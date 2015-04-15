@@ -70,7 +70,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
@@ -84,6 +83,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Wizard to create a new Make project.
@@ -436,17 +436,21 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
-            if (((Boolean) wiz.getProperty("createMainFile"))) { // NOI18N
-                String fname = (String) wiz.getProperty("mainFileName"); // NOI18N
-                String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
+            if (WizardConstants.PROPERTY_CREATE_MAIN_FILE.get(wiz)) { // NOI18N
+                WizardConstants.PROPERTY_MAIN_FILE_NAME.get(wiz);
+                String fname = WizardConstants.PROPERTY_MAIN_FILE_NAME.get(wiz);
+                String template = WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.get(wiz);
                 mainFile = fname + "|" + template; // NOI18N
             }
+            String langStandard = WizardConstants.PROPERTY_LANGUAGE_STANDARD.get(wiz);
+
             MakeConfiguration debug = MakeConfiguration.createConfiguration(dirF, "Debug", conftype, null, hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
+            setupLanguageStandard(debug, langStandard);
             if (wizardtype == TYPE_DB_APPLICATION) {
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
@@ -459,6 +463,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
+            setupLanguageStandard(release, langStandard);
             if (wizardtype == TYPE_DB_APPLICATION) {
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
@@ -492,6 +497,19 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
 
+    private void setupLanguageStandard(MakeConfiguration conf, String langStandard) {
+        Pair<String, Integer> languageStandard = PanelProjectLocationVisual.getLanguageStandard(langStandard);
+        if (languageStandard != null) {
+            if (PanelProjectLocationVisual.C[0].equals(languageStandard.first())) {
+                conf.getCCompilerConfiguration().getCStandard().setValue(languageStandard.second());
+            } else if (PanelProjectLocationVisual.CPP[0].equals(languageStandard.first())) {
+                conf.getCCCompilerConfiguration().getCppStandard().setValue(languageStandard.second());
+            } else if (PanelProjectLocationVisual.FORTRAN[0].equals(languageStandard.first())) {
+                //conf.getFortranCompilerConfiguration().getFortranStandard().setValue(languageStandard.second());
+            } 
+        }
+    }
+    
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;

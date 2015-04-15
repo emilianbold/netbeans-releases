@@ -42,12 +42,15 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.Collection;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
+import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 
 /**
@@ -70,6 +73,41 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).needsClientSidePollingRefresh();
     }
     
+    public static boolean canRefreshFast(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).canRefreshFast();
+    }
+
+    public static void refreshFast(RemoteDirectory directory, boolean expected) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (!directory.hasCache()) {
+            return;
+        }
+        String path = directory.getPath();
+        if (path.isEmpty()) {
+            path = "/"; // NOI18N
+        }
+        long time = 0;
+        int foCount = 0, syncCount = 0;
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
+            final RemoteFileSystem fs = directory.getFileSystem();
+            time = System.currentTimeMillis();
+            foCount = fs.getCachedFileObjectsCount();
+            syncCount = fs.getDirSyncCount();
+        }
+
+        getInstance(directory.getExecutionEnvironment()).refreshFast(path,expected);
+
+        if (RemoteLogger.getInstance().isLoggable(Level.FINE)) {
+            final RemoteFileSystem fs = directory.getFileSystem();
+            time = System.currentTimeMillis() - time;
+            foCount = fs.getCachedFileObjectsCount() - foCount;
+            syncCount = fs.getDirSyncCount() - syncCount;            
+            RemoteLogger.fine("Fast refresh {0} [{1} fo, {2} syncs, {3} new fo] took {4} ms",  //NOI18N
+                    directory.getDisplayName(), fs.getCachedFileObjectsCount(),
+                    syncCount, foCount, time);
+        }
+    }
+
     public static void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths) {
         getInstance(env).scheduleRefresh(paths);
     }
@@ -91,7 +129,7 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static DirEntryList readDirectory(ExecutionEnvironment execEnv, String path) 
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         DirEntryList entries = null;
         RemoteFileSystemTransport transport = FSSTransport.getInstance(execEnv);
@@ -126,19 +164,20 @@ public abstract class RemoteFileSystemTransport {
         return entries;
     }
     
-    public static FileInfoProvider.StatInfo stat(ExecutionEnvironment execEnv, String path) 
-            throws InterruptedException, CancellationException, ExecutionException {
+    public static DirEntry stat(ExecutionEnvironment execEnv, String path) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstance(execEnv).stat(path);
     }
     
-    public static FileInfoProvider.StatInfo lstat(ExecutionEnvironment execEnv, String path)
-            throws InterruptedException, CancellationException, ExecutionException {
+    public static DirEntry lstat(ExecutionEnvironment execEnv, String path)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
 
         return getInstance(execEnv).lstat(path);
      }
 
-    public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) throws IOException {
+    public static DirEntryList delete(ExecutionEnvironment execEnv, String path, boolean directory) 
+            throws ConnectException, IOException {
         return getInstance(execEnv).delete(path, directory);
     }
 
@@ -161,7 +200,7 @@ public abstract class RemoteFileSystemTransport {
      */
     public static DirEntryList copy(ExecutionEnvironment execEnv, String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         return getInstance(execEnv).copy(from, to, subdirectoryExceptions);
     }
 
@@ -179,8 +218,14 @@ public abstract class RemoteFileSystemTransport {
     }
 
     public static MoveInfo move(ExecutionEnvironment execEnv, String from, String to)
-            throws IOException, InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         return getInstance(execEnv).move(from, to);
+    }
+    
+    public static DirEntry uploadAndRename(ExecutionEnvironment execEnv, File src, 
+            String pathToUpload, String pathToRename) 
+            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
+        return getInstance(execEnv).uploadAndRename(src, pathToUpload, pathToRename);
     }
 
     private static RemoteFileSystemTransport getInstance(ExecutionEnvironment execEnv) {
@@ -195,31 +240,39 @@ public abstract class RemoteFileSystemTransport {
 
     protected abstract DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions)
-            throws IOException, InterruptedException, CancellationException, ExecutionException;
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean canMove(String from, String to);
 
     protected abstract MoveInfo move(String from, String to)
-            throws IOException, InterruptedException, CancellationException, ExecutionException;
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
-    protected abstract FileInfoProvider.StatInfo stat(String path) 
-            throws InterruptedException, CancellationException, ExecutionException;
+    protected abstract DirEntry stat(String path) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
     
-    protected abstract FileInfoProvider.StatInfo lstat(String path) 
-            throws InterruptedException, CancellationException, ExecutionException;
+    protected abstract DirEntry lstat(String path) 
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract DirEntryList readDirectory(String path) 
-            throws IOException, InterruptedException, CancellationException, ExecutionException;
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
 
     protected abstract boolean isValid();
     
     protected abstract boolean needsClientSidePollingRefresh();
+
+    protected abstract boolean canRefreshFast();
+    
+    protected abstract void refreshFast(String path, boolean expected)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException;
     
     protected abstract void registerDirectoryImpl(RemoteDirectory directory);
 
     protected abstract void unregisterDirectoryImpl(String path);
 
     protected abstract void scheduleRefresh(Collection<String> paths);
+    
+    protected abstract DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
+            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException;
     
     /** 
      * Deletes the file, returns parent directory content.
@@ -229,7 +282,7 @@ public abstract class RemoteFileSystemTransport {
      * just calling RemoteFileSystemTransport.readDirectory
      * @return parent directory content (can be null - see above)
      */
-    protected abstract DirEntryList delete(String path, boolean directory) throws IOException;
+    protected abstract DirEntryList delete(String path, boolean directory) throws ConnectException, IOException;
 
     protected void onConnect() {
     }

@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.openide.util.Utilities;
 
 /**
@@ -65,7 +66,23 @@ public class ShellConstructor implements Constructor {
         //if maven.bat file is in space containing path, we need to quote with simple quotes.
         String quote = "\"";
         List<String> toRet = new ArrayList<String>();
-        String ex = Utilities.isWindows() ? "mvn.bat" : "mvn"; //NOI18N
+        String ex = "mvn"; //NOI18N
+        if (Utilities.isWindows()) {
+            String version = MavenSettings.getCommandLineMavenVersion(mavenHome);
+            if (null == version) {
+                ex = "mvn.bat"; // NOI18N
+            } else {
+                String[] v = version.split("\\."); // NOI18N
+                int major = Integer.parseInt(v[0]);
+                int minor = Integer.parseInt(v[1]);
+                // starting with 3.3.0 maven stop using .bat file
+                if ((major < 3) || (major == 3 && minor < 3)) {
+                    ex = "mvn.bat"; //NOI18N
+                } else {
+                    ex = "mvn.cmd"; //NOI18N
+                }
+            }
+        }
         File bin = new File(mavenHome, "bin" + File.separator + ex);//NOI18N
         toRet.add(quoteSpaces(bin.getAbsolutePath(), quote));
 

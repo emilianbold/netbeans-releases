@@ -93,6 +93,10 @@ final class RunTCK extends AbstractWizard {
         ready.countDown();
     }
     
+    @Override
+    protected String[] getTechIds() {
+        return new String[0];
+    }
     
     private void test() throws Throwable {
         ready.await();

@@ -112,7 +112,8 @@ function checkSystemversion() {
     <choices-outline>
         <line choice="netbeans">
             <line choice="baseide"></line>
-            <line choice="cpp"></line>            
+            <line choice="cpp"></line>
+            <line choice="jre-nested"/>            
         </line>
         <line choice="postinstallscripts"></line>           
     </choices-outline>
@@ -123,10 +124,14 @@ function checkSystemversion() {
     <choice id="cpp" title="cpp-title" description="cpp-description" start_selected="true" start_enabled="true" start_visible="true" selected="choices.cpp.selected &amp;&amp; choices.baseide.selected" enabled="choices.baseide.selected">
         <pkg-ref id="ident.pkg.cpp"></pkg-ref>
     </choice>
+    <choice id="jre-nested" title="jre-nested-title" description="jre-nested-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="ture">
+        <pkg-ref id="ident.pkg.jrenested"/>
+    </choice>
     <choice id="postinstallscripts" title="postinstallscripts-title" description="postinstallscripts-description" start_selected="true" start_enabled="true" start_visible="false" selected="true" enabled="true" visible="false">
         <pkg-ref id="ident.pkg.postinstallscripts"></pkg-ref>
     </choice>
     <pkg-ref id="ident.pkg.baseide" version="0.0.0.0.1" installKBytes="@SIZE_BASEIDE@" auth="Root" onConclusion="None">baseide-@NB_ID@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.cpp" version="0.0.0.0.1" installKBytes="@SIZE_CPP@" auth="Root" onConclusion="None">cpp-@NB_ID@.pkg</pkg-ref>
+    <pkg-ref id="ident.pkg.jrenested" version="0.0.0.0.1" installKBytes="@SIZE_EXTIDE@" auth="Root" onConclusion="None">jre-nested-@JRE_VERSION@.pkg</pkg-ref>
     <pkg-ref id="ident.pkg.postinstallscripts" version="0.0.0.0.1" auth="Root" onConclusion="None">postinstallscripts.pkg</pkg-ref>
 </installer-gui-script>

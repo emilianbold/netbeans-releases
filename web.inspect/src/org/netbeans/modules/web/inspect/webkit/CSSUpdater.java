@@ -46,6 +46,8 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,6 +56,7 @@ import org.netbeans.modules.css.live.LiveUpdater;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -78,6 +81,21 @@ public class CSSUpdater {
      * Current webkit session.
      */
     private WebKitDebugging webKit;
+    
+    /**
+     * Owning project.
+     */
+    private Project project;
+    
+    /**
+     * Address of the local-host.
+     */
+    private InetAddress localhost;
+
+    /**
+     * Listener for the addition/removal of style-sheets.
+     */
+    private CSS.Listener listener;
     
     /**
      * Mapping between url represented by string and StyleSheetHeader
@@ -106,28 +124,45 @@ public class CSSUpdater {
     synchronized void start(WebKitDebugging webKit, Project project) {
         assert webKit !=null : "webKit allready assigned"; // NOI18N
         this.webKit = webKit;
+        this.project = project;
+        localhost = null;
+        try {
+            localhost = WebUtils.getLocalhostInetAddress();
+        } catch (IllegalStateException isex) {
+            Logger.getLogger(CSSUpdater.class.getName()).log(Level.INFO, null, isex);
+        }
+        this.listener = new Listener();
+        webKit.getCSS().addListener(listener);
         for (StyleSheetHeader header : webKit.getCSS().getAllStyleSheets()) {
-            try {
-                //need to convert file:///
-                URL url = new URL(header.getSourceURL());
-                sheetsMap.put(url.toString(), header);
+            registerStyleSheet(header);
+        }
+    }
 
-                if (project != null) {
-                    FileObject fob = ServerURLMapping.fromServer(project, url);
-                    if (fob != null) {
-                        fobToSheetMap.put(fob, header);
-                    }
+    /**
+     * Registers the specified style-sheet (so that it is refreshed
+     * in the browser when its source file is modified).
+     * 
+     * @param header information about the style-sheet.
+     */
+    synchronized void registerStyleSheet(StyleSheetHeader header) {
+        try {
+            //need to convert file:///
+            URL url = new URL(header.getSourceURL());
+            sheetsMap.put(url.toString(), header);
+
+            if (project != null) {
+                FileObject fob = ServerURLMapping.fromServer(project, url);
+                if (fob != null) {
+                    fobToSheetMap.put(fob, header);
                 }
-                
-                //TODO: hack to workaround #221791
-                if (WebUtils.getLocalhostInetAddress().equals(InetAddress.getByName(url.getHost()))) {
-                    sheetsMap.put(new URL(url.toExternalForm().replace(url.getHost(), "localhost")).toString(), header); // NOI18N
-                }
-                
-                
-            } catch (IOException ex) {
-                //ignore unknown sheets
             }
+
+            //TODO: hack to workaround #221791
+            if (localhost != null && localhost.equals(InetAddress.getByName(url.getHost()))) {
+                sheetsMap.put(new URL(url.toExternalForm().replace(url.getHost(), "localhost")).toString(), header); // NOI18N
+            }
+        } catch (IOException ex) {
+            //ignore unknown sheets
         }
     }
 
@@ -135,7 +170,13 @@ public class CSSUpdater {
      * Stop listening on changes.
      */
     synchronized void stop() {
+        if (webKit != null) {
+            webKit.getCSS().removeListener(listener);
+        }
         this.webKit = null;
+        this.localhost = null;
+        this.project = null;
+        this.listener = null;
         sheetsMap.clear();
         fobToSheetMap.clear();
     }
@@ -210,6 +251,30 @@ public class CSSUpdater {
                 return (DataObject) sdp;
             }
             return null;
+        }
+        
+    }
+
+    /**
+     * Listener for addition/removal of style-sheets.
+     */
+    private class Listener implements CSS.Listener {
+
+        @Override
+        public void mediaQueryResultChanged() {
+        }
+
+        @Override
+        public void styleSheetChanged(String styleSheetId) {
+        }
+
+        @Override
+        public void styleSheetAdded(StyleSheetHeader header) {
+            registerStyleSheet(header);
+        }
+
+        @Override
+        public void styleSheetRemoved(String styleSheetId) {
         }
         
     }

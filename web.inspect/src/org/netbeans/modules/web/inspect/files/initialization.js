@@ -45,7 +45,9 @@ if (!(typeof(NetBeans) === 'object'
     && typeof(NetBeans.GLASSPANE_ID) === 'string'
     && document.getElementById(NetBeans.GLASSPANE_ID) !== null)) {
 
-NetBeans = new Object();
+if (typeof(NetBeans) !== 'object') {
+    NetBeans = new Object();
+}
 
 // Name of attribute used to mark document elements created by NetBeans
 NetBeans.ATTR_ARTIFICIAL = ':netbeans_generated';
@@ -85,6 +87,9 @@ NetBeans.windowActive = true;
 
 // Determines whether getClientRects() returns incorrect values (see issue 236445)
 NetBeans.clientRectsBug = (navigator.userAgent.match(/(iPad|iPhone|iPod);.*CPU.*OS 7_\d/i) ? true : false); /* is iOS 7 */
+
+// Determines whether canvas.clearRect() should be avoided (see issue 236961)
+NetBeans.clearRectBug = navigator.appVersion.indexOf('JavaFX') !== -1 || navigator.userAgent.indexOf('JavaFX') !== -1;
 
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
@@ -311,7 +316,7 @@ NetBeans.paintGlassPane = function() {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
-        if (ctx.canvas.width === width && ctx.canvas.height === height) {
+        if (ctx.canvas.width === width && ctx.canvas.height === height && !NetBeans.clearRectBug) {
             ctx.clearRect(0, 0, width, height);
         } else {
             ctx.canvas.width = width;
@@ -320,6 +325,7 @@ NetBeans.paintGlassPane = function() {
         ctx.globalAlpha = 0.5;
         NetBeans.paintSelectedElements(ctx, NetBeans.ruleSelection, '#00FF00');
         NetBeans.paintSelectedElements(ctx, NetBeans.selection, '#0000FF');
+        NetBeans.paintGrid(ctx, NetBeans.highlight);
         ctx.globalAlpha = 0.25;
         NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
     }
@@ -357,7 +363,7 @@ NetBeans.paintSelectedElements = function(ctx, elements, color) {
             dashedLine(rect.left,rect.top+dash,0,dash,rect.height-dash);
             dashedLine(rect.left+rect.width,rect.top+dash,0,dash,rect.height-dash);
             ctx.stroke();
-            
+
             ctx.beginPath();
         }
     }
@@ -390,6 +396,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
     ctx.lineWidth = 1;
     for (var i=0; i<elements.length; i++) {
         var highlightedElement = elements[i];
+        
+        // Grid rows have a special highlighting
+        if (highlightedElement.classList.contains('oj-row')) continue;
+
         var rects = NetBeans.getClientRects(highlightedElement);
         var style = window.getComputedStyle(highlightedElement);
 
@@ -452,10 +462,10 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             // Label
             var oldAlpha = ctx.globalAlpha;
             ctx.globalAlpha = 1;
-            var text = highlightedElement.tagName.toLowerCase();
+            var line1 = highlightedElement.tagName.toLowerCase();
             var id = highlightedElement.id;
             if (id !== '') {
-                text += '#' + id;
+                line1 += '#' + id;
             }
             var classList = highlightedElement.classList;
             if (classList.length !== 0) {
@@ -463,22 +473,34 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
                     var clazz = classList[k];
                     // Do not show the class that simulates hovering
                     if (clazz !== NetBeans.CLASS_HOVER) {
-                        text += '.' + clazz;
+                        line1 += '.' + clazz;
                     }
                 }
             }
-            var text = ' ' + text + ' ' + borderRect.width + 'px \xD7 ' + borderRect.height + 'px ';
+            var line2 = borderRect.width + 'px \xD7 ' + borderRect.height + 'px';
 
-            var width = ctx.measureText(text).width;
+            if (highlightedElement.classList.contains('oj-col')) {
+                var parentElement = highlightedElement.parentElement;
+                if (parentElement.classList.contains('oj-row')) {
+                    var parentRect = parentElement.getBoundingClientRect();
+                    var columns = Math.round(12*borderRect.width/parentRect.width);
+                    line2 += '(' + columns + ' column' + ((columns === 1) ? '' : 's') + ')';
+                }
+            }
+
+            var width1 = ctx.measureText(line1).width;
+            var width2 = ctx.measureText(line2).width;
+            var width = 6 + ((width1 < width2) ? width2 : width1);
             var x = marginRect.left;
             var y = marginRect.top + marginRect.height + 2*fontSize;
 
             ctx.strokeStyle = '#000000';
-            ctx.strokeRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.strokeRect(x, y-1.2*fontSize, width, 3.2*fontSize);
             ctx.fillStyle = '#FFFF88';
-            ctx.fillRect(x, y-1.5*fontSize, width, 2*fontSize);
+            ctx.fillRect(x, y-1.2*fontSize, width, 3.2*fontSize);
             ctx.fillStyle = '#000000';
-            ctx.fillText(text, x, y);
+            ctx.fillText(line1, x+3, y);
+            ctx.fillText(line2, x+3, y+1.6*fontSize);
             ctx.globalAlpha = oldAlpha;
 
             ctx.stroke();
@@ -639,10 +661,131 @@ NetBeans.getKnockout = function() {
     return ko;
 };
 
-// Determines whether the page uses Knockout
-NetBeans.usesKnockout = function() {
+// Returns the version of the Knockout used by the inspected page (or null).
+NetBeans.getKnockoutVersion = function() {
     var ko = this.getKnockout();
-    return !!(ko && ko.observable && ko.applyBindings);
+    return !!(ko && ko.observable && ko.applyBindings) ? ko.version : null;
+};
+
+// Determines whether unused binding information is available
+NetBeans.unusedBindingsAvailable = function() {
+    return !!NetBeans.knockoutMarkers;
+};
+
+// Returns information about unused Knockout bindings
+NetBeans.unusedBindings = function() {
+    var infos = null;
+    if (this.unusedBindingsAvailable()) {
+        infos = [];
+        var i;
+        for (i=0; i<NetBeans.knockoutMarkers.length; i++) {
+            var marker = NetBeans.knockoutMarkers[i];
+            if (!marker.invoked) {
+                var info = {
+                    name: marker.binding,
+                    id: i                    
+                };
+                if (marker.node.nodeType === 1) { // element
+                    info.nodeTagName = marker.node.tagName;
+                    info.nodeId = marker.node.getAttribute('id');
+                    info.nodeClasses = marker.node.getAttribute('class');
+                    info.nodeRemoved = !this.isInDocument(marker.node);
+                }
+                infos.push(info);
+            }
+        }
+    }
+    return JSON.stringify(infos);
+};
+
+// Checks if the specified node is in the document (or if it was removed)
+NetBeans.isInDocument = function(node) {
+    while (node !== null && node !== document.documentElement) {
+        node = node.parentElement;
+    }
+    return node !== null;
+};
+
+// Returns the node that owns the unused binding with the specified ID
+NetBeans.ownerOfUnusedBinding = function(id) {
+    var node = NetBeans.knockoutMarkers[id].node;
+    if (node.nodeType === 8) {
+        node = node.parentElement;
+    }
+    return node;
+};
+
+// Paints a feedback specific for 12-column grid
+NetBeans.paintGrid = function(ctx, elements) {
+    // Grids found
+    var grids = [];
+    // Information about columns occupied by specified elements (we don't
+    // paint there because the elements have their own visual feedback).
+    // Note that we use 24 instead of 12 columns to handle centered
+    // elements with an odd width.
+    var occupied = [];
+    var i;
+    for (var elementIndex=0; elementIndex<elements.length; elementIndex++) {
+        var element = elements[elementIndex];
+        var grid = null;
+        var start;
+        var width;
+        var top;
+        var bottom;
+        if (element.classList.contains('oj-col')) {
+            var parentElement = element.parentElement;
+            if (parentElement.classList.contains('oj-row')) {
+                var parentRect = parentElement.getBoundingClientRect();
+                var elementRect = element.getBoundingClientRect();
+                width = Math.round(24*elementRect.width/parentRect.width);
+                start = Math.round(24*(elementRect.left-parentRect.left)/parentRect.width);
+                top = elementRect.top;
+                bottom = elementRect.top+elementRect.height;
+                grid = parentElement;
+            }
+        } else if (element.classList.contains('oj-row')) {
+            grid = element;
+            start = 0;
+            width = 0;
+        }
+        // Make sure that we don't paint some grid several times
+        if (grid) {
+            var index = grids.indexOf(grid);
+            var data = [];
+            if (index === -1) {
+                index = grids.length;
+                grids.push(grid);
+                data = [];
+                for (var i=0; i<24; i++) {
+                    data.push([]);
+                }
+                occupied.push(data);
+            } else {
+                data = occupied[index];
+            }
+            for (var i=start; i<start+width; i++) {
+                data[i].push(top);
+                data[i].push(bottom);
+            }
+        }
+    }
+    for (i=0; i<grids.length; i++) {
+        var grid = grids[i];
+        var occupiedData = occupied[i];
+        var rect = grid.getBoundingClientRect();
+        for (var column=0; column<24; column++) {
+            var data = occupiedData[column];
+            data.push(rect.top);
+            data.push(rect.top+rect.height);
+            data.sort(function(a,b) { return a-b; });
+            ctx.fillStyle = (column%4 < 2) ? '#0000FF' : '#000088';
+            for (var j=0; j<data.length; j+=2) {
+                var from = Math.round(rect.left+column*rect.width/24);
+                var to = Math.round(rect.left+(column+1)*rect.width/24);
+                ctx.fillRect(from, data[j], to-from, data[j+1]-data[j]);
+            }            
+        }
+    }
 };
 
 // Insert glass-pane into the inspected page

@@ -76,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -648,12 +649,14 @@ public final class ExternalBrowserPlugin {
         Map params = new HashMap();
         params.put( Message.TAB_ID, tabId );
         if (newURL != null) {
+            String url;
             try {
-                String u = reformatFileURL(newURL.toURI().toString());
-                params.put( "url", u ); // NOI18N
+                url = newURL.toURI().toASCIIString();
             } catch (URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                url = newURL.toExternalForm();
             }
+            url = reformatFileURL(url);
+            params.put("url", url); // NOI18N
         }
         Message msg = new Message( Message.MessageType.RELOAD, params);
         return msg.toStringValue();
@@ -857,7 +860,7 @@ public final class ExternalBrowserPlugin {
             }
 
             if (inspector != null && browserImpl.getBrowserFeatures().isPageInspectorEnabled()) {
-                inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
+                inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext(), Lookups.fixed(browserImpl)));
             }
         }
 

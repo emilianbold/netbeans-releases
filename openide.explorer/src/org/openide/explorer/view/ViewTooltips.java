@@ -541,8 +541,9 @@ final class ViewTooltips extends MouseAdapter implements MouseMotionListener {
             Dimension d = jc.getPreferredSize();
             Rectangle currentScreenBounds = Utilities.getUsableScreenBounds();
             // get some reasonable limit for the width
-            int width = Math.min(d.width, 4 * currentScreenBounds.width);
-            BufferedImage nue = new BufferedImage (width, d.height + 2, 
+            int width = Math.min(d.width, 2 * currentScreenBounds.width);
+            int height = Math.min(d.height + 2, 2 * currentScreenBounds.height);
+            BufferedImage nue = new BufferedImage (width, height, 
                     BufferedImage.TYPE_INT_ARGB_PRE);
             Graphics2D g = nue.createGraphics();
             g.setColor (bg);

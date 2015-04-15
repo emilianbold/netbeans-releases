@@ -89,8 +89,8 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     
     private final DefinitionKind definitionKind;
     
-    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, false, file, startOffset, endOffset, global);
+    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, false, file, startOffset, endOffset, global);
         this.definitionKind = defKind;
     }
 
@@ -110,6 +110,8 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
+        boolean _override = false;
+        boolean _final = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean afterAssignEqual = false;
@@ -121,6 +123,12 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                     break;
                 case CPPTokenTypes.LITERAL_virtual:
                     _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_override:
+                    _override = true;
+                    break;
+                case CPPTokenTypes.LITERAL_final:
+                    _final = true;
                     break;
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
@@ -148,7 +156,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, defKind, _virtual, _override, _final, _explicit, _static, _const, file, startOffset, endOffset, global);        
         temporaryRepositoryRegistration(ast, global, methodDDImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -266,10 +274,10 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             boolean _explicit = false;
 
 
-            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, false, false, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 

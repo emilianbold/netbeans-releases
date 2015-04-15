@@ -781,7 +781,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     
     void switchProject(ProjectHandle ph, ListNode node, boolean hideMenu, boolean forceRefresh) {
         getProjectPicker().setCurrentProject(server, ph, node, hideMenu);
-        switchProject(ph, hideMenu, forceRefresh);
+        switchProject(ph, false, forceRefresh);
     }
             
     void switchProject(ProjectHandle project, boolean preserveSelection) {

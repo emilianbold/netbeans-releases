@@ -104,7 +104,7 @@ public class WrongCreationEventsTestCase extends RemoteFileTestBase {
                 }
             };
 
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             baseDir = mkTemp(execEnv, true);
             String creationScript =
                     "cd " + baseDir + "; " +

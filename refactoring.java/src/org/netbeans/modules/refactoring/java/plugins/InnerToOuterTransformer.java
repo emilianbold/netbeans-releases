@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -138,6 +139,12 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             }
         }
         return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    public Tree visitCase(CaseTree node, Element p) {
+        // Ignore case expression
+        return super.scan(node.getStatements(), p);
     }
 
     @Override
@@ -270,12 +277,16 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
             
             newInnerClass = refactorInnerClass(newInnerClass);
             
+            TreePath outerPath = workingCopy.getTrees().getPath(outer);
+            
             if (outerouter.getKind() == ElementKind.PACKAGE) {
                 FileObject sourceRoot=ClassPath.getClassPath(workingCopy.getFileObject(), ClassPath.SOURCE).findOwnerRoot(workingCopy.getFileObject());
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
+                if(outerPath != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(outerPath, workingCopy);
+                }
                 CompilationUnitTree compilationUnit = tp.getCompilationUnit();
                 String relativePath = RefactoringUtils.getPackageName(compilationUnit).replace('.', '/') + '/' + refactoring.getClassName() + ".java"; // NOI18N
                 CompilationUnitTree newCompilation = JavaPluginUtils.createCompilationUnit(sourceRoot, relativePath, newInnerClass, workingCopy, make);
@@ -290,7 +301,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 ClassTree newOuterOuter = GeneratorUtilities.get(workingCopy).insertClassMember(outerouterTree, newInnerClass);
                 rewrite(outerTree, newOuter);
-                JavaRefactoringUtils.cacheTreePathInfo(workingCopy.getTrees().getPath(outer), workingCopy);
+                if(outerPath != null) {
+                    JavaRefactoringUtils.cacheTreePathInfo(outerPath, workingCopy);
+                }
                 rewrite(outerouterTree, newOuterOuter);
                 return newOuterOuter;
             }
@@ -363,7 +376,21 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         for (Element privEl : this.referencedPrivateElement) {
             problem = MoveTransformer.createProblem(problem, false, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "WRN_InnerToOuterRefToPrivate", privEl));
         }
-
+        
+        Trees trees = workingCopy.getTrees();
+        CompilationUnitTree newNode = node;
+        for (ImportTree imp : node.getImports()) {
+            if(imp.isStatic()) {
+                Tree qualIdent = imp.getQualifiedIdentifier();
+                TypeElement el = workingCopy.getElements().getTypeElement(qualIdent.toString());
+                if(inner.equals(el)) {
+                    newNode = make.removeCompUnitImport(newNode, imp);
+                }
+            }
+        }
+        if(newNode != node) {
+            rewrite(node, newNode);
+        }
         return result;
     }
     

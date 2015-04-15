@@ -44,19 +44,24 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 
 /**
@@ -65,22 +70,48 @@ import org.openide.util.NbCollections;
  *
  * @author Jan Pokorsky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
-public final class ProjectTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
+@org.openide.util.lookup.ServiceProvider(service=CreateFromTemplateAttributes.class)
+public final class ProjectTemplateAttributesProvider implements CreateFromTemplateAttributes {
     
     private static final String ATTR_PROJECT = "project"; // NOI18N
     private static final String ATTR_LICENSE = "license"; // NOI18N
     private static final String ATTR_LICENSE_PATH = "licensePath"; // NOI18N
     private static final String ATTR_ENCODING = "encoding"; // NOI18N
-    
-    public Map<String, ? extends Object> attributesFor(
-            DataObject template, DataFolder target, String name) {
-        
-        Project prj = FileOwnerQuery.getOwner(target.getPrimaryFile());
+
+    @Override
+    public Map<String, ?> attributesFor(CreateDescriptor desc) {
+        FileObject templateF = desc.getTemplate();
+        FileObject targetF = desc.getTarget();
+        String name = desc.getProposedName();
+        Project prj = FileOwnerQuery.getOwner(targetF);
         Map<String, Object> all = null;
         if (prj != null) {
-            for (CreateFromTemplateAttributesProvider attrs : prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class)) {
-                Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
+            // call old providers
+            Collection<? extends CreateFromTemplateAttributesProvider> oldProvs = prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class);
+            if (!oldProvs.isEmpty()) {
+                try {
+                    DataObject t = DataObject.find(targetF);
+                    if (t instanceof DataFolder) {
+                        DataFolder target = (DataFolder)t;
+                        DataObject template = DataObject.find(templateF);
+                        for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
+                            Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
+                            if (m != null) {
+                                if (all == null) {
+                                    all = new HashMap<String, Object>();
+                                }
+                                all.putAll(m);
+                            }
+                        }
+                    }
+                } catch (IOException ex) {
+                    // an unexpected error
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            // call new providers last, so they can override anything old providers could screw up.
+            for (CreateFromTemplateAttributes attrs : prj.getLookup().lookupAll(CreateFromTemplateAttributes.class)) {
+                Map<String, ? extends Object> m = attrs.attributesFor(desc);
                 if (m != null) {
                     if (all == null) {
                         all = new HashMap<String, Object>();
@@ -89,8 +120,7 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                 }
             }
         }
-        
-        return checkProjectAttrs(all, target.getPrimaryFile());
+        return checkProjectAttrs(all, targetF);
     }
     
     static Map<String, ? extends Object> checkProjectAttrs(Map<String, Object> m, FileObject parent) {

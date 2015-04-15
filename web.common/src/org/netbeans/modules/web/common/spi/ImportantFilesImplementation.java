@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.common.spi;
 
 import java.util.Collection;
+import java.util.Objects;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -89,7 +90,7 @@ public interface ImportantFilesImplementation {
 
         /**
          * Creates information for the given file.
-         * @param file file
+         * @param file file, cannot be a directory
          */
         public FileInfo(FileObject file) {
             this(file, null, null);
@@ -98,12 +99,15 @@ public interface ImportantFilesImplementation {
         /**
          * Creates information for the given file with custom display name
          * and/or custom description.
-         * @param file file
+         * @param file file, cannot be a directory
          * @param displayName custom display name, can be {@code null}
          * @param description custom description, can be {@code null}
          */
         public FileInfo(FileObject file, @NullAllowed String displayName, @NullAllowed String description) {
             Parameters.notNull("file", file); // NOI18N
+            if (file.isFolder()) {
+                throw new IllegalArgumentException("File cannot be a directory");
+            }
             this.file = file;
             this.displayName = displayName;
             this.description = description;
@@ -138,6 +142,28 @@ public interface ImportantFilesImplementation {
         @Override
         public String toString() {
             return "FileInfo{" + "file=" + file + ", displayName=" + displayName + ", description=" + description + '}'; // NOI18N
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 71 * hash + Objects.hashCode(this.file);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final FileInfo other = (FileInfo) obj;
+            if (!Objects.equals(this.file, other.file)) {
+                return false;
+            }
+            return true;
         }
 
     }

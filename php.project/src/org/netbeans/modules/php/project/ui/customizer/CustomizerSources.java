@@ -43,6 +43,7 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -51,8 +52,15 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -75,6 +83,8 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -151,6 +161,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ChangeListener defaultChangeListener = new DefaultChangeListener();
         copyFilesVisual.addChangeListener(defaultChangeListener);
+        sourceFolderTextField.getDocument().addDocumentListener(defaultDocumentListener);
         webRootTextField.getDocument().addDocumentListener(defaultDocumentListener);
         phpVersionComboBox.addItemListener(new DefaultComboBoxItemListener());
         ItemListener defaultCheckBoxItemListener = new DefaultCheckBoxItemListener();
@@ -326,6 +337,13 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         }
 
         // everything ok
+        File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
+        String srcPath = PropertyUtils.relativizeFile(projectDirectory, srcDir);
+        if (srcPath == null) {
+            // path cannot be relativized => use absolute path (any VCS can be hardly use, of course)
+            srcPath = srcDir.getAbsolutePath();
+        }
+        properties.setSrcDir(srcPath);
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
         properties.setCopySrcOnOpen(copyFilesVisual.isCopyOnOpen());
@@ -384,184 +402,213 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        projectFolderLabel = new javax.swing.JLabel();
-        projectFolderTextField = new javax.swing.JTextField();
-        sourceFolderLabel = new javax.swing.JLabel();
-        sourceFolderTextField = new javax.swing.JTextField();
-        webRootLabel = new javax.swing.JLabel();
-        webRootTextField = new javax.swing.JTextField();
-        webRootButton = new javax.swing.JButton();
-        copyFilesPanel = new javax.swing.JPanel();
-        encodingLabel = new javax.swing.JLabel();
-        encodingComboBox = new javax.swing.JComboBox<Charset>();
-        phpVersionLabel = new javax.swing.JLabel();
-        phpVersionComboBox = new javax.swing.JComboBox<PhpVersion>();
-        phpVersionInfoLabel = new javax.swing.JLabel();
-        shortTagsCheckBox = new javax.swing.JCheckBox();
-        aspTagsCheckBox = new javax.swing.JCheckBox();
+        projectFolderLabel = new JLabel();
+        projectFolderTextField = new JTextField();
+        sourceFolderLabel = new JLabel();
+        sourceFolderTextField = new JTextField();
+        sourceFolderButton = new JButton();
+        webRootLabel = new JLabel();
+        webRootTextField = new JTextField();
+        webRootButton = new JButton();
+        copyFilesPanel = new JPanel();
+        encodingLabel = new JLabel();
+        encodingComboBox = new JComboBox<Charset>();
+        phpVersionLabel = new JLabel();
+        phpVersionComboBox = new JComboBox<PhpVersion>();
+        phpVersionInfoLabel = new JLabel();
+        shortTagsCheckBox = new JCheckBox();
+        aspTagsCheckBox = new JCheckBox();
 
         projectFolderLabel.setLabelFor(projectFolderTextField);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
-        org.openide.awt.Mnemonics.setLocalizedText(projectFolderLabel, bundle.getString("LBL_ProjectFolder")); // NOI18N
+        ResourceBundle bundle = ResourceBundle.getBundle("org/netbeans/modules/php/project/ui/customizer/Bundle"); // NOI18N
+        Mnemonics.setLocalizedText(projectFolderLabel, bundle.getString("LBL_ProjectFolder")); // NOI18N
 
         projectFolderTextField.setEditable(false);
 
         sourceFolderLabel.setLabelFor(sourceFolderTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("LBL_SourceFolder")); // NOI18N
+        Mnemonics.setLocalizedText(sourceFolderLabel, bundle.getString("LBL_SourceFolder")); // NOI18N
 
         sourceFolderTextField.setEditable(false);
 
+        Mnemonics.setLocalizedText(sourceFolderButton, NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderButton.text")); // NOI18N
+        sourceFolderButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                sourceFolderButtonActionPerformed(evt);
+            }
+        });
+
         webRootLabel.setLabelFor(webRootTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
+        Mnemonics.setLocalizedText(webRootLabel, bundle.getString("LBL_WebRoot")); // NOI18N
 
         webRootTextField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(webRootButton, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseWebRoot")); // NOI18N
-        webRootButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(webRootButton, NbBundle.getMessage(CustomizerSources.class, "LBL_BrowseWebRoot")); // NOI18N
+        webRootButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 webRootButtonActionPerformed(evt);
             }
         });
 
-        copyFilesPanel.setLayout(new java.awt.BorderLayout());
+        copyFilesPanel.setLayout(new BorderLayout());
 
         encodingLabel.setLabelFor(encodingComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_Encoding")); // NOI18N
+        Mnemonics.setLocalizedText(encodingLabel, NbBundle.getMessage(CustomizerSources.class, "LBL_Encoding")); // NOI18N
 
         phpVersionLabel.setLabelFor(phpVersionComboBox);
-        org.openide.awt.Mnemonics.setLocalizedText(phpVersionLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpVersionLabel, NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(phpVersionInfoLabel, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(phpVersionInfoLabel, NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(shortTagsCheckBox, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_ShortTagsEnabled")); // NOI18N
+        Mnemonics.setLocalizedText(shortTagsCheckBox, NbBundle.getMessage(CustomizerSources.class, "LBL_ShortTagsEnabled")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(aspTagsCheckBox, org.openide.util.NbBundle.getMessage(CustomizerSources.class, "LBL_AspTagsEnabled")); // NOI18N
+        Mnemonics.setLocalizedText(aspTagsCheckBox, NbBundle.getMessage(CustomizerSources.class, "LBL_AspTagsEnabled")); // NOI18N
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(projectFolderLabel)
                         .addComponent(sourceFolderLabel)
                         .addComponent(webRootLabel)
                         .addComponent(encodingLabel)
                         .addComponent(phpVersionLabel))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(projectFolderTextField)
-                        .addComponent(sourceFolderTextField)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(sourceFolderTextField)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(sourceFolderButton))
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(webRootTextField)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(webRootButton))
-                        .addComponent(encodingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(phpVersionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(encodingComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(phpVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createSequentialGroup()
                             .addComponent(phpVersionInfoLabel)
                             .addGap(0, 0, Short.MAX_VALUE))))
-                .addComponent(copyFilesPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(copyFilesPanel, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(aspTagsCheckBox)
                     .addComponent(shortTagsCheckBox))
                 .addContainerGap())
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(projectFolderLabel)
-                    .addComponent(projectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(projectFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(sourceFolderLabel)
-                    .addComponent(sourceFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sourceFolderTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sourceFolderButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(webRootLabel)
-                    .addComponent(webRootTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(webRootTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(webRootButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(copyFilesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(encodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(copyFilesPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(encodingComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(encodingLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(phpVersionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(phpVersionComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(phpVersionLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(phpVersionInfoLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(shortTagsCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(aspTagsCheckBox))
         );
 
-        projectFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.projectFolderLabel.AccessibleContext.accessibleName")); // NOI18N
-        projectFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.projectFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        projectFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_ProjectFolder")); // NOI18N
-        projectFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_ProjectFolder")); // NOI18N
-        sourceFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleName")); // NOI18N
-        sourceFolderLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        sourceFolderTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleName")); // NOI18N
-        sourceFolderTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        webRootLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleName")); // NOI18N
-        webRootLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        webRootTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleName")); // NOI18N
-        webRootTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        webRootButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Browse")); // NOI18N
-        webRootButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_BrowseWebRoot")); // NOI18N
-        copyFilesPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N
-        copyFilesPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleDescription")); // NOI18N
-        encodingLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleName")); // NOI18N
-        encodingLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        encodingComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSN_Encoding")); // NOI18N
-        encodingComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "ACSD_Encoding")); // NOI18N
-        phpVersionLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpVersionLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        phpVersionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionComboBox.AccessibleContext.accessibleName")); // NOI18N
-        phpVersionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
-        phpVersionInfoLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpVersionInfoLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        shortTagsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        shortTagsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        aspTagsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.aspTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        aspTagsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.aspTagsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.projectFolderLabel.AccessibleContext.accessibleName")); // NOI18N
+        projectFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.projectFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "ACSN_ProjectFolder")); // NOI18N
+        projectFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "ACSD_ProjectFolder")); // NOI18N
+        sourceFolderLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleName")); // NOI18N
+        sourceFolderLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        sourceFolderTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleName")); // NOI18N
+        sourceFolderTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.sourceFolderTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        webRootLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleName")); // NOI18N
+        webRootLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        webRootTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleName")); // NOI18N
+        webRootTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.webRootTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        webRootButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "ACSN_Browse")); // NOI18N
+        webRootButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "ACSD_BrowseWebRoot")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleName")); // NOI18N
+        copyFilesPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.copyFilesPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        encodingLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleName")); // NOI18N
+        encodingLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.encodingLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "ACSN_Encoding")); // NOI18N
+        encodingComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "ACSD_Encoding")); // NOI18N
+        phpVersionLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpVersionLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        phpVersionComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionComboBox.AccessibleContext.accessibleName")); // NOI18N
+        phpVersionComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        phpVersionInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.AccessibleContext.accessibleName")); // NOI18N
+        phpVersionInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.phpVersionInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        shortTagsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        shortTagsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        aspTagsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.aspTagsCheckBox.AccessibleContext.accessibleName")); // NOI18N
+        aspTagsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.aspTagsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerSources.class, "CustomizerSources.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void webRootButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_webRootButtonActionPerformed
-        String selected = Utils.browseSourceFolder(properties.getProject(), webRootTextField.getText());
+    private void webRootButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_webRootButtonActionPerformed
+        FileObject fo = FileUtil.toFileObject(getSrcDir());
+        if (fo == null) {
+            return;
+        }
+        String selected = Utils.browseFolder(properties.getProject(), fo, webRootTextField.getText());
         if (isDefaultWebRoot(selected)) {
             selected = DEFAULT_WEB_ROOT;
         }
         webRootTextField.setText(selected);
     }//GEN-LAST:event_webRootButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerSources.src.browse.title=Select Source Files")
+    private void sourceFolderButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourceFolderButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        File sources = new FileChooserBuilder(CustomizerSources.class)
+                .setDirectoriesOnly(true)
+                .setTitle(Bundle.CustomizerSources_src_browse_title())
+                .setDefaultWorkingDirectory(FileUtil.toFile(properties.getProject().getProjectDirectory()))
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (sources != null) {
+            sourceFolderTextField.setText(FileUtil.normalizeFile(sources).getAbsolutePath());
+        }
+    }//GEN-LAST:event_sourceFolderButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox aspTagsCheckBox;
-    private javax.swing.JPanel copyFilesPanel;
-    private javax.swing.JComboBox<Charset> encodingComboBox;
-    private javax.swing.JLabel encodingLabel;
-    private javax.swing.JComboBox<PhpVersion> phpVersionComboBox;
-    private javax.swing.JLabel phpVersionInfoLabel;
-    private javax.swing.JLabel phpVersionLabel;
-    private javax.swing.JLabel projectFolderLabel;
-    private javax.swing.JTextField projectFolderTextField;
-    private javax.swing.JCheckBox shortTagsCheckBox;
-    private javax.swing.JLabel sourceFolderLabel;
-    private javax.swing.JTextField sourceFolderTextField;
-    private javax.swing.JButton webRootButton;
-    private javax.swing.JLabel webRootLabel;
-    private javax.swing.JTextField webRootTextField;
+    private JCheckBox aspTagsCheckBox;
+    private JPanel copyFilesPanel;
+    private JComboBox<Charset> encodingComboBox;
+    private JLabel encodingLabel;
+    private JComboBox<PhpVersion> phpVersionComboBox;
+    private JLabel phpVersionInfoLabel;
+    private JLabel phpVersionLabel;
+    private JLabel projectFolderLabel;
+    private JTextField projectFolderTextField;
+    private JCheckBox shortTagsCheckBox;
+    private JButton sourceFolderButton;
+    private JLabel sourceFolderLabel;
+    private JTextField sourceFolderTextField;
+    private JButton webRootButton;
+    private JLabel webRootLabel;
+    private JTextField webRootTextField;
     // End of variables declaration//GEN-END:variables
 
     private class DefaultChangeListener implements ChangeListener {

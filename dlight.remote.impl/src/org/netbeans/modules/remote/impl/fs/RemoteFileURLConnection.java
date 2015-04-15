@@ -55,6 +55,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -92,7 +93,7 @@ public class RemoteFileURLConnection extends URLConnection {
     }
 
     private FileNotFoundException newFileNotFoundException() {
-        return new FileNotFoundException(execEnv.getDisplayName() + ':' + path); //NOI18N
+        return RemoteExceptions.createFileNotFoundException(RemoteFileObjectBase.getDisplayName(execEnv, path));
     }
 
     @Override

@@ -526,7 +526,7 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel4.text")); // NOI18N
 
-        cbProjectNodeNameMode.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Default", "${project.artifactId}", "${project.artifactId}-TRUNK", "${project.artifactId}-${project.version}", "${project.groupId}.${project.artifactId}", "${project.groupId}.${project.artifactId}-${project.version}", "Custom..." }));
+        cbProjectNodeNameMode.setModel(getProjectNodeModel());
         cbProjectNodeNameMode.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 cbProjectNodeNameModeItemStateChanged(evt);
@@ -931,6 +931,18 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JTextField txtOptions;
     private javax.swing.JTextField txtProjectNodeNameCustomPattern;
     // End of variables declaration//GEN-END:variables
+    
+    
+    private DefaultComboBoxModel getProjectNodeModel() {
+        return new javax.swing.DefaultComboBoxModel(new String[] { 
+            NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblDefault.text"), // NOI18N
+            "${project.artifactId}", // NOI18N 
+            "${project.artifactId}-TRUNK", // NOI18N
+            "${project.artifactId}-${project.version}", // NOI18N
+            "${project.groupId}.${project.artifactId}", // NOI18N
+            "${project.groupId}.${project.artifactId}-${project.version}", // NOI18N
+            NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCustom.text")}); // NOI18N
+    }
     
     private void browseAddNewRuntime() {
         JFileChooser chooser = new JFileChooser();

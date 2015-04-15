@@ -86,7 +86,7 @@ import org.netbeans.modules.subversion.remote.ui.status.SyncFileNode;
 import org.netbeans.modules.subversion.remote.util.ClientCheckSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -99,6 +99,7 @@ import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -150,14 +151,19 @@ public class CommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
+        Context cachedContext = getCachedContext(nodes);
+        final FileSystem fileSystem = cachedContext.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+            return false;
+        }
+        FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if(!isSvnNodes(nodes) && !isDeepRefreshDisabledGlobally()) {
             // allway true as we have will accept and check for external changes
             // and we don't about them yet
-            return true;
+            return cache.ready();
         }
         // XXX could be a performace issue, maybe a msg box in commit would be enough
-        FileStatusCache cache = Subversion.getInstance().getStatusCache();
-        return cache.ready() && cache.containsFiles(getCachedContext(nodes), FileInformation.STATUS_LOCAL_CHANGE, true);
+        return cache.ready() && cache.containsFiles(cachedContext, FileInformation.STATUS_LOCAL_CHANGE, true);
     }
 
     /** Run commit action. Shows UI */
@@ -228,7 +234,7 @@ public class CommitAction extends ContextAction {
         // start backround prepare
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -407,7 +413,7 @@ public class CommitAction extends ContextAction {
 
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
@@ -452,7 +458,7 @@ public class CommitAction extends ContextAction {
                     }
                 }
                 // get all changed files while honoring the flat folder logic
-                VCSFileProxy[][] split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(contextFiles);
+                VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(contextFiles);
                 Set<VCSFileProxy> fileSet = new LinkedHashSet<>();
                 for (int c = 0; c < split.length; c++) {
                     contextFiles = split[c];
@@ -625,7 +631,7 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         String errorLabel;
         if (stickyTags.size() <= 1) {
-            String stickyTag = stickyTags.isEmpty() ? null : (String) stickyTags.iterator().next();
+            String stickyTag = stickyTags.isEmpty() ? null : stickyTags.iterator().next();
             if (stickyTag == null) {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle }));
                 errorLabel = ""; // NOI18N
@@ -1117,7 +1123,7 @@ public class CommitAction extends ContextAction {
             VCSFileProxy file = fileNode.getFile();
             if(file.isDirectory()) {
                 VCSFileProxy[] children = file.listFiles();
-                if(children != null || children.length > 0) {
+                if(children != null && children.length > 0) {
                     for (VCSFileProxy child : children) {
                         final FileStatusCache cache = Subversion.getInstance().getStatusCache();
                         FileInformation info = cache.getStatus(child);
@@ -1246,9 +1252,9 @@ public class CommitAction extends ContextAction {
         for (VCSFileProxy parent : files) {
             Set<VCSFileProxy> toRemove = new HashSet<>(filteredFiles.size());
             for (VCSFileProxy f : filteredFiles) {
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(f, parent)) {
+                if (VCSFileProxySupport.isAncestorOrEqual(f, parent)) {
                     continue;
-                } else if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(parent, f)) {
+                } else if (VCSFileProxySupport.isAncestorOrEqual(parent, f)) {
                     toRemove.add(f);
                 } 
             }

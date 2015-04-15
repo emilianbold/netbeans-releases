@@ -60,7 +60,9 @@ public class DisableHintFix implements EnhancedFix {
 
     @Override
     public String getText() {
-        return NbBundle.getMessage(DisableHintFix.class, "DisableHint"); // NOI18N
+        return NbBundle.getMessage(DisableHintFix.class, "DisableHint") // NOI18N
+                .concat(" - ") // NOI18N
+                .concat(info.getAuditID());
     }
 
     @Override
@@ -72,7 +74,7 @@ public class DisableHintFix implements EnhancedFix {
     @Override
     public CharSequence getSortText() {
         //Hint opening options dialog should always be the lastest in offered list
-        return Integer.toString(Integer.MAX_VALUE);
+        return "\uFFFF"; //NOI18N
     }
     
     public static interface CodeAuditInfo {

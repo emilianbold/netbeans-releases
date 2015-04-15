@@ -78,10 +78,10 @@ import org.openide.util.actions.Presenter;
 @ActionID(id = "org.netbeans.modules.javascript.gulp.ui.actions.RunGulpTaskAction", category = "Build")
 @ActionRegistration(displayName = "#RunGulpTaskAction.name", lazy = false)
 @ActionReferences({
-    @ActionReference(path = "Editors/text/gulp+javascript/Popup", position = 900),
+    @ActionReference(path = "Editors/text/gulp+javascript/Popup", position = 795),
     @ActionReference(path = "Loaders/text/gulp+javascript/Actions", position = 150),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 181),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 671),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 131),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 671),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 771),
 })

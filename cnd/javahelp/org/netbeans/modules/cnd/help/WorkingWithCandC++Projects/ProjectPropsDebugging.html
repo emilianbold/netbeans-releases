@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2014 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2015 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -35,6 +35,10 @@ type="text/css">
       debugging.
     </p>
     <p>
+       <b>Symbol file.</b> Specify a file containing a symbol table. By default the IDE
+       assumes the symbols are in the output binary.
+    </p>
+    <p>
        <b>Gdb Init File.</b> By default, the IDE uses the <tt>.gdbinit</tt> file in your home
       directory. You can specify a different <tt>.gdbinit</tt> file for gdb commands to be executed
       before the debugging session starts.
@@ -54,6 +58,9 @@ type="text/css">
     <p>
        <b>Substitute Path.</b> You can map your compile time and debug time file paths if they are
       different.
+    </p>
+    <p>
+       <b>Signals.</b> You can specify which signals the debugger should ignore.
     </p>
     <table>
       <tr>

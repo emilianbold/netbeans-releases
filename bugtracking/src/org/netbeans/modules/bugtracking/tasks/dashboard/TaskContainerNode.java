@@ -317,25 +317,27 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     @Override
     protected List<TreeListNode> createChildren() {
-        List<TaskNode> filteredNodes = filteredTaskNodes;
+        synchronized (LOCK) {
+            List<TaskNode> filteredNodes = filteredTaskNodes;
 
-        Comparator<TaskNode> specialComparator = getSpecialComparator();
-        Collections.sort(filteredNodes, specialComparator == null ? TaskSorter.getInstance().getComparator() : specialComparator);
+            Comparator<TaskNode> specialComparator = getSpecialComparator();
+            Collections.sort(filteredNodes, specialComparator == null ? TaskSorter.getInstance().getComparator() : specialComparator);
 
-        List<TaskNode> taskNodesToShow;
-        boolean addShowNext = false;
-        int taskCountToShow = getTaskCountToShow();
-        if (!isTaskLimited() || filteredNodes.size() <= taskCountToShow) {
-            taskNodesToShow = filteredNodes;
-        } else {
-            taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
-            addShowNext = true;
+            List<TaskNode> taskNodesToShow;
+            boolean addShowNext = false;
+            int taskCountToShow = getTaskCountToShow();
+            if (!isTaskLimited() || filteredNodes.size() <= taskCountToShow) {
+                taskNodesToShow = filteredNodes;
+            } else {
+                taskNodesToShow = new ArrayList<TaskNode>(filteredNodes.subList(0, taskCountToShow));
+                addShowNext = true;
+            }
+            ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
+            if (addShowNext) {
+                children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - children.size(), pageSize)));
+            }
+            return children;
         }
-        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>(taskNodesToShow);
-        if (addShowNext) {
-            children.add(new ShowNextNode(this, Math.min(filteredNodes.size() - children.size(), pageSize)));
-        }
-        return children;
     }
 
     private int getTaskCountToShow() {
@@ -362,12 +364,14 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     }
 
     private void refilterTaskNodes() {
-        DashboardViewer dashboard = DashboardViewer.getInstance();
-        AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
-        filteredTaskNodes.clear();
-        for (TaskNode taskNode : taskNodes) {
-            if (appliedFilters.isInFilter(taskNode)) {
-                filteredTaskNodes.add(taskNode);
+        synchronized (LOCK) {
+            DashboardViewer dashboard = DashboardViewer.getInstance();
+            AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
+            filteredTaskNodes.clear();
+            for (TaskNode taskNode : taskNodes) {
+                if (appliedFilters.isInFilter(taskNode)) {
+                    filteredTaskNodes.add(taskNode);
+                }
             }
         }
     }

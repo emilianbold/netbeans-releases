@@ -72,7 +72,7 @@ import org.netbeans.modules.subversion.remote.ui.commit.CommitAction;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.StringSelector;
 import org.openide.DialogDisplayer;
@@ -335,20 +335,6 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
             importPanel.browseRepositoryButton.setEnabled(editable);
             importPanel.messageTextArea.setEditable(editable);
             importPanel.repositoryPathTextField.setEditable(editable);
-        }
-
-        private void deleteDirectory(VCSFileProxy file) {
-             VCSFileProxy[] files = file.listFiles();
-             if(files !=null || files.length > 0) {
-                 for (int i = 0; i < files.length; i++) {
-                     if(files[i].isDirectory()) {
-                         deleteDirectory(files[i]);
-                     } else {
-                        VCSFileProxySupport.delete(files[i]);
-                     }
-                 }
-             }
-             VCSFileProxySupport.delete(file);
         }
 
         /**

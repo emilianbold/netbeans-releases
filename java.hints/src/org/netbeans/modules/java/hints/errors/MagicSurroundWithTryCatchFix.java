@@ -129,10 +129,13 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     };
     
     private boolean isStreamAlike(CompilationInfo info, TypeMirror type) {
+        if (type == null) {
+            return false;
+        }
         for (String fqn : STREAM_ALIKE_CLASSES) {
             Element inputStream = info.getElements().getTypeElement(fqn);
             
-            if (info.getTypes().isAssignable(type, inputStream.asType()))
+            if (inputStream != null && info.getTypes().isAssignable(type, inputStream.asType()))
                 return true;
         }
         
@@ -303,7 +306,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
             StatementTree result = close;
             if (throwsIO) {
                 result = make.Try(make.Block(Collections.singletonList(close), false), Collections.singletonList(createCatch(info, make, statement, inferName(info, statement), info.getElements().getTypeElement("java.io.IOException").asType())), null);
-            }
+                }
             
             return result;
         }

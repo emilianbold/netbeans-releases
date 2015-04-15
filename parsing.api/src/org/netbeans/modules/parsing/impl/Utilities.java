@@ -112,11 +112,12 @@ public class Utilities {
     }
 
     //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api
-    /**
-     * Temporary may be replaced by scheduler, hepefully.
-     */
-    public static void scheduleSpecialTask (final Runnable runnable, int priority) {
-        TaskProcessor.scheduleSpecialTask(runnable, priority);
+
+    public static void scheduleSpecialTask (
+            @NonNull final Runnable runnable,
+            @NonNull final Lookup context,
+            final int priority) {
+        TaskProcessor.scheduleSpecialTask(runnable, context, priority);
     }
 
     //Helpers to bridge java.source factories into parsing.api
@@ -124,6 +125,13 @@ public class Utilities {
         final SourceControl ctl = SourceAccessor.getINSTANCE().getEnvControl(source);
         ctl.sourceChanged(false);
         ctl.revalidate(SourceEnvironment.getReparseDelay(false));
+    }
+    
+    public static void revalidate (@NonNull final FileObject fo) {
+        final Source source = SourceAccessor.getINSTANCE().get(fo);
+        if (source != null) {
+            revalidate(source);
+        }
     }
     
     public static void addParserResultTask (final ParserResultTask<?> task, final Source source) {

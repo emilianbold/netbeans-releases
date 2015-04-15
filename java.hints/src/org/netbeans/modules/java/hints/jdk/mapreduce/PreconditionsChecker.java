@@ -301,7 +301,7 @@ public class PreconditionsChecker {
             }
             TreePath currentTreePath = this.getCurrentPath();
             Element el = trees.getElement(currentTreePath);
-            if (isExternalNEF(el, that)) {
+            if (el != null && isExternalNEF(el, that)) {
                 checkIfRefactorableMutation(currentTreePath, that);
             }
             return super.visitIdentifier(that, trees);

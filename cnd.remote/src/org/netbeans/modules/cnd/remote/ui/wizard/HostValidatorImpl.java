@@ -51,6 +51,10 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
+import org.netbeans.modules.cnd.remote.server.RemoteServerList;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -83,9 +87,19 @@ public class HostValidatorImpl implements HostValidator {
     }
 
     @Override
-    public boolean validate(ExecutionEnvironment env, /*char[] password, boolean rememberPassword,*/ final PrintWriter writer) {
-        boolean result = false;
+    public boolean validate(final ExecutionEnvironment env, final PrintWriter writer) {
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        record.setNeedsValidationOnConnect(false);
+        try {
+            return validateImpl(record, writer);
+        } finally {
+            record.setNeedsValidationOnConnect(true);
+        }
+    }
+    
+    private boolean validateImpl(final RemoteServerRecord record, final PrintWriter writer) {
+        final ExecutionEnvironment env = record.getExecutionEnvironment();
+        boolean result = false;
         final boolean alreadyOnline = record.isOnline();
         if (alreadyOnline) {
             String message = NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgAlreadyConnected1");
@@ -104,19 +118,21 @@ public class HostValidatorImpl implements HostValidator {
 //            if (password != null && password.length > 0) {
 //                PasswordManager.getInstance().storePassword(env, password, rememberPassword);
 //            }
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "connecting"); //NOI18N
             ConnectionManager.getInstance().connectTo(env);
-        } catch (InterruptedIOException ex) {
-            return false; // don't report InterruptedIOException
+            sw.stop();
+        } catch (InterruptedIOException | CancellationException ex) {
+            return false; // don't report InterruptedIOException and CancellationException
         } catch (IOException ex) {
             writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
-            return false;
-        } catch (CancellationException ex) {
             return false;
         }
         if (!alreadyOnline) {
             writer.print(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.MsgDone") + '\n');
             writer.print(NbBundle.getMessage(getClass(), "CSM_ConfHost") + '\n');
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "record.init"); //NOI18N
             record.init(null);
+            sw.stop();
         }
         if (record.isOnline()) {
             Writer reporter = new Writer() {
@@ -134,9 +150,11 @@ public class HostValidatorImpl implements HostValidator {
                 @Override
                 public void close() throws IOException {
                 }
-            };
+            };            
             final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
+            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "CompilerSetManager.initialize"); //NOI18N
             csm.initialize(false, false, reporter);
+            sw.stop();
             if (record.hasProblems()) {
                 try {
                     reporter.append(record.getProblems());

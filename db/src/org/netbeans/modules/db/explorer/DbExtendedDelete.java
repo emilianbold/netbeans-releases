@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jiri Rechtacek
  */
-@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
+@org.openide.util.lookup.ServiceProvider(service = org.openide.explorer.ExtendedDelete.class)
 public class DbExtendedDelete implements ExtendedDelete {
     private static final Class[] GUARDED_OBJECTS = new Class[] {DriverNode.class, TableNode.class, ViewNode.class, ColumnNode.class, ProcedureNode.class};
 
@@ -60,10 +60,10 @@ public class DbExtendedDelete implements ExtendedDelete {
         if (nodes == null || nodes.length == 0) {
             return false;
         }
-        List<String> tables = new ArrayList<String> ();
-        List<String> columns = new ArrayList<String> ();
-        List<String> others = new ArrayList<String> ();
-        List<DriverNode> drivers = new ArrayList<DriverNode> ();
+        List<String> tables = new ArrayList<> ();
+        List<String> columns = new ArrayList<> ();
+        List<String> others = new ArrayList<> ();
+        List<DriverNode> drivers = new ArrayList<> ();
         for (Node n : nodes) {
             for (Class<? extends BaseNode> c : GUARDED_OBJECTS) {
                 BaseNode bn = n.getLookup().lookup(c);
@@ -81,25 +81,30 @@ public class DbExtendedDelete implements ExtendedDelete {
                 }
             }
         }
-        if (! tables.isEmpty()) {
-            return delete(tables,
+        if (!tables.isEmpty()) {
+            boolean preventDelete = preventDelete(tables,
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationMessage_Tables", tables.size()), // NOI18N
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationTitle_Tables", tables.size())); // NOI18N
-        } else if (! columns.isEmpty()) {
-            return delete(columns,
+            if (!preventDelete) {
+                TableExtendedDelete.delete(nodes);
+            }
+            // return true to indicate, that deletion is always handled here
+            return true;
+        } else if (!columns.isEmpty()) {
+            return preventDelete(columns,
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationMessage_Columns", columns.size()), // NOI18N
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationTitle_Columns", columns.size())); // NOI18N
-        } else if (! others.isEmpty()) {
-            return delete(others,
+        } else if (!others.isEmpty()) {
+            return preventDelete(others,
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationMessage_Others", others.size()), // NOI18N
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationTitle_Others", others.size())); // NOI18N
-        } else if (! drivers.isEmpty()) {
+        } else if (!drivers.isEmpty()) {
             return DriverExtendedDeleteImpl.delete(nodes);
         }
         return false;
     }
 
-    private boolean delete(List<String> objects, String type, String title) {
+    private boolean preventDelete(List<String> objects, String type, String title) {
         // confirmation
         return DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(

@@ -645,7 +645,11 @@ sass_map_pair
 
 rule
     :
-    ((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws?
+        (
+            (SASS_AT_ROOT (ws selectorsGroup)?) 
+            | (SASS_AT_ROOT ws LPAREN ws? {tokenNameEquals("without") || tokenNameEquals("with")}? IDENT /* with || without */ ws? COLON ws? IDENT ws? RPAREN) 
+            | selectorsGroup
+        ) ws?
     LBRACE ws? syncToFollow
         declarations?
     RBRACE
@@ -672,15 +676,16 @@ declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
-    | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
-    | (((SASS_AT_ROOT (ws selectorsGroup)?) | selectorsGroup) ws? LBRACE)=>rule
+    | (cp_mixin_call)=> {isCssPreprocessorSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
+    | {isLessSource()}? AT_IDENT LPAREN RPAREN
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_content
     | {isScssSource()}? sass_function_return
+    | {isScssSource()}? sass_error
     | {isScssSource()}? importItem
     | GEN
     ;
@@ -1015,7 +1020,6 @@ cp_expression_list
     :
     (cp_expression) => cp_expression
     ((ws? COMMA ws? cp_expression)=>ws? COMMA ws? cp_expression)*
-    | {isScssSource()}? LPAREN ws? syncToFollow sass_map_pairs? RPAREN
     ;
 
 //expression:
@@ -1030,11 +1034,13 @@ cp_expression_list
 //
 cp_expression
     :
-    cp_expression_atom
+    {isLessSource()}? (LBRACE ws? syncToFollow declarations? RBRACE)
+    | (cp_expression_atom) => (cp_expression_atom
     (
         (ws? cp_expression_operator)=>(ws? cp_expression_operator ws?) cp_expression_atom
         | (ws? cp_expression_atom)=>ws? cp_expression_atom
-    )*
+    )*)
+    | {isScssSource()}? LPAREN ws? syncToFollow sass_map_pairs? RPAREN
     ;
 
 cp_expression_operator
@@ -1245,6 +1251,11 @@ sass_extend_only_selector
 sass_debug
     :
     ( SASS_DEBUG | SASS_WARN ) ws cp_expression
+    ;
+
+sass_error
+    :
+    SASS_ERROR ws STRING
     ;
 
 sass_control
@@ -1751,6 +1762,7 @@ SASS_MIXIN          : '@MIXIN';
 SASS_INCLUDE        : '@INCLUDE';
 SASS_EXTEND         : '@EXTEND';
 SASS_DEBUG          : '@DEBUG';
+SASS_ERROR          : '@ERROR';
 SASS_WARN           : '@WARN';
 SASS_IF             : '@IF';
 SASS_ELSE           : '@ELSE';

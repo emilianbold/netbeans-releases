@@ -190,7 +190,7 @@ public class Tiny {
         TypeElement resultSet = ctx.getInfo().getElements().getTypeElement("java.sql.ResultSet");
         String methodName = ctx.getVariableNames().get("$method");
 
-        if (!METHOD_NAME.contains(methodName)) {
+        if (resultSet == null || !METHOD_NAME.contains(methodName)) {
             return null;
         }
 

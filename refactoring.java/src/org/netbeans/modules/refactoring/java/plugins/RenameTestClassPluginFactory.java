@@ -38,6 +38,7 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.Tree;
+import java.util.EnumSet;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -55,8 +56,9 @@ public class RenameTestClassPluginFactory implements RefactoringPluginFactory {
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
+            EnumSet<Tree.Kind> supported = EnumSet.of(Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE, Tree.Kind.METHOD);
             TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-            if (handle!=null && (handle.getKind()==Tree.Kind.CLASS || handle.getKind()==Tree.Kind.METHOD)) {
+            if (handle!=null && supported.contains(handle.getKind())) {
                 return new RenameTestClassRefactoringPlugin((RenameRefactoring) refactoring);
             }
         }

@@ -127,6 +127,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     
     public Project getOwner(FileObject f) {
+        deserialize();
         while (f != null) {
             synchronized (this) {
                 if (lastFoundKey != null && lastFoundKey.get() == f) {
@@ -217,11 +218,65 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
     
     private static final Map<URI,FileObject> deserializedExternalOwners =
         Collections.synchronizedMap(new HashMap<URI,FileObject>());
-    
+
     private static boolean externalRootsIncludeNonFolders = false;
-    
-    
+
+    private static enum ExternalRootsState {
+        NEW,
+        LOADING,
+        LOADED
+    }
+
+    //@GuardedBy("SimpleFileOwnerQueryImplementation.class")
+    private static ExternalRootsState externalRootsState = ExternalRootsState.NEW;
+    /**
+     * Deserializes stored cross-reference of external files to their projects.
+     * It is called from @OnStart, which runs asynchronously/in parallel, but 
+     * getOwner() queries require that the cross-ref is laoded so the answers are
+     * consistent in time.
+     */
     static void deserialize() {
+        boolean needsToLoad = false;
+        synchronized (SimpleFileOwnerQueryImplementation.class) {
+            LOG.log(Level.FINEST, "External Roots State: {0}", externalRootsState); //NOI18N    - unit tests
+            switch (externalRootsState) {
+                case NEW:
+                    externalRootsState = ExternalRootsState.LOADING;
+                    needsToLoad = true;
+                    break;
+                case LOADING:
+                    while (externalRootsState == ExternalRootsState.LOADING) {
+                        try {
+                            SimpleFileOwnerQueryImplementation.class.wait();
+                        } catch (InterruptedException ie) {
+                            LOG.log(Level.INFO, null, ie);
+                            break;
+                        }
+                    }
+                    break;
+                case LOADED:
+                    break;
+                default:
+                    throw new IllegalStateException(String.format(
+                        "Unknown external roots state: %s",    //NOI18N
+                        externalRootsState));
+            }
+        }
+        if (needsToLoad) {
+            try {
+                deserializeImpl();
+                LOG.log(Level.FINEST, "External Roots Deserialized"); //NOI18N    - unit tests
+            } finally {
+                synchronized (SimpleFileOwnerQueryImplementation.class) {
+                    assert externalRootsState == ExternalRootsState.LOADING;
+                    externalRootsState = ExternalRootsState.LOADED;
+                    SimpleFileOwnerQueryImplementation.class.notifyAll();
+                }
+            }
+        }
+    }
+
+    private static void deserializeImpl() {
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");
             for (String name : p.keys()) {
@@ -238,7 +293,7 @@ public class SimpleFileOwnerQueryImplementation implements FileOwnerQueryImpleme
             LOG.log(Level.INFO, null, ex);
         }
     }
-    
+
     static void serialize() {
         try {
             Preferences p = NbPreferences.forModule(SimpleFileOwnerQueryImplementation.class).node("externalOwners");

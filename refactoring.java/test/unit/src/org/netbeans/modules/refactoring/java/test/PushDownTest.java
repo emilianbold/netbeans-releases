@@ -66,7 +66,27 @@ public class PushDownTest extends RefactoringTestBase {
 
     public PushDownTest(String name) {
         super(name);
-   }
+    }
+
+    public void test103592a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { int f, g = f; }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE, new Problem(false, "f is referenced by B."));
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { int f; }"),
+                new File("pushdown/B.java", "package pushdown; public class B { int g = f; }"));
+    }
+    
+    public void test103592b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { public void m1() { } public void m2() { m1(); } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, -1, Boolean.FALSE, new Problem(false, "m1 is referenced by B."));
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public void m1() { } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {public void m2() { m1(); } }"));
+    }
     
     public void test240704() throws Exception {
         String source;

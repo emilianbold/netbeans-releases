@@ -183,13 +183,11 @@ public final class ConnectionManager {
             throw new IllegalStateException("This method can not be called on the event dispatch thread."); // NOI18N
         }
 
-        if (org.netbeans.modules.db.explorer.DatabaseConnection.isVitalConnection(dbconn.getJDBCConnection(), null)) {
+        if (dbconn.getDelegate().isVitalConnection()) {
             return true;
         }
 
         dbconn.getDelegate().connectSync();
-        dbconn.getDelegate().getConnector().finishConnect(null, dbconn.getDelegate(), dbconn.getDelegate().getConnection());
-        dbconn.getDelegate().fireConnectionComplete();
         return true;
     }
 

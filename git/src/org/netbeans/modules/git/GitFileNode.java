@@ -116,6 +116,27 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
             }
         }
     }
+
+    public static class GitMergeFileNode extends GitLocalFileNode {
+        private FileInformation.Mode mode;
+        
+        public GitMergeFileNode(File root, File file, FileInformation.Mode mode) {
+            super(root, file);
+            this.mode = mode;
+        }
+        
+        @Override
+        public VCSCommitOptions getDefaultCommitOption (boolean withExclusions) {
+            if (getInformation().containsStatus(FileInformation.STATUS_REMOVED)) {
+                return VCSCommitOptions.COMMIT_REMOVE;
+            } else if (getInformation().containsStatus(Status.NEW_INDEX_WORKING_TREE)
+                    && !getInformation().containsStatus(Status.REMOVED_HEAD_INDEX)) {
+                return VCSCommitOptions.EXCLUDE;
+            } else {
+                return VCSCommitOptions.COMMIT;
+            }
+        }
+    }
     
     public static class GitHistoryFileNode extends GitFileNode<HistoryFileInformation> {
         private final HistoryFileInformation fi;

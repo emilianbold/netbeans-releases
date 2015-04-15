@@ -1108,7 +1108,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(context, this.file, offset, strPrefix.length() == 0, false);
         LinkedHashSet<CsmNamespace> out = new LinkedHashSet<CsmNamespace>(1024);
         for (CsmNamespace ns : namespaces) {
-            List<CsmNamespace> res = contResolver.getNestedNamespaces(ns, strPrefix, match);
+            List<CsmNamespace> res = contResolver.getNestedNamespaces(ns, strPrefix, match, false);
             out.addAll(res);
         }
         return out;

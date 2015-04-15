@@ -84,7 +84,7 @@ while [ $# != 0 ] ; do
 			name=`basename "$nextfile"`
 			echo 
 			echo "... file : `basename $nextfile`"
-			size=`ls -l "$nextfile" | awk ' { print $5 }' 2>/dev/null`
+			size=`stat -Lc %s $nextfile 2>/dev/null`
 			echo "... size : $size"
 			md5=`$alg "$nextfile" | sed "s/ .*//g"`
 			echo "...  md5 : $md5"

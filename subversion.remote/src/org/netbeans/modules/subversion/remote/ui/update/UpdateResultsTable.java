@@ -228,7 +228,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         Node.Property [] properties = new Node.Property[columns.length];
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
-            String [] labels = (String[]) columnLabels.get(column);
+            String [] labels = columnLabels.get(column);
             properties[i] = new UpdateResultsTable.ColumnDescriptor(column, String.class, labels[0], labels[1]);  
         }
         tableModel.setProperties(properties);
@@ -363,7 +363,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         for(int idx : selection) {
             int nodesIdx = sorter.modelIndex(idx);
             Node node = nodes[nodesIdx];
-            FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
+            FileUpdateInfo fui = node.getLookup().lookup(FileUpdateInfo.class);
             if(fui != null && ae.isAction(fui) ) {
                 continue;
             }
@@ -373,7 +373,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     }
     
     private void performOpen(int idx) {        
-        FileUpdateInfo fui = (FileUpdateInfo) nodes[idx].getLookup().lookup(FileUpdateInfo.class);
+        FileUpdateInfo fui = nodes[idx].getLookup().lookup(FileUpdateInfo.class);
         if(fui == null) {
             return;        
         }        
@@ -404,7 +404,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         for(int idx : selection) {
             int nodesIdx = sorter.modelIndex(idx);
             Node node = nodes[nodesIdx];
-            FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
+            FileUpdateInfo fui = node.getLookup().lookup(FileUpdateInfo.class);
             if(fui == null) {
                 continue;
             }
@@ -435,7 +435,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                tc.setActivatedNodes((Node[]) selectedNodes.toArray(new Node[selectedNodes.size()]));
+                tc.setActivatedNodes(selectedNodes.toArray(new Node[selectedNodes.size()]));
             }            
         });        
     }
@@ -481,7 +481,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
             boolean touched = false;
             final UpdateResultNode[] currentNodes = nodes;
             for(UpdateResultNode node : currentNodes) {
-                FileUpdateInfo fui = (FileUpdateInfo) node.getLookup().lookup(FileUpdateInfo.class);
+                FileUpdateInfo fui = node.getLookup().lookup(FileUpdateInfo.class);
                 if(fui != null) {                    
                     int action = fui.getAction();
                     if((action & ACTION_CONFLICTED_FILE) == ACTION_CONFLICTED_FILE &&

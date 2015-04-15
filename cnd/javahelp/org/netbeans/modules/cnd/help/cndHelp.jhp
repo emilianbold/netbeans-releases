@@ -315,6 +315,14 @@
 				<file title="who_includes.png"/>
 				<file title="who_is_included.png"/>
 			</directory>
+			<directory title="SendTo">
+				<file title="sendto-about.html"/>
+				<file title="sendto-createmodify.html"/>
+				<file title="sendto-execute.html"/>
+				<file title="sendto-script.html"/>
+				<file title="sendto-tab.html"/>
+				<file title="sendto-vscript.html"/>
+			</directory>
 			<directory title="TestingCandC++Projects">
 				<file title="c_unit_about.html"/>
 				<file title="c_unit_creatingtests.html"/>
@@ -372,6 +380,7 @@
 				<file title="NewStaticLibWizard.html"/>
 				<file title="ProjectPropsArchiverGeneral.html"/>
 				<file title="ProjectPropsBuild.html"/>
+				<file title="ProjectPropsCompile.html"/>
 				<file title="ProjectPropsCompilerGeneral.html"/>
 				<file title="ProjectPropsDebugging.html"/>
 				<file title="ProjectPropsFormatting.html"/>
@@ -380,6 +389,7 @@
 				<file title="ProjectPropsMake.html"/>
 				<file title="ProjectPropsPackaging.html"/>
 				<file title="ProjectPropsParser.html"/>
+				<file title="ProjectPropsPreBuild.html"/>
 				<file title="ProjectPropsQt.html"/>
 				<file title="ProjectPropsRequired.html"/>
 				<file title="ProjectPropsRunning.html"/>
@@ -394,6 +404,7 @@
 				<file title="RemoteDevelopmentTerminal.html"/>
 				<file title="RemoteDevelopmentToolbar.html"/>
 				<file title="RemoteModes.html"/>
+				<file title="RemoteVCS.html"/>
 				<file title="RunningCorC++Project.html"/>
 				<file title="SettingCandC++FileProperties.html"/>
 				<file title="SettingCandC++FolderProperties.html"/>

@@ -71,7 +71,6 @@ import org.eclipse.mylyn.tasks.core.TaskMapping;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.client.spi.ContentFilter;
 import org.netbeans.modules.jira.client.spi.FilterDefinition;
@@ -94,11 +93,9 @@ import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
-import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
@@ -446,7 +443,7 @@ public class JiraRepository {
         resetRepository(oldUrl.equals(url) && oldUser.equals(user));
     }
 
-    public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
+    public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {                       
         MylynUtils.setCredentials(taskRepository, user, password, httpUser, httpPassword);
     }
     

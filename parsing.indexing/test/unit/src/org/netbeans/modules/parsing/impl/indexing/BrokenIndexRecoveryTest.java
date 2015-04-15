@@ -172,7 +172,7 @@ public class BrokenIndexRecoveryTest extends IndexingTestBase {
                 if (fo.getName().startsWith("nb-lock")) {   //NOI18N
                     continue;
                 }
-                if (delCandidate == null || fo.getExt().equals("prx")) {    //NOI18N
+                if (delCandidate == null || fo.getExt().equals("cfs")) {    //NOI18N
                     delCandidate = fo;
                 }
             }            

@@ -56,6 +56,8 @@ public class BuildToolsCommand extends Command {
 
     private final String commandId;
 
+    private volatile boolean showCustomizer = true;
+
 
     public BuildToolsCommand(ClientSideProject project, String commandId) {
         super(project);
@@ -76,10 +78,11 @@ public class BuildToolsCommand extends Command {
     @NbBundle.Messages("BuildToolsCommand.buildTool.none=No build tool (e.g. Grunt) used in project.")
     @Override
     void invokeActionInternal(Lookup context) {
-        if (!tryBuild(true, false)
+        if (!tryBuild(showCustomizer, false)
                 && !ClientSideProjectUtilities.isCordovaProject(project)) {
             DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(Bundle.BuildToolsCommand_buildTool_none()));
         }
+        showCustomizer = false;
     }
 
     public boolean tryBuild(boolean showCustomizer, boolean waitFinished) {

@@ -68,7 +68,7 @@ import org.openide.util.Lookup;
  * @author Rob Englander
  */
 public class ConnectionNodeProvider extends NodeProvider {
-    private PropertyChangeListener PCL = new PropertyChangeListener() {
+    private final PropertyChangeListener PCL = new PropertyChangeListener() {
         @Override
         public void propertyChange(final PropertyChangeEvent pce) {
             if (pce.getPropertyName().equals(BaseNode.PROP_DISPLAY_NAME)) {
@@ -132,7 +132,7 @@ public class ConnectionNodeProvider extends NodeProvider {
     private final ConnectionList connectionList;
     
     private ConnectionNodeProvider(Lookup lookup) {
-        super(lookup, new ConnectionComparator());
+        super(lookup, connectionNodeComparator);
         connectionList = getLookup().lookup(ConnectionList.class);
     }
     
@@ -153,7 +153,7 @@ public class ConnectionNodeProvider extends NodeProvider {
     }
 
     protected synchronized void initialize(DatabaseConnection selectedConn) {
-        List<Node> newList = new ArrayList<Node>();
+        List<Node> newList = new ArrayList<>();
         DatabaseConnection newConnection = null;
         DatabaseConnection[] connections = connectionList.getConnections();
         for (DatabaseConnection connection : connections) {
@@ -180,11 +180,10 @@ public class ConnectionNodeProvider extends NodeProvider {
         setNodes(newList);
     }
 
-    static class ConnectionComparator implements Comparator<Node> {
+    private static final Comparator<Node> connectionNodeComparator = new Comparator<Node>() {
         @Override
         public int compare(Node model1, Node model2) {
             return model1.getDisplayName().compareToIgnoreCase(model2.getDisplayName());
         }
-        
-    }
+    };
 }

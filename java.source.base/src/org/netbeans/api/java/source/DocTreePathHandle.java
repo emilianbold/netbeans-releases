@@ -304,6 +304,10 @@ public final class DocTreePathHandle {
             }
             DocTreePath tp = null;
             DocCommentTree doc = javac.getDocTrees().getDocCommentTree(treePath);
+            if (doc == null) {
+                // no doc comment for the TreePath
+                return null;
+            }
             int pos = position.getOffset();
             tp = resolvePathForPos(javac, treePath, doc, pos + 1);
             if (tp != null) {

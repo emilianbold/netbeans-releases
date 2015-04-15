@@ -214,12 +214,12 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     private static CharSequence getName(OffsetableDeclarationBase<?> obj) {
         if (CsmKindUtilities.isFunction(obj) && obj instanceof FunctionImpl) {
             FunctionImpl fun = (FunctionImpl) obj;
-            StringBuilder sb = new StringBuilder(fun.getName()); 
-            CharSequence signature = fun.getSignatureForUID();
-            if (signature != null) {
-                sb.append(signature);
+            CharSequence funExtraSuffix = fun.getUIDExtraSuffix();
+            if (funExtraSuffix != null) {
+                StringBuilder sb = new StringBuilder(fun.getName()); 
+                sb.append(funExtraSuffix);
+                return sb.toString();
             }
-            return sb.toString();
         } 
         return obj.getName();
     }       

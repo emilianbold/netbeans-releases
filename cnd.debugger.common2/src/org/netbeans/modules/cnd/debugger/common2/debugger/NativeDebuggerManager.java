@@ -130,8 +130,10 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
 import org.netbeans.modules.cnd.debugger.common2.DbgActionHandler;
+import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Platform;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -165,7 +167,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
     private static final boolean pl = "on".equals(System.getProperty("PL_MODE")); // NOI18N;
 
-    private NativeDebugger currentDebugger;
+    private volatile NativeDebugger currentDebugger;
     private InputOutput io;
 
     // Keep a strong reference to 'changeListener' so it doesn't get GC'ed
@@ -1065,6 +1067,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 ndi.setAction(this.getAction());
             }
         }
+        
+        String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
+        symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
+        ndi.setSymbolFile(symbolFile);
 
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
@@ -1185,7 +1191,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     /**
      * Start debugging by loading program.
      */
-    public NativeDebuggerInfo debug(String executable, Configuration configuration, String host,
+    public NativeDebuggerInfo debug(String executable, String symbolFile, Configuration configuration, String host,
             InputOutput io, DbgActionHandler dah, RunProfile profile) {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debuggerType(configuration));
         ndi.setTarget(executable);
@@ -1200,11 +1206,22 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             ndi.setAction(this.getAction());
         }
         
+        DbgProfile dbgProfile = ndi.getDbgProfile();
         // override executable if needed
-        String debugExecutable = ndi.getDbgProfile().getExecutable();
+        String debugExecutable = dbgProfile.getExecutable();
         if (debugExecutable != null && !debugExecutable.isEmpty()) {
             ndi.setTarget(debugExecutable);
         }
+        if (symbolFile == null || symbolFile.isEmpty()) {
+            symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(dbgProfile.getOptions());
+            symbolFile = ((MakeConfiguration) configuration).expandMacros(symbolFile);
+            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+                symbolFile = ((MakeConfiguration) configuration).getBaseDir() + "/" + symbolFile; // NOI18N
+                symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
+                symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
+            }
+        }
+        ndi.setSymbolFile(symbolFile);
 
         startDebugger(Start.NEW, ndi);
         return ndi;
@@ -1229,11 +1246,13 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 	    ndi.setTarget("-"); //NOI18N
         } else {
             String execPath = ndi.getTarget();
-            if (host.getPlatform() != Platform.Windows_x86 && host.getPlatform() != Platform.MacOSX_x86) {
-                execPath = executor.readlink(dt.getPid());
-            } else {
+            if (host.getPlatform() == Platform.MacOSX_x86) {
+                execPath = executor.readlsof(dt.getPid());
+            } else if (host.getPlatform() == Platform.Windows_x86) {
                 // omit arguments (IZ 230518)
                 execPath = execPath.split(" ")[0]; // NOI18N
+            } else {
+                execPath = executor.readlink(dt.getPid());
             }
             ndi.setTarget(execPath);
         }
@@ -1248,6 +1267,17 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         ndi.setHostName(dt.getHostName());
         ndi.setAction(ATTACH);
         ndi.setCaptureInfo(dt.getCaptureInfo());
+        
+        if (dt.getProjectMode() == DebugTarget.ProjectMode.OLD_PROJECT) {
+            String symbolFile = DebuggerOption.SYMBOL_FILE.getCurrValue(ndi.getDbgProfile().getOptions());
+            symbolFile = ((MakeConfiguration) conf).expandMacros(symbolFile);
+            if (!CndPathUtilities.isPathAbsolute(symbolFile)) {
+                symbolFile = ((MakeConfiguration) conf).getBaseDir() + "/" + symbolFile; // NOI18N
+                symbolFile = CndPathUtilities.normalizeSlashes(symbolFile);
+                symbolFile = CndPathUtilities.normalizeUnixPath(symbolFile);
+            }
+            ndi.setTarget(symbolFile);
+        }
 
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
@@ -1269,7 +1299,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         ndi.setCorefile(dt.getCorefile());
         ndi.setConfiguration(conf);
         ndi.setAction(CORE);
-
+        
         if (isStandalone()) {
             startDebugger(getExistingDebugger(ndi), ndi);
         } else {

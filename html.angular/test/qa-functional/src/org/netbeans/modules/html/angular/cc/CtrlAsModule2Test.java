@@ -43,12 +43,9 @@ package org.netbeans.modules.html.angular.cc;
 
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
-import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -57,29 +54,30 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class CtrlAsModule2Test extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testNgClick",
+        "testExpression2",
+        "testDirective6",
+        "testDirective7",
+        "testDirective8",
+        "testDirective9",
+        "testExpression12",
+        "testExpression14",
+        "testExpression16",
+        "testExpression18",
+        "testDirective20",
+        "testNgBind",
+        "testNgModel",
+        "testControllers"
+    };
+
     public CtrlAsModule2Test(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CtrlAsModule2Test.class).addTest(
-                        "openProject",
-                        "testNgClick",
-                        "testExpression2",
-                        "testDirective6",
-                        "testDirective7",
-                        "testDirective8",
-                        "testDirective9",
-                        "testExpression12",
-                        "testExpression14",
-                        "testExpression16",
-                        "testExpression18",
-                        "testDirective20",
-                        "testNgBind",
-                        "testNgModel",
-                        "testControllers"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CtrlAsModule2Test.class, tests);
     }
 
     public void openProject() throws Exception {

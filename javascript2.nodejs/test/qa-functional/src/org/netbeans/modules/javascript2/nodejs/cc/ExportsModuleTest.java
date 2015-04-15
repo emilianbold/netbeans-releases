@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,47 +53,49 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class ExportsModuleTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExports1",
+        "testExports2",
+        "testExports3",
+        "testExports4",
+        "testExports5",
+        "testExports6",
+        "testExports7",
+        "testExports8",
+        "testExports9",
+        "testExports10",
+        "testExports11",
+        "testExports12",
+        "testExports13",
+        "testExports14",
+        "testExports15",
+        "testExports16",
+        "testExports17",
+        "testExports18",
+        "testExports19",
+        "testExports20",
+        "testExports21",
+        "testExports22",
+        "testExports23",
+        "testExports24",
+        "testExports25",
+        "testExports26",
+        "testExports27",
+        "testExports28"
+    };
+
     public ExportsModuleTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExportsModuleTest.class).addTest(
-                        "openProject",
-                        "testExports1",
-                        "testExports2",
-                        "testExports3",
-                        "testExports4",
-                        "testExports5",
-                        "testExports6",
-                        "testExports7",
-                        "testExports8",
-                        "testExports9",
-                        "testExports10",
-                        "testExports11",
-                        "testExports12",
-                        "testExports13",
-                        "testExports14",
-                        "testExports15",
-                        "testExports16",
-                        "testExports17",
-                        "testExports18",
-                        "testExports19",
-                        "testExports20",
-                        "testExports21",
-                        "testExports22",
-                        "testExports23",
-                        "testExports24",
-                        "testExports25",
-                        "testExports26",
-                        "testExports27",
-                        "testExports28"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(ExportsModuleTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);

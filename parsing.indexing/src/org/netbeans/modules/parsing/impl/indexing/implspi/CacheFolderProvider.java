@@ -129,7 +129,16 @@ public abstract class CacheFolderProvider {
         Lookup.Result<CacheFolderProvider> res = impls.get();
         if (res == null) {
             final Lookup lkp = new ProxyLookup(
-                Lookup.getDefault(),
+                // FIXME: the default Lookup instance changes between users; quick fix is to delegate
+                // to a dynamic proxy lookup which always delegates to the current default Lookup instance.
+                // Proper fix is to probably cache a weak(defaultLookup) -> Lookup.Result map - performance
+                // of the lookup.
+                Lookups.proxy(new Lookup.Provider() {
+                    @Override
+                    public Lookup getLookup() {
+                        return Lookup.getDefault();
+                    }
+                }),
                 Lookups.singleton(DefaultCacheFolderProvider.getInstance()));
             res = lkp.lookupResult(CacheFolderProvider.class);
             if (!impls.compareAndSet(null, res)) {

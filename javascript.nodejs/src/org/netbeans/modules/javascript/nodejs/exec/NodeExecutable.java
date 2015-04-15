@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -62,12 +63,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -101,8 +103,11 @@ public class NodeExecutable {
 
     static final Logger LOGGER = Logger.getLogger(NodeExecutable.class.getName());
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "Just internal usage")
     public static final String[] NODE_NAMES;
     public static final int DEFAULT_DEBUG_PORT = 9292;
+
+    private static final String IO_NAME;
 
     private static final String DEBUG_COMMAND = "--debug-brk=%d"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
@@ -118,8 +123,10 @@ public class NodeExecutable {
     static {
         if (Utilities.isWindows()) {
             NODE_NAMES = new String[] {"node.exe"}; // NOI18N
+            IO_NAME = "iojs.exe"; // NOI18N
         } else {
             NODE_NAMES = new String[] {"node", "nodejs"}; // NOI18N
+            IO_NAME = "iojs"; // NOI18N
         }
     }
 
@@ -163,7 +170,7 @@ public class NodeExecutable {
     @CheckForNull
     private static NodeExecutable forProjectInternal(@NullAllowed Project project, boolean showCustomizer) {
         if (project == null) {
-            return getDefault(project, showCustomizer);
+            return getDefault(null, showCustomizer);
         }
         NodeJsPreferences preferences = NodeJsSupport.forProject(project).getPreferences();
         if (preferences.isDefaultNode()) {
@@ -192,6 +199,17 @@ public class NodeExecutable {
 
     String getCommand() {
         return nodePath;
+    }
+
+    public boolean isIojs() {
+        File node = new File(new ExternalExecutable(nodePath).getExecutable());
+        if (node.getName().equals(IO_NAME)) {
+            return true;
+        }
+        // #250534 - selected "node" file in io.js sources?
+        File iojs = new File(node.getParentFile(), IO_NAME);
+        // do not check if iojs exists but simply immediately compare their sizes
+        return node.length() == iojs.length();
     }
 
     public void resetVersion() {
@@ -277,7 +295,7 @@ public class NodeExecutable {
                 .run(getDescriptor(countDownTask));
         assert task != null : nodePath;
         try {
-            countDownLatch.await(15, TimeUnit.SECONDS);
+            countDownLatch.await(5, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -299,7 +317,7 @@ public class NodeExecutable {
         for (File src : sourceRoots) {
             localPaths.add(src.getAbsolutePath());
             for (File site : siteRoots) {
-                if (FileUtils.isSubdirectoryOf(src, site)) {
+                if (FileUtils.isSubdirectoryOf(src, site) && !src.equals(site)) {
                     if (localPathsExclusionFilter.isEmpty()) {
                         localPathsExclusionFilter = new ArrayList<>();
                     }
@@ -325,6 +343,7 @@ public class NodeExecutable {
 
     private ExecutionDescriptor getDescriptor(@NullAllowed Runnable debuggerStartTask) {
         assert project != null;
+        final boolean rerunPossible = debuggerStartTask == null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
@@ -332,7 +351,21 @@ public class NodeExecutable {
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask));
+                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask))
+                .rerunCondition(new ExecutionDescriptor.RerunCondition() {
+                    @Override
+                    public void addChangeListener(ChangeListener listener) {
+                        // noop
+                    }
+                    @Override
+                    public void removeChangeListener(ChangeListener listener) {
+                        // noop
+                    }
+                    @Override
+                    public boolean isRerunPossible() {
+                        return rerunPossible;
+                    }
+                });
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -431,7 +464,7 @@ public class NodeExecutable {
 
     }
 
-    static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+    static class VersionOutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         private static final Pattern VERSION_PATTERN = Pattern.compile("^v([\\d\\.]+)$"); // NOI18N
 
@@ -520,7 +553,7 @@ public class NodeExecutable {
         public List<ConvertedLine> convert(String line) {
             // debugger?
             if (debuggerStartTask != null
-                    && line.startsWith("debugger listening on port")) { // NOI18N
+                    && line.toLowerCase(Locale.US).startsWith("debugger listening on port")) { // NOI18N
                 debuggerStartTask.run();
                 debuggerStartTask = null;
             }

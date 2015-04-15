@@ -121,6 +121,7 @@ public final class NbActiveDocumentProvider implements ActiveDocumentProvider, P
         assert SwingUtilities.isEventDispatchThread() : "Changes in focused editor component should be delivered on AWT"; //NOI18N
         Document deactivate = null, activate = null;
         List<? extends JTextComponent> components = Collections.<JTextComponent>emptyList();
+        boolean steady = false;
         final String propName = evt.getPropertyName();
         if (propName == null) {
             components = EditorRegistry.componentList();
@@ -136,6 +137,7 @@ public final class NbActiveDocumentProvider implements ActiveDocumentProvider, P
             if (evt.getOldValue() instanceof JTextComponent) {
                 JTextComponent jtc = (JTextComponent) evt.getOldValue();
                 components = Collections.singletonList(jtc);
+                steady = true;
             }
         } else if (propName.equals(EditorRegistry.FOCUS_GAINED_PROPERTY)) {
             if (evt.getNewValue() instanceof JTextComponent) {
@@ -163,12 +165,18 @@ public final class NbActiveDocumentProvider implements ActiveDocumentProvider, P
             activate = (Document) evt.getNewValue();
         }
 
-        fire(deactivate, activate, map(components, new F<JTextComponent,Document>() {
-            @Override
-            public Document apply(JTextComponent jtc) {
-                return jtc.getDocument();
-            }
-        }));
+        fire(
+            deactivate,
+            activate,
+            map(
+                components,
+                new F<JTextComponent,Document>() {
+                    @Override
+                    public Document apply(JTextComponent jtc) {
+                        return jtc.getDocument();
+                    }
+                }),
+            steady);
     }
 
     private void attachListener() {
@@ -180,12 +188,14 @@ public final class NbActiveDocumentProvider implements ActiveDocumentProvider, P
     private void fire(
         @NullAllowed final Document deactivated,
         @NullAllowed final Document activated,
-        @NonNull final Collection<? extends Document> toRefresh) {
+        @NonNull final Collection<? extends Document> toRefresh,
+        final boolean steady) {
         final ActiveDocumentEvent event = new ActiveDocumentEvent(
             this,
             deactivated,
             activated,
-            toRefresh);
+            toRefresh,
+            steady);
         for (ActiveDocumentListener l : listeners) {
             l.activeDocumentChanged(event);
         }

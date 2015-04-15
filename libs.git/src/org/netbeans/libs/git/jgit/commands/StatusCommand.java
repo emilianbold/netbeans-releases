@@ -203,6 +203,11 @@ public class StatusCommand extends GitCommand {
                     boolean isFolder = false;
                     if (!symlink && treeWalk.isSubtree()) {
                         if (mWorking == FileMode.TREE.getBits() && fti.isEntryIgnored()) {
+                            if (mHead != 0 || mIndex != 0) {
+                                statusIndexWC = statusHeadWC = GitStatus.Status.STATUS_IGNORED;
+                                isFolder = true;
+                                treeWalk.enterSubtree();
+                            } else {
                             Collection<TreeFilter> subTreeFilters = getSubtreeFilters(pathFilters, path);
                             if (!subTreeFilters.isEmpty()) {
                                 // caller requested a status for a file under an ignored folder
@@ -216,6 +221,7 @@ public class StatusCommand extends GitCommand {
                                 isFolder = true;
                             } else {
                                 continue;
+                            }
                             }
                         } else {
                             treeWalk.enterSubtree();

@@ -49,6 +49,7 @@ import java.lang.annotation.Target;
 import java.util.Locale;
 import javax.swing.JComponent;
 import javafx.scene.Node;
+import org.netbeans.html.context.spi.Contexts.Id;
 
 /** Generates factory method in class specified by {@link #className()}
  * that will return a component of requested {@link #type()} which can
@@ -93,4 +94,13 @@ public @interface HTMLComponent {
      * @return name of class to generate
      */
     String className() default "Pages";
+
+    /** Selects some of provided technologies. The HTML/Java API @ version 1.1
+     * supports {@link Id technology ids}. One can specify the preferred ones
+     * to use in this NetBeans component by using this attribute.
+     * 
+     * @return list of preferred technology ids
+     * @since 1.3
+     */
+    String[] techIds() default {};
 }

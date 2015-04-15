@@ -149,7 +149,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
 
     @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, true);
         RemoteFileSystem rfs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
         createRemoteFSResources(rfs, testName, resources);
         return new FileSystem[] {rfs};
@@ -157,7 +157,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
 
     @Override
     protected void destroyFileSystem(String testName) throws IOException {
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, true);
     }
 
     @Override

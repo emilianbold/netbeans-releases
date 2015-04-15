@@ -99,4 +99,9 @@ public class WindowsXAMPPInstallation implements Installation {
     public String getDefaultPort() {
         return DEFAULT_PORT;
     }
+    
+    @Override
+    public String toString() {
+        return "XAMPP Installation - " + basePath; //NOI18N
+    }
 }

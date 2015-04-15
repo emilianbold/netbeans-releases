@@ -41,20 +41,24 @@
  */
 package org.netbeans.modules.javascript.bower.file;
 
-import java.util.Arrays;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.web.clientproject.api.json.JsonFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.Pair;
 
 /**
  * Class representing project's <tt>bower.json</tt> file.
  */
 @MIMEResolver.Registration(displayName = "bower.json", resource = "../resources/bower-resolver.xml", position = 128)
-public final class BowerJson extends JsonFile {
+public final class BowerJson {
 
     public static final String FILE_NAME = "bower.json"; // NOI18N
     public static final String PROP_DEPENDENCIES = "DEPENDENCIES"; // NOI18N
@@ -63,23 +67,70 @@ public final class BowerJson extends JsonFile {
     public static final String FIELD_DEPENDENCIES = "dependencies"; // NOI18N
     public static final String FIELD_DEV_DEPENDENCIES = "devDependencies"; // NOI18N
 
+    private final JsonFile bowerJson;
+
 
     public BowerJson(FileObject directory) {
-        super(FILE_NAME, directory);
+        this(directory, FILE_NAME);
     }
 
-    @Override
-    List<Pair<String, String[]>> watchedFields() {
-        return Arrays.asList(
-                Pair.of(PROP_DEPENDENCIES, new String[] {FIELD_DEPENDENCIES}),
-                Pair.of(PROP_DEV_DEPENDENCIES, new String[] {FIELD_DEV_DEPENDENCIES})
-        );
+    // for unit tests
+    BowerJson(FileObject directory, String filename) {
+        assert directory != null;
+        bowerJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
+                .add(PROP_DEPENDENCIES, FIELD_DEPENDENCIES)
+                .add(PROP_DEV_DEPENDENCIES, FIELD_DEV_DEPENDENCIES));
     }
 
     public BowerDependencies getDependencies() {
-        Map<String, String> dependencies = getContentValue(Map.class, BowerJson.FIELD_DEPENDENCIES);
-        Map<String, String> devDependencies = getContentValue(Map.class, BowerJson.FIELD_DEV_DEPENDENCIES);
-        return new BowerDependencies(dependencies, devDependencies);
+        Map<Object, Object> dependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEPENDENCIES);
+        Map<Object, Object> devDependencies = bowerJson.getContentValue(Map.class, BowerJson.FIELD_DEV_DEPENDENCIES);
+        return new BowerDependencies(sanitizeDependencies(dependencies), sanitizeDependencies(devDependencies));
+    }
+
+    @CheckForNull
+    private Map<String, String> sanitizeDependencies(@NullAllowed Map<Object, Object> data) {
+        if (data == null
+                || data.isEmpty()) {
+            return null;
+        }
+        Map<String, String> sanitized = new HashMap<>();
+        for (Map.Entry<Object, Object> entry : data.entrySet()) {
+            sanitized.put(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
+        }
+        return sanitized;
+    }
+
+    public boolean exists() {
+        return bowerJson.exists();
+    }
+
+    public String getPath() {
+        return bowerJson.getPath();
+    }
+
+    public File getFile() {
+        return bowerJson.getFile();
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        bowerJson.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        bowerJson.removePropertyChangeListener(listener);
+    }
+
+    public void refresh() {
+        bowerJson.refresh();
+    }
+
+    public void setContent(List<String> fieldHierarchy, Object value) throws IOException {
+        bowerJson.setContent(fieldHierarchy, value);
+    }
+
+    void cleanup() {
+        bowerJson.cleanup();
     }
 
     //~ Inner classes
@@ -106,6 +157,11 @@ public final class BowerJson extends JsonFile {
 
         public int getCount() {
             return dependencies.size() + devDependencies.size();
+        }
+
+        @Override
+        public String toString() {
+            return "BowerDependencies{" + "dependencies=" + dependencies + ", devDependencies=" + devDependencies + '}'; // NOI18N
         }
 
     }

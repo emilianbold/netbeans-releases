@@ -50,12 +50,10 @@ import java.net.URL;
 import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.SettingsServices;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
@@ -72,22 +70,19 @@ import org.openide.util.NbBundle;
  */
 public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements java.beans.Customizer, DocumentListener, ActionListener {
 
-    private Object bean;
     private NotificationLineSupport ns;
     private DialogDescriptor dd;
-    private JButton okButton;
     private TeamServerProvider provider;
     private String originalName;
     private String originalUrl;
 
-    public TeamServerInstanceCustomizer(JButton okButton, TeamServerProvider provider) {
-        this(okButton, (Collection<TeamServerProvider>) null);
+    public TeamServerInstanceCustomizer(TeamServerProvider provider) {
+        this((Collection<TeamServerProvider>) null);
         this.provider = provider;
     }
     
     /** Creates new customizer TeamInstanceCustomizer */
-    public TeamServerInstanceCustomizer(JButton okButton, Collection<TeamServerProvider> providers) {
-        this.okButton = okButton;
+    public TeamServerInstanceCustomizer(Collection<TeamServerProvider> providers) {
         initComponents();
         
         SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
@@ -289,13 +284,11 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         stopProgress();
         ns.setInformationMessage(text);
         dd.setValid(false);
-        okButton.setEnabled(false);
     }
 
     void clearError() {
         ns.clearMessages();
         dd.setValid(true);
-        okButton.setEnabled(true);
     }
 
     public void startProgress() {

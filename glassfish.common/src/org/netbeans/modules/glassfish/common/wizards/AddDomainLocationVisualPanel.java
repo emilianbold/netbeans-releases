@@ -59,7 +59,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.utils.NetUtils;
+import org.netbeans.modules.glassfish.tooling.utils.NetUtils;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ServerDetails;
 import org.netbeans.modules.glassfish.common.ui.IpComboBox;

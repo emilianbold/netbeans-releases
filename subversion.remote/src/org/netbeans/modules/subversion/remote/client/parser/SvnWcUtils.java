@@ -48,7 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -78,7 +78,7 @@ public class SvnWcUtils {
                 return getSvnFile(file.getParentFile(), PROPS + "/" + file.getName() + getPropFileNameSuffix(base)); //NOI18N
             }            
         } else {            
-            return getSvnFile(file, base ? "/dir-prop-base" : "/dir-props"); //NOI18N
+            return getSvnFile(file, base ? "dir-prop-base" : "dir-props"); //NOI18N
         }        
     }
 

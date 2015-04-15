@@ -88,22 +88,22 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
         };
     }
 
-    private final List<Node> nodes = new ArrayList<Node>();
+    private final List<Node> nodes = new ArrayList<>();
     private final DatabaseConnection connection;
     private final MetadataElementHandle<Catalog> catalogHandle;
 
     private SchemaNodeProvider(Lookup lookup) {
-        super(lookup, new SchemaComparator());
+        super(lookup, schemaComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
         catalogHandle = getLookup().lookup(MetadataElementHandle.class);
     }
 
     @Override
     protected synchronized void initialize() {
-        final List<Node> newList = new ArrayList<Node>();
-        final List<Node> otherList = new ArrayList<Node>();
+        final List<Node> newList = new ArrayList<>();
+        final List<Node> otherList = new ArrayList<>();
 
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
 
         nodes.clear();
@@ -182,10 +182,10 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
         if (this.initialized && "importantSchemas".equals(pce.getPropertyName())) {
-            final List<Node> mainList = new ArrayList<Node>();
-            final List<Node> otherList = new ArrayList<Node>();
+            final List<Node> mainList = new ArrayList<>();
+            final List<Node> otherList = new ArrayList<>();
 
-            for(Node node: new ArrayList<Node>(nodes)) {
+            for(Node node: new ArrayList<>(nodes)) {
                 if(connection.isImportantSchema(node.getName())) {
                     mainList.add(node.cloneNode());
                 } else {
@@ -199,7 +199,7 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
         }
     }
 
-    static class SchemaComparator implements Comparator<Node> {
+    private static final Comparator<Node> schemaComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node node1, Node node2) {
@@ -213,7 +213,7 @@ public class SchemaNodeProvider extends NodeProvider implements PropertyChangeLi
             }
             return node1.getDisplayName().compareToIgnoreCase(node2.getDisplayName());
         }
-    }
+    };
 
     @NbBundle.Messages({
         "LBL_OtherSchemas=Other schemas"

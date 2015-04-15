@@ -60,8 +60,8 @@ import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
  */
 public class DataViewTableUIModel extends ResultSetTableModel {
 
-    private final Map<Integer, Map<Integer, Object>> oldData =
-            new LinkedHashMap<Integer, Map<Integer, Object>>();
+    private final Map<Integer, Map<Integer, Object>> oldData = new LinkedHashMap<>();
+    private int rowOffset = 0;
 
     protected DataViewTableUIModel(DBColumn[] columns) {
         super(columns);
@@ -87,6 +87,19 @@ public class DataViewTableUIModel extends ResultSetTableModel {
         }
     }
 
+    public int getRowOffset() {
+        return rowOffset;
+    }
+
+    public void setRowOffset(int rowOffset) {
+        this.rowOffset = rowOffset;
+        fireTableDataChanged();
+    }
+
+    public int getTotalRowOffset(int row) {
+        return rowOffset + row;
+    }
+    
     @Override
     public void setData(List<Object[]> data) {
         assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
@@ -112,7 +125,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
         assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Map<Integer, Object> rowMap = oldData.get(row);
         if (rowMap == null) {
-            rowMap = new LinkedHashMap<Integer, Object>();
+            rowMap = new LinkedHashMap<>();
             oldData.put(row, rowMap);
         }
 
@@ -123,10 +136,10 @@ public class DataViewTableUIModel extends ResultSetTableModel {
 
     public void removeAllUpdates(boolean discardNewValue) {
         assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
-        for(Integer rowIndex: new HashSet<Integer>(oldData.keySet())) {
+        for(Integer rowIndex: new HashSet<>(oldData.keySet())) {
             Map<Integer,Object> oldRow = oldData.remove(rowIndex);
             if (discardNewValue) {
-                for (Integer columnIndex : new HashSet<Integer>(oldRow.keySet())) {
+                for (Integer columnIndex : new HashSet<>(oldRow.keySet())) {
                     super.setValueAt(oldRow.remove(columnIndex), rowIndex,
                             columnIndex);
                 }
@@ -139,7 +152,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
         if (oldData.containsKey(row)) {
             Map<Integer, Object> oldRow = oldData.remove(row);
             if (discardNewValue) {
-                for (Integer columnIndex : new HashSet<Integer>(oldRow.keySet())) {
+                for (Integer columnIndex : new HashSet<>(oldRow.keySet())) {
                     super.setValueAt(oldRow.remove(columnIndex), row,
                             columnIndex);
                 }
@@ -172,7 +185,7 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     public Map<Integer, Object> getChangedData(int row) {
         assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Set<Integer> changedColumns = oldData.get(row).keySet();
-        Map<Integer,Object> result = new HashMap<Integer, Object>();
+        Map<Integer,Object> result = new HashMap<>();
         for(Integer column: changedColumns) {
             result.put(column, getValueAt(row, column));
         }
@@ -187,6 +200,6 @@ public class DataViewTableUIModel extends ResultSetTableModel {
     boolean hasUpdates(int row, int col) {
         assert SwingUtilities.isEventDispatchThread() : "Not on EDT";
         Map<Integer, Object> rowMap = oldData.get(new Integer(row));
-        return rowMap != null && rowMap.containsKey(new Integer(col));
+        return rowMap != null && rowMap.containsKey(col);
     }
 }

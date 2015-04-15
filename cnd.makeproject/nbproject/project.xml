@@ -63,7 +63,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.32.1</specification-version>
+                        <specification-version>1.33.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -80,7 +80,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.15</specification-version>
+                        <specification-version>1.21.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -456,7 +456,7 @@
                 <friend>org.netbeans.modules.cnd.simpleunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.cnd.tha</friend>
-                <friend>org.netbeans.modules.mixeddev</friend>
+                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.makeproject.api</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.actions</package>
                 <package>org.netbeans.modules.cnd.makeproject.api.configurations</package>

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.php.smarty;
 
-import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -116,7 +115,7 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
      * extension, {@code false} otherwise
      */
     public static boolean hasSmartyTemplateExtension(FileObject fo) {
-        return TplDataLoader.MIME_TYPE.equals(FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE));
+        return FileUtil.getMIMEType(fo, TplDataLoader.MIME_TYPE, null) != null;
     }
 
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
@@ -143,11 +142,6 @@ public final class SmartyPhpFrameworkProvider extends PhpFrameworkProvider {
     public boolean isInPhpModule(final PhpModule phpModule) {
         Boolean enabled = getSmartyPropertyEnabled(phpModule);
         return enabled != null && enabled;
-    }
-
-    @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
     }
 
     @Override

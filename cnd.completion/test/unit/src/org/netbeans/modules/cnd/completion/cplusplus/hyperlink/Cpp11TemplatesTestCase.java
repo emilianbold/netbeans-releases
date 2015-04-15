@@ -157,4 +157,11 @@ public class Cpp11TemplatesTestCase extends HyperlinkBaseTestCase {
     public void testBug248747() throws Exception {
         performTest("bug248747.cpp", 83, 17, "bug248747.cpp", 78, 9);
     }    
+    
+    public void testBug249833() throws Exception {
+        performTest("bug249833.cpp", 29, 59, "bug249833.cpp", 6, 9);
+        performTest("bug249833.cpp", 30, 58, "bug249833.cpp", 3, 9);
+        performTest("bug249833.cpp", 36, 68, "bug249833.cpp", 6, 9);
+        performTest("bug249833.cpp", 41, 67, "bug249833.cpp", 3, 9);
+    }
 }

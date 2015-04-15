@@ -57,7 +57,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -139,7 +138,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     @SuppressWarnings("SleepWhileHoldingLock")
     private static boolean ensureServerStopped(InternalWebServer instance) {
         assert !EventQueue.isDispatchThread();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
+        ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.InternalWebServer_stopping(instance.project.getName()));
         try {
             progressHandle.start();
             // stop server
@@ -276,8 +275,7 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     private ExecutionDescriptor getDescriptor() {
         return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
-                // #225093
-                .showProgress(false)
+                .showSuspended(true)
                 .optionsPath(UiUtils.OPTIONS_PATH + "/" + UiUtils.GENERAL_OPTIONS_SUBCATEGORY) // NOI18N
                 .outConvertorFactory(FileRunner.PHP_LINE_CONVERTOR_FACTORY)
                 .preExecution(new Runnable() {

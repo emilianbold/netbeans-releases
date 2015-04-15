@@ -58,7 +58,7 @@ public class GeneralFormattingOptionsTest extends FormattingOptionsTest {
         try {
             operator.getExpandTabsToSpaces().changeSelection(false);
             formattingOperator.ok();
-            formatFileAndCompare("general", "indentation.html");
+            formatFileAndCompare("general", "indentation.xml");
         } finally {
             FormattingOptionsOperator.restoreDefaultValues();
         }
@@ -71,7 +71,7 @@ public class GeneralFormattingOptionsTest extends FormattingOptionsTest {
             operator.getExpandTabsToSpaces().changeSelection(false);
             operator.getTabSize().setValue(4);
             formattingOperator.ok();
-            formatFileAndCompare("general", "indentation.html");
+            formatFileAndCompare("general", "indentation.xml");
         } finally {
             FormattingOptionsOperator.restoreDefaultValues();
         }

@@ -161,16 +161,18 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
                     (id == GroovyTokenId.LBRACKET) || (id == GroovyTokenId.RBRACKET) ||
                     (id == GroovyTokenId.LBRACE) || (id == GroovyTokenId.RBRACE) ||
                     (id == GroovyTokenId.LPAREN) || (id == GroovyTokenId.RPAREN)) {
-                if (ch == ']') {
-                    skipClosingBracket(doc, caret, ch, GroovyTokenId.RBRACKET);
-                } else if (ch == ')') {
-                    skipClosingBracket(doc, caret, ch, GroovyTokenId.RPAREN);
-                } else if (ch == '}') {
-                    skipClosingBracket(doc, caret, ch, GroovyTokenId.RBRACE);
-                // the curly is not completed intentionally see #189443
-                // java and php don't do that as well
-                } else if ((ch == '[') || (ch == '(')) {
-                    completeOpeningBracket(doc, dotPos, caret, ch);
+                if (TypingHooksUtil.isMatchingBracketsEnabled(doc)) {
+                    if (ch == ']') {
+                        skipClosingBracket(doc, caret, ch, GroovyTokenId.RBRACKET);
+                    } else if (ch == ')') {
+                        skipClosingBracket(doc, caret, ch, GroovyTokenId.RPAREN);
+                    } else if (ch == '}') {
+                        skipClosingBracket(doc, caret, ch, GroovyTokenId.RBRACE);
+                    // the curly is not completed intentionally see #189443
+                    // java and php don't do that as well
+                    } else if ((ch == '[') || (ch == '(')) {
+                        completeOpeningBracket(doc, dotPos, caret, ch);
+                    }
                 }
             }
 
@@ -301,8 +303,8 @@ public class GroovyTypedTextInterceptor implements TypedTextInterceptor {
             return false; // false: continue to insert the "*"
         }
 
-        // "/" is handled AFTER the character has been inserted since we need the lexer's help
-        if (ch == '\"' || ch == '\'') {
+        // "/" is handled AFTER the character has been inserted since we need the lexer's help        
+        if ( ( ch == '\"' || ch == '\'' ) && TypingHooksUtil.isMatchingBracketsEnabled(doc)) {
             if (completeQuote(doc, caretOffset, caret, ch, STRING_TOKENS, GroovyTokenId.STRING_LITERAL)) {
                 caret.setDot(caretOffset + 1);
 

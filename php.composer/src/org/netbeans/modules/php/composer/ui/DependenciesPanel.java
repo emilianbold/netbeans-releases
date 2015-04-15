@@ -43,6 +43,7 @@ package org.netbeans.modules.php.composer.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -225,6 +226,7 @@ public final class DependenciesPanel extends JPanel {
     }
 
     private void initResults() {
+        // split pane
         outputSplitPane.setDividerLocation(0.5);
         // results
         resultsList.setModel(resultsModel);
@@ -548,6 +550,7 @@ public final class DependenciesPanel extends JPanel {
         outputSplitPane.setResizeWeight(0.5);
 
         resultsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultsList.setMinimumSize(new Dimension(100, 50));
         resultsList.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent evt) {
                 resultsListMouseClicked(evt);
@@ -559,6 +562,7 @@ public final class DependenciesPanel extends JPanel {
 
         detailsTextPane.setEditable(false);
         detailsTextPane.setFont(new Font("Monospaced", 0, 12)); // NOI18N
+        detailsTextPane.setMinimumSize(new Dimension(100, 50));
         detailsScrollPane.setViewportView(detailsTextPane);
 
         outputSplitPane.setBottomComponent(detailsScrollPane);
@@ -568,8 +572,7 @@ public final class DependenciesPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -595,8 +598,7 @@ public final class DependenciesPanel extends JPanel {
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(0, 0, 0))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)

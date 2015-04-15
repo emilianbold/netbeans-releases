@@ -57,7 +57,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -182,8 +182,7 @@ public class SvnClientFactory {
         try {
             exception = null;
             if (!VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
-                VCSFileProxySupport.connectFileSystem(fileSystem);
-                //throw new SVNClientException("Remote host "+fileSystem+" is not connected."); //NOI18N
+                throw new SVNClientException("Remote host "+fileSystem+" is not connected."); //NOI18N
             }
             // ping config file copying
             SvnConfigFiles.getInstance(fileSystem);

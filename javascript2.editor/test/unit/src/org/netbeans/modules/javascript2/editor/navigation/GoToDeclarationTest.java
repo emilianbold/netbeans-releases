@@ -80,4 +80,16 @@ public class GoToDeclarationTest extends JsTestBase {
     public void testIssue223057_01() throws Exception {
         checkDeclaration("testfiles/markoccurences/issue223057.js", "a.url = container.na^me;", "container.^name = n;");
     }
+    
+    public void testCallbackDeclaration_01() throws Exception {
+        checkDeclaration("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requester~requestC^allback} cb - The callback that handles the response.", " * @callback Requester~^requestCallback");
+    }
+    
+    public void testCallbackDeclaration_02() throws Exception {
+        checkDeclaration("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Reque^ster~requestCallback} cb - The callback that handles the response.", "function ^Requester() {}");
+    }
+    
+    public void testCallbackDeclaration_03() throws Exception {
+        checkDeclaration("testfiles/markoccurences/callbackDeclaration2.js", " * @param {reques^tCallback} cb - The callback that handles the response.", " * @callback ^requestCallback");
+    }
 }

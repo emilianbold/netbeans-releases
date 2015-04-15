@@ -53,6 +53,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -141,6 +142,12 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     private static final Logger LOGGER = Logger.getLogger(StartTomcat.class.getName());
         
     private TomcatManager tm;
+
+    // GuardedBy("this")
+    private boolean javaOptsEscaped;
+
+    // GuardedBy("this")
+    private Date lastCheckedStart;
     
     private ProgressEventSupport pes;
     private int currentServerPort; // current server port Tomcat is running on
@@ -781,24 +788,36 @@ public final class StartTomcat extends StartServer implements ProgressObject {
         return platform;
     }
 
-    // FIXME should we cache this?
     private boolean isJavaOptsEscaped() {
         if (Utilities.isUnix()) {
             return false;
         }
+
         FileObject start = FileUtil.toFileObject(FileUtil.normalizeFile(getStartupScript()));
-        if (start != null) {
+        if (start == null) {
+            return false;
+        }
+
+        synchronized (this) {
+            if (lastCheckedStart != null && !start.lastModified().after(lastCheckedStart)) {
+                return javaOptsEscaped;
+            }
+
+            javaOptsEscaped = false;
+            lastCheckedStart = start.lastModified();
             try {
-                for(String line : start.asLines("UTF-8")) { // NOI18N
+                for (String line : start.asLines("UTF-8")) { // NOI18N
                     if (WINDOWS_ESCAPED_JAVA_OPTS.matcher(line).matches()) {
-                        return true;
+                        javaOptsEscaped = true;
+                        break;
                     }
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
+
+            return javaOptsEscaped;
         }
-        return false;
     }
 
     /** enable/disable ${catalina.home}/common/endorsed/*.jar in the catalina class

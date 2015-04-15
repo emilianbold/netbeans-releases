@@ -77,8 +77,6 @@ public class ExistingClientSideProject extends JPanel {
     boolean fireChanges = true;
     // @GuardedBy("EDT")
     String lastSiteRoot = ""; // NOI18N
-    // @GuardedBy("EDT")
-    String lastProjectName = ""; // NOI18N
     volatile String testDir = null;
 
 
@@ -105,16 +103,7 @@ public class ExistingClientSideProject extends JPanel {
         // sources
         sourcesTextField.getDocument().addDocumentListener(defaultDocumentListener);
         // project name
-        projectNameTextField.getDocument().addDocumentListener(new DefaultDocumentListener(new Runnable() {
-            @Override
-            public void run() {
-                assert EventQueue.isDispatchThread();
-                fireChanges = false;
-                updateProjectDirectoryName();
-                lastProjectName = getProjectName();
-                fireChanges = true;
-            }
-        }));
+        projectNameTextField.getDocument().addDocumentListener(defaultDocumentListener);
         // project dir
         projectDirectoryTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
@@ -255,21 +244,6 @@ public class ExistingClientSideProject extends JPanel {
         projectDirectoryTextField.setText(getSiteRoot());
     }
 
-    void updateProjectDirectoryName() {
-        String projectDirectory = getProjectDirectory();
-        if (projectDirectory.equals(getSiteRoot())) {
-            // project directory is site root => do nothing
-            return;
-        }
-        if (!lastProjectName.isEmpty()
-                && !projectDirectory.equals(lastProjectName)
-                && projectDirectory.endsWith(lastProjectName)) {
-            // yes, project directory follows project name
-            String newProjDir = projectDirectory.substring(0, projectDirectory.length() - lastProjectName.length()) + getProjectName();
-            projectDirectoryTextField.setText(newProjDir);
-        }
-    }
-
     void detectClientSideProject(String folder) {
         ClientSideProjectDetector detector = new ClientSideProjectDetector(new File(folder));
         if (detector.detected()) {
@@ -402,13 +376,7 @@ public class ExistingClientSideProject extends JPanel {
         File projectDirectory = browseFile(".projectDirectory", Bundle.ExistingClientSideProject_projectDirectory_dialog_title(), // NOI18N
                 getProjectDirectory());
         if (projectDirectory != null) {
-            File result = FileUtil.normalizeFile(projectDirectory);
-            File[] children = result.listFiles();
-            if (children != null && children.length > 0) {
-                // non-empty dir is not allowed, preselect directory with project name
-                result = new File(result, getProjectName());
-            }
-            projectDirectoryTextField.setText(result.getAbsolutePath());
+            projectDirectoryTextField.setText(FileUtil.normalizeFile(projectDirectory).getAbsolutePath());
         }
     }//GEN-LAST:event_projectDirectoryBrowseButtonActionPerformed
 
@@ -431,7 +399,7 @@ public class ExistingClientSideProject extends JPanel {
                 workDir = currDir;
             }
         }
-        FileChooserBuilder builder = new FileChooserBuilder(NewClientSideProject.class.getName() + dirKey)
+        FileChooserBuilder builder = new FileChooserBuilder(ExistingClientSideProject.class.getName() + dirKey)
                 .setTitle(title)
                 .setDirectoriesOnly(true);
         if (workDir != null) {

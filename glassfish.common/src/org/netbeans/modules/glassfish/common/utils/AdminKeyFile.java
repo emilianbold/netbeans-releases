@@ -52,10 +52,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.utils.OsUtils;
-import static org.glassfish.tools.ide.utils.ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME;
-import static org.glassfish.tools.ide.utils.ServerUtils.addPathElement;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.utils.OsUtils;
+import static org.netbeans.modules.glassfish.tooling.utils.ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME;
+import static org.netbeans.modules.glassfish.tooling.utils.ServerUtils.addPathElement;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import sun.misc.BASE64Encoder;
 

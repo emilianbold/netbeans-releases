@@ -537,7 +537,7 @@ class DataViewUI extends JXPanel {
 
         url = getClass().getResource(imgPrefix + "cancel_edits.png"); // NOI18N
         cancel = new JXButton(new ImageIcon(url));
-        cancel.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_cancel_edits"));
+        cancel.setToolTipText(NbBundle.getMessage(DataViewUI.class, "TOOLTIP_cancel_edits_all"));
         cancel.addActionListener(outputListener);
         cancel.setEnabled(false);
         processButton(cancel);

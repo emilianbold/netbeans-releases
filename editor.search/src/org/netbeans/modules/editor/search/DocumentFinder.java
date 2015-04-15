@@ -76,7 +76,7 @@ public class DocumentFinder
     }
 
 
-    private static DocFinder getFinder(Document doc, Map<String, Object>  searchProps, boolean oppositeDir, boolean blocksFinder){
+    private static DocFinder getFinder(Document doc, Map<String, Object>  searchProps, boolean oppositeDir, boolean blocksFinder) throws PatternSyntaxException{
         String text = (String)searchProps.get(EditorFindSupport.FIND_WHAT);
         if (text == null || text.length() == 0) {
             if (blocksFinder) {
@@ -120,14 +120,8 @@ public class DocumentFinder
                     PatternCache.putPattern(text, matchCase, pattern);
                 }
             }catch(PatternSyntaxException pse){
-                if (!blocksFinder){
-                    NotifyDescriptor msg = new NotifyDescriptor.Message(
-                            NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + "\n" + pse.getDescription(), NotifyDescriptor.ERROR_MESSAGE);
-                    msg.setTitle(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-title")); //NOI18N
-                    DialogDisplayer.getDefault().notify(msg);
-                }
                 PatternCache.putPattern(text, matchCase, null);
-                return null;
+                throw pse;
             }
         }else{
             PatternCache.clear();
@@ -193,7 +187,14 @@ public class DocumentFinder
         if (endOffset == -1){
             endOffset = doc.getLength();
         }
-        DocFinder finder = getFinder(doc, props, oppositeDir, false);
+        DocFinder finder = null;
+        try {
+            finder = getFinder(doc, props, oppositeDir, false);
+        } catch (PatternSyntaxException pse) {
+            FindReplaceResult findReplaceResult = new FindReplaceResult(new int[]{-1, -1}, "");
+            findReplaceResult.setErrorMsg(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + " " + pse.getDescription());
+            return findReplaceResult;
+        }
         if (finder == null){
             return null;
         }
@@ -275,8 +276,15 @@ public class DocumentFinder
                     try{
                         replaceText = matcher.replaceFirst(convertStringForMatcher(replaceText));
                     }catch(IndexOutOfBoundsException | IllegalArgumentException ioobe){
-                        notifyRegexpException(ioobe);
-                        return null;
+                        String additionalHint = ""; //NOI18N
+                        if (ioobe instanceof IllegalArgumentException) {
+                            additionalHint = "\n" + NbBundle.getMessage(DocumentFinder.class, "pattern-error-missing-escape-hint"); //NOI18N
+                        }
+
+                        FindReplaceResult findReplaceResult = new FindReplaceResult(new int[]{-1, -1}, "");
+                        findReplaceResult.setErrorMsg(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + " "
+                                + ioobe.getLocalizedMessage() + additionalHint);
+                        return findReplaceResult;
                     }   
                 }
             }
@@ -303,11 +311,18 @@ public class DocumentFinder
         return result.getFoundPositions();
     }
 
-    public static int[] findBlocks(Document doc, int startOffset, int endOffset, 
+    public static FindReplaceResult findBlocks(Document doc, int startOffset, int endOffset, 
                     Map<String, Object> props, int blocks[]) throws BadLocationException{
-        BlocksFinder finder =(BlocksFinder) getFinder(doc, props, false, true);
+        BlocksFinder finder;
+        try {
+            finder = (BlocksFinder) getFinder(doc, props, false, true);
+        } catch (PatternSyntaxException pse) {
+            FindReplaceResult findReplaceResult = new FindReplaceResult(new int[]{-1, -1}, "");
+            findReplaceResult.setErrorMsg(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + " " + pse.getDescription());
+            return findReplaceResult;
+        }
         if (finder == null){
-            return blocks;
+            return new FindReplaceResult(blocks, "");
         }
         CharSequence cs = DocumentUtilities.getText(doc, startOffset, endOffset - startOffset);
         if (cs==null){
@@ -318,7 +333,7 @@ public class DocumentFinder
             finder.setBlocks(blocks);
             finder.find(startOffset, cs);
             int ret [] = finder.getBlocks();
-            return ret;
+            return new FindReplaceResult(ret, "");
         }
     }
     
@@ -333,17 +348,6 @@ public class DocumentFinder
         return preserveCaseImpl(findReplaceImpl, replaceString, doc, props);
     }
     
-    private static void notifyRegexpException(Exception ex) throws MissingResourceException {
-        String additionalHint = ""; //NOI18N
-        if (ex instanceof IllegalArgumentException) {
-            additionalHint = "\n" + NbBundle.getMessage(DocumentFinder.class, "pattern-error-missing-escape-hint"); //NOI18N
-        }
-        NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-content") + "\n" +
-                ex.getLocalizedMessage() + additionalHint, NotifyDescriptor.ERROR_MESSAGE);
-        
-        msg.setTitle(NbBundle.getMessage(DocumentFinder.class, "pattern-error-dialog-title")); //NOI18N
-        DialogDisplayer.getDefault().notify(msg);
-    }
     
      private static boolean getBoolFromEditorFindSupport(Map<String, Object> searchProps, String editorFindSupportConstant) {
         Boolean b = (Boolean) searchProps.get(editorFindSupportConstant);
@@ -1330,6 +1334,7 @@ public class DocumentFinder
     public static class FindReplaceResult{
         private final int[] positions;
         private final String replacedString;
+        private String errorMsg;
         
         public FindReplaceResult(int[] positions, String replacedString){
             this.positions = positions;
@@ -1342,6 +1347,18 @@ public class DocumentFinder
         
         public int[] getFoundPositions(){
             return positions;
+        }
+        
+        public void setErrorMsg(String error) {
+            errorMsg = error;
+        }
+        
+        public boolean hasErrorMsg() {
+            return errorMsg != null;
+        }
+        
+        public String getErrorMsg() {
+            return errorMsg;
         }
     }
     

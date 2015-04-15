@@ -73,6 +73,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 import org.openide.util.Parameters;
@@ -239,11 +240,19 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     private Description element2description(final Element e, final Element parent,
             final boolean isParentInherited, final CompilationInfo info,
             final Map<Element,Long> pos, boolean  fqn) {
-        if( info.getElementUtilities().isSynthetic(e) )
+        final ElementUtilities eu = info.getElementUtilities();
+        if(eu.isSynthetic(e)) {
             return null;
-        
+        }
         boolean inherited = isParentInherited || (null != parent && !parent.equals( e.getEnclosingElement() ));
         final Element encElement = e.getEnclosingElement();
+        TypeElement overridenFrom = null;
+        if (e.getKind() == ElementKind.METHOD) {
+            final ExecutableElement overriden = eu.getOverriddenMethod((ExecutableElement)e);
+            if (overriden != null) {
+                overridenFrom = (TypeElement) overriden.getEnclosingElement();
+            }
+        }
         Description d = new Description(
                 ui,
                 getSimpleName(e),
@@ -256,7 +265,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             d.subs = new HashSet<Description>();
             d.htmlHeader = createHtmlHeader(info,  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
         } else if( e instanceof ExecutableElement ) {
-            d.htmlHeader = createHtmlHeader(info,  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
+            d.htmlHeader = createHtmlHeader(info,  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn, overridenFrom);
         } else if( e instanceof VariableElement ) {
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
@@ -288,7 +297,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
         
    /** Creates HTML display name of the Executable element */
-    private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited, boolean fqn ) {
+    private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited, boolean fqn, TypeElement overridenFrom) {
 
         StringBuilder sb = new StringBuilder();
         if ( isDeprecated ) {
@@ -324,12 +333,17 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         if ( e.getKind() != ElementKind.CONSTRUCTOR ) {
             TypeMirror rt = e.getReturnType();
-            if ( rt.getKind() != TypeKind.VOID ) {                               
-                sb.append(" : "); // NOI18N     
+            if ( rt.getKind() != TypeKind.VOID ) {
+                sb.append(" : "); // NOI18N
                 sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
                 sb.append(print(info, e.getReturnType(), fqn));
-                sb.append("</font>"); // NOI18N                    
+                sb.append("</font>"); // NOI18N
             }
+        }
+
+        if (!isInherited && overridenFrom != null) {
+            sb.append(" ↑ ");   //NOI18N
+            sb.append(print(info, overridenFrom.asType(), fqn));
         }
 
         return sb.toString();

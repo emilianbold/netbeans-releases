@@ -57,7 +57,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -180,11 +180,30 @@ public abstract class SvnCommand implements CommandNotificationListener {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
                     Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 }
-                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, line.getPath()));
+                String path = getAbsolutePath(line.getPath());
+                if (!path.startsWith("/")) { //NOI18N
+                    path = "/"+path; //NOI18N
+                }
+                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, path));
             }
             notify(line);
             notificationHandler.logMessage(lineString);
         }
+    }
+    
+    public String getAbsolutePath(String path) {
+        return path;
+    }
+    
+    protected final  String getAbsolutePath(String path, VCSFileProxy... files) {
+        if (!path.startsWith("/")) { //NOI18N
+            for(VCSFileProxy f : files){
+                if (f.getPath().endsWith("/"+path)) { //NOI18N
+                    return f.getPath();
+                }
+            }
+        }
+        return path;
     }
     
     public void output(byte[] bytes) {

@@ -23,7 +23,7 @@ else
          BITNESS=64
       fi
    else
-      uname -a | egrep "x86_64|WOW64" >/dev/null
+      uname -a | egrep "x86_64|WOW64|sparc64" >/dev/null
       if [ $? -eq 0 ]; then
          BITNESS=64
       fi
@@ -53,15 +53,22 @@ OSFAMILY=${OSFAMILY:-`test "$OS" = "Linux" && echo LINUX`}
 OSFAMILY=${OSFAMILY:-${OS}}
 
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
-if [ "${CPUFAMILY}" != "x86" -a "${CPUFAMILY}" != "sparc" ]; then
+if [ "${CPUFAMILY}" != "x86" -a "${CPUFAMILY}" != "sparc" -a "${CPUFAMILY}" != "sparc64" ]; then
    CPUTYPE=`uname -m`
 fi
 CPUFAMILY=`(echo ${CPUTYPE} | egrep "^i|x86_64|athlon|Intel" >/dev/null && echo x86) || echo ${CPUTYPE}`
+if [ "${CPUFAMILY}" = "sparc64" ]; then
+   CPUFAMILY="sparc"
+fi
 
 USERDIRBASE=${HOME}
 
 if [ "${OSFAMILY}" = "LINUX" ]; then
-   CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
+   if [ "${CPUFAMILY}" = "sparc" ]; then
+     CPUNUM=`cat /proc/cpuinfo | grep 'ncpus active' | sed 's/[^:]*.[ ]*//'`
+   else
+     CPUNUM=`cat /proc/cpuinfo | grep processor | wc -l | sed 's/^ *//'`
+   fi
 elif [ "${OSFAMILY}" = "WINDOWS" ]; then
    CPUNUM=$NUMBER_OF_PROCESSORS
    OSNAME=`uname`
@@ -72,18 +79,19 @@ elif [ "${OSFAMILY}" = "MACOSX" ]; then
    OSBUILD=`hostinfo | sed -n '/kernel version/{n;p;}' | sed 's/[	 ]*\([^:]*\).*/\1/'`
 fi
 
-wx_test() {
+wx_fail() {
     tmp="${1}/wx_test"
     touch ${tmp} 2> /dev/null
     if [ $? -eq 0 ]; then
         chmod u+x ${tmp} 2> /dev/null
         if [ -x ${tmp} ]; then
             rm ${tmp} 2> /dev/null
-            return 0
+            return 1
         fi
+        rm ${tmp} 2> /dev/null
     fi
 
-    return 1
+    return 0
 }
 
 USER=${USER:-`logname 2>/dev/null`}
@@ -93,8 +101,8 @@ TMPBASE=${TMPBASE:-/var/tmp}
 SUFFIX=0
 TMPDIRBASE=${TMPBASE}/dlight_${USER}
 
-if ! wx_test ${TMPBASE}; then
-    if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPBASE}; then
+    if wx_fail ${TMPDIRBASE}; then
         TMPBASE=/tmp
         TMPDIRBASE=${TMPBASE}/dlight_${USER}
     fi
@@ -102,7 +110,7 @@ fi
 
 mkdir -p ${TMPDIRBASE}
 while [ ${SUFFIX} -lt 5 ]; do
-    if ! wx_test ${TMPDIRBASE}; then
+    if wx_fail ${TMPDIRBASE}; then
         echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
         SUFFIX=`expr 1 + ${SUFFIX}`
         TMPDIRBASE=${TMPBASE}/dlight_${USER}_${SUFFIX}
@@ -112,13 +120,15 @@ while [ ${SUFFIX} -lt 5 ]; do
     fi
 done
 
-if wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
+    :
+else
     SUFFIX=0
     TMPBASE=${TMPDIRBASE}
     TMPDIRBASE=${TMPBASE}/${NB_KEY}
     mkdir -p ${TMPDIRBASE}
     while [ ${SUFFIX} -lt 5 ]; do
-        if ! wx_test ${TMPDIRBASE}; then
+        if wx_fail ${TMPDIRBASE}; then
             echo "Warning: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
             SUFFIX=`expr 1 + ${SUFFIX}`
             TMPDIRBASE=${TMPBASE}/${NB_KEY}_${SUFFIX}
@@ -129,14 +139,14 @@ if wx_test ${TMPDIRBASE}; then
     done
 fi
 
-if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
     TMPDIRBASE=${TMPBASE}
 fi
 
-if ! wx_test ${TMPDIRBASE}; then
+if wx_fail ${TMPDIRBASE}; then
     echo "Error: TMPDIRBASE is not writable: ${TMPDIRBASE}">&2
 fi
-\
+
 ENVFILE="${TMPDIRBASE}/env"
 
 ID=`LC_MESSAGES=C /usr/bin/id`

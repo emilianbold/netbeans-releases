@@ -144,7 +144,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             this.content.setPairs(order(items));
             FileSystem fs = null;
             try {
-                fs = FileUtil.getConfigRoot().getFileSystem();
+                fs = FileUtil.getSystemConfigRoot().getFileSystem();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -304,6 +304,10 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             Object r = ref.get();
             if (r == null) {
                 r = createInstanceFor(fo, Object.class);
+                Object o = ref.get();
+                if (o != null) {
+                    return o;
+                }
                 if (r != null) {
                     ref = new WeakReference<Object>(r);
                 }

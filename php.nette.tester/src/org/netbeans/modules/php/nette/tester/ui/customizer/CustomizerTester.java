@@ -98,10 +98,14 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
                 TesterPreferences.getTesterPath(phpModule),
                 testerCheckBox, testerTextField);
         initBinaryExecutable();
+        initFile(TesterPreferences.isCoverageSourcePathEnabled(phpModule),
+                TesterPreferences.getCoverageSourcePath(phpModule),
+                coverageSrcCheckBox, coverageSrcTextField);
 
         enableComponents(phpIniCheckBox.isSelected(), phpIniLabel, phpIniTextField, phpIniBrowseButton);
         enableComponents(testerCheckBox.isSelected(), testerLabel, testerTextField, testerBrowseButton);
         enableComponents(binaryExecutableCheckBox.isSelected(), binaryExecutableLabel, binaryExecutableComboBox);
+        enableComponents(coverageSrcCheckBox.isSelected(), coverageSrcLabel, coverageSrcTextField, coverageSrcBrowseButton);
 
         addListeners();
         validateData();
@@ -128,6 +132,7 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         ValidationResult result = new TesterPreferencesValidator()
                 .validatePhpIni(phpIniCheckBox.isSelected(), phpIniTextField.getText())
                 .validateTester(testerCheckBox.isSelected(), testerTextField.getText())
+                .validateCoverageSourcePath(coverageSrcCheckBox.isSelected(), coverageSrcTextField.getText())
                 .getResult();
         for (ValidationResult.Message message : result.getErrors()) {
             category.setErrorMessage(message.getMessage());
@@ -150,6 +155,8 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         TesterPreferences.setTesterPath(phpModule, testerTextField.getText());
         TesterPreferences.setBinaryEnabled(phpModule, binaryExecutableCheckBox.isSelected());
         TesterPreferences.setBinaryExecutable(phpModule, (String) binaryExecutableComboBox.getSelectedItem());
+        TesterPreferences.setCoverageSourcePathEnabled(phpModule, coverageSrcCheckBox.isSelected());
+        TesterPreferences.setCoverageSourcePath(phpModule, coverageSrcTextField.getText());
     }
 
     private void initFile(boolean enabled, String file, JCheckBox checkBox, JTextField textField) {
@@ -195,6 +202,15 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
             }
         });
         binaryExecutableComboBox.addActionListener(defaultActionListener);
+
+        coverageSrcCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                enableComponents(e.getStateChange() == ItemEvent.SELECTED, coverageSrcLabel, coverageSrcTextField, coverageSrcBrowseButton);
+                validateData();
+            }
+        });
+        coverageSrcTextField.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
     private File getDefaultDirectory() {
@@ -229,6 +245,12 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         binaryExecutableCheckBox = new JCheckBox();
         binaryExecutableLabel = new JLabel();
         binaryExecutableComboBox = new JComboBox<String>();
+        noteLabel = new JLabel();
+        infoLabel = new JLabel();
+        coverageSrcCheckBox = new JCheckBox();
+        coverageSrcLabel = new JLabel();
+        coverageSrcTextField = new JTextField();
+        coverageSrcBrowseButton = new JButton();
 
         Mnemonics.setLocalizedText(phpIniCheckBox, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.phpIniCheckBox.text")); // NOI18N
 
@@ -259,10 +281,38 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         binaryExecutableLabel.setLabelFor(binaryExecutableComboBox);
         Mnemonics.setLocalizedText(binaryExecutableLabel, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.binaryExecutableLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.noteLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.infoLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageSrcCheckBox, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.coverageSrcCheckBox.text")); // NOI18N
+
+        coverageSrcLabel.setLabelFor(coverageSrcTextField);
+        Mnemonics.setLocalizedText(coverageSrcLabel, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.coverageSrcLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(coverageSrcBrowseButton, NbBundle.getMessage(CustomizerTester.class, "CustomizerTester.coverageSrcBrowseButton.text")); // NOI18N
+        coverageSrcBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                coverageSrcBrowseButtonActionPerformed(evt);
+            }
+        });
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            .addComponent(phpIniCheckBox)
+            .addComponent(testerCheckBox)
+            .addComponent(binaryExecutableCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addComponent(binaryExecutableLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+            .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoLabel))
+            .addComponent(coverageSrcCheckBox)
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
@@ -277,24 +327,18 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(testerTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(testerBrowseButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(phpIniCheckBox)
-                    .addComponent(testerCheckBox)
-                    .addComponent(binaryExecutableCheckBox)
+                        .addComponent(testerBrowseButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(binaryExecutableLabel)
+                        .addComponent(coverageSrcLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-                .addGap(0, 0, Short.MAX_VALUE))
+                        .addComponent(coverageSrcTextField)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(coverageSrcBrowseButton))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpIniBrowseButton, testerBrowseButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {coverageSrcBrowseButton, phpIniBrowseButton, testerBrowseButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(phpIniCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -314,7 +358,19 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(binaryExecutableLabel)
-                    .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(binaryExecutableComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(coverageSrcCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(coverageSrcLabel)
+                    .addComponent(coverageSrcTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(coverageSrcBrowseButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(infoLabel)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -347,10 +403,29 @@ public class CustomizerTester extends JPanel implements HelpCtx.Provider {
         }
     }//GEN-LAST:event_testerBrowseButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerTester.chooser.coverage.src.path=Select Source Path for Coverage")
+    private void coverageSrcBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_coverageSrcBrowseButtonActionPerformed
+        File file = new FileChooserBuilder(CustomizerTester.class)
+                .setTitle(Bundle.CustomizerTester_chooser_coverage_src_path())
+                .setDirectoriesOnly(true)
+                .setDefaultWorkingDirectory(FileUtil.toFile(phpModule.getSourceDirectory()))
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (file != null) {
+            coverageSrcTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_coverageSrcBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox binaryExecutableCheckBox;
     private JComboBox<String> binaryExecutableComboBox;
     private JLabel binaryExecutableLabel;
+    private JButton coverageSrcBrowseButton;
+    private JCheckBox coverageSrcCheckBox;
+    private JLabel coverageSrcLabel;
+    private JTextField coverageSrcTextField;
+    private JLabel infoLabel;
+    private JLabel noteLabel;
     private JButton phpIniBrowseButton;
     private JCheckBox phpIniCheckBox;
     private JLabel phpIniLabel;

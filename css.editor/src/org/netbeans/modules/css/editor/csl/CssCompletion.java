@@ -590,12 +590,12 @@ public class CssCompletion implements CodeCompletionHandler {
 //    }
     private String getPrefix(TokenSequence<CssTokenId> ts, int caretOffset) {
         //we are out of any css
-        if (ts == null) {
+        if (ts == null || caretOffset < 0) {
             return null;
         }
 
         int diff = ts.move(caretOffset);
-        if (diff == 0) {
+        if (diff <= 0) {
             if (!ts.movePrevious()) {
                 //beginning of the token sequence, cannot get any prefix
                 return ""; //NOI18N

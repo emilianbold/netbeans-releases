@@ -77,7 +77,7 @@ final class FileObjectCrawler extends Crawler {
 
     private static final char SEPARATOR = '/';  //NOI18N
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
-    /*test*/ static Map<Pair<File,File>,Boolean> mockLinkTypes;
+    /*test*/ static Map<Pair<FileObject,FileObject>,Boolean> mockLinkTypes;
 
     private final FileObject root;
     private final ClassPath.Entry entry;
@@ -284,7 +284,7 @@ NEXT_FILE:      for(FileObject f : files) {
             final @NonNull Collection<Indexable> allResources,
             final @NullAllowed Stats stats,
             final @NullAllowed ClassPath.Entry entry,
-            final @NonNull Deque<File> path,
+            final @NonNull Deque<FileObject> path,
             final @NonNull StringBuilder relativePathBuilder)
     {
         parkWhileSuspended();
@@ -308,21 +308,15 @@ NEXT_FILE:      for(FileObject f : files) {
                     continue;
                 }
                 if (folder) {
-                    File dir = null;
-                    if (path.isEmpty() ||
-                        (dir=FileUtil.toFile(fo)) == null ||
-                        !isLink(dir,path, stats)) {
-                        if (dir != null) {
-                            path.addLast(dir);
-                        }
+                    if (!isLink(fo, path, stats)) {
+                        path.addLast(fo);
                         try {
                             if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, path, relativePathBuilder)) {
                                 return false;
                             }
                         } finally {
-                            if (dir != null) {
-                                path.removeLast();
-                            }
+                            FileObject last = path.removeLast();
+                            assert last == fo;
                         }
                     }
                 } else {
@@ -377,33 +371,34 @@ NEXT_FILE:      for(FileObject f : files) {
         }
         return false;
     }
-    
-    private static boolean isSameFile(File check, File other) throws IOException {
-        Path checkPath = check.toPath();
-        if (Files.isSymbolicLink(checkPath)) {
-            Path target = other.toPath();
-            // if the file exists, check the target using JDK/system call.
-            // otherwise compare the contents of the symbolic link.
-            return target.toRealPath().equals(checkPath.toRealPath());
-        } else {
-            return false;
+
+    private static boolean isSameFile(
+            @NonNull final FileObject check,
+            @NonNull final FileObject other) throws IOException {
+        if (check.isSymbolicLink()) {
+            FileObject otherReslved = other.getCanonicalFileObject();
+            if (otherReslved == null) {
+                otherReslved = other;
+            }
+            return otherReslved.equals(check.getCanonicalFileObject());
         }
+        return false;
     }
-    
+
     private static boolean isLink(
-        @NonNull final File file,
-        @NonNull final Deque<? extends File> path,
+        @NonNull final FileObject file,
+        @NonNull final Deque<? extends FileObject> path,
         @NullAllowed final Stats stats) {
         final long st = System.currentTimeMillis();
         boolean hasLink = false;
         try {
-            final Iterator<? extends File> it = path.descendingIterator();
+            final Iterator<? extends FileObject> it = path.descendingIterator();
             while (it.hasNext()) {
-                final File pathElement = it.next();
-                if (file.getName().equals(pathElement.getName())) {
+                final FileObject pathElement = it.next();
+                if (file.getNameExt().equals(pathElement.getNameExt())) {
                     try {
                         if (mockLinkTypes != null ?
-                            mockLinkTypes.get(Pair.<File,File>of(pathElement, file)) :
+                            mockLinkTypes.get(Pair.<FileObject,FileObject>of(pathElement, file)) :
                             isSameFile(file, pathElement)) {
                             hasLink = true;
                             break;
@@ -435,13 +430,12 @@ NEXT_FILE:      for(FileObject f : files) {
             }
         }
     }
-    
-    private static Deque<File> createPathForRoot(@NonNull final FileObject root) {
-        final Deque<File> result = new ArrayDeque<File>();
-        File file = FileUtil.toFile(root);
-        while (file != null) {
-            result.addFirst(file);
-            file = file.getParentFile();
+
+    private static Deque<FileObject> createPathForRoot(@NonNull FileObject root) {
+        final Deque<FileObject> result = new ArrayDeque<>();
+        while (root != null) {
+            result.addFirst(root);
+            root = root.getParent();
         }
         return result;
     }

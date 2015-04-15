@@ -44,15 +44,11 @@
 
 package org.netbeans.modules.j2me.common.ant;
 import java.io.File;
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
@@ -81,7 +77,7 @@ import org.apache.tools.ant.types.Reference;
  */
 public class ExtractTask extends Task
 {
-    
+
     /** Holds value of property classpath and exclasspath. */
     private Path classPath, exClassPath;
     
@@ -90,7 +86,7 @@ public class ExtractTask extends Task
     
     /** Holds value of property excludeManifest. */
     private boolean excludeManifest = false;
-    
+
     /**
      * Do the work.
      * @throws BuildException if attribute is missing or there is a problem during creating or managing empty-api archives.
@@ -106,12 +102,15 @@ public class ExtractTask extends Task
             throw new BuildException(Bundle.getMessage("ERR_Extract_InvalidDir", dir != null ? dir.getAbsolutePath() : null)); // NO I18N
         final String[] archives = classPath.list();
         final Set excludes = exClassPath == null ? Collections.EMPTY_SET : new HashSet(Arrays.asList(exClassPath.list()));
-        
+        final Map<String, Boolean> libletsInProject = LibletUtils.loadLibletsInProject(getProject());
+
         if (archives != null) for (int a = 0; a < archives.length; a ++)
         {
             if (excludes.contains(archives[a])) continue;
-            if (isJarLiblet(archives[a])) {
-                //do not extract liblets
+            final Map<Object, Object> manifestAttributes = LibletUtils.getJarManifestAttributes(archives[a]);
+            if (LibletUtils.isJarLiblet(manifestAttributes)
+                    && !libletsInProject.get(LibletUtils.getLibletDetails(manifestAttributes))) {
+                //do not extract this LIBlet
                 continue;
             }
             final File source = new File(archives[a]);
@@ -245,15 +244,5 @@ public class ExtractTask extends Task
     {
         this.excludeManifest = excludeManifest;
     }
-    
-    private boolean isJarLiblet(String path) {
-        try {
-            JarFile jar = new JarFile(path);
-            Attributes manifestAttributes = jar.getManifest().getMainAttributes();
-            return manifestAttributes.containsKey(new Attributes.Name("LIBlet-Name")); //NOI18N
-        } catch (IOException ex) {
-            Logger.getLogger(ExtractTask.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return false;
-    }
+
 }

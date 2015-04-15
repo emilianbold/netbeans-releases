@@ -62,6 +62,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -271,16 +272,32 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
         return handler.getLibrary();
     }
 
-    private static void readLibrary (FileObject descriptorFile, LibraryDeclarationParser parser) throws SAXException, ParserConfigurationException, IOException {
-        final URL baseURL = descriptorFile.toURL();
-        InputSource input = new InputSource(baseURL.toExternalForm());        
-        try (InputStream in = descriptorFile.getInputStream()) {
-            input.setByteStream(in); // #33554 workaround
-            parser.parse(input);
-        } catch (SAXException e) {
-            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
-        } catch (IOException e) {
-            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
+    private static void readLibrary (
+            @NonNull final FileObject descriptorFile,
+            @NonNull final LibraryDeclarationParser parser) throws SAXException, ParserConfigurationException, IOException {
+        try {
+            FileLockManager.getDefault().readAction(
+                descriptorFile,
+                new Callable<Void>() {
+                    @Override
+                    public Void call() throws IOException, ParserConfigurationException, SAXException {
+                        final URL baseURL = descriptorFile.toURL();
+                        final InputSource input = new InputSource(baseURL.toExternalForm());
+                        try (InputStream in = descriptorFile.getInputStream()) {
+                            input.setByteStream(in); // #33554 workaround
+                            parser.parse(input);
+                        } catch (SAXException e) {
+                            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
+                        } catch (IOException e) {
+                            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
+                        }
+                        return null;
+                    }
+                });
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -503,13 +520,8 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                 FileObject parent = storage.getParent();
                 FileObject timeStampFile = FileUtil.createData(parent,TIME_STAMPS_FILE);
                 FileLock lock = timeStampFile.lock();
-                try {
-                    OutputStream out = timeStampFile.getOutputStream(lock);
-                    try {
-                        timeStamps.store (out, null);
-                    } finally {
-                        out.close();
-                    }
+                try (final OutputStream out = timeStampFile.getOutputStream(lock)) {
+                    timeStamps.store (out, null);
                 } finally {
                     lock.releaseLock();
                 }

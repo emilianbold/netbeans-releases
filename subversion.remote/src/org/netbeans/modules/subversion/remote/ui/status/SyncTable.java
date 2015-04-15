@@ -91,7 +91,7 @@ import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.remote.ui.update.UpdateAction;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -289,7 +289,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
         Node.Property [] properties = new Node.Property[columns.length];
         for (int i = 0; i < columns.length; i++) {
             String column = columns[i];
-            String [] labels = (String[]) columnLabels.get(column);
+            String [] labels = columnLabels.get(column);
             properties[i] = new ColumnDescriptor(column, labels[0], labels[1]);  
         }
         tableModel.setProperties(properties);
@@ -457,7 +457,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                 
         menu.addSeparator();
         item = menu.add(new SystemActionBridge(SystemAction.get(BlameAction.class),
-                                               ((BlameAction)SystemAction.get(BlameAction.class)).visible(null) ?
+                                               SystemAction.get(BlameAction.class).visible(null) ?
                                                actionString("CTL_PopupMenuItem_HideBlame") : // NOI18N
                                                actionString("CTL_PopupMenuItem_Blame"))); // NOI18N
         Mnemonics.setLocalizedText(item, item.getText());
@@ -467,7 +467,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
         menu.addSeparator();
         String label;
-        ExcludeFromCommitAction exclude = (ExcludeFromCommitAction) SystemAction.get(ExcludeFromCommitAction.class);
+        ExcludeFromCommitAction exclude = SystemAction.get(ExcludeFromCommitAction.class);
         if (exclude.getActionStatus(null) == ExcludeFromCommitAction.INCLUDING) {
             label = org.openide.util.NbBundle.getMessage(Annotator.class, "CTL_PopupMenuItem_IncludeInCommit"); // NOI18N
         } else {
@@ -507,7 +507,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 //        Mnemonics.setLocalizedText(item, item.getText());
         
         Action ignoreAction = new SystemActionBridge(SystemAction.get(IgnoreAction.class),
-           ((IgnoreAction)SystemAction.get(IgnoreAction.class)).getActionStatus(files) == IgnoreAction.UNIGNORING ?
+           SystemAction.get(IgnoreAction.class).getActionStatus(files) == IgnoreAction.UNIGNORING ?
            actionString("CTL_PopupMenuItem_Unignore") : // NOI18N
            actionString("CTL_PopupMenuItem_Ignore")); // NOI18N
         item = menu.add(ignoreAction);

@@ -432,7 +432,9 @@ public class ArithmeticUtilities {
          */
         private static Object resolveElementValue(CompilationInfo info, TreePath path, boolean enhanceProcessing) {
             Element el = info.getTrees().getElement(path);
-
+            if (el == null) {
+                return null;
+            }
             Map<Object, ElementValue> cache = getValueCache(info);
             ElementValue entry = cache.get(el);
             if (entry != null) {

@@ -217,6 +217,10 @@ public class RepositoryRevision {
         "# {0} - revision", "MSG_CheckoutRevision.progress=Checking out {0}"
     })
     Action[] getActions () {
+        if (RepositoryInfo.getInstance(repositoryRoot) == null) {
+            // repository deleted? Then return no actions, nothing makes sense any more.
+            return new Action[0];
+        }
         List<Action> actions = new ArrayList<Action>();
         final String revision = getPreferredRevision();
         actions.add(new AbstractAction(Bundle.LBL_Action_CheckoutRevision(revision)) {

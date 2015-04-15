@@ -1012,6 +1012,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             if (child.getType() == CPPTokenTypes.LITERAL_friend) {
                 child = child.getNextSibling();
             }
+            if (child != null && child.getType() == CPPTokenTypes.LITERAL_typename) {
+                child = child.getNextSibling();
+            }            
             if (child != null && child.getType() == CPPTokenTypes.LITERAL_template) {
                 child = child.getNextSibling();
             }
@@ -1096,6 +1099,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             }
             if (idAST == null || (idAST.getType() != CPPTokenTypes.CSM_QUALIFIED_ID &&
                                   idAST.getType() != CPPTokenTypes.IDENT)) {
+                return null;
+            }
+            if (!EnumMemberForwardDeclaration.isCorrectOpaqueEnumDeclaration(token)) {
                 return null;
             }
             return EnumMemberForwardDeclaration.create(getContainingFile(), ClassImpl.this, token, curentVisibility, !isRenderingLocalContext());

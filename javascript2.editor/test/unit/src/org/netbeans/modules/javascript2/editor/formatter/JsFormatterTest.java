@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import static junit.framework.Assert.assertNull;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
@@ -1769,6 +1768,78 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.rightMargin, 100);
         reformatFileContents("testfiles/formatter/issue244983.js",
                 options, ".expand.formatted");
+    }
+
+    public void testIssue250557() throws Exception {
+        reformatFileContents("testfiles/formatter/issue250557.js", new IndentPrefs(4, 4));
+    }
+
+    // braces formatting tests
+    public void testBracesSameLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.functionDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.withBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        reformatFileContents("testfiles/formatter/bracesFormat.js", options, ".sameLine.formatted");
+    }
+
+    public void testBracesNewLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.functionDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.withBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        reformatFileContents("testfiles/formatter/bracesFormat.js", options, ".newLine.formatted");
+    }
+
+    public void testBracesNewLineIndented() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.functionDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.withBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        reformatFileContents("testfiles/formatter/bracesFormat.js", options, ".newLineIndented.formatted");
+    }
+
+    public void testIssue227007WithContinuation() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.objectLiteralContinuation, true);
+        reformatFileContents("testfiles/formatter/issue227007.js", options, ".continuation.formatted");
+    }
+
+    public void testIssue227007WithouContinuation() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.objectLiteralContinuation, false);
+        reformatFileContents("testfiles/formatter/issue227007.js", options, ".noContinuation.formatted");
+    }
+
+    // alignment options tests
+    public void testKeywordAlignmentSameLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.placeElseOnNewLine, false);
+        options.put(FmtOptions.placeWhileOnNewLine, false);
+        options.put(FmtOptions.placeCatchOnNewLine, false);
+        options.put(FmtOptions.placeFinallyOnNewLine, false);
+        reformatFileContents("testfiles/formatter/keywordPlacement.js", options, ".sameLine.formatted");
+    }
+
+    public void testKeywordAlignmentNewLine() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.placeElseOnNewLine, true);
+        options.put(FmtOptions.placeWhileOnNewLine, true);
+        options.put(FmtOptions.placeCatchOnNewLine, true);
+        options.put(FmtOptions.placeFinallyOnNewLine, true);
+        reformatFileContents("testfiles/formatter/keywordPlacement.js", options, ".newLine.formatted");
     }
 
     // test from original formatter

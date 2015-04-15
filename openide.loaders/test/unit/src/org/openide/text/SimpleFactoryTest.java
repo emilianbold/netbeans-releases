@@ -57,14 +57,12 @@ import junit.framework.TestSuite;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.actions.Savable;
 import org.netbeans.junit.*;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.*;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
-import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport.Pane;
 import org.openide.util.Lookup;
@@ -105,7 +103,7 @@ public final class SimpleFactoryTest extends NbTestCase {
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
         
-        System.setProperty("org.openide.util.Lookup", "org.openide.text.SimpleFactoryTest$Lkp");
+        MockServices.setServices(DLP.class);
         super.setUp();
         
         LocalFileSystem l = new LocalFileSystem ();
@@ -175,21 +173,6 @@ public final class SimpleFactoryTest extends NbTestCase {
         assertNull("Changes discarded", obj.getLookup().lookup(Savable.class));
     }
     
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DLP ());
-            ic.add (new NbMutexEventProvider());
-        }
-    }
-    
     private static final class SL extends org.openide.loaders.UniFileLoader {
         public SL () {
             super (SO.class.getName ());
@@ -233,7 +216,7 @@ public final class SimpleFactoryTest extends NbTestCase {
         }
     }
 
-    private static final class DLP extends org.openide.loaders.DataLoaderPool {
+    public static final class DLP extends org.openide.loaders.DataLoaderPool {
 
         @Override
         protected Enumeration<? extends DataLoader> loaders() {

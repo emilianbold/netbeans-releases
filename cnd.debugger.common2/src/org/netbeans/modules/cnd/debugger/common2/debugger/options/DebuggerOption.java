@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.options.CatalogDynamic;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionValue;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Validity;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 public class DebuggerOption extends Option {
 
@@ -341,6 +342,14 @@ public class DebuggerOption extends Option {
 			    "on", //NOI18N // deault value
 			    true, // is engine option
 			    Type.COMBO_BOX, false);  //type , hasToolTip
+    
+    public static final DebuggerOption GDB_REVERSE_DEBUGGING = 
+        new DebuggerOption( // NOI18N
+			    "reverse_debugging", // NOI18N //name
+                            new String[] {"on", "off"},  // NOI18N //values
+                            "off",  // NOI18N // deault value
+			    true, // is engine option
+			    Type.CHECK_BOX, false);  //type , hasToolTip
 
     public static final DebuggerOption OUTPUT_BASE  =
 	new DebuggerOption( // NOI18N
@@ -760,4 +769,11 @@ public class DebuggerOption extends Option {
 			    "", // deault value
 			    false, // is engine option
 			    Type.DIRECTORY, false);  //type , hasToolTip
+    
+    public static final DebuggerOption SYMBOL_FILE = 
+        new DebuggerOption( // NOI18N
+			    "symbol_file", // NOI18N //name
+                            MakeConfiguration.CND_OUTPUT_PATH_MACRO, // deault value
+			    false, // is engine option
+			    Type.FILE, false);  //type , hasToolTip
 }

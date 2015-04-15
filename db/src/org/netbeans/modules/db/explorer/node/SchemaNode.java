@@ -57,12 +57,13 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Rob Englander
  */
-public class SchemaNode extends BaseNode {
+public class SchemaNode extends BaseNode implements PropertyChangeListener {
     private static final String ICONBASE = "org/netbeans/modules/db/resources/schema.png"; // NOI18N
     private static final String FOLDER = "Schema"; //NOI18N
 
@@ -98,20 +99,18 @@ public class SchemaNode extends BaseNode {
     protected void initialize() {
         setupNames();
 
-        connection.addPropertyChangeListener(
-            new PropertyChangeListener() {
-            @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFSCHEMA)) {
-                        updateProperties();
-                    }
-                }
-            }
-        );
+        connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(DatabaseConnection.PROP_DEFSCHEMA)) {
+            updateProperties();
+        }
     }
 
     private void setupNames() {
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         final MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             new SwingWorker() {
@@ -168,7 +167,7 @@ public class SchemaNode extends BaseNode {
         }
 
         if (schema != null) {
-            boolean isDefault = false;
+            boolean isDefault;
             String def = connection.getDefaultSchema();
             if (def != null) {
                 isDefault = def.equals(name);

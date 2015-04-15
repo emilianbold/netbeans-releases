@@ -53,6 +53,9 @@ import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /** Miscellaneous utility classes useful for the C/C++/Fortran module */
 public class CppUtils {
@@ -184,8 +187,20 @@ public class CppUtils {
         return qmakespec;
     }
 
-    public static String getDefaultDevelopmentHost() {
-        return ExecutionEnvironmentFactory.toUniqueID(ServerList.getDefaultRecord().getExecutionEnvironment());
+    public static String getDefaultDevelopmentHost(FileObject projectDirectory) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(projectDirectory);
+        if (env.isLocal()) {
+            env = ServerList.getDefaultRecord().getExecutionEnvironment();
+        }
+        return ExecutionEnvironmentFactory.toUniqueID(env);
+    }
+
+    public static String getDefaultDevelopmentHost(FileSystem projectFS) {
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(projectFS);
+        if (env.isLocal()) {
+            env = ServerList.getDefaultRecord().getExecutionEnvironment();
+        }
+        return ExecutionEnvironmentFactory.toUniqueID(env);
     }
 
     /*package*/ static ExecutionEnvironment convertAfterReading(ExecutionEnvironment env, MakeConfiguration makeConfiguration) {

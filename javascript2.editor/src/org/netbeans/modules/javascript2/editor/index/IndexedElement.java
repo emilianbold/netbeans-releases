@@ -500,6 +500,7 @@ public class IndexedElement implements JsElement {
         private static final int PARAMETER = 1 << 17;
         private static final int PROPERTY_GETTER = 1 << 18;
         private static final int PROPERTY_SETTER = 1 << 19;
+        private static final int CALLBACK = 1 << 22;
 
         private static final int PLATFORM = 1 << 20;
 
@@ -534,6 +535,7 @@ public class IndexedElement implements JsElement {
             if (kind == JsElement.Kind.PROPERTY_SETTER) value = value | PROPERTY_SETTER;
             if (kind == JsElement.Kind.VARIABLE) value = value | VARIABLE;
             if (kind == JsElement.Kind.OBJECT_LITERAL) value = value | OBJECT_LITERAL;
+            if (kind == JsElement.Kind.CALLBACK) value = value | CALLBACK;
 
             if (object.isPlatform()) value = value | PLATFORM;
 
@@ -581,6 +583,7 @@ public class IndexedElement implements JsElement {
             else if ((flag & PROPERTY_SETTER) != 0) result = JsElement.Kind.PROPERTY_SETTER;
             else if ((flag & VARIABLE) != 0) result = JsElement.Kind.VARIABLE;
             else if ((flag & OBJECT_LITERAL) != 0) result = JsElement.Kind.OBJECT_LITERAL;
+            else if ((flag & CALLBACK) != 0) result = JsElement.Kind.CALLBACK;
             return result;
         }
     }

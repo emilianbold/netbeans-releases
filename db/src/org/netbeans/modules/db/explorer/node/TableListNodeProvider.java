@@ -85,7 +85,7 @@ public class TableListNodeProvider extends NodeProvider {
 
     @Override
     protected void initialize() {
-        if (connection.getConnector().isDisconnected()) {
+        if (! connection.isConnected()) {
             removeAllNodes();
             setup = false;
         } else {
@@ -138,11 +138,11 @@ public class TableListNodeProvider extends NodeProvider {
     }
 
     private TableListNodeProvider(Lookup lookup) {
-        super(lookup, new TableListNodeComparator());
+        super(lookup, tableNodeComparator);
         connection = getLookup().lookup(DatabaseConnection.class);
     }
 
-    private static class TableListNodeComparator implements Comparator<Node> {
+    private static final Comparator<Node> tableNodeComparator = new Comparator<Node>() {
 
         @Override
         public int compare(Node o1, Node o2) {
@@ -154,5 +154,5 @@ public class TableListNodeProvider extends NodeProvider {
                         o2.getDisplayName());
             }
         }
-    }
+    };
 }

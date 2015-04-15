@@ -50,7 +50,7 @@ import org.netbeans.modules.subversion.remote.Annotator;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SubversionVCS;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.filesystems.FileSystem;

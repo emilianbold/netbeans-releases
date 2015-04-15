@@ -111,6 +111,21 @@ public class JavadocCompletionQueryTest extends JavadocTestSupport {
         performCompletionTest(code, "p1:", "p2:");
     }
     
+    public void testParamNameCompletionForMethod4() throws Exception {
+        String code =
+                "package p;\n" +
+                "class Clazz {\n" +
+                "    /**\n" +
+                "     * @param p1 tada\n" +
+                "     * @param |\n" +
+                "     */\n" +
+                "    void method(int p1, int p2) {\n" +
+                "    }\n" +
+                "}\n";
+        
+        performCompletionTest(code, "p2:");
+    }
+    
     public void testParamNameCompletionForConstructor() throws Exception {
         String code =
                 "package p;\n" +

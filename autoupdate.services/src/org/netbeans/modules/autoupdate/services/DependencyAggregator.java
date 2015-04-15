@@ -87,7 +87,11 @@ public class DependencyAggregator extends Object {
     }
     
     public boolean addDependee(ModuleInfo dependee) {
-        return depending.add (dependee);
+        boolean result = false;
+        synchronized (depending) {
+            result = depending.add (dependee);
+        }
+        return result;
     }
     
     public Collection<ModuleInfo> getDependening() {

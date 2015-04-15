@@ -80,7 +80,7 @@ import org.openide.awt.Mnemonics;
  */
 public class CommitTable implements AncestorListener, TableModelListener, MouseListener {
 
-    public static String [] COMMIT_COLUMNS = new String [] {
+    static final String [] COMMIT_COLUMNS = new String [] {
                                             CommitTableModel.COLUMN_NAME_COMMIT,
                                             CommitTableModel.COLUMN_NAME_NAME,
                                             CommitTableModel.COLUMN_NAME_STATUS,
@@ -88,7 +88,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                                             CommitTableModel.COLUMN_NAME_PATH
                                         };
 
-    public static String [] IMPORT_COLUMNS = new String [] {
+    public static final String [] IMPORT_COLUMNS = new String [] {
                                             CommitTableModel.COLUMN_NAME_COMMIT,
                                             CommitTableModel.COLUMN_NAME_NAME,
                                             CommitTableModel.COLUMN_NAME_ACTION,
@@ -585,22 +585,18 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         }
     }
 
-    private class StatusComparator extends SvnUtils.ByImportanceComparator {
-        public int compare(Object o1, Object o2) {
-            Integer row1 = (Integer) o1;
-            Integer row2 = (Integer) o2;
-            return super.compare(tableModel.getNode(row1.intValue()).getInformation(),
-                                 tableModel.getNode(row2.intValue()).getInformation());
+    private class StatusComparator extends SvnUtils.ByImportanceComparator<Integer> {
+        public int compare(Integer row1, Integer row2) {
+            return super.compare(tableModel.getNode(row1).getInformation(),
+                                 tableModel.getNode(row2).getInformation());
         }
     }
     
-    private class FileNameComparator implements Comparator {
+    private class FileNameComparator implements Comparator<Integer> {
         @Override
-        public int compare(Object o1, Object o2) {
-            Integer row1 = (Integer) o1;
-            Integer row2 = (Integer) o2;
-            return tableModel.getNode(row1.intValue()).getName().compareToIgnoreCase(
-                    tableModel.getNode(row2.intValue()).getName());
+        public int compare(Integer row1, Integer row2) {
+            return tableModel.getNode(row1).getName().compareToIgnoreCase(
+                    tableModel.getNode(row2).getName());
         }
     }
 

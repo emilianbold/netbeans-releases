@@ -42,11 +42,13 @@
 package org.netbeans.modules.javascript.nodejs.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
@@ -268,6 +270,25 @@ public final class NodeJsUtils {
     private static File getNodeSources(String version) {
         assert version != null;
         return new File(getNodeSources(), version);
+    }
+
+    /**
+     * Checks whether the given folder is already a project.
+     * @param folder folder to be checked
+     * @return {@code true} if the given folder is already a project, {@code false} otherwise
+     */
+    public static boolean isProject(File folder) {
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(folder)));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // noop
+        }
+        return prj != null
+                || foundButBroken;
     }
 
 }

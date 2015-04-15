@@ -305,6 +305,15 @@ public class JsDocComment extends JsComment {
         }
         return properties;
     }
+
+    @Override
+    public Type getCallBack() {
+        List<Type> callbacks = new LinkedList<Type>();
+        for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.CALLBACK)) {
+            callbacks.add(((DeclarationElement) jsDocElement).getDeclaredType());
+        }
+        return callbacks.isEmpty() ? null : callbacks.get(0);
+    }
     
     
 }

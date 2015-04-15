@@ -80,7 +80,7 @@ public class RefreshNonInstantiatedTestCase extends RemoteFileTestBase {
     public void testRefreshNonInstantiated() throws Exception {
         String baseDir = null;
         try {
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             baseDir = mkTempAndRefreshParent(true);
             RemoteFileObject baseFO = getFileObject(baseDir);
             baseFO.refresh();
@@ -101,12 +101,12 @@ public class RefreshNonInstantiatedTestCase extends RemoteFileTestBase {
             createDirStructure(execEnv, baseDir, struct);
             
             int dirSyncCount_1 = fs.getDirSyncCount();
-            int cacheSize_1 = fs.getFactory().getCachedFileObjects().size();
+            int cacheSize_1 = fs.getCachedFileObjectsCount();
 
             baseFO.refresh();
 
             int dirSyncCount_2 = fs.getDirSyncCount();
-            int cacheSize_2 = fs.getFactory().getCachedFileObjects().size();
+            int cacheSize_2 = fs.getCachedFileObjectsCount();
 
             System.err.printf("Cache size: %d -> %d   Dir sync count: %d -> %d\n", cacheSize_1, cacheSize_2, dirSyncCount_1, dirSyncCount_2);
 

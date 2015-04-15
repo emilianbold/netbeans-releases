@@ -75,7 +75,7 @@ public class OperatorsPanel extends JPanel {
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.insets = new java.awt.Insets(12, 12, 6, 12);
             add(operatorsSelectorLabel, gridBagConstraints);
-            operatorsSelector = new ElementSelectorPanel(fieldsDescription, false, true);
+            operatorsSelector = new ElementSelectorPanel(fieldsDescription, false, true, true);
             gridBagConstraints.gridy = 1;
             gridBagConstraints.weightx = 0.5;
             gridBagConstraints.weighty = 1.0;

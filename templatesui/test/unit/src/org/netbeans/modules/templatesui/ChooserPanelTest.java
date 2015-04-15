@@ -77,5 +77,10 @@ public class ChooserPanelTest extends AbstractWizard {
     @Override
     protected void initializationDone(Throwable error) {
     }
+
+    @Override
+    protected String[] getTechIds() {
+        return new String[0];
+    }
     
 }

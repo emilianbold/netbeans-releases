@@ -73,6 +73,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
@@ -141,6 +142,8 @@ public class J2SEProjectProperties {
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
     //Runtime platform
     public static final String PLATFORM_RUNTIME = "platform.runtime";   //NOI18N
+    //Force javac fork
+    public static final String JAVAC_EXTERNAL_VM = "javac.external.vm";   //NOI18N
 
     //Name of ant platform name property
     public static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
@@ -189,6 +192,7 @@ public class J2SEProjectProperties {
     ButtonModel NO_DEPENDENCIES_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_MODEL;
     ButtonModel ENABLE_ANNOTATION_PROCESSING_IN_EDITOR_MODEL;
+    ButtonModel JAVAC_EXTERNAL_VM_MODEL;
     DefaultListModel ANNOTATION_PROCESSORS_MODEL;
     DefaultTableModel PROCESSOR_OPTIONS_MODEL;
     Document JAVAC_COMPILER_ARG_MODEL;
@@ -366,6 +370,7 @@ public class J2SEProjectProperties {
                 PROCESSOR_OPTIONS_MODEL.addRow(new String[] {key, value});
             }
         }
+        JAVAC_EXTERNAL_VM_MODEL = projectGroup.createToggleButtonModel(evaluator, JAVAC_EXTERNAL_VM);
         JAVAC_COMPILER_ARG_MODEL = projectGroup.createStringDocument( evaluator, JAVAC_COMPILERARGS );
         
         // CustomizerJar

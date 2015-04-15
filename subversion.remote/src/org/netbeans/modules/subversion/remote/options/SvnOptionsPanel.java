@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -103,6 +104,24 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         }
         return Collections.unmodifiableList(Arrays.asList(keywords));
     }
+
+    void fileSystemChanged(FileSystem fileSystem) {
+        boolean enabled = fileSystem != null;
+        addButton.setEnabled(enabled);
+        annotationTextField.setEnabled(enabled);
+        browseButton.setEnabled(enabled);
+        cbAutoLockFiles.setEnabled(enabled);
+        cbDetermineBranches.setEnabled(enabled);
+        cbGetRemoteLocks.setEnabled(enabled);
+        cbOpenOutputWindow.setEnabled(enabled);
+        excludeNewFiles.setEnabled(enabled);
+        executablePathTextField.setEnabled(enabled);
+        manageConnSettingsButton.setEnabled(enabled);
+        manageLabelsButton.setEnabled(enabled);
+        prefixRepositoryPath.setEnabled(enabled);
+        textPaneClient.setEnabled(enabled);
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -405,5 +424,4 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JCheckBox prefixRepositoryPath = new javax.swing.JCheckBox();
     final javax.swing.JTextPane textPaneClient = new javax.swing.JTextPane();
     // End of variables declaration//GEN-END:variables
-
 }

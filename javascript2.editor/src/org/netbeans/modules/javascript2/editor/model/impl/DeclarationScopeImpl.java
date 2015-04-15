@@ -58,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationScope {
 
-    private final DeclarationScope parentScope;
+    private DeclarationScope parentScope;
 
     private final List<DeclarationScope> childrenScopes;
 
@@ -82,6 +82,10 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     @Override
     public void addDeclaredScope(DeclarationScope scope) {
         childrenScopes.add(scope);
+    }
+
+    public void setParentScope(DeclarationScope parentScope) {
+        this.parentScope = parentScope;
     }
 
     private static class With {

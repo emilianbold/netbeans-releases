@@ -178,7 +178,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             ui.getRefactoring().addProgressListener(fuListener = new FUListener());
         }
         initialize();
-        updateFilters();
+        updateFilters(false);
         refresh(false);
     }
     
@@ -674,10 +674,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
         boolean scanning = IndexingManager.getDefault().isIndexing();
+        boolean resetFilters = showParametersPanel;
         if (showParametersPanel) {
             // create parameters panel for refactoring
             if (parametersPanel == null) {
                 parametersPanel = new ParametersPanel(ui);
+                resetFilters = false;
             }
             // show parameters dialog
             RefactoringSession tempSession = parametersPanel.showDialog();
@@ -711,7 +713,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         final AtomicBoolean sizeIsApproximate = new AtomicBoolean();
         initialize();
         if(showParametersPanel) {
-            updateFilters();
+            updateFilters(resetFilters);
         }
 
         cancelRequest.set(false);
@@ -767,12 +769,10 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                         setupInstantTree(root, showParametersPanel);
                     }
                     
-                    if (isQuery) {
-                        if (!showParametersPanel) {
-                            progressHandle.start();
-                        }
-                    } else {
+                    if (!isQuery) {
                         progressHandle.start(elements.size()/10);
+                    } else {
+                        progressHandle.start();
                     }
 
                     int i=0;
@@ -781,7 +781,6 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                         //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
                         try {
                             // ui.getRefactoring().setClassPath();
-                            boolean progressStarted = false;
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
                                 final RefactoringElement e = (RefactoringElement) it.next();
                                 TreeElement treeElement = null;
@@ -802,10 +801,6 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                     }
                                     final boolean finished = session!= null? APIAccessor.DEFAULT.isFinished(session) : true;
                                     final boolean last = !it.hasNext();
-                                    if (!progressStarted && (finished || last)) {
-                                        progressStarted = true;
-                                        progressHandle.start();
-                                    }
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
@@ -852,7 +847,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                 stopButton.setVisible(false);
                                 refreshButton.setVisible(true);
                                 if(showParametersPanel) {
-                                    updateFilters();
+                                    updateFilters(false);
                                 }
                             }
                         });
@@ -1131,7 +1126,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         prefs.putInt(PREF_VIEW_TYPE, currentView);
     }
 
-    private void updateFilters() {
+    private void updateFilters(boolean reset) {
         if(!ui.isQuery() || callback != null) {
             if(filterBar != null) {
                 toolbars.remove(filterBar);
@@ -1146,7 +1141,11 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
             filterBar = null;
             filtersManager = null;
         }
-        final FiltersDescription desc = APIAccessor.DEFAULT.getFiltersDescription(ui.getRefactoring());
+        AbstractRefactoring refactoring = ui.getRefactoring();
+        if(reset) {
+            APIAccessor.DEFAULT.resetFiltersDescription(refactoring);
+        }
+        final FiltersDescription desc = APIAccessor.DEFAULT.getFiltersDescription(refactoring);
         filtersManager = FiltersManagerImpl.create(desc == null? new FiltersDescription() : desc);
         filterBar = filtersManager.getComponent();
         toolbars.add(filterBar, BorderLayout.EAST);

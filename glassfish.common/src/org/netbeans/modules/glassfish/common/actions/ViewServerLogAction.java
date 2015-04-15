@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.LogViewMgr;

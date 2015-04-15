@@ -584,7 +584,7 @@ public class SyntaxAnalyzerResult {
     // URI to prefix map
     @Deprecated
     public Map<String, String> getDeclaredNamespaces() {
-        Map<String, Collection<String>> all = getAllDeclaredNamespaces();
+        Map<String, Collection<String>> all = new HashMap<>(getAllDeclaredNamespaces());
         Map<String, String> firstPrefixOnly = new HashMap<>();
         for (String namespace : all.keySet()) {
             Collection<String> prefixes = all.get(namespace);

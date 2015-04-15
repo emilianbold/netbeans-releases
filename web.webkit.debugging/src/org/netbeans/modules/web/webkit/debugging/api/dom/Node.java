@@ -142,12 +142,12 @@ public class Node {
      * @return ID of this node.
      */
     public int getNodeId() {
-        Number nodeId = (Number)getProperties().get("nodeId");
-        //workaround for mobile safari
-        if (nodeId==null) {
-            nodeId = (Number)getProperties().get("id");
+        Number nodeId = (Number)getProperties().get("nodeId"); // NOI18N
+        // workaround for mobile safari
+        if (nodeId == null) {
+            nodeId = (Number)getProperties().get("id"); // NOI18N
         }
-        return (nodeId).intValue(); // NOI18N
+        return nodeId.intValue();
     }
 
     /**

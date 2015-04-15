@@ -52,8 +52,8 @@ import org.w3c.dom.Element;
 /**
  */
 public abstract class CommonProjectHelper {
-    public static Object PRIVATE_PROPERTIES_PATH = new Object();
-    public static Object PROJECT_PROPERTIES_PATH = new Object();
+    public static final Object PRIVATE_PROPERTIES_PATH = new Object();
+    public static final Object PROJECT_PROPERTIES_PATH = new Object();
 
     public abstract EditableProperties getProperties(Object path);
 
@@ -62,7 +62,7 @@ public abstract class CommonProjectHelper {
     public abstract SharabilityQueryImplementation2 createSharabilityQuery2(Values evaluator, String[] toArray, String[] string);
 
     public abstract Values getStandardPropertyEvaluator();
-    
+
     public abstract Object getXmlSavedHook();
 
     public abstract File resolveFile(String licensePath);
@@ -74,7 +74,7 @@ public abstract class CommonProjectHelper {
     public abstract void notifyDeleted();
 
     public abstract AuxiliaryConfiguration createAuxiliaryConfiguration();
-    
+
     public abstract void registerCallback(Callback l);
 
     public abstract Element getPrimaryConfigurationData(boolean b);
@@ -84,10 +84,10 @@ public abstract class CommonProjectHelper {
     public abstract Object createAuxiliaryProperties();
 
     public abstract void putPrimaryConfigurationData(Element data, boolean b);
-    
+
     public interface Callback {
         public void projectXmlSaved() throws IOException;
         public void configurationXmlChanged();
         public void propertiesChanged();
-    }    
+    }
 }

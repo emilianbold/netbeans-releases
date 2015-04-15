@@ -388,7 +388,6 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
             @Override
             public void run() {
                 try {
-                    int localLineHeight = lineHeight;
                     View rootView = Utilities.getDocumentView(master.getEditorPane());
                     if(rootView == null) { // this might happen
                         return;
@@ -406,6 +405,7 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                         return;
                     }
                     int yOffset;
+                    int localLineHeight = rec.height;
                     int linesDrawn = clip.height / localLineHeight + 4;  // draw past clipping rectangle to avoid partially drawn numbers
                     int docLines = Utilities.getRowCount((BaseDocument) master.getEditorPane().getDocument());
                     if (lineNumber + linesDrawn > docLines) {

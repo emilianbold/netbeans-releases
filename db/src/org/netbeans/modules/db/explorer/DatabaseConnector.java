@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.db.explorer;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,8 +50,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.lib.ddl.DDLException;
 import org.netbeans.lib.ddl.DatabaseProductNotFoundException;
 import org.netbeans.lib.ddl.adaptors.DefaultAdaptor;
 import org.netbeans.lib.ddl.impl.CreateTable;
@@ -68,33 +67,21 @@ import org.netbeans.modules.db.metadata.model.api.IndexColumn;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
-import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Rob Englander
  */
 public class DatabaseConnector {
-
-    // Thread-safe, no synchronization
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-
-    private DatabaseConnection databaseConnection;
-    private Connection connection = null;
+    private final DatabaseConnection databaseConnection;
     private Specification spec;
 
     // we maintain a lazy cache of driver specs mapped to the catalog name
-    private ConcurrentHashMap<String, DriverSpecification> driverSpecCache = new ConcurrentHashMap<String, DriverSpecification>();
-
-    private ConcurrentHashMap<String, Object> properties = new ConcurrentHashMap<String, Object>();
+    private ConcurrentHashMap<String, DriverSpecification> driverSpecCache 
+            = new ConcurrentHashMap<>();
 
     public DatabaseConnector(DatabaseConnection conn) {
         databaseConnection = conn;
-    }
-
-    public DatabaseConnection getDatabaseConnection() {
-        return databaseConnection;
     }
 
     public Specification getDatabaseSpecification() {
@@ -109,7 +96,7 @@ public class DatabaseConnector {
                 dspec = factory.createDriverSpecification(spec.getMetaData().getDriverName().trim());
                 if (spec.getMetaData().getDriverName().trim().equals("jConnect (TM) for JDBC (TM)")) //NOI18N
                     //hack for Sybase ASE - I don't guess why spec.getMetaData doesn't work
-                    dspec.setMetaData(connection.getMetaData());
+                    dspec.setMetaData(databaseConnection.getJDBCConnection().getMetaData());
                 else
                     dspec.setMetaData(spec.getMetaData());
 
@@ -125,16 +112,16 @@ public class DatabaseConnector {
         return dspec;
     }
     
-    public void finishConnect(String dbsys, DatabaseConnection con, Connection connection) throws DatabaseException {
+    void finishConnect(String dbsys) throws DatabaseException {
         try {
             SpecificationFactory factory = RootNode.instance().getSpecificationFactory();
             int readOnlyFlag = 0;
             if (dbsys != null) {
-                spec = (Specification) factory.createSpecification(con, dbsys, connection);
+                spec = (Specification) factory.createSpecification(databaseConnection, dbsys, databaseConnection.getJDBCConnection());
 
                 readOnlyFlag = 1;
             } else {
-                spec = (Specification) factory.createSpecification(con, connection);
+                spec = (Specification) factory.createSpecification(databaseConnection, databaseConnection.getJDBCConnection());
             }
 
             DatabaseMetaData md = spec.getMetaData();
@@ -145,17 +132,13 @@ public class DatabaseConnector {
                 spec.setMetaDataAdaptorClassName(adaname);
             }
 
-            setConnection(connection);
+            driverSpecCache.clear();
         } catch (DatabaseProductNotFoundException e) {
             Logger.getLogger(DatabaseConnector.class.getName()).log(Level.FINE, e.getLocalizedMessage(), e);
-            finishConnect("GenericDatabaseSystem", null, connection); // NOI18N
-        } catch (Exception e) {
+            finishConnect("GenericDatabaseSystem"); // NOI18N
+        } catch (DDLException | SQLException e) {
             throw new DatabaseException(e.getMessage());
         }
-    }
-
-    public boolean isDisconnected() {
-        return connection == null;
     }
 
     /**
@@ -166,45 +149,8 @@ public class DatabaseConnector {
      * @throws org.netbeans.api.db.explorer.DatabaseException
      */
     public void performDisconnect() throws DatabaseException {
-        if (connection != null) {
-            Throwable cause = null;
-            Connection con = connection;
-            try {
                 driverSpecCache.clear();
-                setConnection(null); // fires change
-                con.close();
-            } catch (Exception exc) {
-                // connection is broken, connection state has been changed
-                setConnection(null); // fires change
             }
-
-            // XXX hack for Derby
-            DerbyConectionEventListener.getDefault().afterDisconnect(getDatabaseConnection(), con);
-
-            if (cause != null) {
-                throw new DatabaseException(
-                            NbBundle.getMessage (DatabaseConnector.class, "EXC_DisconnectError", cause.getMessage()), // NOI18N
-                            cause);
-            }
-        }
-    }
-
-    public Connection getConnection() {
-        return connection;
-    }
-
-    public void setConnection(Connection con) throws DatabaseException
-    {
-        Connection oldval = connection;
-        if (con != null) {
-            if (oldval != null && oldval.equals(con)) return;
-            connection = con;
-        } else {
-            connection = null;
-        }
-        driverSpecCache.clear();
-        notifyChange();
-    }
 
     public static boolean containsColumn(Collection<Column> columnList, Column column) {
         boolean result = false;
@@ -318,15 +264,4 @@ public class DatabaseConnector {
         return supported;
     }
 
-    public void addChangeListener(ChangeListener listener) {
-        changeSupport.addChangeListener(listener);
     }
-
-    public void removeChangeListener(ChangeListener listener) {
-        changeSupport.removeChangeListener(listener);
-    }
-
-    public void notifyChange() {
-        changeSupport.fireChange();
-    }
-}

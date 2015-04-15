@@ -44,7 +44,7 @@ package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import org.glassfish.tools.ide.utils.NetUtils;
+import org.netbeans.modules.glassfish.tooling.utils.NetUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.*;

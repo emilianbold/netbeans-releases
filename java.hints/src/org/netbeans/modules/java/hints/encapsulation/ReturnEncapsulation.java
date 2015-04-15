@@ -288,7 +288,11 @@ public class ReturnEncapsulation {
             
             assert info != null;
             assert tp != null;
-            String field = info.getTrees().getElement(tp).getSimpleName().toString();
+            Element fe = info.getTrees().getElement(tp);
+            if (fe == null) {
+                return null;
+            }
+            String field = fe.getSimpleName().toString();
             final Types types = info.getTypes();
             final Elements elements = info.getElements();
             TypeMirror returnTypeEr = types.erasure(enclMethod.getReturnType());

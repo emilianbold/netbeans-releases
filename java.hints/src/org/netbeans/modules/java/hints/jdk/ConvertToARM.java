@@ -249,7 +249,7 @@ public class ConvertToARM {
                 final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
                 final Trees trees = ctx.getInfo().getTrees();
                 final VariableElement resElement = (VariableElement) trees.getElement(varVar);
-                if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
+                if (resElement != null && !stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
                     final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
                     final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
                     final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();

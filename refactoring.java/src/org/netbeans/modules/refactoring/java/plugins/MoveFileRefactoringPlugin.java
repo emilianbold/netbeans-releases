@@ -203,8 +203,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                 final URL targetUrl = ((MoveRefactoring)refactoring).getTarget().lookup(URL.class);
                 if(targetUrl != null) {
                     FileObject rootFO = RefactoringUtils.getRootFileObject(targetUrl);
-                    ClassPath classPath = ClassPath.getClassPath(rootFO, ClassPath.SOURCE);
-                    if(classPath == null) {
+                    if(rootFO == null || ClassPath.getClassPath(rootFO, ClassPath.SOURCE) == null) {
                         return new Problem(true, NbBundle.getMessage(
                         MoveFileRefactoringPlugin.class,
                         "ERR_ClasspathNotFound",

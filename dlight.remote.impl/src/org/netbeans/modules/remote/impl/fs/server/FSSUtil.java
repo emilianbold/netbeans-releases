@@ -46,7 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
-import org.netbeans.modules.remote.impl.fs.RemoteIOException;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 
 /**
  *
@@ -111,12 +111,12 @@ import org.netbeans.modules.remote.impl.fs.RemoteIOException;
         switch (errno) {
             case Errno.EACCES:
             case Errno.ENOENT:
-                return RemoteIOException.annotateException(new FSSFileNotFoundException(errno, emsg));
+                return RemoteExceptions.annotateException(new FSSFileNotFoundException(errno, emsg));
             case 0:
                 RemoteLogger.info("fs_server [{0}] reports zero errno; treating as 'file not found': {1}", execEnv, emsg);
-                return RemoteIOException.annotateException(new FSSFileNotFoundException(errno, emsg));
+                return RemoteExceptions.annotateException(new FSSFileNotFoundException(errno, emsg));
             default:
-                return RemoteIOException.annotateException(new FSSIOException(errno, emsg));
+                return RemoteExceptions.annotateException(new FSSIOException(errno, emsg));
         }
     }
     

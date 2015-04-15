@@ -60,7 +60,11 @@ public class V8Value {
         Script,
         Context,
         Error,
-        Regexp;
+        Regexp,
+        Symbol,     // ES6
+        Promise,    // ES6
+        Map,        // ES6
+        Set;        // ES6
 
         @Override
         public String toString() {

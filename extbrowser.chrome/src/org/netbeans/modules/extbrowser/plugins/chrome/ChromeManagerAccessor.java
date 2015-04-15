@@ -50,6 +50,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
@@ -87,6 +88,8 @@ import org.openide.util.Utilities;
  */
 public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
+    static final Logger LOGGER = Logger.getLogger(ChromeManagerAccessor.class.getName());
+
     private static final String NO_WEB_STORE_SWITCH=
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
 
@@ -104,11 +107,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
     static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
 
-        private static final String LAST_USED = "\"last_used\":";               // NOI18N
-
         private static final String VERSION = "\"version\":";                   // NOI18N
-
-        private static final String STATE = "\"state\":";                       // NOI18N
 
         private static final String PLUGIN_PUBLIC_KEY =
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgo89CrO8f/2srD2BGUP9+dG4I" +
@@ -148,27 +147,34 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private ExtensionManager.ExtensitionStatus isInstalledImpl() {
             JSONObject preferences = findPreferences();
+            LOGGER.log(Level.FINE, "Chrome preferences: {0}", preferences);
             if (preferences == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
+            LOGGER.log(Level.FINE, "Chrome preferences -> extensions: {0}", preferences.get("extensions"));
             JSONObject extensions = (JSONObject)preferences.get("extensions");
             if (extensions == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
+            LOGGER.log(Level.FINE, "Chrome preferences -> extensions -> settings: {0}", extensions.get("settings"));
             JSONObject settings = (JSONObject)extensions.get("settings");
             if (settings == null) {
                 return ExtensionManager.ExtensitionStatus.MISSING;
             }
             for (Object item : settings.entrySet()) {
                 Map.Entry e = (Map.Entry)item;
-                JSONObject extension = (JSONObject)e.getValue();
-                if (extension != null) {
+                Object value = e.getValue();
+                LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension: {0}", value);
+                // #251250
+                if (value instanceof JSONObject) {
+                    JSONObject extension = (JSONObject) value;
                     String path = (String)extension.get("path");
-                    if (path != null && (path.indexOf("/extbrowser.chrome/plugins/chrome") != -1
-                            || path.indexOf("\\extbrowser.chrome\\plugins\\chrome") != -1))
+                    if (path != null && (path.contains("/extbrowser.chrome/plugins/chrome")
+                            || path.contains("\\extbrowser.chrome\\plugins\\chrome")))
                     {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
+                    LOGGER.log(Level.FINE, "Chrome preferences - extensions -> settings -> value/extension -> manifest: {0}", extension.get("manifest"));
                     JSONObject manifest = (JSONObject)extension.get("manifest");
                     if (manifest != null && PLUGIN_PUBLIC_KEY.equals((String)manifest.get("key"))) {
                         String version = (String)manifest.get("version");
@@ -188,6 +194,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private JSONObject findPreferences() {
             File defaultProfile = getDefaultProfile();
+            LOGGER.log(Level.FINE, "Chrome default profile: {0}", defaultProfile);
             if (defaultProfile == null) {
                 return null;
             }
@@ -200,6 +207,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     JSONObject preferences = Utils.readFile(prefs[0]);
                     if (preferences != null
                             && preferences.get("extensions") != null) { // NOI18N
+                        LOGGER.log(Level.FINE, "Chrome preferences file: {0}", prefs[0]);
                         return preferences;
                     }
                 }
@@ -257,6 +265,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         protected String getCurrentPluginVersion(){
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            if (extensionFile == null) {
+                Logger.getLogger(ChromeExtensionManager.class.getCanonicalName()).
+                    info("Could not find chrome extension in installation directory!"); // NOI18N
+                return null;
+            }
             String content = Utils.readZip( extensionFile, "manifest.json");    // NOI18N
             int index = content.indexOf(VERSION);
             if ( index == -1){
@@ -278,6 +291,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private File getDefaultProfile() {
             String[] userData = getUserData();
+            LOGGER.log(Level.FINE, "Chrome user data: {0}", Arrays.toString(userData));
             if ( userData != null ){
                 for (String dataDir : userData) {
                     File dir = new File(dataDir);
@@ -365,7 +379,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 ExtensionManager.ExtensitionStatus currentStatus,
                 File extensionFile )
         {
-            String path = null;
+            String path;
             try {
                 path = extensionFile.getCanonicalPath();
             }
@@ -399,9 +413,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return true;
                     }
                     ExtensitionStatus status = isInstalled();
-                    if ( status!= ExtensitionStatus.INSTALLED){
-                        continue;
-                    } else {
+                    if (status == ExtensitionStatus.INSTALLED){
                         return true;
                     }
                 } else {

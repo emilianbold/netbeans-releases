@@ -109,8 +109,10 @@ public class HelperLibraryUtility {
                             final String remoteFile = hinfo.getTempDir() + '/' + fileFolder +'/' +fileName;
 
                             Future<CommonTasksSupport.UploadStatus> uploadTask = CommonTasksSupport.uploadFile(lf, env, remoteFile, 0755, true);
-                            if (!uploadTask.get().isOK()) {
-                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName()); // NOI18N
+                            CommonTasksSupport.UploadStatus status = uploadTask.get();
+                            if (!status.isOK()) {
+                                throw new IOException("Unable to upload " + fileName + " to " + env.getDisplayName() + ':' + remoteFile // NOI18N
+                                        + " rc=" + status.getExitCode() + ' ' + status.getError()); // NOI18N
                             }
                             result.add(remoteFile);
                         }
@@ -226,12 +228,17 @@ public class HelperLibraryUtility {
             paths.add(path);
         }
         List<String> res = new ArrayList<String>();
+        MissingResourceException ex = null;
         for(String p : paths) {
             File file = fl.locate(p, codeNameBase, false);
             if (file == null || !file.exists()) {
-                throw new MissingResourceException(p, null, null); //NOI18N
+                ex = new MissingResourceException(p, null, null);
+                continue;
             }
             res.add(file.getAbsolutePath());
+        }
+        if (res.isEmpty() && ex != null) {
+            throw ex;
         }
         return res;
     }

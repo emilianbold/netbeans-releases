@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -93,6 +94,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx.Provider {
@@ -104,6 +106,22 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Inot Hosts", 1); // NOI18N
     private static final RequestProcessor validationRP = new RequestProcessor("Wizard Validation", 1); // NOI18N
+    static final String[] CPP = new String[]{"C++", // NOI18N
+                                CndLanguageStandards.CndLanguageStandard.CPP98.toString(),
+                                CndLanguageStandards.CndLanguageStandard.CPP11.toString(),
+                                CndLanguageStandards.CndLanguageStandard.CPP14.toString()
+                                };
+    static final String[] C = new String[]{"C", // NOI18N
+                                CndLanguageStandards.CndLanguageStandard.C89.toString(),
+                                CndLanguageStandards.CndLanguageStandard.C99.toString(),
+                                CndLanguageStandards.CndLanguageStandard.C11.toString()
+                                };
+    static final String[] FORTRAN = new String[]{"Fortran90 Fixed", // NOI18N
+                                                 "Fortran90 Free", // NOI18N
+                                                 "Fortran95", // NOI18N
+                                                 "Fortran2003", // NOI18N
+                                                 "Fortran2008" // NOI18N
+                                };
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
@@ -147,23 +165,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
-            createMainComboBox.addItem("C"); // NOI18N
-            createMainComboBox.addItem("C++"); // NOI18N
-            createMainComboBox.addItem("Fortran"); // NOI18N
+            fillComboBox(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE, MIMENames.FORTRAN_MIME_TYPE);
             String prefLanguage = MakeOptions.getInstance().getPrefApplicationLanguage();
             createMainComboBox.setSelectedItem(prefLanguage);
         } else if (type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
-            createMainComboBox.addItem("C"); // NOI18N
-            createMainComboBox.addItem("C++"); // NOI18N
-            createMainComboBox.setSelectedItem(0);
+            fillComboBox(MIMENames.C_MIME_TYPE, MIMENames.CPLUSPLUS_MIME_TYPE);
+            createMainComboBox.setSelectedIndex(0);
         } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
             createMainCheckBox.setVisible(true);
             createMainTextField.setVisible(true);
             createMainComboBox.setVisible(true);
-            createMainComboBox.addItem("C++"); // NOI18N
+            fillComboBox(MIMENames.CPLUSPLUS_MIME_TYPE);
             createMainComboBox.setSelectedIndex(0);
         } else {
             createMainCheckBox.setVisible(false);
@@ -174,6 +189,46 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         disableHostsInfo(this.hostComboBox, this.toolchainComboBox);
     }
 
+    private void fillComboBox(String ... mimeTypes){
+        for(String mime : mimeTypes) {
+            if (mime.equals(MIMENames.C_MIME_TYPE)) {
+                for(String st : C) {
+                    createMainComboBox.addItem(st);
+                }
+            } else if (mime.equals(MIMENames.CPLUSPLUS_MIME_TYPE)) {
+                for(String st : CPP) {
+                    createMainComboBox.addItem(st);
+                }
+            } else if (mime.equals(MIMENames.FORTRAN_MIME_TYPE)) {
+                for(String st : FORTRAN) {
+                    createMainComboBox.addItem(st);
+                }
+            }
+        }
+    }
+    
+    static Pair<String,Integer> getLanguageStandard(String value) {
+        if (value == null) {
+            return null;
+        }
+        for(int i = 0; i < C.length; i++) {
+            if (value.equals(C[i])) {
+                return Pair.of(C[0], i);
+            }
+        }
+        for(int i = 0; i < CPP.length; i++) {
+            if (value.equals(CPP[i])) {
+                return Pair.of(CPP[0], i);
+            }
+        }
+        for(int i = 0; i < FORTRAN.length; i++) {
+            if (value.equals(FORTRAN[i])) {
+                return Pair.of(FORTRAN[0], i);
+            }
+        }
+        return null;
+    }
+    
     /*package*/
     static void disableHostsInfo(JComboBox hostComboBox, JComboBox toolchainComboBox) {
         // load hosts && toolchains
@@ -637,31 +692,65 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         MIMEExtensions ccExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
         MIMEExtensions fortranExtensions = MIMEExtensions.get(MIMENames.FORTRAN_MIME_TYPE);
 
-        d.putProperty("createMainFile", createMainCheckBox.isSelected() ? Boolean.TRUE : Boolean.FALSE); // NOI18N
+        WizardConstants.PROPERTY_CREATE_MAIN_FILE.put(d, createMainCheckBox.isSelected());
         if (createMainCheckBox.isSelected() && createMainTextField.getText().length() > 0) {
             if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION) {
-                if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
-                    d.putProperty("mainFileName", createMainTextField.getText() + "." + cExtensions.getDefaultExtension()); // NOI18N
-                    d.putProperty("mainFileTemplate", "Templates/cFiles/main.c"); // NOI18N
-                } else if (((String) createMainComboBox.getSelectedItem()).equals("C++")) { // NOI18N
-                    d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
-                    d.putProperty("mainFileTemplate", "Templates/cppFiles/main.cc"); // NOI18N
-                } else if (((String) createMainComboBox.getSelectedItem()).equals("Fortran")) { // NOI18N
-                    d.putProperty("mainFileName", createMainTextField.getText() + "." + fortranExtensions.getDefaultExtension()); // NOI18N
-                    d.putProperty("mainFileTemplate", "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
+                Pair<String, Integer> languageStandard = getLanguageStandard((String) createMainComboBox.getSelectedItem());
+                if (languageStandard != null) {
+                    WizardConstants.PROPERTY_LANGUAGE_STANDARD.put(d, (String) createMainComboBox.getSelectedItem());
+                    if (languageStandard.first().equals(C[0])) {
+                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + "." + cExtensions.getDefaultExtension()); // NOI18N
+                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/cFiles/main.c"); // NOI18N
+                    } else if (languageStandard.first().equals(CPP[0])) {
+                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
+                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/cppFiles/main.cc"); // NOI18N
+                    } else if (languageStandard.first().equals(FORTRAN[0])) {
+                        switch(languageStandard.second()) {
+                            case 0:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFixedFormatFile.f"); // NOI18N
+                                break;
+                            case 1:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f90"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 2:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f95"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 3:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f03"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                            case 4:
+                                WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".f08"); // NOI18N
+                                WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/fortranFiles/fortranFreeFormatFile.f90"); // NOI18N
+                                break;
+                        }
+                    }
                 }
                 MakeOptions.getInstance().setPrefApplicationLanguage((String) createMainComboBox.getSelectedItem());
             } else if (type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
-                if (((String) createMainComboBox.getSelectedItem()).equals("C")) { // NOI18N
-                    d.putProperty("mainFileName", createMainTextField.getText() + ".pc"); // NOI18N
-                    d.putProperty("mainFileTemplate", "Templates/cFiles/main.pc"); // NOI18N
-                } else {
-                    d.putProperty("mainFileName", createMainTextField.getText() + ".pc"); // NOI18N
-                    d.putProperty("mainFileTemplate", "Templates/ccFiles/main.pc"); // NOI18N
+                Pair<String, Integer> languageStandard = getLanguageStandard((String) createMainComboBox.getSelectedItem());
+                if (languageStandard != null) {
+                    WizardConstants.PROPERTY_LANGUAGE_STANDARD.put(d, (String) createMainComboBox.getSelectedItem());
+                    if (languageStandard.first().equals(C[0])) {
+                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".pc"); // NOI18N
+                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/cFiles/main.pc"); // NOI18N
+                    } else if (languageStandard.first().equals(CPP[0])) {
+                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + ".pc"); // NOI18N
+                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/ccFiles/main.pc"); // NOI18N
+                    }
                 }
             } else if (type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION) {
-                d.putProperty("mainFileName", createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
-                d.putProperty("mainFileTemplate", "Templates/qtFiles/main.cc"); // NOI18N
+                Pair<String, Integer> languageStandard = getLanguageStandard((String) createMainComboBox.getSelectedItem());
+                if (languageStandard != null) {
+                    WizardConstants.PROPERTY_LANGUAGE_STANDARD.put(d, (String) createMainComboBox.getSelectedItem());
+                    if (languageStandard.first().equals(CPP[0])) {
+                        WizardConstants.PROPERTY_MAIN_FILE_NAME.put(d, createMainTextField.getText() + "." + ccExtensions.getDefaultExtension()); // NOI18N
+                        WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.put(d, "Templates/qtFiles/main.cc"); // NOI18N
+                    }
+                }
             }
         }
         Object obj = hostComboBox.getSelectedItem();

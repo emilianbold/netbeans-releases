@@ -95,14 +95,6 @@ public interface DatabaseSpecificationFactory {
 
     public DatabaseSpecification createSpecification(Connection c)
     throws DatabaseProductNotFoundException, SQLException;
-
-    /** Returns debug-mode flag
-    */
-    public boolean isDebugMode();
-
-    /** Sets debug-mode flag
-    */
-    public void setDebugMode(boolean mode);
 }
 
 /*

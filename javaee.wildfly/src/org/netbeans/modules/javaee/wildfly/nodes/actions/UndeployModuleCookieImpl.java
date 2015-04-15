@@ -43,15 +43,10 @@
  */
 package org.netbeans.modules.javaee.wildfly.nodes.actions;
 
-import java.io.File;
 import java.io.IOException;
 import javax.enterprise.deploy.shared.ModuleType;
-import javax.enterprise.deploy.spi.TargetModuleID;
-import javax.enterprise.deploy.spi.exceptions.TargetException;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -93,7 +88,7 @@ public class UndeployModuleCookieImpl implements UndeployModuleCookie {
     public Task undeploy() {
         final WildflyDeploymentManager dm = (WildflyDeploymentManager) lookup.lookup(WildflyDeploymentManager.class);
         final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(UndeployModuleCookieImpl.class,
+        final ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(UndeployModuleCookieImpl.class,
                 "LBL_UndeployProgress", nameWoExt));
 
         Runnable r = new Runnable() {

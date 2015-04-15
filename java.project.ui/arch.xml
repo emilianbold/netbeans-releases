@@ -637,6 +637,13 @@ Nothing.
    not depend on project-specific APIs and there is no declarative registration
    for <code>DataNode</code> context menus.
   </p>
+    <api name="JavaPackageChooser" category="friend" type="export" group="java">
+      Templatesui module is using reflection to access 
+      <code>JavaTemplates</code> class from this module
+      in order to
+      create Java-like package chooser.
+  </api>
+
  </answer>
 
 

@@ -121,9 +121,12 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
         imports.add ("java.lang.*");    // NOI18N
         CallStackFrameImpl csfi = (CallStackFrameImpl) csf;
         try {
-            imports.addAll (Arrays.asList (EditorContextBridge.getContext().getImports (
-                debugger.getEngineContext ().getURL (csfi.getStackFrame(), "Java") // NOI18N
-            )));
+            String[] frameImports = EditorContextBridge.getContext().getImports (
+                    debugger.getEngineContext ().getURL (csfi.getStackFrame(), "Java") // NOI18N
+            );
+            if (frameImports != null) {
+                imports.addAll (Arrays.asList (frameImports));
+            }
             JPDAThreadImpl trImpl = (JPDAThreadImpl) csf.getThread();
             EvaluationContext context;
             TreeEvaluator evaluator =

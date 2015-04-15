@@ -61,7 +61,10 @@ public enum SVNNodeKind {
                 return r;
             }
         }
-        return null;
+        if ("directory".equals(s)) { //NOI18N
+            return DIR;
+        }
+        throw new IllegalArgumentException("Unknown node " + s); //NOI18N
     }
 
     @Override

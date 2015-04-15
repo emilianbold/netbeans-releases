@@ -32,7 +32,7 @@ package org.netbeans.modules.subversion.remote.ui.update;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileUtil;
 

@@ -50,7 +50,6 @@ package org.netbeans.modules.remote.impl.fs.server;
     FS_REQ_RECURSIVE_LS('r'), 
     FS_REQ_STAT('S'), 
     FS_REQ_LSTAT('s'),
-    FS_REQ_CANCEL('c'), 
     FS_REQ_QUIT('q'),
     FS_REQ_SLEEP('P'),
     FS_REQ_ADD_WATCH('W'),
@@ -58,6 +57,7 @@ package org.netbeans.modules.remote.impl.fs.server;
     FS_REQ_REFRESH('R'),
     FS_REQ_DELETE('d'),
     FS_REQ_COPY('C'),
+    FS_REQ_MOVE('m'),
     FS_REQ_SERVER_INFO('i');
 
     private final char letter;

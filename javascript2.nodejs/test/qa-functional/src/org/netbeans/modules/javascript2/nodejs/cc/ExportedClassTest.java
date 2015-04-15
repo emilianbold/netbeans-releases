@@ -41,32 +41,34 @@
  */
 package org.netbeans.modules.javascript2.nodejs.cc;
 
+import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
  *
  * @author vriha
  */
-public class ExportedClassTest extends GeneralNodeJs{
+public class ExportedClassTest extends GeneralNodeJs {
+
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExportedClass"
+    };
 
     public ExportedClassTest(String args) {
         super(args);
     }
-    
-      public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExportedClassTest.class).addTest(
-                        "openProject",
-                        "testExportedClass"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+
+    public static Test suite() {
+       return createModuleTest(ExportedClassTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);
@@ -78,5 +80,20 @@ public class ExportedClassTest extends GeneralNodeJs{
         startTest();
         testCompletion(new EditorOperator("foo.js"), 27);
         endTest();
+    }
+
+    @Override
+    public void tearDown() {
+        if (GeneralNodeJs.currentLine < 1) {
+            return;
+        }
+        EditorOperator eo = new EditorOperator(ExportedClassTest.currentFile);
+        eo.setCaretPositionToEndOfLine(GeneralNodeJs.currentLine);
+        String l = eo.getText(eo.getLineNumber());
+        for (int i = 0; i < l.length() - 1; i++) {
+            eo.pressKey(KeyEvent.VK_BACK_SPACE);
+        }
+
+        evt.waitNoEvent(1000);
     }
 }

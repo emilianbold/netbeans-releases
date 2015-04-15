@@ -130,16 +130,15 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     private final BreakpointManager bm;
 
-    protected ContextProvider ctxProvider;	// for lookup
-    protected DebuggerEngine debuggerEngine;	// corresponding engine
-    protected NativeSession session;	// corresponding (our) session object
-    protected DebuggerSettingsBridge profileBridge;
+    protected final ContextProvider ctxProvider;	// for lookup
+    protected final DebuggerEngine debuggerEngine;	// corresponding engine
+    protected final NativeSession session;	// corresponding (our) session object
 
     // turned on when postKill is called
-    protected boolean postedKill = false;
+    protected volatile boolean postedKill = false;
 
     // turned on when killEngine is issued
-    protected boolean postedKillEngine = false;
+    protected volatile boolean postedKillEngine = false;
 
     protected volatile Location visitedLocation = null;
 
@@ -243,9 +242,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
 
     // interface NativeDebugger
-    public DebuggerSettingsBridge profileBridge() {
-        return profileBridge;
-    }
+    public abstract DebuggerSettingsBridge profileBridge();
 
     public Context context() {
         final String executable = session().getTarget();
@@ -998,8 +995,8 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             // See bug 6307423.
             // Probably SHOULD do more work.
             OptionSet profileOptions = null;
-            if (profileBridge.currentDbgProfile() != null) {
-                profileOptions = profileBridge.currentDbgProfile().getOptions();
+            if (profileBridge().currentDbgProfile() != null) {
+                profileOptions = profileBridge().currentDbgProfile().getOptions();
                 assert profileOptions != null : "debug profile must have options";
                 optionLayers.push(profileOptions);
             }

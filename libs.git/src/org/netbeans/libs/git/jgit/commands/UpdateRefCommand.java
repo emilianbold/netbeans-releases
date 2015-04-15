@@ -91,7 +91,12 @@ public class UpdateRefCommand extends GitCommand {
             }
             
             RefUpdate u = repository.updateRef(ref.getName());
-            u.setNewObjectId(newRef.isPeeled() ? newRef.getPeeledObjectId() : newRef.getObjectId());
+            newRef = repository.peel(newRef);
+            ObjectId srcObjectId = newRef.getPeeledObjectId();
+            if (srcObjectId == null) {
+                srcObjectId = newRef.getObjectId();
+            }
+            u.setNewObjectId(srcObjectId);
             u.setRefLogMessage("merge " + name + ": Fast-forward", false); //NOI18N
             u.update();
             result = GitRefUpdateResult.valueOf((u.getResult() == null 

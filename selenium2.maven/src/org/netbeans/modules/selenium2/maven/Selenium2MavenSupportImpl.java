@@ -155,6 +155,8 @@ public class Selenium2MavenSupportImpl extends Selenium2SupportImpl {
             return Templates.buildSimpleTargetChooser(project, groups).create();
         } else {
             FileObject testDir = getTestRoot(project);
+            // fetch source groups again in case test root was just created
+            groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             for (SourceGroup selGroup : groups) {
                 if (selGroup.getRootFolder().equals(testDir)){
                     return JavaTemplates.createPackageChooser(project, new SourceGroup[]{selGroup});
@@ -180,7 +182,7 @@ public class Selenium2MavenSupportImpl extends Selenium2SupportImpl {
         File testRoot = new File(testRoots.get(0));
         FileObject result = null;
         try {
-            result = FileUtil.createData(testRoot);
+            result = FileUtil.createFolder(testRoot);
         } catch (IOException ex) {
             Logger.getLogger(Selenium2MavenSupportImpl.class.getName()).log(Level.SEVERE, "Impossible to create test root file object", ex); //NOI18N
         }

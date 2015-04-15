@@ -41,14 +41,17 @@
  */
 package org.netbeans.modules.javascript.nodejs.editor;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.platform.NodeJsPlatformProvider;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.javascript2.nodejs.spi.NodeJsSupport;
+import org.netbeans.modules.web.common.api.Version;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,6 +59,9 @@ import org.openide.util.ChangeSupport;
 
 @ProjectServiceProvider(service = NodeJsSupport.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class NodeJsSupportImpl implements NodeJsSupport {
+
+    private static final String NODEJS_DOC_URL = "http://nodejs.org/docs/v%s/api/"; // NOI18N
+    private static final String IOJS_DOC_URL = "https://iojs.org/dist/v%s/doc/api/"; // NOI18N
 
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -75,7 +81,22 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
     }
 
     @Override
+    public String getDocumentationUrl() {
+        assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node == null) {
+            return null;
+        }
+        Version version = node.getVersion();
+        if (version == null) {
+            return null;
+        }
+        return String.format(node.isIojs() ? IOJS_DOC_URL : NODEJS_DOC_URL, version.toString());
+    }
+
+    @Override
     public FileObject getDocumentationFolder() {
+        assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
         File nodeSources = NodeJsUtils.getNodeSources(project);
         if (nodeSources == null) {
             return null;

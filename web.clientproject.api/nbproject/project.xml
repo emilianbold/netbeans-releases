@@ -20,7 +20,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.40</specification-version>
+                        <specification-version>1.45</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -38,6 +38,15 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -282,6 +291,7 @@
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
+                <friend>org.netbeans.modules.javascript.bower</friend>
                 <friend>org.netbeans.modules.javascript.cdnjs</friend>
                 <friend>org.netbeans.modules.javascript.grunt</friend>
                 <friend>org.netbeans.modules.javascript.gulp</friend>
@@ -289,6 +299,8 @@
                 <friend>org.netbeans.modules.javascript.karma</friend>
                 <friend>org.netbeans.modules.javascript.nodejs</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.php.composer</friend>
+                <friend>org.netbeans.modules.php.phing</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.platforms.android</friend>
                 <friend>org.netbeans.modules.selenium2.webclient</friend>
@@ -303,6 +315,7 @@
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.clientproject.api</package>
                 <package>org.netbeans.modules.web.clientproject.api.build</package>
+                <package>org.netbeans.modules.web.clientproject.api.json</package>
                 <package>org.netbeans.modules.web.clientproject.api.jstesting</package>
                 <package>org.netbeans.modules.web.clientproject.api.network</package>
                 <package>org.netbeans.modules.web.clientproject.api.platform</package>

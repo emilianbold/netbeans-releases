@@ -50,11 +50,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.data.GlassFishAdminInterface;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishAdminInterface;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
@@ -657,7 +657,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
 
             for (int i = 0; i < instanceFOs.length; i++) {
                 if (url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))
-                        && !GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
+                        && !instanceFOs[i].getName().startsWith(GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE)) {
                     instanceFO = instanceFOs[i];
                 }
             }

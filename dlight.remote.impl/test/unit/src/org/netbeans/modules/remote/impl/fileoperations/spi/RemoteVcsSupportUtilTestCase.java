@@ -56,6 +56,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileTestBase;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -110,7 +111,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
 
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
 
             assertEquals(true, RemoteVcsSupportUtil.canRead(fs, origFilePath));
             assertEquals(false, RemoteVcsSupportUtil.canRead(fs, origNotReadableFilePath));
@@ -163,7 +164,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
 
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             
             assertEquals(null, RemoteVcsSupportUtil.getCanonicalPath(fs, origFilePath));
             assertEquals (origFilePath, RemoteVcsSupportUtil.getCanonicalPath(fs, lnkFilePathAbs));
@@ -178,7 +179,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(), 
                         "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
             }
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
         }
     }
 
@@ -218,7 +219,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
             assertEquals(true, RemoteVcsSupportUtil.isSymbolicLink(fs, lnkFilePathAbs));
             assertEquals(true, RemoteVcsSupportUtil.isSymbolicLink(fs, lnkFilePathRel1));
 
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
 
 
             refreshParentAndRecurse(basePath);
@@ -229,7 +230,7 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
                         "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
             }
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
         }
     }
 
@@ -257,7 +258,38 @@ public class RemoteVcsSupportUtilTestCase extends RemoteFileTestBase {
                 ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
                         "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
             }
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testSetLastModified() throws Exception {
+        String basePath = mkTemp(execEnv, true);
+        try {
+            final String file = "file.1";
+            final String refFile = "file.2";
+            final String absPath = basePath + '/' + file;
+            final String absRefPath = basePath + '/' + refFile;
+            final String script =
+                    "touch " + file + "; " +
+                    "sleep 2; " +
+                    "touch " + refFile + ";";
+            ProcessUtils.ExitStatus res = ProcessUtils.executeInDir(basePath, execEnv, "sh", "-c", script);
+            assertEquals("Error executing sc    ript \"" + script + "\": " + res.error, 0, res.exitCode);
+            //VCSFileProxy baseProxy = VCSFileProxy.createFileProxy(getFileObject(basePath));
+            //VCSFileProxy proxy = VCSFileProxy.createFileProxy(baseProxy, file);
+            //VCSFileProxy refProxy = VCSFileProxy.createFileProxy(baseProxy, refFile);
+            refreshParentAndRecurse(basePath);
+            RemoteVcsSupportUtil.setLastModified(fs, absPath, absRefPath);
+            RemoteFileObject fo = getFileObject(absPath);
+            RemoteFileObject refFo = getFileObject(absRefPath);
+            assertEquals(refFo.lastModified(), fo.lastModified());            
+        } finally {
+            if (basePath != null) {
+                ProcessUtils.ExitStatus res = ProcessUtils.execute(getTestExecutionEnvironment(),
+                        "sh", "-c", "chmod -R 700" + basePath + "; rm -rf " + basePath);
+            }
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
         }
     }
 

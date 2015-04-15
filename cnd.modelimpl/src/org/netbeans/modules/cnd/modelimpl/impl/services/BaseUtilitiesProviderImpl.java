@@ -89,22 +89,6 @@ public class BaseUtilitiesProviderImpl extends CsmBaseUtilitiesProvider {
     public CsmNamespace getClassNamespace(CsmClassifier cls) {
         return IMPL._getClassNamespace(cls);
     }
-
-    @Override
-    public String getFileLanguage(CsmFile file) {
-        if (file instanceof FileImpl) {
-            return ((FileImpl) file).getFileLanguage();
-        }
-        return APTLanguageSupport.UNKNOWN;
-    }
-
-    @Override
-    public String getFileLanguageFlavor(CsmFile file) {
-        if (file instanceof FileImpl) {
-            return ((FileImpl) file).getFileLanguageFlavor();
-        }        
-        return APTLanguageSupport.FLAVOR_UNKNOWN;
-    }
     
     @Override
     public boolean isGlobalVariable(CsmVariable var) {

@@ -137,15 +137,14 @@ public final class CodeStyle {
         return preferences.getInt(rightMargin, provider.getDefaultAsInt(rightMargin));
     }
 
-    // Brace placement --------------------------------------------------------
-
-    public BracePlacement getClassDeclBracePlacement() {
-        String placement = preferences.get(classDeclBracePlacement, provider.getDefaultAsString(classDeclBracePlacement));
-        return BracePlacement.valueOf(placement);
+    public boolean continuationBeforeObjectLiteral() {
+        return preferences.getBoolean(objectLiteralContinuation, provider.getDefaultAsBoolean(objectLiteralContinuation));
     }
 
-    public BracePlacement getMethodDeclBracePlacement() {
-        String placement = preferences.get(methodDeclBracePlacement, provider.getDefaultAsString(methodDeclBracePlacement));
+    // Brace placement --------------------------------------------------------
+
+    public BracePlacement getFunctionDeclBracePlacement() {
+        String placement = preferences.get(functionDeclBracePlacement, provider.getDefaultAsString(functionDeclBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
@@ -174,13 +173,8 @@ public final class CodeStyle {
         return BracePlacement.valueOf(placement);
     }
 
-    public BracePlacement getUseTraitBodyBracePlacement() {
-        String placement = preferences.get(useTraitBodyBracePlacement, provider.getDefaultAsString(useTraitBodyBracePlacement));
-        return BracePlacement.valueOf(placement);
-    }
-
-    public BracePlacement getOtherBracePlacement() {
-        String placement = preferences.get(otherBracePlacement, provider.getDefaultAsString(otherBracePlacement));
+    public BracePlacement getWithBracePlacement() {
+        String placement = preferences.get(withBracePlacement, provider.getDefaultAsString(withBracePlacement));
         return BracePlacement.valueOf(placement);
     }
 
@@ -508,23 +502,23 @@ public final class CodeStyle {
 //    public boolean alignMultilineArrayInit() {
 //        return preferences.getBoolean(alignMultilineArrayInit, provider.getDefaultAsBoolean(alignMultilineArrayInit));
 //    }
-//
-//    public boolean placeElseOnNewLine() {
-//        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
-//    }
-//
-//    public boolean placeWhileOnNewLine() {
-//        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
-//    }
-//
-//    public boolean placeCatchOnNewLine() {
-//        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
-//    }
-//
-//    public boolean placeNewLineAfterModifiers() {
-//        return preferences.getBoolean(placeNewLineAfterModifiers, provider.getDefaultAsBoolean(placeNewLineAfterModifiers));
-//    }
-//
+
+    public boolean placeElseOnNewLine() {
+        return preferences.getBoolean(placeElseOnNewLine, provider.getDefaultAsBoolean(placeElseOnNewLine));
+    }
+
+    public boolean placeWhileOnNewLine() {
+        return preferences.getBoolean(placeWhileOnNewLine, provider.getDefaultAsBoolean(placeWhileOnNewLine));
+    }
+
+    public boolean placeCatchOnNewLine() {
+        return preferences.getBoolean(placeCatchOnNewLine, provider.getDefaultAsBoolean(placeCatchOnNewLine));
+    }
+
+    public boolean placeFinallyOnNewLine() {
+        return preferences.getBoolean(placeFinallyOnNewLine, provider.getDefaultAsBoolean(placeFinallyOnNewLine));
+    }
+
 //    public boolean groupMulitlineAssignment() {
 //        return preferences.getBoolean(groupAlignmentAssignment, provider.getDefaultAsBoolean(groupAlignmentAssignment));
 //    }
@@ -692,9 +686,7 @@ public final class CodeStyle {
 
         final int rightMargin;
 
-        final CodeStyle.BracePlacement classDeclBracePlacement;
-
-        final CodeStyle.BracePlacement methodDeclBracePlacement;
+        final CodeStyle.BracePlacement functionDeclBracePlacement;
 
         final CodeStyle.BracePlacement ifBracePlacement;
 
@@ -706,9 +698,9 @@ public final class CodeStyle {
 
         final CodeStyle.BracePlacement catchBracePlacement;
 
-        final CodeStyle.BracePlacement useTraitBodyBracePlacement;
+        final CodeStyle.BracePlacement withBracePlacement;
 
-        final CodeStyle.BracePlacement otherBracePlacement;
+        final boolean objectLiteralContinuation;
 
         final boolean spaceBeforeWhile;
 
@@ -858,6 +850,11 @@ public final class CodeStyle {
 
         final CodeStyle.WrapStyle wrapProperties;
 
+        final boolean placeElseOnNewLine;
+        final boolean placeWhileOnNewLine;
+        final boolean placeCatchOnNewLine;
+        final boolean placeFinallyOnNewLine;
+
         private Holder(CodeStyle style) {
             expandTabsToSpaces = style.expandTabToSpaces();
             tabSize = style.getTabSize();
@@ -869,15 +866,14 @@ public final class CodeStyle {
             indentHtml = style.indentHtml();
             rightMargin = style.getRightMargin();
 
-            classDeclBracePlacement = style.getClassDeclBracePlacement();
-            methodDeclBracePlacement = style.getMethodDeclBracePlacement();
+            functionDeclBracePlacement = style.getFunctionDeclBracePlacement();
             ifBracePlacement = style.getIfBracePlacement();
             forBracePlacement = style.getForBracePlacement();
             whileBracePlacement = style.getWhileBracePlacement();
             switchBracePlacement = style.getSwitchBracePlacement();
             catchBracePlacement = style.getCatchBracePlacement();
-            useTraitBodyBracePlacement = style.getUseTraitBodyBracePlacement();
-            otherBracePlacement = style.getOtherBracePlacement();
+            withBracePlacement = style.getWithBracePlacement();
+            objectLiteralContinuation = style.continuationBeforeObjectLiteral();
 
             spaceBeforeWhile = style.spaceBeforeWhile();
             spaceBeforeElse = style.spaceBeforeElse();
@@ -954,6 +950,11 @@ public final class CodeStyle {
             wrapStatementsOnTheSameLine = style.wrapStatementsOnTheSameLine();
             wrapObjects = style.wrapObjects();
             wrapProperties = style.wrapProperties();
+
+            placeElseOnNewLine = style.placeElseOnNewLine();
+            placeWhileOnNewLine = style.placeWhileOnNewLine();
+            placeCatchOnNewLine = style.placeCatchOnNewLine();
+            placeFinallyOnNewLine = style.placeFinallyOnNewLine();
         }
     }
 }

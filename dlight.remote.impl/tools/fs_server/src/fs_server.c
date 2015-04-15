@@ -89,19 +89,22 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 4
-#define FS_SERVER_MINOR_VERSION 0
+#define FS_SERVER_MID_VERSION 6
+#define FS_SERVER_MINOR_VERSION 2
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
     char* name;
     int /*short?*/ link_len;
     char* link;
-    unsigned int  uid;
-    unsigned int  gid;
-    unsigned int mode;
+    char file_type;
     long size;
     long long mtime;
+    bool can_read : 1;
+    bool can_write : 1;
+    bool can_exec : 1;
+    unsigned long int /*dev_t*/ st_dev;
+    unsigned long int /*ino_t*/ st_ino;
     char data[];
 } fs_entry;
 
@@ -148,9 +151,9 @@ static const char* err_get_message() {
 
 static const char* err_to_string(int err_no) {
 #if __linux__
-    return strerror_r(err_no, err_info.strerr, thread_emsg_bufsize);
+    return strerror_r(err_no, err_info.strerr, strerr_bufsize);
 #else
-    if (strerror_r(err_no, err_info.strerr, thread_emsg_bufsize)) {
+    if (strerror_r(err_no, err_info.strerr, strerr_bufsize)) {
         return "";
     } else {
         return err_info.strerr;
@@ -237,8 +240,9 @@ static const char* decode_##type_name (const char* text, type* result) { \
 }
 
 DECLARE_DECODE(int, int, 12)
-DECLARE_DECODE(unsigned int, uint, 12)
+//DECLARE_DECODE(unsigned int, uint, 12) unused so far
 DECLARE_DECODE(long, long, 20)
+DECLARE_DECODE(unsigned long, ulong, 20)
 DECLARE_DECODE(long long, long_long, 20)
 
 static bool is_prohibited(const char* abspath) {
@@ -256,7 +260,7 @@ static bool is_prohibited(const char* abspath) {
 }
 
 static bool has_second_path(enum  fs_request_kind kind) {
-    return kind == FS_REQ_COPY;
+    return kind == FS_REQ_COPY || kind == FS_REQ_MOVE;
 }
 
 static void clone_request(fs_request* dst, fs_request* src) {
@@ -269,6 +273,15 @@ static void clone_request(fs_request* dst, fs_request* src) {
     }
 }
 
+static int word_len(const char* p) {
+    int len = 0;
+    while (*p && ! isspace(*p)) {
+        p++;
+        len++;
+    }
+    return len;
+}
+
 /**
  * Decodes in-place fs_raw_request into fs_request
  */
@@ -279,7 +292,7 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
     int id;
     int path_len;
     const char* p;
-    if (*raw_request == FS_REQ_QUIT) {
+    if (*raw_request == FS_REQ_QUIT || *raw_request == FS_REQ_HELP) {
         id = 0;
         path_len = 0;
         p = "";
@@ -299,8 +312,11 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
                 return NULL;
             }
             if (!path_len && *raw_request != FS_REQ_QUIT) {
-                report_error("wrong (zero path) request: %s", raw_request);
-                return NULL;
+                path_len = word_len(p);
+                if (!path_len) {
+                    report_error("wrong (zero path) request: %s", raw_request);
+                    return NULL;
+                }
             }
         }
     }
@@ -326,6 +342,9 @@ static fs_request* decode_request(char* raw_request, fs_request* request, int re
         p = decode_int(p, &path_len);
         if (p == NULL) {
             return NULL;
+        }
+        if (path_len == 0) {
+            path_len = word_len(p);
         }
         path_len = utf8_bytes_count(p, path_len);
         if (path_len > (request_max_size - sizeof (fs_request) - 1)) {
@@ -362,22 +381,35 @@ static fs_entry* create_fs_entry(fs_entry *entry2clone) {
     } else {
         entry->link = "";
     }
-    entry->gid = entry2clone->gid;
-    entry->uid = entry2clone->uid;
-    entry->mode = entry2clone->mode;
+    entry->file_type = entry2clone->file_type;
     entry->size = entry2clone->size;
     entry->mtime = entry2clone->mtime;
+    entry->can_read = entry2clone->can_read;
+    entry->can_write = entry2clone->can_write;
+    entry->can_exec = entry2clone->can_exec;
+    entry->st_dev = entry2clone->st_dev;
+    entry->st_ino = entry2clone->st_ino;
     return entry;
 }
 
 
 /**
- * Creates a fs_entry on heap.
+ * Creates a fs_entry on heap
+ * from a line that is read from persistence
  * NB: modifies buf: can unescape and zero-terminate strings
  */
 static fs_entry *decode_entry_response(char* buf, int buf_size) {
 
-    // format: name_len name uid gid mode size mtime link_len link
+    // format: 
+    // Version 1: 
+    // name_len name uid gid mode size mtime link_len link
+    // Version 1 example: 
+    // 20 abi-3.2.0-70-generic 0 0 33188 796014 1411590344000 10 lnk_target
+    // Version 2:
+    // name_len name uid gid mode size mtime access device inode link_len link
+    // Version 2 example:
+    // 20 abi-3.2.0-70-generic 0 0 33188 796014 1411590344000 r-x 123 45678 10 lnk_target
+    
     fs_entry tmp; // a temporary one since we don't know names size
 
     const char* p = decode_int(buf, &tmp.name_len);
@@ -394,19 +426,46 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
     p += tmp.name_len + 1;
     tmp.name_len = strlen(tmp.name);
 
-    p = decode_uint(p, &tmp.uid);
-    if (!p) { return NULL; }; // decode_int already printed error message
-
-    p = decode_uint(p, &tmp.gid);
-    if (!p) { return NULL; };
-
-    p = decode_uint(p, &tmp.mode);
-    if (!p) { return NULL; };
+    tmp.file_type = *p;
+    p += 2;
 
     p = decode_long(p, &tmp.size);
     if (!p) { return NULL; };
 
     p = decode_long_long(p, &tmp.mtime);
+    if (!p) { return NULL; };
+
+    // next segment is "rwx" for this user
+    if (*p == 'r') {
+        tmp.can_read = true;
+    } else if (*p == '-') {
+        tmp.can_read = false;
+    } else {
+        report_error("wrong can_read flag: %c\n", *p);
+        return NULL;
+    }
+    p++;
+    if (*p == 'w') {
+        tmp.can_write = true;
+    } else if (*p == '-') {
+        tmp.can_write = false;
+    } else {
+        report_error("wrong can_write flag: %c\n", *p);
+        return NULL;
+    }
+    p++;
+    if (*p == 'x') {
+        tmp.can_exec = true;
+    } else if (*p == '-') {
+        tmp.can_exec = false;
+    } else {
+        report_error("wrong can_exec flag: %c\n", *p);
+        return NULL;
+    }
+    p += 2;
+    p = decode_ulong(p, &tmp.st_dev);
+    if (!p) { return NULL; };
+    p = decode_ulong(p, &tmp.st_ino);
     if (!p) { return NULL; };
 
     p = decode_int(p, &tmp.link_len);
@@ -435,8 +494,11 @@ static fs_entry *decode_entry_response(char* buf, int buf_size) {
     return create_fs_entry(&tmp);
 }
 
+static const char* persistence_version_label = "VERSION=";
+static const int persistence_version_curr = 2;
+
 static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cache_fp,
-        const char *cache_path, char *buf, int buf_size, const char* path) {
+        const char *cache_path, char *buf, int buf_size, const char* path, int* persistence_version) {
 
     if (!fgets(buf, buf_size, cache_fp)) {
         if (feof(cache_fp)) {
@@ -445,6 +507,27 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
             report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
         }
         return false;
+    }
+    
+    *persistence_version = 1;
+    // in version 1 version string was not written into file
+    size_t version_labe_len = strlen(persistence_version_label);
+    if (strncmp(buf, persistence_version_label, version_labe_len) == 0) {
+        if (!decode_int(buf + version_labe_len, persistence_version)) {
+            report_error("error reading cache from %s for %s: wrong version format: %s\n", cache_path, path, buf);
+            return false;
+        }
+        if (*persistence_version != persistence_version_curr) {
+            return false;
+        }
+        if (!fgets(buf, buf_size, cache_fp)) {
+            if (feof(cache_fp)) {
+                report_error("error reading cache from %s for %s: preliminary EOF\n", cache_path, path);
+            } else {
+                report_error("error reading cache from %s for %s: %s\n", cache_path, path, strerror(errno));
+            }
+            return false;
+        }
     }
 
     unescape_strcpy(buf, buf);
@@ -478,7 +561,9 @@ static bool read_entries_from_cache_impl(array/*<fs_entry>*/ *entries, FILE* cac
     return success;
 }
 
-static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el, const char* path) {
+static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element* el,
+        const char* path, int* persistence_version) {
+
     const char *cache_path = dirtab_get_element_cache_path(el);
     FILE* cache_fp = fopen(cache_path, "r");
     array_init(entries, 100);
@@ -486,7 +571,8 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     if (cache_fp) {
         int buf_size = PATH_MAX + 40;
         char *buf = malloc(buf_size);
-        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, buf_size, path);
+        success = read_entries_from_cache_impl(entries, cache_fp, cache_path, buf, 
+                buf_size, path, persistence_version);
         free(buf);
         fclose(cache_fp);
     }
@@ -498,12 +584,22 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
     fs_entry tmp;
     tmp.name_len = strlen(name);
     tmp.name = name;
-    tmp.uid = stat_buf->st_uid;
-    tmp.gid = stat_buf->st_gid;
-    tmp.mode = stat_buf->st_mode;
+    tmp.file_type = mode_to_file_type_char(stat_buf->st_mode);
     tmp.size = stat_buf->st_size;
     tmp.mtime = get_mtime(stat_buf);
+    tmp.st_dev = stat_buf->st_dev;
+    tmp.st_ino = stat_buf->st_ino;
     bool is_link = S_ISLNK(stat_buf->st_mode);
+    if (is_link) {
+        // links themselves always has rwx (by definition)
+        tmp.can_read = true;
+        tmp.can_write = true;
+        tmp.can_exec = true;
+   } else {
+        tmp.can_read = !access(abspath, R_OK);
+        tmp.can_write = !access(abspath, W_OK);
+        tmp.can_exec = !access(abspath, X_OK);
+   }
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
     fs_entry* new_entry = create_fs_entry(&tmp);
@@ -517,7 +613,7 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
 
 static void read_entries_from_dir(array/*<fs_entry>*/ *entries, const char* path) {
     array_init(entries, 100);
-    visit_dir_entries(path, fs_entry_creating_visitor, entries);
+    visit_dir_entries(path, fs_entry_creating_visitor, NULL, entries);
     array_truncate(entries);
 }
 
@@ -538,7 +634,11 @@ static bool response_entry_create(buffer response_buf,
         int escaped_link_size = 0;
         char* escaped_link = "";
 
+        char can_read, can_write, can_exec;
         if (link_flag) {
+            can_read = 'r';     // the permissions of symbolic links are never used
+            can_write = 'w';    // symbolic links always have rwxrwxrwx permissions
+            can_exec = 'x';
             char* link = work_buf.data + escaped_name_size + 1;
             ssize_t sz = readlink(abspath, link, work_buf_size);
             if (sz == -1) {
@@ -557,21 +657,28 @@ static bool response_entry_create(buffer response_buf,
                 escaped_link = link + sz + 1;
                 escape_strcpy(escaped_link, link);
             }
+        } else {
+            can_read = access(abspath, R_OK) ? '-' : 'r';
+            can_write = access(abspath, W_OK) ? '-' : 'w';
+            can_exec = access(abspath, X_OK) ? '-' : 'x';
         }
-        snprintf(response_buf.data, response_buf.size, "%i %s %lu %lu %lu %lu %lli %i %s\n",
+
+        // name_len name type size mtime access device inode link_len link
+        snprintf(response_buf.data, response_buf.size, "%i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                (unsigned long) stat_buf.st_uid,
-                (unsigned long) stat_buf.st_gid,
-                (unsigned long) stat_buf.st_mode,
+                mode_to_file_type_char(stat_buf.st_mode),
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
+                can_read, can_write, can_exec,
+                (unsigned long) stat_buf.st_dev,
+                (unsigned long) stat_buf.st_ino,
                 utf8_char_count(escaped_link, escaped_link_size),
                 escaped_link);
         return true;
     } else {
         err_set(errno, "error getting lstat for '%s': %s", abspath, err_to_string(errno));
-        report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
+        //report_error("error getting lstat for '%s': %s\n", abspath, err_get_message());
         return false;
     }
 }
@@ -586,6 +693,16 @@ typedef struct {
 static void response_end(int request_id, const char* path);
 static bool response_ls_plain_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
 static bool response_ls_recursive_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p);
+static void response_error(int request_id, const char* path, int err_code, const char *err_msg);
+
+static void ls_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data) {
+    if (dir_itself && data) {
+        response_ls_data *rsp_data = data;
+        response_error(rsp_data->request_id, path, err, additional_message);
+    } else {
+        default_error_handler(dir_itself, path, err, additional_message,data);
+    }
+}
 
 static void response_ls(int request_id, const char* path, bool recursive, bool inner) {
 
@@ -607,6 +724,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
         dirtab_set_watch_state(el, DE_WSTATE_POLL);
         cache_fp = fopen600(dirtab_get_element_cache_path(el));
         if (cache_fp) {
+            fprintf(cache_fp, "%s%i\n", persistence_version_label, persistence_version_curr);
             escape_strcpy(response_buf.data, path);
             fprintf(cache_fp, "%s\n", response_buf.data);
         } else {
@@ -616,7 +734,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     }
 
     response_ls_data data = { request_id, response_buf, work_buf, cache_fp };
-    visit_dir_entries(path, response_ls_plain_visitor, &data);
+    visit_dir_entries(path, response_ls_plain_visitor, ls_error_handler, &data);
 
     response_end(request_id, path);
 
@@ -629,7 +747,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
     }
 
     if (recursive) {
-        visit_dir_entries(path, response_ls_recursive_visitor, &data);
+        visit_dir_entries(path, response_ls_recursive_visitor, NULL, &data);
         if (!inner) {
             response_end(request_id, path);
         }
@@ -641,7 +759,7 @@ static void response_ls(int request_id, const char* path, bool recursive, bool i
 
 static void response_end(int request_id, const char* path) {
     my_fprintf(STDOUT, "%c %d %li %s\n", FS_RSP_END, request_id, (long) utf8_strlen(path), path);
-    my_fflush(STDOUT);    
+    my_fflush(STDOUT);
 }
 
 static void response_error(int request_id, const char* path, int err_code, const char *err_msg) {
@@ -742,23 +860,30 @@ static void response_stat(int request_id, const char* path) {
         const char* basename = get_basename(path);
         escape_strcpy(escaped_name, basename);
         int escaped_name_size = strlen(escaped_name);
-        my_fprintf(STDOUT, "%c %i %i %s %lu %lu %lu %lu %lli %d %s\n",
+
+        // in contrary to lstat, we call access() even for links)
+        char can_read = access(path, R_OK) ? '-' : 'r';
+        char can_write = access(path, W_OK) ? '-' : 'w';
+        char can_exec = access(path, X_OK) ? '-' : 'x';
+        
+        // name_len name type size mtime access device inode link_len link
+        my_fprintf(STDOUT, "%c %i %i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
                 FS_RSP_ENTRY,
                 request_id,
                 utf8_char_count(escaped_name, escaped_name_size),
                 escaped_name,
-                (unsigned long) stat_buf.st_uid,
-                (unsigned long) stat_buf.st_gid,
-                (unsigned long) stat_buf.st_mode,
+                mode_to_file_type_char(stat_buf.st_mode),
                 (unsigned long) stat_buf.st_size,
                 get_mtime(&stat_buf),
+                can_read, can_write, can_exec,
+                (unsigned long) stat_buf.st_dev,
+                (unsigned long) stat_buf.st_ino,
                 0, "");
         my_fflush(STDOUT);
         free(escaped_name);
     }  else {
         int err_code = errno;
         const char* strerr = err_to_string(err_code);
-        report_error("error getting stat for '%s': %s\n", path, strerr);
         my_fprintf(STDOUT, "%c %i %i %s: %s\n", FS_RSP_ERROR, request_id, err_code, strerr, path);
         my_fflush(STDOUT);
     }
@@ -804,6 +929,8 @@ static void response_copy(const fs_request* request) {
             response_end(request->id, request->path2);
         }
         free(dst_parent);
+    } else {
+        response_end(request->id, request->path2);
     }
 }
 
@@ -812,13 +939,13 @@ typedef struct {
     int id;
     char* dst_path_base_end;
     int dst_max_append_size;
-    char dst_path[PATH_MAX+1];    
+    char dst_path[PATH_MAX+1];
 } copy_dir_struct;
 
 static bool copy_dir_visitor(char* name, struct stat *stat_buf, char* link, const char* child_abspath, void *p) {
     copy_dir_struct *cds = p;
     strncpy_w_zero(cds->dst_path_base_end, name, cds->dst_max_append_size);
-    
+
     bool success = false;
     if (S_ISDIR(stat_buf->st_mode)) {
         success = copy_dir(child_abspath, cds->dst_path, cds->id);
@@ -828,7 +955,7 @@ static bool copy_dir_visitor(char* name, struct stat *stat_buf, char* link, cons
         success = copy_symlink(child_abspath, cds->dst_path, cds->id);
     } else {
         response_error(cds->id, child_abspath, 0, "don't know how to copy a special file");
-    }    
+    }
     return success;
 }
 
@@ -848,10 +975,10 @@ static bool copy_dir(const char* path, const char* path2, int id) {
     cds->dst_path_base_end = cds->dst_path + len + 1;
     cds->dst_max_append_size = PATH_MAX - len - 1;
 
-    visit_dir_entries(path, copy_dir_visitor, cds);
-    
+    visit_dir_entries(path, copy_dir_visitor, NULL, cds);
+
     bool success = cds->success;
-    free(cds);    
+    free(cds);
     return success;
 }
 
@@ -925,7 +1052,7 @@ static bool copy_symlink(const char* path, const char* path2, int id) {
         errno = 0;
         if (symlink(link_dst, path2) == -1) {
             response_error(id, path2, errno, err_to_string(errno));
-        } else { 
+        } else {
            success = true;
         }
     }
@@ -944,13 +1071,34 @@ static void response_lstat(int request_id, const char* path) {
 //            fprintf(cache_fp, "%s",response_buf); // trailing '\n' already there, added by form_entry_response
 //        }
     } else {
-        report_error("error formatting response for '%s'\n", path);
         //TODO: pass error message from response_entry_create
         my_fprintf(STDOUT, "%c %i %i %s\n", FS_RSP_ERROR, request_id, err_get_code(), err_get_message());
         my_fflush(STDOUT);
     }
     buffer_free(&response_buf);
     buffer_free(&work_buf);
+}
+
+static void response_move(const fs_request* request) {
+    // check whether it is directory and print clear error message
+    // (copy_plain_file will print unclear "Operation not permitted" in this case)
+    struct stat stat_buf;
+    if (lstat(request->path, &stat_buf) == -1) {
+        response_error(request->id, request->path, errno, err_to_string(errno));
+        return;
+    }
+    if (S_ISDIR(stat_buf.st_mode)) {
+        response_error(request->id, request->path2, 0, "can not move directory");
+        return;
+    }
+    if (copy_plain_file(request->path, request->path2, request->id)) {
+        if (unlink(request->path)) {
+            response_error(request->id, request->path, errno, "can't remove file");
+            return;
+        }
+        response_lstat(request->id, request->path2);
+    }
+    // in the case of failure, copy_plain_file() already reported it)
 }
 
 static void response_add_or_remove_watch(int request_id, const char* path, bool add) {
@@ -966,6 +1114,71 @@ static int entry_comparator(const void *element1, const void *element2) {
     const fs_entry *e2 = *((fs_entry**) element2);
     int res = strcmp(e1->name, e2->name);
     return res;
+}
+
+static bool entries_differ(fs_entry *new_entry, fs_entry *old_entry, int persistence_version, const char* path) {
+    if (new_entry->name_len != old_entry->name_len) {
+        trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (strcmp(new_entry->name, old_entry->name) != 0) {
+        trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
+        return true;
+    }
+    if (new_entry->file_type != old_entry->file_type) {
+        trace(TRACE_FINE, "refresh manager: file types differ for %s/%s: %c vs %c\n", path, new_entry->name, new_entry->file_type, old_entry->file_type);
+        return true;
+    }
+    // if links, then check links
+    if (new_entry->file_type == FILETYPE_LNK) {
+        if (new_entry->link_len != old_entry->link_len) {
+            trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+        if (strcmp(new_entry->link, old_entry->link) != 0) {
+            trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
+            return true;
+        }
+    }
+    // names, modes and link targets are same
+    if (new_entry->file_type == FILETYPE_REG) {
+        if (new_entry->size != old_entry->size) {
+            trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
+            return true;
+        }
+        if (new_entry->mtime != old_entry->mtime) {
+            trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
+            return true;
+        }
+    }
+    if (persistence_version > 1) {
+        if (new_entry->can_read != old_entry->can_read) {
+            trace(TRACE_FINE, "refresh manager: can_read differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_read ? 'T' : 'F', old_entry->can_read ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_write != old_entry->can_write) {
+            trace(TRACE_FINE, "refresh manager: can_write differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_write ? 'T' : 'F', old_entry->can_write ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->can_exec != old_entry->can_exec) {
+            trace(TRACE_FINE, "refresh manager: can_exec differ for %s/%s: %c vs %c\n", path, new_entry->name,
+                    new_entry->can_exec ? 'T' : 'F', old_entry->can_exec ? 'T' : 'F');
+            return true;
+        }
+        if (new_entry->st_dev != old_entry->st_dev) {
+            trace(TRACE_FINE, "refresh manager: st_dev differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_dev, (long long) old_entry->st_dev);
+            return true;
+        }
+        if (new_entry->st_ino != old_entry->st_ino) {
+            trace(TRACE_FINE, "refresh manager: st_ino differ for %s/%s: %lld vs %lld\n", path, new_entry->name,
+                    (long long) new_entry->st_ino, (long long) old_entry->st_ino);
+            return true;
+        }
+    }
+    return false;
 }
 
 static bool refresh_visitor(const char* path, int index, dirtab_element* el, void *data) {
@@ -1007,7 +1220,9 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         trace(TRACE_FINER, "refresh notification already sent for %s\n", path);
         return need_to_proceed();
     }
-    bool success = read_entries_from_cache(&old_entries, el, path);
+
+    int persistence_version = -1;
+    bool success = read_entries_from_cache(&old_entries, el, path, &persistence_version);
     bool differs;
     if (success) {
         read_entries_from_dir(&new_entries, path);
@@ -1016,7 +1231,14 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         differs = false;
     } else {
         array_init(&new_entries, 4);
-        report_error("error refreshing %s: error reading cache\n", path);
+        if (persistence_version == -1 ||  persistence_version == persistence_version_curr) { 
+            // -1 means that there was error reading,
+            // version equals to current => there was an unexpected error => report
+            // version != current => just old cache version found => do not report
+            report_error("error refreshing %s: error reading cache\n", path);
+        } else {
+            trace(TRACE_FINEST, "invalid cache (incorrect version: %d) for %s\n", persistence_version, path);
+        }
         differs = true;
     }
 
@@ -1027,57 +1249,9 @@ static bool refresh_visitor(const char* path, int index, dirtab_element* el, voi
         for (int i = 0; i < new_entries.size; i++) {
             fs_entry *new_entry = array_get(&new_entries, i);
             fs_entry *old_entry = array_get(&old_entries, i);
-            if (new_entry->name_len != old_entry->name_len) {
+            if (entries_differ(new_entry, old_entry, persistence_version, path)) {
                 differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (1) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
                 break;
-            }
-            if (strcmp(new_entry->name, old_entry->name) != 0) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: names differ (2) in directory %s: %s vs %s\n", path, new_entry->name, old_entry->name);
-                break;
-            }
-            // names are same; check types (modes))
-            if (new_entry->mode != old_entry->mode) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: modes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->mode, old_entry->mode);
-                break;
-            }
-            // if links, then check links
-            if (S_ISLNK(new_entry->mode)) {
-                if (new_entry->link_len != old_entry->link_len) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (1) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-                if (strcmp(new_entry->link, old_entry->link) != 0) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: links differ (2) for %s/%s: %s vs %s\n", path, new_entry->name, new_entry->link, old_entry->link);
-                    break;
-                }
-            }
-            // names, modes and link targets are same
-            if (new_entry->uid != old_entry->uid) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: uids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->uid, old_entry->uid);
-                break;
-            }
-            if (new_entry->gid != old_entry->gid) {
-                differs = true;
-                trace(TRACE_FINE, "refresh manager: gids differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->gid, old_entry->gid);
-                break;
-            }
-            if (S_ISREG(new_entry->mode)) {
-                if (new_entry->size != old_entry->size) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: sizes differ for %s/%s: %d vs %d\n", path, new_entry->name, new_entry->size, old_entry->size);
-                    break;
-                }
-                if (new_entry->mtime != old_entry->mtime) {
-                    differs = true;
-                    trace(TRACE_FINE, "refresh manager: times differ for %s/%s: %lld vs %lld\n", path, new_entry->name, new_entry->mtime, old_entry->mtime);
-                    break;
-                }
             }
         }
     }
@@ -1123,9 +1297,10 @@ static void refresh_cycle_impl(fs_request* request) {
 }
 
 static void refresh_cycle(fs_request* request) {
-    
+
     dirtab_flush(); // TODO: find the appropriate place
-    dirtab_element* el = dirtab_get_element(request->path);
+    const char* path = request ? request->path : "/";
+    dirtab_element* el = dirtab_get_element(path);
 
     // analyze and set refresh_state;
     dirtab_lock(el);
@@ -1133,46 +1308,46 @@ static void refresh_cycle(fs_request* request) {
     if (refresh_state == DRS_REFRESHING) {
         // already refreshing => set pending flag,
         // so the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already refreshing: setting pending flag\n", path);
         dirtab_set_refresh_state(el, DRS_PENDING_REFRESH);
         dirtab_unlock(el);
         return;
     } else if (refresh_state == DRS_PENDING_REFRESH) {
         // nothing: the thread that refreshes will repeat once again
-        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", request->path);
+        trace(TRACE_FINEST, "refresh[1] %s already pending: nothing to do\n", path);
         dirtab_unlock(el);
         return;
     } else {
-        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", request->path, refresh_state);
+        soft_assert(refresh_state == DRS_NONE, "unexpected refresh_state for %s : %d\n", path, refresh_state);
         dirtab_set_refresh_state(el, DRS_REFRESHING);
         dirtab_unlock(el);
     }
-    
-    while (true) {        
-        trace(TRACE_FINEST, "refreshing %s...\n", request->path);
+
+    while (true) {
+        trace(TRACE_FINEST, "refreshing %s...\n", path);
         refresh_cycle_impl(request);
-        trace(TRACE_FINEST, "refreshing %s completed\n", request->path);
-        
+        trace(TRACE_FINEST, "refreshing %s completed\n", path);
+
         dirtab_lock(el);
         dirtab_refresh_state refresh_state = dirtab_get_refresh_state(el);
         if (refresh_state == DRS_REFRESHING) {
             // no new refresh request has come => just exit
-            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s no new request => exiting\n", path);
             dirtab_set_refresh_state(el, DRS_NONE);
             dirtab_unlock(el);
             return;
         } else if (refresh_state == DRS_PENDING_REFRESH) {
             // while we refreshed, new request has come
-            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", request->path);
+            trace(TRACE_FINEST, "refresh[2] %s pending request => once more\n", path);
             dirtab_set_refresh_state(el, DRS_REFRESHING);
             dirtab_unlock(el);
             continue;
         } else {
-            soft_assert(false, "unexpected refresh_state for %s : %d, should be either %d or %d\n", 
-                    request->path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
+            soft_assert(false, "unexpected refresh_state for %s : %d, should be either %d or %d\n",
+                    path, refresh_state, DRS_REFRESHING, DRS_PENDING_REFRESH);
             dirtab_unlock(el);
             return;
-        }        
+        }
     }
 }
 
@@ -1198,6 +1373,26 @@ static void *refresh_loop(void *data) {
 
 static void response_refresh(fs_request* request) {
     refresh_cycle(request);
+}
+
+static void response_help() {
+    my_fprintf(STDOUT, "Help on request kinds\n");
+    #define help_req_kind(kind) my_fprintf(STDOUT, "%c - %s\n", kind, #kind)
+    help_req_kind(FS_REQ_LS);
+    help_req_kind(FS_REQ_RECURSIVE_LS);
+    help_req_kind(FS_REQ_STAT);
+    help_req_kind(FS_REQ_LSTAT);
+    help_req_kind(FS_REQ_COPY);
+    help_req_kind(FS_REQ_MOVE);
+    help_req_kind(FS_REQ_QUIT);
+    help_req_kind(FS_REQ_SLEEP);
+    help_req_kind(FS_REQ_ADD_WATCH);
+    help_req_kind(FS_REQ_REMOVE_WATCH);
+    help_req_kind(FS_REQ_REFRESH);
+    help_req_kind(FS_REQ_DELETE);
+    help_req_kind(FS_REQ_SERVER_INFO);
+    help_req_kind(FS_REQ_HELP);
+    #undef  help_req_kind
 }
 
 static void process_request(fs_request* request) {
@@ -1232,6 +1427,12 @@ static void process_request(fs_request* request) {
         case FS_REQ_COPY:
             response_copy(request);
             break;
+        case FS_REQ_MOVE:
+            response_move(request);
+            break;
+        case FS_REQ_HELP:
+            response_help();
+            break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);
     }
@@ -1246,10 +1447,10 @@ static void *rp_loop(void *data) {
         if (request) {
             trace(TRACE_FINE, "thread[%d] request #%d sz=%d kind=%c len=%d path=%s\n",
                     ti->no, request->id, request->size, request->kind, request->len, request->path);
-            increment_busy_threads();            
+            increment_busy_threads();
             process_request(request);
             free(request);
-            decrement_busy_threads();            
+            decrement_busy_threads();
         } else {
             if (!state_get_proceed()) {
                 break;
@@ -1322,9 +1523,9 @@ static void main_loop() {
                 }
                 continue;
             }
-            if (rp_thread_count > 1) {                
+            if (rp_thread_count > 1) {
                 int busy = get_busy_threads();
-                if (busy >= rp_thread_count && rp_thread_count < MAX_THREAD_COUNT) {                    
+                if (busy >= rp_thread_count && rp_thread_count < MAX_THREAD_COUNT) {
                     int curr_thread = rp_thread_count++;
                     trace(TRACE_FINE, "Starting thread #%d...\n", curr_thread);
                     rp_threads[curr_thread].no = curr_thread;
@@ -1415,7 +1616,7 @@ void process_options(int argc, char* argv[]) {
                         break;
                     default:
                         report_error("incorrect value of -v flag: %d. Defaulting to %d\n",
-                                new_trace_level, default_trace_leve);
+                                new_trace_level, new_trace_level > TRACE_FINEST ? TRACE_FINEST : default_trace_leve);
                         set_trace(new_trace_level);
                         break;
                 }
@@ -1534,7 +1735,7 @@ static void startup() {
 
 static void *killer(void *data) {
     pthread_t victim;
-    victim = (pthread_t) data;
+    victim = *((pthread_t*) data);
     sleep(2);
     //pthread_kill(victim, SIGKILL);
     pthread_kill(victim, SIGTERM);
@@ -1550,7 +1751,9 @@ static void shutdown() {
     }
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     pthread_t killer_thread;
-    pthread_create(&killer_thread, NULL, killer, (void*) pthread_self());
+    static pthread_t self; // we need to pass a pointer => can't use auto
+    self = pthread_self();
+    pthread_create(&killer_thread, NULL, killer, &self);
 
     trace(TRACE_INFO, "Shutting down. Joining threads...\n");
     // NB: we aren't joining refresh thread; it's safe

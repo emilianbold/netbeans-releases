@@ -46,7 +46,6 @@ package org.netbeans.modules.javaee.wildfly.nodes.actions;
 import java.io.IOException;
 import javax.enterprise.deploy.shared.ModuleType;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -55,7 +54,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
 /**
- * 
+ *
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class StartModuleCookieImpl implements StartModuleCookie {
@@ -86,7 +85,7 @@ public class StartModuleCookieImpl implements StartModuleCookie {
     public Task start() {
         final WildflyDeploymentManager dm = (WildflyDeploymentManager) lookup.lookup(WildflyDeploymentManager.class);
         final String nameWoExt = fileName.substring(0, fileName.lastIndexOf('.'));
-        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(StartModuleCookieImpl.class,
+        final ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(StartModuleCookieImpl.class,
                 "LBL_StartProgress", nameWoExt));
 
         Runnable r = new Runnable() {

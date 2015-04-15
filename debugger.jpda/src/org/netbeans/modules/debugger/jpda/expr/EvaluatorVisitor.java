@@ -196,6 +196,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ValueWrapper;
 import org.netbeans.modules.debugger.jpda.models.CallStackFrameImpl;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
+import org.openide.util.NbBundle;
 
 /**
  * Mirror is either Value or ReferenceType
@@ -3677,6 +3678,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return value;
     }
 
+    @NbBundle.Messages("MSG_IncompatibleThreadStateMessage=Current thread can not invoke methods.\nProbably was not suspended by an event (breakpoint, step, etc.).")
     private Value invokeMethod(Tree arg0, Method method, Boolean isStatic, ClassType type,
                                ObjectReference objectReference, List<Value> argVals,
                                EvaluationContext evaluationContext, boolean nonVirtual) {
@@ -3730,8 +3732,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         } catch (ClassNotLoadedException cnlex) {
             throw new IllegalStateException(cnlex);
         } catch (IncompatibleThreadStateException itsex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-            ieex.initCause(itsex);
+            String message = Bundle.MSG_IncompatibleThreadStateMessage();
+            InvalidExpressionException ieex = new InvalidExpressionException(message, itsex);
             throw new IllegalStateException(ieex);
         } catch (InvalidStackFrameException isfex) {
             InvalidExpressionException ieex = new InvalidExpressionException (isfex);

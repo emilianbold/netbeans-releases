@@ -56,6 +56,11 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
@@ -74,6 +79,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.editor.NbEditorUtilities;
 
 /**
@@ -400,25 +406,46 @@ public class CompletionUtilities {
         return null;
     }
 
-    public static int findEndOfMethod(Document doc, int startPos) {
-        int level = 0;
-        CharSequence text = DocumentUtilities.getText(doc);
-        for (int i = startPos; i < doc.getLength(); i++) {
-            char ch = text.charAt(i);
-            if (ch == ';') {
-                return -1;
-            }
-            if (ch == '(') {
-                level++;
-            }
-            if (ch == ')') {
-                level--;
-                if (level == 0) {
-                    return i + 1;
+    public static int findEndOfMethod(final Document doc, final int startPos) {
+        final MutableObject<Integer> result = new MutableObject<Integer>(-1);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, false, startPos > 0);
+                if (ts != null) {
+                    int parenLevel = 0;
+                    int braceLevel = 0;
+                    while (ts.token() != null && ts.token().id() instanceof CppTokenId && braceLevel >= 0 && parenLevel >= 0) {
+                        Token<TokenId> token = ts.token();
+                        CppTokenId cppTokenId = (CppTokenId) token.id();
+                        if (braceLevel == 0 && cppTokenId == CppTokenId.SEMICOLON) {
+                            break;
+                        }
+                        if (cppTokenId == CppTokenId.LBRACE) {
+                            braceLevel++;
+                        }
+                        if (cppTokenId == CppTokenId.RBRACE) {
+                            braceLevel--;
+                        }
+                        if (cppTokenId == CppTokenId.LPAREN) {
+                            parenLevel++;
+                        }
+                        if (cppTokenId == CppTokenId.RPAREN) {
+                            parenLevel--;
+                            if (parenLevel == 0) {
+                                result.value = ts.offset() + token.length();
+                                break;
+                            }
+                        }
+                        if (!ts.moveNext()) {
+                            break;
+                        }
+                    }
                 }
             }
-        }
-        return -1;
+        });
+        return result.value;
     }
 
     public static int findEndOfInstantiation(Document doc, int startPos) {

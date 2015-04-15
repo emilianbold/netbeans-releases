@@ -143,6 +143,9 @@ public class RequireJsPreferences {
     }
     
     public static String get(final Project project, Property<? extends Object> property) {
+        if (project == null) {
+            return null;
+        }
         Preferences preferences = getPreferences(project);
         // get default value lazyly since it can do anything...
         String value = preferences.get(property.getKey(), DEFAULT_VALUE);
@@ -160,10 +163,12 @@ public class RequireJsPreferences {
     }
     
     public static void put(Project project, Property<? extends Object> property, String value) {
-        if (StringUtils.hasText(value) && !value.equals(property.getDefaultValue())) {
-            getPreferences(project).put(property.getKey(), value);
-        } else {
-            getPreferences(project).remove(property.getKey());
+        if (project != null) {
+            if (StringUtils.hasText(value) && !value.equals(property.getDefaultValue())) {
+                getPreferences(project).put(property.getKey(), value);
+            } else {
+                getPreferences(project).remove(property.getKey());
+            }
         }
     }
     

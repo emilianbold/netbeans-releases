@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Nested JRE" basedir="." default="build-pkg">  
+
+
+    <property name="builddir" value="${basedir}/build"/>
+    <property name="appdir" value="${builddir}/app/${appname}.app"/>
+    <property name="scriptsdir" value="${builddir}/scripts"/>  
+
+    <target name="clean">
+        <delete dir="${builddir}"/>
+    </target>
+
+    <target name="init">
+        <mkdir dir="${scriptsdir}"/>
+    </target>    
+    
+    <target name="build-pkg" depends="init">
+        <echo file="${scriptsdir}/env.sh"><![CDATA[
+NETBEANS_INSTALL_DIR="${app.name}"
+NETBEANS_BUILDNUMBER="${buildnumber}"
+NETBEANS_CHECK_BUILDNUMBER=${nb.check.build.number}
+TOMCAT_INSTALL_DIR="${tomcat.install.dir}"
+NB_CLUSTER_DIR="${nbClusterDir}"
+GLASSFISH_INSTALL_DIR="${glassfish.install.dir}"
+DEFAULT_JDK_HOME="${default.jdk.home}"
+NB_ID="${nb.id}"
+GLASSFISH_ID="${glassfish.id}"
+TOMCAT_ID="${tomcat.id}"
+]]></echo>  
+
+        <copy todir="${scriptsdir}" verbose="yes">
+            <fileset dir="${basedir}/pkg/scripts"/>
+        </copy>
+        
+        <copy file="${basedir}/../../commonfiles/unpack200.sh" tofile="${scriptsdir}/unpack200.sh"/>
+        <copy file="${basedir}/../../commonfiles/get_current_jdk.sh" tofile="${scriptsdir}/get_current_jdk.sh"/>
+        <copy file="${basedir}/../../commonfiles/postupgrade_generic" tofile="${scriptsdir}/postupgrade" overwrite="false"/>
+        <copy file="${basedir}/../../commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall" overwrite="false"/>
+        <copy file="${basedir}/../../commonfiles/postinstall_generic" tofile="${scriptsdir}/postinstall_generic" overwrite="false"/>
+        
+        <chmod dir="${scriptsdir}" perm="ugo+x" includes="**/*"/>
+        
+        <get src="${jre.builds.path}/${jre.archiv.filename}" dest="${builddir}/${jre.archiv.filename}" usetimestamp="true"/>
+        
+        <mkdir dir="${builddir}/jre"/>
+        
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="tar zxvf ${builddir}/${jre.archiv.filename} -C ${builddir}/jre/"/>
+        </exec>
+        
+        <condition property="sign.option" value="--sign '${signing_identity}'" else="">
+            <not>
+                <equals arg1="${signing_identity}" arg2="0"/>
+            </not>
+        </condition> 
+
+        <echo message="Building jre-nested-${jre.version.string.long}.pkg into ${basedir}/../../build/jre-nested-${jre.version.string.long}.pkg"/>        
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="pkgbuild --root ${builddir}/jre/jre${jre.version.string.long}.jre/Contents/Home/ --scripts ${scriptsdir} --identifier jre-nested ${sign.option} --install-location '/${app.name}/Contents/Resources/NetBeans/bin/jre' ${basedir}/../../build/jre-nested-${jre.version.string.long}.pkg"/>
+        </exec>
+    </target>    
+    
+</project>

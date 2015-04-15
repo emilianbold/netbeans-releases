@@ -135,6 +135,7 @@ public final class ClientSideProjectDetector {
 
         private static final Collection<String> WELL_KNOWN_SITE_ROOTS = Arrays.asList(
                 "public_html", // NOI18N
+                "public", // NOI18N
                 "web", // NOI18N
                 "www"); // NOI18N
 

@@ -201,6 +201,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
+                case CALL_ARGUMENT:
+                    completeCallArguments(request, resultList);
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
@@ -216,6 +218,8 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 case DOCUMENTATION:
                     JsDocumentationCodeCompletion.complete(request, resultList);
                     break;
+                case OBJECT_PROPERTY_NAME:
+                    completeObjectPropertyName(request, added);
                 default:
                     break;
             }
@@ -622,6 +626,197 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         return addedProperties;
     }
     
+    private Identifier findNameOfFunctionCall (CompletionRequest request) {
+        // is an argument of a function call?
+        TokenHierarchy<?> th = request.result.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return null;
+        }
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        if (ts == null) {
+            return null;
+        }
+        
+        ts.move(request.anchor);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return null;
+        }
+            
+        int curlyDeep = 0;
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = token.id();
+        while (ts.movePrevious() && tokenId != JsTokenId.BRACKET_LEFT_PAREN
+                && tokenId != JsTokenId.OPERATOR_SEMICOLON) {
+            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                curlyDeep++;
+            }
+            token = ts.token();
+            tokenId = token.id();
+        }
+        
+        
+        if (tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+            token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token != null && token.id() == JsTokenId.IDENTIFIER) {
+                String functionName = token.text().toString();
+                return new IdentifierImpl(functionName, new OffsetRange(ts.offset(), ts.offset() + functionName.length()));
+            }
+        }
+        return null;
+    }
+    
+    private List<IndexedElement.FunctionIndexedElement> findFunctionInIndex(Identifier functionName, CompletionRequest request) {
+        List<IndexedElement.FunctionIndexedElement> result = new ArrayList<IndexedElement.FunctionIndexedElement>();
+        List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), functionName.getOffsetRange().getStart() - 1, false);
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        if (fo != null) {
+            JsIndex jsIndex = JsIndex.get(fo);
+            if (expChain.isEmpty()) {
+                // global space
+                Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName.getName());
+                for (IndexedElement globalVar : globalVars) {
+                    if (globalVar.getName().equals(functionName) && globalVar.getJSKind().isFunction()) {
+                        result.add((IndexedElement.FunctionIndexedElement)globalVar);
+                    }
+                }
+            } else {
+                // the expression needs to be resolved
+                Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                for (TypeUsage type : types) {
+                    Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName.getName());
+                    properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName.getName()));
+                    for (IndexedElement property : properties) {
+                        if (property.getName().equals(functionName.getName()) && property.getJSKind().isFunction()) {
+                            IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)property;
+                            result.add(function);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private List<TypeUsage> findPossibleCallArgTypes(CompletionRequest request) {
+        Identifier functionName = findNameOfFunctionCall(request);
+        if (functionName == null) {
+            // probably not in a call
+            return null;
+        }
+        List<TypeUsage> result = new ArrayList<TypeUsage>();
+        List<IndexedElement.FunctionIndexedElement> functions = findFunctionInIndex(functionName, request);
+        for (IndexedElement.FunctionIndexedElement function : functions) {
+            LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+            for (Collection<String> assignments: parameters.values()) {
+                if (!assignments.isEmpty()) {
+                    for (String assignment : assignments) {
+                        result.add(new TypeUsageImpl(assignment));
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    private void completeObjectPropertyName(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
+        // is an argument of the function call?
+        TokenHierarchy<?> th = request.result.getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return;
+        }
+        TokenSequence<JsTokenId> ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        if (ts == null) {
+            return;
+        }
+        
+        ts.move(request.anchor);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return;
+        }
+            
+        int curlyDeep = 0;
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId tokenId = token.id();
+        while (ts.movePrevious() && tokenId != JsTokenId.BRACKET_LEFT_PAREN
+                && tokenId != JsTokenId.OPERATOR_SEMICOLON) {
+            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                curlyDeep++;
+            }
+            token = ts.token();
+            tokenId = token.id();
+        }
+        
+        // what is the function?
+        if (curlyDeep == 1 && tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+            token = LexUtilities.findPreviousNonWsNonComment(ts);
+            if (token != null && token.id() == JsTokenId.IDENTIFIER) {
+                String functionName = token.text().toString();
+                List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), ts.offset() - 1, false);
+                List<TypeUsage> possibleTypes = new ArrayList<TypeUsage>();
+                FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                JsIndex jsIndex = JsIndex.get(fo);
+                if (expChain.isEmpty()) {
+                    // global space
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(request.result.getModel(), request.anchor);
+                    for (JsObject variable : variables) {
+                        if (variable.getName().equals(functionName) && variable.getJSKind().isFunction()) {
+                            // do we now the tape of the argument?
+                            JsFunction function = (JsFunction)variable;
+                            Collection<? extends JsObject> parameters = function.getParameters();
+                            for (JsObject parameter: parameters) {
+                                if (!parameter.getAssignments().isEmpty()) {
+                                    possibleTypes.addAll(parameter.getAssignments());
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(functionName);
+                    for (IndexedElement globalVar : globalVars) {
+                        if (globalVar.getName().equals(functionName) && globalVar.getJSKind().isFunction()) {
+                            IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)globalVar;
+                            LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+                            for (Collection<String> assignments: parameters.values()) {
+                                if (!assignments.isEmpty()) {
+                                    for (String type : assignments) {
+                                        possibleTypes.add(new TypeUsageImpl(type));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Collection<TypeUsage> types = ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, false);
+                    for (TypeUsage type : types) {
+                        Collection<IndexedElement> properties = jsIndex.getPropertiesWithPrefix(type.getType(), functionName);
+                        properties.addAll(jsIndex.getPropertiesWithPrefix(type.getType() + "." + ModelUtils.PROTOTYPE, functionName));
+                        for (IndexedElement property : properties) {
+                            if (property.getName().equals(functionName) && property.getJSKind().isFunction()) {
+                                IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)property;
+                                LinkedHashMap<String, Collection<String>> parameters = function.getParameters();
+                                for (Collection<String> assignments: parameters.values()) {
+                                    if (!assignments.isEmpty()) {
+                                        for (String assignment : assignments) {
+                                            possibleTypes.add(new TypeUsageImpl(assignment));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!possibleTypes.isEmpty()) {
+                    for (TypeUsage type : possibleTypes) {
+                        addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
+                    }
+                }
+            }
+        }
+        
+    }
+    
     private List<String> resolveExpressionChainFromString(CompletionRequest request) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
@@ -872,6 +1067,24 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
+    private void completeCallArguments(CompletionRequest request, List<CompletionProposal> resultList) {
+        // find (if exist) the function which is called.
+        List<TypeUsage> types = findPossibleCallArgTypes(request);
+        FileObject fo = request.result.getSnapshot().getSource().getFileObject();
+        if (types != null && fo != null && !types.isEmpty()) {
+            JsIndex jsIndex = JsIndex.get(fo);
+            for (TypeUsage type: types) {
+                Collection<? extends IndexResult> fromIndex = jsIndex.findByFqn(type.getType(), JsIndex.TERMS_BASIC_INFO);
+                for (IndexResult indexResult: fromIndex) {
+                    IndexedElement indexElement = IndexedElement.create(indexResult);
+                    if (indexElement.getJSKind() == JsElement.Kind.CALLBACK) {
+                        resultList.add(new JsCompletionItem.JsCallbackCompletionItem((IndexedElement.FunctionIndexedElement)indexElement, request));
+                    }
+                }
+            }
+        }
+    }
+    
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
         for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
             if (startsWith(keyword, request.prefix)) {
@@ -1024,40 +1237,49 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     
     private void addPropertyToMap(CompletionRequest request, Map<String, List<JsElement>> addedProperties, JsElement property) {    
         String name = property.getName();
-        if (startsWith(name, request.prefix) && !(ModelUtils.getDisplayName(property.getName()).isEmpty())) {
+        if (startsWith(name, request.prefix) && !(ModelUtils.getDisplayName(property.getName()).isEmpty())
+                && property.getJSKind() != JsElement.Kind.CALLBACK) {
             if (!(name.equals(request.prefix) && !property.isDeclared() && request.anchor == property.getOffset())) { // don't include just the prefix
                 List<JsElement> elements = addedProperties.get(name);
-                if (elements == null || elements.isEmpty()) {
-                    List<JsElement> properties = new ArrayList<JsElement>(1);
-                    properties.add(property);
-                    addedProperties.put(name, properties);
-                } else {
-                    if (!ModelUtils.PROTOTYPE.equals(name) && property.isDeclared()) {
-                        boolean addAsNew = true;
-                        if (!elements.isEmpty()) {
-                            for (int i = 0; i < elements.size(); i++) {
-                                JsElement element = elements.get(i);
-                                FileObject fo = element.getFileObject();
-                                if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
-                                    if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
-                                        elements.remove(i);
-                                        elements.add(property);
-                                        addAsNew = false;
-                                        break;
-                                    } else if (fo != null && fo.equals(property.getFileObject())) {
+                if (!ModelUtils.PROTOTYPE.equals(name)) {
+                    if (elements == null || elements.isEmpty()) {
+                        List<JsElement> properties = new ArrayList<JsElement>(1);
+                        properties.add(property);
+                        addedProperties.put(name, properties);
+                    } else {
+                        if (property.isDeclared()) {
+                            boolean addAsNew = true;
+                            if (!elements.isEmpty()) {
+                                for (int i = 0; i < elements.size(); i++) {
+                                    JsElement element = elements.get(i);
+                                    FileObject fo = element.getFileObject();
+                                    if (!element.isDeclared() || (fo != null && fo.equals(property.getFileObject()))) {
+                                        if (!element.isDeclared() || (element.getOffsetRange() == OffsetRange.NONE && property.getOffsetRange() != OffsetRange.NONE)) {
+                                            elements.remove(i);
+                                            elements.add(property);
+                                            addAsNew = false;
+                                            break;
+                                        } else if (fo != null && fo.equals(property.getFileObject())) {
+                                            addAsNew = false;
+                                            break;
+                                        }
+                                    } else if (element.isPlatform() && property.isPlatform()) {
                                         addAsNew = false;
                                         break;
                                     }
-                                } else if (element.isPlatform() && property.isPlatform()) {
-                                    addAsNew = false;
-                                    break;
                                 }
                             }
+                            if (addAsNew) {
+                                // expect that all items are declaration -> so just add the next declaraiton
+                                elements.add(property);
+                            }
                         }
-                        if (addAsNew) {
-                            // expect that all items are declaration -> so just add the next declaraiton
-                            elements.add(property);
-                        }
+                    }
+                } else {
+                    if (elements == null && property.isPlatform()) {
+                        List<JsElement> properties = new ArrayList<JsElement>(1);
+                        properties.add(property);
+                        addedProperties.put(name, properties);
                     }
                 }
             }

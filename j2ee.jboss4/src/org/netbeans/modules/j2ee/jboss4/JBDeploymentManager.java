@@ -323,13 +323,14 @@ public class JBDeploymentManager implements DeploymentManager {
                 MBeanServerConnection rmiServer = null;
                 try {
                     JMXServiceURL url;
+                    int port = JBPluginUtils.getJmxPortNumber(props, ip);
                     if (props.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
                         // using management-native port
                         url = new JMXServiceURL(
-                                System.getProperty("jmx.service.url", "service:jmx:remoting-jmx://localhost:9999")); // NOI18N
+                                System.getProperty("jmx.service.url", "service:jmx:remoting-jmx://localhost:" + port)); // NOI18N
                     } else {
                         url = new JMXServiceURL(
-                                "service:jmx:rmi:///jndi/rmi://localhost:1090/jmxrmi"); // NOI18N
+                                "service:jmx:rmi:///jndi/rmi://localhost:" + port + "/jmxrmi"); // NOI18N
                     }
                     conn = JMXConnectorFactory.connect(url);
 

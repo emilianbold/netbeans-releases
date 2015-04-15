@@ -42,10 +42,6 @@
 
 package org.netbeans.modules.php.zend;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
@@ -54,10 +50,10 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
+import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
 import org.netbeans.modules.php.zend.commands.ZendCommandSupport;
 import org.netbeans.modules.php.zend.editor.ZendEditorExtender;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -101,27 +97,8 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     @Override
-    public File[] getConfigurationFiles(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            // broken project
-            return new File[0];
-        }
-        List<File> files = new LinkedList<>();
-        FileObject appConfig = sourceDirectory.getFileObject("application/configs"); // NOI18N
-        if (appConfig != null) {
-            for (FileObject child : appConfig.getChildren()) {
-                if (child.isData()) {
-                    files.add(FileUtil.toFile(child));
-                }
-            }
-            Collections.sort(files);
-        }
-        FileObject bootstrap = sourceDirectory.getFileObject("application/Bootstrap.php"); // NOI18N
-        if (bootstrap != null) {
-            files.add(FileUtil.toFile(bootstrap));
-        }
-        return files.toArray(new File[files.size()]);
+    public ImportantFilesImplementation getConfigurationFiles2(PhpModule phpModule) {
+        return new ConfigurationFiles(phpModule);
     }
 
     @Override

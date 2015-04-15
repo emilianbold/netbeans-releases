@@ -59,26 +59,38 @@ public class TestRunnerReporterTest extends TestCase {
     
     @Test
     public void testFilePatternRegex() throws Exception {
-        Pattern pattern = TestRunnerReporter.CallStackCallback.FILE_LINE_PATTERN;
+        Pattern pattern_windows = TestRunnerReporter.CallStackCallback.FILE_LINE_PATTERN_WINDOWS;
+        Pattern pattern_unix = TestRunnerReporter.CallStackCallback.FILE_LINE_PATTERN_UNIX;
         
         final String[][] matchingStrings = new String[][]{
-            {"at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
-            {"at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
-            {"[chrome #1] at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
-            {"[chrome #1] at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
-            {"[chrome #1]   at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
-            {"[chrome #1]   at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", null, null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", null, null, null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"at C:\\Users\\toikonom\\AppData\\Local\\Temp\\AngularJSPhoneCat\\node_modules\\protractor\\lib\\protractor.js:1041:17", null, null, "C:", "\\Users\\toikonom\\AppData\\Local\\Temp\\AngularJSPhoneCat\\node_modules\\protractor\\lib\\protractor.js", "1041", "17"},
+            {"at [object Object].webdriver.promise.ControlFlow.runInNewFrame_ (C:\\Users\\toikonom\\AppData\\Local\\Temp\\AngularJSPhoneCat\\node_modules\\protractor\\node_modules\\selenium-webdriver\\lib\\webdriver\\promise.js:1539:20)", null, null, "C:", "\\Users\\toikonom\\AppData\\Local\\Temp\\AngularJSPhoneCat\\node_modules\\protractor\\node_modules\\selenium-webdriver\\lib\\webdriver\\promise.js", "1539", "20"},
+            {"[chrome #1] at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"[chrome #1] at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
+            {"[chrome #1]   at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29", "chrome", "1", null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1425", "29"},
+            {"[chrome #1]   at webdriver.promise.ControlFlow.runInNewFrame_ (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1654:20)", "chrome", "1", null, "/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js", "1654", "20"},
         };
 
         for (int i = 0; i < matchingStrings.length; i++) {
             String string = matchingStrings[i][0];
-            Matcher matcher = pattern.matcher(string);
-            assertTrue("should match: " + string, matcher.find());
+            Matcher matcher = pattern_windows.matcher(string);
+            boolean matchFound = matcher.find();
+            String drive = null;
+            if(matchFound) {
+                drive = matcher.group("DRIVE"); // NOI18N
+            } else {
+                matcher = pattern_unix.matcher(string);
+                matchFound = matcher.find();
+            }
+            assertTrue("should match: " + string, matchFound);
             assertEquals(matchingStrings[i][1], matcher.group("BROWSER"));
             assertEquals(matchingStrings[i][2], matcher.group("CAPABILITY"));
-            assertEquals(matchingStrings[i][3], matcher.group("FILE"));
-            assertEquals(matchingStrings[i][4], matcher.group("LINE"));
-            assertEquals(matchingStrings[i][5], matcher.group("COLUMN"));
+            assertEquals(matchingStrings[i][3], drive);
+            assertEquals(matchingStrings[i][4], matcher.group("FILE"));
+            assertEquals(matchingStrings[i][5], matcher.group("LINE"));
+            assertEquals(matchingStrings[i][6], matcher.group("COLUMN"));
         }
     }
     

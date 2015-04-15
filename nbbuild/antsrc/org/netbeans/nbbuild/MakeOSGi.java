@@ -954,6 +954,7 @@ public class MakeOSGi extends Task {
             "org.openide.filesystems",
             "org.openide.filesystems.compat8",
             "org.netbeans.core.startup",
+            "org.netbeans.core.startup.base",
             "org.netbeans.core.osgi",
             "org.eclipse.osgi"
     ));

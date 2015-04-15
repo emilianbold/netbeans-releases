@@ -46,19 +46,24 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ImportantFilesImplementation;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.StatusDecorator;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -79,11 +84,19 @@ import org.openide.util.WeakListeners;
  */
 public final class ImportantFiles {
 
+    static final Logger LOGGER = Logger.getLogger(ImportantFiles.class.getName());
+
+
     private ImportantFiles() {
     }
 
     @NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 520)
     public static NodeFactory forHtml5Project() {
+        return new ImportantFilesNodeFactory();
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 200)
+    public static NodeFactory forPhpProject() {
         return new ImportantFilesNodeFactory();
     }
 
@@ -160,6 +173,7 @@ public final class ImportantFiles {
 
         @Override
         public void stateChanged(ChangeEvent e) {
+            importantFilesChildren.refreshImportantFiles();
             fireChange();
         }
 
@@ -224,8 +238,11 @@ public final class ImportantFiles {
         }
 
         public boolean hasImportantFiles() {
-            refreshImportantFiles();
-            return getNodesCount() > 0;
+            return !getImportantFiles().isEmpty();
+        }
+
+        private void refreshImportantFiles() {
+            setKeys();
         }
 
         @Override
@@ -241,7 +258,7 @@ public final class ImportantFiles {
 
         @Override
         protected void addNotify() {
-            refreshImportantFiles();
+            setKeys();
         }
 
         @Override
@@ -249,13 +266,18 @@ public final class ImportantFiles {
             setKeys(Collections.<ImportantFilesImplementation.FileInfo>emptyList());
         }
 
-        private void refreshImportantFiles() {
-            List<ImportantFilesImplementation.FileInfo> importantFiles = new ArrayList<>();
+        private void setKeys() {
+            List<ImportantFilesImplementation.FileInfo> importantFiles = getImportantFiles();
+            Collections.sort(importantFiles, new FileInfoComparator());
+            setKeys(importantFiles);
+        }
+
+        private List<ImportantFilesImplementation.FileInfo> getImportantFiles() {
+            Set<ImportantFilesImplementation.FileInfo> importantFiles = new LinkedHashSet<>();
             for (ImportantFilesImplementation provider : lookupResult.allInstances()) {
                 importantFiles.addAll(provider.getFiles());
             }
-            Collections.sort(importantFiles, new FileInfoComparator());
-            setKeys(importantFiles);
+            return new ArrayList<>(importantFiles);
         }
 
     }
@@ -280,12 +302,33 @@ public final class ImportantFiles {
         }
 
         @Override
+        public String getHtmlDisplayName() {
+            String displayName = getDisplayName();
+            assert displayName != null : fileInfo;
+            StatusDecorator statusDecorator = getStatusDecorator();
+            if (statusDecorator != null) {
+                return statusDecorator.annotateNameHtml(displayName, Collections.singleton(fileInfo.getFile()));
+            }
+            return displayName;
+        }
+
+        @Override
         public String getShortDescription() {
             String description = fileInfo.getDescription();
             if (description != null) {
                 return description;
             }
             return super.getShortDescription();
+        }
+
+        @CheckForNull
+        private StatusDecorator getStatusDecorator() {
+            try {
+                return fileInfo.getFile().getFileSystem().getDecorator();
+            } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            return null;
         }
 
     }
@@ -304,6 +347,5 @@ public final class ImportantFiles {
         }
 
     }
-
 
 }

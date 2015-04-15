@@ -78,6 +78,14 @@ public class CsmContext {
         this.offset = offset;
         context = new ArrayList<CsmContextEntry>();
     }
+    
+    /** Copy constructor */
+    public CsmContext(CsmContext other) {
+        this.file = other.file;
+        this.offset = other.offset;
+        this.context = new ArrayList<CsmContextEntry>(other.context);
+        this.csmLastObject = other.csmLastObject;
+    }
 
     public CsmContextEntry get(int index) {
         return context.get(index);

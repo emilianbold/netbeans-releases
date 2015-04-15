@@ -155,12 +155,12 @@ public final class SearchNbEditorKit extends NbEditorKit {
         }
     }
 
-    public static void openFindIfNecessary(EditorUI eui, ActionEvent evt) {
+    public static void openFindIfNecessary(JTextComponent component, ActionEvent evt) {
         Object findWhat = EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);
         if (findWhat == null || !(findWhat instanceof String) || ((String) findWhat).isEmpty()) {
 
-            Action findAction = ((BaseKit) eui.getComponent().getUI().getEditorKit(
-                    eui.getComponent())).getActionByName("find");
+            Action findAction = ((BaseKit) component.getUI().getEditorKit(
+                    component)).getActionByName("find");
             if (findAction != null) {
                 findAction.actionPerformed(evt);
             }

@@ -191,9 +191,9 @@ public class NodeRegistry implements ChangeListener {
         if (connection == null) {
             return;
         }
-        if (! DatabaseConnection.isVitalConnection(connection.getConnection(), connection)) {
+        if (! connection.isVitalConnection()) {
             try {
-                if (! connection.getConnector().isDisconnected() && closeConnectionIfBroken) {
+                if ( connection.isConnected() && closeConnectionIfBroken) {
                     String msg = e.getCause().getLocalizedMessage();
                     if (msg.length() > 280) {
                         msg = msg.substring(0, 280) + NbBundle.getMessage(NodeRegistry.class, "NodeRegistry_CloseBrokenConnectionMore"); // NOI18N

@@ -57,8 +57,10 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -185,7 +187,8 @@ public class ProjectSupport {
             return null;
         }
         if (execEnv.isRemote()) {
-            PathMap mapper = RemoteSyncSupport.getPathMap(pae.getProject());
+            RemoteSyncFactory remoteSyncFactory = pae.getConfiguration().getRemoteSyncFactory();
+            PathMap mapper = remoteSyncFactory.getPathMap(execEnv);
             if (mapper != null) {
                 String aLocalDir = mapper.getRemotePath(localDir, false);
                 if (aLocalDir != null) {

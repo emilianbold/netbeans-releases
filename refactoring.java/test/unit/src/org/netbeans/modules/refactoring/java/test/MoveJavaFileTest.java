@@ -58,6 +58,33 @@ public class MoveJavaFileTest extends RefactoringTestBase {
         super(name);
     }
     
+        public void test236877() throws Exception { // #236877 - [Move method] Imports are not added
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "/** Class B */\n"
+                + "public class B {\n"
+                + "    public void m(A p) { }\n"
+                + "}\n"),
+                new File("u/package-info.java", "package u;\n"
+                + "}\n"));
+        performMoveClass(Lookups.singleton(src.getFileObject("t/B.java")), new URL(src.getURL(), "u/"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("u/B.java", "package u;\n"
+                + "import t.A;\n"
+                + "/** Class B */\n"
+                + "public class B {\n"
+                + "    public void m(A p) { }\n"
+                + "}\n"),
+                new File("u/package-info.java", "package u;\n"
+                + "}\n"));
+    }
+    
     public void test241586() throws Exception {
         writeFilesAndWaitForScan(test,
                                  new File("t/package-info.java", "package t;"),

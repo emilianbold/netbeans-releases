@@ -80,6 +80,19 @@ public final class APTLanguageSupport {
         return STD_C.equals(language) || GNU_C.equals(language);
     }
     
+    public boolean isLanguageCpp(String language) {
+        return STD_CPP.equals(language) || GNU_CPP.equals(language);
+    }
+    
+    public boolean isFlavourSufficient(String actualFlavour, String necessaryFlavour) {
+        if (FLAVOR_CPP11.equals(necessaryFlavour)) {
+            return FLAVOR_CPP11.equals(actualFlavour);
+        } else if (FLAVOR_UNKNOWN.equals(necessaryFlavour)) {
+            return true;
+        }
+        return false;
+    }
+    
     public APTLanguageFilter getFilter(String lang) {
         return getFilter(lang, null);
     }

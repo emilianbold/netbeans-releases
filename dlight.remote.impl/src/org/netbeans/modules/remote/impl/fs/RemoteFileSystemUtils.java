@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,13 +53,16 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import static org.netbeans.modules.remote.impl.fs.RemoteFileObjectBase.composeName;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -276,7 +278,7 @@ public class RemoteFileSystemUtils {
             if (candidate instanceof RemoteLinkBase) {
                 RemoteFileObjectBase delegate = ((RemoteLinkBase) candidate).getDelegateImpl();
                 if (delegate == null) {
-                    throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N
+                    throw new FileNotFoundException("Null delegate for remote link " + candidate); //NOI18N // new IOException sic!
                 }
                 if (delegate instanceof RemoteLinkBase) {
                     candidate = delegate;
@@ -287,7 +289,8 @@ public class RemoteFileSystemUtils {
                 return candidate;
             }
         }
-        throw new FileNotFoundException("Remote link "+fileObject+" contains more than "+MAXSYMLINKS+" links in a chain."); //NOI18N
+        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                "EXC_DeepSymLinks", fileObject.getDisplayName(), MAXSYMLINKS)); //NOI18N
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
@@ -351,6 +354,31 @@ public class RemoteFileSystemUtils {
     public static boolean isUnitTestMode() {
         return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
     }
+    
+    public static Boolean isLinux(ExecutionEnvironment env) {
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                HostInfo hi = HostInfoUtils.getHostInfo(env);
+                return hi.getOSFamily() == HostInfo.OSFamily.LINUX;
+            } catch (IOException | ConnectionManager.CancellationException ex) {
+                Exceptions.printStackTrace(ex); // should never be the case if isHostInfoAvailable retured true
+            }
+            // should never be the case if isHostInfoAvailable retured true
+            
+        }
+        return null;
+    }
+    
+    public static void deleteRecursively(File file) {
+        if (file != null) {
+            file.delete();
+            if (file.isDirectory()) {
+                for (File child : file.listFiles()) {
+                    deleteRecursively(child);
+                }
+            }
+        }
+    }
 
     // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil" defaultstate="collapsed">
 
@@ -359,9 +387,8 @@ public class RemoteFileSystemUtils {
 
         if (source.isFolder()) {
             if (FileUtil.isParentOf(source, target)) {
-                IOException ioe = new IOException(NbBundle.getMessage(RemoteFileSystemUtils.class, "EXC_OperateChild", // NOI18N
-                        source.getPath(), target.getPath()));
-                throw RemoteIOException.annotateException(ioe);
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                        "EXC_OperateChild", source.getPath(), target.getPath())); // NOI18N
             }
         }
 
@@ -378,7 +405,8 @@ public class RemoteFileSystemUtils {
                     ((RemoteFileObject) target).getImplementor().postDeleteOrCreateChild(null, entries);
                     FileObject fo = target.getFileObject(newNameExt);
                     if (fo == null) {
-                        throw new IOException("Null file object after copy " + env + ':' + newPath); //NOI18N
+                        throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                                "EXC_NullFoAfterCopy", RemoteFileObjectBase.getDisplayName(env, newPath))); //NOI18N
                     } else {
                         FileUtil.copyAttributes(source, fo);
                         if (!subdirectoryExceptions.isEmpty()) {
@@ -387,14 +415,15 @@ public class RemoteFileSystemUtils {
                         return fo;
                     }
                 } catch (InterruptedException ex) {
-                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (CancellationException ex) {
-                    throw new InterruptedIOException(ex.getLocalizedMessage());
+                    throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileSystemUtils.class, 
+                                "EXC_CantCopyFromTo", from, newPath, ex.getLocalizedMessage()), ex); //NOI18N
                     } else {
-                        throw new IOException(ex);
+                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                     }
                 }
             }

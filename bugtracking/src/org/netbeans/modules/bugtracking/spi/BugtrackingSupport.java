@@ -109,12 +109,16 @@ public final class BugtrackingSupport<R, Q, I> {
         }
         RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, repositoryProvider, queryProvider, issueProvider, issueStatusProvider, issueSchedulingProvider, issuePriorityProvider, issueFinder);
         RepositoryInfo info = impl.getInfo();
-        if(info != null && NBBugzillaUtils.isNbRepository(info.getUrl())) { 
+        if(info != null) {            
             // might be we just automatically generated a nb repository,
             // in such a case it also has to be added to the registry 
-            // as otherwise it happens only on manul repositoy creation
+            // as otherwise it happens only on manual repositoy creation
+            // XXX this realy isn't the cleanest way how to do it, if possible - change 
+            // currently there are 2 impls taking atvantage of this hack:
+            // - hardcoded repository created for the netbeans bugzilla 
+            // - hardcoded repository for the inhouse bugdb tracker
             RepositoryRegistry registry = RepositoryRegistry.getInstance();
-            if(getRepositoryImpl(r) == null) {
+            if(getRepositoryImpl(r, false) == null) {
                 registry.addRepository(impl);
             }
         }
@@ -179,7 +183,7 @@ public final class BugtrackingSupport<R, Q, I> {
      * @since 1.85
      */
     public boolean editRepository(R r, String errorMessage) {
-        RepositoryImpl impl = getRepositoryImpl(r);
+        RepositoryImpl impl = getRepositoryImpl(r, false);
         return impl != null ? BugtrackingUtil.editRepository(impl, errorMessage) : false;
     }
 
@@ -198,27 +202,27 @@ public final class BugtrackingSupport<R, Q, I> {
     }
     
     private QueryImpl getQueryImpl(R r, Q q) {
-        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r);
+        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r, true);
         return impl != null ? impl.getQuery(q) : null;
     }
     
     private IssueImpl getIssueImpl(R r, I i) {
-        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r);
+        RepositoryImpl<R, Q, I> impl = getRepositoryImpl(r, true);
         return impl != null ? impl.getIssue(i) : null;
     }
 
     private Repository getRepository(String connectorId, String repositoryId) {
-        RepositoryImpl impl = getRepositoryImpl(connectorId, repositoryId);
+        RepositoryImpl impl = getRepositoryImpl(connectorId, repositoryId, false);
         return impl != null ? impl.getRepository() : null;
     }    
     
-    private RepositoryImpl getRepositoryImpl(R r) {
+    private RepositoryImpl getRepositoryImpl(R r, boolean allKnown) {
        RepositoryInfo info = repositoryProvider.getInfo(r);
-       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getID()) : null;
+       return info != null ? getRepositoryImpl(info.getConnectorId(), info.getID(), allKnown) : null;
     }
     
-    private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, false);
+    private RepositoryImpl getRepositoryImpl(String connectorId, String repositoryId, boolean allKnown) {
+        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId, allKnown);
     }    
     
     private Repository getRepository(R r) {

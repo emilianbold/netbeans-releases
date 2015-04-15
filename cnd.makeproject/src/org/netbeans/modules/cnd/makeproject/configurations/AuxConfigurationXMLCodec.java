@@ -131,7 +131,7 @@ class AuxConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     @Override
     public void endElement(String element, String currentText) {
         if (element.equals(DEFAULT_CONF_ELEMENT)) {
-            configurationDescriptor.getConfs().setActive(new Integer(currentText));
+            configurationDescriptor.getConfs().setActive(Integer.parseInt(currentText));
         } else if (element.equals(DEVELOPMENT_SERVER_ELEMENT)) {
             if (currentConf instanceof MakeConfiguration) {
                 ExecutionEnvironment env = ExecutionEnvironmentFactory.fromUniqueID(currentText);

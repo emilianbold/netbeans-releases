@@ -473,21 +473,29 @@ public class JavaTypeProvider implements TypeProvider {
         return textForQuery;
     }
 
-    @NonNull
+    @CheckForNull
     private static Pattern createPackageRegExp(@NonNull String pkgName) {
         final StringBuilder sb = new StringBuilder();
         sb.append("(.*\\.)?");  //NOI18N
+        boolean valid = false;
         for (int i=0; i< pkgName.length(); i++) {
             char c = pkgName.charAt(i);
             if (Character.isJavaIdentifierPart(c)) {
                 sb.append(c);
+                valid = true;
             } else if (c == '.') {  //NOI18N
                 sb.append(".*\\."); //NOI18N
             }
         }
-        sb.append(".*(\\..*)?");  //NOI18N
-        LOGGER.log(Level.FINE, "Package pattern: {0}", sb); //NOI18N
-        return Pattern.compile(sb.toString());
+        final Pattern p;
+        if (valid) {
+            sb.append(".*(\\..*)?");  //NOI18N
+            p = Pattern.compile(sb.toString());
+        } else {
+            p = null;
+        }
+        LOGGER.log(Level.FINE, "Package pattern: {0}", p); //NOI18N
+        return p;
     }
 
     /**
@@ -673,6 +681,7 @@ public class JavaTypeProvider implements TypeProvider {
                     typeName,
                     kind,
                     Collections.unmodifiableSet(Collections.<SearchScopeType>singleton(searchScope)),
+                    DocumentUtil.declaredTypesFieldSelector(true),
                     new JavaTypeDescriptionConvertor(this),
                     collector);
             } catch (Index.IndexClosedException ice) {
@@ -767,13 +776,13 @@ public class JavaTypeProvider implements TypeProvider {
         private static class JavaTypeDescriptionConvertor implements Convertor<Document, JavaTypeDescription> {
 
             private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(C|I|E|A|\\$.+)");   //NOI18N
+            private static final Convertor<Document,ElementHandle<TypeElement>> HANDLE_CONVERTOR = DocumentUtil.elementHandleConvertor();
+            private static Convertor<Document,String> SOURCE_CONVERTOR = DocumentUtil.sourceNameConvertor();
 
             private final CacheItem ci;
-            private final Convertor<Document,ElementHandle<TypeElement>> delegate;
 
             JavaTypeDescriptionConvertor(@NonNull final CacheItem ci) {
                 this.ci = ci;
-                this.delegate = DocumentUtil.elementHandleConvertor();
             }
 
             @Override
@@ -782,8 +791,9 @@ public class JavaTypeProvider implements TypeProvider {
                 if (binName == null || ANONYMOUS.matcher(binName).matches()) {
                     return null;
                 }
-                final ElementHandle<TypeElement> eh = delegate.convert(p);
-                return eh == null ? null : new JavaTypeDescription(ci, eh);
+                final ElementHandle<TypeElement> eh = HANDLE_CONVERTOR.convert(p);
+                final String sourceName = SOURCE_CONVERTOR.convert(p);
+                return eh == null ? null : new JavaTypeDescription(ci, eh, sourceName);
             }
 
         }

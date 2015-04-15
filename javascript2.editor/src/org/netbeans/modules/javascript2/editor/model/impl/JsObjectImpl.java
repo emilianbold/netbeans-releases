@@ -779,7 +779,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             if (index > -1 && !typeFQN.contains(toType)
                     && (index == 0 || typeFQN.charAt(index - 1) == '.' || typeFQN.charAt(index - 1) == ';')
                     && ((index + fromType.length()) == typeFQN.length() || typeFQN.charAt(index + fromType.length()) == '.')) {
-                typeR = typeFQN.substring(0, index) + toType + typeFQN.substring(index + fromType.length());
+                boolean replace = (index == 0 || typeFQN.startsWith(SemiTypeResolverVisitor.ST_START_DELIMITER));
+                if (!replace && index > 0) {
+                    String typePrefix = typeFQN.substring(0, index - 1);
+                    JsObject global = ModelUtils.getGlobalObject(this);
+                    replace = ModelUtils.findJsObjectByName(global, typePrefix) != null;
+                }
+                if (replace) {
+                    typeR = typeFQN.substring(0, index) + toType + typeFQN.substring(index + fromType.length());
+                }
             }
         }
         return typeR;

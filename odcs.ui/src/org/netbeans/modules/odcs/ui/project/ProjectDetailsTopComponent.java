@@ -616,7 +616,7 @@ public final class ProjectDetailsTopComponent extends TopComponent implements Ex
     private void initDetails() {
         linkProject.setText(project.getWebUrl());
         if (project.hasWiki()) {
-            linkWiki.setText(Utils.getRealUrl(project.getWikiUrl()));
+            linkWiki.setText(Utils.getWebUrl(project.getWikiUrl()));
         } else {
             linkWiki.setText(Bundle.LBL_Service_Not_Enabled());
             linkWiki.setEnabled(false);

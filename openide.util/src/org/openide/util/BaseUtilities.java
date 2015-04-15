@@ -50,6 +50,7 @@ import java.lang.ref.ReferenceQueue;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -1633,11 +1634,15 @@ widthcheck:  {
      */
     public static URI toURI(File f) {
         URI u;
-        try {
-            u = f.toPath().toUri();
-        } catch (java.nio.file.InvalidPathException ex) {
+        if (pathToURISupported()) {
+            try {
+                u = f.toPath().toUri();
+            } catch (java.nio.file.InvalidPathException ex) {
+                u = f.toURI();
+                LOG.log(Level.FINE, "can't convert " + f + " falling back to " + u, ex);
+            }
+        } else {
             u = f.toURI();
-            LOG.log(Level.FINE, "can't convert " + f + " falling back to " + u, ex);
         }
         if (u.toString().startsWith("file:///")) { 
             try {
@@ -1696,4 +1701,23 @@ widthcheck:  {
         public String[] readPair(String line);
     }
 
+    private static volatile Boolean pathURIConsistent;
+
+    private static boolean pathToURISupported() {
+        Boolean res = pathURIConsistent;
+        if (res == null) {
+            boolean c;
+            try {
+                final File f = new File("küñ"); //NOI18N
+                c = f.toPath().toUri().equals(f.toURI());
+            } catch (InvalidPathException e) {
+                c = false;
+            }
+            if (!c) {
+                LOG.fine("The java.nio.file.Path.toUri is inconsistent with java.io.File.toURI");   //NOI18N
+            }
+            res = pathURIConsistent = c;
+        }
+        return res;
+    }
 }

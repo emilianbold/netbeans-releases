@@ -47,6 +47,8 @@ package org.netbeans.modules.cnd.api.model.util;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
+import org.netbeans.modules.cnd.api.model.CsmClosureClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureType;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
@@ -214,6 +216,10 @@ public class CsmKindUtilities {
     
     public static boolean isFunctionPointerType(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerType);
+    }
+    
+    public static boolean isClosureType(CsmObject obj) {
+        return (obj instanceof CsmClosureType);
     }
 
     public static boolean isType(CsmObject obj) {
@@ -435,6 +441,10 @@ public class CsmKindUtilities {
     
     public static boolean isFunctionPointerClassifier(CsmObject obj) {
         return (obj instanceof CsmFunctionPointerClassifier);
+    }
+    
+    public static boolean isClosureClassifier(CsmObject obj) {
+        return (obj instanceof CsmClosureClassifier);
     }
 
     public static boolean isLambda(CsmObject obj) {

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.form;
 
+import java.awt.EventQueue;
 import java.util.*;
 import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
@@ -607,7 +608,7 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
-    private class PropertySynchronizer implements PropertyChangeListener {
+    private class PropertySynchronizer implements PropertyChangeListener, Runnable {
         private String sourcePropertyName;
         private String targetPropertyName;
 
@@ -620,10 +621,19 @@ public class RADVisualComponent extends RADComponent {
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             if (sourcePropertyName.equals(propName)) {
-                RADComponentNode node = getNodeReference();
-                if (node != null) {
-                    node.firePropertyChangeHelper(targetPropertyName, null, null);
+                if (!FormLAF.inLAFBlock()) {
+                    run();
+                } else {
+                    EventQueue.invokeLater(this);
                 }
+            }
+        }
+
+        @Override
+        public void run() {
+            RADComponentNode node = getNodeReference();
+            if (node != null) {
+                node.firePropertyChangeHelper(targetPropertyName, null, null);
             }
         }
     }

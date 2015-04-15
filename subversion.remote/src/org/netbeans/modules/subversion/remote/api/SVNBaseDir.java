@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.api;
 
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -111,7 +111,7 @@ public class SVNBaseDir {
                 break;
             }
             if (i > 0) {
-                commonsPart.append("/");
+                commonsPart.append("/"); //NOI18N
             }
             commonsPart.append(part1);
         }

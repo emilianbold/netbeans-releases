@@ -45,6 +45,7 @@ package org.netbeans.modules.java.editor.javadoc;
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.DocTree.Kind;
+import com.sun.source.doctree.ParamTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
@@ -555,13 +556,13 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         // complete type
         CharSequence cs = JavadocCompletionUtils.getCharSequence(jdctx.doc, start, end);
         StringBuilder sb = new StringBuilder();
-        jdctx.anchorOffset = start;
         for (int i = caretOffset - start - 1; i >= 0; i--) {
             char c = cs.charAt(i);
             if (c == '#') {
                 // complete class member
                 String prefix = sb.toString();
                 int substitutionOffset = caretOffset - sb.length();
+                jdctx.anchorOffset = substitutionOffset;
                 ExpressionTree classReference = jdctx.javac.getTreeUtilities().getReferenceClass(tag);
                 if (classReference == null) {
                     if (kind == Kind.VALUE) {
@@ -587,6 +588,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 String prefix = sb.toString();
                 String fqn = cs.subSequence(0, i).toString();
                 int substitutionOffset = caretOffset - sb.length();
+                jdctx.anchorOffset = substitutionOffset;
                 if (kind == Kind.THROWS) {
                     completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
                 } else {
@@ -601,6 +603,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         String prefix = sb.toString();
         String fqn = null;
         int substitutionOffset = caretOffset - sb.length();
+        jdctx.anchorOffset = substitutionOffset;
         if (kind == Kind.THROWS) {
             completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
         } else {
@@ -655,11 +658,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     
     private void completeParamName(DocTreePath tag, String prefix, int substitutionOffset, JavadocContext jdctx) {
         if (EXECUTABLE.contains(jdctx.commentFor.getKind())) {
+            List<? extends DocTree> blockTags = jdctx.comment.getBlockTags();
             ExecutableElement method = (ExecutableElement) jdctx.commentFor;
             for (VariableElement param : method.getParameters()) {
                 String name = param.getSimpleName().toString();
-                
-                if (name.startsWith(prefix)) {
+
+                if (!containsParam(blockTags, name) && name.startsWith(prefix)) {
                     items.add(JavadocCompletionItem.createNameItem(name, substitutionOffset));
                 }
             }
@@ -669,7 +673,19 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             completeTypeVarName(jdctx.commentFor, prefix, substitutionOffset);
         }
     }
-    
+
+    private boolean containsParam(List<? extends DocTree> blockTags, String name) {
+        for (DocTree blockTag : blockTags) {
+            if(blockTag.getKind() == Kind.PARAM) {
+                ParamTree param = (ParamTree) blockTag;
+                if(name.contentEquals(param.getName().getName())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     private void completeTypeVarName(Element forElement, String prefix, int substitutionOffset) {
         if (prefix.length() > 0) {
             if (prefix.charAt(0) == '<') {

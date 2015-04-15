@@ -70,12 +70,6 @@ branch, whether the branch was made before or after the given date. In
 some cases corresponding API changes have been made both in the trunk
 and in an in-progress stabilization branch, if they were needed for a
 bug fix; this ought to be marked in this list.</p>
-<ul>
-<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.
-Specification versions: 6.0 begins after this point.</li>
-<li>The <code>release40</code> branch was made on Nov 01 '04 for use in the NetBeans 4.0 release.
-Specification versions: 5.0 begins after this point.</li>
-</ul>
 <hr/>
 <standard-changelists module-code-name="org.netbeans.lib.v8debug"/>
 <hr/>

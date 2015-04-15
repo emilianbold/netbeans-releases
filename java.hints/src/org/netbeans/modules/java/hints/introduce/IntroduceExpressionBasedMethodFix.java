@@ -123,10 +123,12 @@ final class IntroduceExpressionBasedMethodFix extends IntroduceFixBase implement
                     break;
                 }
                 Element el = info.getTrees().getElement(acceptableParent);
-                boolean isIface = el.getKind().isInterface();
-                if (el != null && (el.getKind().isClass() || isIface)) {
-                    targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable, isIface));
-                    allInterfaces &= isIface;
+                if (el != null) {
+                    boolean isIface = el.getKind().isInterface();
+                    if (el.getKind().isClass() || isIface) {
+                        targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable, isIface));
+                        allInterfaces &= isIface;
+                    }
                 }
             }
             acceptableParent = acceptableParent.getParentPath();

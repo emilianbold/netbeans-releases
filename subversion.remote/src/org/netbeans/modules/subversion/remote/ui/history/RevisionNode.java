@@ -131,7 +131,7 @@ class RevisionNode extends AbstractNode {
     }
     
     private void initProperties() {
-        AttributeSet searchHiliteAttrs = ((FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class)).getFontColors("highlight-search"); //NOI18N
+        AttributeSet searchHiliteAttrs = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getFontColors("highlight-search"); //NOI18N
         Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
         if (c != null) {
             bgColor = getColorString(c);

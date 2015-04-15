@@ -279,6 +279,23 @@ public final class CodeStyle {
     }
 
     /**
+     * Determines whether the dependencies between members must be used when sorting.
+     * It returns true only if some sorting option is available (default: off) and the dependency
+     * inspection is enabled (default: true).
+     * <p/>
+     * Changing member order without looking for dependencies may result in incorrect code. A field
+     * must be declared textually first, and only then it can be referenced by simple name from field
+     * initializers and class/instance initializers - see defect #249199.
+     * @since 2.3
+     */
+    public boolean computeMemberDependencies() {
+        if (sortMembersInGroupsAlphabetically() || preferences.getBoolean(sortMembersByVisibility, getDefaultAsBoolean(sortMembersByVisibility))) {
+            return preferences.getBoolean(sortUsesDependencies, getDefaultAsBoolean(sortUsesDependencies));
+        }
+        return false;
+    }
+
+    /**
      * Returns an information about the desired insertion point of a new class member.
      * @since 0.96
      */

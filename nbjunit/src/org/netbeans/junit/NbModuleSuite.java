@@ -865,6 +865,7 @@ public class NbModuleSuite {
             modules.add("org.openide.util.ui");
             modules.remove("org.netbeans.insane");
             modules.add("org.netbeans.core.startup");
+            modules.add("org.netbeans.core.startup.base");
             modules.add("org.netbeans.bootstrap");
             turnModules(ud, !config.honorAutoEager, modules, config.moduleRegExp, platform);
             if (config.enableClasspathModules) {
@@ -1072,6 +1073,7 @@ public class NbModuleSuite {
                 "org.openide.filesystems",
                 "org.openide.filesystems.compat8",
                 "org.netbeans.core.startup",
+                "org.netbeans.core.startup.base",
                 "org.netbeans.libs.asm"));
         static void turnClassPathModules(File ud, ClassLoader loader) throws IOException {
             Enumeration<URL> en = loader.getResources("META-INF/MANIFEST.MF");

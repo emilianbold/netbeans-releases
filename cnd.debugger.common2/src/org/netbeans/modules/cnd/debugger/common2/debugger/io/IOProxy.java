@@ -136,7 +136,7 @@ public abstract class IOProxy {
 
     /** Helper class forwarding input from the io tab to the file */
     private class InputWriterThread extends Thread {
-        private boolean cancel = false;
+        private volatile boolean cancel = false;
 
         public InputWriterThread() {
             setName("TTY InputWriterThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
@@ -177,7 +177,7 @@ public abstract class IOProxy {
 
     /** Helper class forwarding output from the file to the io tab */
     private class OutputReaderThread  extends Thread {
-        private boolean cancel = false;
+        private volatile boolean cancel = false;
 
         public OutputReaderThread() {
             setName("TTY OutputReaderThread"); // NOI18N - Note NetBeans doesn't xlate "IDE Main"
@@ -190,14 +190,14 @@ public abstract class IOProxy {
                 int read;
                 in = createOutStream();
 
-                while ((read = in.read()) != (-1)) {
-                    if (cancel) { // 131739
-                        return;
-                    }
-                    if (read == 10) {
-                        ioWriter.write("\n"); // NOI18N
+                while (true) {
+                    read = in.read();
+                    if (read == -1) {
+                        if (cancel) { // 131739
+                            return;
+                        }
                     } else {
-                        ioWriter.write((char) read);
+                        ioWriter.write((read == 10) ? '\n' : (char) read);
                     }
                     //output.flush(); // 135380
                 }

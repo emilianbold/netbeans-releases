@@ -758,7 +758,7 @@ public class Gdb {
         
         @Override
         protected void notifyAsyncOutput(MIRecord record) {
-            if (debugger == null) {
+            if (debugger == null || debugger.session() == null) {
                 /* Debugger can not be initialized before the readiness "(gdb)" prompt
                  * but some service output may appear. Debugger should not handle it.*/
                 return;

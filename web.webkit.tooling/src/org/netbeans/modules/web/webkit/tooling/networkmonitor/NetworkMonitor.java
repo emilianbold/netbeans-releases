@@ -88,6 +88,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
                     component = new NetworkMonitorTopComponent(model, isConnected());
                     if (show) {
                         component.open();
+                        component.requestActive();
                     }
                 } else {
                     component.setModel(model, isConnected());

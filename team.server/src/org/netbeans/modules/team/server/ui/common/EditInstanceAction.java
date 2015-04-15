@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.MalformedURLException;
 import javax.swing.AbstractAction;
-import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.team.server.TeamServerInstanceCustomizer;
@@ -62,10 +61,6 @@ import org.openide.util.RequestProcessor;
  */
 public class EditInstanceAction extends AbstractAction {
 
-    @NbBundle.Messages("CTL_Change=Edit")
-    public static final String CHANGE_BUTTON = Bundle.CTL_Change();
-    public static final String CANCEL_BUTTON = Bundle.CTL_Cancel();
-    
     private JDialog dialog;
     
     public TeamServer server;
@@ -76,14 +71,13 @@ public class EditInstanceAction extends AbstractAction {
     }
 
     @Override
+    @NbBundle.Messages("CTL_EditTeamServerInstance=Edit Team Server")
     public void actionPerformed(ActionEvent e) {
-        final JButton changeButton = new JButton(CHANGE_BUTTON);
-        changeButton.getAccessibleContext().setAccessibleDescription(CHANGE_BUTTON);
-        final TeamServerInstanceCustomizer tsInstanceCustomizer = new TeamServerInstanceCustomizer(changeButton, server.getProvider());
+        final TeamServerInstanceCustomizer tsInstanceCustomizer = new TeamServerInstanceCustomizer(server.getProvider());
         ActionListener bl = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (e.getSource().equals(changeButton)) {
+                if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
                     tsInstanceCustomizer.startProgress();
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
@@ -121,9 +115,10 @@ public class EditInstanceAction extends AbstractAction {
 
         DialogDescriptor dd = new DialogDescriptor(
                 tsInstanceCustomizer,
-                Bundle.CTL_NewTeamServerInstance(),
+                Bundle.CTL_EditTeamServerInstance(),
                 true,
-                new Object[] {changeButton, CANCEL_BUTTON}, changeButton,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN,
                 null,
                 bl
@@ -132,6 +127,7 @@ public class EditInstanceAction extends AbstractAction {
         tsInstanceCustomizer.setDialogDescriptor(dd);
         tsInstanceCustomizer.setDisplayName(server.getDisplayName());
         tsInstanceCustomizer.setUrl(server.getUrl().toString());
+        dd.setValid(false); // initally disabled OK button (no change)
                 
         dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
         dialog.validate();

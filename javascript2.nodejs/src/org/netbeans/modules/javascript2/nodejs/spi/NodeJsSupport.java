@@ -53,6 +53,17 @@ public interface NodeJsSupport {
 
     boolean isSupportEnabled();
 
+    /**
+     * <b>Warning</b>: This method should not be called in the UI thread!
+     * @return documentation URL or {@code null} if not known
+     * @since 0.7
+     */
+    @CheckForNull
+    String getDocumentationUrl();
+
+    /**
+     * <b>Warning</b>: This method should not be called in the UI thread!
+     */
     @CheckForNull
     FileObject getDocumentationFolder();
 

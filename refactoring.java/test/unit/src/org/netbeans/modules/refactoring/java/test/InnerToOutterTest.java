@@ -58,6 +58,96 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test236189() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                new File("t/A.java", "package t; public class A { int i; public class B { public void foo() { F f = F.A; switch(f) { case A: break; } } } }"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
+                new File("t/B.java", "/*\n"
+                        + " * Refactoring License\n"
+                        + " */\n"
+                        + "\n"
+                        + "package t;\n"
+                        + "\n"
+                        + "/**\n"
+                        + " *\n"
+                        + " * @author junit\n"
+                        + " */\n"
+                        + "public class B {\n"
+                        + "\n"
+                        + "    public void foo() {\n"
+                        + "        F f = F.A;\n"
+                        + "        switch (f) {\n"
+                        + "            case A:\n"
+                        + "                break;\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "\n"
+                        + "}\n"),
+                new File("t/A.java", "package t; public class A { int i; }"));
+    }
+    
+    public void test248745() throws Exception { // #248745 - Move Inner to outer Level does not alter static import of moved class
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n public class A {\n public static class B {\n }\n }"),
+                new File("t/C.java", "package t;\n import static t.A.B;\n public class C {\n public void foo() {\n B b = new B(); } }"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                new File("t/B.java", "/*\n"
+                        + " * Refactoring License\n"
+                        + " */\n"
+                        + "\n"
+                        + "package t;\n"
+                        + "\n"
+                        + "/**\n"
+                        + " *\n"
+                        + " * @author junit\n"
+                        + " */\n"
+                        + "public class B {\n"
+                        + "}\n"),
+                new File("t/A.java", "package t; public class A { }"),
+                new File("t/C.java", "package t; public class C { public void foo() { B b = new B(); } }"));
+    }
+    
+    public void test249299() throws Exception { // #249299 - JavaDoc comments for enum values are lost during Refactor -> Move Inner to Outer level 
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for SampleEnum\n"
+                        + "     */\n"
+                        + "    public enum SampleEnum {\n"
+                        + "        /**\n"
+                        + "         * JavaDoc for value1\n"
+                        + "         */\n"
+                        + "        Value1,\n"
+                        + "        /**\n"
+                        + "         * JavaDoc for value2\n"
+                        + "         */\n"
+                        + "        Value2;\n"
+                        + "    }\n"
+                        + "}"));
+        performInnerToOuterTest(null);
+        verifyContent(src,
+                      new File("t/SampleEnum.java", "/* * Refactoring License */ package t;\n"
+                        + "/**\n"
+                        + " * JavaDoc for SampleEnum\n"
+                        + " */\n"
+                        + "public enum SampleEnum {\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for value1\n"
+                        + "     */\n"
+                        + "    Value1,\n"
+                        + "    /**\n"
+                        + "     * JavaDoc for value2\n"
+                        + "     */\n"
+                        + "    Value2\n"
+                        + "}\n"),
+                      new File("t/A.java", "package t; public class A { }"));
+    }
+    
     public void test100305() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { class B { } class F { F(int outer) { System.out.println(outer); } } }"));

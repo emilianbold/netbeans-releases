@@ -580,6 +580,22 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             List<? extends VariableTree> currentParameters = current.getParameters();
             List<VariableTree> newParameters = new ArrayList<VariableTree>(paramInfos.length);
             
+            boolean renameParams = !fromIntroduce;
+            
+            ExecutableElement oMethod = (ExecutableElement) el;
+            ExecutableElement refMethod = (ExecutableElement) elementToFind;
+            
+            if(oMethod != refMethod) {
+                List<? extends VariableElement> oParams = oMethod.getParameters();
+                List<? extends VariableElement> rParams = refMethod.getParameters();
+                for (int i = 0; i < oParams.size(); i++) {
+                    if(!oParams.get(i).getSimpleName().contentEquals(rParams.get(i).getSimpleName())) {
+                        renameParams = false;
+                        break;
+                    }
+                }
+            }
+            
             ParameterInfo[] p = paramInfos;
             for (int i=0; i<p.length; i++) {
                 int originalIndex = p[i].getOriginalIndex();
@@ -606,7 +622,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         typeTree = make.Identifier(newType); // NOI18N
                     }
                     vt = make.Variable(originalVt.getModifiers(),
-                            fromIntroduce? originalVt.getName() : p[i].getName(),
+                            renameParams? p[i].getName() : originalVt.getName(),
                             typeTree,
                             originalVt.getInitializer());
                 }
@@ -676,7 +692,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     }
                 }
             }
-            final BlockTree body = translateBody(current.getBody(), current.getParameters(), (ExecutableElement)el);
+            final BlockTree body = translateBody(current.getBody(), current.getParameters(), (ExecutableElement)el, renameParams);
 
             MethodTree nju = make.Method(
                     make.Modifiers(modifiers, current.getModifiers().getAnnotations()),
@@ -769,30 +785,31 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return false;
     }
     
-    private BlockTree translateBody(BlockTree blockTree,  final List<? extends VariableTree> parameters, ExecutableElement p) {
+    private BlockTree translateBody(BlockTree blockTree,  final List<? extends VariableTree> parameters, ExecutableElement p, boolean renameParams) {
         final Map<ExpressionTree, ExpressionTree> original2Translated = new HashMap<ExpressionTree, ExpressionTree>();
         boolean changed = false;
         do {
             original2Translated.clear();
-            TreeScanner<Void, Void> idScan = new TreeScanner<Void, Void>() {
-                @Override
-                public Void visitIdentifier(IdentifierTree node, Void p) {
-                    String name = node.getName().toString();
-                    if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.MEMBER_SELECT){
-                        for (int i = 0; i < paramInfos.length; i++) {
-                            ParameterInfo parameterInfo = paramInfos[i];
-                            if(parameterInfo.getOriginalIndex() >= 0 &&
-                                    parameters.get(parameterInfo.getOriginalIndex()).getName().contentEquals(name)) {
-                                original2Translated.put(node, make.Identifier(parameterInfo.getName()));
+            if(renameParams) {
+                TreeScanner<Void, Void> idScan = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitIdentifier(IdentifierTree node, Void p) {
+                        String name = node.getName().toString();
+                        if (getCurrentPath().getParentPath().getLeaf().getKind() != Kind.MEMBER_SELECT){
+                            for (int i = 0; i < paramInfos.length; i++) {
+                                ParameterInfo parameterInfo = paramInfos[i];
+                                if(parameterInfo.getOriginalIndex() >= 0 &&
+                                        parameters.get(parameterInfo.getOriginalIndex()).getName().contentEquals(name)) {
+                                    original2Translated.put(node, make.Identifier(parameterInfo.getName()));
+                                }
                             }
                         }
+                        return super.visitIdentifier(node, p);
                     }
-                    return super.visitIdentifier(node, p);
-                }
-            };
-            idScan.scan(blockTree, null);
-            blockTree = (BlockTree) workingCopy.getTreeUtilities().translate(blockTree, original2Translated);
-            
+                };
+                idScan.scan(blockTree, null);
+                blockTree = (BlockTree) workingCopy.getTreeUtilities().translate(blockTree, original2Translated);
+            }
             original2Translated.clear();
             TreeScanner<Boolean, ExecutableElement> methodScanner = new TreeScanner<Boolean, ExecutableElement>() {
                 @Override

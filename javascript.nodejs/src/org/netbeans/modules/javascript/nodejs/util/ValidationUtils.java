@@ -53,6 +53,7 @@ public final class ValidationUtils {
     public static final String NODE_PATH = "node.path"; // NOI18N
     public static final String NODE_SOURCES_PATH = "node.sources.path"; // NOI18N
     public static final String NPM_PATH = "npm.path"; // NOI18N
+    public static final String EXPRESS_PATH = "express.path"; // NOI18N
 
 
     private ValidationUtils() {
@@ -88,6 +89,14 @@ public final class ValidationUtils {
         String warning = ExternalExecutableValidator.validateCommand(npm, Bundle.ValidationUtils_npm_name());
         if (warning != null) {
             result.addWarning(new ValidationResult.Message(NPM_PATH, warning));
+        }
+    }
+
+    @NbBundle.Messages("ValidationUtils.express.name=Express")
+    public static void validateExpress(ValidationResult result, String express) {
+        String warning = ExternalExecutableValidator.validateCommand(express, Bundle.ValidationUtils_express_name());
+        if (warning != null) {
+            result.addWarning(new ValidationResult.Message(EXPRESS_PATH, warning));
         }
     }
 

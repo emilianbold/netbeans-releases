@@ -41,17 +41,20 @@
  */
 package org.netbeans.modules.parsing.lucene;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.LockObtainFailedException;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -123,14 +126,14 @@ class RecordOwnerLockFactory extends LockFactory {
             boolean first = true;
             for (Map.Entry<String,RecordOwnerLock> e : locks.entrySet()) {
                 if (!first) {
-                    sb.append(','); //NOI18N
+                    sb.append('\n');    //NOI18N
                 } else {
                     first = false;
                 }
                 sb.append("name: ").append(e.getKey()).append("->").append(e.getValue());   //NOI18N
             }
         }
-        sb.append(']'); //NOI18N
+        sb.append("]\n"); //NOI18N
         return sb.toString();
     }
 
@@ -159,6 +162,19 @@ class RecordOwnerLockFactory extends LockFactory {
         }
 
         @Override
+        public boolean obtain(long lockWaitTimeout) throws LockObtainFailedException, IOException {
+            try {
+                return super.obtain(lockWaitTimeout);
+            } catch (LockObtainFailedException e) {
+                throw annotateException(
+                    e,
+                    (File) null,
+                    Thread.getAllStackTraces(),
+                    RecordOwnerLockFactory.this);
+            }
+        }
+
+        @Override
         public void release() {
             synchronized (RecordOwnerLockFactory.this.locks) {
                 this.owner = null;
@@ -176,13 +192,70 @@ class RecordOwnerLockFactory extends LockFactory {
         @Override
         public String toString() {
             synchronized (RecordOwnerLockFactory.this.locks) {
-                return String.format(
-                    "%s[owned by: %s(%d), created from: %s]",   //NOI18N
-                    this.getClass().getSimpleName(),
-                    owner,
-                    owner == null ? -1 : owner.getId(),
-                    caller == null ? Collections.emptySet() : Arrays.asList(caller.getStackTrace()));
+                final StringBuilder sb = new StringBuilder();
+                sb.append(this.getClass().getSimpleName());
+                sb.append("owned by:[");    //NOI18N
+                sb.append(owner);
+                sb.append('(').append(owner == null ? -1 : owner.getId()).append(')');  //NOI18N
+                sb.append("created from:\n");
+                stackTrace(caller == null ? new StackTraceElement[0] : caller.getStackTrace(), sb);
+                return sb.toString();
             }
+        }
+    }
+
+    static <T extends Exception> T annotateException(
+        @NonNull final T e,
+        @NullAllowed File indexDir,
+        @NullAllowed Map<Thread,StackTraceElement[]> threads) {
+        return annotateException(e, indexDir, threads, null);
+    }
+
+    private static <T extends Exception> T annotateException(
+        @NonNull final T e,
+        @NullAllowed File indexDir,
+        @NullAllowed Map<Thread,StackTraceElement[]> threads,
+        @NullAllowed LockFactory lockFactory) {
+        final StringBuilder message = new StringBuilder();
+        if (indexDir != null) {
+            final File[] children = indexDir.listFiles();
+            if (children == null) {
+                message.append("Non existing index folder");    //NOI18N
+            } else {
+                for (File c : children) {
+                    message.append(c.getName()).append(" f: ").append(c.isFile()).
+                    append(" r: ").append(c.canRead()).
+                    append(" w: ").append(c.canWrite()).append("\n");  //NOI18N
+                }
+            }
+        }
+        if (threads != null) {
+            final Thread ct = Thread.currentThread();
+            message.append("current thread: ").append(ct).append('(').append(ct.getId()).append(')');    //NOI18N
+            message.append("threads: \n");     //NOI18N   //NOI18N
+            stackTraces(threads, message);
+        }
+        if (lockFactory != null) {
+            message.append("lockFactory: ").append(lockFactory);    //NOI18N
+        }
+        return Exceptions.attachMessage(e, message.toString());
+    }
+
+    private static void stackTraces(
+        @NonNull final Map<Thread,StackTraceElement[]> traces,
+        @NonNull final StringBuilder sb) {
+        for (Map.Entry<Thread,StackTraceElement[]> entry : traces.entrySet()) {
+            final Thread t = entry.getKey();
+            sb.append(t).append('(').append(t.getId()).append(")\n"); //NOI18N
+            stackTrace(entry.getValue(), sb);
+        }
+    }
+
+    private static void stackTrace(
+        @NonNull final StackTraceElement[] stack,
+        @NonNull final StringBuilder sb) {
+        for (StackTraceElement se : stack) {
+            sb.append('\t').append(se).append('\n');    //NOI18N
         }
     }
 }

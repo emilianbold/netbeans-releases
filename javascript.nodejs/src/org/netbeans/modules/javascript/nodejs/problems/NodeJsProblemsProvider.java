@@ -225,8 +225,9 @@ public final class NodeJsProblemsProvider implements ProjectProblemsProvider {
             return;
         }
         File nodeSources = NodeJsUtils.getNodeSources(project);
-        if (nodeSources == null) {
-            // no sources
+        if (nodeSources == null
+                || !nodeSources.isDirectory()) {
+            // no or incorrect sources
             String message = Bundle.NodeJsProblemProvider_error(Bundle.NodeJsProblemProvider_node_sources());
             ProjectProblem problem = ProjectProblem.createError(
                     message,

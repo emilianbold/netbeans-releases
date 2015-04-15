@@ -43,11 +43,11 @@ package org.netbeans.modules.glassfish.common.status;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import static org.glassfish.tools.ide.data.GlassFishStatusCheck.LOCATIONS;
-import static org.glassfish.tools.ide.data.GlassFishStatusCheck.VERSION;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
+import org.netbeans.modules.glassfish.tooling.GlassFishStatus;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishStatusCheck.LOCATIONS;
+import static org.netbeans.modules.glassfish.tooling.data.GlassFishStatusCheck.VERSION;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishStatusTask;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ui.GlassFishCredentials;

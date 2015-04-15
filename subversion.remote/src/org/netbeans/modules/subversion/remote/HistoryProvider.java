@@ -43,7 +43,6 @@ package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -61,7 +60,8 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.history.HistoryActionVCSProxyBased;
@@ -322,7 +322,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             final Context context = new Context(file);
             SVNUrl repository;
             try {
-                repository = SvnUtils.getRepositoryRootUrl(file);
+                repository = ContextAction.getSvnUrl(context);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(context, ex, false, false);
                 return;

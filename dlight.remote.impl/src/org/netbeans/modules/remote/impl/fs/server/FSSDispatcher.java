@@ -56,6 +56,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,6 +80,7 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
 import org.openide.modules.InstalledFileLocator;
@@ -125,7 +127,7 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.4.0"; // NOI18N
+    private static final String MIN_SERVER_VERSION = "1.6.2"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
@@ -157,7 +159,9 @@ import org.openide.util.RequestProcessor;
     }
 
     public void connected() {
-        RP.post(new ConnectTask());
+        if (RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+            RP.post(new ConnectTask());
+        }
     }
 
     /*package*/ void requestRefreshCycle(String path) {
@@ -245,13 +249,24 @@ import org.openide.util.RequestProcessor;
                         synchronized (responseLock) {
                             FSSResponse response = responses.get(respId);
                             if (response == null) {
-                                RemoteLogger.info("skipping {0} response #{1}: {2}",
+                                RemoteLogger.fine("skipping {0} response #{1}: {2}",
                                         traceName, respId, line);
                             } else {
                                 response.addPackage(FSSResponseKind.fromChar(respKind), line);
                             }
                         }
                     }
+                }
+                Collection<FSSResponse> respCopy;
+                synchronized (responseLock) {
+                    respCopy = new ArrayList<>(responses.values());
+                    responses.clear();
+                }                
+                ExecutionException ex = new ExecutionException(
+                        RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env)));
+
+                for (FSSResponse resp : respCopy) {
+                    resp.failed(ex);
                 }
                 NativeProcess process = server.getProcess();
                 if (!ProcessUtils.isAlive(process)) {
@@ -348,6 +363,8 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
+        } catch (ConnectException ex) {
+            throw ex; // that's normal, transport still valid, just disconnect occurred
         } catch (IOException ex) {
             setInvalid(false);
             throw ex;
@@ -434,7 +451,8 @@ import org.openide.util.RequestProcessor;
                 }
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
-                        ((osFamily == HostInfo.OSFamily.LINUX) ? "${_isa}" : ""); // NOI18N
+                        ((osFamily == HostInfo.OSFamily.LINUX && 
+                        hostInfo.getCpuFamily() != HostInfo.CpuFamily.SPARC) ? "${_isa}" : ""); // NOI18N
                 platformPath = macroExpander.expandPredefinedMacros(toExpand);
             }
             toolPath += "bin/" + platformPath + "/fs_server"; //NOI18N
@@ -448,7 +466,7 @@ import org.openide.util.RequestProcessor;
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
 
         String toolPath;
@@ -499,7 +517,7 @@ import org.openide.util.RequestProcessor;
             }
             if (server == null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                    throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+                    throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);
@@ -548,14 +566,14 @@ import org.openide.util.RequestProcessor;
             try {
                 HostInfo hi = HostInfoUtils.getHostInfo(env);
                 sb.append('(').append(hi.getOS().getName()).append(' ').append(hi.getCpuFamily()).append(' ');
-                sb.append(" - ").append(hi.getOS().getVersion()).append(')');
+                sb.append(" - ").append(hi.getOS().getVersion()).append(')'); // NOI18N
             } catch (ConnectionManager.CancellationException | IOException ex) {
                 Exceptions.printStackTrace(ex); // never occurs
             }
         }
         NativeProcess process = server.getProcess();
         if (process != null) {
-            sb.append(" rc=").append(process.exitValue()).append(' ');
+            sb.append(" rc=").append(process.exitValue()).append(' '); // NOI18N
         }
         sb.append(' ').append(lastErrorMessage.get());
         return sb.toString();
@@ -662,6 +680,11 @@ import org.openide.util.RequestProcessor;
             }
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
+            } else {
+                if (!RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+                    // there is no cache locally => clean remote cache as well
+                    argsList.add("-c"); // NOI18N
+                }
             }
             if (SERVER_THREADS > 0 ) {
                 argsList.add("-t"); // NOI18N
@@ -730,7 +753,7 @@ import org.openide.util.RequestProcessor;
             ps.printf("\t[pid=%d] state=%s ", pid,  process.getState()); //NOI18N
             try {
                 ProcessStatusEx exitStatusEx = process.getExitStatusEx();
-                ps.printf("\trc=%d signalled=%b termSignal=%d ", //NOI18N
+                ps.printf("\trc=%d signalled=%b termSignal=%s ", //NOI18N
                         exitStatusEx.getExitCode(),
                         exitStatusEx.ifSignalled(),
                         exitStatusEx.termSignal());

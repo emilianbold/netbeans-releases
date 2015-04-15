@@ -764,4 +764,27 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testDetachedRuleset() {
+        String source = "// declare detached ruleset\n"
+                + "@detached-ruleset: { background: red; };\n"
+                + "\n"
+                + "// use detached ruleset\n"
+                + ".top {\n"
+                + "    @detached-ruleset(); \n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testDetachedRulesetestWithMixin() {
+        String source = ".mymixin(@ruleset) {\n"
+                + "    @ruleset(); // Hint: Unexpected LPAREN found\n"
+                + "}\n"
+                + ".xx {\n"
+                + "    .mymixin({.red()}); // Hint: Unexpected IDENT found\n"
+                + "} ";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
 }

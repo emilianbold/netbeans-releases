@@ -65,7 +65,7 @@ import org.openide.util.Utilities;
  * directory. Designed to be called from installer.
  * <p>
  * Sample command line<br>
- * java -cp platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-j2ee-weblogic9.jar org.netbeans.modules.j2ee.weblogic9.registration.AutomaticRegistration %lt;clusterDir&gt; &lt;serverDir&gt; &lt;domainDir&gt; &lt;username&gt; &lt;password&gt;
+ * java -cp platform/core/core.jar:platform/core/core-base.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:platform/lib/org-openide-util-ui.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-j2ee-weblogic9.jar:enterprise/modules/org-netbeans-modules-weblogic-common.jar org.netbeans.modules.j2ee.weblogic9.registration.AutomaticRegistration --add %lt;clusterDir&gt; &lt;serverDir&gt; &lt;domainDir&gt; &lt;username&gt; &lt;password&gt;
  *
  * @author Petr Hejl
  * @see #main(java.lang.String[]) 

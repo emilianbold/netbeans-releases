@@ -206,14 +206,54 @@ public class CndTokenUtilities {
             if (ts == null) {
                 return 0;
             }
+            CppTokenId prev = null;
+            int bracesDepth = 0;
             do {
                 final TokenId id = ts.token().id();
                 if(id instanceof CppTokenId) {
                         switch ((CppTokenId)id) {
                             case SEMICOLON:
+                                if (bracesDepth <= 0) {
+                                    return ts.offset();
+                                }
+                                prev = (CppTokenId) id;
+                                break;
+                                
                             case LBRACE:
+                                if (bracesDepth > 0) {
+                                    bracesDepth--;
+                                } else {
+                                    return ts.offset();
+                                }
+                                prev = (CppTokenId) id;
+                                break;
+                                   
+                                
                             case RBRACE:
-                                return ts.offset();
+                                if (bracesDepth > 0) {
+                                    bracesDepth++;
+                                } else if (canBeNextToLambdaToken(prev)) {
+                                    bracesDepth++;
+                                } else if (canBeNextToUniformInitilaizerToken(prev)) {
+                                    bracesDepth++;
+                                } else {
+                                    return ts.offset();
+                                }
+                                prev = (CppTokenId) id;
+                                break;
+                                
+                            case WHITESPACE:
+                            case NEW_LINE:
+                            case LINE_COMMENT:
+                            case DOXYGEN_LINE_COMMENT:
+                            case BLOCK_COMMENT:
+                            case DOXYGEN_COMMENT:
+                            case ESCAPED_LINE:
+                                break;
+                                
+                            default:
+                                prev = (CppTokenId) id;
+                                break;
                         }
                     }
             } while (ts.movePrevious());
@@ -404,6 +444,19 @@ public class CndTokenUtilities {
     
     private static int shiftOffset(int offset, int shift) {
         return offset + shift;
+    }
+    
+    private static boolean canBeNextToLambdaToken(CppTokenId id) {
+        return id == CppTokenId.LPAREN 
+            || id == CppTokenId.COMMA
+            || id == CppTokenId.RPAREN;
+    }
+    
+    private static boolean canBeNextToUniformInitilaizerToken(CppTokenId id) {
+        return id == CppTokenId.DOT
+            || id == CppTokenId.COMMA 
+            || id == CppTokenId.LPAREN
+            || id == CppTokenId.RPAREN;
     }
 
     private static class SkipTokenProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {

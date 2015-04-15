@@ -102,7 +102,7 @@ public class ViewNode extends BaseNode implements SchemaNameProvider {
     }
 
     protected void initialize() {
-        boolean connected = !connection.getConnector().isDisconnected();
+        boolean connected = connection.isConnected();
         MetadataModel metaDataModel = connection.getMetadataModel();
         if (connected && metaDataModel != null) {
             try {

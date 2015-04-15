@@ -136,7 +136,7 @@ public class DomTCController implements PropertyChangeListener {
                 TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
                 boolean wasOpened = tc.isOpened();
                 group.open();
-                if (!wasOpened && tc.isOpened()) {
+                if (!wasOpened && tc.isOpened() && !WindowManager.getDefault().isTopComponentMinimized(tc)) {
                     tc.requestVisible();
                 }
             }

@@ -444,6 +444,21 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug243087.cpp", 4, 20, "bug243087.cpp", 1, 1);
     }        
     
+    public void testBug249613() throws Exception {
+        // Bug 249613 - Code assistance fails for some inline namespaces
+        performTest("bug249613.cpp", 22, 30, "bug249613.cpp", 5, 17);
+        performTest("bug249613.cpp", 23, 30, "bug249613.cpp", 14, 17);
+        performTest("bug249613.cpp", 24, 25, "bug249613.cpp", 9, 13);
+        performTest("bug249613.cpp", 25, 25, "bug249613.cpp", 17, 13);
+    }        
+    
+    public void testBug251256() throws Exception {
+        // Bug 251256 - Unable to resolve static functions dereferenced with ::
+        performTest("bug251256.cpp", 10, 10, "bug251256.cpp", 1, 1);
+        performTest("bug251256.cpp", 11, 10, "bug251256.cpp", 3, 1);
+        performTest("bug251256.cpp", 12, 10, "bug251256.cpp", 6, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

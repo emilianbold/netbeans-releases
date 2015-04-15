@@ -135,6 +135,11 @@ public final class DomTC extends TopComponent {
         };
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        return getComponent(0).requestFocusInWindow();
+    }
+
     /**
      * Lookup of {@code DomTC}.
      */

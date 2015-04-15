@@ -96,6 +96,10 @@ public class CPUtils {
                 //skip current file (it is included to the referred files list)
                 continue;
             }
+            if (file.isSymbolicLink() && reff.getPath().equals(file.readSymbolicLinkPath())) {
+                continue;
+            }
+            
             CPCssIndexModel cpIndexModel = (CPCssIndexModel) index.getIndexModel(CPCssIndexModel.Factory.class, reff);
             if (cpIndexModel != null) {
                 models.put(reff, cpIndexModel);

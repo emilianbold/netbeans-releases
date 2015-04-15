@@ -71,7 +71,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.commit.ConflictResolvedAction;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
@@ -106,7 +106,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
 
     public void exec() {
         assert SwingUtilities.isEventDispatchThread();
-        MergeVisualizer merge = (MergeVisualizer) Lookup.getDefault().lookup(MergeVisualizer.class);
+        MergeVisualizer merge = Lookup.getDefault().lookup(MergeVisualizer.class);
         if (merge == null) {
             throw new IllegalStateException("No Merge engine found."); // NOI18N
         }
@@ -144,7 +144,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 JOptionPane.showMessageDialog(null, NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts"), 
                                               NbBundle.getMessage(ResolveConflictsExecutor.class, "MSG_NestedConflicts_Title"), 
                                               JOptionPane.WARNING_MESSAGE);
-                org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(file);
+                VCSFileProxySupport.openFile(file);
             } else {
                 Subversion.LOG.log(Level.SEVERE, null, ioex);
             }
@@ -153,7 +153,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
     
     private boolean handleMergeFor(final VCSFileProxy file, FileObject fo, FileLock lock,
                                 final MergeVisualizer merge) throws IOException {
-        String mimeType = (fo == null) ? "text/plain" : fo.getMIMEType(); // NOI18N
+        String mimeType = fo.getMIMEType();
         String ext = "."+fo.getExt(); // NOI18N
         
         VCSFileProxy f1 = VCSFileProxySupport.createTempFile(file, TMP_PREFIX, ext, true);
@@ -181,10 +181,10 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         String originalLeftFileRevision = leftFileRevision;
         String originalRightFileRevision = rightFileRevision;
         if (leftFileRevision != null) {
-            leftFileRevision.trim();
+            leftFileRevision = leftFileRevision.trim();
         }
         if (rightFileRevision != null) {
-            rightFileRevision.trim();
+            rightFileRevision = rightFileRevision.trim();
         }
         if (leftFileRevision == null || leftFileRevision.equals(LOCAL_FILE_SUFFIX) || leftFileRevision.equals(WORKING_FILE_SUFFIX)) { // NOI18N
             leftFileRevision = org.openide.util.NbBundle.getMessage(ResolveConflictsExecutor.class, "Diff.titleWorkingFile"); // NOI18N
@@ -199,8 +199,8 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
         
         final StreamSource s1;
         final StreamSource s2;
-        Utils.associateEncoding(file, f1);
-        Utils.associateEncoding(file, f2);
+        VCSFileProxySupport.associateEncoding(file, f1);
+        VCSFileProxySupport.associateEncoding(file, f2);
         s1 = StreamSource.createSource(file.getName(), leftFileRevision, mimeType, new BufferedReader(new InputStreamReader(f1.getInputStream(false), encoding)));
         s2 = StreamSource.createSource(file.getName(), rightFileRevision, mimeType, new BufferedReader(new InputStreamReader(f2.getInputStream(false), encoding)));
         final StreamSource result = new MergeResultWriterInfo(f1, f2, f3, file, mimeType,

@@ -67,6 +67,8 @@ import org.netbeans.modules.html.knockout.model.KOModel;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.spi.knockout.Bindings;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
 /**
@@ -100,6 +102,8 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private KODataBindContext currentTemplateContext;
 
+    private String generatedSource;
+
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
         this.stack = new LinkedList();
@@ -113,6 +117,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
         if(!KOModel.getModel(parserResult).containsKnockout()) {
             return false;
+        }
+
+        FileObject fo = snapshot.getSource().getFileObject();
+        if (fo != null) {
+            generatedSource = Bindings.findBindings(fo, 1);
         }
         return true;
     }
@@ -340,6 +349,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private void startKnockoutSnippet(KODataBindContext context, Integer position) {
         StringBuilder sb = new StringBuilder();
         sb.append("(function(){\n"); // NOI18N
+
+        if (generatedSource != null) {
+            sb.append(generatedSource).append("\n"); //NOI18N
+        }
 
         // for now this is actually just a placeholder
         sb.append("var $element;\n");

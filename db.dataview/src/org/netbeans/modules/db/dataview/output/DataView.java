@@ -45,21 +45,27 @@ package org.netbeans.modules.db.dataview.output;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.io.CharConversionException;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.xml.XMLUtil;
 
 /**
  * DataView to show data of a given sql query string, provides static method to create 
@@ -72,14 +78,15 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 public class DataView {
+    private static final Logger LOG = Logger.getLogger(DataView.class.getName());
     private static final int MAX_TAB_LENGTH = 25;
     private DatabaseConnection dbConn;
-    private List<Throwable> errMessages = new ArrayList<Throwable>();
+    private final List<Throwable> errMessages = new ArrayList<>();
     private String sqlString; // Once Set, Data View assumes it will never change
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
-    private final List<DataViewPageContext> dataPage = new ArrayList<DataViewPageContext>();
-    private final List<DataViewUI> dataViewUI = new ArrayList<DataViewUI>();
+    private final List<DataViewPageContext> dataPage = new ArrayList<>();
+    private final List<DataViewUI> dataViewUI = new ArrayList<>();
     private JComponent container;
     private int initialPageSize = org.netbeans.modules.db.dataview.api.DataViewPageContext.getStoredPageSize();
     private boolean nbOutputComponent = false;
@@ -149,13 +156,28 @@ public class DataView {
         }
 
         String sql = getSQLString();
-        if (sql.length() > MAX_TAB_LENGTH) {
-            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
+        String sqlSpaceNormalized = sql.replaceAll("\\s+", " ");
+        if (sqlSpaceNormalized.length() > MAX_TAB_LENGTH) {
+            String trimmed = sqlSpaceNormalized.substring(0, MAX_TAB_LENGTH) + "\u2026";
             container.setName(trimmed);
         } else {
-            container.setName(sql);
+            container.setName(sqlSpaceNormalized);
         }
-        container.setToolTipText(sql);
+
+        try {
+            // Limit SQL length to 512 chars to create excessive tooltip
+            int length = Math.min(sql.length(), 512);
+            String displaySQL = sql.substring(0, length);
+            if(sql.length() > 512) {
+                displaySQL += "\u2026";
+            }
+            container.setToolTipText(
+                    NbBundle.getMessage(DataView.class, "DataViewUI_ToolTip",
+                            XMLUtil.toAttributeValue(dbConn.getDisplayName()),
+                            XMLUtil.toAttributeValue(displaySQL)));
+        } catch (CharConversionException ex) {
+            LOG.log(Level.WARNING, "", ex);
+        }
 
         results = new ArrayList<Component>();
         results.add(container);
@@ -247,18 +269,21 @@ public class DataView {
         return this.dataPage.get(i);
     }
 
-    DataViewPageContext addPageContext(final DataViewDBTable table) {
-        final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
-        this.dataPage.add(pageContext);
-        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
-            @Override
-            public Void run() {
-                pageContext.setTableMetaData(table);
-                pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
-                return null;
-            }
-        });
-        return pageContext;
+    DataViewPageContext addPageContext(final DataViewDBTable table) throws InterruptedException {
+        try {
+            final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
+            this.dataPage.add(pageContext);
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    pageContext.setTableMetaData(table);
+                    pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+                }
+            });
+            return pageContext;
+        } catch (InvocationTargetException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     DatabaseConnection getDatabaseConnection() {
@@ -284,7 +309,7 @@ public class DataView {
     }
 
     public void resetEditable() {
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
             @Override
             public void run() {
                 for (DataViewPageContext pageContext : dataPage) {
@@ -294,26 +319,9 @@ public class DataView {
         });
     }
 
-    public boolean isEditable() {
-        if(dataPage.isEmpty()) {
-            return false;
-        } else {
-            return Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
-                @Override
-                public Boolean run() {
-                    boolean editable = true;
-                    for (DataViewPageContext pageContext : dataPage) {
-                        editable &= pageContext.getModel().isEditable();
-                    }
-                    return editable;
-                }
-            });
-        }
-    }
-
     synchronized void disableButtons() {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {
@@ -326,7 +334,7 @@ public class DataView {
     }
 
     synchronized void removeComponents() {
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {
@@ -373,7 +381,7 @@ public class DataView {
 
     void resetToolbar(final boolean wasError) {
         assert dataViewUI != null;
-        Mutex.EVENT.readAccess(new Runnable() {
+        Mutex.EVENT.writeAccess(new Runnable() {
 
             @Override
             public void run() {

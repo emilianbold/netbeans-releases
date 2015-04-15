@@ -177,7 +177,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
     private SourceGroup[] getSourceGroups(Project project, FileObject file) {
         // #239027
-        if (JSON_MIME_TYPE.equals(FileUtil.getMIMEType(file, JSON_MIME_TYPE))) {
+        if (FileUtil.getMIMEType(file, JSON_MIME_TYPE, null) != null) {
             return ProjectUtils.getSources(project).getSourceGroups(Sources.TYPE_GENERIC);
         }
         ClientSideProject clientSideProject = getClientSideProject(project);

@@ -169,6 +169,12 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 	    bpt.dispose();
             return;
 	} 
+        
+        // prevent double click on not yet handled previous file:line breakpoint
+        if (debugger != null && debugger.bm().hasBreakpointJobAt(fileName, lineNo)) {
+            // there is no way to dispose a pending breakpoint
+            return;
+        }
                 
         // create a new breakpoint
         else if (address != null) {

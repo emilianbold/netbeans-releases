@@ -41,19 +41,20 @@
  */
 package org.netbeans.modules.db.sql.analyzer;
 
+import java.util.List;
 import java.util.SortedMap;
 
 /**
  *
  * @author Jiri Skrivanek
  */
-public class CreateStatement extends SQLStatement {
+public class CreateStatement extends SelectStatement {
 
     private int bodyStartOffset;
     private int bodyEndOffset;
 
-    CreateStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, int bodyStartOffset, int bodyEndOffset) {
-        super(startOffset, endOffset, offset2Context);
+    CreateStatement(int startOffset, int endOffset, SortedMap<Integer, Context> offset2Context, int bodyStartOffset, int bodyEndOffset, TablesClause tablesClause, List<SelectStatement> subqueries) {
+        super(startOffset, endOffset, null, tablesClause, subqueries, offset2Context);
         this.bodyStartOffset = bodyStartOffset;
         this.bodyEndOffset = bodyEndOffset;
         this.kind = SQLStatementKind.CREATE;

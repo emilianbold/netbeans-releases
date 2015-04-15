@@ -55,7 +55,9 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.lib.profiler.ProfilerLogger;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.ui.SwingWorker;
+import org.netbeans.lib.profiler.utils.VMUtils;
 import org.netbeans.lib.profiler.utils.formatting.MethodNameFormatterFactory;
+import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import org.netbeans.modules.profiler.api.java.ProfilerTypeUtils;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
@@ -162,13 +164,21 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
         "MSG_Opening=Opening {0}",
         "# {0} - full target name Class.Method(Signature)",
         "# {1} - line number",
-        "MSG_OpeningOnLine=Opening {0}, line {1}"
+        "MSG_OpeningOnLine=Opening {0}, line {1}",
+        "MSG_CannotShowPrimitive=Cannot show source for primitive type"
     })
     public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {        
+        
+        String normalizedClassName = className.replace("[", "").replace("]", "").replace("/", "."); // NOI18N // TODO: handle $?
+        if (VMUtils.isPrimitiveType(normalizedClassName)) {
+            ProfilerDialogs.displayWarning(Bundle.MSG_CannotShowPrimitive());
+            return true;
+        }
+        
         final ProgressDisplayer pd = ProfilerProgressDisplayer.getDefault();
         final AtomicBoolean cancelled = new AtomicBoolean(false);
         final ProgressDisplayer.ProgressController[] pc = new ProgressDisplayer.ProgressController[1];
-        final GotoSourceRunnable r = new GotoSourceRunnable(project, className, methodName, signature, line, cancelled);
+        final GotoSourceRunnable r = new GotoSourceRunnable(project, normalizedClassName, methodName, signature, line, cancelled);
         
         new SwingWorker(false) {
             @Override

@@ -51,16 +51,28 @@ import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
  */
 @TypeDisplayNameConvertor.Registration(priority=200)
 public class NodeJsTypeDisplayNameConvertor implements TypeDisplayNameConvertor {
-
+    private static String REQUIRE_MODULE_NAME = NodeJsUtils.REQUIRE_METHOD_NAME + "." + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX;
+    
     @Override
     public String getDisplayName(Type type) {
         String typeString = type.getType();
         String displayName = null;
-        if (typeString != null && typeString.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)) {
-            displayName = typeString.substring(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length());
-            int index = displayName.indexOf('.');
-            if (index > 0) {
-                displayName = "Module " + displayName.substring(0, index);  //NOI18N
+        if (typeString != null 
+                && (typeString.startsWith(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX)
+                || typeString.startsWith(REQUIRE_MODULE_NAME))) {
+            displayName = typeString.substring(typeString.indexOf(NodeJsUtils.FAKE_OBJECT_NAME_PREFIX) + NodeJsUtils.FAKE_OBJECT_NAME_PREFIX.length());
+            if (displayName.endsWith(NodeJsUtils.EXPORTS)) {
+                int index = displayName.indexOf('.');
+                if (index > 0) {
+                    displayName = "Module " + displayName.substring(0, index); //NOI18N
+                }
+            } else {
+                int index = displayName.lastIndexOf('.');
+                if (index > 0) {
+                    displayName = displayName.substring(index + 1);  
+                } else {
+                    displayName = "Module " + displayName; //NOI18N
+                }
             }
         }
         return displayName;

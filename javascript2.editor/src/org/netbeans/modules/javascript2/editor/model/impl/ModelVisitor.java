@@ -75,6 +75,7 @@ import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -623,10 +624,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             //XXX This is not right solution. The right solution would be to create new anonymous function
                             // and the recreate the object that has the same name as the function.
                             // See issue #246598
+                            removeFromPathTheLast();
                             return null;
                         }
                         JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
                         jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                        removeFromPathTheLast();
                         return null; 
                 }
             }
@@ -646,6 +649,7 @@ public class ModelVisitor extends PathNodeVisitor {
             previousUsage = (modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName());
             if ( previousUsage != null && previousUsage.isDeclared() && previousUsage instanceof JsFunction) {
                 // the function is alredy there
+                removeFromPathTheLast();
                 return null;
             }
             String funcName = functionNode.isAnonymous() ? functionNode.getName() : functionNode.getIdent().getName();
@@ -714,37 +718,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-        } else if (docHolder != null) {
-            // look for the type defined through comment like @typedef
-            Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
-            for(JsComment comment: commentBlocks.values()) {
-                DocParameter definedType = comment.getDefinedType();
-                if (definedType != null) {
-                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
-                    getGlobalObject().addProperty(object.getName(), object);
-                    int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
-                    List<Type> types = definedType.getParamTypes();
-                    
-                    for (Type type : types) {
-                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                    }
-                    List<Type> assignedTypes = comment.getTypes();
-                    for (Type type : assignedTypes) {
-                        object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                    }
-                    List<DocParameter> properties = comment.getProperties();
-                    for (DocParameter docProperty: properties) {
-                        JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
-                        object.addProperty(jsProperty.getName(), jsProperty);
-                        types = docProperty.getParamTypes();
-                        assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
-                        for (Type type : types) {
-                           jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
-                        }
-                    }
-                }
-            }
-        }
+        } 
 //        else {
             for(FunctionNode cFunction: functionNode.getFunctions()) {
                 if (cFunction.isAnonymous()) {
@@ -791,6 +765,89 @@ public class ModelVisitor extends PathNodeVisitor {
                     ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
                 }
 
+            }
+            
+            if (docHolder != null) {
+                // look for the type defined through comment like @typedef
+                Map<Integer, ? extends JsComment> commentBlocks = docHolder.getCommentBlocks();
+                for (JsComment comment : commentBlocks.values()) {
+                    DocParameter definedType = comment.getDefinedType();
+                    if (definedType != null) {
+                    // XXX the param name now can contains names with dot.
+                        // it would be better if the getParamName returns list of identifiers
+                        String typeName = definedType.getParamName().getName();
+                        List<Identifier> fqn = new ArrayList<Identifier>();
+                        JsObject whereOccurrence = getGlobalObject();
+                        if (typeName.indexOf('.') > -1) {
+                            String[] parts = typeName.split("\\.");
+                            int offset = definedType.getParamName().getOffsetRange().getStart();
+                            int delta = 0;
+                            for (int i = 0; i < parts.length; i++) {
+                                fqn.add(new IdentifierImpl(parts[i], offset + delta));
+                                if (whereOccurrence != null) {
+                                    whereOccurrence = whereOccurrence.getProperty(parts[i]);
+                                    if (whereOccurrence != null) {
+                                        whereOccurrence.addOccurrence(new OffsetRange(offset + delta, offset + delta + parts[i].length()));
+                                    }
+                                }
+                                delta = delta + parts[i].length() + 1;
+                            }
+                        } else {
+                            fqn.add(definedType.getParamName());
+                        }
+                        JsObject object = ModelUtils.getJsObject(modelBuilder, fqn, true);
+//                    JsObject object = new JsObjectImpl(getGlobalObject(), definedType.getParamName(), definedType.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        //getGlobalObject().addProperty(object.getName(), object);
+                        int assignOffset = definedType.getParamName().getOffsetRange().getEnd();
+                        List<Type> types = definedType.getParamTypes();
+
+                        for (Type type : types) {
+                            object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                        List<Type> assignedTypes = comment.getTypes();
+                        for (Type type : assignedTypes) {
+                            object.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                        }
+                        List<DocParameter> properties = comment.getProperties();
+                        for (DocParameter docProperty : properties) {
+                            JsObject jsProperty = new JsObjectImpl(object, docProperty.getParamName(), docProperty.getParamName().getOffsetRange(), true, JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                            object.addProperty(jsProperty.getName(), jsProperty);
+                            types = docProperty.getParamTypes();
+                            jsProperty.setDocumentation(Documentation.create(docProperty.getParamDescription()));
+                            assignOffset = docProperty.getParamName().getOffsetRange().getEnd();
+                            for (Type type : types) {
+                                jsProperty.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset()), assignOffset);
+                            }
+                        }
+                    }
+                    Type callBack = comment.getCallBack();
+                    if (callBack != null) {
+                        List<Identifier> fqn = fqnFromType(callBack);
+                        markOccurrences(fqn);
+                        List<Identifier> parentFqn = new ArrayList<Identifier>();
+                        for (int i = 0; i < fqn.size() - 1; i++) {
+                            parentFqn.add(fqn.get(i));
+                        }
+                        JsObject parentObject = parentFqn.isEmpty() ? getGlobalObject() : ModelUtils.getJsObject(modelBuilder, parentFqn, true);
+                        JsFunctionImpl callBackFunction = new JsFunctionImpl(
+                                parentObject instanceof DeclarationScope ? (DeclarationScope)parentObject : ModelUtils.getDeclarationScope(parentObject),
+                                parentObject, fqn.get(fqn.size() - 1), Collections.EMPTY_LIST, 
+                                callBack.getOffset() > -1 ? new OffsetRange(callBack.getOffset(), callBack.getOffset() + callBack.getType().length()) : OffsetRange.NONE,
+                                JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                        parentObject.addProperty(callBackFunction.getName(), callBackFunction);
+                        callBackFunction.setDocumentation(Documentation.create(comment.getDocumentation()));
+                        callBackFunction.setJsKind(JsElement.Kind.CALLBACK);
+                        List<DocParameter> docParameters = comment.getParameters();
+                        for (DocParameter docParameter: docParameters) {
+                            ParameterObject parameter = new ParameterObject(callBackFunction, docParameter.getParamName(), JsTokenId.JAVASCRIPT_MIME_TYPE, null);
+                            for (Type type : docParameter.getParamTypes()) {
+                                parameter.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), parameter.getOffset());
+                            }
+                            addDocNameOccurence(parameter);
+                            callBackFunction.addParameter(parameter);
+                        }
+                    }
+                }
             }
             
             List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);
@@ -878,6 +935,35 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
 
+    private List<Identifier> fqnFromType (final Type type) {
+        List<Identifier> fqn = new ArrayList<Identifier>();
+        String typeName = type.getType();
+        int offset = type.getOffset();
+        if (typeName.indexOf('.') > -1) {
+            String[] parts = typeName.split("\\.");
+            int delta = 0;
+            for (int i = 0; i < parts.length; i++) {
+                fqn.add(new IdentifierImpl(parts[i], offset + delta));
+                delta = delta + parts[i].length() + 1;
+            }
+        } else {
+            fqn.add(new IdentifierImpl(typeName, offset));
+        }
+        return fqn;
+    }
+    
+    private void markOccurrences (List<Identifier> fqn) {
+        JsObject whereOccurrence = getGlobalObject();
+        for (Identifier iden: fqn) {
+            whereOccurrence = whereOccurrence.getProperty(iden.getName());
+            if (whereOccurrence != null) {
+                whereOccurrence.addOccurrence(iden.getOffsetRange());
+            } else {
+                break;
+            }
+        }
+    }
+    
     private JsArray handleArrayCreation(Node initNode, JsObject parent, Identifier name) {
         if (initNode instanceof UnaryNode && parent != null) {
             UnaryNode uNode = (UnaryNode)initNode;
@@ -1721,7 +1807,7 @@ public class ModelVisitor extends PathNodeVisitor {
         Identifier name = fqn.get(0);
         if (!"this".equals(fqn.get(0).getName())) { 
             if (modelBuilder.getCurrentWith() == null) {
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
+                Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
                 for(JsObject variable : variables) {
                     if (variable.getName().equals(name.getName()) ) {
                         if (variable instanceof ParameterObject || variable.getModifiers().contains(Modifier.PRIVATE)) {

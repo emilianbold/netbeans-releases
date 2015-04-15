@@ -60,6 +60,7 @@ import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Formatter;
@@ -291,6 +292,7 @@ public class JspIndenterTest extends TestBase2 {
         reformatFileContents("testfilesformatting/issue230077.jsp", new IndentPrefs(4, 4));
     }
 
+    @RandomlyFails
     public void testIndentation() throws Exception {
         insertNewline("<style>\n     h1 {\n        <%= System.\n   somth() ^%>",
                       "<style>\n     h1 {\n        <%= System.\n   somth() \n        ^%>", null);

@@ -65,7 +65,6 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
@@ -644,7 +643,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             public void run() {
                 try {
                     new Reformatter(bd, codeStyle).reformat();
-                } catch (BadLocationException ex) {
+                } catch (Exception ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }

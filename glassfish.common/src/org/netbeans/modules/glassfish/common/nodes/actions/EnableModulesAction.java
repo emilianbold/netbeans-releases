@@ -51,7 +51,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

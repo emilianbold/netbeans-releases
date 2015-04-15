@@ -34,7 +34,7 @@ int main()
 {  
     T1<1> t1;
     
-     //
+     // select<Person>().one().
     
     return 0;
 }

@@ -138,6 +138,20 @@ public final class NewSampleWizardIterator extends BaseWizardIterator {
                 "MessagesAngular"); // NOI18N
     }
 
+    @TemplateRegistration(
+            folder = "Project/Samples/HTML5",
+            content = "../../samples/MessagesExpress.zip",
+            displayName = "#NewSampleWizardIterator.newMessagesExpressSample.displayName",
+            description = "../resources/NewMessagesExpressSampleDescription.html",
+            iconBase = NODEJS_PROJECT_ICON,
+            position = 1530)
+    @NbBundle.Messages("NewSampleWizardIterator.newMessagesExpressSample.displayName=Express/Jade Messages Sample")
+    public static NewSampleWizardIterator newMessagesExpressSample() {
+        return new NewSampleWizardIterator(
+                Bundle.NewSampleWizardIterator_newMessagesExpressSample_displayName(),
+                "MessagesExpress"); // NOI18N
+    }
+
     @Override
     String getWizardTitle() {
         return wizardTitle;

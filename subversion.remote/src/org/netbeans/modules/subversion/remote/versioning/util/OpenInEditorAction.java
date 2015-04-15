@@ -53,7 +53,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**

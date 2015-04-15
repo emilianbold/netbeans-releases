@@ -42,21 +42,36 @@
 package org.netbeans.lib.v8debug;
 
 /**
- *
+ * An optional boolean property.
+ * Use {@link #hasValue()} to test whether the property has the value or not.
+ * 
  * @author Martin Entlicher
  */
 public final class PropertyBoolean {
     
     private final Boolean b;
     
+    /**
+     * Create the boolean property.
+     * @param b when <code>null</code>, then the property is undefined.
+     */
     public PropertyBoolean(Boolean b) {
         this.b = b;
     }
     
+    /**
+     * Test whether the property has a value.
+     * @return whether the property has a value.
+     */
     public boolean hasValue() {
         return b != null;
     }
     
+    /**
+     * Get the property value. If the property does not have the value set,
+     * it returns <code>false</code>.
+     * @return the property value, or <code>false</code> when not set.
+     */
     public boolean getValue() {
         if (b == null) {
             return false;
@@ -65,6 +80,11 @@ public final class PropertyBoolean {
         }
     }
     
+    /**
+     * Get the property value or the provided value when the property does not have one.
+     * @param defaultValue The default value to return when the property is undefined.
+     * @return 
+     */
     public boolean getValueOr(boolean defaultValue) {
         if (b == null) {
             return defaultValue;

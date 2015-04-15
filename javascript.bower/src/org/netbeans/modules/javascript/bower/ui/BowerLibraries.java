@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
@@ -168,6 +169,7 @@ public final class BowerLibraries {
         }
 
         private void fireChange() {
+            bowerLibrariesChildren.refreshDependencies();
             changeSupport.fireChange();
         }
 
@@ -233,10 +235,12 @@ public final class BowerLibraries {
         }
 
         public boolean hasDependencies() {
-            refreshDependencies();
-            return getNodesCount() > 0;
+            return !bowerJson.getDependencies().isEmpty();
         }
 
+        public void refreshDependencies() {
+            setKeys();
+        }
 
         @Override
         protected Node[] createNodes(BowerLibraryInfo key) {
@@ -246,7 +250,7 @@ public final class BowerLibraries {
         @NbBundle.Messages("BowerLibrariesChildren.library.dev=dev")
         @Override
         protected void addNotify() {
-            refreshDependencies();
+            setKeys();
         }
 
         @Override
@@ -255,7 +259,7 @@ public final class BowerLibraries {
         }
 
 
-        private void refreshDependencies() {
+        private void setKeys() {
             BowerJson.BowerDependencies dependencies = bowerJson.getDependencies();
             if (dependencies.isEmpty()) {
                 setKeys(Collections.<BowerLibraryInfo>emptyList());
@@ -353,6 +357,9 @@ public final class BowerLibraries {
 
 
         BowerLibraryInfo(Image icon, String name, String descrition) {
+            assert icon != null;
+            assert name != null;
+            assert descrition != null;
             this.icon = icon;
             this.name = name;
             this.description = descrition;
@@ -361,6 +368,25 @@ public final class BowerLibraries {
         @Override
         public int compareTo(BowerLibraryInfo other) {
             return name.compareToIgnoreCase(other.name);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final BowerLibraryInfo other = (BowerLibraryInfo) obj;
+            return name.equalsIgnoreCase(other.name);
         }
 
     }

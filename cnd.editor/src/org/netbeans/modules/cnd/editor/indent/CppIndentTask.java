@@ -119,12 +119,18 @@ public class CppIndentTask extends IndentSupport implements IndentTask {
             if (token.getTokenID() == CppTokenId.NEW_LINE) {
                 ts.movePrevious();
                 TokenItem prev = new TokenItem(ts, true);
-                int indent = getTokenColumn(prev);
-                String spaces = spaces(indent);
+
                 if (prev.getTokenID() == CppTokenId.DOXYGEN_LINE_COMMENT
                         && caretOffset - token.getTokenSequence().offset() == 3) {
                     Function function = CsmDocGeneratorProvider.getDefault().getFunction(doc, caretOffset);
                     if (function != null) {
+                        if (codeStyle == null) {
+                            codeStyle = CodeStyle.getDefault(doc);
+                        }
+                        
+                        int indent = getTokenColumn(prev);
+                        String spaces = spaces(indent);
+                        
                         StringBuilder buf = new StringBuilder();
                         buf.append(" \n"); // NOI18N
                         for (Parameter p : function.getParametes()) {

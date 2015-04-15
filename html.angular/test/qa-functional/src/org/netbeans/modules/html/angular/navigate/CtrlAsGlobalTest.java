@@ -41,12 +41,9 @@
  */
 package org.netbeans.modules.html.angular.navigate;
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -55,25 +52,26 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class CtrlAsGlobalTest extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testGoTo28",
+        "testGoTo29",
+        "testGoTo30",
+        "testGoTo31",
+        //                        "testGoTo32",
+        "testGoTo33",
+        //                        "testGoTo34",
+        //                        "testGoTo35",
+        //                        "testGoTo36",
+        "testGoTo37"
+    };
+
     public CtrlAsGlobalTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CtrlAsGlobalTest.class).addTest(
-                        "openProject",
-                        "testGoTo28",
-                        "testGoTo29",
-                        "testGoTo30",
-                        "testGoTo31",
-//                        "testGoTo32",
-                        "testGoTo33",
-//                        "testGoTo34",
-//                        "testGoTo35",
-//                        "testGoTo36",
-                        "testGoTo37"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CtrlAsGlobalTest.class, tests);
     }
 
     public void openProject() throws Exception {

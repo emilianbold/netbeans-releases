@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.nodejs.navigate;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -52,14 +51,7 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  * @author vriha
  */
 public class ReferencesNavTest extends GeneralNodeJs {
-
-    public ReferencesNavTest(String args) {
-        super(args);
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ReferencesNavTest.class).addTest(
+  static final String[] tests = new String[]{
                         "openProject",
                         "testReference",
                         "testReference2",
@@ -69,7 +61,13 @@ public class ReferencesNavTest extends GeneralNodeJs {
                         "testReference7",
                         "testReference8",
                         "testReference9"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+    };
+    public ReferencesNavTest(String args) {
+        super(args);
+    }
+
+    public static Test suite() {
+        return createModuleTest(ReferencesNavTest.class, tests);
     }
 
     public void openProject() throws Exception {

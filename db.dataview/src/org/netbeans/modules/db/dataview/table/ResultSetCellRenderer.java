@@ -47,10 +47,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -142,13 +139,25 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
 
     protected void setTableCellToolTip(Component c, Object value) {
         if (c instanceof JComponent) {
-            if (value instanceof String) {
+            String text = null;
+            if( value instanceof String ) {
+                text = (String) value;
+            } else if (value != null) {
+                text = value.toString();
+            }
+            if(text == null) {
+                ((JComponent) c).setToolTipText(null);
+            } else {
+                int limit = Math.min(255, text.length());
                 String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>";
-                tooltip += DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>").replaceAll(" ", "&nbsp;");
+                tooltip += DataViewUtils.escapeHTML(text.substring(0, limit))
+                        .replace("\n", "<br>")
+                        .replace(" ", "&nbsp;");
+                if(text.length() > 255) {
+                    tooltip += "<br><br>&hellip;";
+                }
                 tooltip += "</td></tr></table></html>";
                 ((JComponent) c).setToolTipText(tooltip);
-            } else {
-                ((JComponent) c).setToolTipText(value.toString());
             }
         }
     }
@@ -156,7 +165,7 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
 
 class BooleanCellRenderer extends CellFocusCustomRenderer {
 
-    JRendererCheckBox cb;
+    private JRendererCheckBox cb;
 
     public BooleanCellRenderer() {
         super();
@@ -166,7 +175,7 @@ class BooleanCellRenderer extends CellFocusCustomRenderer {
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        cb.setSelected(((Boolean) value).booleanValue());
+        cb.setSelected((Boolean) value);
         if (!isSelected) {
             cb.setBackground(table.getBackground());
         } else {

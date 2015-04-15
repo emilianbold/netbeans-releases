@@ -193,6 +193,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.android.maven</friend>
                 <!-- danis@netbeans.org -->
                 <friend>org.vaadin.netbeans.maven</friend>
+                <!-- NetBeans support for Google App Engine -->
+                <friend>org.netbeans.modules.j2ee.appengine</friend>
                 <friend>org.netbeans.modules.maven.util</friend>
                 <!-- XXX <subpackages> not permitted by schema -->
                 <package>org.apache.maven</package>

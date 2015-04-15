@@ -166,9 +166,9 @@ class DiffTreeTable extends OutlineView {
         if (obj.equals(object)) {
             return node;
         }
-        Enumeration children = node.getChildren().nodes();
+        Enumeration<Node> children = node.getChildren().nodes();
         while (children.hasMoreElements()) {
-            Node child = (Node) children.nextElement();
+            Node child = children.nextElement();
             Node result = getNode(child, obj);
             if (result != null) {
                 return result;

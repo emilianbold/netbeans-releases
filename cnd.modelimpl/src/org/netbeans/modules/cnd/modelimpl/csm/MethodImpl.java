@@ -45,12 +45,14 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
+import java.util.Objects;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
@@ -58,6 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import static org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities.UID_INTERNAL_DATA_PREFIX;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -73,14 +76,18 @@ import org.openide.util.CharSequences;
 public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
 
     private final CsmVisibility visibility;
-    private static final byte ABSTRACT = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
-    private static final byte VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
-    private static final byte EXPLICIT = (byte)(1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3));
+    private static final short ABSTRACT = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final short VIRTUAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
+    private static final short EXPLICIT = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+3);
+    private static final short OVERRIDE = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+4);
+    private static final short FINAL = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+5);
 
-    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
+    protected MethodImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, boolean _abstract, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, cls, _static, _const, file, startOffset, endOffset, global);
         this.visibility = visibility;
         setVirtual(_virtual);
+        setOverride(_override);
+        setFinal(_final);
         setExplicit(_explicit);
         setAbstract(_abstract);
     }
@@ -101,6 +108,8 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
+        boolean _override = false;
+        boolean _final = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean _abstract = false;
@@ -111,6 +120,12 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                     break;
                 case CPPTokenTypes.LITERAL_virtual:
                     _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_override:
+                    _override = true;
+                    break;
+                case CPPTokenTypes.LITERAL_final:
+                    _final = true;
                     break;
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
@@ -128,7 +143,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImpl<T> methodImpl = new MethodImpl<>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
+        MethodImpl<T> methodImpl = new MethodImpl<>(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();
@@ -168,6 +183,14 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         setFlags(VIRTUAL, _virtual);
     }
 
+    private void setOverride(boolean _override) {
+        setFlags(OVERRIDE, _override);
+    }
+
+    private void setFinal(boolean _final) {
+        setFlags(FINAL, _final);
+    }
+
     private void setExplicit(boolean _explicit) {
         setFlags(EXPLICIT, _explicit);
     }
@@ -185,11 +208,49 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
     }
 
     @Override
+    public boolean isOverride() {
+        return hasFlags(OVERRIDE);
+    }
+
+    @Override
+    public boolean isFinal() {
+        return hasFlags(FINAL);
+    }
+
+    @Override
     public boolean isConst() {
         return super.isConst();
     }
 
-    
+    @Override
+    protected CharSequence createUIDExtraSuffix(AST ast) {
+        CharSequence funSuffix = super.createUIDExtraSuffix(ast);
+        if (CsmKindUtilities.isMethodDeclaration(this)) {
+            // Check if this is method declaration which is added in class via #include directive:
+            // struct AAA {
+            //  #include "body.inc"
+            // };
+            CsmClass cls = getContainingClass();
+            CsmFile clsFile = cls != null ? cls.getContainingFile() : null;
+            if (cls != null && clsFile != null && !Objects.equals(clsFile, getContainingFile())) {
+                StringBuilder sb = new StringBuilder(UID_INTERNAL_DATA_PREFIX);
+                sb.append(cls.getName());
+                sb.append("_"); // NOI18N
+                if (clsFile instanceof FileImpl) {
+                    sb.append(((FileImpl) clsFile).getFileId());
+                } else {
+                    // Absolute path shouldn't be used here
+                    sb.append(clsFile.getName());
+                }
+                if (funSuffix != null) {
+                    sb.append(funSuffix);
+                }
+                return sb.toString();
+            }
+        }
+        return funSuffix;
+    }
+
     public static class MethodBuilder extends FunctionBuilder implements MemberBuilder {
         
         private final boolean _virtual = false;
@@ -228,10 +289,10 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
             }
             CsmClass cls = (CsmClass) getScope();
 
-            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), isExplicit(), isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), true);
+            MethodImpl method = new MethodImpl(getName(), getRawName(), cls, getVisibility(), isVirtual(), false, false, isExplicit(), isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 

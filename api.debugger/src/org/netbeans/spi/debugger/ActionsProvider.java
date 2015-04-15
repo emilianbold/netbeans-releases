@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.debugger.registry.ContextAwareServiceHandler;
+import org.netbeans.debugger.registry.ContextAwareServicePath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -186,7 +187,8 @@ public abstract class ActionsProvider {
         Registration[] value();
     }
 
-    static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider> {
+    static class ContextAware extends ActionsProvider implements ContextAwareService<ActionsProvider>,
+                                                                 ContextAwareServicePath {
 
         private static final String ERROR = "error in getting MIMEType";    // NOI18N
 
@@ -232,6 +234,11 @@ public abstract class ActionsProvider {
         }
 
         @Override
+        public String getServicePath() {
+            return path;
+        }
+        
+        @Override
         public Set getActions() {
             ActionsProvider actionsDelegate;
             if (actions != null) {
@@ -268,12 +275,10 @@ public abstract class ActionsProvider {
                 actionsDelegate = getDelegate();
             }
             if (actionsDelegate == null) {
-                String currentMIMEType = getCurrentMIMEType();
-                if (currentMIMEType != ERROR) {
-                    if (!enabledOnMIMETypes.contains(currentMIMEType)) {
-                        //System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
-                        return false;
-                    }
+                Boolean isEnabledMIME = isCurrentMIMETypeIn(enabledOnMIMETypes);
+                if (Boolean.FALSE.equals(isEnabledMIME)) {
+                    //System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
+                    return false;
                 }
             }
             return getDelegate().isEnabled(action);
@@ -389,7 +394,7 @@ public abstract class ActionsProvider {
             }
         }
 
-        private static String getCurrentMIMEType() {
+        private static Boolean isCurrentMIMETypeIn(Set<String> mimeTypes) {
             // Ask EditorContextDispatcher.getDefault().getMostRecentFile()
             // It's not in a dependent module, therefore we have to find it dynamically:
             try {
@@ -397,9 +402,15 @@ public abstract class ActionsProvider {
                 try {
                     try {
                         Object editorContextDispatcher = editorContextDispatcherClass.getMethod("getDefault").invoke(null);
+                        java.lang.reflect.Method getMIMETypesOnCurrentLineMethod = editorContextDispatcherClass.getDeclaredMethod("getMIMETypesOnCurrentLine");
+                        getMIMETypesOnCurrentLineMethod.setAccessible(true);
+                        Set<String> lineMIMETypes = (Set<String>) getMIMETypesOnCurrentLineMethod.invoke(editorContextDispatcher);
+                        if (!lineMIMETypes.isEmpty()) {
+                            return !Collections.disjoint(mimeTypes, lineMIMETypes);
+                        }
                         FileObject file = (FileObject) editorContextDispatcherClass.getMethod("getMostRecentFile").invoke(editorContextDispatcher);
                         if (file != null) {
-                            return file.getMIMEType();
+                            return mimeTypes.contains(file.getMIMEType());
                         } else {
                             return null;
                         }
@@ -417,9 +428,9 @@ public abstract class ActionsProvider {
                 }
             } catch (ClassNotFoundException ex) {
             }
-            return ERROR;
+            return null;
         }
-
+        
         private PropertyChangeListener attachContextDispatcherListener() {
             // Call EditorContextDispatcher.getDefault().addPropertyChangeListener(String MIMEType, PropertyChangeListener l)
             // It's not in a dependent module, therefore we have to find it dynamically:

@@ -78,6 +78,7 @@ public class JDBCDriverConvertorTest extends TestBase {
     }
     
     protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
         super.setUp();
         Util.deleteDriverFiles();
     }

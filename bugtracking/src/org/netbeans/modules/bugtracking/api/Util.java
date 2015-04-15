@@ -148,7 +148,7 @@ public final class Util {
     }
     
     /**
-     * Creates a new Issue and opens and opens it the Issue editor TopComponent.
+     * Creates a new Issue and opens it in the Issue editor TopComponent.
      * 
      * @param repository the repository for which the Issue is to be created.
      * @since 1.85
@@ -194,7 +194,7 @@ public final class Util {
      * execute in AWT. 
      * <p>
      * 
-     * @param url a url comming from a Team Server - e.g. kenai or java.net. 
+     * @param url a url coming from a Team Server - e.g. kenai or java.net. 
      * Might be representing either a team vcs repository, an issue or a team server host.
      * @param projectName the name of a particular Team Server project
      * 
@@ -207,14 +207,17 @@ public final class Util {
     }
     
     /**
-     * Opens a modal edit repository dialog.<br>
-     * Blocks until the dialog isn't closed.
+     * Opens a dialog for editing a repository.
+     * The dialog is modal, blocks until closed.<br>
+     * If editing a not yet registered repository it is automatically added
+     * to the registry after the dialog is confirmed.
      * 
      * @param repository the repository to be edited
-     * @since 1.85
+     * @return true if the repository was successfully edited (dialog closed via OK button)
+     * @since 1.86
      */
-    public static void edit(Repository repository) { 
-        BugtrackingUtil.editRepository(repository);
+    public static boolean edit(Repository repository) { 
+        return BugtrackingUtil.editRepository(repository);
     }
     
     /**

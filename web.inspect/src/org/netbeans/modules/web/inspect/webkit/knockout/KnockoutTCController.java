@@ -68,6 +68,8 @@ import org.openide.windows.WindowSystemListener;
 public class KnockoutTCController implements PropertyChangeListener {
     /** Default instance of this class. */
     private static final KnockoutTCController DEFAULT = new KnockoutTCController();
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(KnockoutTCController.class.getName(), 5);
     /** Current {@code KnockoutChecker}. */
     KnockoutChecker currentChecker;
 
@@ -126,12 +128,9 @@ public class KnockoutTCController implements PropertyChangeListener {
             }
             getKnockoutTCGroup().close();
         } else {
-            boolean isOpened = getKnockoutTC().isOpened();
-            if (!isOpened) {
-                synchronized (this) {
-                    currentChecker = new KnockoutChecker((WebKitPageModel)inspectedPage);
-                    currentChecker.startCheck();
-                }
+            synchronized (this) {
+                currentChecker = new KnockoutChecker((WebKitPageModel)inspectedPage);
+                currentChecker.startCheck();
             }
         }
     }
@@ -192,14 +191,14 @@ public class KnockoutTCController implements PropertyChangeListener {
                     return; // this checker is obsolete
                 }
             }
-            String expression = "window.NetBeans && NetBeans.usesKnockout()"; // NOI18N
+            String expression = "window.NetBeans ? NetBeans.getKnockoutVersion() : null"; // NOI18N
             RemoteObject object = pageModel.getWebKit().getRuntime().evaluate(expression);
-            boolean koFound = "true".equals(object.getValueAsString()); // NOI18N
+            boolean koFound = (object != null && object.getType() == RemoteObject.Type.STRING);
             if (koFound) {
                 synchronized (this) {
                     currentTask = null;
                 }
-                openKnockoutTCGroup();
+                openKnockoutTCGroup(object.getValueAsString());
             } else {
                 // try it later
                 scheduleKnockoutCheck(false);
@@ -218,18 +217,22 @@ public class KnockoutTCController implements PropertyChangeListener {
             } else {
                 currentDelay *= 2;
             }
-            currentTask = RequestProcessor.getDefault().schedule(this, currentDelay, TimeUnit.SECONDS);
+            currentTask = RP.schedule(this, currentDelay, TimeUnit.SECONDS);
         }
 
         /**
          * Opens the Knockout top component group.
+         * 
+         * @param koVersion version of Knockout used by the inspected page.
          */
-        private void openKnockoutTCGroup() {
+        private void openKnockoutTCGroup(final String koVersion) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     TopComponentGroup group = getKnockoutTCGroup();
-                    Mode mode = WindowManager.getDefault().findMode(getKnockoutTC());
+                    KnockoutTC knockoutTC = (KnockoutTC)getKnockoutTC();
+                    knockoutTC.knockoutUsed(pageModel, koVersion);
+                    Mode mode = WindowManager.getDefault().findMode(knockoutTC);
                     TopComponent selectedTC = mode.getSelectedTopComponent();
                     group.open();
                     if (selectedTC != null) {

@@ -332,7 +332,9 @@ public final class KarmaServer implements PropertyChangeListener {
     }
 
     private File getProjectConfigFile() {
-        return new File(KarmaPreferences.getConfig(project));
+        String config = KarmaPreferences.getConfig(project);
+        assert config != null : project.getProjectDirectory();
+        return new File(config);
     }
 
     private File getNetBeansKarmaReporter() {

@@ -61,7 +61,7 @@ import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.options.AnnotationExpression;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbPreferences;

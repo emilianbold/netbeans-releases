@@ -101,6 +101,9 @@ public class ComparatorParameterNotUsed extends TreePathScanner {
     public static List<ErrorDescription> run(HintContext ctx) {
         CompilationInfo ci = ctx.getInfo();
         Element me = ci.getTrees().getElement(ctx.getPath());
+        if (me == null) {
+            return null;
+        }
         Element clazz = me.getEnclosingElement();
         if (clazz == null || !(
                 clazz.getKind().isClass() || 

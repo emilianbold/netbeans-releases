@@ -211,7 +211,8 @@ public class JBDeploymentFactory implements DeploymentFactory {
                 }
                 
                 urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
-                urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+                //urlList.add(new File(serverRoot, "bin"+sep+"client"+sep+"jboss-client.jar").toURI().toURL());
+                addUrl(urlList, new File(serverRoot), "bin" + sep + "client", Pattern.compile("jboss-client.*.jar"));
 
                 addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
                 addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));

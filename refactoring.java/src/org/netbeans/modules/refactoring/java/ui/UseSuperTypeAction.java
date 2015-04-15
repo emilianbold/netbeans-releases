@@ -47,6 +47,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -63,7 +64,10 @@ import org.openide.util.NbBundle;
  */
 @ActionID(id = "org.netbeans.modules.refactoring.java.api.ui.UseSuperTypeAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_UseSuperType_Action", lazy = false)
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "UseSuperTypeAction", position = 900)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "UseSuperTypeAction", position = 900),
+    @ActionReference(path = "Shortcuts", name = "OCS-W")
+})
 public class UseSuperTypeAction extends JavaRefactoringGlobalAction{
     
     private TreePathHandle classTreeHandle = null;

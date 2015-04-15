@@ -130,9 +130,9 @@ public class HintsTestCase extends JavaTestCase {
         int index = -1;
         String[] list = new String[model.getSize()];
         for (int i = 0; i < model.getSize(); i++) {
-            String desc = ((Fix) model.getElementAt(i)).getText();
+            String desc = ((Fix) model.getElementAt(i)).getText().toUpperCase();
             list[i] = desc;
-            if (desc.startsWith(hint)) {
+            if (desc.startsWith(hint.toUpperCase())) {
                 index = i;
             }
         }

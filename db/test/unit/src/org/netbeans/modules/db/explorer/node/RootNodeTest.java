@@ -71,6 +71,7 @@ public class RootNodeTest extends TestCase {
 
     @Override
     public void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
         Util.clearConnections();
         Util.deleteDriverFiles();
     }

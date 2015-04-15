@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.modules.remotefs.versioning.api.SearchHistorySupport;
 import org.netbeans.modules.subversion.remote.api.ISVNInfo;
 import org.netbeans.modules.subversion.remote.api.ISVNProperty;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
@@ -65,10 +66,9 @@ import org.netbeans.modules.subversion.remote.ui.status.StatusAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnSearchHistorySupport;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.util.SearchHistorySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -241,9 +241,11 @@ class FilesystemHandler extends VCSInterceptor {
             }
         }
         VCSFileProxy[] files = from.listFiles();
-        for (VCSFileProxy file : files) {
-            if (!SvnUtils.isAdministrative(file)) {
-                svnMoveImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+        if (files != null) {
+            for (VCSFileProxy file : files) {
+                if (!SvnUtils.isAdministrative(file)) {
+                    svnMoveImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+                }
             }
         }
     }
@@ -268,9 +270,11 @@ class FilesystemHandler extends VCSInterceptor {
             }
         }
         VCSFileProxy[] files = from.listFiles();
-        for (VCSFileProxy file : files) {
-            if (!SvnUtils.isAdministrative(file)) {
-                svnCopyImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+        if (files != null) {
+            for (VCSFileProxy file : files) {
+                if (!SvnUtils.isAdministrative(file)) {
+                    svnCopyImplementation(file, VCSFileProxy.createFileProxy(to, file.getName()));
+                }
             }
         }
     }

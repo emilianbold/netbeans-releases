@@ -48,8 +48,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.Hint;
@@ -57,6 +60,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -69,6 +73,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelExtender;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -87,6 +92,10 @@ public class GlobalIsNotDefined extends JsAstRule {
     
     @Override
     void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
+        if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.getJsParserResult().getSnapshot().getMimePath().getPath())) {
+            // compute this hint just for the js files.
+            return;
+        }
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
@@ -124,9 +133,9 @@ public class GlobalIsNotDefined extends JsAstRule {
 
     private void addHint(JsRuleContext context, List<Hint> hints, int offset, String name, OffsetRange range) throws BadLocationException {
         boolean add = false;
-        if (offset > -1) {
         Document document = context.getJsParserResult().getSnapshot().getSource().getDocument(false);
-        if (document != null && document instanceof BaseDocument) {
+        if (offset > -1) {
+            if (document != null && document instanceof BaseDocument) {
                 BaseDocument baseDocument = (BaseDocument)document;
                 int lineOffset = Utilities.getLineOffset(baseDocument, offset);
                 int lineOffsetRange = Utilities.getLineOffset(baseDocument, range.getStart());
@@ -134,7 +143,21 @@ public class GlobalIsNotDefined extends JsAstRule {
             }
         } else {
             add = true;
+            if (document != null) {
+                ((AbstractDocument)document).readLock();
+                try {
+                    TokenSequence ts = LexerUtils.getTokenSequence(document, range.getStart(), JsTokenId.javascriptLanguage(), true);
+                    ts.move(range.getStart());
+                    if (ts.moveNext()) {
+                        add = ts.token().id() != JsTokenId.DOC_COMMENT;
+                    }
+                } finally {
+                    ((AbstractDocument) document).readUnlock();
+                }
+                
+            }
         }
+        
         if (add) {
             List<HintFix> fixes;
             fixes = new ArrayList<HintFix>();

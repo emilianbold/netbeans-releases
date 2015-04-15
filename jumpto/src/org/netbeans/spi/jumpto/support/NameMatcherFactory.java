@@ -30,6 +30,9 @@
  */
 package org.netbeans.spi.jumpto.support;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -42,6 +45,23 @@ import org.openide.util.Parameters;
  * @author Vladimir Kvashin
  */
 public final class NameMatcherFactory {
+
+    private static final Map<Character,String> RE_SPECIALS;
+    static {
+        final Map<Character,String> m = new HashMap<>();
+        m.put('{',"\\{");         //NOI18N
+        m.put('}',"\\}");         //NOI18N
+        m.put('[',"\\[");         //NOI18N
+        m.put(']',"\\]");         //NOI18N
+        m.put('(',"\\(");         //NOI18N
+        m.put(')',"\\)");         //NOI18N
+        m.put('\\',"\\\\");       //NOI18N
+        m.put('.', "\\.");        //NOI18N
+        m.put('+',"\\+");         //NOI18N
+        m.put('*', ".*" );        //NOI18N
+        m.put('?', ".");          //NOI18N
+        RE_SPECIALS = Collections.unmodifiableMap(m);
+    }
 
     private NameMatcherFactory() {
     }
@@ -121,7 +141,7 @@ public final class NameMatcherFactory {
 
 	private final Pattern pattern;
 
-	public CamelCaseNameMatcher(String name) {
+	public CamelCaseNameMatcher(String name, boolean caseSensitive) {
             if (name.length() == 0) {
                 throw new IllegalArgumentException ();
             }
@@ -136,7 +156,7 @@ public final class NameMatcherFactory {
                 patternString.append( index != -1 ?  "[\\p{Lower}\\p{Digit}_]*" : ".*"); // NOI18N
                 lastIndex = index;
             } while(index != -1);
-            pattern = Pattern.compile(patternString.toString());
+            pattern = Pattern.compile(patternString.toString(), caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
 	}
         
         private static int findNextUpper(String text, int offset ) {
@@ -180,7 +200,9 @@ public final class NameMatcherFactory {
                 case CASE_INSENSITIVE_PREFIX:
                      return new CaseInsensitivePrefixNameMatcher(text);
                 case CAMEL_CASE:
-                    return new CamelCaseNameMatcher(text);
+                    return new CamelCaseNameMatcher(text, true);
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    return new CamelCaseNameMatcher(text, false);
                 default:
                     throw new IllegalArgumentException("Unsupported type: " + type);  //NOI18N
             }
@@ -198,20 +220,19 @@ public final class NameMatcherFactory {
      * @since 1.20
      */
     public static String wildcardsToRegexp(final String pattern, boolean prefix) {
-        String result = pattern.
-                replace("{","").        //NOI18N
-                replace("}","").        //NOI18N
-                replace("[","").        //NOI18N
-                replace("]","").        //NOI18N
-                replace("(","").        //NOI18N
-                replace(")","").        //NOI18N
-                replace("\\","").       //NOI18N
-                replace(".", "\\.").    //NOI18N
-                replace( "*", ".*" ).   //NOI18N
-                replace( '?', '.' );    //NOI18N
-        if (prefix) {
-            result = result.concat(".*");   //NOI18N
+        final StringBuilder res = new StringBuilder();
+        for (int i = 0; i< pattern.length(); i++) {
+            final char c = pattern.charAt(i);
+            final String r = RE_SPECIALS.get(c);
+            if (r != null) {
+                res.append(r);
+            } else {
+                res.append(c);
+            }
         }
-        return result;
+        if (prefix) {
+            res.append(".*");   //NOI18N
+        }
+        return res.toString();
     }
 }

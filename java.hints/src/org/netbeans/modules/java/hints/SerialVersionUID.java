@@ -105,6 +105,9 @@ public class SerialVersionUID implements ErrorRule<Void>, OverrideErrorMessage<V
         }
         
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
+        if (type == null) {
+            return null;
+        }
         List<Fix> fixes = new ArrayList<Fix>();
 
         fixes.add(new FixImpl(TreePathHandle.create(treePath, info), false).toEditorFix());

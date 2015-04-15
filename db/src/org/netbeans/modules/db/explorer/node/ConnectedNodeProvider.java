@@ -77,7 +77,7 @@ public abstract class ConnectedNodeProvider  extends NodeProvider {
     protected abstract BaseNode createNode(NodeDataLookup lookup);
 
     protected synchronized void initialize() {
-        if (connection.getConnector().isDisconnected()) {
+        if (! connection.isConnected()) {
             removeAllNodes();
             setup = false;
         } else {

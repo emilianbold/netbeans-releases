@@ -233,6 +233,8 @@ public class EarProjectTest extends EarTestCase {
         EarProjectTest.closeProject((EarProject) earProject);
         rootNode = null;
         earProject = null;
+        // TimedWeakReference timeout plus some buffer (projectapi.nb)
+        Thread.sleep(15000 + 5000);
         assertGC("project cannot be garbage collected", wr);
     }
 

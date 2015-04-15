@@ -267,6 +267,7 @@ public final class ElementUtilities {
             switch (type.getKind()) {
                 case DECLARED:
                 case UNION:
+                case INTERSECTION:
                     TypeElement te = (TypeElement)((DeclaredType)type).asElement();
                     if (te == null) break;
                     for (Element member : elements.getAllMembers(te)) {

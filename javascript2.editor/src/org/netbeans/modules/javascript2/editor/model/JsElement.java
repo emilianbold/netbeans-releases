@@ -69,7 +69,8 @@ public interface JsElement extends ElementHandle {
         PROPERTY_SETTER(12),
         OBJECT_LITERAL(13),
         CATCH_BLOCK(14),
-        WITH_OBJECT(15);
+        WITH_OBJECT(15),
+        CALLBACK(16);
         
         private final int id;
         private static final Map<Integer, Kind> LOOKUP = new HashMap<Integer, Kind>();
@@ -94,7 +95,8 @@ public interface JsElement extends ElementHandle {
         
         public boolean isFunction() {
             return this == FUNCTION || this == METHOD || this == CONSTRUCTOR
-                    || this == PROPERTY_GETTER || this == PROPERTY_SETTER;
+                    || this == PROPERTY_GETTER || this == PROPERTY_SETTER 
+                    || this == CALLBACK;
         }
         
         public boolean isPropertyGetterSetter() {

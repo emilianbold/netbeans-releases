@@ -58,12 +58,15 @@ import java.util.Map;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureType;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -314,6 +317,9 @@ abstract public class CsmCompletion {
     public static CsmType createType(CsmClassifier cls, int ptrDepth, int refDepth, int arrayDepth, boolean _const) {
         if (cls == null) {
             return null;
+        }
+        if (CsmKindUtilities.isClosureClassifier(cls)) {
+            return new CompletionClosureType(((CsmClosureClassifier) cls).getLambda(), refDepth, _const);
         }
         return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const);
     }
@@ -959,6 +965,82 @@ abstract public class CsmCompletion {
         @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return delegate.isBuiltInBased(resolveTypeChain);
+        }
+    }
+    
+    public static class CompletionClosureClassifier implements CsmClosureClassifier {
+        
+        private final CsmFunctionDefinition lambda;
+
+        public CompletionClosureClassifier(CsmFunctionDefinition lambda) {
+            this.lambda = lambda;
+        }
+
+        @Override
+        public CsmFunctionDefinition getLambda() {
+            return lambda;
+        }
+
+        @Override
+        public Kind getKind() {
+            return CsmDeclaration.Kind.FUNCTION_TYPE;
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return lambda.getScope();
+        }
+
+        @Override
+        public CharSequence getUniqueName() {
+            return lambda.getUniqueName();
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            return lambda.getQualifiedName();
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return lambda.getReturnType();
+        }
+
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            return lambda.getParameters();
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return lambda.getSignature();
+        }
+
+        @Override
+        public CharSequence getName() {
+            return lambda.getName();
+        }
+
+        @Override
+        public boolean isValid() {
+            return lambda.isValid();
+        }
+    }
+    
+    public static class CompletionClosureType extends BaseType implements CsmClosureType {
+
+        public CompletionClosureType(CsmFunctionDefinition lambda, int reference, boolean _const) {
+            super(new CompletionClosureClassifier(lambda), 0, reference, 0, _const);
+        }
+
+        @Override
+        public CsmFunctionDefinition getLambda() {
+            return ((CsmClosureClassifier) clazz).getLambda();
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return ((CsmClosureClassifier) clazz).getScope();
         }
     }
 

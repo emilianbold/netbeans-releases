@@ -139,7 +139,7 @@ public class ThrowableNotThrown {
         }
         TypeMirror tm = ctx.getInfo().getTrees().getTypeMirror(p);
         Element el = ctx.getInfo().getElements().getTypeElement("java.lang.Throwable"); // NOI18N
-        if (!Utilities.isValidType(tm)) {
+        if (el == null || !Utilities.isValidType(tm)) {
             // bad JDK ?
             return null;
         }
@@ -310,6 +310,9 @@ public class ThrowableNotThrown {
                     }
                     case MEMBER_SELECT: {
                         Element el = info.getTrees().getElement(excPath);
+                        if (el == null) {
+                            return true;
+                        }
                         if (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR) {
                             ExecutableElement xel = (ExecutableElement)el;
                             TypeMirror tm = xel.getReturnType();

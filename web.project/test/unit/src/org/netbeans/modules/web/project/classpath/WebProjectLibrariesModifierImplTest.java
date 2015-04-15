@@ -85,6 +85,7 @@ public class WebProjectLibrariesModifierImplTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        MockLookup.setLayersAndInstances(new TestLibraryProvider());
         File dest = new File(getWorkDir().getAbsolutePath(), "WebApplication1");
         dest.mkdir();
         TestUtil.copyDir(new File(getDataDir().getAbsolutePath(), "projects/WebApplication1"), dest);
@@ -93,7 +94,6 @@ public class WebProjectLibrariesModifierImplTest extends NbTestCase {
         dest.mkdir();
         TestUtil.copyDir(new File(getDataDir().getAbsolutePath(), "projects/WebApplication1"), dest);
         webProject2 = (WebProject) ProjectManager.getDefault().findProject(FileUtil.toFileObject(dest));
-        MockLookup.setInstances(new TestLibraryProvider());
     }
 
     public void testAllMethods() throws Exception {

@@ -41,10 +41,15 @@
  */
 package org.netbeans.modules.remotefs.versioning.impl;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -60,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtil;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.remotefs.versioning.spi.RemoteVcsSupportImplementation;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
@@ -75,7 +81,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = RemoteVcsSupportImplementation.class)
 public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
 
-    private static final Logger LOGGER = Logger.getLogger(RemoteVcsSupportImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger("remote.vcs.logger"); //NOI18N
 
     public RemoteVcsSupportImpl() {
     }
@@ -92,9 +98,18 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public VCSFileProxy getSelectedFile(JFileChooser chooser) {
         if (chooser instanceof FileChooserBuilder.JFileChooserEx) {
-            FileObject fo = ((FileChooserBuilder.JFileChooserEx) chooser).getSelectedFileObject();
+            final FileChooserBuilder.JFileChooserEx chooserEx = (FileChooserBuilder.JFileChooserEx) chooser;
+            FileObject fo = chooserEx.getSelectedFileObject();
             if (fo != null) {
                 return VCSFileProxy.createFileProxy(fo);
+            } else {
+                File file = chooser.getSelectedFile();
+                if (file != null) {
+                    String path = file.getPath();
+                    ExecutionEnvironment env = chooserEx.getExecutionEnvironment();
+                    FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
+                    return VCSFileProxy.createFileProxy(VCSFileProxy.createFileProxy(fileSystem.getRoot()), path);
+                }
             }
         } else {
             File file = chooser.getSelectedFile();
@@ -113,6 +128,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         } else {
             VCSFileProxy root = getRootFileProxy(proxy);
             try {
+                // TODO: make it more effective
                 return root.toFileObject().getFileSystem();
             } catch (FileStateInvalidException ex) {
                 throw new IllegalStateException(ex);
@@ -142,6 +158,11 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     }
 
     @Override
+    public FileSystem[] getConnectedFileSystems() {
+        return RemoteVcsSupportUtil.getConnectedFileSystems();
+    }
+
+    @Override
     public FileSystem getDefaultFileSystem() {
         // TODO: get default from cnd.remote !!!
         FileSystem[] fsList = getFileSystems();
@@ -156,6 +177,17 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             return Files.isSymbolicLink(path);
         } else {
             return RemoteVcsSupportUtil.isSymbolicLink(getFileSystem(proxy), proxy.getPath());
+        }
+    }
+
+    @Override
+    public String readSymbolicLinkPath(VCSFileProxy proxy) throws IOException {
+        File file = proxy.toFile();
+        if (file != null) {
+            Path path = file.toPath();
+            return Files.readSymbolicLink(path).toString();
+        } else {
+            return RemoteVcsSupportUtil.readSymbolicLinkPath(getFileSystem(proxy), proxy.getPath());
         }
     }
 
@@ -216,6 +248,19 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
     }
 
+    private void reportHostInfoNotAvailable(ExecutionEnvironment env) {
+        // TODO: is this correct error processing?
+        IllegalStateException ex = new IllegalStateException("Host info is not available for " + env); //NOI18N
+        Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    private VCSFileProxy getFakeHome(FileSystem fs) {
+        // TODO: is this correct error processing?
+        VCSFileProxy root = VCSFileProxy.createFileProxy(fs.getRoot());
+        ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+        return VCSFileProxy.createFileProxy(root, "/home/" + env.getUser()); //NOI18N
+    }
+    
     @Override
     public VCSFileProxy getHome(VCSFileProxy proxy) {
         File file = proxy.toFile();
@@ -231,14 +276,14 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     return VCSFileProxy.createFileProxy(root, userDir);
                 } catch (IOException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
+                    return getFakeHome(fs);
                 } catch (ConnectionManager.CancellationException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return null;
+                    return getFakeHome(fs);
                 }
             } else {
-                // TODO: what to return here???
-                return null;
+                reportHostInfoNotAvailable(env);
+                return getFakeHome(fs);
             }
         }     
     }
@@ -262,10 +307,35 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     return false;
                 }
             } else {
-                // TODO: what to return here???
+                reportHostInfoNotAvailable(env);
                 return false;
             }
         }     
+    }
+
+    @Override
+    public boolean isSolaris(VCSFileProxy proxy) {
+        File file = proxy.toFile();
+        if (file != null) {
+            return System.getProperty("os.name").startsWith("SunOS"); // NOI18N
+        } else {
+            FileSystem fs = getFileSystem(proxy);
+            ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
+            if (HostInfoUtils.isHostInfoAvailable(env)) {
+                try {
+                    return HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.SUNOS;
+                } catch (IOException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return false;
+                } catch (ConnectionManager.CancellationException ex) {
+                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    return false;
+                }
+            } else {
+                reportHostInfoNotAvailable(env);
+                return false;
+            }
+        }
     }
 
     @Override
@@ -297,8 +367,8 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return false;
                 }
-            } else {
-                // TODO: what to return here???
+            } else {                
+                reportHostInfoNotAvailable(env);
                 return false;
             }
         }     
@@ -354,7 +424,6 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     @Override
     public VCSFileProxy fromString(String proxyString) {
         FileSystem fs = FileSystemProvider.urlToFileSystem(proxyString);
-        FileObject root = fs.getRoot();
         VCSFileProxy rootProxy = VCSFileProxy.createFileProxy(fs.getRoot());
         return VCSFileProxy.createFileProxy(rootProxy, proxyString);
     }
@@ -369,6 +438,16 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
     }
 
+    @Override
+    public void deleteExternally(VCSFileProxy file) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            deleteRecursively(javaFile);
+        } else {
+            RemoteVcsSupportUtil.deleteExternally(getFileSystem(file), file.getPath());
+        }
+    }
+
     private static void deleteRecursively(File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
@@ -380,4 +459,34 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
         }
         file.delete();
     }
+
+    @Override
+    public void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile) {
+        File javaFile = file.toFile();
+        if (javaFile != null) {
+            javaFile.setLastModified(referenceFile.lastModified());
+        } else {
+            RemoteVcsSupportUtil.setLastModified(getFileSystem(file), file.getPath(), referenceFile.getPath());
+        }
+    }
+
+    @Override
+    public FileSystem readFileSystem(DataInputStream is)  throws IOException {
+        String uri = is.readUTF();
+        try {
+            return FileSystemProvider.getFileSystem(new URI(uri));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    @Override
+    public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException {
+        os.writeUTF(fs.getRoot().toURI().toString());
+    }
+
+    @Override
+    public void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException {
+        RemoteVcsSupportUtil.refreshFor(fs, paths);
+    }    
 }

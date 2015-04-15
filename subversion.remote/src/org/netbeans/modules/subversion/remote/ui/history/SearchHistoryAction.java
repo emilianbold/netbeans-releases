@@ -50,6 +50,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.util.*;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
@@ -119,7 +120,7 @@ public class SearchHistoryAction extends ContextAction {
                 tc.setDisplayName(title); 
                 tc.open();
                 tc.requestActive();
-                if (files.length == 1 && files[0].isFile() || files.length > 1 && org.netbeans.modules.subversion.remote.versioning.util.Utils.shareCommonDataObject(files)) {
+                if (files.length == 1 && files[0].isFile() || files.length > 1 && VCSFileProxySupport.shareCommonDataObject(files)) {
                     tc.search(false);
                 }
             }

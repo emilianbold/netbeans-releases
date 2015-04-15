@@ -116,6 +116,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
 
     @Override
     protected Problem preCheck(CompilationController javac) throws IOException {
+        javac.toPhase(JavaSource.Phase.PARSED);
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         if (handle.resolveElement(javac) == null) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
@@ -260,7 +261,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     final Set<String> packageSet = new HashSet<>(packages.size());
                     for (NonRecursiveFolder nonRecursiveFolder : packages) {
                         String resourceName = info.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE).getResourceName(nonRecursiveFolder.getFolder());
-                        packageSet.add(resourceName.replace('/', '.'));
+                        if(resourceName != null) {
+                            packageSet.add(resourceName.replace('/', '.'));
+                        }
                     }
                     searchScopeType.add(new SearchScopeType() {
                         @Override
@@ -396,6 +399,8 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     @Override
     public Problem prepare(final RefactoringElementsBag elements) {
         fireProgressListenerStart(ProgressEvent.START, -1);
+        usedAccessFilters.clear();
+        usedFilters.clear();
         Set<FileObject> a = getRelevantFiles(refactoring.getRefactoringSource().lookup(TreePathHandle.class));
         fireProgressListenerStep(a.size());
         Problem problem = null;

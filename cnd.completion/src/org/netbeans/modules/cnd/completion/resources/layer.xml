@@ -69,6 +69,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
+                    
+                    <file name="org-netbeans-modules-cnd-completion-keywords.CsmKeywordsCompletionProvider.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
                 </folder>                
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
@@ -137,7 +141,10 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
                     </file>
-                    
+
+                    <file name="org-netbeans-modules-cnd-completion-keywords.CsmKeywordsCompletionProvider.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>                    
                 </folder>
                 <folder name="HyperlinkProviders">
                     <file name="CsmHyperlinkProvider.instance">
@@ -206,6 +213,10 @@ made subject to such option by the copyright holder.
 
                     <file name="org-netbeans-lib-editor-codetemplates-CodeTemplateCompletionProvider.instance">
                         <attr name="position" intvalue="200"/>
+                    </file>
+
+                    <file name="org-netbeans-modules-cnd-completion-keywords.CsmKeywordsCompletionProvider.instance">
+                        <attr name="position" intvalue="300"/>
                     </file>
                 </folder>                
                 <folder name="HyperlinkProviders">

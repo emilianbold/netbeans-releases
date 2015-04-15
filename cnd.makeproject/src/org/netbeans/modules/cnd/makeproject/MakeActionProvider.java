@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -65,6 +66,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
+import org.netbeans.modules.cnd.api.project.CodeAssistance;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -383,11 +386,17 @@ public final class MakeActionProvider implements ActionProvider {
             String message;
             if (record.isDeleted()) {
                 message = MessageFormat.format(getString("ERR_RequestingDeletedConnection"), record.getDisplayName());
-                int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
-                if (res == JOptionPane.YES_OPTION) {
+                if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                    message += "\n Confirm Yes"; //NOI18N
+                    new Exception(message).printStackTrace(System.err);
                     ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
                 } else {
-                    return;
+                    int res = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), message, getString("DLG_TITLE_DeletedConnection"), JOptionPane.YES_NO_OPTION);
+                    if (res == JOptionPane.YES_OPTION) {
+                        ServerList.addServer(record.getExecutionEnvironment(), record.getDisplayName(), record.getSyncFactory(), false, true);
+                    } else {
+                        return;
+                    }
                 }
             }
             // start validation phase
@@ -411,17 +420,20 @@ public final class MakeActionProvider implements ActionProvider {
                     } catch (CancellationException ex) {
                         cancel();
                     } catch (Exception e) {
-                        e.printStackTrace(System.err);
                         final String message = MessageFormat.format(getString("ERR_Cant_Connect"), record.getDisplayName()); //NOI18N
-                        final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
-                        SwingUtilities.invokeLater(new Runnable() {
+                        if (CndUtils.isUnitTestMode() || CndUtils.isStandalone()) {
+                            new Exception(message).printStackTrace(System.err);
+                        } else {
+                            final String title = getString("DLG_TITLE_Cant_Connect"); //NOI18N
+                            SwingUtilities.invokeLater(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
-                                        message, title, JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                                @Override
+                                public void run() {
+                                    JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(),
+                                            message, title, JOptionPane.ERROR_MESSAGE);
+                                }
+                            });
+                        }
                     }
                     if (record.isOnline()) {
                         actionWorker.run();
@@ -429,10 +441,14 @@ public final class MakeActionProvider implements ActionProvider {
                 }
             };
         }
-        Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
-        String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
-        ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        if (SwingUtilities.isEventDispatchThread()) {
+            Frame mainWindow = WindowManager.getDefault().getMainWindow();
+            String msg = NbBundle.getMessage(MakeActionProvider.class, "MSG_Validate_Host", record.getDisplayName());
+            String title = NbBundle.getMessage(MakeActionProvider.class, "DLG_TITLE_Validate_Host");
+            ModalMessageDlg.runLongTask(mainWindow, wrapper, null, wrapper, title, msg);
+        } else {
+            wrapper.run();
+        }
     }
 
     private void addAction(ArrayList<ProjectActionEvent> actionEvents,
@@ -978,20 +994,62 @@ public final class MakeActionProvider implements ActionProvider {
                 return false;
             }
             if (itemConfiguration.getExcluded().getValue()) {
+                Item bestComileUnit = getBestComileUnit(item, conf);
+                if (bestComileUnit != null) {
+                    return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
+                }
                 return false;
             }
             if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                Item bestComileUnit = getBestComileUnit(item, conf);
+                if (bestComileUnit != null) {
+                    return onCompileSingleStepImpl(pd, conf, bestComileUnit, bestComileUnit.getItemConfiguration(conf), actionEvents, context, actionEvent);
+                }
                 return false;
             }
-            MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
-            String outputFile = getOutputFile(conf, item, itemConfiguration);
-            if (conf.isMakefileConfiguration()) {
-                return compileSingleUnmanage(actionEvents, conf, makeArtifact, context, actionEvent, item, itemConfiguration);
-            } else {
-                compileSingleManage(actionEvents, conf, makeArtifact, context, actionEvent, pd, outputFile);
-            }
+            return onCompileSingleStepImpl(pd, conf, item, itemConfiguration, actionEvents, context, actionEvent);
         }
         return true;
+    }
+
+    private boolean onCompileSingleStepImpl(MakeConfigurationDescriptor pd, MakeConfiguration conf, Item item, ItemConfiguration itemConfiguration, ArrayList<ProjectActionEvent> actionEvents, Lookup context, Type actionEvent) {
+        MakeArtifact makeArtifact = new MakeArtifact(pd, conf);
+        String outputFile = getOutputFile(conf, item, itemConfiguration);
+        if (conf.isMakefileConfiguration()) {
+            return compileSingleUnmanage(actionEvents, conf, makeArtifact, context, actionEvent, item, itemConfiguration);
+        } else {
+            compileSingleManage(actionEvents, conf, makeArtifact, context, actionEvent, pd, outputFile);
+            return true;
+        }
+    }
+    
+    private Item getBestComileUnit(Item item, MakeConfiguration conf) {
+        CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
+        Item bestCandidate = null;
+        if (ca.hasCodeAssistance(item)) {
+            String name = item.getName();
+            if (name.indexOf('.') > 0) {
+                name = name.substring(0, name.lastIndexOf('.'));
+            }
+            // included header
+            List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
+            for(NativeFileItem i : listCU) {
+                if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
+                   (i instanceof Item)) {
+                    if (checkItemCompileConfuguration((Item) i, conf)) {
+                        String aName = i.getName();
+                        if (aName.indexOf('.') > 0) {
+                            aName = aName.substring(0, aName.lastIndexOf('.'));
+                        }
+                        bestCandidate = (Item) i;
+                        if (aName.equals(name)) {
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return bestCandidate;
     }
     
     private String getOutputFile(MakeConfiguration conf, Item item, ItemConfiguration itemConfiguration) {
@@ -1392,43 +1450,7 @@ public final class MakeActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG_STEP_INTO)) {
             return conf.hasDebugger() /*&& !conf.isLibraryConfiguration()*/;
         } else if (command.equals(COMMAND_COMPILE_SINGLE)) {
-            boolean enabled = true;
-            Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
-            while (it.hasNext()) {
-                Node node = it.next();
-                Item item = getNoteItem(node);
-                if (item == null) {
-                    return false;
-                }
-                ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
-                if (itemConfiguration == null) {
-                    return false;
-                }
-                if (itemConfiguration.getExcluded().getValue()) {
-                    return false;
-                }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
-                    return false;
-                }
-                if (conf.isMakefileConfiguration()) {
-                    //AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
-                    //if (options != null) {
-                        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                        AbstractCompiler ccCompiler = null;
-                        if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
-                            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-                        } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
-                            ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-                        } 
-                        if (ccCompiler == null) {
-                            return false;
-                        }
-                        return true;
-                    //}
-                    //return false;
-                }
-            }
-            return enabled;
+            return isCompileEnable(context, conf);
         } else if (command.equals(COMMAND_DELETE)
                 || command.equals(COMMAND_RENAME)) {
             return true;
@@ -1455,6 +1477,99 @@ public final class MakeActionProvider implements ActionProvider {
         }
     }
 
+    private boolean isCompileEnable(Lookup context, MakeConfiguration conf) {
+        boolean enabled = true;
+        Iterator<? extends Node> it = context.lookupAll(Node.class).iterator();
+        while (it.hasNext()) {
+            Node node = it.next();
+            Item item = getNoteItem(node);
+            if (item == null) {
+                return false;
+            }
+            ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);//ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(item.getPath()));
+            if (itemConfiguration == null) {
+                return false;
+            }
+            if (itemConfiguration.getExcluded().getValue()) {
+                CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
+                if (ca.hasCodeAssistance(item)) {
+                    // included header
+                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
+                    for(NativeFileItem i : listCU) {
+                        if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
+                           (i instanceof Item)) {
+                            if (checkItemCompileConfuguration((Item) i, conf)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+                CodeAssistance ca = Lookup.getDefault().lookup(CodeAssistance.class);
+                if (ca.hasCodeAssistance(item)) {
+                    // included header
+                    List<NativeFileItem> listCU = ca.findHeaderCompilationUnit(item);
+                    for(NativeFileItem i : listCU) {
+                        if (Objects.equals(item.getNativeProject(), i.getNativeProject()) &&
+                           (i instanceof Item)) {
+                            if (checkItemCompileConfuguration((Item) i, conf)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            if (conf.isMakefileConfiguration()) {
+                //AllOptionsProvider options = CompileOptionsProvider.getDefault().getOptions(item);
+                //if (options != null) {
+                    CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                    AbstractCompiler ccCompiler = null;
+                    if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                    } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                        ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                    } 
+                    if (ccCompiler == null) {
+                        return false;
+                    }
+                    return true;
+                //}
+                //return false;
+            }
+        }
+        return enabled;
+    }
+    
+    private boolean checkItemCompileConfuguration(Item item, MakeConfiguration conf) {
+        ItemConfiguration itemConfiguration = item.getItemConfiguration(conf);
+        if (itemConfiguration == null) {
+            return false;
+        }
+        if (itemConfiguration.getExcluded().getValue()) {
+            return false;
+        }
+        if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool && !itemConfiguration.getCustomToolConfiguration().getModified()) {
+            return false;
+        }
+        if (conf.isMakefileConfiguration()) {
+            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+            AbstractCompiler ccCompiler = null;
+            if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+            } else if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+            } 
+            if (ccCompiler == null) {
+                return false;
+            }
+            return true;
+        }
+        return true;
+    }
+    
     private Item getNoteItem(Node node) {
         Item item = (Item) node.getValue("Item"); // NOI18N
         if (item == null) {
@@ -1890,9 +2005,12 @@ public final class MakeActionProvider implements ActionProvider {
         private ConfSelectorPanel confSelectorPanel;
         private String command = null;
         private Dialog dialog = null;
+        private final String recentSelectionKey;
 
         BatchConfigurationSelector(MakeProject project, Configuration[] confs) {
             confSelectorPanel = new ConfSelectorPanel(getString("CheckLabel"), getString("CheckLabelMn").charAt(0), confs, new JButton[]{buildButton, rebuildButton, cleanButton});
+            recentSelectionKey = project.getProjectDirectory().getPath();
+            confSelectorPanel.restoreSelection(recentSelectionKey);
 
             String dialogTitle = MessageFormat.format(getString("BatchBuildTitle"), // NOI18N
                     new Object[]{ProjectUtils.getInformation(project).getDisplayName()});
@@ -1945,6 +2063,7 @@ public final class MakeActionProvider implements ActionProvider {
                 assert false;
             }
             dialog.dispose();
+            confSelectorPanel.storeSelection(recentSelectionKey);
         }
     }
 

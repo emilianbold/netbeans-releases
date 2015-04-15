@@ -142,33 +142,36 @@ public class ODCSProjectsListRenderer extends javax.swing.JPanel {
         projectNameLabel.setForeground(new Color(0, 22, 103));
         projectNameLabel.setText(NbBundle.getMessage(ODCSProjectsListRenderer.class, "ODCSProjectsListRenderer.projectNameLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(4, 6, 0, 0);
+        gridBagConstraints.insets = new Insets(4, 6, 0, 6);
         add(projectNameLabel, gridBagConstraints);
 
         projectDescLabel.setFont(new Font("Lucida Grande", 0, 12)); // NOI18N
         projectDescLabel.setForeground(new Color(128, 128, 128));
         projectDescLabel.setLineWrap(true);
         projectDescLabel.setWrapStyleWord(true);
+        projectDescLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
         projectDescLabel.setFocusable(false);
         projectDescLabel.setOpaque(false);
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = GridBagConstraints.BOTH;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(4, 6, 0, 14);
+        gridBagConstraints.insets = new Insets(4, 6, 0, 6);
         add(projectDescLabel, gridBagConstraints);
         gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new Insets(0, 0, 6, 6);
+        gridBagConstraints.insets = new Insets(0, 0, 4, 6);
         add(detailsButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables

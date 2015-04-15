@@ -140,6 +140,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
         final String[] classPtr = new String[1];
+        final java.awt.IllegalComponentStateException[] cnex = new java.awt.IllegalComponentStateException[] { null };
         final int[] linePtr = new int[1];
         final int[] offsetPtr = new int[1];
         try {
@@ -151,7 +152,11 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     linePtr[0] = context.getCurrentLineNumber();
                     offsetPtr[0] = EditorContextBridge.getCurrentOffset();
                     urlPtr[0] = context.getCurrentURL();
-                    classPtr[0] = context.getCurrentClassName();
+                    try {
+                        classPtr[0] = context.getCurrentClassName();
+                    } catch (java.awt.IllegalComponentStateException icsex) {
+                        cnex[0] = icsex;
+                    }
                 }
             });
         } catch (InvocationTargetException ex) {
@@ -173,7 +178,12 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int methodLine = linePtr[0];
         final int methodOffset = offsetPtr[0];
         final String url = urlPtr[0];
-        String className = classPtr[0]; //debugger.getCurrentThread().getClassName();
+        String className;
+        if (cnex[0] == null) {
+            className = classPtr[0]; //debugger.getCurrentThread().getClassName();
+        } else {
+            className = cnex[0].getMessage();
+        }
         RunIntoMethodActionSupport.runIntoMethod(debugger, url, className,
                                                  method, methodLine, methodOffset);
     }

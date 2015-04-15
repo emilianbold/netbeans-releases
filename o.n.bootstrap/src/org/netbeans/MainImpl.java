@@ -313,7 +313,11 @@ final class MainImpl extends Object {
                     InputStream is = u.openStream();
                     mf = new java.util.jar.Manifest(is);
                     is.close();
-                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                    // #251035: core-base now allows impl dependencies, with manually added impl version. Prefer Build-Version.
+                    value = mf.getMainAttributes().getValue("OpenIDE-Module-Build-Version"); // NOI18N
+                    if (value == null) {
+                        value = mf.getMainAttributes().getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+                    }
                     if (value != null) {
                         break;
                     }

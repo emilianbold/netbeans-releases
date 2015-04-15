@@ -2986,26 +2986,7 @@ public final class TreeMaker {
                 set.getPrecedingComments().remove(comment);
             }
         } else {
-            if (index == (-1)) {
-                if (preceding)
-                    set.addPrecedingComment(comment);
-                else
-                    set.addTrailingComment(comment);
-            } else {
-                List<Comment> comments;
-                
-                if (preceding) {
-                    comments = set.getPrecedingComments();
-                } else {
-                    comments = set.getTrailingComments();
-                }
-                
-                if (comments.size() >= index) {
-                    comments.add(index, comment);
-                } else {
-                    throw new IllegalArgumentException("Index out of bounds, index=" + index + ", length=" + comments.size());
-                }
-            }
+            set.insertComment(preceding ? CommentSet.RelativePosition.PRECEDING : CommentSet.RelativePosition.TRAILING, comment, index);
         }
     }
     

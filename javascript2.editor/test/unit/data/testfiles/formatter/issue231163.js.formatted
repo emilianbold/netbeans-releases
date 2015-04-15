@@ -4,5 +4,4 @@ try {
 
 }
 
-foo.then(joinedCall).catch(function (error) {
-})
+foo.then(joinedCall).catch(function (error) {})

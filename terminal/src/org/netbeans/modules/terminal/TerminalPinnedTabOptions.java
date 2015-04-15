@@ -155,6 +155,6 @@ public class TerminalPinnedTabOptions {
 
     private long getId(String value) {
 	String[] split = value.split(DELIMITER);
-	return Long.valueOf(split[0]);
+	return Long.parseLong(split[0]);
     }
 }

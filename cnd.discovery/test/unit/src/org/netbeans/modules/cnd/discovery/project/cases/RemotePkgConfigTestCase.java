@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
+import org.netbeans.modules.cnd.remote.sync.FtpSyncFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -60,7 +61,7 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
 
     public RemotePkgConfigTestCase() {
         super("RemotePkgConfig");
-        System.setProperty("cnd.remote.default.sync", "rfs");
+        System.setProperty("cnd.remote.default.sync", FtpSyncFactory.ID);
     }
 
     @Override

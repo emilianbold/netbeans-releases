@@ -144,6 +144,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private GdbEngineProvider engineProvider;
     private Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
+    private final DebuggerSettingsBridge profileBridge;
     
     static final Logger LOG = Logger.getLogger(GdbDebuggerImpl.class.toString());
 
@@ -279,6 +280,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     @Override
     public String debuggerType() {
         return "gdb"; // NOI18N
+    }
+
+    @Override
+    public DebuggerSettingsBridge profileBridge() {
+        return profileBridge;
     }
 
     public Gdb gdb() {
@@ -708,7 +714,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         postedKillEngine = true;
-        session = null;
 	state().isLoaded = false;
 	stateChanged();
         
@@ -804,7 +809,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private void stepIntoMain() {
         send("-break-insert -t main"); //NOI18N
         firstBreakpointId = STEP_INTO_ID; // to force pid request but avoid continue
-        sendResumptive("-exec-run"); // NOI18N
+        MICommand cmd = new MIResumptiveCommand("-exec-run") { // NOI18N
+
+            @Override
+            protected void onRunning(MIRecord record) {
+                startRecordingIfNeeded();
+                super.onRunning(record);
+            }
+            
+        };
+        gdb.sendCommand(cmd, true);
     }
 
     @Override
@@ -908,6 +922,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             @Override
             protected void onDone(MIRecord record) {
                 attachDone();
+                startRecordingIfNeeded();
                 finish();
             }
         };
@@ -952,7 +967,20 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         state().isCore = true;
                         stateChanged();
 			session().setSessionState(state());
-                        requestStack(null);
+                        startRecordingIfNeeded();
+                        
+                        MICommand cmd2 = new MiCommandImpl("-thread-list-ids") { // NOI18N
+
+                            @Override
+                            protected void onDone(MIRecord record) {
+                                currentThreadId = record.results().getConstValue(MI_CURRENT_THREAD);
+                                requestStack(null);
+                                finish();
+                            }
+                            
+                        };
+                        
+                        gdb.sendCommand(cmd2);
                         finish();
                     }
             };
@@ -1146,6 +1174,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             super(cmd);
         }  
 
+        @Override
+        protected void onDone(MIRecord record) {
+            // Logging output for user-typed commands
+            gdb.tap().log(getConsoleStream().replaceAll("\\\\n","\r\n")); // NOI18N
+        }
+        
         @Override
         protected void onError(MIRecord record) {
             String errMsg = getErrMsg(record);
@@ -1373,6 +1407,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 @Override
                     protected void onRunning(MIRecord record) {
                         state().isProcess = true;
+                        startRecordingIfNeeded();
                         super.onRunning(record);
                     }
                 };
@@ -1417,16 +1452,37 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void popToHere(Frame frame) {
+        if (warnAboutReverseIfNeeded()) {
+            return;
+        }
         int frameNo = Integer.parseInt(frame.getNumber());
-        if (frameNo > 0) {
-            makeFrameCurrent(getStack()[frameNo-1]);
-            execFinish();
+        // We have to pop the last frame several times
+        // as there is no way to pop several frames at once in GDB
+        while (frameNo > 0) {
+            popTopmostCall();
+            frameNo--;
         }
     }
 
+    private boolean warnAboutReverseIfNeeded() {
+        if (!DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
+            NativeDebuggerManager.error(Catalog.get("MSG_Reverse_Debugging_Option"));	// NOI18N
+            return true;
+        }
+        return false;
+    }
     @Override
     public void popTopmostCall() {
-        stepOut();
+        if (!warnAboutReverseIfNeeded()) {
+            sendResumptive(peculiarity.execFinishCommand(currentThreadId) + " --reverse");	// NOI18N
+        }
+    }
+    
+    private void startRecordingIfNeeded() {
+        if (DebuggerOption.GDB_REVERSE_DEBUGGING.isEnabled(optionLayers())) {
+            send("-gdb-set record stop-at-limit off"); // NOI18N
+            send("record"); // NOI18N
+        }
     }
 
     @Override
@@ -1435,8 +1491,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     @Override
     public void popToCurrentFrame() {
-        makeCalleeCurrent();
-        execFinish();
+        popToHere(getCurrentFrame());
     }
 
     private static final int PRINT_REPEAT = Integer.getInteger("gdb.print.repeat", 0); //NOI18N
@@ -4175,7 +4230,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // load program
         }
         
-        String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
+        String outputFile = gdi.getSymbolFile();
         outputFile = localToRemote("symbol-file", outputFile); //NOI18N
         
         String tmp_cmd;
@@ -5459,7 +5514,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     public void stepOutInst() {
         execFinish();
     }
-
+            
     // interface NativeDebugger
     @Override
     public void stepOverInst() {

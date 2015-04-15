@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 
 /**
@@ -195,7 +196,7 @@ public final class Snapshot {
             });
         MimePath newMimePath = MimePath.get (mimePath, mimeType);
         Snapshot snapshot = create (
-            getText ().subSequence (offset, offset + length),
+            new CharSequenceView(getText(), offset, offset + length),
             null,
             source,
             newMimePath,
@@ -393,7 +394,92 @@ public final class Snapshot {
         }
         return sb.toString ();
     }
+
+    private static final class CharSequenceView implements CharSequence {
+        private final CharSequence seq;
+        private final int from;
+        private final int to;
+
+        CharSequenceView(
+                @NonNull final CharSequence str,
+                final int from,
+                final int to) {
+            Parameters.notNull("str", str); //NOI18N
+            checkRanges(from, to, 0, str.length());
+            this.seq = str;
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public int length() {
+            return to - from;
+        }
+
+        @Override
+        public char charAt(final int index) {
+            return seq.charAt(from+index);
+        }
+
+        @Override
+        public CharSequence subSequence(final int start, final int end) {
+            checkRanges(start, end, from, to);
+            return new CharSequenceView(seq, from+start, from+end);
+        }
+
+        private static void checkRanges(
+            final int from,
+            final int to,
+            final int lbound,
+            final int ubound) {
+            if (from < 0) {
+                throw new IllegalArgumentException("Start index: " + from + " < 0 ");   //NOI18N
+            }
+            if (from > to) {
+                throw new IllegalArgumentException("Start index: " + from + " > To index:" + to);   //NOI18N
+            }
+            if (from + lbound > ubound) {
+                throw new IllegalArgumentException("Start index: " + from + " > length: " + (ubound - lbound));   //NOI18N
+            }
+            if (to + lbound > ubound) {
+                throw new IllegalArgumentException("To index: " + to + " > length: " + (ubound - lbound));   //NOI18N
+            }
+        }
+
+        @Override
+        public String toString() {
+            if (seq instanceof String) {
+                return ((String)seq).substring(from, to);
+            } else {
+                final char[] data = new char[to-from];
+                for (int i=0; i<data.length; i++) {
+                    data[i] = seq.charAt(from+i);
+                }
+                return new String(data);
+            }
+        }
+
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof CharSequenceView)) {
+                return false;
+            }
+            final CharSequenceView other = (CharSequenceView) obj;
+            return from == other.from &&
+                    to == other.to &&
+                    seq.equals(other.seq);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 17;
+            hash = hash * 31 + from;
+            hash = hash * 31 + to;
+            hash = hash * 31 + seq.hashCode();
+            return hash;
+        }
+    }
 }
-
-
-

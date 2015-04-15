@@ -134,7 +134,7 @@ public class Regexp {
             public Void visitIdentifier(IdentifierTree node, Void p) {
                 Element el = ctx.getInfo().getTrees().getElement(getCurrentPath());
 
-                if (el.getKind() == ElementKind.FIELD) {
+                if (el != null && el.getKind() == ElementKind.FIELD) {
                     VariableElement ve = (VariableElement) el;
 
                     if (ve.getConstantValue() instanceof String) {
@@ -149,7 +149,7 @@ public class Regexp {
             public Void visitMemberSelect(MemberSelectTree node, Void p) {
                 Element el = ctx.getInfo().getTrees().getElement(getCurrentPath());
 
-                if (el.getKind() == ElementKind.FIELD) {
+                if (el != null && el.getKind() == ElementKind.FIELD) {
                     VariableElement ve = (VariableElement) el;
 
                     if (ve.getConstantValue() instanceof String) {

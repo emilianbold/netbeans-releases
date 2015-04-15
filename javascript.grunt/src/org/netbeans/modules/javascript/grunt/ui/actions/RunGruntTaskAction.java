@@ -78,10 +78,10 @@ import org.openide.util.actions.Presenter;
 @ActionID(id = "org.netbeans.modules.javascript.grunt.ui.actions.RunGruntTaskAction", category = "Build")
 @ActionRegistration(displayName = "#RunGruntTaskAction.name", lazy = false)
 @ActionReferences({
-    @ActionReference(path = "Editors/text/grunt+javascript/Popup", position = 900),
+    @ActionReference(path = "Editors/text/grunt+javascript/Popup", position = 790),
     @ActionReference(path = "Loaders/text/grunt+javascript/Actions", position = 150),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 180),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 670),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 130),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 670),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 770),
 })

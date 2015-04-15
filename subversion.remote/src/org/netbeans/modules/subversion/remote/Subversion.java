@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.net.PasswordAuthentication;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -54,6 +53,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -64,14 +65,11 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnClientRefreshHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.remote.config.PasswordFile;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
 import org.netbeans.modules.subversion.remote.ui.ignore.IgnoreAction;
-import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.versioning.util.VCSHyperlinkProvider;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -79,6 +77,7 @@ import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.Parameters;
@@ -133,6 +132,19 @@ public class Subversion {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote"); //NOI18N
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
+    
+    private static final List<String> allowableFolders;
+    static {
+        List<String> files = new ArrayList<String>();
+        try {
+            String allowable = System.getProperty("versioning.svn.allowableFolders", "/"); //NOI18N
+            files.addAll(Arrays.asList(allowable.split("\\;"))); //NOI18N
+            files.remove(""); //NOI18N
+        } catch (Exception e) {
+            LOG.log(Level.INFO, e.getMessage(), e);
+        }
+        allowableFolders = files;
+    }
 
     public static synchronized Subversion getInstance() {
         if (instance == null) {
@@ -155,22 +167,11 @@ public class Subversion {
         filesystemHandler  = new FilesystemHandler(this);
         refreshHandler = new SvnClientRefreshHandler();
         prepareCache();
-
-        asyncInit();
     }
     
     public void attachListeners(SubversionVCS svcs) {
         fileStatusCache.addVersioningListener(svcs);
         addPropertyChangeListener(svcs);
-    }
-
-    private void asyncInit() {
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                SvnKenaiAccessor.getInstance().registerVCSNoficationListener();
-            }
-        }, 500);
     }
 
     private RequestProcessor.Task cleanupTask;
@@ -228,6 +229,10 @@ public class Subversion {
     }
 
     public boolean checkClientAvailable(Context context) {
+        final FileSystem fileSystem = context.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+            return false;
+        }
         try {
             SvnClientFactory.checkClientAvailable(context);
         } catch (SVNClientException ex) {
@@ -248,27 +253,6 @@ public class Subversion {
         String username = ""; // NOI18N
         char[] password = null;
 
-        SvnKenaiAccessor kenaiSupport = SvnKenaiAccessor.getInstance();
-        if(kenaiSupport.isKenai(repositoryUrl.toString())) {
-            PasswordAuthentication pa = kenaiSupport.getPasswordAuthentication(repositoryUrl.toString(), false);
-            if(pa != null) {
-                username = pa.getUserName();
-                password = pa.getPassword();
-            }
-        } else {
-            RepositoryConnection rc = SvnModuleConfig.getDefault(context.getFileSystem()).getRepositoryConnection(repositoryUrl.toString());
-            if(rc != null) {
-                username = rc.getUsername();
-                password = rc.getPassword();
-            } else {
-                PasswordFile pf = PasswordFile.findFileForUrl(context.getFileSystem(), repositoryUrl);
-                if(pf != null) {
-                    username = pf.getUsername();
-                    String psswdString = pf.getPassword();
-                    password = psswdString != null ? psswdString.toCharArray() : null;
-                }
-            }
-        }
         return getClient(context, repositoryUrl, username, password, progressSupport);
     }
 
@@ -344,6 +328,7 @@ public class Subversion {
     }
 
     public void versionedFilesChanged() {
+        topmostInfo.clear();
         unversionedParents.clear();
         support.firePropertyChange(PROP_VERSIONED_FILES_CHANGED, null, null);
     }
@@ -495,16 +480,26 @@ public class Subversion {
      * Delegates to SubversionVCS.getTopmostManagedAncestor
      * @param file a file for which the topmost managed ancestor shall be looked up.
      * @return topmost managed ancestor for the given file
-     */    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+     */
+    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
+        if (file.toFile() != null) {
+            return null;
+        }
+        if (!isAllowable(file)) {
+            return null;
+        }
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
+        }
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+            return null;
         }
         if(unversionedParents.contains(file)) {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine(" cached as unversioned");
             }
             return null;
-    }
+       }
         VCSFileProxy metadataRoot = null;
         if (SvnUtils.isPartOfSubversionMetadata(file)) {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -566,6 +561,7 @@ public class Subversion {
         if (Subversion.LOG.isLoggable(Level.FINE)) {
             Subversion.LOG.log(Level.FINE, "returning managed parent {0}", new Object[] { topmost });
         }
+        cacheIfNeededAllForTopmost(topmost);
         return topmost;
     }
 
@@ -673,6 +669,109 @@ public class Subversion {
         List<VCSHyperlinkProvider> providersList = new ArrayList<>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
+    }
+
+    private boolean isAllowable(VCSFileProxy file) {
+        String path = file.getPath()+"/"; //NOI18N
+        for(String s : allowableFolders) {
+            if (s.endsWith("/")) { //NOI18N
+                if (path.startsWith(s)) {
+                    return true;
+                }
+            } else {
+                if (path.startsWith(s+"/")) { //NOI18N
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public SVNUrl getTopmostRepositoryUrl(VCSFileProxy file) throws SVNClientException {
+        VCSFileProxy topmost = getTopmostManagedAncestor(file);
+        if (topmost == null) {
+            return null;
+        }
+        GlobalInfo out = topmostInfo.get(topmost);
+        assert out != null;
+        return out.getTopmostRepositoryUrl();
+    }
+    
+    public void refreshTopmostRepositoryUrl(VCSFileProxy file) {
+        VCSFileProxy topmost = getTopmostManagedAncestor(file);
+        if (topmost == null) {
+            return;
+        }
+        GlobalInfo out = topmostInfo.get(topmost);
+        out.refresh();
+    }
+    
+    private final ConcurrentMap<VCSFileProxy, GlobalInfo> topmostInfo = new ConcurrentHashMap<>();
+    private void cacheIfNeededAllForTopmost(VCSFileProxy topmost) {
+        if (topmost != null) {
+            try {
+                GlobalInfo info = topmostInfo.get(topmost);
+                if (info == null) {
+                    topmostInfo.putIfAbsent(topmost, new GlobalInfo(topmost));
+                    info = topmostInfo.get(topmost);
+                    info.getTopmostRepositoryUrl();
+                }
+            } catch (SVNClientException ex) {
+                LOG.log(Level.INFO, "Cannot get repository URL for "+topmost.getPath(), ex); //NOI18N
+            }
+        }
+    }
+
+    private final class GlobalInfo implements Runnable {
+        private boolean inited = false;
+        private SVNUrl result;
+        private final VCSFileProxy topmost;
+        private SVNClientException ex;
+        RequestProcessor.Task runner;
+        
+        private GlobalInfo(VCSFileProxy topmost) {
+            this.topmost = topmost;
+        }
+
+        private SVNUrl getTopmostRepositoryUrl() throws SVNClientException {
+            synchronized (this) {
+                if (!inited) {
+                    if (runner == null) {
+                        runner = getParallelRequestProcessor().create(this);
+                        runner.run();
+                    }
+                    runner.waitFinished();
+                }
+                if (ex != null) {
+                    throw ex;
+                }
+                return result;
+            }
+        }
+
+        @Override
+        public void run() {
+            try {
+                result = SvnUtils.getRepositoryRootUrl(topmost, true);
+            } catch (SVNClientException ex) {
+                this.ex = ex;
+            }
+            inited = true;
+        }
+
+        private void refresh() {
+            synchronized(this) {
+                inited = false;
+                ex = null;
+                runner = null;
+                result = null;
+            }
+            try {
+                getTopmostRepositoryUrl();
+            } catch (SVNClientException ex) {
+                // will be thrown when getting url next time
+            }
+        }
     }
 }
 

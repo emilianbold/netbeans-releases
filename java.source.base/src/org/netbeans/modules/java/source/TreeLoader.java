@@ -83,6 +83,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -683,6 +684,9 @@ public class TreeLoader extends LazyTreeLoader {
                     e.printStackTrace();
                     break;
                 }
+            } catch (InterruptedIOException x) {
+                //Http javadoc timeout
+                break;
             } catch(IOException ioe){
                 ioe.printStackTrace();
                 break;

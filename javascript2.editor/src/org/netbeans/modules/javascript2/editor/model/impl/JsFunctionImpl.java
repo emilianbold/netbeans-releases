@@ -238,8 +238,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public boolean moveProperty(String name, JsObject newParent) {
         JsObject property = getProperty(name);
-        if (property != null) {
-            correctDeclarationScope(property, this, new HashSet<String>());
+        if (property != null && (newParent instanceof DeclarationScope)) {
+            correctDeclarationScope(property, (DeclarationScope)newParent, new HashSet<String>());
         }
         return super.moveProperty(name, newParent); 
     }
@@ -248,11 +248,16 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (!done.contains(where.getFullyQualifiedName())) {
             done.add(where.getFullyQualifiedName());
             if (where instanceof DeclarationScope) {
-                DeclarationScope scope = (DeclarationScope)where;
-                if (scope.getParentScope() != null) {
-                    scope.getParentScope().getChildrenScopes().remove(scope);
+                if (where.isDeclared()) {
+                    DeclarationScope scope = (DeclarationScope)where;
+                    if (scope.getParentScope() != null) {
+                        scope.getParentScope().getChildrenScopes().remove(scope);
+                        if (scope instanceof DeclarationScopeImpl) {
+                            ((DeclarationScopeImpl)scope).setParentScope(newScope);
+                        }
+                    }
+                    newScope.addDeclaredScope(scope);
                 }
-                newScope.addDeclaredScope(scope);
             } else {
                 for (JsObject property : where.getProperties().values()) {
                     correctDeclarationScope(property, newScope, done);
@@ -304,15 +309,27 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
         returnTypes.clear();
         returnTypes.addAll(resolved);
-        
+         
         // parameters and type type resolving for occurrences
+        JsObject global = ModelUtils.getGlobalObject(this);
         for(JsObject param : parameters) {
             Collection<? extends TypeUsage> types = param.getAssignmentForOffset(param.getDeclarationName().getOffsetRange().getStart());
             for(TypeUsage type: types) {
-                JsObject jsObject = ModelUtils.getJsObjectByName(this, type.getType());
+                JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());//getJsObjectByName(this, type.getType());
                 if (jsObject != null) {
                     ModelUtils.addDocTypesOccurence(jsObject, docHolder);
                     moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
+                    if (type.getType().indexOf('.') > -1) {
+                        // mark occurrences also for the parent if the type is like Contex.Object
+                        String[] typeParts = type.getType().split("\\.");
+                        JsObject parent = jsObject.getParent();
+                        for (int i = (typeParts.length - 2); i > -1 && parent != null; i--) {
+                            if (parent.getName().equals(typeParts[i])) {
+                                ModelUtils.addDocTypesOccurence(parent, docHolder);
+                            }
+                            parent = parent.getParent();
+                        }
+                    }
                 }
             }
             List<JsObject> paramProperties = new ArrayList(param.getProperties().values());

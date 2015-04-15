@@ -49,10 +49,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -550,7 +552,9 @@ public class WebUtils {
                 }
             }
             return localHost;
-        } catch (Exception ex) {
+        } catch (UnknownHostException uhex) {
+            throw new IllegalStateException("Cannot resolve local host address, please check your network configuration.", uhex); // NOI18N
+        } catch (SocketException ex) {
             throw new IllegalStateException(ex);
         }
     }

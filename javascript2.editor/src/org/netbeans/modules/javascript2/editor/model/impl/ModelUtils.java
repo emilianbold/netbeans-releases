@@ -290,7 +290,8 @@ public class ModelUtils {
                 while (deep) {
                     deep = false;
                     for (DeclarationScope innerScope : result.getChildrenScopes()) {
-                        if (((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
+                        if ((innerScope instanceof DeclarationScopeImpl)
+                                && ((DeclarationScopeImpl)innerScope).getOffsetRange().containsInclusive(offset)) {
                             result = innerScope;
                             deep = true;
                             break;
@@ -1386,8 +1387,8 @@ public class ModelUtils {
     
     
     public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
-        if (docHolder.getOccurencesMap().containsKey(jsObject.getName())) {
-            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getName())) {
+        if (docHolder.getOccurencesMap().containsKey(jsObject.getFullyQualifiedName())) {
+            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getFullyQualifiedName())) {
                 ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
             }
         }

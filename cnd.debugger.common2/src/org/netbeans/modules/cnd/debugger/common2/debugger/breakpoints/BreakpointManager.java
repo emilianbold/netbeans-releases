@@ -45,9 +45,10 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Error;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Log;
@@ -307,10 +308,10 @@ public final class BreakpointManager {
         }
     }
 
-    private static class BreakpointJobs {
+    private static final class BreakpointJobs {
 
-	private final HashMap<Integer, BreakpointJob> map =
-	    new HashMap<Integer, BreakpointJob>();
+	private final Map<Integer, BreakpointJob> map =
+	    new ConcurrentHashMap<Integer, BreakpointJob>();
 
         public void put(int rt, BreakpointJob bj) {
             bj.print();
@@ -345,7 +346,18 @@ public final class BreakpointManager {
             }
         }
     }
-
+    
+    public boolean hasBreakpointJobAt(String fileName, int lineNo) {
+        final Map<Integer, BreakpointJob> map = breakpointJobs.map;
+        for (BreakpointJob breakpointJob : map.values()) {
+            NativeBreakpoint bp = breakpointJob.template();
+            if (bp.matchesLine(fileName, lineNo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private BreakpointJob getBreakpointJob(int rt) {
         return breakpointJobs.get(rt);
     }

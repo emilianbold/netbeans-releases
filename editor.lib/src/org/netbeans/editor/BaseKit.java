@@ -45,6 +45,7 @@
 package org.netbeans.editor;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -82,7 +83,6 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -3584,6 +3584,11 @@ public class BaseKit extends DefaultEditorKit {
         @Override
         public View getRootView(JTextComponent t) {
             return null;
+        }
+
+        @Override
+        public Dimension getPreferredSize (JComponent c) {
+            return new Dimension(0, 0);
         }
         
     }

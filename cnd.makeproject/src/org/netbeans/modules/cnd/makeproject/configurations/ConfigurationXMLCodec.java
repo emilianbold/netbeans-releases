@@ -163,7 +163,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     public void start(Attributes atts) throws VersionException {
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
-            descriptorVersion = new Integer(versionString);
+            descriptorVersion = Integer.parseInt(versionString);
             projectDescriptor.setVersion(descriptorVersion);
         }
     }
@@ -304,7 +304,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentConf.addAuxObject(itemConfiguration);
                 if (descriptorVersion >= 57) {
                     String excluded = atts.getValue(ItemXMLCodec.EXCLUDED_ATTR);
-                    int tool = new Integer(atts.getValue(ItemXMLCodec.TOOL_ATTR));
+                    int tool = Integer.parseInt(atts.getValue(ItemXMLCodec.TOOL_ATTR));
                     itemConfiguration.getExcluded().setValue(excluded.equals(TRUE_VALUE));
                     itemConfiguration.setTool(PredefinedToolKind.getTool(tool));
                     String flavor = atts.getValue(ItemXMLCodec.FLAVOR2_ATTR);
@@ -573,7 +573,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ASSEMBLER_REQUIRED_ELEMENT)) {
             ((MakeConfiguration) currentConf).getAssemblerRequired().setValue(currentText.equals(TRUE_VALUE), !currentText.equals(TRUE_VALUE));
         } else if (element.equals(PLATFORM_ELEMENT)) {
-            int set = new Integer(currentText);
+            int set = Integer.parseInt(currentText);
             if (descriptorVersion <= 37 && set == 4) {
                 set = PlatformTypes.PLATFORM_GENERIC;
             }
@@ -1102,7 +1102,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         if (descriptorVersion < 46) {
             host = HostInfoUtils.LOCALHOST;
         } else {
-            host = CppUtils.getDefaultDevelopmentHost();
+            host = CppUtils.getDefaultDevelopmentHost(projectDirectory);
         }
         FSPath fsPath;
         try {

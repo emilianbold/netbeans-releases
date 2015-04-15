@@ -46,7 +46,8 @@ import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * An event that occurs in the debugger backend.
+ * 
  * @author Martin Entlicher
  */
 public final class V8Event extends V8Packet {
@@ -55,11 +56,13 @@ public final class V8Event extends V8Packet {
         Break,
         Exception,
         AfterCompile,
-        ScriptCollected;
+        ScriptCollected,
+        CompileError;       // ES6
 
         @Override
         public String toString() {
-            return super.toString().toLowerCase();
+            String str = super.toString();
+            return Character.toLowerCase(str.charAt(0)) + str.substring(1);
         }
         
         static Kind fromString(String eventName) {
@@ -77,9 +80,9 @@ public final class V8Event extends V8Packet {
     private final PropertyBoolean success;
     private final String errorMessage;
     
-    V8Event(long sequence, Kind eventKind, V8Body body,
-            ReferencedValue[] referencedValues, Boolean running,
-            Boolean success, String errorMessage) {
+    public V8Event(long sequence, Kind eventKind, V8Body body,
+                   ReferencedValue[] referencedValues, Boolean running,
+                   Boolean success, String errorMessage) {
         super(sequence, V8Type.event);
         this.eventKind = eventKind;
         this.body = body;

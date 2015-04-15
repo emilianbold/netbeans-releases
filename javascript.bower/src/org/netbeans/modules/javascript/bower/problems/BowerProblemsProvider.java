@@ -252,7 +252,7 @@ public final class BowerProblemsProvider implements ProjectProblemsProvider, Pro
 
     }
 
-    private final class ProjectProblemResolverImpl implements ProjectProblemResolver {
+    private static final class ProjectProblemResolverImpl implements ProjectProblemResolver {
 
         private final String ident;
         private final Future<Result> resolver;

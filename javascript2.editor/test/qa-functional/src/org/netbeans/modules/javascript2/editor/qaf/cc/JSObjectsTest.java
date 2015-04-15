@@ -47,7 +47,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.WindowOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -56,35 +55,37 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class JSObjectsTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "createApplication",
+        "testStringConstructor",
+        "testStringSimple",
+        "testRegExpConstructor",
+        "testRegExpSimple",
+        "testLiteralArray",
+        "testCondensedArray",
+        "testRegularArray",
+        "testArrayConfirmedProp",
+        "testArrayConfirmedMethod",
+        "testBoolean",
+        "testMath",
+        "testMathConfirmedConstant",
+        "testMathConfirmedMethod",
+        "testMathHelp",
+        "testDate",
+        "testNumber",
+        "testNumberPartial",
+        "testGlobalFunctions",
+        "testGlobalFunctionsPartial",
+        "testGlobalHelpWindow",
+        "testGlobalDateInLocal"
+    };
+
     public JSObjectsTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JSObjectsTest.class).addTest(
-                "createApplication",
-                "testStringConstructor",
-                "testStringSimple",
-                "testRegExpConstructor",
-                "testRegExpSimple",
-                "testLiteralArray",
-                "testCondensedArray",
-                "testRegularArray",
-                "testArrayConfirmedProp",
-                "testArrayConfirmedMethod",
-                "testBoolean",
-                "testMath",
-                "testMathConfirmedConstant",
-                "testMathConfirmedMethod",
-                "testMathHelp",
-                "testDate",
-                "testNumber",
-                "testNumberPartial",
-                "testGlobalFunctions",
-                "testGlobalFunctionsPartial",
-                "testGlobalHelpWindow",
-                "testGlobalDateInLocal").enableModules(".*").clusters(".*"));
+        return createModuleTest(JSObjectsTest.class, tests);
     }
 
     public void createApplication() {

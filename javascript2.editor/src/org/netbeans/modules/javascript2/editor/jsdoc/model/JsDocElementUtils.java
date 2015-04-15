@@ -141,7 +141,12 @@ public class JsDocElementUtils {
         } else if (LOWERCASED_BOOLEAN.equals(type)) {
             return new TypeUsageImpl(Type.BOOLEAN, offset);
         } else {
-            return new TypeUsageImpl(type, offset);
+            String correctedType = type;
+            if (correctedType.indexOf('~') > 0) {
+                // we dont't replace tilda if it's on the first position
+                correctedType = correctedType.replace('~', '.'); // replacing tilda with dot. See issue #25110
+            }
+            return new TypeUsageImpl(correctedType, offset);
         }
     }
 
@@ -186,7 +191,8 @@ public class JsDocElementUtils {
             // get name value (mandatory part)
             if (parts.length > process && elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
                 nameOffset = descStartOffset + elementText.indexOf(parts[process], types.length());
-                if (parts[process].trim().charAt(0) == '[') {
+                String currentPart = parts[process].trim();
+                if (!currentPart.isEmpty() && currentPart.charAt(0) == '[') {
                     // has default value
                     int start = elementText.indexOf('[', types.length());
                     if (start > 0) {
@@ -197,11 +203,12 @@ public class JsDocElementUtils {
                             name.append(elementText.substring(start)).append(']');// close the default value
                         }
                     }
-                    while (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) != ']') {
-                        process++;
+                    while (process < parts.length - 1 && currentPart.charAt(currentPart.length() - 1) != ']') {
+                         process++;
+                         currentPart = parts[process].trim();                        
                     }
                     
-                    if (process < parts.length && parts[process].trim().charAt(parts[process].length() - 1) == ']') {
+                    if (process < parts.length && currentPart.charAt(currentPart.length() - 1) == ']') {
                         process++;
                     }
                 } else {

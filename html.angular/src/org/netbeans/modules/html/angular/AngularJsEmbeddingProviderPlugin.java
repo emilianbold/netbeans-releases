@@ -344,7 +344,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             sb.append("$scope;\n");   //NOI18N
             embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
             sb = new StringBuilder();
-            if (!controllerName.isEmpty()) {
+            final int embeddingEndOffset = tokenSequence.offset() + 1 + controllerName.length();
+            if (!controllerName.isEmpty() && embeddingEndOffset <= snapshot.getText().length()) {
                 embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
                 sb.append(";");
             } else {
@@ -632,7 +633,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     index = value.indexOf(':');
                     if (index > 0) {
                         String[] conditionParts = part.trim().split(":");
-                        if(conditionParts.length > 1) {
+                        if (conditionParts.length > 1 && !conditionParts[0].contains("?")) { //ignore if ternary operator is present (issue #251057)
                             String propName = conditionParts[1].trim();
                             if (!propName.startsWith("//")) {
                                 int position = lastPartPos + part.indexOf(propName) + oneTimeBindingShift + 1;

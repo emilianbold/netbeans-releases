@@ -180,6 +180,7 @@ public class GdbProfile extends DbgProfile implements
         final FileSystem fileSystem = getConfiguration().getFileSystem();
         
         set.put(DebuggerOption.DEBUG_DIR.createNodeProp(this, baseDir, fileSystem));
+        set.put(DebuggerOption.SYMBOL_FILE.createNodeProp(this, baseDir, fileSystem));
         
 	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this, baseDir, fileSystem));
         set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this, baseDir, fileSystem));
@@ -187,6 +188,8 @@ public class GdbProfile extends DbgProfile implements
         set.put(DebuggerOption.GDB_FOLLOW_FORK_MODE.createNodeProp(this));
         set.put(DebuggerOption.GDB_DETACH_ON_FORK.createNodeProp(this));
 	
+        set.put(DebuggerOption.GDB_REVERSE_DEBUGGING.createNodeProp(this));
+        
         set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
 	// LATER set.put(new ExceptionsNodeProp(this));
         set.put(new SignalsNodeProp(this));

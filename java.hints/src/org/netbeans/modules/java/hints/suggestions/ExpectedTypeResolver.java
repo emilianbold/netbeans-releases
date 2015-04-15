@@ -353,7 +353,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
                 return null;
             }
             // initializer and update operation can have any result type, including none
-            return Collections.singletonList(info.getElements().getTypeElement("java.lang.Void").asType()); // NOI18N
+            TypeElement tel = info.getElements().getTypeElement("java.lang.Void");
+            if (tel == null) {
+                return null;
+            }
+            return Collections.singletonList(tel.asType()); // NOI18N
         }
     }
 
@@ -599,6 +603,9 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             }
         } else {
             Element el = info.getTrees().getElement(getCurrentPath());
+            if (el == null) {
+                return null;
+            }
             if (theExpression.getLeaf() != node &&
                 (el.getKind() == ElementKind.METHOD || el.getKind() == ElementKind.CONSTRUCTOR)) {
                 int argIndex = args.indexOf(theExpression.getLeaf());
@@ -682,6 +689,9 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
             return null;
         }
         Element el = info.getTrees().getElement(getCurrentPath());
+        if (el == null) {
+            return null;
+        }
         if (theExpression.getLeaf() != node.getEnclosingExpression()) {
             ExecutableType execType = (ExecutableType)info.getTypes().asMemberOf((DeclaredType)tm, el);
             return visitMethodOrNew(node, p, node.getArguments(), execType);
@@ -943,7 +953,11 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         if (theExpression == null) {
             initExpression(new TreePath(getCurrentPath(), node.getExpression()));
         }
-        return Collections.singletonList(info.getElements().getTypeElement("java.lang.Object").asType()); // NOI18N
+        TypeElement tel = info.getElements().getTypeElement("java.lang.Object");
+        if (tel == null) {
+            return null;
+        }
+        return Collections.singletonList(tel.asType()); // NOI18N
     }
     
     /**
@@ -983,7 +997,7 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
         List<TypeMirror> tt = new ArrayList<TypeMirror>();
         Element el = info.getTrees().getElement(getCurrentPath());
         
-        if (el.getKind() == ElementKind.METHOD) {
+        if (el != null && el.getKind() == ElementKind.METHOD) {
             // special hack: if the casted value is a lambda, we NEED to assign it a type prior to method invocation:
             TreePath exp = getExpressionWithoutCasts();
             if (exp != null && exp.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {

@@ -42,12 +42,16 @@
 package org.netbeans.modules.web.clientproject.createprojectapi;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.ui.wizard.ClientSideProjectWizardIterator;
 import org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel;
 import org.netbeans.modules.web.clientproject.ui.wizard.ToolsPanel;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -121,11 +125,17 @@ public final class CreateProjectUtils {
             throw new IllegalArgumentException("toolsPanel must be created by #createToolsWizardPanel() method");
         }
         Set<FileObject> files = new HashSet<>();
-        FileObject folder = findBestToolsFolder(project);
+        FileObject folder = project.getProjectDirectory();
         assert folder != null;
         Tools tools = ((ToolsPanel) toolsPanel).getTools();
         if (tools.isBower()) {
             files.add(createFile(folder, "bower.json", "Templates/ClientSide/bower.json")); // NOI18N
+            // #251608
+            String webRootPath = getWebRootPath(project);
+            if (webRootPath != null) {
+                files.add(createFile(folder, ".bowerrc", "Templates/ClientSide/.bowerrc", // NOI18N
+                        Collections.<String, Object>singletonMap("project", Collections.singletonMap("webRootPath", webRootPath)))); // NOI18N
+            }
         }
         if (tools.isNpm()) {
             files.add(createFile(folder, "package.json", "Templates/ClientSide/package.json")); // NOI18N
@@ -139,16 +149,19 @@ public final class CreateProjectUtils {
         return files;
     }
 
-    private static FileObject findBestToolsFolder(Project project) {
-        // XXX ???
-        /*Sources sources = ProjectUtils.getSources(project);
-        for (SourceGroup sourceGroup : sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5)) {
-            return sourceGroup.getRootFolder();
-        }*/
-        return project.getProjectDirectory();
+    @CheckForNull
+    private static String getWebRootPath(Project project) {
+        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
+            return FileUtil.getRelativePath(project.getProjectDirectory(), webRoot);
+        }
+        return null;
     }
 
     private static FileObject createFile(FileObject root, String file, String template) throws IOException {
+        return createFile(root, file, template, Collections.<String, Object>emptyMap());
+    }
+
+    private static FileObject createFile(FileObject root, String file, String template, Map<String, Object> parameters) throws IOException {
         assert root != null;
         assert root.isFolder() : root;
         FileObject target = root.getFileObject(file);
@@ -159,7 +172,7 @@ public final class CreateProjectUtils {
         FileObject templateFile = FileUtil.getConfigFile(template);
         DataFolder dataFolder = DataFolder.findFolder(root);
         DataObject dataIndex = DataObject.find(templateFile);
-        return dataIndex.createFromTemplate(dataFolder).getPrimaryFile();
+        return dataIndex.createFromTemplate(dataFolder, null, parameters).getPrimaryFile();
     }
 
     //~ Inner classes

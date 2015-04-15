@@ -179,9 +179,10 @@ tokens {
 	CSM_NAMESPACE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DIRECTIVE<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 	CSM_USING_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
+    CSM_TYPE_ALIAS<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
-        CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-        CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_CTOR_INITIALIZER<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_CTOR_INITIALIZER_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_QUALIFIED_ID<AST=org.netbeans.modules.cnd.modelimpl.parser.NamedFakeAST>;
 
@@ -670,8 +671,8 @@ tokens {
 	//protected int finalQualifier() { return finalQualifier(1); }
 	//protected int finalQualifier(final int k) { /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
-        protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected boolean isTypeName(CharSequence s) { /*TODO: implement*/ throw new NotImplementedException(); }
+    protected CharSequence getTokenText(Token token) { /*TODO: implement*/ throw new NotImplementedException(); }
 	// isClassName is used in CPPParserEx only
 	//protected boolean isClassName(String  s) { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected void end_of_stmt() {}
@@ -711,7 +712,8 @@ tokens {
 	protected void endConstructorDeclaration() {}
 	protected void beginDestructorDeclaration(String s) {}
 	protected void endDestructorDeclaration() {}
-	protected void beginParameterDeclaration() {}
+	protected boolean beginParameterDeclaration() { _ts = tsInvalid; return true; }
+    protected boolean endParameterDeclaration(int oldTs) { _ts = oldTs; return true; }
 	protected void beginFieldDeclaration() {}
 	//protected void beginFunctionDefinition() {}
 	//protected void endFunctionDefinition() {}
@@ -1928,7 +1930,7 @@ declaration[int kind]
     |
         (LITERAL_using literal_ident ASSIGNEQUAL) => alias_declaration
     |
-	using_declaration	// DW 19/04/04
+        using_declaration	// DW 19/04/04
     |
         namespace_alias_definition
     |
@@ -2471,7 +2473,7 @@ init_declarator[int kind]
 			ASSIGNEQUAL 
             (cast_array_initializer_head) => initializer
         |	
-            LPAREN (expression_list | array_initializer) RPAREN
+            LPAREN cpp11_expression_list RPAREN
         |
             array_initializer
 		)?
@@ -2763,8 +2765,11 @@ direct_declarator[int kind, int level]
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         (variable_attribute_specification)?
+        // TODO: initializer should be removed from here because it is already present
+        // in init_declarator. That change may require some improvements in
+        // AstRenderer as it may be useful to preserve offsets of declarations.
         LPAREN
-        (expression_list)?
+        (cpp11_expression_list)?
         RPAREN
         {#direct_declarator = #(#[CSM_VARIABLE_DECLARATION, "CSM_VARIABLE_DECLARATION"], #direct_declarator);}
     |
@@ -2818,15 +2823,15 @@ direct_declarator[int kind, int level]
 		(parameter_list[false])?
 		RPAREN //{declaratorEndParameterList(false);}
 	|	
-		LPAREN declarator[kind, level+1] RPAREN
-                (options {greedy=true;} :variable_attribute_specification)?
-                (
-                    {_ts != tsInvalid}?
-                        (options {greedy=true;} : declarator_suffixes)?
-                |
-                    declarator_suffixes
-                )   
-                (options {greedy=true;} :variable_attribute_specification)?
+        LPAREN declarator[kind, level+1] RPAREN
+        (options {greedy=true;} :variable_attribute_specification)?
+        (
+            {_ts != tsInvalid}?
+                (options {greedy=true;} : declarator_suffixes)?
+        |
+            declarator_suffixes
+        )   
+        (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            
              // Issue #87792  Parser reports error on declarations with name in parenthesis.
@@ -2862,13 +2867,13 @@ declarator_suffixes
 	{TypeQualifier tq;}  
 	:
 	(
-		(options {warnWhenFollowAmbig = false;}:
-		 LSQUARE (constant_expression)? RSQUARE)+
+        (options {warnWhenFollowAmbig = false;}: LSQUARE (constant_expression)? RSQUARE)+
 		{declaratorArray();}
-        |
-                (LPAREN RPAREN) => declarator_param_list
-	|	{(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
-		declarator_param_list
+    |
+        (LPAREN RPAREN) => declarator_param_list
+	|	
+        {(!((LA(1)==LPAREN)&&(LA(2)==IDENT||LA(2)==LITERAL_final))||(qualifiedItemIsOneOf(qiType|qiCtor,1)))}?
+        declarator_param_list
 //	|	// DW 28/06/04 deleted Assume either following bracketed declaration
 //		// empty
 	)
@@ -2927,7 +2932,7 @@ trailing_type
         cv_qualifier_seq
         ts=trailing_type_specifier
         cv_qualifier_seq
-        (options {greedy=true;} : greedy_abstract_declarator)?
+        ((is_abstract_declarator)=>greedy_abstract_declarator)?
     ;
 
 trailing_type_specifier returns [/*TypeSpecifier*/int ts = tsInvalid]
@@ -3113,7 +3118,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN (expression_list | array_initializer)? RPAREN
+            LPAREN (cpp11_expression_list)? RPAREN
         |
             array_initializer
         )
@@ -3272,7 +3277,8 @@ parameter_declaration_list [boolean symTabCheck]
 	;
 
 parameter_declaration[boolean inTemplateParams]
-	:	{beginParameterDeclaration();}
+    { int oldTs = _ts; }
+	:	({beginParameterDeclaration()}?)
 		(
 			{!((LA(1)==SCOPE) && (LA(2)==STAR||LA(2)==LITERAL_OPERATOR)) &&
 			    (!(LA(1)==SCOPE||LA(1)==IDENT||LA(1)==LITERAL_final) ||
@@ -3292,11 +3298,10 @@ parameter_declaration[boolean inTemplateParams]
                     (   
                         {inTemplateParams}? template_param_expression
                     |
-                        array_initializer // c++11 extended initilizer list
-                    |	
-                        assignment_expression
+                        cpp11_assignment_expression
                     )
 		)?
+        ({endParameterDeclaration(oldTs)}?)
 		{ #parameter_declaration = #(#[CSM_PARAMETER_DECLARATION, "CSM_PARAMETER_DECLARATION"], #parameter_declaration); }
 	;
 
@@ -3314,10 +3319,16 @@ simple_parameter_declaration
     ;
 
 type_name // aka type_id
-	:
-	declaration_specifiers[true, false] 
+    :
+        declaration_specifiers[true, false] 
         abstract_declarator
-	;
+    ;
+
+// Predicts if here can start abstract_declarator (without empty alternative)
+is_abstract_declarator
+    :
+        ptr_operator | LPAREN | LSQUARE | ELLIPSIS
+    ;
 
 /* This rule looks a bit weird because (...) can happen in two
  * places within the declaration such as "void (*)()" (ptr to
@@ -4111,10 +4122,11 @@ using_declaration
 	;
 
 alias_declaration
-    {String s;}
+    {String s="";}
 	:	LITERAL_using
 		s=literal_ident ASSIGNEQUAL alias_declaration_type
 		SEMICOLON //{end_of_stmt();}
+        {#alias_declaration = #(#[CSM_TYPE_ALIAS, s], #alias_declaration);}
 	;
 
 // Rule to catch class definition inside type alias
@@ -4211,6 +4223,18 @@ expression
 		{#expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #expression);}
 	;
 
+cpp11_expression_list
+    :
+        cpp11_assignment_expression (COMMA cpp11_assignment_expression)*
+    ;
+
+cpp11_assignment_expression
+    :
+            assignment_expression
+        |
+            array_initializer // uniform initialization syntax
+    ;
+
 assignment_expression
 	:
         (
@@ -4222,7 +4246,7 @@ assignment_expression
             |
             throw_expression
         )
-	(options {greedy=true;}:	
+        (options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -4345,7 +4369,6 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   trait_type_literals
 
             |   LITERAL_auto
-            |   LITERAL_override
             |   LITERAL_constexpr
             |   LITERAL_thread_local
             |   LITERAL_static_assert
@@ -4592,7 +4615,6 @@ lazy_expression_predicate
     |   trait_type_literals
 
     |   LITERAL_auto
-    |   LITERAL_override
     |   LITERAL_constexpr
     |   LITERAL_thread_local
     |   LITERAL_static_assert
@@ -4634,31 +4656,31 @@ postfix_cv_qualifier
 
 protected
 unnamed_ptr_operator
-	:	(	AMPERSAND 	{is_address = true;}
-                |       AND {is_address = true;} // r-value reference
-		|	literal_cdecl 
-		|	literal_near
-		|	literal_far 
-		|	LITERAL___interrupt 
-		|	literal_pascal 
-		|	literal_stdcall
-                |       literal_clrcall
-		|	STAR 
-		)	
+	:	(   AMPERSAND 	{is_address = true;}
+        |   AND {is_address = true;} // r-value reference
+        |   literal_cdecl 
+        |   literal_near
+        |   literal_far 
+        |   LITERAL___interrupt 
+        |   literal_pascal 
+        |   literal_stdcall
+        |   literal_clrcall
+        |   STAR 
+        )	
    ;
 
 ptr_operator
-	:	(	AMPERSAND 	{is_address = true;}
-                |       AND {is_address = true;} // r-value reference
-		|	literal_cdecl 
-		|	literal_near
-		|	literal_far 
-		|	LITERAL___interrupt 
-		|	literal_pascal 
-		|	literal_stdcall
-                |       literal_clrcall
-		|	ptr_to_member	// e.g. STAR 
-		)	
+	:	(   AMPERSAND 	{is_address = true;}
+        |   AND {is_address = true;} // r-value reference
+        |   literal_cdecl 
+        |   literal_near
+        |   literal_far 
+        |   LITERAL___interrupt 
+        |   literal_pascal 
+        |   literal_stdcall
+        |   literal_clrcall
+        |   ptr_to_member	// e.g. STAR 
+        )	
 		{#ptr_operator=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #ptr_operator);}
    ;
 
@@ -4857,9 +4879,13 @@ literal_ident returns [String s = ""]
         id:IDENT 
         {s = id.getText();}
     | 
-        kwd:LITERAL_final
-        {s = kwd.getText();}
-        {#literal_ident = #[IDENT, s];}
+        kwd_final:LITERAL_final
+        {s = kwd_final.getText();}
+        {#literal_ident = #[IDENT, s, kwd_final];}
+    | 
+        kwd_override:LITERAL_override
+        {s = kwd_override.getText();}
+        {#literal_ident = #[IDENT, s, kwd_override];}
     ;
 
 protected

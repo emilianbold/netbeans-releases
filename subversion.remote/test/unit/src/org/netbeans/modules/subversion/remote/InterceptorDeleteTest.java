@@ -51,8 +51,9 @@ import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import static org.netbeans.modules.subversion.remote.RemoteVersioningTestBase.addTest;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -98,7 +99,7 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
         RequestProcessor.Task r = Subversion.getInstance().getParallelRequestProcessor().create(new Runnable() {
             @Override
             public void run() {
-                fileA.toFileObject().refresh();
+                VersioningSupport.refreshFor(new VCSFileProxy[]{fileA});
             }
         });
         r.run();
@@ -148,14 +149,14 @@ public class InterceptorDeleteTest extends RemoteVersioningTestBase {
         try {
             System.setProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true");
             // delete externally
-            VCSFileProxySupport.delete(file);
+            VCSFileProxySupport.deleteExternally(file);
 
             // test
             assertFalse(file.exists());
             assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
 
             // notify changes
-            file.toFileObject().refresh();
+            VersioningSupport.refreshFor(new VCSFileProxy[]{file});
             assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
         } finally {
             System.setProperty("org.netbeans.modules.subversion.deleteMissingFiles", prop);

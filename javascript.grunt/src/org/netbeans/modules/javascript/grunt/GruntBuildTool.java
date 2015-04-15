@@ -78,7 +78,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
     private GruntBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        gruntfile = new Gruntfile(project.getProjectDirectory());
+        gruntfile = Gruntfile.create(project.getProjectDirectory());
         gruntTasks = GruntTasks.create(project, gruntfile);
         gruntPreferences = new GruntPreferences(project);
     }

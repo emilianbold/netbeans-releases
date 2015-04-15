@@ -99,7 +99,7 @@ public final class BuildTraceSupport {
                 case MACOSX:
                     return cpuFamily == HostInfo.CpuFamily.X86;
                 case LINUX:
-                    return cpuFamily == HostInfo.CpuFamily.X86;
+                    return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
                 case SUNOS:
                     return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
             }

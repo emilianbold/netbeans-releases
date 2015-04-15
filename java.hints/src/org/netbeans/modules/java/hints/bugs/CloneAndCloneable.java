@@ -97,6 +97,9 @@ public class CloneAndCloneable {
     )
     public static ErrorDescription cloneWithoutSuperClone(HintContext ctx) {
         ExecutableElement me = (ExecutableElement)ctx.getInfo().getTrees().getElement(ctx.getPath());
+        if (me == null) {
+            return null;
+        }
         ExecutableElement sup = ctx.getInfo().getElementUtilities().getOverriddenMethod(me);
         if (sup == null) {
             return null;
@@ -276,7 +279,7 @@ public class CloneAndCloneable {
             return null;
         }
         TypeElement clazz = (TypeElement)info.getTrees().getElement(ctx.getPath());
-        if (!info.getTypes().isSubtype(clazz.asType(), cloneableIface.asType())) {
+        if (clazz == null || !info.getTypes().isSubtype(clazz.asType(), cloneableIface.asType())) {
             return null;
         }
         for (ExecutableElement exec : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
@@ -307,6 +310,9 @@ public class CloneAndCloneable {
             ClassTree clazz = (ClassTree)path.getLeaf();
             
             TypeElement clazzType = (TypeElement)ctx.getWorkingCopy().getTrees().getElement(path);
+            if (clazzType == null) {
+                return;
+            }
             ExecutableElement superClone = null;
             
             for (ExecutableElement ee : ElementFilter.methodsIn(ctx.getWorkingCopy().getElements().getAllMembers(clazzType))) {

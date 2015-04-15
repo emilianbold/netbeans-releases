@@ -50,6 +50,7 @@ import org.netbeans.modules.db.mysql.impl.Installation;
 import org.netbeans.modules.db.mysql.impl.MultiInstallation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  * Class for detection of installed versions of MySQL on Windows OS.
@@ -64,11 +65,14 @@ public class WindowsStandaloneMultiInstallation implements MultiInstallation {
 
     @Override
     public Collection<Installation> getInstallations() {
+        if (!Utilities.isWindows()) {
+            return Collections.<Installation>emptyList();
+        }
         if (installations != null) {
             return installations;
         }
         FileObject fo = FileUtil.toFileObject(
-                new File(WindowsStandaloneInstallation.DEFAULT_BASE_PATH));
+                WindowsStandaloneInstallation.DEFAULT_BASE_PATH);
 
         if (fo != null) {
             List<Installation> found = new ArrayList<Installation>(3);

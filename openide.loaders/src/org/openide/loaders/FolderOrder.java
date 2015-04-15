@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.*;
 
 import org.openide.filesystems.*;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.loaders.DataFolder.SortMode;
 
 
@@ -115,7 +116,20 @@ final class FolderOrder extends Object implements Comparator<Object> {
     
     /** Changes the order of data objects.
      */
-    public synchronized void setOrder (DataObject[] arr) throws IOException {
+    public void setOrder (final DataObject[] arr) throws IOException {
+        // #251398: setOrder is internally synchronized(this) and fires FS events
+        // while holding the lock over this FolderOrder, although the Order is
+        // already updated. FSAA will defer event dispatch until after the FolderOrder
+        // lock is released. Also helps Listeners to see the oder consistent, not
+        // partially set as individual FObj attributes are changed.
+        folder.getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                doSetOrder(arr);
+            }
+        });
+    }
+        
+    private synchronized void doSetOrder(DataObject[] arr) throws IOException {
         if (arr != null) {
             order = new HashMap<String, Integer> (arr.length * 4 / 3 + 1);
 

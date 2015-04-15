@@ -85,11 +85,11 @@ public class RfsSetupProvider implements SetupProvider {
             , "SunOS-x86_64" // NOI18N
             , "Linux-x86" // NOI18N
             , "Linux-x86_64" // NOI18N
+            , "Linux-sparc_64" // NOI18N
             , "SunOS-sparc" // NOI18N
             , "SunOS-sparc_64" // NOI18N
         };
         binarySetupMap = new HashMap<String, File>();
-        File file;
         for (String dir : dirs) {
             binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
             binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
@@ -194,7 +194,8 @@ public class RfsSetupProvider implements SetupProvider {
 
         switch (osFamily) {
             case LINUX:
-                return (cpuFamily == HostInfo.CpuFamily.X86) ? Boolean.TRUE : Boolean.FALSE;
+                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? 
+                        Boolean.TRUE : Boolean.FALSE;
             case SUNOS:
                 //BZ #189231 Smart secure copy does not work on (remote) Solaris 8
                 //Disable Automatic copying on Solaris 8 as it is not supported platform
@@ -226,7 +227,7 @@ public class RfsSetupProvider implements SetupProvider {
 
         int version = -1;
         try {
-            version = Integer.valueOf(result);
+            version = Integer.parseInt(result);
         } catch (NumberFormatException e) {
             return -1;
         }

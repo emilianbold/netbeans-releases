@@ -62,10 +62,6 @@ public abstract class CsmBaseUtilitiesProvider {
         return DEFAULT;
     }
     
-    public abstract String getFileLanguage(CsmFile file);
-    
-    public abstract String getFileLanguageFlavor(CsmFile file);
-    
     public abstract boolean isGlobalVariable(CsmVariable var);
 
     public abstract CsmFunction getFunctionDeclaration(CsmFunction fun);
@@ -86,23 +82,7 @@ public abstract class CsmBaseUtilitiesProvider {
         Default() {
             svcs = Lookup.getDefault().lookupAll(CsmBaseUtilitiesProvider.class);
         }
-
-        @Override
-        public String getFileLanguage(CsmFile file) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                return provider.getFileLanguage(file);
-            }
-            return null;
-        }
-
-        @Override
-        public String getFileLanguageFlavor(CsmFile file) {
-            for (CsmBaseUtilitiesProvider provider : svcs) {
-                return provider.getFileLanguageFlavor(file);
-            }
-            return null;
-        }
-
+        
         @Override
         public boolean isGlobalVariable(CsmVariable var) {
             for (CsmBaseUtilitiesProvider provider : svcs) {
