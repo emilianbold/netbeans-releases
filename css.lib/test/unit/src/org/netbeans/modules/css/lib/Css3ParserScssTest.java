@@ -1833,4 +1833,32 @@ public class Css3ParserScssTest extends CssTestBase {
         result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testSassNestingGreater() {
+        assertParses("div {\n"
+                + "    margin: 0;\n"
+                + "    > {\n"
+                + "        label {\n"
+                + "            float: left;\n"
+                + "        }\n"
+                + "        input {\n"
+                + "            width: 70%; \n"
+                + "        }\n"
+                + "    }\n"
+                + "}");
+    } 
+    
+    public void testPseudoClassBeforeAmpersand() {
+        assertParses("  li {\n"
+                + "        a:hover, &.selected {\n"
+                + "            display: block;\n"
+                + "        }\n"
+                + "    }");
+
+    }
+    
+    public void testDotInterpolationMinus() {
+    assertParses("$fa-css-prefix : test;\n"
+                + ".#{$fa-css-prefix}-2x { font-size: 2em; }");
+    }
 }
