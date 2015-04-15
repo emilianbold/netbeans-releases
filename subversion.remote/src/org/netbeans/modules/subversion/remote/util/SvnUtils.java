@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -203,7 +204,7 @@ public class SvnUtils {
                 char[] chars = Character.toChars(c);
                 for (int j = 0; j < chars.length; ++j) {
                     sb.append('%');
-                    sb.append(Integer.toHexString(chars[j]).toUpperCase());
+                    sb.append(Integer.toHexString(chars[j]).toUpperCase(Locale.ENGLISH));
                 }
             } else {
                 sb.append(c);
@@ -1712,7 +1713,7 @@ public class SvnUtils {
             return false;
         }
 
-        return javaVMName.toLowerCase().contains("64-bit"); //NOI18N
+        return javaVMName.toLowerCase(Locale.getDefault()).contains("64-bit"); //NOI18N
     }
 
     public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
