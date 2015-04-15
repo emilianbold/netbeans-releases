@@ -101,6 +101,8 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="450"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cFiles.html"/>
+            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+            <attr name="templateCategory" stringvalue="c-types"/>
             
             <file name="file.c" url="templates/c/empty-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -136,6 +138,8 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="550"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/cppFiles.html"/>
+            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+            <attr name="templateCategory" stringvalue="cpp-types"/>
                        
             <file name="file.cc" url="templates/cpp/empty-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
@@ -291,6 +295,8 @@ made subject to such option by the copyright holder.
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
             <attr name="position" intvalue="650"/>
             <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/resources/fortranFiles.html"/>
+            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
+            <attr name="templateCategory" stringvalue="fortran-types"/>
             
             <file name="fortranEmptyFile.f90" url="templates/fortran/empty-f90.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.resources.Bundle"/>
