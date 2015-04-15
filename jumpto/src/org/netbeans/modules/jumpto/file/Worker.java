@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -193,8 +192,8 @@ final class Worker implements Runnable {
     @NonNull
     static Collector newCollector(
         @NonNull final Models.MutableListModel<FileDescriptor> model,
-        @NonNull final Function<Collector,Void> updateCallBack,
-        @NonNull final Function<Collector,Void> doneCallBack,
+        @NonNull final Runnable updateCallBack,
+        @NonNull final Runnable doneCallBack,
         final long startTime) {
         return new Collector(model, updateCallBack, doneCallBack, startTime);
     }
@@ -337,14 +336,10 @@ final class Worker implements Runnable {
         }
     }
 
-    static interface Function<P,R> {
-        R apply(@NonNull P param);
-    }
-
     static final class Collector {
         private final Models.MutableListModel<FileDescriptor> model;
-        private final Function<Collector,Void> updateCallBack;
-        private final Function<Collector,Void> doneCallBack;
+        private final Runnable updateCallBack;
+        private final Runnable doneCallBack;
         private final long startTime;
         private final Set<Worker> active = Collections.newSetFromMap(new ConcurrentHashMap<Worker, Boolean>());
         private volatile boolean frozen;
@@ -352,8 +347,8 @@ final class Worker implements Runnable {
 
         private Collector(
             @NonNull final Models.MutableListModel<FileDescriptor> model,
-            @NonNull final Function<Collector,Void> updateCallBack,
-            @NonNull final Function<Collector,Void> doneCallBack,
+            @NonNull final Runnable updateCallBack,
+            @NonNull final Runnable doneCallBack,
             final long startTime) {
             Parameters.notNull("model", model); //NOI18N
             Parameters.notNull("updateCallBack", updateCallBack);   //NOI18N
@@ -408,7 +403,7 @@ final class Worker implements Runnable {
             final boolean cancelled = worker.cancelled;
             if (!cancelled) {
                 model.add(files);
-                updateCallBack.apply(this);
+                updateCallBack.run();
             }
         }
 
@@ -421,8 +416,8 @@ final class Worker implements Runnable {
                     worker,
                     this));
             }
-            if (active.isEmpty()) {
-                doneCallBack.apply(this);
+            if (isDone()) {
+                doneCallBack.run();
             }
         }
     }

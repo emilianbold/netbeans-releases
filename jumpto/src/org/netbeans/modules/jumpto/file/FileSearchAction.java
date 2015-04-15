@@ -290,9 +290,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     lineNr);
                 final Worker.Collector collector = Worker.newCollector(
                     baseListModel,
-                    new Worker.Function<Worker.Collector, Void>() {
+                    new Runnable () {
                         @Override
-                        public Void apply(@NonNull final Worker.Collector c) {
+                        public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -300,23 +300,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                     enableOK(baseListModel.getSize() > 0);
                                 }
                             });
-                            return null;
                         }
                     },
-                    new Worker.Function<Worker.Collector, Void>() {
+                    new Runnable () {
                         @Override
-                        public Void apply(@NonNull final Worker.Collector c) {
-                            final boolean success = c.isDone();
-                            if (success) {
-                                currentSearch.searchCompleted(searchType, searchText);
-                            }
+                        public void run() {
+                            currentSearch.searchCompleted(searchType, searchText);
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    panel.searchCompleted(success);
+                                    panel.searchCompleted(true);
                                 }
                             });
-                            return null;
                         }
                     },
                     panel.time);
@@ -494,6 +489,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 }
                 running = null;
                 scheduledTasks = null;
+                panel.searchCompleted(false);
             }
         }
     }
