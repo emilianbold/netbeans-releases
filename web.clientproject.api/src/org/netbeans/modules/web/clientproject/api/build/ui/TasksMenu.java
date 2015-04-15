@@ -170,7 +170,9 @@ public class TasksMenu extends JMenu {
     }
 
     void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        if (isShowing()) {
+            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        }
     }
 
     void refreshMenu() {
@@ -188,32 +190,34 @@ public class TasksMenu extends JMenu {
             addConfigureToolMenuItem();
             return;
         }
-        Collection<String> allTasks = addTasksMenuItems(tasks);
+        // ui
+        VerticalGridLayout vgl = new VerticalGridLayout();
+        getPopupMenu().setLayout(vgl);
+        // items
+        Set<String> allTasks = new LinkedHashSet<>(tasks);
+        // default task
+        final String defaultTaskName = support.getDefaultTaskName();
+        if (defaultTaskName != null) {
+            allTasks.remove(defaultTaskName);
+            addTaskMenuItem(true, defaultTaskName, false);
+            addSeparator();
+        }
+        // other tasks
         addAdvancedMenuItems(allTasks);
+        addTasksMenuItems(allTasks);
         addReloadTasksMenuItem();
     }
 
     @CheckForNull
-    private Collection<String> addTasksMenuItems(List<String> tasks) {
+    private void addTasksMenuItems(Collection<String> tasks) {
         assert EventQueue.isDispatchThread();
         assert tasks != null;
-        // default task
-        final String defaultTaskName = support.getDefaultTaskName();
-        if (defaultTaskName != null) {
-            addTaskMenuItem(true, defaultTaskName, false);
-        }
-        addSeparator();
-        Set<String> allTasks = new LinkedHashSet<>(tasks);
-        if (defaultTaskName != null) {
-            allTasks.remove(defaultTaskName);
-        }
-        for (String task : allTasks) {
+        for (String task : tasks) {
             addTaskMenuItem(false, task, false);
         }
-        if (!allTasks.isEmpty()) {
+        if (!tasks.isEmpty()) {
             addSeparator();
         }
-        return allTasks;
     }
 
     @NbBundle.Messages("TasksMenu.menu.advanced=Advanced...")

@@ -274,6 +274,7 @@ public class GruntExecutable {
 
         @Override
         public List<ConvertedLine> convert(String line) {
+            LOGGER.log(Level.FINE, line);
             switch (state) {
                 case 0:
                     if (AVAILABLE_TASKS.equals(line)) {

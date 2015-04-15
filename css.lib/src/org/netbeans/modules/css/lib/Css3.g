@@ -672,11 +672,11 @@ declaration
     (cp_variable_declaration)=>cp_variable_declaration
     | (sass_map)=> sass_map
     | (sass_nested_properties)=>sass_nested_properties
+    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
     | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
     | (cp_mixin_declaration)=>cp_mixin_declaration
-    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
     | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
@@ -703,6 +703,7 @@ selectorsGroup
 
 selector
     :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws) simpleSelectorSequence)*
+       | {isScssSource()}? combinator
     ;
 
 combinator
@@ -1218,7 +1219,7 @@ less_selector_interpolation
 
 //SCSS interpolation expression
 sass_selector_interpolation_exp :
-    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | IDENT | MINUS)?
+    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION)+)?
     ;
 
 sass_interpolation_expression_var
