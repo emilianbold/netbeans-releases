@@ -182,21 +182,21 @@ public class TasksMenu extends JMenu {
     }
 
     void addMenuItems(@NullAllowed List<String> tasks) {
-        Collection<String> allTasks = addTasksMenuItems(tasks);
-        if (tasks != null) { // not 'allTasks' intentionally, one can run default task e.g. with just some parameters
-            addAdvancedMenuItems(allTasks);
-            addReloadTasksMenuItem();
-        }
-    }
-
-    @CheckForNull
-    private Collection<String> addTasksMenuItems(@NullAllowed List<String> tasks) {
         assert EventQueue.isDispatchThread();
         if (tasks == null) {
             // build tool cli error?
             addConfigureToolMenuItem();
-            return null;
+            return;
         }
+        Collection<String> allTasks = addTasksMenuItems(tasks);
+        addAdvancedMenuItems(allTasks);
+        addReloadTasksMenuItem();
+    }
+
+    @CheckForNull
+    private Collection<String> addTasksMenuItems(List<String> tasks) {
+        assert EventQueue.isDispatchThread();
+        assert tasks != null;
         // default task
         final String defaultTaskName = support.getDefaultTaskName();
         if (defaultTaskName != null) {
