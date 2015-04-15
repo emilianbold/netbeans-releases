@@ -121,7 +121,7 @@ public final class QuerySupport {
      * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
      *
      * @return The collection of roots for a given file. It may be empty, but never <code>null</code>.
-     * 
+     *
      * @since 1.6
      */
     @NonNull
@@ -163,7 +163,7 @@ public final class QuerySupport {
      * all the source roots which have either direct or transitive dependency on
      * the given source root.
      *
-     * @param root to find the dependent roots for
+     * @param file to find the dependent roots for
      * @param filterNonOpenedProjects if true the results contains only roots of
      * opened projects
      * @return {@link Collection} of {@link FileObject}s containing at least the incoming
@@ -185,30 +185,27 @@ public final class QuerySupport {
         final Map<URL, List<URL>> binaryDeps = ic.getBinaryRootDependencies();
         final Map<URL, List<URL>> sourceDeps = ic.getRootDependencies();
         final Map<URL, List<URL>> peerDeps = ic.getRootPeers();
-        Set<URL> urls;
-
+        final Set<URL> urls = new HashSet<>();
         if (sourceDeps.containsKey(root)) {
-            urls = Util.findReverseSourceRoots(root, sourceDeps, peerDeps);
-        } else {
-            urls = new HashSet<URL>();
-            final FileObject rootFo = URLMapper.findFileObject(root);
-            if (rootFo != null) {
-                for (URL binary : findBinaryRootsForSourceRoot(rootFo, binaryDeps)) {
-                    List<URL> deps = binaryDeps.get(binary);
-                    if (deps != null) {
-                        urls.addAll(deps);
-                    }
+            urls.addAll(Util.findReverseSourceRoots(root, sourceDeps, peerDeps));
+        }
+        final FileObject rootFo = URLMapper.findFileObject(root);
+        if (rootFo != null) {
+            for (URL binary : findBinaryRootsForSourceRoot(rootFo, binaryDeps)) {
+                List<URL> deps = binaryDeps.get(binary);
+                if (deps != null) {
+                    urls.addAll(deps);
                 }
             }
         }
 
         if(filterNonOpenedProjects) {
             final GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
-            final Set<ClassPath> cps = new HashSet<ClassPath>();
+            final Set<ClassPath> cps = new HashSet<>();
             for (String id : PathRecognizerRegistry.getDefault().getSourceIds()) {
                 cps.addAll(gpr.getPaths(id));
             }
-            Set<URL> toRetain = new HashSet<URL>();
+            Set<URL> toRetain = new HashSet<>();
             for (ClassPath cp : cps) {
                 for (ClassPath.Entry e : cp.entries()) {
                     toRetain.add(e.getURL());
@@ -236,7 +233,7 @@ public final class QuerySupport {
      * @param binaryLibraryPathIds The IDs of binary library classpath to look at.
      *
      * @return The collection of roots for a given project. It may be empty, but never <code>null</code>.
-     * 
+     *
      * @since 1.6
      */
     @NonNull
@@ -349,7 +346,7 @@ public final class QuerySupport {
     public static QuerySupport forRoots (final String indexerName, final int indexerVersion, final FileObject... roots) throws IOException {
         Parameters.notNull("indexerName", indexerName); //NOI18N
         Parameters.notNull("roots", roots); //NOI18N
-        final List<URL> rootsURL = new ArrayList<URL>(roots.length);
+        final List<URL> rootsURL = new ArrayList<>(roots.length);
         for (FileObject root : roots) {
             rootsURL.add(root.toURL());
         }
@@ -441,6 +438,8 @@ public final class QuerySupport {
         public static final class Factory {
 
             private final QuerySupport qs;
+            private String camelCaseSeparator;
+            private String camelCasePart;
 
             private Factory(@NonNull final QuerySupport qs) {
                 assert qs != null;
@@ -462,13 +461,30 @@ public final class QuerySupport {
                 Parameters.notNull("fieldName", fieldName); //NOI18N
                 Parameters.notNull("fieldValue", fieldValue);   //NOI18N
                 Parameters.notNull("kind", kind);   //NOI18N
+                Map<String,Object> options = null;
+                if (camelCaseSeparator != null) {
+                    if (options == null) {
+                        options = new HashMap<>();
+                    }
+                    options.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, camelCaseSeparator);
+                }
+                if (camelCasePart != null) {
+                    if (options == null) {
+                        options = new HashMap<>();
+                    }
+                    options.put(Queries.OPTION_CAMEL_CASE_PART, camelCasePart);
+                }
+                if (options == null) {
+                    options = Collections.emptyMap();
+                }
                 return new Query(
                     qs,
                     Queries.createQuery(
                         fieldName,
                         fieldName,
                         fieldValue,
-                        translateQueryKind(kind)));
+                        translateQueryKind(kind),
+                        options));
             }
 
             /**
@@ -555,6 +571,28 @@ public final class QuerySupport {
                     qs,
                     bq);
             }
+
+            /**
+             * Sets a camel case separator.
+             * Sets a regular expression for camel case separator.
+             * @param camelCaseSeparator the regular expression for camel case separator.
+             * When null the default (upper case letter) is used.
+             * @since 9.5
+             */
+            public void setCamelCaseSeparator(@NullAllowed final String camelCaseSeparator) {
+                this.camelCaseSeparator = camelCaseSeparator;
+            }
+
+            /**
+             * Sets a camel case part.
+             * Sets a regular expression for camel case part content.
+             * @param camelCasePart  the regular expression for camel case part.
+             * When null the default (lower case letter, digit) is used.
+             * @since 9.5
+             */
+            public void setCamelCasePart(@NullAllowed final String camelCasePart) {
+                this.camelCasePart = camelCasePart;
+            }
         }
 
         /**
@@ -585,7 +623,7 @@ public final class QuerySupport {
                             });
                         if (!staleFiles.isEmpty() && !scanningThread && !TransientUpdateSupport.isTransientUpdate()) {
                             final URL root = pair.first();
-                            LinkedList<URL> list = new LinkedList<URL>();
+                            LinkedList<URL> list = new LinkedList<>();
                             for (String staleFile : staleFiles) {
                                 try {
                                     list.add(Util.resolveUrl(root, staleFile, false));
@@ -601,7 +639,7 @@ public final class QuerySupport {
                             }
                         }
                     }
-                    final Queue<IndexResult> result = new ArrayDeque<IndexResult>();
+                    final Queue<IndexResult> result = new ArrayDeque<>();
                     for (Pair<URL, LayeredDocumentIndex> pair : indices) {
                         final DocumentIndex2 index = pair.second();
                         final URL root = pair.first();
@@ -624,7 +662,7 @@ public final class QuerySupport {
                                 LOG.log(Level.FINE, " {0}", idi); //NOI18N
                             }
                             LOG.fine("----"); //NOI18N
-                        }                        
+                        }
                     }
                     return result;
                 }
@@ -635,14 +673,12 @@ public final class QuerySupport {
             } else {
                 throw ice;
             }
-        } catch (IOException ioe) {
-            throw ioe;
-        } catch (RuntimeException re) {
-            throw re;
+        } catch (IOException | RuntimeException e) {
+            throw e;
         } catch (Exception ex) {
             throw new IOException(ex);
         }
-            
+
         }
 
         @NonNull
@@ -651,7 +687,7 @@ public final class QuerySupport {
             return String.format(
                 "QuerySupport.Query[%s]",   //NOI18N
                 queryImpl);
-        }        
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -665,7 +701,7 @@ public final class QuerySupport {
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
         this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
-        this.roots = new ArrayList<URL>(Arrays.asList(roots));
+        this.roots = new ArrayList<>(Arrays.asList(roots));
 
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(
@@ -695,7 +731,7 @@ public final class QuerySupport {
         @NullAllowed Collection<String> sourcePathIds,
         @NullAllowed Collection<String> libraryPathIds,
         @NullAllowed Collection<String> binaryLibraryPathIds) {
-        final Set<FileObject> roots = new HashSet<FileObject>();
+        final Set<FileObject> roots = new HashSet<>();
         if (sourcePathIds == null) {
             sourcePathIds = PathRecognizerRegistry.getDefault().getSourceIds();
         }
@@ -770,14 +806,14 @@ public final class QuerySupport {
             return sb.toString();
         }
     }
-    
+
     private static Queries.QueryKind translateQueryKind(final QuerySupport.Kind kind) {
         switch (kind) {
             case EXACT: return Queries.QueryKind.EXACT;
-            case PREFIX: return Queries.QueryKind.PREFIX;                
+            case PREFIX: return Queries.QueryKind.PREFIX;
             case CASE_INSENSITIVE_PREFIX: return Queries.QueryKind.CASE_INSENSITIVE_PREFIX;
             case CAMEL_CASE: return Queries.QueryKind.CAMEL_CASE;
-            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_REGEXP;                
+            case CASE_INSENSITIVE_REGEXP: return Queries.QueryKind.CASE_INSENSITIVE_REGEXP;
             case REGEXP: return Queries.QueryKind.REGEXP;
             case CASE_INSENSITIVE_CAMEL_CASE: return Queries.QueryKind.CASE_INSENSITIVE_CAMEL_CASE;
             default: throw new UnsupportedOperationException (kind.toString());
@@ -824,7 +860,7 @@ public final class QuerySupport {
     private static Set<URL> findBinaryRootsForSourceRoot(
             @NonNull final FileObject sourceRoot,
             @NonNull final Map<URL, List<URL>> binaryDeps) {
-        Set<URL> result = new HashSet<URL>();
+        Set<URL> result = new HashSet<>();
         for (URL bin : binaryDeps.keySet()) {
             for (FileObject fo : SourceForBinaryQuery.findSourceRoots(bin).getRoots()) {
                 if (sourceRoot.equals(fo)) {
@@ -839,7 +875,7 @@ public final class QuerySupport {
     private static Collection<FileObject> mapToFileObjects(
         @NonNull final Collection<? extends URL> urls) {
         final URLCache ucache = URLCache.getInstance();
-        final Collection<FileObject> result = new ArrayList<FileObject>(urls.size());
+        final Collection<FileObject> result = new ArrayList<>(urls.size());
         for (URL u : urls) {
             final FileObject fo = ucache.findFileObject(u, false);
             if (fo != null) {
@@ -895,7 +931,7 @@ public final class QuerySupport {
         justification="URLs have never host part")
         public Iterable<? extends Pair<URL, LayeredDocumentIndex>> getIndices(List<? extends URL> roots) {
             synchronized (root2index) {
-                List<Pair<URL, LayeredDocumentIndex>> indices = new LinkedList<Pair<URL, LayeredDocumentIndex>>();
+                List<Pair<URL, LayeredDocumentIndex>> indices = new LinkedList<>();
 
                 for(URL r : roots) {
                     assert PathRegistry.noHostPart(r) : r;
@@ -904,7 +940,7 @@ public final class QuerySupport {
                     if (index == null) {
                         index = findIndex(r);
                         if (index != null) {
-                            root2index.put(r, new SoftReference<LayeredDocumentIndex>(index));
+                            root2index.put(r, new SoftReference<>(index));
                         } else {
                             root2index.remove(r);
                         }
@@ -926,14 +962,14 @@ public final class QuerySupport {
         // Private implementation
         // ------------------------------------------------------------------------
 
-        private static final Map<String, IndexerQuery> queries = new HashMap<String, IndexerQuery>();
+        private static final Map<String, IndexerQuery> queries = new HashMap<>();
         /* test */ static /* final, but tests need to change it */ IndexFactoryImpl indexFactory = LuceneIndexFactory.getDefault();
 
         private final String indexerId;
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS",
         justification="URLs have never host part")
-        private final Map<URL, Reference<LayeredDocumentIndex>> root2index = new HashMap<URL, Reference<LayeredDocumentIndex>>();
+        private final Map<URL, Reference<LayeredDocumentIndex>> root2index = new HashMap<>();
 
         private IndexerQuery(String indexerId) {
             this.indexerId = indexerId;

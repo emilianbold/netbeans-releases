@@ -561,14 +561,17 @@ final class Worker implements Runnable {
                 FileIndexer.ID,
                 FileIndexer.VERSION,
                 roots.toArray(new FileObject[roots.size()]));
+            final QuerySupport.Query.Factory f = q.getQueryFactory();
+            f.setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR);
+            f.setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
             if (isCancelled()) {
                 return false;
             }
             final List<FileDescriptor> files = new ArrayList<>();
-            final Collection<? extends IndexResult> results = q.query(
+            final Collection<? extends IndexResult> results = f.field(
                 query.first(),
                 query.second(),
-                request.getSearchKind());
+                request.getSearchKind()).execute();
             for (IndexResult r : results) {
                 FileObject file = r.getFile();
                 if (file == null || !file.isValid()) {
@@ -660,7 +663,8 @@ final class Worker implements Runnable {
             //Looking for matching files in all found folders
             final NameMatcher matcher = NameMatcherFactory.createNameMatcher(
                     request.getText(),
-                    jumpToSearchType);
+                    jumpToSearchType,
+                    FileSearchAction.SEARCH_OPTIONS);
             final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
             final Collection <FileObject> allFolders = new HashSet<FileObject>();
             List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
