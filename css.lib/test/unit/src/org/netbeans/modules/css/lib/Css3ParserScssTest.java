@@ -1833,4 +1833,18 @@ public class Css3ParserScssTest extends CssTestBase {
         result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testSassNestingGreater() {
+        assertParses("div {\n"
+                + "    margin: 0;\n"
+                + "    > {\n"
+                + "        label {\n"
+                + "            float: left;\n"
+                + "        }\n"
+                + "        input {\n"
+                + "            width: 70%; \n"
+                + "        }\n"
+                + "    }\n"
+                + "}");
+    } 
 }
