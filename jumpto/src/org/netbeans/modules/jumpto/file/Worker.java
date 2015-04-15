@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -176,9 +177,7 @@ final class Worker implements Runnable {
     }
 
     private void emit(@NonNull final List<? extends FileDescriptor> files) {
-        if (!this.cancelled) {
-            this.collector.emit(this, files);
-        }
+        this.collector.emit(this, files);
     }
 
     @NonNull
@@ -194,8 +193,8 @@ final class Worker implements Runnable {
     @NonNull
     static Collector newCollector(
         @NonNull final Models.MutableListModel<FileDescriptor> model,
-        @NonNull final Runnable updateCallBack,
-        @NonNull final Runnable doneCallBack,
+        @NonNull final Function<Collector,Void> updateCallBack,
+        @NonNull final Function<Collector,Void> doneCallBack,
         final long startTime) {
         return new Collector(model, updateCallBack, doneCallBack, startTime);
     }
@@ -338,18 +337,23 @@ final class Worker implements Runnable {
         }
     }
 
+    static interface Function<P,R> {
+        R apply(@NonNull P param);
+    }
+
     static final class Collector {
         private final Models.MutableListModel<FileDescriptor> model;
-        private final Runnable updateCallBack;
-        private final Runnable doneCallBack;
+        private final Function<Collector,Void> updateCallBack;
+        private final Function<Collector,Void> doneCallBack;
         private final long startTime;
         private final Set<Worker> active = Collections.newSetFromMap(new ConcurrentHashMap<Worker, Boolean>());
         private volatile boolean frozen;
+        private boolean someCancelled;  //Threading: Accessed from a single (worker) thread
 
         private Collector(
             @NonNull final Models.MutableListModel<FileDescriptor> model,
-            @NonNull final Runnable updateCallBack,
-            @NonNull final Runnable doneCallBack,
+            @NonNull final Function<Collector,Void> updateCallBack,
+            @NonNull final Function<Collector,Void> doneCallBack,
             final long startTime) {
             Parameters.notNull("model", model); //NOI18N
             Parameters.notNull("updateCallBack", updateCallBack);   //NOI18N
@@ -371,7 +375,7 @@ final class Worker implements Runnable {
         }
 
         boolean isDone() {
-            return frozen && active.isEmpty();
+            return frozen && active.isEmpty() && !someCancelled;
         }
 
         private void configure(@NonNull final Worker worker) {
@@ -401,12 +405,16 @@ final class Worker implements Runnable {
             @NonNull final List<? extends FileDescriptor> files) {
             Parameters.notNull("worker", worker);   //NOI18N
             Parameters.notNull("files", files); //NOI18N
-            model.add(files);
-            updateCallBack.run();
+            final boolean cancelled = worker.cancelled;
+            if (!cancelled) {
+                model.add(files);
+                updateCallBack.apply(this);
+            }
         }
 
         private void done(@NonNull final Worker worker) {
             Parameters.notNull("worker", worker);   //NOI18N
+            someCancelled |= worker.cancelled;
             if (!active.remove(worker)) {
                 throw new IllegalStateException(String.format(
                     "Trying to removed unknown worker: %s from collector: %s",  //NOI18N
@@ -414,7 +422,7 @@ final class Worker implements Runnable {
                     this));
             }
             if (active.isEmpty()) {
-                doneCallBack.run();
+                doneCallBack.apply(this);
             }
         }
     }

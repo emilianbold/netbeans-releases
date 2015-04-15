@@ -264,7 +264,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if (currentSearch.isNarrowing(searchType, text)) {
                 itemsComparator.setUsePreferred(panel.isPreferedProject());
                 currentSearch.filter(searchType, text);
-                enableOK(panel.searchCompleted());
+                enableOK(panel.searchCompleted(true));
                 return false;
             } else {
                 final String searchText = text;
@@ -290,9 +290,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     lineNr);
                 final Worker.Collector collector = Worker.newCollector(
                     baseListModel,
-                    new Runnable(){
+                    new Worker.Function<Worker.Collector, Void>() {
                         @Override
-                        public void run() {
+                        public Void apply(@NonNull final Worker.Collector c) {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
@@ -300,18 +300,23 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                     enableOK(baseListModel.getSize() > 0);
                                 }
                             });
+                            return null;
                         }
                     },
-                    new Runnable(){
+                    new Worker.Function<Worker.Collector, Void>() {
                         @Override
-                        public void run() {
-                            currentSearch.searchCompleted(searchType, searchText);
+                        public Void apply(@NonNull final Worker.Collector c) {
+                            final boolean success = c.isDone();
+                            if (success) {
+                                currentSearch.searchCompleted(searchType, searchText);
+                            }
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    panel.searchCompleted();
+                                    panel.searchCompleted(success);
                                 }
                             });
+                            return null;
                         }
                     },
                     panel.time);
