@@ -188,6 +188,8 @@ public class TasksMenu extends JMenu {
             addConfigureToolMenuItem();
             return;
         }
+        VerticalGridLayout vgl = new VerticalGridLayout();
+        getPopupMenu().setLayout(vgl);
         Collection<String> allTasks = addTasksMenuItems(tasks);
         addAdvancedMenuItems(allTasks);
         addReloadTasksMenuItem();
