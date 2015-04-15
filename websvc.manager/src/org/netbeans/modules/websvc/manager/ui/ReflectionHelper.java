@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.websvc.manager.ui;
 
-//import com.sun.tools.ws.processor.model.java.JavaMethod;
-//import com.sun.tools.ws.processor.model.java.JavaParameter;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -124,7 +122,7 @@ public class ReflectionHelper {
     }
 
     public static boolean isArray(String className) {
-        return className != null && className.indexOf("[]") >= 0; // NOI18N
+        return className != null && className.contains("[]"); // NOI18N
     }
 
     public static boolean isComplexType(String className, ClassLoader runtimeClassLoader) {
@@ -188,7 +186,7 @@ public class ReflectionHelper {
     public static Object makeGenericArray(String componentType, int length, ClassLoader loader)
             throws WebServiceReflectionException {
         try {
-            Class componentClass = null;
+            Class componentClass;
             if (isPrimitiveClass(componentType)) {
                 componentClass = getPrimitiveClass(componentType);
             } else {
@@ -210,8 +208,7 @@ public class ReflectionHelper {
             }
 
             Thread.currentThread().setContextClassLoader(loader);
-            Class declaredClass = null;
-
+            Class declaredClass;
             if (isPrimitiveClass(valueType)) {
                 declaredClass = getPrimitiveClass(valueType);
             } else {
@@ -388,22 +385,18 @@ public class ReflectionHelper {
         ClassLoader savedLoader = null;
         try {
             Class typeClass = Class.forName(type, true, loader);
-
             char[] name = propName.toCharArray();
-            String propCaps = null;
-
             Method method = null;
 
             for (int i = 0; i < propName.length() && method == null; i++) {
                 name[i] = Character.toUpperCase(name[i]);
-                propCaps = new String(name);
+                String propCaps = new String(name);
                 try {
                     method = typeClass.getMethod("get" + propCaps, new Class[0]); // NOI18N
                 } catch (NoSuchMethodException ex) {
                     try {
                         method = typeClass.getMethod("is" + propCaps, new Class[0]); // NOI18N
                     } catch (NoSuchMethodException nsme) {
-                        continue;
                     }
                 }
             }
@@ -462,7 +455,7 @@ public class ReflectionHelper {
 
     public static void setJAXBElementValue(Object jaxBElement, Object value) throws WebServiceReflectionException {
         try {
-            Method m = jaxBElement.getClass().getMethod("setValue", new Class[]{Object.class});
+            Method m = jaxBElement.getClass().getMethod("setValue", new Class[]{Object.class}); // NOI18N
             m.invoke(jaxBElement, value);
         } catch (Exception ex) {
             throw new WebServiceReflectionException(ex.getClass().getName(), ex);
@@ -508,7 +501,7 @@ public class ReflectionHelper {
         try {
             Class typeClass = objValue.getClass();
 
-            Class propClass = null;
+            Class propClass;
             savedLoader = Thread.currentThread().getContextClassLoader();
             Thread.currentThread().setContextClassLoader(classLoader);
 
@@ -522,17 +515,15 @@ public class ReflectionHelper {
                 Class[] params = new Class[]{propClass};
 
                 char[] name = propName.toCharArray();
-                String methodName = null;
                 Method method = null;
 
                 for (int i = 0; i < propName.length() && method == null; i++) {
                     name[i] = Character.toUpperCase(name[i]);
-                    methodName = "set" + new String(name); // NOI18N
+                    String methodName = "set" + new String(name); // NOI18N
 
                     try {
                         method = typeClass.getMethod(methodName, params);
                     } catch (NoSuchMethodException nsme) {
-                        continue;
                     }
                 }
 
@@ -570,17 +561,15 @@ public class ReflectionHelper {
             Thread.currentThread().setContextClassLoader(classLoader);
 
             char[] name = propertyName.toCharArray();
-            String propCaps = null;
             for (int i = 0; i < propertyName.length() && method == null; i++) {
                 name[i] = Character.toUpperCase(name[i]);
-                propCaps = new String(name);
+                String propCaps = new String(name);
                 try {
                     method = typeClass.getMethod("get" + propCaps, new Class[0]); // NOI18N
                 } catch (NoSuchMethodException ex) {
                     try {
                         method = typeClass.getMethod("is" + propCaps, new Class[0]); // NOI18N
                     } catch (NoSuchMethodException nsme) {
-                        continue;
                     }
                 }
             }
@@ -653,12 +642,9 @@ public class ReflectionHelper {
             Object classInstance = null;
             try {
 
-                File wsdlFile = new File(wsData.getWsdlFile());
-                if (wsdlFile != null) {
-                    wsdlFile = wsdlFile.getCanonicalFile();
-                }
-                boolean isRPCEncoded = wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
-                URL wsdlUrl = null;
+                File wsdlFile = new File(wsData.getWsdlFile()).getCanonicalFile();
+                boolean isRPCEncoded = JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
+                URL wsdlUrl;
                 if (isRPCEncoded) {
                     wsdlUrl = wsData.getJaxRpcDescriptor().getWsdlUrl();
                 } else {
@@ -666,23 +652,22 @@ public class ReflectionHelper {
                 }
                 String urlPath = wsdlUrl.getPath();
                 int start;
-                if (wsdlUrl.getProtocol().toLowerCase().startsWith("file")) {
-                    // NOI18N
-                    start = urlPath.lastIndexOf(System.getProperty("path.separator"));
-                    start = (start < 0) ? urlPath.lastIndexOf("/") : start;
+                if (wsdlUrl.getProtocol().toLowerCase().startsWith("file")) { // NOI18N
+                    start = urlPath.lastIndexOf(System.getProperty("path.separator")); // NOI18N
+                    start = (start < 0) ? urlPath.lastIndexOf("/") : start; // NOI18N
                 } else {
-                    start = urlPath.lastIndexOf("/");
+                    start = urlPath.lastIndexOf("/"); // NOI18N
                 }
                 start = (start < 0 || start >= urlPath.length() - 1) ? 0 : start + 1;
 
                 String wsdlFileName = urlPath.substring(start);
-                String namespace = null;
+                String namespace;
                 if (isRPCEncoded) {
                     namespace = wsData.getJaxRpcDescriptor().getModel().getNamespaceURI();
                 } else {
                     namespace = wsData.getJaxWsDescriptor().getModel().getNamespaceURI();
                 }
-                String qname = null;
+                String qname;
                 if (isRPCEncoded) {
                     qname = wsData.getJaxRpcDescriptor().getName();
                 } else {
@@ -692,12 +677,11 @@ public class ReflectionHelper {
                 URL jarWsdlUrl = serviceClass.getResource(wsdlFileName);
                 QName name = new QName(namespace, qname);
 
-                Constructor constructor = null;
-                Object serviceObject = null;
+                Object serviceObject;
                 if (isRPCEncoded) {
                     serviceObject = serviceClass.newInstance();
                 } else {
-                    constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
+                    Constructor constructor = serviceClass.getConstructor(java.net.URL.class, javax.xml.namespace.QName.class);
                     serviceObject = constructor.newInstance(jarWsdlUrl, name);
                 }
 
@@ -794,39 +778,29 @@ public class ReflectionHelper {
     }
 
     public static boolean isPrimitiveClass(String inType) {
-        if (inType.equalsIgnoreCase("int")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("byte")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("boolean")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("float")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("double")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("long")) {
-            return true;
-        } else if (inType.equalsIgnoreCase("short")) {
-            return true;
-        } else {
-            return false;
-        }
+        return inType.equalsIgnoreCase("int") // NOI18N
+                || inType.equalsIgnoreCase("byte") // NOI18N
+                || inType.equalsIgnoreCase("boolean") // NOI18N
+                || inType.equalsIgnoreCase("float") // NOI18N
+                || inType.equalsIgnoreCase("double") // NOI18N
+                || inType.equalsIgnoreCase("long") // NOI18N
+                || inType.equalsIgnoreCase("short"); // NOI18N
     }
 
     public static Class getPrimitiveClass(String inType) {
-        if (inType.equalsIgnoreCase("int")) {
+        if (inType.equalsIgnoreCase("int")) { // NOI18N
             return int.class;
-        } else if (inType.equalsIgnoreCase("byte")) {
+        } else if (inType.equalsIgnoreCase("byte")) { // NOI18N
             return byte.class;
-        } else if (inType.equalsIgnoreCase("boolean")) {
+        } else if (inType.equalsIgnoreCase("boolean")) { // NOI18N
             return boolean.class;
-        } else if (inType.equalsIgnoreCase("float")) {
+        } else if (inType.equalsIgnoreCase("float")) { // NOI18N
             return float.class;
-        } else if (inType.equalsIgnoreCase("double")) {
+        } else if (inType.equalsIgnoreCase("double")) { // NOI18N
             return double.class;
-        } else if (inType.equalsIgnoreCase("long")) {
+        } else if (inType.equalsIgnoreCase("long")) { // NOI18N
             return long.class;
-        } else if (inType.equalsIgnoreCase("short")) {
+        } else if (inType.equalsIgnoreCase("short")) { // NOI18N
             return short.class;
         } else {
             return null;
@@ -837,21 +811,21 @@ public class ReflectionHelper {
         if (null == inClass) {
             return inClass;
         }
-        if (inClass.getName().equalsIgnoreCase("java.lang.Boolean")) {
+        if (inClass.getName().equalsIgnoreCase("java.lang.Boolean")) { // NOI18N
             return boolean.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Byte")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Byte")) { // NOI18N
             return byte.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Double")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Double")) { // NOI18N
             return double.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Float")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Float")) { // NOI18N
             return float.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Integer")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Integer")) { // NOI18N
             return int.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Long")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Long")) { // NOI18N
             return long.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Short")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Short")) { // NOI18N
             return short.class;
-        } else if (inClass.getName().equalsIgnoreCase("java.lang.Character")) {
+        } else if (inClass.getName().equalsIgnoreCase("java.lang.Character")) { // NOI18N
             return char.class;
         } else {
             return inClass;

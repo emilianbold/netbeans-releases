@@ -212,4 +212,45 @@ public class RequireJsIndex {
         }
         return Collections.emptyList();
     }
+
+    public Map<String, String> getPackages() {
+        Collection<? extends IndexResult> result = null;
+
+        try {
+            result = querySupport.query(RequireJsIndexer.FIELD_PACKAGES, "", QuerySupport.Kind.PREFIX, RequireJsIndexer.FIELD_PACKAGES);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            Map<String, String> mappings = new HashMap<>();
+            for (IndexResult indexResult : result) {
+                for (String value : indexResult.getValues(RequireJsIndexer.FIELD_PACKAGES)) {
+                    String[] parts = value.split(";");
+                    if (parts.length == 2) {
+                        mappings.put(parts[0], parts[1]);
+                    }
+                }
+            }
+            return mappings;
+        }
+        return Collections.emptyMap();
+    }
+
+    public Collection<String> getSourceRoots() {
+        Collection<? extends IndexResult> result = null;
+
+        try {
+            result = querySupport.query(RequireJsIndexer.FIELD_SOURCE_ROOT, "", QuerySupport.Kind.PREFIX, RequireJsIndexer.FIELD_SOURCE_ROOT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            List<String> paths = new ArrayList();
+            for (IndexResult indexResult : result) {
+                paths.addAll(Arrays.asList(indexResult.getValues(RequireJsIndexer.FIELD_SOURCE_ROOT)));
+            }
+            return paths;
+        }
+        return Collections.emptyList();
+    }
 }

@@ -512,9 +512,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 }
             }
 
-            if (occurrences.size() != correctedOccurrences.size()) {
-                occurrences.clear();
-                occurrences.addAll(correctedOccurrences);
+            for(Occurrence occurrence : correctedOccurrences){
+                addOccurrence(occurrence.getOffsetRange());
             }
         }
 
