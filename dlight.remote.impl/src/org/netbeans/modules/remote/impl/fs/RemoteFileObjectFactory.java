@@ -46,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -55,7 +54,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileChangeListener;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -66,13 +64,13 @@ public class RemoteFileObjectFactory {
     private final ExecutionEnvironment env;
     private final RemoteFileSystem fileSystem;
 
-    private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<String, RemoteFileObjectBase>();
+    private final WeakCache<String, RemoteFileObjectBase> fileObjectsCache = new WeakCache<>();
 
     /** lockImpl for both fileObjectsCache and pendingListeners */
     private final Object lock = new Object();
 
     private final Map<String, List<FileChangeListener>> pendingListeners =
-            new HashMap<String, List<FileChangeListener>>();
+            new HashMap<>();
 
     private int cacheRequests = 0;
     private int cacheHits = 0;
@@ -297,7 +295,7 @@ public class RemoteFileObjectFactory {
                 if (fo != null) {
                     List<FileChangeListener> listeners = pendingListeners.get(normalizedPath);
                     if (listeners == null) {
-                        listeners = new ArrayList<FileChangeListener>();
+                        listeners = new ArrayList<>();
                         pendingListeners.put(normalizedPath, listeners);
                     }
                     listeners.add(listener);

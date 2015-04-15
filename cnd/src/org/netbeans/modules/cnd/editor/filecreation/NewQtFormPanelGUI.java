@@ -89,6 +89,7 @@ import org.openide.loaders.DataObjectNotFoundException;
         browseButton.addActionListener(this);
     }
 
+    @Override
     public void initValues(FileObject template, FileObject preselectedFolder, String formName) {
 
         tfProject.setText(ProjectUtils.getInformation(project).getDisplayName());
@@ -144,6 +145,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 
     }
 
+    @Override
     public SourceGroup getTargetGroup() {
         Object selectedItem = cbLocation.getSelectedItem();
         if (selectedItem == null) {
@@ -156,11 +158,13 @@ import org.openide.loaders.DataObjectNotFoundException;
         return (SourceGroup) selectedItem;
     }
 
+    @Override
     public String getTargetFolder() {
         String folderName = tfFolder.getText().trim();
         return folderName.replace(fileSeparatorChar, '/'); // NOI18N
     }
 
+    @Override
     public String getTargetName() {
         String formName = getFileName(getFormName());
         if (formName.length() == 0 || formName.charAt(formName.length() - 1) == '.') {
@@ -170,6 +174,7 @@ import org.openide.loaders.DataObjectNotFoundException;
         }
     }
 
+    @Override
     protected void updateCreatedFile() {
         FileObject root = getTargetGroup().getRootFolder();
         String folderName = tfFolder.getText().trim();
@@ -446,6 +451,7 @@ import org.openide.loaders.DataObjectNotFoundException;
     // End of variables declaration//GEN-END:variables
 
     // ActionListener implementation -------------------------------------------
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if (browseButton == e.getSource()) {
             FileObject fo = null;

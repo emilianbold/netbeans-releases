@@ -199,7 +199,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
     public void doTestDestroyInfiniteTasks(final ExecutionEnvironment execEnv) throws Exception {
         System.out.println("==== TestDestroyInfiniteTasks@" + execEnv.getDisplayName() + " STARTED ===="); // NOI18N
         ConnectionManager.getInstance().connectTo(execEnv);
-        final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();
+        final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<>();
         final Counters counters = new Counters();
         int count = 20;
 
@@ -225,7 +225,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
 
     public void doTestExecAndWaitTasks(final ExecutionEnvironment execEnv) throws Exception {
         System.out.println("==== TestExecAndWaitTasks@" + execEnv.getDisplayName() + " STARTED ===="); // NOI18N
-        final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<NativeProcess>();
+        final BlockingQueue<NativeProcess> processQueue = new LinkedBlockingQueue<>();
         final Counters counters = new Counters();
         int count = 5;
 
@@ -324,7 +324,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
                             // Will wait for maximum secondsToWait seconds for
                             // the destroyed process...
 
-                            FutureTask<Integer> waitTask = new FutureTask<Integer>(new Callable<Integer>() {
+                            FutureTask<Integer> waitTask = new FutureTask<>(new Callable<Integer>() {
 
                                 @Override
                                 public Integer call() throws Exception {

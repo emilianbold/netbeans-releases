@@ -83,7 +83,7 @@ public final class ModuleLifecycleManager implements ErrorHandler, EntityResolve
     private ModuleLifecycleManager () {
     }
 
-    static ModuleLifecycleManager getInstance () {
+    static synchronized ModuleLifecycleManager getInstance () {
         if (instance == null) {
             instance = new ModuleLifecycleManager();
         }

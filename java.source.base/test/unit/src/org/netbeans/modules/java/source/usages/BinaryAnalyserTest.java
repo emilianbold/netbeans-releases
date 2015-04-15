@@ -48,6 +48,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,12 +60,13 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
@@ -75,6 +79,7 @@ import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcherAccessor;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.Utilities;
@@ -82,19 +87,35 @@ import org.openide.util.Utilities;
 /**
  *
  * @author Jan Lahoda
+ * @author Tomas Zezula
  */
 public class BinaryAnalyserTest extends NbTestCase {
+
+    private static final boolean RUN_PERF_TESTS = true; //Boolean.getBoolean("BinaryAnalyserTest.perf");
+    private static final int QUERY_ROUNDS = 100;
+
+    private int flushCount = 0;
 
     public BinaryAnalyserTest(String name) {
         super(name);
     }
 
     @Override
-    public void setUp() {
-        System.setProperty("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex", "true");
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }
+
+
+    @Override
+    protected void tearDown() throws Exception {
+        requireFullIndex(false);
+        LowMemoryWatcherAccessor.setLowMemory(false);
+        super.tearDown();
     }
 
     public void testAnnotationsIndexed() throws Exception {
+        requireFullIndex(true);
         FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
         FileObject indexDir = workDir.createFolder("index");
         File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
@@ -108,57 +129,57 @@ public class BinaryAnalyserTest extends NbTestCase {
         assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
         assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
     }
-    
+
     public void testDeleteClassFolderContent() throws Exception {
         FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
         FileObject indexDir = workDir.createFolder("index");
         File jar = new File(getDataDir(), "Annotations.jar");
         FileObject classFolderFO = workDir.createFolder("classes");
         File classFolder = FileUtil.toFile(classFolderFO);
-        
+
         assertNotNull(classFolder);
-        
+
         unzip(jar, classFolder);
-        
+
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
         assertTrue(a.analyse(Utilities.toURI(classFolder).toURL()).done);
-        
+
         Set<String> origClasses = listClasses(index);
 
         assertTrue(origClasses.toString(), !origClasses.isEmpty());
-        
+
         for (File c : classFolder.listFiles()) {
             delete(c);
         }
-        
+
         a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
         final Changes changes = a.analyse(Utilities.toURI(classFolder).toURL());
         assertTrue(changes.done);
-        
+
         Set<String> removedClasses = new HashSet<String>();
-        
+
         for (ElementHandle<TypeElement> eh : changes.removed) {
             removedClasses.add(eh.getBinaryName());
         }
-        
+
         assertEquals(origClasses, removedClasses);
         assertEquals(new HashSet<String>(), listClasses(index));
     }
-    
+
     public void testDeleteClassFolder() throws Exception {
         FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
         FileObject indexDir = workDir.createFolder("index");
         File jar = new File(getDataDir(), "Annotations.jar");
         FileObject classFolderFO = workDir.createFolder("classes");
         File classFolder = FileUtil.toFile(classFolderFO);
-        
+
         assertNotNull(classFolder);
-        
+
         unzip(jar, classFolder);
-        
+
         final Index index = IndexManager.createIndex(FileUtil.toFile(indexDir), DocumentUtil.createAnalyzer());
         BinaryAnalyser a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
@@ -167,33 +188,26 @@ public class BinaryAnalyserTest extends NbTestCase {
         Set<String> origClasses = listClasses(index);
 
         assertTrue(origClasses.toString(), !origClasses.isEmpty());
-        
+
         delete(classFolder);
-        
+
         a = new BinaryAnalyser(new IndexWriter(index), getWorkDir());
 
         final Changes changes = a.analyse(Utilities.toURI(classFolder).toURL());
         assertTrue(changes.done);
-        
+
         Set<String> removedClasses = new HashSet<String>();
-        
+
         for (ElementHandle<TypeElement> eh : changes.removed) {
             removedClasses.add(eh.getBinaryName());
         }
-        
+
         assertEquals(origClasses, removedClasses);
         assertEquals(new HashSet<String>(), listClasses(index));
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        LowMemoryWatcherAccessor.setLowMemory(false);
-        super.tearDown();
-    }
-    
-    private int flushCount = 0;
-    
     public void testTransactionalFlush() throws Exception {
+        requireFullIndex(true);
         FileObject workDir = SourceUtilsTestUtil.makeScratchDir(BinaryAnalyserTest.this);
         FileObject indexDir = workDir.createFolder("index");
         File binaryAnalyzerDataDir = new File(getDataDir(), "Annotations.jar");
@@ -223,7 +237,7 @@ public class BinaryAnalyserTest extends NbTestCase {
         assertReference(index, "annotations.TestEnum", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
         assertReference(index, "java.util.List", "usages.ClassAnnotations", "usages.ClassArrayAnnotations", "usages.MethodAnnotations", "usages.MethodArrayAnnotations", "usages.FieldAnnotations", "usages.FieldArrayAnnotations");
     }
-    
+
     /**
      * This method is eventually called from the middle of BinaryAnalyser work, after it flushes some data from memory. The method
      * must check & store information that the data is NOT visible to IndexReaders yet
@@ -240,26 +254,26 @@ public class BinaryAnalyserTest extends NbTestCase {
                 QueryUtil.createUsagesQuery("java.util.List", EnumSet.of(UsageType.TYPE_REFERENCE), Occur.SHOULD));
         names.retainAll(
                 Arrays.asList(
-                "usages.ClassAnnotations", 
-                "usages.ClassArrayAnnotations", 
-                "usages.MethodAnnotations", 
-                "usages.MethodArrayAnnotations", 
-                "usages.FieldAnnotations", 
+                "usages.ClassAnnotations",
+                "usages.ClassArrayAnnotations",
+                "usages.MethodAnnotations",
+                "usages.MethodArrayAnnotations",
+                "usages.FieldAnnotations",
                 "usages.FieldArrayAnnotations")
         );
         assertTrue(names.isEmpty());
-        
+
         flushCount++;
     }
-        
-    
+
+
     private static class IndexWriter implements ClassIndexImpl.Writer {
         Index index;
 
         public IndexWriter(Index index) {
             this.index = index;
         }
-        
+
         @Override
         public void clear() throws IOException {
             index.clear();
@@ -282,8 +296,8 @@ public class BinaryAnalyserTest extends NbTestCase {
         public void rollback() throws IOException {
             ((Index.Transactional)index).rollback();
         }
-        
-        
+
+
     }
 
     public void testCRCDiff () throws Exception {
@@ -334,6 +348,33 @@ public class BinaryAnalyserTest extends NbTestCase {
         assertEquals((create("test/bsecond", "test/dfourth")), c.changed);
     }
 
+    public void testFullIndexPerformance() throws Exception {
+        final URL rtJar = findRtJar();
+        if (RUN_PERF_TESTS && rtJar != null) {
+            final File wd = FileUtil.normalizeFile(getWorkDir());
+
+            //Warm up
+            index(new File(wd, "wuIndex"), rtJar, false);    //NOI18N
+            query(new File(wd, "wuIndex"), QUERY_ROUNDS);       //NOI18N
+
+            //Partial index
+            long[] res = index(new File(wd, "index"), rtJar, false);    //NOI18N
+            final long indexSize = res[0];
+            final long indexTime = res[1];
+            final long indexQTime = query(new File(wd, "index"), QUERY_ROUNDS);       //NOI18N
+
+            //Full index
+            res = index(new File(wd, "fullIndex"), rtJar, true);    //NOI18N
+            final long fullIndexSize = res[0];
+            final long fullIndexTime = res[1];
+            final long fullIndexQTime = query(new File(wd, "fullIndex"), QUERY_ROUNDS);       //NOI18N
+
+            System.out.println("Index size: " + (indexSize>>>10) +"KB, FullIndex size: " + (fullIndexSize>>>10)+"KB.");   //NOI18N
+            System.out.println("Index time: " + (indexTime/1_000_000) +"ms, FullIndex time: " + (fullIndexTime/1_000_000)+"ms.");   //NOI18N
+            System.out.println("Query time: " + (indexQTime/1_000_000) +"ms, FullIndex time: " + (fullIndexQTime/1_000_000)+"ms.");   //NOI18N
+        }
+    }
+
     private Pair<ElementHandle<TypeElement>,Long> create (String name, long crc) {
         return Pair.<ElementHandle<TypeElement>,Long>of(ElementHandle.createTypeElementHandle(ElementKind.CLASS, name),crc);
     }
@@ -360,7 +401,7 @@ public class BinaryAnalyserTest extends NbTestCase {
     private void unzip(File what, File where) throws IOException {
         JarFile jf = new JarFile(what);
         Enumeration<JarEntry> en = jf.entries();
-        
+
         while (en.hasMoreElements()) {
             JarEntry current = en.nextElement();
             if (current.isDirectory()) continue;
@@ -369,26 +410,26 @@ public class BinaryAnalyserTest extends NbTestCase {
             assertTrue(target.getParentFile().isDirectory());
             InputStream in = jf.getInputStream(current);
             OutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-            
+
             FileUtil.copy(in, out);
-            
+
             in.close();
             out.close();
         }
     }
-    
+
     private void delete(File what) {
         File[] children = what.listFiles();
-        
+
         if (children != null) {
             for (File c : children) {
                 delete(c);
             }
         }
-        
+
         assertTrue(what.delete());
     }
-    
+
     private Set<String> listClasses(Index index) throws IOException, InterruptedException {
         final Set<String> result = new HashSet<String>();
         index.query(
@@ -402,5 +443,89 @@ public class BinaryAnalyserTest extends NbTestCase {
                 "",
                 DocumentUtil.translateQueryKind(NameKind.PREFIX)));
         return result;
+    }
+
+    private static void requireFullIndex(final boolean fullIndex) throws ReflectiveOperationException {
+        final Class<BinaryAnalyser> clz = BinaryAnalyser.class;
+        final Field fld = clz.getDeclaredField("FULL_INDEX");   //NOI18N
+        fld.setAccessible(true);
+        fld.set(null, Boolean.valueOf(fullIndex));
+    }
+
+    @CheckForNull
+    private static URL findRtJar() {
+        final String boot = System.getProperty("sun.boot.class.path");  //NOI18N
+        if (boot != null) {
+            for (String part : boot.split(File.pathSeparator)) {
+                if (part.contains("rt.jar")) {  //NOI18N
+                    final File rtJar = FileUtil.normalizeFile(new File(part));
+                    try {
+                        return FileUtil.getArchiveRoot(BaseUtilities.toURI(rtJar).toURL());
+                    } catch (MalformedURLException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private static long dirSize(@NonNull final File directory) {
+        long res = 0;
+        final File[] children = directory.listFiles();
+        if (children != null) {
+            for (File c : children) {
+                res += c.isDirectory() ? dirSize(c) : c.length();
+            }
+        }
+        return res;
+    }
+
+    private static long[] index(
+            @NonNull final File cacheFolder,
+            @NonNull final URL binary,
+            final boolean fullIndex) throws ReflectiveOperationException, IOException {
+        requireFullIndex(fullIndex);
+        final File refs = new File (cacheFolder, "refs"); //NOI18N
+        refs.mkdirs();
+        final long st = System.nanoTime();
+        final Index index = IndexManager.createIndex(refs, DocumentUtil.createAnalyzer());
+        try {
+            final ClassIndexImpl.Writer writer = new IndexWriter(index);
+            final BinaryAnalyser analyzer = new BinaryAnalyser(writer, cacheFolder);
+            analyzer.analyse(binary);
+        } finally {
+            index.close();
+        }
+        final long et = System.nanoTime();
+        return new long[] {
+            dirSize(refs),
+            et - st
+        };
+    }
+
+    /**
+     * Query - worst case
+     */
+    private static long query(
+        @NonNull final File cacheFolder,
+        final int rounds) throws IOException, InterruptedException {
+        long time = 0;
+        final File refs = new File (cacheFolder, "refs"); //NOI18N
+        final List<String> res = new ArrayList<>();
+        for (int i = 0; i< rounds; i++) {
+            final long st = System.nanoTime();
+            final Index index = IndexManager.createIndex(refs, DocumentUtil.createAnalyzer());
+            index.query(
+                res,
+                DocumentUtil.binaryNameConvertor(),
+                DocumentUtil.declaredTypesFieldSelector(false),
+                null,
+                Queries.createQuery("simpleName", "ciName", "", Queries.QueryKind.PREFIX)); //NOI18N
+            index.close();
+            time += System.nanoTime() - st;
+            res.clear();
+        }
+        return time/rounds;
     }
 }

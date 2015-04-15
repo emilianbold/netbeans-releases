@@ -61,11 +61,13 @@ public class WatchesXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return TAG_WATCHES;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String what = "watch list"; // NOI18N
 	int maxVersion = 1;
@@ -73,14 +75,17 @@ public class WatchesXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
@@ -89,6 +94,7 @@ public class WatchesXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(TAG_WATCHES, version());
 	    for (NativeWatch w : bag.getWatches()) {

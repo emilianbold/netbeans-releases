@@ -143,11 +143,7 @@ public abstract class RemoteFileSystemTransport {
                 // and DirectoryReaderFS.isValid()  is set to false.
                 // In this case we need to fallback to the default (sftp) implementation
                 // TODO: consider redesign?
-            } catch (ExecutionException ex) {
-                if (transport.isValid()) {
-                    throw ex; // process as usual
-                } // else fall back to sftp implementation
-            } catch (IOException ex) {
+            } catch (ExecutionException | IOException ex) {
                 if (transport.isValid()) {
                     throw ex; // process as usual
                 } // else fall back to sftp implementation

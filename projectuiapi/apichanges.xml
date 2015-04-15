@@ -107,6 +107,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="newProjectAction.preselectCategory">
+            <api name="general"/>
+            <summary>Provide a method to create an action that invokes the new project wizard, 
+                preselects a category and propagates a set of properties to the wizard descriptor.</summary>
+            <version major="1" minor="81"/>
+            <date day="14" month="4" year="2015"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>CommonProjectActions.newProjectAction</code> makes it 
+                    so far posible to set the new projects parent folder by a 
+                    property. It would be also usefull to preselect the category 
+                    and to propagate custom properties to the new project wizard 
+                    descriptor.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="CommonProjectActions"/>
+            <issue number="251563"/>
+        </change>
+        
         <change id="server.is.free">
             <api name="general"/>
             <summary>Split the api into a desktop (swing, awt) and NetBeans dependent and independent part.</summary>

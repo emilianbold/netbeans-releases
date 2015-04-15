@@ -53,7 +53,7 @@ public class PlatformMacOSX extends Platform {
     public static final String NAME = "MacOSX"; // NOI18N
     public static final String LIBRARY_SUFFIX = ".dylib"; // NOI18N
 
-    public static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
+    private static final LibraryItem.StdLibItem[] standardLibrariesLinux = {
 //        StdLibraries.getStandardLibary("Motif"), // NOI18N
         StdLibraries.getStandardLibary("Mathematics"), // NOI18N
         StdLibraries.getStandardLibary("DataCompression"), // NOI18N

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.remote.compilers;
@@ -59,21 +59,21 @@ import org.openide.util.Exceptions;
 
 /**
  * Manage the getCompilerSets script.
- * 
+ *
  * @author gordonp
  */
 /*package-local*/ class CompilerSetScriptManager extends RemoteConnectionSupport {
 
-    private List<String> compilerSets;
+    private final List<String> compilerSets;
     private int nextSet;
     private String platform;
     private Process process;
-    
+
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     public CompilerSetScriptManager(ExecutionEnvironment env) {
         super(env);
-        compilerSets = new ArrayList<String>();
+        compilerSets = new ArrayList<>();
     }
 
     public boolean cancel() {
@@ -99,19 +99,19 @@ import org.openide.util.Exceptions;
                 if (log.isLoggable(Level.FINEST)) {
                     log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager generating script started", //NOI18N
                             new Object[]{System.currentTimeMillis()});
-                }                
+                }
                 final String script = ToolchainScriptGenerator.generateScript(null, hinfo);
                 if (log.isLoggable(Level.FINEST)) {
                     log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager generating script finished in {1} ms", //NOI18N
                             new Object[]{System.currentTimeMillis(), System.currentTimeMillis() - time});
                 }
-                
+
                 if (log.isLoggable(Level.FINEST)) {
                     log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager feeding script started", //NOI18N
                             new Object[]{System.currentTimeMillis()});
-                }                
+                }
                 time = System.currentTimeMillis();
-                process.getOutputStream().write(script.getBytes());
+                process.getOutputStream().write(script.getBytes("UTF-8")); //NOI18N
                 process.getOutputStream().close();
                 if (log.isLoggable(Level.FINEST)) {
                     log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager feeding script finished in {1} ms", //NOI18N
@@ -121,7 +121,7 @@ import org.openide.util.Exceptions;
                 if (log.isLoggable(Level.FINEST)) {
                     log.log(Level.FINEST, "[{0}] #HostSetup: CompilerSetManager reading response started", //NOI18N
                             new Object[]{System.currentTimeMillis()});
-                }    
+                }
                 time = System.currentTimeMillis();
                 List<String> lines = ProcessUtils.readProcessOutput(process);
                 int status = -1;

@@ -87,7 +87,7 @@ public class CndTestIOProvider extends IOProvider {
         }
         err = System.err;
     }
-    private List<Listener> listeners = new ArrayList();
+    private final List<Listener> listeners = new ArrayList();
 
     public CndTestIOProvider() {
         //System.err.printf("CndTestIOProvider.ctor\n");
@@ -99,6 +99,7 @@ public class CndTestIOProvider extends IOProvider {
     }
 
 
+    @Override
     public InputOutput getIO(String name, boolean newIO) {
         return new TrivialIO(name);
     }
@@ -113,6 +114,7 @@ public class CndTestIOProvider extends IOProvider {
         return new TrivialIO(name);
     }
 
+    @Override
     public OutputWriter getStdOut() {
         return new TrivialOW(out, "stdout"); // NOI18N
     }
@@ -153,46 +155,60 @@ public class CndTestIOProvider extends IOProvider {
             this.name = name;
         }
 
+        @Override
         public Reader getIn() {
             return in;
         }
 
+        @Override
         public OutputWriter getOut() {
             return new TrivialOW(out, name);
         }
 
+        @Override
         public OutputWriter getErr() {
             return new TrivialOW(err, name);
         }
 
+        @Override
         public Reader flushReader() {
             return getIn();
         }
 
+        @Override
         public boolean isClosed() {
             return false;
         }
 
+        @Override
         public boolean isErrSeparated() {
             return false;
         }
 
+        @Override
         public boolean isFocusTaken() {
             return false;
         }
 
+        @Override
         public void closeInputOutput() {}
 
+        @Override
         public void select() {}
 
+        @Override
         public void setErrSeparated(boolean value) {}
 
+        @Override
         public void setErrVisible(boolean value) {}
 
+        @Override
         public void setFocusTaken(boolean value) {}
 
+        @Override
         public void setInputVisible(boolean value) {}
 
+        @Override
         public void setOutputVisible(boolean value) {}
 
     }
@@ -328,11 +344,13 @@ public class CndTestIOProvider extends IOProvider {
             print(s);
         }
 
+        @Override
         public void println(String s, OutputListener l) throws IOException {
             prefix(l != null);
             stream.println(s);
         }
 
+        @Override
         public void reset() throws IOException {}
 
         @Override

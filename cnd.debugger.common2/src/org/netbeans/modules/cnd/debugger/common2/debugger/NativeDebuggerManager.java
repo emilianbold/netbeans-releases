@@ -447,6 +447,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
         changeListener = new ChangeListener() {
 
+            @Override
             public void stateChanged(ChangeEvent evt) {
 		Object source = evt.getSource();
 		if (source instanceof Set<?>) {
@@ -606,6 +607,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (od != null) {
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     od.deactivate(redundant);
                 }
@@ -615,6 +617,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (nd != null) {
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     nd.activate(redundant);
                 }
@@ -993,6 +996,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         if (isAsyncStart()) {
             getRequestProcessor().post(new Runnable() {
 
+                @Override
                 public void run() {
                     delegate().startDebugging(di);
                 }
@@ -1691,6 +1695,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
         if (!handled && (error.maxSeverity() == Error.Severity.ERROR)) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     IpeUtils.postError(error.text());
                 }
@@ -1885,6 +1890,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         } else {
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     updateProgressSameThread(message, note, progress);
                 }
@@ -1935,6 +1941,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         } else {
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     cancelProgressSameThread();
                 }
@@ -2185,6 +2192,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
         if (!SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         enableConsoleWindow();
                     }
@@ -2208,6 +2216,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
         if (!SwingUtilities.isEventDispatchThread()) {
 	    SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    enablePioWindow();
 		}

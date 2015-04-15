@@ -44,7 +44,6 @@ package org.netbeans.modules.remote.impl.fs;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -156,7 +155,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
             res.cancel(true);
             throw ex;
         }
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
+        List<DirEntry> newEntries = new ArrayList<>(infos.length);
         for (StatInfo statInfo : infos) {
             // filtering of "." and ".." is up to provider now
             newEntries.add(DirEntryImpl.create(statInfo, execEnv));

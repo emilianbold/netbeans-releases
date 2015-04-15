@@ -56,7 +56,7 @@ import org.openide.util.Utilities;
  */
 public final class Path {
     
-    private static ArrayList<String> list = new ArrayList<String>();
+    private static ArrayList<String> list = new ArrayList<>();
     private static String pathName = null;
     
     static {
@@ -97,7 +97,7 @@ public final class Path {
      * @return A list of all path directories
      */
     public static ArrayList<String> getPath() {
-        return new ArrayList<String>(list);
+        return new ArrayList<>(list);
     }
     
     /**

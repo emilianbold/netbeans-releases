@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
@@ -127,10 +126,10 @@ public class CompletionResolverImpl implements CompletionResolver {
     public void setContextOffset(int offset) {
         this.contextOffset = offset;
     }
-    
+
     public void setContextScope(CsmScope scope) {
         this.contextScope = scope;
-    }    
+    }
 
     @Override
     public QueryScope setResolveScope(QueryScope queryScope) {
@@ -331,13 +330,13 @@ public class CompletionResolverImpl implements CompletionResolver {
             CsmFile startFile = contResolver.getStartFile();
             for (CsmObject obj : toCheck) {
                 boolean isVisible = false;
-                
+
                 if (CsmKindUtilities.isOffsetable(obj)) {
                     isVisible = resolver.isObjectVisible(((CsmOffsetable) obj).getContainingFile(), file);
                 }
-                
+
                 isVisible |= resolver.isObjectVisible(startFile, obj);
-                
+
                 if (isVisible) {
                     foundVisible = true;
                     if(CsmClassifierResolver.getDefault().isForwardClassifier(obj)) {
@@ -451,11 +450,11 @@ public class CompletionResolverImpl implements CompletionResolver {
                 }
 
                 if (clazz != null) {
-                    
+
                     if (resolveCurrentClassInsideType(clazz, resImpl, context, offset, strPrefix, match)) {
                         return true;
-                    }                    
-                    
+                    }
+
                     // get class variables visible in this method
                     if (needClassFields(context, offset)) {
                         resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true, inspectOuterClasses, false);
@@ -479,7 +478,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                             return true;
                         }
                     }
-                    
+
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
                         resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses, resolveContextMode);
@@ -494,11 +493,11 @@ public class CompletionResolverImpl implements CompletionResolver {
             clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false, true);
             if (clazz != null) {
                 boolean staticContext = false;
-                
+
                 if (resolveCurrentClassInsideType(clazz, resImpl, context, offset, strPrefix, match)) {
                     return true;
                 }
-                
+
                 // get class methods visible in this method
                 CsmOffsetableDeclaration contextDeclaration = fun != null ? fun : clazz;
                 // if we in resolving mode => use 2 phases
@@ -710,20 +709,20 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         return false;
     }
-    
+
     /**
      * If we are inside class and inside type and class name matches strPrefix,
      * we should add class to the result as elements inside class could
-     * not have the same name. 
+     * not have the same name.
      * The only exception is constructor, but we prefer class in such case
-     * 
+     *
      * @param clazz
      * @param resImpl
      * @param context
      * @param offset
      * @param strPrefix
      * @param match
-     * 
+     *
      * @return true if it is enough resolving context
      */
     private boolean resolveCurrentClassInsideType(CsmClass clazz, ResultImpl resImpl, CsmContext context, int offset, String strPrefix, boolean match) {
@@ -731,10 +730,10 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (CsmSortUtilities.matchName(clazz.getName(), strPrefix, match, caseSensitive)) {
                 // if inside type and class name matches given string
                 // we should add class to resolve ambiguity class/constructor in favor of class
-                
+
                 if (resImpl.classesEnumsTypedefs == null) {
                     resImpl.classesEnumsTypedefs = new LinkedHashSet<CsmClassifier>();
-                }                        
+                }
 
                 resImpl.classesEnumsTypedefs.add(clazz);
 
@@ -789,7 +788,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         }
         if (CsmContextUtilities.isInForwardDeclaration(context, offset)) {
             hideTypes &= ~RESOLVE_CLASS_FIELDS;
-            hideTypes &= ~RESOLVE_CLASS_METHODS;            
+            hideTypes &= ~RESOLVE_CLASS_METHODS;
         }
         return hideTypes;
     }
@@ -904,7 +903,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
 
-    private static <T> Collection remove(Collection<T> dest, Collection<T> removeItems) {
+    private static <T> Collection<T> remove(Collection<T> dest, Collection<T> removeItems) {
         CsmUtilities.<T>removeAll(dest, removeItems);
         return dest;
     }
@@ -1128,14 +1127,14 @@ public class CompletionResolverImpl implements CompletionResolver {
         } else {
             out.addAll(aliases);
         }
-        
+
         // here we lookup aliases defined in namespaces visible at this point
         Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0,false);
         for (CsmNamespace ns : namespaces) {
             List<CsmNamespaceAlias> aliases2 = contResolver.getNamespaceAliases(ns, strPrefix, match, match);
             for (CsmNamespaceAlias alias : aliases2) {
                 if (alias.getContainingFile().equals(this.file) && alias.getEndOffset() < offset) {
-                    out.add(alias);                    
+                    out.add(alias);
                 }
             }
         }
@@ -1897,7 +1896,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
     }
-    
+
     private boolean isInFunctionPointerType(CsmContext context, int offset) {
         if (CsmKindUtilities.isFunctionPointerType(context.getLastScope())) {
             return CsmOffsetUtilities.isInObject(context.getLastScope(), offset);

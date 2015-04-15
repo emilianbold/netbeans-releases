@@ -74,13 +74,13 @@ public class APTDriverImpl {
     /** static shared sync map */
     private Map<CharSequence, Reference<APTFile>> file2ref2apt = new ConcurrentHashMap<CharSequence, Reference<APTFile>>();
     private Map<CharSequence, APTFile> file2apt = new ConcurrentHashMap<CharSequence, APTFile>();
-    
+
     /** instance fields */
-    
+
     /** Creates a new instance of APTCreator */
     public APTDriverImpl() {
     }
-    
+
     public APTFile findAPT(APTFileBuffer buffer, boolean withTokens, String lang, String flavor) throws IOException {
         CharSequence path = buffer.getAbsolutePath();
         APTFile apt = _getAPTFile(path, withTokens);
@@ -100,7 +100,7 @@ public class APTDriverImpl {
             apt = creator.findAPT(buffer, withTokens, lang, flavor);
             file2creator.remove(path);
         }
-        return apt;        
+        return apt;
     }
 
     public void invalidateAPT(APTFileBuffer buffer) {
@@ -111,7 +111,7 @@ public class APTDriverImpl {
             file2apt.remove(path);
         }
     }
-    
+
     public void invalidateAll() {
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             file2ref2apt.clear();
@@ -119,7 +119,7 @@ public class APTDriverImpl {
             file2apt.clear();
         }
     }
-    
+
     private class APTSyncCreator {
         private APTFile fullAPT = null;
         private APTFile lightAPT = null;
@@ -186,9 +186,9 @@ public class APTDriverImpl {
                 }
             }
             return apt;
-        }       
-    } 
-    
+        }
+    }
+
     private APTFile _getAPTFile(CharSequence path, boolean withTokens) {
         if (withTokens) {
             // we do not cache full apt
@@ -200,10 +200,10 @@ public class APTDriverImpl {
             apt = aptRef == null ? null : aptRef.get();
         } else {
             apt = file2apt.get(path);
-        }        
+        }
         return apt;
     }
-    
+
     private void _putAPTFile(CharSequence path, APTFile apt, boolean withTokens, APTFileBuffer.BufferType bufType) {
         if (withTokens) {
             // we do not cache full apt
@@ -211,7 +211,7 @@ public class APTDriverImpl {
         }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             if (bufType == APTFileBuffer.BufferType.START_FILE) {
-                // this kind of buffer worth to cache to not loose in scalability as shown by measurements. 
+                // this kind of buffer worth to cache to not loose in scalability as shown by measurements.
                 // It helps to do multi reparses of the same file
                 // without touching disk
                 file2ref2apt.put(path, new WeakReference<APTFile>(apt));
@@ -220,13 +220,13 @@ public class APTDriverImpl {
             }
         } else {
             file2apt.put(path, apt);
-        }        
+        }
     }
 
     public void close() {
         invalidateAll();
     }
-    
+
     public void traceActivity() {
         long totalReads = 0;
         long fileSizes = 0;
@@ -250,7 +250,7 @@ public class APTDriverImpl {
         double ratio = fileSizes == 0 ? 0 : (1.0 * totalReads) / fileSizes;
         totalReads /= 1024;
         fileSizes /= 1024;
-        System.err.printf("StreamBuilder has %d (%d no APTLight queries) entries, ratio is %f (%d reads where %d Light) [read %dKb from files of total size %dKb]\n", readFiles.size(), noAPTLightFiles, ratio, nrReads, ligthNrReads, totalReads, fileSizes);
+        System.err.printf("StreamBuilder has %d (%d no APTLight queries) entries, ratio is %f (%d reads where %d Light) [read %dKb from files of total size %dKb]%n", readFiles.size(), noAPTLightFiles, ratio, nrReads, ligthNrReads, totalReads, fileSizes);
         readFiles.clear();
     }
 

@@ -99,7 +99,7 @@ public abstract class XMLDecoder {
     protected void deregisterXMLDecoder(XMLDecoder decoder) {
         tagMap.remove(decoder.tag());
     }
-    private Map<String, XMLDecoder> tagMap = new HashMap<String, XMLDecoder>();
+    private final Map<String, XMLDecoder> tagMap = new HashMap<String, XMLDecoder>();
     private XMLDecoder currentDecoder;
     private String currentElement;
 

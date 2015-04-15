@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmToken;
 
 public class SmartTemplateMatcher {        
     
-    private List<Object[]> templ;
-    private int []pos;
+    private final List<Object[]> templ;
+    private final int []pos;
     
     public SmartTemplateMatcher(List<Object[]> templ) {
         this.templ = templ;

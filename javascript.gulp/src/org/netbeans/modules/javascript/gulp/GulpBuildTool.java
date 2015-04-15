@@ -67,7 +67,7 @@ public final class GulpBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(GulpBuildTool.class.getName());
 
-    private static final String IDENTIFIER = "Gulp"; // NOI18N
+    public static final String IDENTIFIER = "Gulp"; // NOI18N
 
     private final Project project;
     private final Gulpfile gulpfile;

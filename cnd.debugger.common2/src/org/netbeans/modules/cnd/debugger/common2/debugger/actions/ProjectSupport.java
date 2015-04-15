@@ -388,6 +388,7 @@ public final class ProjectSupport {
 
 	final String hostName = seed.getHostName();
 	CndRemote.validate(hostName, new Runnable() {
+                @Override
 		public void run() {
 		    Host host = Host.byName(hostName);
 		    seed.setHost(host);
@@ -530,7 +531,7 @@ public final class ProjectSupport {
 	    case OLD_PROJECT:
 		assert seed.conf == null;
 		/* CR 7000724 needs to make a clone, it won't override the orig one later on */
-                MakeConfiguration mc = ConfigurationSupport.getProjectActiveConfiguration(seed.project).clone();
+                MakeConfiguration mc = ConfigurationSupport.getProjectActiveConfiguration(seed.project);
                 // bug 238853. Won't clone null value.
                 if (mc != null) {
                     seed.conf = mc.clone();

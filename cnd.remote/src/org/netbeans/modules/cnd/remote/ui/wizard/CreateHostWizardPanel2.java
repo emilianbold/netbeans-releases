@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.remote.ui.wizard;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;

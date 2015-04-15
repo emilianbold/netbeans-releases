@@ -2755,25 +2755,25 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         if (JAVA_LANG_CLASS.contentEquals(element.getQualifiedName())) {
                             addTypeDotClassMembers(env, type);
                         }
-                        if (startsWith(env, element.getSimpleName().toString())) {
-                            final boolean withinScope = withinScope(env, element);
-                            if (withinScope && scope.getEnclosingClass() == element) {
-                                continue;
+                        final boolean startsWith = startsWith(env, element.getSimpleName().toString());
+                        final boolean withinScope = withinScope(env, element);
+                        if (withinScope && scope.getEnclosingClass() == element) {
+                            continue;
+                        }
+                        final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
+                        final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
+                        ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                            @Override
+                            public boolean accept(Element e, TypeMirror t) {
+                                return (startsWith || startsWith(env, e.getSimpleName().toString()))
+                                        && (!e.getSimpleName().contentEquals(CLASS_KEYWORD) && (!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD))
+                                        && trees.isAccessible(scope, e, (DeclaredType) t)
+                                        && (e.getKind().isField() && isOfSmartType(env, ((VariableElement) e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement) e).getReturnType(), finalSmartTypes));
                             }
-                            final boolean isStatic = element.getKind().isClass() || element.getKind().isInterface();
-                            final Set<? extends TypeMirror> finalSmartTypes = smartTypes;
-                            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                                @Override
-                                public boolean accept(Element e, TypeMirror t) {
-                                    return (!e.getSimpleName().contentEquals(CLASS_KEYWORD) && (!withinScope && (!isStatic || e.getModifiers().contains(STATIC))) || withinScope && e.getSimpleName().contentEquals(THIS_KEYWORD))
-                                            && trees.isAccessible(scope, e, (DeclaredType) t)
-                                            && (e.getKind().isField() && isOfSmartType(env, ((VariableElement) e).asType(), finalSmartTypes) || e.getKind() == METHOD && isOfSmartType(env, ((ExecutableElement) e).getReturnType(), finalSmartTypes));
-                                }
-                            };
-                            for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
-                                if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee)) {
-                                    results.add(itemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon()));
-                                }
+                        };
+                        for (Element ee : controller.getElementUtilities().getMembers(type, acceptor)) {
+                            if (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(ee)) {
+                                results.add(itemFactory.createStaticMemberItem(env.getController(), type, ee, asMemberOf(ee, type, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon()));
                             }
                         }
                     }
@@ -3324,8 +3324,20 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
     private void addEnumConstants(Env env, TypeElement elem) {
         Elements elements = env.getController().getElements();
+        Trees trees = env.getController().getTrees();
+        TreePath path = env.getPath().getParentPath();
+        Set<Element> alreadyUsed = new HashSet<>();
+        if (path != null && path.getLeaf().getKind() == Tree.Kind.SWITCH) {
+            SwitchTree st = (SwitchTree)path.getLeaf();
+            for (CaseTree ct : st.getCases()) {
+                Element e = trees.getElement(new TreePath(path, ct.getExpression()));
+                if (e != null && e.getKind() == ENUM_CONSTANT) {
+                    alreadyUsed.add(e);
+                }
+            }
+        }
         for (Element e : elem.getEnclosedElements()) {
-            if (e.getKind() == ENUM_CONSTANT) {
+            if (e.getKind() == ENUM_CONSTANT && !alreadyUsed.contains(e)) {
                 String name = e.getSimpleName().toString();
                 if (startsWith(env, name) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e))) {
                     results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, e.asType(), anchorOffset, null, false, elements.isDeprecated(e), false, env.assignToVarPos()));

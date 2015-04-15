@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class ManDocumentation {
+    private static final String MAN_PAGES_CACHE_ENCODING = "UTF-8"; //NOI18N
 
 //    private static final Logger LOG = Logger.getLogger(ManDocumentation.class.getName());
 //    private static String manPath = null;
@@ -183,7 +184,7 @@ public class ManDocumentation {
             try {
                 out = new FileOutputStream(cache);
 
-                out.write(doc.getBytes());
+                out.write(doc.getBytes(MAN_PAGES_CACHE_ENCODING));
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             } finally {
@@ -221,7 +222,7 @@ public class ManDocumentation {
         // name might look like "operator /=", so we need to escape it
         String safeName;
         try {
-            safeName = URLEncoder.encode(name, "UTF-8"); // NOI18N
+            safeName = URLEncoder.encode(name, MAN_PAGES_CACHE_ENCODING); // NOI18N
         } catch (UnsupportedEncodingException ex) {
             // UTF-8 should always be supported, but anyway...
             safeName = name;
@@ -269,7 +270,7 @@ public class ManDocumentation {
                 exitStatus = NativeProjectSupport.execute(np, "man", null, name); // NOI18N
             }
         } else {
-            // Current host locale is used here, because user possibly wants to see man pages 
+            // Current host locale is used here, because user possibly wants to see man pages
             // in locale of his development host, not in remote's host one.
             final String DOT_UTF8 = ".UTF-8";  // NOI18N
             exitStatus = NativeProjectSupport.execute(np, "man", new String[]{"MANWIDTH=" + Man2HTML.MAX_WIDTH, "LANG=" + Locale.getDefault().toString().trim().replace(DOT_UTF8, "") + DOT_UTF8}, "-S2:3", name); // NOI18N
@@ -298,7 +299,7 @@ public class ManDocumentation {
         String section = null;
         int index1 = output.indexOf(number);
         int index2;
-        while (section == null && index1 >= 0) {
+        while (index1 >= 0) {
             if (output.charAt(index1 + 2) != 'f') { // Don't want fortran!
                 index2 = output.substring(index1).indexOf(")"); // NOI18N
                 section = output.substring(index1 + 1, index1 + index2);
@@ -309,7 +310,7 @@ public class ManDocumentation {
         }
         return section;
     }
-    
+
     private static final Map<String, String> TRANSLATE;
 
     static {
@@ -336,7 +337,7 @@ public class ManDocumentation {
 
             FileUtil.copy(in, out);
 
-            return out.toString();
+            return out.toString(MAN_PAGES_CACHE_ENCODING);
         } finally {
             if (in != null) {
                 try {

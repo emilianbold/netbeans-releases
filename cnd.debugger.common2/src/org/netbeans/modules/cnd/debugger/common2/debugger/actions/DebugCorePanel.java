@@ -74,7 +74,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHostList;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.HostListEditor;
-import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.Collection;
@@ -271,6 +270,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	    // listen to host host list model
 	    if (hostlist != null) {
 		hostlist.addRecordListListener(new RecordListListener() {
+                    @Override
 		    public void contentsChanged(RecordListEvent e) {
 			if (e.getHostName() != null)
 			    lastHostChoice = e.getHostName();
@@ -406,6 +406,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 "ACSD_EditHosts"); // NOI18N
 
         hostsButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 hostsButtonActionPerformed(evt);
             }
@@ -467,6 +468,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         corefileBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("LOADCORE_COREFILEBROWSE_BUTTON_MN").charAt(0));
         corefileBrowseButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("BROWSE_BUTTON_TXT"));
         corefileBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 corefileBrowseButtonActionPerformed(evt);
             }
@@ -507,6 +509,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         executableBrowseButton.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("EXECUTABLEBROWSE_BUTTON_MN").charAt(0));
         executableBrowseButton.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/debugger/common2/debugger/actions/Bundle").getString("BROWSE_BUTTON_TXT"));
         executableBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 executableBrowseButtonActionPerformed(evt);
             }

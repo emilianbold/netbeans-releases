@@ -50,6 +50,7 @@ public interface FormatOption {
     String getOption();
     
     public static FormatOption EMPTY = new FormatOption() {
+        @Override
         public String getOption() {
             return "";
         }

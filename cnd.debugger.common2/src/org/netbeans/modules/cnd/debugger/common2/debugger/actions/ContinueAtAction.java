@@ -65,6 +65,7 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -96,24 +97,28 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
         return Catalog.get("LBL_ContinueAtAction"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/cnd/debugger/common2/icons/continue-at-line.png"; // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
         super.initialize();
         putValue(SHORT_DESCRIPTION, Catalog.get("TIP_ContinueAtAction")); // NOI18N
@@ -121,6 +126,7 @@ public class ContinueAtAction extends CallableSystemAction implements StateListe
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable = false;
         NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();

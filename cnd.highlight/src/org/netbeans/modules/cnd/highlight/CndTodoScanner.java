@@ -99,7 +99,7 @@ public class CndTodoScanner extends PushTaskScanner {
         });
     }
     
-    private class ScanJob {
+    private static class ScanJob {
         private final Set<FileObject> files;
         private final Callback callback;
 

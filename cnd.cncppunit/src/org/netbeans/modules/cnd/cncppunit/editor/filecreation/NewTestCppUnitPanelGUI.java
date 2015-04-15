@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Locale;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
@@ -59,7 +60,6 @@ import org.netbeans.modules.cnd.editor.filecreation.CndPanelGUI;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.simpleunit.spi.wizard.AbstractUnitTestIterator;
 import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -71,19 +71,19 @@ import org.openide.util.NbBundle;
 
 /**
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
- * 
+ *
  */
 final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener{
-  
+
     private final String baseTestName;
     private String sourceExt;
     private String headerExt;
     private final MIMEExtensions sourceExtensions = MIMEExtensions.get(MIMENames.CPLUSPLUS_MIME_TYPE);
     private final MIMEExtensions headerExtensions = MIMEExtensions.get(MIMENames.HEADER_MIME_TYPE);
 
-    protected static final String NEW_TEST_PREFIX = getMessage("LBL_NewTest_NewTestPrefix"); // NOI18N
+    private static final String NEW_TEST_PREFIX = getMessage("LBL_NewTest_NewTestPrefix"); // NOI18N
 
-    protected static final String DEFAULT_TESTS_FOLDER = "tests"; // NOI18N
+    private static final String DEFAULT_TESTS_FOLDER = "tests"; // NOI18N
 
     /** Creates new form NewCndFileChooserPanelGUI */
     NewTestCppUnitPanelGUI( Project project, SourceGroup[] folders, Component bottomPanel, String baseTestName) {
@@ -92,33 +92,33 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         this.baseTestName = baseTestName;
 
         initComponents();
-        
+
         locationComboBox.setRenderer( CELL_RENDERER );
-        
+
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
         initValues( null, null, null );
-        
+
         browseButton.addActionListener( NewTestCppUnitPanelGUI.this );
         locationComboBox.addActionListener( NewTestCppUnitPanelGUI.this );
         classNameTextField.getDocument().addDocumentListener( NewTestCppUnitPanelGUI.this );
         runnerTextField.getDocument().addDocumentListener( NewTestCppUnitPanelGUI.this );
         folderTextField.getDocument().addDocumentListener( NewTestCppUnitPanelGUI.this );
-        
+
         setName (NbBundle.getMessage(NewTestCppUnitPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
 
     @Override
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
-        
+
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
-        
+
         Sources sources = ProjectUtils.getSources( project );
-                        
+
         folders = sources.getSourceGroups( Sources.TYPE_GENERIC );
-        
+
         if ( folders.length < 2 ) {
             // one source group i.e. hide Location
             locationLabel.setVisible( false );
@@ -128,20 +128,20 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
             // more source groups user needs to select location
             locationLabel.setVisible( true );
             locationComboBox.setVisible( true );
-            
+
         }
-        
+
         locationComboBox.setModel( new DefaultComboBoxModel( folders ) );
         // Guess the group we want to create the file in
-        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
-        locationComboBox.setSelectedItem( preselectedGroup );               
+        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );
+        locationComboBox.setSelectedItem( preselectedGroup );
         // Create OS dependent relative name
         String relPreselectedFolder = getRelativeNativeName(preselectedGroup.getRootFolder(), preselectedFolder);
         folderTextField.setText( relPreselectedFolder);
         if(folderTextField.getText().isEmpty()) {
             folderTextField.setText(DEFAULT_TESTS_FOLDER);
         }
-        
+
         String displayName = null;
         try {
             if (template != null) {
@@ -151,9 +151,9 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         } catch (DataObjectNotFoundException ex) {
             displayName = template.getName ();
         }
-        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
-        
-        
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
+
+
         sourceExt = sourceExtensions.getDefaultExtension();
         sourceExtComboBox.setSelectedItem(sourceExt);
 
@@ -164,7 +164,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
             if (documentName == null) {
                 final String baseName = (baseTestName == null) ?
                     getMessage("NewClassSuggestedName") : // NOI18N
-                    getMessage("TestClassSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
+                    getMessage("TestClassSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(Locale.getDefault()); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -172,7 +172,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
                             currentFolder, getFileName(documentName),
                             sourceExt, headerExt);
                 }
-                
+
             }
             classNameTextField.setText (documentName);
         }
@@ -180,7 +180,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         if (template != null) {
             final String baseName = (baseTestName == null) ?
                     getMessage("NewRunnerSuggestedName") : // NOI18N
-                    getMessage("TestRunnerSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
+                    getMessage("TestRunnerSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(Locale.getDefault()); // NOI18N
             String runnerName = baseName;
             FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
             if (currentFolder != null) {
@@ -258,7 +258,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         }
         return testRootFolder;
     }
-    
+
     @Override
     public SourceGroup getTargetGroup() {
         Object selectedItem = locationComboBox.getSelectedItem();
@@ -271,24 +271,24 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         }
         return (SourceGroup) selectedItem;
     }
-        
+
     @Override
     public String getTargetFolder() {
-        
+
         String folderName = folderTextField.getText().trim();
-        
+
         if ( folderName.length() == 0 ) {
             return "";
         }
-        else {           
+        else {
             return folderName.replace( File.separatorChar, '/' ); // NOI18N
         }
     }
-    
+
     @Override
     public String getTargetName() {
         String documentName = getSourceFileName();
-        
+
         if ( documentName.length() == 0 || documentName.charAt(documentName.length() - 1) == '.') {
             return null;
         } else {
@@ -325,7 +325,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         }
         return documentName;
     }
-    
+
     public String getSourceFileName() {
         return getFileName(getClassName()) + "." + sourceExt; // NOI18N
     }
@@ -367,7 +367,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     private DefaultComboBoxModel getHeaderExtensionsModel() {
         return new DefaultComboBoxModel(new Vector<String>(headerExtensions.getValues()));
     }
-    
+
     private static String getFileName(String className) {
         return className;
     }
@@ -583,7 +583,7 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         headerExt = (String)headerExtComboBox.getSelectedItem();
         updateCreatedFile();
 }//GEN-LAST:event_headerExtComboBoxActionPerformed
-        
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
@@ -614,20 +614,20 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
     @Override
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
-            // Show the browse dialog             
+            // Show the browse dialog
             SourceGroup group = getTargetGroup();
             FileObject fo = BrowseFolders.showDialog( new SourceGroup[] { group },
-                                           project, 
+                                           project,
                                            folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
-                        
+
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
                 folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
-            }                        
+            }
         } else if ( locationComboBox == e.getSource() )  {
             updateCreatedFile();
-        } 
-    }    
+        }
+    }
 
     protected static String getMessage(String name) {
         return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name);

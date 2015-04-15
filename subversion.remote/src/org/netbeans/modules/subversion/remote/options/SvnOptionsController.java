@@ -365,10 +365,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onManageLabelsClick() {     
         String labelFormat = panel.annotationTextField.getText().replaceAll(" ", ""); //NOI18N  
-        annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1); //NOI18N         
+        annotationSettings.show(labelFormat.indexOf("{folder}") > -1); //NOI18N         
     }
 
-    private class LabelVariable {
+    private static class LabelVariable {
         private String description;
         private String variable;
          

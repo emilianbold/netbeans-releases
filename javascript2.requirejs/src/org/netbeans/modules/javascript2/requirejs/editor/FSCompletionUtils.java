@@ -311,7 +311,7 @@ public class FSCompletionUtils {
     }
 
     public static FileObject findFileObject(final FileObject fromFO, final String path, boolean filesOnly) {
-        FileObject parent = fromFO;
+        FileObject parent = fromFO.getParent();
         FileObject targetFO;
         Project project = FileOwnerQuery.getOwner(fromFO);
         String projectDirectoryPath = ""; //NOI18N

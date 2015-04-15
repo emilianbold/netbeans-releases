@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.nodejs.editor;
 
 import java.io.IOException;
-import org.netbeans.modules.javascript2.editor.JsStructureScannerTest;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.openide.filesystems.FileObject;
 

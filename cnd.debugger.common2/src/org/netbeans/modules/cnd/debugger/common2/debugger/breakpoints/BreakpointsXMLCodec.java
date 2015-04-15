@@ -95,11 +95,13 @@ class BreakpointsXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return TAG_BREAKPOINTS;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String what = "breakpoint list"; // NOI18N
 	int maxVersion = 1;
@@ -107,14 +109,17 @@ class BreakpointsXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
@@ -123,6 +128,7 @@ class BreakpointsXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(TAG_BREAKPOINTS, version());
 	    NativeBreakpoint[] breakpoints = bag.getBreakpoints();

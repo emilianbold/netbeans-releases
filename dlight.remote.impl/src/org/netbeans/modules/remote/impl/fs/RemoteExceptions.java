@@ -42,15 +42,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.FileNotFoundException;
-import java.util.MissingResourceException;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.ConnectException;
-import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
  * Inspired by org.netbeans.modules.masterfs.filebasedfs.utils.FSException

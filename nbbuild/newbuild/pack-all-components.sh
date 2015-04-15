@@ -151,6 +151,9 @@ pack_all_components()
     pack_component $DIST_DIR/zip/moduleclusters $NAME java "java*"
     rm -rf java*
 
+    pack_component $DIST_DIR/zip/moduleclusters $NAME cndext "cndext*"
+    rm -rf cndext*
+
     pack_component $DIST_DIR/zip/moduleclusters $NAME cnd "cnd*"
     rm -rf cnd*
 

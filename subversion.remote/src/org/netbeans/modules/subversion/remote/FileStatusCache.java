@@ -1234,7 +1234,7 @@ public class FileStatusCache {
         }
     }
 
-    private class FakeRevisionStatus implements ISVNStatus {
+    private static class FakeRevisionStatus implements ISVNStatus {
         private final ISVNStatus value;
         private final SVNRevision.Number revision;
         public FakeRevisionStatus(ISVNStatus value, SVNRevision.Number revision) {

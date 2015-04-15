@@ -91,13 +91,13 @@ public class WeakCache<K, V> {
     }
 
     public WeakCache() {
-        map = new ConcurrentHashMap<K, Ref<K, V>>();
-        referenceQueue = new ReferenceQueue<V>();
+        map = new ConcurrentHashMap<>();
+        referenceQueue = new ReferenceQueue<>();
         lock = new ReentrantLock();
     }
 
     public Collection<V> values() {
-        Collection<V> result = new ArrayList<V>(map.size());
+        Collection<V> result = new ArrayList<>(map.size());
         for (Ref<K, V> ref : map.values()) {
             V value = ref.get();
             if (value != null) {
@@ -108,7 +108,7 @@ public class WeakCache<K, V> {
     }
     
     public void remove(K key, V expected) {
-        Ref<K, V> expectedRef = new Ref<K, V>(key, expected, referenceQueue);
+        Ref<K, V> expectedRef = new Ref<>(key, expected, referenceQueue);
         map.remove(key, expectedRef);
     }
     
@@ -165,7 +165,7 @@ public class WeakCache<K, V> {
 //    }
 
     public void put(K key, V value) {
-        Ref<K, V> ref = new Ref<K, V>(key, value, referenceQueue);
+        Ref<K, V> ref = new Ref<>(key, value, referenceQueue);
         map.put(key, ref);
     }
 
@@ -190,7 +190,7 @@ public class WeakCache<K, V> {
                 Ref<K, V> ref;
                 while ( (ref = (Ref<K, V>) referenceQueue.poll()) != null) {
                     if (ref.key != null) {
-                        Ref<K, V> expectedRef = new Ref<K, V>(ref.key, null, referenceQueue);
+                        Ref<K, V> expectedRef = new Ref<>(ref.key, null, referenceQueue);
                         map.remove(ref.key, expectedRef);
                     }
                 }

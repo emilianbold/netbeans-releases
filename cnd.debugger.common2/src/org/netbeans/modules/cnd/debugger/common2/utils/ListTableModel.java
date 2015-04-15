@@ -94,10 +94,12 @@ public class ListTableModel extends AbstractTableModel {
     private Class<?> column0Class = null;
     private Class<?> column1Class = null;
 
+    @Override
     public int getRowCount() {
 	return rowCount;
     }
 
+    @Override
     public int getColumnCount() {
 	return colCount;
     }
@@ -138,6 +140,7 @@ public class ListTableModel extends AbstractTableModel {
 	return true;
     }
 	
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
 	if (columnIndex == 0) {
 	    return column0.get(rowIndex);

@@ -55,7 +55,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -191,7 +190,7 @@ public class RemoteFileURLConnection extends URLConnection {
         /**
          * delegated reader that reads the document
          */
-        private StringReader reader;
+        private final StringReader reader;
 
         /**
          * @param folder is a folder

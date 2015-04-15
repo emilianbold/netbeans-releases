@@ -249,7 +249,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     @NbBundle.Messages({
         "CTL_CloneDestinationStep.branch.noBranch=No Branch"
     })
-    private class BranchRenderer extends DefaultListCellRenderer {
+    private static class BranchRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList jlist, Object o, int i, boolean bln, boolean bln1) {
             if(o instanceof GitBranch) {

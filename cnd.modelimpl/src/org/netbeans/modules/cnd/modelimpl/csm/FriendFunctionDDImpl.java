@@ -78,47 +78,47 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunction> implements CsmFriendFunction {
     private final CsmUID<CsmClass> friendClassUID;
-    
+
     protected FriendFunctionDDImpl(CharSequence name, CharSequence rawName, CsmScope scope, CsmClass cls, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
         friendClassUID = UIDs.get(cls);
     }
-    
+
     public static FriendFunctionDDImpl create(AST ast, final CsmFile file, FileContent fileContent, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
-        
+
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             throw AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);        
+        FriendFunctionDDImpl friendFunctionDDImpl = new FriendFunctionDDImpl(name, rawName, scope, cls, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, friendFunctionDDImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, friendFunctionDDImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         friendFunctionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDDImpl, file));
-        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, fileContent), 
+        friendFunctionDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDDImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, friendFunctionDDImpl);
         if (body == null) {
             throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
-        }        
+        }
         friendFunctionDDImpl.setCompoundStatement(body);
-        
+
         postObjectCreateRegistration(global, friendFunctionDDImpl);
         nameHolder.addReference(fileContent, friendFunctionDDImpl);
         return friendFunctionDDImpl;
@@ -155,12 +155,12 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
 
     public static class FriendFunctionDDBuilder extends FunctionDDBuilder {
         private final List<Token> bodyTokens = new ArrayList<>();
-    
+
         @Override
         public CsmScope getScope() {
             CsmScope scope = super.getScope();
             while (CsmKindUtilities.isClass(scope)) {
-               CsmScope newScope = ((CsmClass)scope).getScope(); 
+               CsmScope newScope = ((CsmClass)scope).getScope();
                if (newScope != null) {
                    scope = newScope;
                } else {
@@ -168,19 +168,19 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
                }
             }
             return AstRenderer.FunctionRenderer.getScope(scope, getFile(), isStatic(), true);
-        } 
-        
+        }
+
         public CsmClass getCls() {
             return (CsmClass) super.getScope();
-        } 
-        
+        }
+
         @Override
         public FriendFunctionDDImpl create() {
             FriendFunctionDDImpl fun = new FriendFunctionDDImpl(getName(), getRawName(), getScope(), getCls(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }
-        
+
         protected void init(FunctionDDImpl fun) {
             temporaryRepositoryRegistration(isGlobal(), fun);
 
@@ -188,19 +188,19 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
             setReturnType(fun);
             setParameters(fun);
             setBody(fun);
-                        
+
             postObjectCreateRegistration(isGlobal(), fun);
             addReference(fun);
-            
+
             addDeclaration(fun);
-        }        
+        }
 
         public void addBodyToken(Token token) {
             if (!APTUtils.isEOF(token)) {
                 bodyTokens.add(token);
             }
         }
-        
+
         public TokenStream getBodyTokenStream() {
             if(bodyTokens.isEmpty()) {
                 return null;
@@ -213,7 +213,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
                     public Token nextToken() throws TokenStreamException {
                         if(bodyTokens.size() > index) {
                             index++;
-                            return bodyTokens.get(index - 1);                        
+                            return bodyTokens.get(index - 1);
                         } else {
                             return null;
                         }
@@ -221,16 +221,16 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
                 };
             }
         }
-    }    
-    
+    }
+
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(friendClassUID, output);
     }
-    
+
     public FriendFunctionDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         friendClassUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }       
+    }
 }

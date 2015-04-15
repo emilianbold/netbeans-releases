@@ -219,6 +219,7 @@ public final class AttachPanel extends TopComponent {
             if (hostlist != null) {
                 hostlist.addRecordListListener(new RecordListListener() {
 
+                    @Override
                     public void contentsChanged(RecordListEvent e) {
                         updateRemoteHostList();
                         String hostName = e.getHostName();
@@ -258,6 +259,7 @@ public final class AttachPanel extends TopComponent {
         }
 
         // interface TableCellRenderer
+        @Override
         public Component getTableCellRendererComponent(JTable table,
                 Object value,
                 boolean isSelected,
@@ -297,6 +299,7 @@ public final class AttachPanel extends TopComponent {
 
         allProcessesCheckBox.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 refreshProcesses(null, true);
             }
@@ -312,6 +315,7 @@ public final class AttachPanel extends TopComponent {
         Catalog.setAccessibleDescription(refreshButton, "ACSD_Refresh"); // NOI18N
         refreshButton.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 refreshProcesses(null, true);
             }
@@ -327,6 +331,7 @@ public final class AttachPanel extends TopComponent {
         
         final JTextComponent cbEditor = (JTextComponent) filterCombo.getEditor().getEditorComponent();
         cbEditor.getDocument().addDocumentListener(new AnyChangeDocumentListener() {
+            @Override
             public void documentChanged(DocumentEvent e) {
                 refreshProcesses(null, false);
             }
@@ -340,6 +345,7 @@ public final class AttachPanel extends TopComponent {
         hostCombo.setToolTipText(Catalog.get("HostName")); //NOI18N
         hostCombo.addActionListener(new ActionListener() {
 
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 String ac = evt.getActionCommand();
                 if ((ac != null) && ac.equals("comboBoxChanged")) { // NOI18N
@@ -363,6 +369,7 @@ public final class AttachPanel extends TopComponent {
                 "ACSD_EditHosts");		// NOI18N
         hostsButton.addActionListener(new java.awt.event.ActionListener() {
 
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 hostsButtonActionPerformed(evt);
             }
@@ -497,6 +504,7 @@ public final class AttachPanel extends TopComponent {
         ListSelectionModel sm = procTable.getSelectionModel();
         sm.addListSelectionListener(new ListSelectionListener() {
 
+            @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (e.getValueIsAdjusting() || isTableInfoShown()) {
                     return;
@@ -627,6 +635,7 @@ public final class AttachPanel extends TopComponent {
     
     private void tableInfo(final String infoKey, final boolean enabled) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 procTable.clearSelection();
                 setUIEnabled(enabled);
@@ -730,12 +739,14 @@ public final class AttachPanel extends TopComponent {
 
     private void requestProcesses(final Pattern re, final String hostname, final boolean getAll) {
         Runnable asycData = new Runnable() {
+            @Override
 	    public void run() {
                 final Host selectedHost = Host.byName(hostname);
                 PsProvider psProvider = PsProvider.getDefault(selectedHost);
                 if (psProvider == null) {
                     // "clear" the table
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             processModel.setRowCount(0);
                         }
@@ -747,6 +758,7 @@ public final class AttachPanel extends TopComponent {
 		setPsData(data);
 		try {
 		    javax.swing.SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                         public void run() {
                             filterProcesses(re);
                         }
@@ -791,6 +803,7 @@ public final class AttachPanel extends TopComponent {
 
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 processModel.setDataVector(psData.processes(re), psData.header());
                 setUIEnabled(true);
@@ -889,14 +902,17 @@ public final class AttachPanel extends TopComponent {
     public static abstract class AnyChangeDocumentListener implements DocumentListener {
         protected abstract void documentChanged(DocumentEvent e);
 
+        @Override
         public void changedUpdate(DocumentEvent e) {
             documentChanged(e);
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             documentChanged(e);
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
             documentChanged(e);
         }
@@ -915,6 +931,7 @@ public final class AttachPanel extends TopComponent {
         private String loadedPID = null;
 
         // interface Controller
+        @Override
         final public boolean isValid() {
 	    if (!ckMatch())
 		return false;
@@ -937,6 +954,7 @@ public final class AttachPanel extends TopComponent {
         }
 
         // interface Controller
+        @Override
         final public boolean ok() {
             //System.out.println("AttachPanel.ok");
             
@@ -1004,16 +1022,19 @@ public final class AttachPanel extends TopComponent {
         }
 
         // interface Controller
+        @Override
         final public boolean cancel() {
             return true;
         }
 
         // interface Controller
+        @Override
         final public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
 
         // interface Controller
+        @Override
         final public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }

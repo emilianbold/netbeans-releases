@@ -69,6 +69,7 @@ public class EvaluationWindowAction extends CallableSystemAction implements Stat
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return menu_name;
     }
@@ -81,6 +82,7 @@ public class EvaluationWindowAction extends CallableSystemAction implements Stat
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable;
         if (!state.isLoaded) {
@@ -93,6 +95,7 @@ public class EvaluationWindowAction extends CallableSystemAction implements Stat
     }
     
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 
@@ -103,6 +106,7 @@ public class EvaluationWindowAction extends CallableSystemAction implements Stat
 	    } else {
 		try {
 		    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
 			public void run() {
 			    EvaluationWindow.getDefault().open();
 			    EvaluationWindow.getDefault().requestActive();
@@ -115,16 +119,19 @@ public class EvaluationWindowAction extends CallableSystemAction implements Stat
     }
 
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("CTL_ExpressionEvaluation");	// NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/" +		// NOI18N
 	       "evaluate_expression.png";			// NOI18N

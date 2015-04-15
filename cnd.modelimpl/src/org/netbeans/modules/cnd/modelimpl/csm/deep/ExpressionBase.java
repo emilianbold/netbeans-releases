@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.io.IOException;
-import java.lang.ref.SoftReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,13 +53,10 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
@@ -73,7 +68,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -87,18 +81,18 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public class ExpressionBase extends OffsetableBase implements CsmExpression {
-    
+
     // This is a marker that expression had declared some lambdas
     private final static List<CsmStatement> NOT_EMPTY = Collections.unmodifiableList(new ArrayList<CsmStatement>(0));
-    
+
     //private final CsmExpression.Kind kind;
     //private final CsmExpression parent;
     private List<CsmExpression> operands;
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    
+
     private List<CsmStatement> lambdas;
-    
+
     ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         //this.parent = parent;
@@ -133,35 +127,35 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         if (lambdas == null) {
             return Collections.<CsmStatement>emptyList();
         }
-        return lambdas;        
+        return lambdas;
     }
 
     @Override
     public CharSequence getExpandedText() {
         return getText();
     }
-    
+
     public void setLambdas(List<CsmStatement> lambdas) {
         this.lambdas = lambdas;
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
         onDispose();
         if (lambdas != null) {
             Utils.disposeAll(lambdas);
-        }        
+        }
     }
 
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized
-            this.scopeRef = this.scopeRef != null ? this.scopeRef : UIDCsmConverter.UIDtoScope(this.scopeUID);
+            this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
     }
-    
+
     private synchronized CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
@@ -175,7 +169,7 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
 	// within bodies scope is a statement - it is not Identifiable
         if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         } else {
             this.scopeRef = scope;
         }
@@ -188,12 +182,12 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         }
         return Collections.unmodifiableList(operands);
     }
-    
+
     @Override
     public CsmExpression getParent() {
         return null; //parent;
     }
-    
+
     /**
      * Creates a list of lambdas
      */
@@ -242,10 +236,10 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
                     FileImpl fileImpl = (FileImpl) getContainingFile();
                     CsmCorePackageAccessor.get().releaseLazyStatementParsingContent(fileImpl, tmpFileContent);
                 }
-            }            
+            }
         }
     }
-    
+
     private CsmParserProvider.CsmParserResult resolveLazyLambdas(TokenStream tokenStream) {
         CsmParserProvider.CsmParser parser = CsmParserProvider.createParser(getContainingFile());
         if (parser != null) {
@@ -253,8 +247,8 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
             return parser.parse(CsmParserProvider.CsmParser.ConstructionKind.INITIALIZER);
         }
         assert false : "parser not found"; // NOI18N
-        return null;        
-    }    
+        return null;
+    }
 
     public void renderStatements(AST ast, List<CsmStatement> list, Map<Integer, CsmObject> objects) {
         for (; ast != null; ast = ast.getNextSibling()) {
@@ -263,36 +257,36 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
                 list.add(stmt);
             }
         }
-    }    
+    }
 
     public interface ExpressionBuilderContainer {
         public void addExpressionBuilder(ExpressionBuilder builder);
     }
-    
+
     public static class ExpressionBuilder extends ScopedDeclarationBuilder {
 
         private int level = 0;
         public void enterExpression() {
             level++;
         }
-        
+
         public void leaveExpression() {
             level--;
         }
-        
+
         public boolean isTopExpression() {
             return level == 0;
         }
-        
+
         public ExpressionBase create() {
             ExpressionBase expr = new ExpressionBase(getStartOffset(), getEndOffset(), getFile(), getScope());
             return expr;
         }
-    }         
-    
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
+
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
@@ -301,8 +295,8 @@ public class ExpressionBase extends OffsetableBase implements CsmExpression {
         PersistentUtils.writeExpressions(this.operands, output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         output.writeBoolean((lambdas == NOT_EMPTY) || (lambdas != null && !lambdas.isEmpty()));
-    }  
-    
+    }
+
     public ExpressionBase(RepositoryDataInput input) throws IOException {
         super(input);
         //this.parent = PersistentUtils.readExpression(input);

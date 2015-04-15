@@ -60,6 +60,7 @@ public class EngineProfileProvider implements ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object
      */
+    @Override
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
 	return new EngineProfile(pcs);
     }

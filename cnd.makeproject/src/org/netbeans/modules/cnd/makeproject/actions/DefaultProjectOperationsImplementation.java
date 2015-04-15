@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.cnd.makeproject.actions;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,15 +63,12 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -94,7 +89,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -188,7 +182,7 @@ public final class DefaultProjectOperationsImplementation {
         
         final List<FileObject> metadataFiles = ProjectOperations.getMetadataFiles(project);
         final List<FileObject> dataFiles = ProjectOperations.getDataFiles(project);
-        final List<FileObject> allFiles = new ArrayList<FileObject>();
+        final List<FileObject> allFiles = new ArrayList<>();
         
         allFiles.addAll(metadataFiles);
         allFiles.addAll(dataFiles);
@@ -310,7 +304,7 @@ public final class DefaultProjectOperationsImplementation {
             
             FileObject target = newTarget.createFolder(nueName);
             FileObject projectDirectory = project.getProjectDirectory();
-            List<FileObject> toCopyList = new ArrayList<FileObject>();
+            List<FileObject> toCopyList = new ArrayList<>();
             for (FileObject child : projectDirectory.getChildren()) {
                 if (child.isValid()) {
                     toCopyList.add(child);
@@ -713,7 +707,7 @@ public final class DefaultProjectOperationsImplementation {
                     
                     RequestProcessor.getDefault().post(new Runnable() {
                         public @Override void run() {
-                            final AtomicReference<Throwable> e = new AtomicReference<Throwable>();
+                            final AtomicReference<Throwable> e = new AtomicReference<>();
                             try {
                                 executor.execute();
                             } catch (Throwable ex) {

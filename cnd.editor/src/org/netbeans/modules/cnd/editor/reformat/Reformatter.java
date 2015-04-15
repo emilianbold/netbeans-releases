@@ -342,8 +342,8 @@ public class Reformatter implements ReformatTask {
     }
     
     static class Diff {
-        private int start;
-        private int end;
+        private final int start;
+        private final int end;
         private int newLines;
         private int spaces;
         private boolean isIndent;

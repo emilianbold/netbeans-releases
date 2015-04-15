@@ -64,16 +64,14 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 /**
  *
  * @author Alexander Simon
  */
-public class FileComponentReferences extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentReferences extends FileComponent {
 
     private static final boolean TRACE = false;
     //private static int request = 0;
@@ -113,6 +111,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return EMPTY;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UL")
     FileComponentReferences(FileComponentReferences other, boolean empty) {
         super(other);
         try {
@@ -130,7 +129,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         this.fileUID = other.fileUID;
     }
-    
+
     public FileComponentReferences(FileImpl file) {
         super(new FileReferencesKey(file));
         references = new TreeMap<>();
@@ -221,7 +220,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         referencesLock.readLock().lock();
         try {
             for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.tailMap(new ReferenceImpl(ref.getStartOffset(), ref.getEndOffset(), ref.getText())).entrySet()) {
-                if (entry.getKey().start == ref.getStartOffset() && 
+                if (entry.getKey().start == ref.getStartOffset() &&
                     entry.getKey().end == ref.getEndOffset() &&
                         entry.getKey().identifier.equals(ref.getText())) {
                     //request_hit++;
@@ -235,7 +234,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
         return null;
     }
-    
+
     ReferenceImpl getReferenceImpl(int offset, SortedMap<ReferenceImpl, CsmUID<CsmObject>> storage) {
         //if (request > 0 && request%1000 == 0) {
         //    System.err.println("Reference statictic:");
@@ -276,11 +275,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
             put();
         }
     }
-    
+
     public boolean addReference(CsmReference ref, CsmObject referencedObject) {
          return addReferenceImpl(ref, referencedObject, references, true);
     }
-    
+
     private boolean addReferenceImpl(CsmReference ref, CsmObject referencedObject, Map<ReferenceImpl, CsmUID<CsmObject>> storage, boolean index) {
         //respons++;
         if (!UIDCsmConverter.isIdentifiable(referencedObject)) {
@@ -306,7 +305,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         ReferenceImpl refImpl = new ReferenceImpl(fileUID, ref, referencedUID, ownerUID, closestTopLevelObjectUID);
         //if (ref.getContainingFile().getAbsolutePath().toString().endsWith("ConjunctionScorer.cpp")) {
         //    if (("sort".contentEquals(ref.getText())) && ref.getStartOffset() == 1478) {
-        //        Logger.getLogger("xRef").log(Level.INFO, "{0} \n with {1} \n and owner {2}\n", new Object[]{ref, referencedObject, ownerUID});
+        //        Logger.getLogger("xRef").log(Level.INFO, "{0} %n with {1} \n and owner {2}\n", new Object[]{ref, referencedObject, ownerUID});
         //    }
         //}
         referencesLock.writeLock().lock();
@@ -398,31 +397,31 @@ public class FileComponentReferences extends FileComponent implements Persistent
     }
 
     public void dump(PrintWriter printOut) {
-        printOut.printf("Has %d references:\n", references.size());// NOI18N 
+        printOut.printf("Has %d references:%n", references.size());// NOI18N
         for (Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
-            printOut.printf("ref %s\n\t%s:\n", entry.getKey().toString(true), entry.getValue());// NOI18N 
+            printOut.printf("ref %s%n\t%s:%n", entry.getKey().toString(true), entry.getValue());// NOI18N
         }
-        printOut.printf("Has %d type2classifier:\n", type2classifier.size());// NOI18N 
+        printOut.printf("Has %d type2classifier:%n", type2classifier.size());// NOI18N
         for (Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.entrySet()) {
-            printOut.printf("type ref %s\n\t%s:\n", entry.getKey().toString(true), entry.getValue());// NOI18N 
-        }        
-        printOut.printf("Has %d obj2refs:\n", obj2refs.size());// NOI18N 
+            printOut.printf("type ref %s%n\t%s:%n", entry.getKey().toString(true), entry.getValue());// NOI18N
+        }
+        printOut.printf("Has %d obj2refs:%n", obj2refs.size());// NOI18N
         int refNum = 0;
         for (Map.Entry<CsmUID<?>, Collection<FileComponentReferences.ReferenceImpl>> entry : obj2refs.entrySet()) {
-            printOut.printf("refs on %s:\n", entry.getKey());// NOI18N 
+            printOut.printf("refs on %s:%n", entry.getKey());// NOI18N
             Collection<ReferenceImpl> value = new TreeSet<>(ReferencesIndex.REF_COMPARATOR);
             value.addAll(entry.getValue());
             refNum += value.size();
             int index = 1;
             for (ReferenceImpl referenceImpl : value) {
-                printOut.printf("[%d] %s\n", index++, referenceImpl.toString(true));// NOI18N 
+                printOut.printf("[%d] %s%n", index++, referenceImpl.toString(true));// NOI18N
             }
-        }    
+        }
         if (refNum != references.size()) {
-            printOut.printf("DIFFERENT number of references refs=%d vs obj2refs=%d:\n", references.size(), refNum);// NOI18N 
+            printOut.printf("DIFFERENT number of references refs=%d vs obj2refs=%d:%n", references.size(), refNum);// NOI18N
         }
     }
-    
+
     public static final class ReferenceImpl implements CsmReference, Comparable<ReferenceImpl>{
         private final CsmUID<CsmFile> file;
         private final CsmReferenceKind refKind;
@@ -513,7 +512,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         public CsmObject getClosestTopLevelObject() {
             return UIDCsmConverter.UIDtoCsmObject(closestTopLevelObjectUID);
         }
-        
+
         @Override
         public CsmFile getContainingFile() {
             return file.getObject();
@@ -522,7 +521,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         public CsmUID<CsmFile> getContainingFileUID() {
             return file;
         }
-        
+
         @Override
         public int getStartOffset() {
             return PositionManager.getOffset(file, start);
@@ -599,7 +598,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         public String toString() {
             return toString(false);
         }
-        
+
         /*package*/ String toString(boolean minimal) {
             if (minimal) {
                 String stString = PositionManager.getPosition(file, start).toString();

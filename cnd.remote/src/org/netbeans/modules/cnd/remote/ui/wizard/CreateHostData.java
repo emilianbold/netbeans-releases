@@ -52,23 +52,25 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
  */
 /*package*/ class CreateHostData extends HostSetupResultImpl {
 
-    private ToolsCacheManager cacheManager;
+    private final ToolsCacheManager cacheManager;
     private int port = 22;
     private String hostName = "";
     private String userName;
     private final boolean manageUser;
+    private boolean searchTools;
 
     public CreateHostData(ToolsCacheManager toolsCacheManager, boolean manageUser) {
         this.cacheManager = toolsCacheManager;
         this.manageUser = manageUser;
         this.userName = System.getProperty("user.name", ""); // NOI18N
+        searchTools = true;
     }
 
     public ToolsCacheManager getCacheManager() {
         return cacheManager;
     }
 
-    public String getHostName() {
+    public synchronized String getHostName() {
         return hostName;
     }
 
@@ -76,24 +78,32 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
         return manageUser;
     }
 
-    public String getUserName() {
+    public synchronized String getUserName() {
         return userName;
     }
 
-    public void setUserName(String name) {
+    public synchronized void setUserName(String name) {
         userName = name;
     }
     
-    public void setHostName(String hostName) {
+    public synchronized void setHostName(String hostName) {
         this.hostName = hostName;
     }
 
-    public int getPort() {
+    public synchronized int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public synchronized void setPort(int port) {
         this.port = port;
+    }
+
+    public synchronized boolean getSearchTools() {
+        return searchTools;
+    }
+
+    public synchronized void setSearchTools(boolean searchTools) {
+        this.searchTools = searchTools;
     }
 
     @Override

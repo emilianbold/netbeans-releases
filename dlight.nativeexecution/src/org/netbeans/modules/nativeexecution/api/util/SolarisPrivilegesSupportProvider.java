@@ -53,7 +53,7 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 public final class SolarisPrivilegesSupportProvider {
 
     private static final ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport> instances =
-            new ConcurrentHashMap<ExecutionEnvironment, SolarisPrivilegesSupport>();
+            new ConcurrentHashMap<>();
 
     private SolarisPrivilegesSupportProvider() {
     }

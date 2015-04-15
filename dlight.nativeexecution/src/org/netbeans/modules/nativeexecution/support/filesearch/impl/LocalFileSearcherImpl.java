@@ -75,7 +75,7 @@ public final class LocalFileSearcherImpl implements FileSearcher {
 
         log.log(Level.FINE, "File Searching Task: {0}...", fileSearchParams.toString()); // NOI18N
 
-        List<String> sp = new ArrayList<String>(fileSearchParams.getSearchPaths());
+        List<String> sp = new ArrayList<>(fileSearchParams.getSearchPaths());
 
         if (fileSearchParams.isSearchInUserPaths()) {
             try {

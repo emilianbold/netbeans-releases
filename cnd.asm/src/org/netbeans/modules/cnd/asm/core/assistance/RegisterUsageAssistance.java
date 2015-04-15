@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.asm.core.dataobjects.AsmObjectUtilities;
 import org.netbeans.modules.cnd.asm.model.AsmModelAccessor;
 import org.netbeans.modules.cnd.asm.model.AsmState;
 
-import static org.netbeans.modules.cnd.asm.model.util.AsmModelUtilities.getRegistersClosure;
 
 public class RegisterUsageAssistance implements CaretListener {
     private final JTextComponent pane;

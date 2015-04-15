@@ -52,6 +52,8 @@ import javax.management.remote.JMXServiceURL;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.weblogic.common.ProxyUtils;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -72,6 +74,14 @@ public final class WebLogicRemote {
             if (nonProxyHosts != null) {
                 System.setProperty(ProxyUtils.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
             }
+            if (config.isSecured()) {
+                WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+                if (handler != null) {
+                    for (Map.Entry<String, String> e : handler.getTrustProperties(config).entrySet()) {
+                        System.setProperty(e.getKey(), e.getValue());
+                    }
+                }
+            }
 
             try {
                 return action.call();
@@ -91,8 +101,8 @@ public final class WebLogicRemote {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("t3", config.getHost(), // NOI18N
-                        config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
+                JMXServiceURL url = new JMXServiceURL(config.isSecured() ? "t3s" : "t3", // NOI18N
+                        config.getHost(), config.getPort(), "/jndi/weblogic.management.mbeanservers.domainruntime"); // NOI18N
 
                 String username = config.getUsername();
                 String password = config.getPassword();

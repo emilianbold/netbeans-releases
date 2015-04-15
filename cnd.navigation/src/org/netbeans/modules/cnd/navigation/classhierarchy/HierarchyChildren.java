@@ -70,12 +70,12 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public class HierarchyChildren extends Children.Keys<CsmClass> {
-    private static Comparator<CsmClass> COMARATOR = new MyComparator();
+    private static final Comparator<CsmClass> COMARATOR = new MyComparator();
     private static final RequestProcessor RP = new RequestProcessor(HierarchyChildren.class.getName(), 1);
     
-    private CsmClass object;
-    private HierarchyModel model;
-    private HierarchyChildren parent;
+    private final CsmClass object;
+    private final HierarchyModel model;
+    private final HierarchyChildren parent;
     private boolean isInited = false;
     
     public HierarchyChildren(CsmClass object, HierarchyModel model, HierarchyChildren parent) {

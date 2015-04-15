@@ -104,7 +104,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public static final String PROP_RUNCOMMAND_CHANGED = "runcommand-ch"; // NOI18N
     public static final String DEFAULT_RUN_COMMAND = "\"${OUTPUT_PATH}\""; // NOI18N
     // cached consoles
-    private static final Map<String,String> consoles = new HashMap<String,String>();
+    private static final Map<String,String> consoles = new HashMap<>();
     private PropertyChangeSupport pcs = null;
     private boolean needSave = false;
     // Where this profile is keept
@@ -159,7 +159,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         this.makeConfiguration = makeConfiguration;
         initializeImpl(initialConsoleType);
     }
-    
+
     /**
      * creation of help run profiles to be executed in output window
      */
@@ -202,34 +202,34 @@ public final class RunProfile implements ConfigurationAuxObject {
         removeInstrumentation = getDefaultRemoveInstrumentation();
         clearChanged();
     }
-    
+
     private ComboStringConfiguration getDefaultRunCommand() {
         DefaultPicklistModel list = new DefaultPicklistModel(10);
         list.addElement(DEFAULT_RUN_COMMAND);
         return new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, list); // NOI18N
-        
+
     }
-    
+
     private StringConfiguration getDefaultArguments() {
         return new StringConfiguration(null, "");
     }
-    
+
     private Env getDefaultEnv() {
         return new Env();
     }
-    
+
     private IntConfiguration getDefaultConsoleTypeConfiguration() {
-        return new IntConfiguration(null, getDefaultConsoleType(), consoleTypeNames, null);        
+        return new IntConfiguration(null, getDefaultConsoleType(), consoleTypeNames, null);
     }
-    
+
     private IntConfiguration getConsoleTypeConfiguration(int initialConsoleType) {
-        return new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);        
-    }    
-    
-    private IntConfiguration getDefaultTerminalType() {
-        return new IntConfiguration(null, 0, setTerminalTypeNames(), null);        
+        return new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);
     }
-    
+
+    private IntConfiguration getDefaultTerminalType() {
+        return new IntConfiguration(null, 0, setTerminalTypeNames(), null);
+    }
+
     private IntConfiguration getDefaultRemoveInstrumentation() {
         return new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
     }
@@ -461,14 +461,14 @@ public final class RunProfile implements ConfigurationAuxObject {
     }
 
     public void setArgs(String[] argsArray) {
-        String argsFlat = ""; // NOI18N
+        StringBuilder argsFlat = new StringBuilder();
         for (int i = 0; i < argsArray.length; i++) {
-            argsFlat += CndPathUtilities.quoteIfNecessary(argsArray[i]);
+            argsFlat.append(CndPathUtilities.quoteIfNecessary(argsArray[i]));
             if (i < (argsArray.length - 1)) {
-                argsFlat += " "; // NOI18N
+                argsFlat.append(' ');
             }
         }
-        setArgs(argsFlat);
+        setArgs(argsFlat.toString());
     }
 
     public void setArgsRaw(String argsFlat) {
@@ -506,7 +506,7 @@ public final class RunProfile implements ConfigurationAuxObject {
             }
         }
     }
-        
+
     /*
      * Sets base directory. Base directory should  always be set and is always absolute.
      * Base directory is what run directory is relative to if it is relative.
@@ -551,7 +551,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public String getRunDirectory() {
         String runDirectory;
         String runDir2 = getRunDir();
-        
+
         // #198813 - Can not run or debug a project if the project folder is not in the source root
         // If this is a makefile based project, and project metadata resides in a separate dir and the field is empty -
         // just return build  directory.
@@ -569,14 +569,14 @@ public final class RunProfile implements ConfigurationAuxObject {
                 }
             }
         }
-        
+
         if (runDir2.length() == 0) {
             runDir2 = "."; // NOI18N
         }
         runDir2 = runDir2.trim();
 
-        final ExecutionEnvironment execEnv = (makeConfiguration == null) ? 
-                ExecutionEnvironmentFactory.getLocal() : 
+        final ExecutionEnvironment execEnv = (makeConfiguration == null) ?
+                ExecutionEnvironmentFactory.getLocal() :
                 makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
 
         if (makeConfiguration != null && (runDir2.startsWith("~/") || runDir2.startsWith("~\\") || runDir2.equals("~"))) { // NOI18N
@@ -597,9 +597,12 @@ public final class RunProfile implements ConfigurationAuxObject {
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
         }
-        
+
         try {
-            String canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
+            String canonicalDir = null;
+            if (makeConfiguration != null) {
+                canonicalDir = FileSystemProvider.getCanonicalPath(makeConfiguration.getFileSystemHost(), runDirectory);
+            }
             CndUtils.assertNotNullInConsole(canonicalDir, "Can not canonicalize " + runDirectory); //NOI18N
             if (canonicalDir == null) {
                 return runDirectory;
@@ -607,7 +610,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 return canonicalDir;
             }
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N            
+            LOGGER.log(Level.INFO, "Exception when getting canonical run directory:", ex); //NOI18N
             if (execEnv.isLocal() && Utilities.isWindows()) {
                 runDirectory = CndPathUtilities.normalizeWindowsPath(runDirectory);
             } else {
@@ -663,7 +666,7 @@ public boolean isSimpleRunCommand() {
         } else  {
             return false;
         }
-    } 
+    }
 
     public ComboStringConfiguration getRunCommand() {
         return runCommand;
@@ -801,12 +804,12 @@ public boolean isSimpleRunCommand() {
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
         //fix for #229873 - NullPointerException at org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile.clone
-        //do not user get.. when clone, use private variable        
+        //do not user get.. when clone, use private variable
         p.setRunCommand(runCommand == null? getDefaultRunCommand() : runCommand.clone());
         p.setConfigurationArguments(arguments == null ? getDefaultArguments() : arguments.clone());
         p.setBuildFirst(getBuildFirst());
         p.setEnvironment(environment == null ? getDefaultEnv() : environment.clone());
-        p.setConsoleType(consoleType == null ? getDefaultConsoleTypeConfiguration() : consoleType.clone());        
+        p.setConsoleType(consoleType == null ? getDefaultConsoleTypeConfiguration() : consoleType.clone());
         p.setTerminalType(terminalType == null ? getDefaultTerminalType() : terminalType.clone());
         p.setRemoveInstrumentation(removeInstrumentation == null ? getDefaultRemoveInstrumentation() : removeInstrumentation.clone());
         return p;

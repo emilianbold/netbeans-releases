@@ -63,10 +63,12 @@ public final class ExceptionsNodeProp extends PropertySupport<Exceptions> {
 	this.profile = profile;
     }
 
+    @Override
     public Exceptions getValue() {
 	return profile.exceptions();
     }
 
+    @Override
     public void setValue(Exceptions v) {
 	profile.exceptions().assign(v);
     }
@@ -145,6 +147,7 @@ public final class ExceptionsNodeProp extends PropertySupport<Exceptions> {
 	}
 	
 	// interface ExPropertyEditor
+        @Override
 	public void attachEnv(PropertyEnv env) {
 	    this.env = env;
 	}

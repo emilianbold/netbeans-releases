@@ -23,50 +23,49 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.asm.model.lang;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public final class AsmElementBuilder {    
-    
-    private final AsmElementPath curPath;
+public final class AsmElementBuilder {
+
+    //private final AsmElementPath curPath;
     private final List<AsmElement> elements;
-    
+
     public static AsmElementBuilder create(AsmElementPath curPath) {
         return new AsmElementBuilder(curPath, new LinkedList<AsmElement>());
     }
-            
+
     AsmElementBuilder(AsmElementPath curPath, List<AsmElement> emptyList) {
-        this.curPath = curPath;        
+        //this.curPath = curPath;
         this.elements = emptyList;
     }
-    
+
     public List<AsmElement> get() {
-        List<AsmElement> ret = new ArrayList<AsmElement>(elements);        
+        List<AsmElement> ret = new ArrayList<AsmElement>(elements);
         return ret; //Collections.unmodifiableList(ret);
     }
-    
+
     public void add(AsmElement el) {
         elements.add(el);
     }
-    
-    public AsmElementPath addAndGetPath(AsmElement el) { 
+
+    public AsmElementPath addAndGetPath(AsmElement el) {
         elements.add(el);
         return null;
     }
-    
+
     public int size() {
         return elements.size();
     }
-    
-    
+
+
 }

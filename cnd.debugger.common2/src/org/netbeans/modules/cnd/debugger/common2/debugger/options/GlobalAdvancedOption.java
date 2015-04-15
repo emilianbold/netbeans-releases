@@ -71,6 +71,7 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
     private OptionSet options;	// keep so we can assign back to it
 
     // implement OptionsPanelController
+    @Override
     public void applyChanges()  {
 	preferencesDialog.applyChanges();
 
@@ -81,22 +82,26 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
     }
 
     // implement OptionsPanelController
+    @Override
     public void cancel() {
 	preferencesDialog.cancelChanges();
     }
 
     // implement OptionsPanelController
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
 	//preferencesDialog = new GlobalOptionsPanel();
 	return preferencesDialog;
     }
 
     // implement OptionsPanelController
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("GlobalDebuggingOptions");
     }
 
     // implement OptionsPanelController
+    @Override
     public boolean isChanged() {
 	if (clonedOptions == null) {
 	    return false;
@@ -123,6 +128,7 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
     }
 
     // implement OptionsPanelController
+    @Override
     public boolean isValid() {
 	// always valid
 	return true;
@@ -135,6 +141,7 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
      */
 
     // implement OptionsPanelController
+    @Override
     public void update() {
 	options = NativeDebuggerManager.get().globalOptions();
 	clonedOptions = options.makeCopy();
@@ -143,10 +150,12 @@ public final class GlobalAdvancedOption extends OptionsPanelController {
     }
 
     // implement OptionsPanelController
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
     }
 
     // implement OptionsPanelController
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
     }
 }

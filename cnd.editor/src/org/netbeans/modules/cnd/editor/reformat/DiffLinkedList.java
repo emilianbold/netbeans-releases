@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.editor.reformat.Reformatter.Diff;
  * @author Alexander Simon
  */
 /*package local*/ class DiffLinkedList {
-    private LinkedList<Diff> storage = new LinkedList<Diff>();
+    private final LinkedList<Diff> storage = new LinkedList<Diff>();
     
     /*package local*/ Diff addFirst(int start, int end, int newLines, int spaces, boolean isIndent){
         Diff diff = new Diff(start, end, newLines, spaces, isIndent);

@@ -62,11 +62,13 @@ public final class ActionProperty extends EnumProperty {
     }
 
     // interface Property
+    @Override
     protected final void setFromStringImpl(String s) {
 	value = Action.byTag(s);
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	if (value != null)
 	    return value.toString();
@@ -75,16 +77,19 @@ public final class ActionProperty extends EnumProperty {
     } 
     
     // interface EnumProperty
+    @Override
     protected final void setFromNameImpl(String s) {
 	value = Action.valueOf(s);
     }
     
     // interface Property
+    @Override
     protected final void setFromObjectImpl(Object o) {
 	value = (Action) o;
     }
 
     // interface Property
+    @Override
     public final Object getAsObject() {
 	return value;
     }

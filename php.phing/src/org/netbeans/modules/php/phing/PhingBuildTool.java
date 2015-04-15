@@ -67,7 +67,7 @@ public final class PhingBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(PhingBuildTool.class.getName());
 
-    private static final String IDENTIFIER = "Phing"; // NOI18N
+    public static final String IDENTIFIER = "Phing"; // NOI18N
 
     private final Project project;
     private final BuildXml buildXml;
@@ -166,30 +166,11 @@ public final class PhingBuildTool implements BuildToolImplementation {
         return true;
     }
 
-    //~ Inner classes
+    //~ Factories
 
-    public static final class Registration {
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-        public static BuildToolImplementation forHtml5Project(Project project) {
-            return new PhingBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-        public static BuildToolImplementation forPhpProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
-        public static BuildToolImplementation forWebProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
-        public static BuildToolImplementation forMavenProject(Project project) {
-            return new PhingBuildTool(project);
-        }
-
+    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+    public static BuildToolImplementation forPhpProject(Project project) {
+        return new PhingBuildTool(project);
     }
 
 }

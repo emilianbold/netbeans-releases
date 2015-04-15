@@ -109,7 +109,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
         Future<StatInfo[]> lsTask = FileInfoProvider.ls(env, remoteDir);
         StatInfo[] ls = lsTask.get();
         assertTrue("too few elements in ls /usr/include RC", ls.length > 10);        
-        List<StatInfo> result = new ArrayList<StatInfo>(ls.length);
+        List<StatInfo> result = new ArrayList<>(ls.length);
         for (int i = 0; i < ls.length; i++) {
             if(!ls[i].isDirectory() && ! ls[i].isLink()) {
                 result.add(ls[i]);
@@ -209,7 +209,7 @@ public class ParallelSftpTest extends NativeExecutionBaseTestCase {
     }
     
     private File[] getNetBeansPlatformPlainFiles() throws Exception {
-        List<File> result = new ArrayList<File>();
+        List<File> result = new ArrayList<>();
         File platformDir = getNetBeansPlatformDir();
         assertNotNull("netbeans platform dir", platformDir);
         gatherPlainFiles(platformDir, result, new TreeSet<String>());

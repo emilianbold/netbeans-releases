@@ -223,13 +223,13 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         setLoggers(false);
     }
 
-    private static Set<ExecutionEnvironment> hosts = new HashSet<ExecutionEnvironment>();
+    private static Set<ExecutionEnvironment> hosts = new HashSet<>();
 
     protected static synchronized void setupHost(ExecutionEnvironment execEnv) {
         if (! hosts.contains(execEnv)) {
             ToolsCacheManager tcm = ToolsCacheManager.createInstance(true);
             HostValidatorImpl validator = new HostValidatorImpl(tcm);
-            boolean ok = validator.validate(execEnv, /*null, false,*/ new PrintWriter(System.out));
+            boolean ok = validator.validate(execEnv, true, new PrintWriter(System.out));
             if (ok) {
                 hosts.add(execEnv);
             }

@@ -119,7 +119,7 @@ public class Utils {
     
     private static final int SIZEOF_SIMPLE_ENUM = 4;    
     
-    private static final Map<String, Integer> builtInSizes = new HashMap<String, Integer>();
+    private static final Map<String, Integer> builtInSizes = new HashMap<>();
     
     static {
         builtInSizes.put("char", 1);     // NOI18N

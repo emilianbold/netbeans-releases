@@ -199,7 +199,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         LOG.fine(sb.toString());
     }
 
-    private class RevisionProviderImpl implements RevisionProvider {
+    private static class RevisionProviderImpl implements RevisionProvider {
         private final HgRevision hgRevision;
 
         public RevisionProviderImpl(HgRevision hgRevision) {

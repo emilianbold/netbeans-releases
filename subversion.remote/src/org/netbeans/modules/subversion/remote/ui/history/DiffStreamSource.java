@@ -215,10 +215,6 @@ public class DiffStreamSource extends StreamSource implements Cancellable {
         }
         try {
             File rf = VersionsCache.getInstance(fileSystem).getFileRevision(repoUrl, url, revision, pegRevision, baseFileName);
-            if (rf == null) {
-                remoteFile = null;
-                return;
-            }
             remoteFile = VCSFileProxy.createFileProxy(rf);
             if (baseFile != null) {
                 VCSFileProxySupport.associateEncoding(baseFile, remoteFile);

@@ -123,7 +123,7 @@ public class MacroExpanderFactoryTest extends NativeExecutionBaseTestCase {
 
             MacroExpander expander = MacroExpanderFactory.getExpander(execEnv);//, "SunStudio"); // NOI18N
 
-            Map<String, String> myenv = new HashMap<String, String>();
+            Map<String, String> myenv = new HashMap<>();
             try {
                 myenv.put("PATH", expander.expandMacros("/bin:$PATH", myenv)); // NOI18N
                 myenv.put("PATH", expander.expandMacros("/usr/bin:$platform:$PATH", myenv)); // NOI18N

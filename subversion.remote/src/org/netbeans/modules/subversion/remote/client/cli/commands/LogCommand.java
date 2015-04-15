@@ -216,7 +216,7 @@ public class LogCommand extends SvnCommand {
         
     }
     
-    private class XmlEntriesHandler extends DefaultHandler {
+    private static class XmlEntriesHandler extends DefaultHandler {
 
         //<logentry revision="6">
         //  <author>geronimo</author>
@@ -376,7 +376,7 @@ public class LogCommand extends SvnCommand {
         }        
     }        
     
-    private class LogMessage implements ISVNLogMessage {
+    private static class LogMessage implements ISVNLogMessage {
         private final String msg;
         private final SVNRevision.Number rev;
         private final String author;

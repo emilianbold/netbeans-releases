@@ -93,11 +93,11 @@ import org.openide.util.RequestProcessor;
     private String remoteDir;
     private ErrorReader errorReader;
 
-    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
+    public RfsSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err,
             FileObject privProjectStorageDir, List<FSPath> paths, List<FSPath> buildResults) {
         super(executionEnvironment, out, err, privProjectStorageDir, paths, buildResults);
     }
- 
+
     @Override
     public boolean startup(Map<String, String> env2add) {
 
@@ -110,7 +110,7 @@ import org.openide.util.RequestProcessor;
         remoteDir = mapper.getRemotePath("/", false); // NOI18N
         if (remoteDir == null) {
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Cant_find_sync_root", ServerList.get(executionEnvironment).toString()));
             }
             return false; // TODO: error processing
         }
@@ -118,7 +118,7 @@ import org.openide.util.RequestProcessor;
         boolean success = false;
         try {
             if (out != null) {
-                out.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Copying",
+                out.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString()));
             }
             Future<Integer> mkDir = CommonTasksSupport.mkDir(executionEnvironment, remoteDir, err);
@@ -140,13 +140,13 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         } catch (IOException ex) {
             RemoteUtil.LOGGER.log(Level.FINE, null, ex);
             if (err != null) {
-                err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
+                err.printf("%s%n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
         }
@@ -157,8 +157,8 @@ import org.openide.util.RequestProcessor;
         RemoteUtil.LOGGER.finest(ex.getMessage());
         if (err != null) {
             String message = NbBundle.getMessage(getClass(), "MSG_Error_Copying", remoteDir, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage());
-            err.printf("%s\n", message); // NOI18N
-            err.printf("%s\n", message); // NOI18N
+            err.printf("%s%n", message); // NOI18N
+            err.printf("%s%n", message); // NOI18N
         }
     }
 
@@ -209,9 +209,9 @@ import org.openide.util.RequestProcessor;
             port = line.substring(5);
         } else if (line == null) {
             int rc = remoteControllerProcess.waitFor();
-            throw new ExecutionException(String.format("Remote controller failed; rc=%d\n", rc), null); // NOI18N
+            throw new ExecutionException(String.format("Remote controller failed; rc=%d%n", rc), null); // NOI18N
         } else {
-            String message = String.format("Protocol error: read \"%s\" expected \"%s\"\n", line,  "PORT <port-number>"); //NOI18N
+            String message = String.format("Protocol error: read \"%s\" expected \"%s\"%n", line,  "PORT <port-number>"); //NOI18N
             System.err.printf(message); // NOI18N
             remoteControllerProcess.destroy();
             throw new ExecutionException(message, null); //NOI18N
@@ -242,7 +242,7 @@ import org.openide.util.RequestProcessor;
         addRemoteEnv(env2add, "cnd.rfs.preload.log", "RFS_PRELOAD_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.log", "RFS_CONTROLLER_LOG"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.controller.port", "RFS_CONTROLLER_PORT"); // NOI18N
-        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N        
+        addRemoteEnv(env2add, "cnd.rfs.controller.host", "RFS_CONTROLLER_HOST"); // NOI18N
         addRemoteEnv(env2add, "cnd.rfs.preload.trace", "RFS_PRELOAD_TRACE"); // NOI18N
 
         RemoteUtil.LOGGER.fine("Setting environment:");
@@ -271,11 +271,11 @@ import org.openide.util.RequestProcessor;
 
     private void refreshRemoteFs() {
         RemotePathMap mapper = RemotePathMap.getPathMap(executionEnvironment);
-        Collection<String> remoteDirs = new ArrayList<String>(files.length);
+        Collection<String> remoteDirs = new ArrayList<>(files.length);
         for (File file : files) {
             if (!file.isDirectory()) {
                 file = file.getParentFile();
-            }            
+            }
             if (file != null) {
                 String path = mapper.getRemotePath(file.getAbsolutePath());
                 if (path != null) {
@@ -291,7 +291,7 @@ import org.openide.util.RequestProcessor;
             localController = null;
         }
     }
-    
+
     private void remoteControllerCleanup() {
         ErrorReader r = errorReader;
         if (r != null) {
@@ -310,18 +310,21 @@ import org.openide.util.RequestProcessor;
 
     private static class ErrorReader implements Runnable {
 
-        private final BufferedReader errorReader;
+        //private final BufferedReader errorReader;
+        private final InputStream errorStream;
         private final PrintWriter errorWriter;
         private final AtomicBoolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
-            this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
+            this.errorStream = errorStream;
             this.errorWriter = errorWriter;
             this.stopped = new AtomicBoolean(false);
         }
         @Override
         public void run() {
+            BufferedReader errorReader = null;
             try {
+                errorReader = new BufferedReader(new InputStreamReader(errorStream, "UTF-8")); //NOI18N
                 String line;
                 while ((line = errorReader.readLine()) != null) {
                     if (stopped.get()) {
@@ -334,6 +337,14 @@ import org.openide.util.RequestProcessor;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                if (errorReader != null) {
+                    try {
+                        errorReader.close();
+                    } catch (IOException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
             }
         }
 
@@ -341,23 +352,23 @@ import org.openide.util.RequestProcessor;
             stopped.set(true);
         }
     }
-    
+
     static class RemoteProcessController {
         private final NativeProcess remoteControllerProcess;
         private final AtomicBoolean stopped = new AtomicBoolean(false);
-        
+
         RemoteProcessController (NativeProcess remoteControllerProcess){
-            this.remoteControllerProcess = remoteControllerProcess;            
+            this.remoteControllerProcess = remoteControllerProcess;
         }
-        
+
         boolean isAlive(){
             return ProcessUtils.isAlive(remoteControllerProcess);
         }
-        
+
         boolean isStopped(){
             return stopped.get();
         }
-        
+
         void stop() {
             stopped.set(true);
             remoteControllerProcess.destroy();

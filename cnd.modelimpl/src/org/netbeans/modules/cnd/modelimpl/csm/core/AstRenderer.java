@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
@@ -65,8 +64,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.AstRendererException;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
-import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.OffsetableAST;
@@ -105,7 +102,7 @@ public class AstRenderer {
     public AstRenderer(FileImpl fileImpl) {
         this(fileImpl, null, fileImpl.getFileLanguage(), null);
     }
-    
+
     protected CsmFile getContainingFile() {
         return file;
     }
@@ -113,11 +110,11 @@ public class AstRenderer {
     protected FileContent getFileContent() {
         return fileContent;
     }
-    
+
     protected boolean hasRegisteredFakeIncludes() {
         return registeredFakeInclude;
     }
-    
+
     public void render(AST root) {
 //        if (file.getAbsolutePath().toString().endsWith("shared.h")) {
 //            int i = 10;
@@ -157,7 +154,7 @@ public class AstRenderer {
                             }
                         } else {
                             planB = true;
-                        }                    
+                        }
                         if(planB) {
                             ClassImpl cls = createClass(token, currentNamespace, container);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
@@ -165,7 +162,7 @@ public class AstRenderer {
                         }
                         break;
                     }
-                    case CPPTokenTypes.CSM_ENUM_DECLARATION: 
+                    case CPPTokenTypes.CSM_ENUM_DECLARATION:
                     case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
                     {
                         boolean planB = false;
@@ -183,11 +180,11 @@ public class AstRenderer {
                             }
                         } else {
                             planB = true;
-                        }                    
+                        }
                         if(planB) {
                             csmEnum = createEnum(token, currentNamespace, container);
                             addTypedefs(renderTypedef(token, csmEnum, currentNamespace).typedefs, currentNamespace, container, csmEnum);
-                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
+                            renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                         }
                         if (csmEnum != null) {
                             checkInnerIncludes(csmEnum, Collections.<CsmObject>emptyList());
@@ -219,7 +216,7 @@ public class AstRenderer {
                             CsmFunctionInstantiation cfi = FunctionInstantiationImpl.create(token, file, fileContent, !isRenderingLocalContext());
                             container.addDeclaration(cfi);
                         }
-                        break;                    
+                        break;
                     case CPPTokenTypes.CSM_CTOR_DEFINITION:
                     case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
                         container.addDeclaration(ConstructorDefinitionImpl.create(token, file, fileContent, !isRenderingLocalContext()));
@@ -310,7 +307,7 @@ public class AstRenderer {
                                 currentNamespace.addDeclaration(fddit);
                             }
                         }
-                        break;                      
+                        break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                         if(!TraceFlags.CPP_PARSER_ACTION || isRenderingLocalContext()) {
                             NamespaceAliasImpl alias = NamespaceAliasImpl.create(token, file, currentNamespace, !isRenderingLocalContext());
@@ -391,14 +388,14 @@ public class AstRenderer {
             }
         }
     }
-    
+
     public boolean isFuncLikeVariable(AST ast, boolean findRefsForParams) {
         return isFuncLikeVariable(ast, findRefsForParams, false);
     }
 
     /**
      * Parser don't use a symbol table, so constructs like
-     * int a(b) 
+     * int a(b)
      * are parsed as if they were functions.
      * At the moment of rendering, we check whether this is a variable of a function
      * @return true if it's a variable, otherwise false (it's a function)
@@ -422,7 +419,7 @@ public class AstRenderer {
 
     /**
      * Parser don't use a symbol table, so local constructs like
-     * int a(b) 
+     * int a(b)
      * are parsed as if they were variables.
      * At the moment of rendering, we check whether this is a variable of a function
      * @return true if it's a function, otherwise false (it's a variable)
@@ -492,12 +489,12 @@ public class AstRenderer {
             if (child != null) {
                 name = child.getFirstChild();
             }
-        } else if (child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+        } else if (child != null && child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
             if (!isAbstractDeclarator(child.getNextSibling())) {
                 return false;
             }
             name = child.getFirstChild();
-        } else if(child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+        } else if(child != null && child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
             return true;
         }
 
@@ -536,10 +533,10 @@ public class AstRenderer {
             }
             if (findWithFullResolve) {
                 return findGlobalHard(
-                    varName, 
-                    csmAST.getOffset(), 
-                    CsmDeclaration.Kind.FUNCTION, 
-                    CsmDeclaration.Kind.FUNCTION_FRIEND, 
+                    varName,
+                    csmAST.getOffset(),
+                    CsmDeclaration.Kind.FUNCTION,
+                    CsmDeclaration.Kind.FUNCTION_FRIEND,
                     CsmDeclaration.Kind.VARIABLE,
                     CsmDeclaration.Kind.VARIABLE_DEFINITION
                 );
@@ -659,9 +656,9 @@ public class AstRenderer {
                 return true;
             }
         }
-        return false;        
+        return false;
     }
-    
+
     private boolean findGlobalHard(CharSequence name, int offset, CsmDeclaration.Kind ... kinds) {
         Collection<CsmObject> resolvedObjects = CsmExpressionResolver.resolveObjects(name, file, offset, null);
         if (resolvedObjects != null) {
@@ -677,8 +674,8 @@ public class AstRenderer {
             }
         }
         return false;
-    }    
-    
+    }
+
     private boolean findVariable(CharSequence name, Iterator<CsmOffsetableDeclaration> it, int offset, CsmFilter filter) {
         while(it.hasNext()) {
             CsmOffsetableDeclaration decl = it.next();
@@ -755,36 +752,34 @@ public class AstRenderer {
                 // TODO: we somehow should check includes in curFile which are valid in context of parsing from inclContainer's file
                 return;
             }
-            if (fileContent != null) {
-                Outer:
-                for (CsmInclude include : fileContent.getIncludes()) {
-                    if (include instanceof IncludeImpl) {
-                        if (include.getStartOffset() > inclContainer.getStartOffset() && include.getEndOffset() < inclContainer.getEndOffset()) {
-                            // check that not inside body of container's elemens
-                            for (CsmObject inner : containerInnerObjects) {
-                                if (CsmKindUtilities.isOffsetable(inner)) {
-                                    CsmOffsetable offs = (CsmOffsetable) inner;
-                                    if (curFile.equals(offs.getContainingFile())) {
-                                        // inner is in the same file as #include directive
-                                        if (include.getStartOffset() > offs.getStartOffset()
-                                                && include.getEndOffset() < offs.getEndOffset()) {
-                                            // #include inside one of inner object's body => not fake for inclContainer
-                                            continue Outer;
-                                        }
+            Outer:
+            for (CsmInclude include : fileContent.getIncludes()) {
+                if (include instanceof IncludeImpl) {
+                    if (include.getStartOffset() > inclContainer.getStartOffset() && include.getEndOffset() < inclContainer.getEndOffset()) {
+                        // check that not inside body of container's elemens
+                        for (CsmObject inner : containerInnerObjects) {
+                            if (CsmKindUtilities.isOffsetable(inner)) {
+                                CsmOffsetable offs = (CsmOffsetable) inner;
+                                if (curFile.equals(offs.getContainingFile())) {
+                                    // inner is in the same file as #include directive
+                                    if (include.getStartOffset() > offs.getStartOffset()
+                                            && include.getEndOffset() < offs.getEndOffset()) {
+                                        // #include inside one of inner object's body => not fake for inclContainer
+                                        continue Outer;
                                     }
                                 }
                             }
-                            registeredFakeInclude |= fileContent.onFakeIncludeRegistration((IncludeImpl) include, inclContainer);
                         }
+                        registeredFakeInclude |= fileContent.onFakeIncludeRegistration((IncludeImpl) include, inclContainer);
                     }
                 }
             }
         }
     }
-    
+
     /**
      * In the case of the "function-like variable" - construct like
-     * int a(b) 
+     * int a(b)
      * renders the AST to create the variable
      */
     private boolean renderFuncLikeVariable(AST token, NamespaceImpl currentNamespace, MutableDeclarationsContainer container, boolean fakeRegistration) {
@@ -799,7 +794,7 @@ public class AstRenderer {
                     _extern = AstUtil.hasChildOfType(token, CPPTokenTypes.LITERAL_extern);
                     token = getFirstSiblingSkipQualifiers(token);
                 }
-                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || 
+                if (token != null && (token.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                         token.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
                         token.getType() == CPPTokenTypes.LITERAL_struct ||
                         token.getType() == CPPTokenTypes.LITERAL_class ||
@@ -869,7 +864,7 @@ public class AstRenderer {
             MutableDeclarationsContainer container1, MutableDeclarationsContainer container2) {
         if(AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_typedef)) {
             return;
-        }        
+        }
         AST token = ast.getFirstChild();
         boolean unnamedStaticUnion = false;
         boolean _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
@@ -877,7 +872,7 @@ public class AstRenderer {
         boolean typedef = false;
         int typeStartOffset = 0;
         if (token != null) {
-            typedef = token.getType() == CPPTokenTypes.LITERAL_typedef;         
+            typedef = token.getType() == CPPTokenTypes.LITERAL_typedef;
             typeStartOffset = AstUtil.getFirstOffsetableAST(token).getOffset();
             if (token.getType() == CPPTokenTypes.LITERAL_static) {
                 token = token.getNextSibling();
@@ -919,7 +914,7 @@ public class AstRenderer {
                             break;
                         }
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
-                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {                    
+                    case CPPTokenTypes.CSM_ARRAY_DECLARATION: {
                         nothingBeforSemicolon = false;
                         int arrayDepth = 0;
                         NameHolder nameHolder = null;
@@ -964,7 +959,7 @@ public class AstRenderer {
                             }
                             break;
                         }
-                    case CPPTokenTypes.SEMICOLON: 
+                    case CPPTokenTypes.SEMICOLON:
                     {
                         if (unnamedStaticUnion && nothingBeforSemicolon) {
                             nothingBeforSemicolon = false;
@@ -988,7 +983,7 @@ public class AstRenderer {
             }
         }
     }
-    
+
     protected boolean renderBitFieldImpl(AST startOffsetAST, AST afterTypeAST, CsmType type, ClassEnumBase<?> classifier) {
         return false;
     }
@@ -1047,9 +1042,7 @@ public class AstRenderer {
                             case CPPTokenTypes.COMMA:
                             case CPPTokenTypes.SEMICOLON:
                                 TypeImpl typeImpl = TypeFactory.createType(cls, ptrOperator, arrayDepth, ast, file);
-                                if (typeImpl != null) {
-                                    typeImpl.setTypeOfTypedef();
-                                }
+                                typeImpl.setTypeOfTypedef();
                                 CsmTypedef typedef = createTypedef((nameToken == null) ? ast : nameToken, file, container, typeImpl, name);
                                 if (cls != null && cls.getName().length() == 0) {
                                     ((TypedefImpl) typedef).setTypeUnnamed();
@@ -1178,7 +1171,7 @@ public class AstRenderer {
                                     }
                                 } else {
                                     planB = true;
-                                }                    
+                                }
                                 if(planB) {
                                     if (cfdi != null) {
                                         typeImpl = TypeFactory.createType(new AST[]{classifier, typeBeginning}, cfdi, file, ptrOperator, arrayDepth, null, scope, false, true);
@@ -1204,7 +1197,7 @@ public class AstRenderer {
                                 arrayDepth = 0;
                                 typeBeginning = curr.getNextSibling();
                                 break;
-                                
+
                             case CPPTokenTypes.POINTERTO:
                                 if (classifier != null && AstUtil.findChildOfType(classifier, CPPTokenTypes.LITERAL_auto) != null) {
                                     cpp11StyleFunction = true;
@@ -1212,7 +1205,7 @@ public class AstRenderer {
                                 break;
                         }
                     }
-                } else if (firstChild.getType() == CPPTokenTypes.CSM_TYPE_ALIAS || 
+                } else if (firstChild.getType() == CPPTokenTypes.CSM_TYPE_ALIAS ||
                             firstChild.getType() == CPPTokenTypes.LITERAL_using ||
                             firstChild.getType() == CPPTokenTypes.LITERAL_template) {
                     AST classifier = null;
@@ -1222,7 +1215,7 @@ public class AstRenderer {
                     AST templateParams = null;
                     AST typeAliasAst = ast;
                     CharSequence name = "";
-                    
+
                     boolean typeof = false;
                     for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
                         switch (curr.getType()) {
@@ -1272,40 +1265,40 @@ public class AstRenderer {
                                 ptrOperator = null;
                                 name = "";
                                 nameToken = null;
-                                arrayDepth = 0;                                
+                                arrayDepth = 0;
                                 break;
                             }
                             case CPPTokenTypes.CSM_ENUM_DECLARATION:
                             case CPPTokenTypes.CSM_CLASS_DECLARATION: {
                                 // This is type alias to class definition
-                                
+
                                 if (templateParams != null) {
                                     // [dcl.type], point 3:
                                     // A type-specifier-seq shall not define a class or enumeration
                                     // unless it appears in the type-id of an alias-declaration (7.1.3) that
-                                    // is not the declaration of a template-declaration.                                    
+                                    // is not the declaration of a template-declaration.
                                     break;
                                 }
 
                                 // Process class definition
                                 AST fakeParent = new FakeAST();
                                 fakeParent.addChild(curr);
-                                
+
                                 CsmOffsetableDeclaration declaration;
-                                
+
                                 if (curr.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION) {
                                     declaration = createClass(curr, scope, container);
                                 } else {
                                     declaration = createEnum(curr, scope, container);
                                 }
-                                
+
                                 // Create type alias
                                 if (CsmKindUtilities.isClassifier(declaration)) {
                                     TypeImpl typeImpl = TypeFactory.createType((CsmClassifier)declaration, ptrOperator, arrayDepth, curr.getFirstChild(), file, declaration.getStartOffset(), declaration.getEndOffset());
                                     typeImpl.setTypeOfTypedef();
                                     List<CsmTemplateParameter> csmTemplateParams = renderTemplateParams(templateParams, scope);
                                     createTypeAlias(results, ast, csmTemplateParams, file, scope, typeImpl, name);
-                                }                                
+                                }
                                 break;
                             }
                         }
@@ -1315,26 +1308,26 @@ public class AstRenderer {
         }
         return results;
     }
-    
+
     private List<CsmTemplateParameter> renderTemplateParams(AST templateParams, CsmScope scope) {
-        List<CsmTemplateParameter> csmTemplateParams = null;        
+        List<CsmTemplateParameter> csmTemplateParams = null;
         if (templateParams != null) {
             csmTemplateParams = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
         }
         return csmTemplateParams;
-    }    
-    
+    }
+
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
-        
+
     private CsmTypedef createTypeAlias(Pair results, AST nameAST, List<CsmTemplateParameter> csmTemplateParams, FileImpl file, CsmScope scope, CsmType typeImpl, CharSequence name) {
         if (csmTemplateParams != null) {
             typeImpl = TemplateUtils.checkTemplateType(typeImpl, scope, csmTemplateParams);
         }
-        
-        CsmTypeAlias typeAlias = createTypeAlias(nameAST/*nameToken*/, file, scope, typeImpl, name); 
-        
+
+        CsmTypeAlias typeAlias = createTypeAlias(nameAST/*nameToken*/, file, scope, typeImpl, name);
+
         if (typeAlias != null) {
             if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
                 ((TypedefImpl) typeAlias).setTypeUnnamed();
@@ -1346,8 +1339,8 @@ public class AstRenderer {
             results.typedefs.add(typeAlias);
         }
         return typeAlias;
-    }  
-    
+    }
+
     protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
         ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
                             ClassImplSpecialization.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container) :
@@ -1357,7 +1350,7 @@ public class AstRenderer {
         }
         return cls;
     }
-    
+
     protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
         EnumImpl csmEnum = EnumImpl.create(token, scope, file, fileContent, !isRenderingLocalContext());
         if (container instanceof MutableDeclarationsContainer) {
@@ -1369,11 +1362,11 @@ public class AstRenderer {
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
-    
+
     protected CsmTypeAlias createTypeAlias(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypeAliasImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
-    }    
-    
+    }
+
     public boolean renderForwardClassDeclaration(
             AST ast,
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container,
@@ -1530,11 +1523,11 @@ public class AstRenderer {
     public static TypeImpl renderType(AST tokType, CsmFile file, CsmScope scope, boolean global) {
         return renderType(tokType, file, false, scope, global);
     }
-    
+
     public static TypeImpl renderType(AST tokType, CsmFile file, boolean inSpecializationParams, CsmScope scope, boolean global) {
         return renderType(tokType, file, null, inSpecializationParams, scope, global);
-    }    
-    
+    }
+
     /**
      * Creates type from AST
      * @param tokType - ast for type
@@ -1558,31 +1551,31 @@ public class AstRenderer {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
                 } else {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
-                }                
+                }
             }
             if (AstUtil.isElaboratedKeyword(tokType)) {
                 boolean createForwardDecl = (tokType.getType() != CPPTokenTypes.LITERAL_enum);
-                
+
                 AST next = tokType.getNextSibling();
                 if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                     AST tokenTypeStart = tokType;
-                    
+
                     tokType = next;
                     next = tokType.getNextSibling();
-                    
+
                     AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
-                    
+
                     if (createForwardDecl && scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
                         MutableObject<CsmNamespace> targetScope = new MutableObject<>();
                         MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
                         getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(tokenTypeStart), targetScope, targetDefinitionContainer);
-                                                
+
                         FakeAST fakeParent = new FakeAST();
                         fakeParent.addChild(tokenTypeStart);
                         ClassForwardDeclarationImpl.create(fakeParent, file, targetScope.value, targetDefinitionContainer.value, global, true);
                     }
-                    
+
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0);
                 }
             }
@@ -1622,7 +1615,7 @@ public class AstRenderer {
         AST ptrOperator =  (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
         return TypeImpl.createType(classifier, ptrOperator, 0);
         }
-        
+
         return null;
          */
         return null;
@@ -1646,8 +1639,8 @@ public class AstRenderer {
             ast = ast.getNextSibling();
         }
         return ast;
-    }    
-    
+    }
+
     /**
      * Returns first child, skips cv-qualifiers and storage class specifiers
      */
@@ -1726,9 +1719,9 @@ public class AstRenderer {
                 return false;
         }
     }
-    
+
     /**
-     * Checks whether the given AST is a variable declaration(s), 
+     * Checks whether the given AST is a variable declaration(s),
      * if yes, creates variable(s), adds to container(s), returns true,
      * otherwise returns false;
      *
@@ -1757,11 +1750,10 @@ public class AstRenderer {
         boolean isThisReference = false;
         CsmClassForwardDeclaration cfdi = null;
         boolean createForwardClass = false;
-        if (tokType != null &&
-                (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
-                tokType.getType() == CPPTokenTypes.LITERAL_union ||
-                tokType.getType() == CPPTokenTypes.LITERAL_enum ||
-                tokType.getType() == CPPTokenTypes.LITERAL_class)) {
+        if (tokType.getType() == CPPTokenTypes.LITERAL_struct ||
+            tokType.getType() == CPPTokenTypes.LITERAL_union ||
+            tokType.getType() == CPPTokenTypes.LITERAL_enum ||
+            tokType.getType() == CPPTokenTypes.LITERAL_class) {
             // This is struct/class word for reference on containing struct/class
             AST keyword = tokType;
             typeAST = tokType;
@@ -1778,10 +1770,10 @@ public class AstRenderer {
             if (keyword.getType() != CPPTokenTypes.LITERAL_enum && tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
                 createForwardClass = true;
             }
- */            
+ */
             isThisReference = true;
         }
-        if (tokType != null && isConstQualifier(tokType.getType())) {
+        if (isConstQualifier(tokType.getType())) {
             assert (false) : "must be skipped above";
             tokType = tokType.getNextSibling();
         }
@@ -1891,8 +1883,8 @@ public class AstRenderer {
                 if (createForwardClass) {
                     MutableObject<CsmNamespace> targetScope = new MutableObject<>();
                     MutableObject<MutableDeclarationsContainer> targetDefinitionContainer = new MutableObject<>();
-                    getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer);                    
-                    
+                    getClosestNamespaceInfo(scope, file, fileContent, OffsetableBase.getStartOffset(ast), targetScope, targetDefinitionContainer);
+
                     ClassForwardDeclarationImpl.create(ast, file, targetScope.value, (MutableDeclarationsContainer) targetDefinitionContainer.value, !isRenderingLocalContext(), true);
                 }
                 return true;
@@ -1960,7 +1952,7 @@ public class AstRenderer {
         CsmType type;
         if (cfdi != null) {
             type = TypeFactory.createType(classifier, cfdi, file, ptrOperator, arrayDepth, null, null, inFunctionParameters, false);
-        } else {        
+        } else {
             type = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, null, inFunctionParameters);
         }
         if (isScopedId(qn)) {
@@ -2188,8 +2180,8 @@ public class AstRenderer {
             }
         }
         return false;
-    }    
-    
+    }
+
     protected boolean isMemberDefinition(AST ast) {
         if (CastUtils.isCast(ast)) {
             return CastUtils.isMemberDefinition(ast);
@@ -2206,7 +2198,7 @@ public class AstRenderer {
         if (mtdName != null && mtdName.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
             AST lessThan = AstUtil.findChildOfType(mtdName, CPPTokenTypes.LESSTHAN);
             if (lessThan == null) {
-                return true; 
+                return true;
             }
             AST scope = AstUtil.findSiblingOfType(lessThan, CPPTokenTypes.SCOPE);
             if (scope == null) {
@@ -2216,7 +2208,7 @@ public class AstRenderer {
         }
         return mtdName != null && mtdName.getType() == CPPTokenTypes.LESSTHAN;
     }
-    
+
     public static boolean isScopedId(AST id) {
         if (id == null) {
             return false;
@@ -2258,7 +2250,7 @@ public class AstRenderer {
     public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope) {
         return renderStatement(ast, file, scope, null);
     }
-    
+
     public static StatementBase renderStatement(AST ast, CsmFile file, CsmScope scope, Map<Integer, CsmObject> objects) {
         switch (ast.getType()) {
             case CPPTokenTypes.CSM_LABELED_STATEMENT:
@@ -2329,7 +2321,7 @@ public class AstRenderer {
      * @return true if it's a expression, otherwise false (it's a declaration)
      */
     private boolean isExpressionLikeDeclaration(AST ast, CsmScope scope) {
-        AST type = ast.getFirstChild();        
+        AST type = ast.getFirstChild();
         if (type != null && type.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
             AST nextToType = type.getNextSibling();
             if(nextToType != null && nextToType.getType() != CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
@@ -2366,7 +2358,7 @@ public class AstRenderer {
         }
         return false;
     }
-    
+
     public ExpressionBase renderExpression(AST ast, CsmScope scope) {
         return isExpression(ast) ? ExpressionsFactory.create(ast, file,/* null,*/ scope) : null;
     }
@@ -2459,46 +2451,46 @@ public class AstRenderer {
         return null;
     }
 //    public ExpressionBase renderExpression(ExpressionBase parent) {
-//        
-//    }      
-    
-    public static boolean getClosestNamespaceInfo(CsmScope scope, CsmFile file, FileContent fileContent, int offset, 
-                                                  MutableObject<CsmNamespace> closestNamespace, 
-                                                  MutableObject<MutableDeclarationsContainer> closestDefinitionContainer) 
+//
+//    }
+
+    public static boolean getClosestNamespaceInfo(CsmScope scope, CsmFile file, FileContent fileContent, int offset,
+                                                  MutableObject<CsmNamespace> closestNamespace,
+                                                  MutableObject<MutableDeclarationsContainer> closestDefinitionContainer)
     {
         // Find first namespace scope to add elaborated forwards in it
-        NamespaceImpl targetScope = findClosestNamespace(scope);  
+        NamespaceImpl targetScope = findClosestNamespace(scope);
 
         closestNamespace.value = null;
         closestDefinitionContainer.value = null;
-        
+
         if (targetScope != null) {
-            MutableDeclarationsContainer targetDefinitionContainer; 
-            
+            MutableDeclarationsContainer targetDefinitionContainer;
+
             if (targetScope.isGlobal()) {
                 targetDefinitionContainer = fileContent;
 //                targetDefinitionContainer = null;
-            } else {                                
+            } else {
                 targetDefinitionContainer = (MutableDeclarationsContainer) getContainingNamespaceDefinition(
                         targetScope.getDefinitions(),
                         file,
                         offset
-                );                                
+                );
             }
-            
+
             closestNamespace.value = targetScope;
             closestDefinitionContainer.value = targetDefinitionContainer;
-            
+
             return true;
         }
-        
+
         return false;
     }
-    
+
     public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters) {
         return renderQualifiedId(qid, parameters, false);
     }
-    
+
     public static CharSequence[] renderQualifiedId(AST qid, List<CsmTemplateParameter> parameters, boolean includeLastIdent) {
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
@@ -2534,10 +2526,10 @@ public class AstRenderer {
                 l.add(manager.getString(id));
             }
             return l.toArray(new CharSequence[l.size()]);
-        }      
+        }
         return null;
     }
-    
+
     private static NamespaceImpl findClosestNamespace(CsmScope scope) {
         while (scope != null && !(scope instanceof NamespaceImpl)) {
             if (scope instanceof CsmScopeElement) {
@@ -2547,11 +2539,11 @@ public class AstRenderer {
             }
         }
         return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
-    }     
-    
+    }
+
     private static CsmNamespaceDefinition getContainingNamespaceDefinition(Collection<CsmNamespaceDefinition> collection, CsmFile file, int offset) {
         Iterator<CsmNamespaceDefinition> iter = collection.iterator();
-        while (iter.hasNext()) {            
+        while (iter.hasNext()) {
             CsmNamespaceDefinition ns = iter.next();
             if (file.getAbsolutePath().equals(ns.getContainingFile().getAbsolutePath())) {
                 if (ns.getStartOffset() <= offset && ns.getEndOffset() > offset) {
@@ -2561,7 +2553,7 @@ public class AstRenderer {
         }
         return null;
     }
-    
+
     private static boolean isBeingParsed(CsmFile file) {
         if (true) return false;
         if (file instanceof FileImpl) {
@@ -2570,9 +2562,9 @@ public class AstRenderer {
             return false;
         }
     }
-    
+
     public static class FunctionRenderer {
-        
+
         public static boolean isStatic(AST ast, CsmFile file, FileContent fileContent, CharSequence name) {
             boolean _static = false;
             AST child = ast.getFirstChild();
@@ -2602,7 +2594,7 @@ public class AstRenderer {
             }
             return _static;
         }
-        
+
         public static boolean isConst(AST node) {
             AST token = node.getFirstChild();
             while( token != null &&  token.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
@@ -2615,8 +2607,8 @@ public class AstRenderer {
                 token = token.getNextSibling();
             }
             return false;
-        }        
-        
+        }
+
         public static CsmScope getScope(CsmScope scope, CsmFile file, boolean _static, boolean definition) {
             // change scope to file for static methods, but only to prevent
             // registration in global namespace
@@ -2628,7 +2620,7 @@ public class AstRenderer {
             }
             return scope;
         }
-        
+
         public static CsmType createReturnType(AST node, CsmScope scope, CsmFile file) {
             return createReturnType(node, scope, file, null);
         }
@@ -2644,7 +2636,7 @@ public class AstRenderer {
                 }
             } else {
                 planB = true;
-            }                    
+            }
             if(planB) {
                 AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
@@ -2659,8 +2651,8 @@ public class AstRenderer {
                 }
             }
             return TemplateUtils.checkTemplateType(ret, scope);
-        }        
-        
+        }
+
         public static FunctionParameterListImpl createParameters(AST ast, CsmScope scope, CsmFile file, FileContent fileContent) {
             FunctionParameterListImpl parameterList = FunctionParameterListImpl.create(file, fileContent, ast, scope);
             return parameterList;
@@ -2670,7 +2662,7 @@ public class AstRenderer {
             AST ast = findParameterNode(node);
             return AstRenderer.isVoidParameter(ast);
         }
-        
+
         private static AST findParameterNode(AST node) {
             AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
             if (ast != null) {
@@ -2682,7 +2674,7 @@ public class AstRenderer {
             }
             return ast;
         }
-        
+
         private static AST getTypeToken(AST node) {
             for( AST token = node; token != null; token = token.getNextSibling() ) {
                 int type = token.getType();
@@ -2705,4 +2697,4 @@ public class AstRenderer {
         }
     }
 }
-    
+

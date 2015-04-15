@@ -78,7 +78,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
 
     @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        Map<String, String> mappings = new HashMap<String, String>();
+        Map<String, String> mappings = new HashMap<>();
         String hostName = execEnv.isLocal() ? getLocalHostName() : execEnv.getHost();
         log.log(Level.FINE, "Find Mappings for {0}", execEnv);
         if (hostName != null) {
@@ -150,7 +150,7 @@ public abstract class HostMappingProviderUnixAbstract implements HostMappingProv
      * @return
      */
     private List<String> parseOutput(ExecutionEnvironment execEnv, Reader outputReader) {
-        List<String> paths = new ArrayList<String>();
+        List<String> paths = new ArrayList<>();
         try {
             BufferedReader reader = new BufferedReader(outputReader);
             for (String line = reader.readLine(); line != null; line = reader.readLine()) {

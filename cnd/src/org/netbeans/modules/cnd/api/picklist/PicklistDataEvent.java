@@ -51,10 +51,10 @@ import java.util.EventObject;
  */
 public class PicklistDataEvent extends EventObject {
     /** Identifies one or more changes in the lists contents. */
-    static int CONTENTS_CHANGED = 0;
+    static final int CONTENTS_CHANGED = 0;
 
     /** * The type of this event; */
-    private int type;
+    private final int type;
 
     /**
      * Constructs a PicklistDataEvent object.

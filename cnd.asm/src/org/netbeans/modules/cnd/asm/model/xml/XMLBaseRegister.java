@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.asm.model.lang.Register;
 
 public abstract class XMLBaseRegister implements Register {
        
-    private String name;
+    private final String name;
   
     private BitWidth width;
     private Collection<Register> children;

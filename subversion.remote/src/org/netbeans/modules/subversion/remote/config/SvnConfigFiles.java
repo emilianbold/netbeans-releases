@@ -121,7 +121,7 @@ public class SvnConfigFiles {
      *
      * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
-    private class ConfigIniFilePatcher implements IniFilePatcher {
+    private static class ConfigIniFilePatcher implements IniFilePatcher {
         @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
@@ -238,7 +238,7 @@ public class SvnConfigFiles {
             return false;
         }
         String certFile = rc.getCertFile();
-        if(certFile == null || certFile.equals("")) {
+        if(certFile.isEmpty()) {
             return false;
         }
         char[] certPasswordChars = rc.getCertPassword();
@@ -495,7 +495,7 @@ public class SvnConfigFiles {
                 String value = groups.get(key);
                 if(value != null) {     
                     value = value.trim();                    
-                    if(value != null && match(value, host)) {
+                    if(match(value, host)) {
                         return svnServers.get(key);
                     }      
                 }
@@ -521,7 +521,7 @@ public class SvnConfigFiles {
                 return true;
             }
 
-            int idx = value.indexOf("*");                                       // NOI18N
+            int idx = value.indexOf('*');                                       // NOI18N
             if(idx > -1 && matchSegments(value, host) ) {
                 return true;
             }

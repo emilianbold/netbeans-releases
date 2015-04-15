@@ -76,6 +76,7 @@ public final class XMLEncoderStream {
     private OutputStream os;	// just so we can close it
 
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm") // default encodings used as fall back
     XMLEncoderStream(OutputStream os, int indentChars, String encoding, String lineSeparator) {
 	this.os = os;
         try {
@@ -118,7 +119,7 @@ public final class XMLEncoderStream {
 	writeAttrs(tagName, version, attrs, true);
 	writer.println(">");			// NOI18N
 	indent++;
-    } 
+    }
 
 
     /**
@@ -147,7 +148,7 @@ public final class XMLEncoderStream {
      */
     public void elementOpen(String tagName, int version) {
 	elementOpen(tagName, version, null);
-    } 
+    }
 
 
     /**
@@ -160,7 +161,7 @@ public final class XMLEncoderStream {
      */
     public void elementOpen(String tagName) {
 	elementOpen(tagName, -1, null);
-    } 
+    }
 
 
     /**
@@ -178,7 +179,7 @@ public final class XMLEncoderStream {
         }
 	writeIndent();
 	writer.println("</" + tagName + ">");	// NOI18N
-    } 
+    }
 
 
     /**
@@ -244,11 +245,11 @@ public final class XMLEncoderStream {
 	writer.close();
 	writer = null;
 	os.close();	// SHOULD double-check if it's really our responsibility
-    } 
+    }
 
     void println(String s) {
 	writer.println(s);
-    } 
+    }
 
     private void writeIndent(int additionalIndent) {
 	for (int i = 0; i < indent; i++) {
@@ -394,7 +395,7 @@ public final class XMLEncoderStream {
 	    return escapedContent;
 	}
     }
-    
+
     private static final class MyPrintWriter extends PrintWriter {
         private final String lineSeparator;
 
@@ -407,7 +408,7 @@ public final class XMLEncoderStream {
         public void println() {
             newLine();
         }
-    
+
         private void newLine() {
             try {
                 synchronized (lock) {

@@ -503,6 +503,7 @@ public abstract class DebuggerSettingsBridge implements PropertyChangeListener {
     Env savedEnv;
 
     // interface PropertyChangeListener
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
 	String name = evt.getPropertyName();
 

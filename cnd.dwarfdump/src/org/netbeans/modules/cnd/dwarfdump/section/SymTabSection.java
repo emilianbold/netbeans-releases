@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.STT;
@@ -56,7 +57,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 public class SymTabSection extends ElfSection {
     // .symtab section index -> elf section index
     private Map<Integer,Integer> sectionMap = new HashMap<Integer, Integer>();
-    
+
     public SymTabSection(ElfReader reader, int sectionIdx) throws IOException {
         super(reader, sectionIdx);
         read();
@@ -107,32 +108,36 @@ public class SymTabSection extends ElfSection {
         reader.seek(filePos);
         return this;
     }
-    
+
     /**
-     * 
+     *
      * @param sectionIndex in symtab
      * @return section index in elf
      */
     public Integer getSectionIndex(int sectionIndex) {
         return sectionMap.get(sectionIndex);
     }
-    
+
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
-        
-        out.printf("Elf section\tSymtab Section\n"); // NOI18N
+
+        out.printf("Elf section\tSymtab Section%n"); // NOI18N
         for(Map.Entry<Integer, Integer> entry: sectionMap.entrySet()) {
-            out.printf("%d\t%d\n", entry.getKey(), entry.getValue()); // NOI18N
+            out.printf("%d\t%d%n", entry.getKey(), entry.getValue()); // NOI18N
         }
     }
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString("UTF-8"); //NOI18N
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
-    
+
 }

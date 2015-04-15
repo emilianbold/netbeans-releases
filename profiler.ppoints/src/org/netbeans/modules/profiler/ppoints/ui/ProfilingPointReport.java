@@ -60,9 +60,9 @@ import org.openide.windows.TopComponent;
 @NbBundle.Messages({
         "ProfilingPointReport_NoHitsString=no hits", // NOI18N
         "ProfilingPointReport_NoMonitorString=Monitor mode not supported by this profiling point.", // NOI18N
-        "ProfilingPointReport_NoSampledCpuString=Sampled CPU profiling not supported by this profiling point. Switch to instrumented profiling to start collecting data.", // NOI18N
-        "ProfilingPointReport_NoCpuString=CPU profiling not supported by this profiling point.", // NOI18N
-        "ProfilingPointReport_NoMemoryString=Memory profiling not supported by this profiling point.", // NOI18N
+        "ProfilingPointReport_NoSampledCpuString=Sampled Methods profiling not supported by this profiling point. Switch to instrumented profiling to start collecting data.", // NOI18N
+        "ProfilingPointReport_NoCpuString=Methods profiling not supported by this profiling point.", // NOI18N
+        "ProfilingPointReport_NoMemoryString=Objects profiling not supported by this profiling point.", // NOI18N
         "ProfilingPointReport_NoCurrentString=Current profiling mode not supported by this profiling point." // NOI18N
     })
 public abstract class ProfilingPointReport extends ProfilerTopComponent {

@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
  */
 public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
 
-    // 
+    //
     public static final String ARRAY = "array"; //NOI18N
     public static final String ITERABLE = "iterable"; //NOI18N
     public static final String TYPE = "type"; //NOI18N
@@ -103,7 +103,7 @@ public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
     public void updateDefaultValues() {
         for (Object p : request.getMasterParameters()) {
             CodeTemplateParameter param = (CodeTemplateParameter)p;
-            String value = getProposedValue(param); 
+            String value = getProposedValue(param);
             if (value != null && !value.equals(param.getValue())) {
                 param.setValue(value);
             }
@@ -156,7 +156,6 @@ public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
                     }
                 }
                 CsmNamespace namespace = CsmContextUtilities.getNamespace(context);
-                Collection<CsmOffsetableDeclaration> namespaceDecl = null;
                 if (namespace != null) {
                     for(CsmDeclaration var : namespace.getDeclarations()) {
                         if (CsmKindUtilities.isVariable(var) ) {
@@ -175,11 +174,10 @@ public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
             }
         }, NbBundle.getMessage(CppCodeTemplateProcessor.class, "CPP-init"), cancel, false); //NOI18N
     }
-    
+
     private String getProposedValue(CodeTemplateParameter param) {
         String name = null;
-        for (Object e : param.getHints().entrySet()) {
-            Map.Entry entry = (Map.Entry)e;
+        for (Map.Entry<String, String> entry : param.getHints().entrySet()) {
             if (ARRAY.equals(entry.getKey())) {
                 for(CsmVariable var : locals) {
                     if (isArray(var)) {
@@ -192,11 +190,11 @@ public class CppCodeTemplateProcessor implements CodeTemplateProcessor {
                         return var.getName().toString();
                     }
                 }
-            } else if (TYPE.equals(entry.getKey())) {
-            } else if (ITERABLE_ELEMENT_TYPE.equals(entry.getKey())) {
-            } else if (RIGHT_SIDE_TYPE.equals(entry.getKey())) {
-            } else if (CAST.equals(entry.getKey())) {
-            } else if (NEW_VAR_NAME.equals(entry.getKey())) {
+            //} else if (TYPE.equals(entry.getKey())) {
+            //} else if (ITERABLE_ELEMENT_TYPE.equals(entry.getKey())) {
+            //} else if (RIGHT_SIDE_TYPE.equals(entry.getKey())) {
+            //} else if (CAST.equals(entry.getKey())) {
+            //} else if (NEW_VAR_NAME.equals(entry.getKey())) {
             }
         }
         return name;

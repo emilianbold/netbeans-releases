@@ -231,6 +231,7 @@ public final class DebugTarget implements Record {
     }
 
     // interface Record
+    @Override
     public String getKey() {
 	return displayName();
     /*
@@ -241,18 +242,21 @@ public final class DebugTarget implements Record {
     }
 
     // interface Record
+    @Override
     public void setKey(String newKey) {
 	// Cannot for now
 	return;
     }
 
     // interface record
+    @Override
     public boolean matches(String key) {
 	return IpeUtils.sameString(getKey(), key, 120);
     }
 
 
     // interface Record
+    @Override
     public boolean isArchetype() {
 	return false;
     }
@@ -294,6 +298,7 @@ public final class DebugTarget implements Record {
     }
 
     // interface Record
+    @Override
     public DebugTarget cloneRecord() {
 
 	// IZ 134190 is fixed in NB6.1 patch 3
@@ -330,6 +335,7 @@ public final class DebugTarget implements Record {
     }
     
     // interface Record
+    @Override
     public String displayName() {
 	String exec = configuration.getMakefileConfiguration().
 			getOutput().getValue() ;
@@ -524,6 +530,7 @@ public final class DebugTarget implements Record {
 	    hostName = h;
     }
 
+    @Override
     public String getHostName() {
 	return hostName;
     }

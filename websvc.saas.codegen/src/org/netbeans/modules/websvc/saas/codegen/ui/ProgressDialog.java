@@ -93,7 +93,7 @@ public class ProgressDialog {
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel, title
-                ); // NOI18N
+        );
         
         final Object[] OPTIONS = new Object[0];
         descriptor.setOptions(OPTIONS);
@@ -104,8 +104,6 @@ public class ProgressDialog {
         dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         
         Frame mainWindow = WindowManager.getDefault().getMainWindow();
-        int windowX = mainWindow.getX();
-        int windowY = mainWindow.getY();
         int windowWidth = mainWindow.getWidth();
         int windowHeight = mainWindow.getHeight();
         int dialogWidth = dialog.getWidth();
@@ -117,13 +115,13 @@ public class ProgressDialog {
     }
     
     private class ProgressPanel extends JPanel {
-        private JLabel messageLabel;
-        private JComponent progressBar;
+        private final JLabel messageLabel;
+        private final JComponent progressBar;
         
         public ProgressPanel(ProgressHandle pHandle) {
             messageLabel = ProgressHandleFactory.createDetailLabelComponent(pHandle);
             messageLabel.setText(NbBundle.getMessage(ProgressDialog.class,
-                    "MSG_StartingProgress"));
+                    "MSG_StartingProgress")); // NOI18N
             progressBar = ProgressHandleFactory.createProgressComponent(pHandle);
             
             initComponents();
@@ -153,6 +151,7 @@ public class ProgressDialog {
         }
         
         
+        @Override
         public Dimension getPreferredSize() {
             Dimension orig = super.getPreferredSize();
             return new Dimension(500, orig.height);

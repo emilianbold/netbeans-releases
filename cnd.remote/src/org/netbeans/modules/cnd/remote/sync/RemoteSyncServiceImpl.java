@@ -74,7 +74,7 @@ public class RemoteSyncServiceImpl implements RemoteSyncService {
         private final PathMap pathMap;
         private final FileData fileData;
 
-        private final Set<String> checkedDirs = new HashSet<String>();
+        private final Set<String> checkedDirs = new HashSet<>();
         private UploadStatus uploadStatus;
 
         public Uploader(Lookup.Provider project, ExecutionEnvironment execEnv) throws IOException {

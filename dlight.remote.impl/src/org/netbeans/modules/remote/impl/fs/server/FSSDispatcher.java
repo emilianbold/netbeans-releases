@@ -95,11 +95,11 @@ import org.openide.util.RequestProcessor;
 
     private static final boolean SUPPRESS_STDERR = Boolean.parseBoolean(System.getProperty("remote.fs_server.suppress.stderr", "true"));
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
-            new HashMap<ExecutionEnvironment, FSSDispatcher>();
+            new HashMap<>();
     private static final Object instanceLock = new Object();
     
     private final ExecutionEnvironment env;
-    private final Map<Integer, FSSResponse> responses = new LinkedHashMap<Integer, FSSResponse>();
+    private final Map<Integer, FSSResponse> responses = new LinkedHashMap<>();
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
@@ -123,7 +123,7 @@ import org.openide.util.RequestProcessor;
     private final AtomicInteger attempts = new AtomicInteger();
     private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3); // NOI18N
     
-    private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
+    private final AtomicReference<String> lastErrorMessage = new AtomicReference<>();
     
     private volatile boolean cleanupUponStart = false;
     
@@ -661,7 +661,7 @@ import org.openide.util.RequestProcessor;
             this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(this.path);            
-            List<String> argsList = new ArrayList<String>();
+            List<String> argsList = new ArrayList<>();
             argsList.add("-t"); // NOI18N
             argsList.add("4"); // NOI18N
             argsList.add("-p"); // NOI18N

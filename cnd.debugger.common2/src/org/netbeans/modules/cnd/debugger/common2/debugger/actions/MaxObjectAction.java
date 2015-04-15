@@ -103,6 +103,7 @@ public class MaxObjectAction
 	}
 
 	// interface PropertyChangeListener
+        @Override
 	public void propertyChange(PropertyChangeEvent e) {
 	    if (e.getPropertyName () == Controller.PROP_VALID) {
 		setValid();
@@ -115,6 +116,7 @@ public class MaxObjectAction
     }
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	final NativeDebugger debugger =
 	    NativeDebuggerManager.get().currentNativeDebugger();
@@ -127,32 +129,38 @@ public class MaxObjectAction
     }
     
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("ACT_Max_Object_Size"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
+    @Override
     protected String iconResource () {
 	return "org/netbeans/modules/debugger/resources/actions/NewWatch.gif"; // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	setEnabled(false);
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	boolean enable = false;
 	if (state != null) {

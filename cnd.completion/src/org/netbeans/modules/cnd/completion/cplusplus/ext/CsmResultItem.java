@@ -66,12 +66,13 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
-import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.lexer.TokenId;
@@ -98,6 +99,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionUtils;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
+import org.netbeans.modules.cnd.modelutil.ExceptionStr;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
 import org.netbeans.modules.cnd.spi.model.services.CsmDocProvider;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -116,7 +118,7 @@ public abstract class CsmResultItem implements CompletionItem {
         DOT_TO_ARROW,
         ARROW_TO_DOT,
     }
-    
+
     private static boolean enableInstantSubstitution = true;
     protected int selectionStartOffset = -1;
     protected int selectionEndOffset = -1;
@@ -140,11 +142,11 @@ public abstract class CsmResultItem implements CompletionItem {
     void setHint(SubstitutionHint hint) {
         this.hint = hint;
     }
-    
+
     protected SubstitutionHint getHint() {
         return this.hint;
     }
-    
+
     protected static Color getTypeColor(CsmType type) {
         return type.isBuiltInBased(false) ? LFCustoms.shiftColor(KEYWORD_COLOR) : LFCustoms.getTextFgColor();
     }
@@ -270,7 +272,7 @@ public abstract class CsmResultItem implements CompletionItem {
         Component comp = getPaintComponent(false);
         return comp != null ? comp.toString() : ""; //NOI18N
     }
-    
+
     protected int convertCsmModifiers(CsmObject obj) {
         return CsmUtilities.getModifiers(obj);
     }
@@ -413,7 +415,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
     // Normailizes include directive string
     private String normalizeInclude(String inc) {
-        inc = inc.toLowerCase();
+        inc = inc.toLowerCase(Locale.getDefault());
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();
@@ -846,8 +848,7 @@ public abstract class CsmResultItem implements CompletionItem {
         }
 
         private boolean isAfterShiftOperator(JTextComponent c) {
-            TokenSequence ts;
-            ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
+            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(c, 0, true, false);
             ts.moveStart();
             if (!ts.moveNext()) {
                 return false;
@@ -954,7 +955,7 @@ public abstract class CsmResultItem implements CompletionItem {
         private CsmCompletionExpression substituteExp;
         private final boolean isDeclaration;
         private List<ParamStr> params = new ArrayList<ParamStr>();
-        private List<?> excs = new ArrayList<Object>();
+        private List<ExceptionStr> excs = new ArrayList<ExceptionStr>();
         private int modifiers;
         private static CsmPaintComponent.ConstructorPaintComponent ctrComponent = null;
         private int activeParameterIndex = -1;
@@ -1030,7 +1031,7 @@ public abstract class CsmResultItem implements CompletionItem {
             return params;
         }
 
-        public List<?> getExceptions() {
+        public List<ExceptionStr> getExceptions() {
             return excs;
         }
 
@@ -1049,7 +1050,7 @@ public abstract class CsmResultItem implements CompletionItem {
             List<String> ret = new ArrayList<String>();
             for (Iterator<ParamStr> it = getParams().iterator(); it.hasNext();) {
                 StringBuilder sb = new StringBuilder();
-                ParamStr ps = it.next();                
+                ParamStr ps = it.next();
                 if (ps.isVarArg()) {
                     sb.append(ps.getSimpleTypeName());
                     sb.append("..."); // NOI18N
@@ -1088,7 +1089,7 @@ public abstract class CsmResultItem implements CompletionItem {
                             if (parmsCnt == 0) {
                                 if (getActiveParameterIndex() == -1) { // not showing active parm
                                     try {
-                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
                                         if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
                                             text = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                             len = fnwpos + 1 - offset;
@@ -1151,8 +1152,8 @@ public abstract class CsmResultItem implements CompletionItem {
                             if (addParams) {
                                 String paramsText = null;
                                 try {
-                                    int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
-                                    if (fnwpos > -1 && fnwpos <= Utilities.getRowEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
+                                    int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
+                                    if (fnwpos > -1 && fnwpos <= LineDocumentUtils.getLineEnd(doc, offset + len) && doc.getChars(fnwpos, 1)[0] == '(') { // NOI18N
                                         paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                         if (addSpace && paramsText.length() < 2) {
                                             text += ' ';
@@ -1186,7 +1187,7 @@ public abstract class CsmResultItem implements CompletionItem {
                                     }
                                 } else {
                                     try {
-                                        int fnwpos = Utilities.getFirstNonWhiteFwd(doc, offset + len);
+                                        int fnwpos = LineDocumentUtils.getNextNonWhitespace(doc, offset + len);
                                         if (fnwpos > -1 && doc.getChars(fnwpos, 1)[0] == ')') { // NOI18N
                                             paramsText = doc.getText(offset + len, fnwpos + 1 - offset - len);
                                             len = fnwpos + 1 - offset;
@@ -1766,19 +1767,19 @@ public abstract class CsmResultItem implements CompletionItem {
 //            this.prm = prm;
 //            this.typeColor = typeColor;
 //        }
-//        
+//
 //        public String getTypeName() {
 //            return type;
 //        }
-//        
+//
 //        public String getSimpleTypeName() {
 //            return simpleType;
 //        }
-//        
+//
 //        public String getName() {
 //            return prm;
 //        }
-//        
+//
 //        public Color getTypeColor() {
 //            return typeColor;
 //        }
@@ -1790,11 +1791,11 @@ public abstract class CsmResultItem implements CompletionItem {
 //            this.name = name;
 //            this.typeColor = typeColor;
 //        }
-//        
+//
 //        public String getName() {
 //            return name;
 //        }
-//        
+//
 //        public Color getTypeColor() {
 //            return typeColor;
 //        }

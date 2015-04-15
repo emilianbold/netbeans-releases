@@ -56,8 +56,8 @@ import org.netbeans.modules.nativeexecution.support.Logger;
 final class PortForwarding {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
-    private final List<PortForwardingInfoR> rinfo = new ArrayList<PortForwardingInfoR>();
-    private final List<PortForwardingInfoL> linfo = new ArrayList<PortForwardingInfoL>();
+    private final List<PortForwardingInfoR> rinfo = new ArrayList<>();
+    private final List<PortForwardingInfoL> linfo = new ArrayList<>();
 
     public synchronized void initSession(Session session) {
         for (PortForwarding.PortForwardingInfoR r : rinfo) {

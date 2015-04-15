@@ -205,7 +205,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         npb.setExecutable("pwd");
         npb.setInitialSuspend(true);
 
-        final AtomicReference<Integer> status = new AtomicReference<Integer>(null);
+        final AtomicReference<Integer> status = new AtomicReference<>(null);
 
         final NativeProcess process = npb.call();
 

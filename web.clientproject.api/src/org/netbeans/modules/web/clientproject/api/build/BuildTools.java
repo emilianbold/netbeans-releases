@@ -44,12 +44,15 @@ package org.netbeans.modules.web.clientproject.api.build;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.api.build.ui.CustomizerPanel;
+import org.netbeans.modules.web.clientproject.api.build.ui.TasksMenu;
 import org.netbeans.modules.web.clientproject.spi.build.BuildToolImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Parameters;
@@ -114,6 +117,19 @@ public final class BuildTools {
         return new CustomizerPanel(customizerSupport);
     }
 
+    /**
+     * Helper method for creating standard UI for context menu for build tool tasks.
+     * <p>
+     * This menu supports loading tasks, showing and running tasks as well as configuring build tool.
+     * @param tasksMenuSupport support for the UI
+     * @return standard UI for context menu for build tool tasks
+     * @since 1.92
+     */
+    public JMenu createTasksMenu(@NonNull TasksMenuSupport tasksMenuSupport) {
+        Parameters.notNull("tasksMenuSupport", tasksMenuSupport); // NOI18N
+        return new TasksMenu(tasksMenuSupport);
+    }
+
     private Collection<BuildToolImplementation> getEnabledBuildTools(Project project) {
         assert project != null;
         Collection<? extends BuildToolImplementation> allBuildTools = project.getLookup()
@@ -169,6 +185,88 @@ public final class BuildTools {
          * @param task task for the given command identifier, can be {@code null} if none assigned
          */
         void setTask(@NonNull String commandId, @NullAllowed String task);
+
+    }
+
+    /**
+     * Support for creating standard UI for context menu for build tool tasks.
+     * @since 1.92
+     */
+    public interface TasksMenuSupport {
+
+        /**
+         * Required titles.
+         */
+        enum Title {
+            MENU,
+            LOADING_TASKS,
+            RELOAD_TASKS,
+            CONFIGURE_TOOL,
+            RUN_ADVANCED,
+            TASKS_LABEL,
+            BUILD_TOOL_EXEC,
+        }
+
+        /**
+         * Gets project we run tasks for.
+         * @return project we run tasks for
+         * @since 1.93
+         */
+        @NonNull
+        Project getProject();
+
+        /**
+         * Gets unique identifier, <b>non-localized</b> identifier of the build tool.
+         * @return unique identifier, <b>non-localized</b> identifier of the build tool
+         * @see BuildToolImplementation#getIdentifier()
+         * @since 1.93
+         */
+        @NonNull
+        String getIdentifier();
+
+        /**
+         * Gets title for the given {@link Title}.
+         * @param title title to be "labeled"
+         * @return title for the given {@link Title}
+         */
+        @NonNull
+        String getTitle(@NonNull Title title);
+
+        /**
+         * Gets default task name (typically "default"); can be {@code null} if not supported.
+         * @return default task name (typically "default"); can be {@code null} if not supported
+         */
+        @CheckForNull
+        String getDefaultTaskName();
+
+        /**
+         * Gets future representing tasks.
+         * <p>
+         * Loading of tasks is done in a background thread automatically.
+         * @return future representing tasks
+         */
+        @NonNull
+        Future<List<String>> getTasks();
+
+        /**
+         * Runs the given task. No task is given for {@link #getDefaultTaskName() default} task.
+         * <p>
+         * This method always runs in a background thread.
+         * @param args task arguments
+         */
+        void runTask(@NullAllowed String... args);
+
+        /**
+         * Reloads tasks.
+         * <p>
+         * This method always runs in a background thread.
+         */
+        void reloadTasks();
+
+        /**
+         * Configures build tool (typically shows IDE Options or Project Properties dialog).
+         */
+        void configure();
 
     }
 

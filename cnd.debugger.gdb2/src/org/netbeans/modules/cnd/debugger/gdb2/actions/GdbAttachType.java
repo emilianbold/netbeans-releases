@@ -77,6 +77,7 @@ public final class GdbAttachType extends AttachType {
     private GdbAttachType() {
     }
 
+    @Override
     public JComponent getCustomizer() {
         EngineType et = GdbEngineCapabilityProvider.getGdbEngineType();
         AttachPanel panel = AttachPanel.getInstance(null, null, et);

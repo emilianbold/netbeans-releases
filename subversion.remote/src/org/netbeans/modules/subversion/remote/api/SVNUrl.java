@@ -82,7 +82,7 @@ public class SVNUrl {
         if (tmp.isEmpty()) {
             throw new MalformedURLException("Invalid path of SVN URL: "+url); //NOI18N
         }
-        i = tmp.indexOf("/"); //NOI18N
+        i = tmp.indexOf('/'); //NOI18N
         if (i < 0) {
             i = tmp.length();
         }

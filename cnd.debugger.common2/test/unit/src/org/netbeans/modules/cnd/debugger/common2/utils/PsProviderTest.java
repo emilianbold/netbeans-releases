@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.test.CndBaseTestCase;
 

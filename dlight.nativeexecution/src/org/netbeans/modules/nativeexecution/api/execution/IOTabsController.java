@@ -61,7 +61,7 @@ public final class IOTabsController {
 
     private static final IOTabsController instance = new IOTabsController();
     private static final TabsGroupGroupsComparator comparator = new TabsGroupGroupsComparator();
-    private final List<TabsGroup> groups = new ArrayList<TabsGroup>();
+    private final List<TabsGroup> groups = new ArrayList<>();
 
     public static IOTabsController getDefault() {
         return instance;
@@ -69,7 +69,7 @@ public final class IOTabsController {
 
     public TabsGroup openTabsGroup(final String groupName, final boolean reuse) {
         synchronized (groups) {
-            List<TabsGroup> toRemove = new ArrayList<TabsGroup>();
+            List<TabsGroup> toRemove = new ArrayList<>();
 
             // Cleanup obsolete groups
             for (TabsGroup group : groups) {
@@ -120,7 +120,7 @@ public final class IOTabsController {
 
     public static final class TabsGroup {
 
-        private final List<InputOutputTab> tabs = new ArrayList<InputOutputTab>();
+        private final List<InputOutputTab> tabs = new ArrayList<>();
         private final AtomicBoolean locked = new AtomicBoolean(false);
         private final String groupName;
         private final int seqID;
@@ -234,7 +234,7 @@ public final class IOTabsController {
 
         private InputOutputTab(final String name, final InputOutput inputOutput) {
             this.name = name;
-            inputOutputRef = new WeakReference<InputOutput>(inputOutput);
+            inputOutputRef = new WeakReference<>(inputOutput);
         }
 
         public String getName() {

@@ -73,6 +73,7 @@ public class HostPanel extends DetailView<CustomizableHost> {
 
     private final DummyPropertySheet.Listener listener =
 	new DummyPropertySheet.Listener() {
+            @Override
 	    public void propertyChanged() {
 		setDirty(true);
 	    }
@@ -130,6 +131,7 @@ public class HostPanel extends DetailView<CustomizableHost> {
     }
 
     // implement DetailView
+    @Override
     public void setRecord(CustomizableHost newhost) {
         original = newhost;	// switch to new original
 
@@ -150,6 +152,7 @@ public class HostPanel extends DetailView<CustomizableHost> {
     }
 
     // implement DetailView
+    @Override
     public void commit() {
 	if (original != null) {
 	    // Changes in sheet are directly applied to the editable
@@ -163,6 +166,7 @@ public class HostPanel extends DetailView<CustomizableHost> {
     }
 
     // implement DetailView
+    @Override
     public void updateView() {
 	updating = true;
 
@@ -193,25 +197,30 @@ public class HostPanel extends DetailView<CustomizableHost> {
 
     // ModifiedDocumentListener
     public class ModifiedValidateDocumentListener implements DocumentListener {
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
         
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
         
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
             validateFields(documentEvent);
         }
     }
 
     // implement Validator
+    @Override
     public boolean isRecordValid() {
 	return true;
     }
 
     // implement Validator
+    @Override
     public boolean isDirty() {
 	return dirty || editable.getOptions().isDirty();
     }

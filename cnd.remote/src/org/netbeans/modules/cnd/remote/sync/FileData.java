@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.remote.sync;
 import java.io.*;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -95,7 +96,7 @@ public final class FileData {
 
     }
 
-    private static Map<String, WeakReference<FileData>> instances = new HashMap<String, WeakReference<FileData>>();
+    private static final Map<String, WeakReference<FileData>> instances = new HashMap<>();
 
     @Deprecated
     public static FileData get(File privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
@@ -121,7 +122,7 @@ public final class FileData {
         }
         if (instance == null) {
             instance = new FileData(privProjectStorageDir, executionEnvironment);
-            instances.put(key, new WeakReference<FileData>(instance));
+            instances.put(key, new WeakReference<>(instance));
         }
         return instance;
     }
@@ -132,7 +133,7 @@ public final class FileData {
         this.dataFileTimeStamp = -1;
         this.dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
-                '-' + executionEnvironment.getSSHPort(); //NOI18N        
+                '-' + executionEnvironment.getSSHPort(); //NOI18N
         if (!Boolean.getBoolean("cnd.remote.timestamps.clear")) {
             try {
                 load();
@@ -145,7 +146,7 @@ public final class FileData {
             }
         }
     }
-    
+
     public FileObject getDataFile() throws IOException {
         return FileUtil.createData(privProjectStorageDir, dataFileName);
     }
@@ -195,12 +196,14 @@ public final class FileData {
     @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void store()  {
         FileObject dataFile = null;
+        OutputStream os = null;
         try {
             dataFile = getDataFile();
-            OutputStream os = new BufferedOutputStream(dataFile.getOutputStream());
+            os = new BufferedOutputStream(dataFile.getOutputStream());
             data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
             os.close();
+            os = null;
             dataFileTimeStamp = dataFile.lastModified().getTime();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -209,7 +212,14 @@ public final class FileData {
                     dataFile.delete();
                 }
             } catch (IOException ex1) {
-                System.err.printf("Error deleting file %s\n", dataFile.getPath());
+                System.err.printf("Error deleting file %s%n", dataFile.getPath());
+            }
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                }
             }
         }
     }
@@ -244,7 +254,7 @@ public final class FileData {
             }
             if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
                 time = System.currentTimeMillis() - time;
-                System.out.printf("reading %d timestamps from %s took %d ms\n", data.size(), dataFile.getPath(), time); // NOI18N
+                System.out.printf("reading %d timestamps from %s took %d ms%n", data.size(), dataFile.getPath(), time); // NOI18N
             }
         }
         return dataFile.lastModified().getTime();
@@ -276,7 +286,7 @@ public final class FileData {
     private String getFileKey(File file) {
         String key = file.getAbsolutePath();
         if (!CndFileUtils.isSystemCaseSensitive()) {
-            key = key.toLowerCase();
+            key = key.toLowerCase(Locale.getDefault());
         }
         return key;
     }

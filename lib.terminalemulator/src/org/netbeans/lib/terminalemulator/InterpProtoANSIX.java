@@ -192,7 +192,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
                     case 10: {
                         // This is specific to nbterm!
                         int semix2 = p2.indexOf(';');
-                        if (semix == -1)
+                        if (semix2 == -1)
                             return null;
                         String p3 = p2.substring(semix2+1);
                         p2 = p2.substring(0, semix2);
@@ -204,11 +204,11 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	}
 
 	static final class ACT_DEC_PRIVATE implements Actor {
-            
+
             // xterm Sequences to turn mouse reporting on and off are to be
             // implemeted here.
             // See http://www.xfree86.org/current/ctlseqs.html#Mouse%20Tracking
-            
+
             private static String decPrivateSet(AbstractInterp ai, char c, int n) {
                 switch (n) {
                     case 1:
@@ -228,7 +228,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
                 }
                 return null;
             }
-            
+
             private static String decPrivateReset(AbstractInterp ai, char c, int n) {
                 switch (n) {
                     case 1:
@@ -248,16 +248,16 @@ class InterpProtoANSIX extends InterpProtoANSI {
                 }
                 return null;
             }
-            
+
             private static String decPrivateSave(AbstractInterp ai, char c, int n) {
                 return "act_DEC_private: unrecognized code " + n;	// NOI18N
-            } 
-            
-            
+            }
+
+
             private static String decPrivateRestore(AbstractInterp ai, char c, int n) {
                 return "act_DEC_private: unrecognized code " + n;	// NOI18N
             }
-            
+
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
@@ -270,7 +270,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
                         case 'r': return decPrivateRestore(ai, c, n);
                         case 's': return decPrivateSave(ai, c, n);
                         default:  return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
-                    } 
+                    }
                 }
                 return null;
 	    }
@@ -299,18 +299,18 @@ class InterpProtoANSIX extends InterpProtoANSI {
 	super(ops, type_singleton);
 	this.type = type_singleton;
 	setup();
-    } 
+    }
 
     protected InterpProtoANSIX(Ops ops, InterpTypeProtoANSIX type) {
 	super(ops, type);
 	this.type = type;
 	setup();
-    } 
+    }
 
     @Override
     public String name() {
 	return "proto-ansi-x";	// NOI18N
-    } 
+    }
 
     @Override
     public void reset() {
@@ -329,7 +329,7 @@ class InterpProtoANSIX extends InterpProtoANSI {
         //          Linux w/ Java 7
         // All other platforms unknown.
         //
-        // We return false in cases where it doesn't work because NumLock is 
+        // We return false in cases where it doesn't work because NumLock is
         // off by default.
 
         final Toolkit toolkit = Toolkit.getDefaultToolkit();

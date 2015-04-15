@@ -75,7 +75,7 @@ import org.openide.util.Exceptions;
 public class HelperUtility {
 
     protected static final java.util.logging.Logger log = Logger.getInstance();
-    private final HashMap<ExecutionEnvironment, String> cache = new HashMap<ExecutionEnvironment, String>();
+    private final HashMap<ExecutionEnvironment, String> cache = new HashMap<>();
     private final String pattern;
     protected final String codeNameBase;
 

@@ -94,7 +94,7 @@ public class Agent {
         ExitStatus res = ProcessUtils.executeInDir(pathToClass, execEnv, "java", Agent.class.getName(), filePath);
         if (res.exitCode == 0) {
             String[] split = res.output.split("\n");
-            Map<String, Object> map = new HashMap<String, Object>();
+            Map<String, Object> map = new HashMap<>();
             for(String s : split) {
                 String key = s.substring(0, s.indexOf('='));
                 String value = s.substring(s.indexOf('=')+1);

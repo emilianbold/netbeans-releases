@@ -53,13 +53,13 @@ import java.io.PrintStream;
 public class DwarfNameLookupEntry {
     public final long offset;
     public final String string;
-    
+
     public DwarfNameLookupEntry(long offset, String str) {
         this.offset = offset;
         this.string = str;
     }
 
     void dump(PrintStream out) {
-        out.printf("%d (0x%x)\t%s\n", offset, offset, string); // NOI18N
+        out.printf("%d (0x%x)\t%s%n", offset, offset, string); // NOI18N
     }
 }

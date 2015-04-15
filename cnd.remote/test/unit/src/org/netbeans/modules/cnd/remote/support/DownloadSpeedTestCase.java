@@ -73,7 +73,7 @@ public class DownloadSpeedTestCase extends RemoteTestBase {
         File listFile = new File("/tmp/download.list");
         assertTrue(listFile.exists());
         BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(listFile)));
-        List<String> remoteFiles = new ArrayList<String>(1000);
+        List<String> remoteFiles = new ArrayList<>(1000);
         String line;
         while ((line = br.readLine()) != null) {
             if (line.length() > 0) { // ignore empty lines (usually trailing)

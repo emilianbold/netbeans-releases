@@ -288,7 +288,7 @@ public class CommandlineClient implements SvnClient {
             }
         }
         refresh(files);
-        return cmd != null ? cmd.getRevision() : SVNRevision.INVALID_REVISION.getNumber();
+        return cmd.getRevision();
     }
     
     @Override
@@ -663,7 +663,7 @@ public class CommandlineClient implements SvnClient {
     ISVNProperty propertyGet(PropertyGetCommand cmd, final String name, final SVNUrl url, final VCSFileProxy file) throws SVNClientException {
         exec(cmd);
         final byte[] bytes = cmd.getOutput();
-        if(bytes == null || bytes.length == 0) {
+        if(bytes.length == 0) {
             return null;
         }
         return new ISVNProperty() {
@@ -775,9 +775,7 @@ public class CommandlineClient implements SvnClient {
                 ret.addAnnotation(annotation);
             }
         } finally {
-            if (r != null) {
-                try { r.close(); } catch (IOException e) {}
-            }
+            try { r.close(); } catch (IOException e) {}
         }
         return ret;
     }
@@ -1101,7 +1099,7 @@ public class CommandlineClient implements SvnClient {
         throw new UnsupportedOperationException();
     }
 
-    class NotificationHandler extends SVNNotificationHandler {
+    static class NotificationHandler extends SVNNotificationHandler {
 
    }
 

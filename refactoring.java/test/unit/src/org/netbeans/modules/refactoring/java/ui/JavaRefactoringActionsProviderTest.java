@@ -74,9 +74,8 @@ public class JavaRefactoringActionsProviderTest extends RefactoringTestBase {
         DataObject testFileDO = DataObject.find(testFile);
         EditorCookie ec = testFileDO.getLookup().lookup(EditorCookie.class);
         ec.open();
-        ec.getOpenedPanes()[0].setCaretPosition(80);
-        ec.getOpenedPanes()[0].setSelectionStart(71);
-        ec.getOpenedPanes()[0].setSelectionEnd(80);
+        ec.getOpenedPanes()[0].setCaretPosition(71);
+        ec.getOpenedPanes()[0].moveCaretPosition(80);
         final AtomicInteger called = new AtomicInteger();
         ContextAnalyzer.SHOW = new ContextAnalyzer.ShowUI() {
             @Override
@@ -118,8 +117,8 @@ public class JavaRefactoringActionsProviderTest extends RefactoringTestBase {
         assertEquals(++expectedCount, called.get());
         new JavaRefactoringActionsProvider().doExtractSuperclass(Lookups.fixed(ec));
         assertEquals(++expectedCount, called.get());
-//        new JavaRefactoringActionsProvider().doInnerToOuter(Lookups.fixed(ec));
-//        assertEquals(++expectedCount, called.get());
+        new JavaRefactoringActionsProvider().doInnerToOuter(Lookups.fixed(ec));
+        assertEquals(++expectedCount, called.get());
         new JavaRefactoringActionsProvider().doPullUp(Lookups.fixed(ec));
         assertEquals(++expectedCount, called.get());
         new JavaRefactoringActionsProvider().doPushDown(Lookups.fixed(ec));

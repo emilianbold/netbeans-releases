@@ -52,6 +52,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,6 +65,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
@@ -158,7 +160,7 @@ public class ConfigurationMakefileWriter {
 //        FileObject configuraionFO = nbProjFO.getFileObject(MakeConfiguration.CONFIGURATIONS_XML);
 //        long xmlFileTimeStamp = (configuraionFO == null) ? -1 : configuraionFO.lastModified().getTime();
 //        Collection<MakeConfiguration> okConfs = getOKConfigurations(false);
-//        for (MakeConfiguration conf : okConfs) {            
+//        for (MakeConfiguration conf : okConfs) {
 //            if (!conf.isMakefileConfiguration()) {
 //                String relPath = getMakefileName(conf); // NOI18N
 //                FileObject fo = nbProjFO.getFileObject(relPath);
@@ -292,13 +294,13 @@ public class ConfigurationMakefileWriter {
             // FIXUP: ERROR
             return;
         }
-        
+        FileObject masterMF = null;
         try {
             FileObject nbprojectFileObject = projectDescriptor.getNbprojectFileObject();
             if (nbprojectFileObject == null) {
                 return;
             }
-            FileObject masterMF = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_IMPL);
+            masterMF = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_IMPL);
             os = SmartOutputStream.getSmartOutputStream(masterMF);
         } catch (IOException ioe) {
             ioe.printStackTrace(System.err);
@@ -309,9 +311,9 @@ public class ConfigurationMakefileWriter {
             // FIXUP: ERROR
             return;
         }
-
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        Charset encoding = FileEncodingQuery.getEncoding(masterMF);
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8")); //NOI18N
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, encoding)); //NOI18N
 
         // Project name
         String projectName = CndPathUtilities.getBaseName(projectDescriptor.getProjectDir());
@@ -367,7 +369,7 @@ public class ConfigurationMakefileWriter {
                 }
             }
         }
-        
+
         if (conf.isCustomConfiguration() && conf.getProjectCustomizer().getMakefileWriter() != null) {
             MakeProjectCustomizer makeProjectCustomizer = conf.getProjectCustomizer();
             String makefileWriterClassName = makeProjectCustomizer.getMakefileWriter();
@@ -395,7 +397,8 @@ public class ConfigurationMakefileWriter {
             return;
         }
         FileObject makefileFO = FileUtil.createData(nbProjFO, getMakefileName(conf)); // NOI18N;
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(makefileFO)));
+        Charset encoding = FileEncodingQuery.getEncoding(makefileFO);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(makefileFO), encoding));
         try {
             makefileWriter.writePrelude(projectDescriptor, conf, bw);
             writeBuildTargets(makefileWriter, projectDescriptor, conf, bw);
@@ -403,7 +406,7 @@ public class ConfigurationMakefileWriter {
             makefileWriter.writeRunTestTarget(projectDescriptor, conf, bw);
             makefileWriter.writeCleanTarget(projectDescriptor, conf, bw);
             //we need to write dependencies only in case they are enabled
-            if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() && 
+            if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration() &&
                     !conf.isQmakeConfiguration() && conf.getCompilerSet().getCompilerSet() != null) {
                 makefileWriter.writeDependencyChecking(projectDescriptor, conf, bw);
             }
@@ -485,12 +488,12 @@ public class ConfigurationMakefileWriter {
         bw.write("CXX=" + getCompilerName(conf, PredefinedToolKind.CCCompiler) + "\n"); // NOI18N
         bw.write("FC=" + getCompilerName(conf, PredefinedToolKind.FortranCompiler) + "\n"); // NOI18N
         bw.write("AS=" + getCompilerName(conf, PredefinedToolKind.Assembler) + "\n"); // NOI18N
-        
+
         DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
         if(provider != null) {
             provider.writePrelude(projectDescriptor, conf, bw);
         }
-        
+
         if (conf.getArchiverConfiguration().getTool().getModified()) {
             bw.write("AR=" + conf.getArchiverConfiguration().getTool().getValue() + "\n"); // NOI18N
         }
@@ -555,7 +558,7 @@ public class ConfigurationMakefileWriter {
         if(provider != null) {
              oicLibOptionsPrefix = provider.getLibraryOptionsPrefix(projectDescriptor, conf);
              oicLibOptionsPostfix = provider.getLibraryOptionsPostfix(projectDescriptor, conf);
-        }        
+        }
         bw.write("LDLIBSOPTIONS=" + oicLibOptionsPrefix + conf.getLinkerConfiguration().getLibraryItems() + oicLibOptionsPostfix + "\n"); // NOI18N
         bw.write("\n"); // NOI18N
 
@@ -566,9 +569,9 @@ public class ConfigurationMakefileWriter {
             // on mac/win32 not passing -spec leads to some problems:
             //      on mac - qmake generates xcode project
             //      on windows - problems with slashes vs. backslashes
-            
+
             if (qmakeSpec.length() == 0 && (
-                    conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX || 
+                    conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX ||
                     conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS)) {
                 qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
                 if (qmakeSpec == null) {
@@ -580,23 +583,23 @@ public class ConfigurationMakefileWriter {
                     }
                 }
             }
-            
+
             // On Solaris with OSS toolchain installed and added to PATH we still should pass -spec to qmake
             // or the following error message will appear:
             // QMAKESPEC has not been set, so configuration cannot be deduced.
-            // Error processing project file: nbproject/qt-Debug.pro 
-            
+            // Error processing project file: nbproject/qt-Debug.pro
+
             if (qmakeSpec.length() == 0 &&
                 (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_INTEL ||
                  conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
                 compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
-                qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());                
+                qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
                 if (qmakeSpec == null) {
                     // Never should be here, but still...
                     qmakeSpec = "solaris-cc";  // NOI18N
                 }
             }
-            
+
             if (!qmakeSpec.isEmpty()) {
                 qmakeSpec = "-spec " + qmakeSpec + " "; // NOI18N
             }
@@ -608,10 +611,10 @@ public class ConfigurationMakefileWriter {
 
             // Removed paths tweak for Windows as when -spec is used everything works....
             // See comment above.
-            // Still if project is created out of the QT tree, problem described 
+            // Still if project is created out of the QT tree, problem described
             // in http://bugreports.qt.nokia.com/browse/QTBUG-10633 exists.
             // To work-around it us following trick.
-            
+
             if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
                 // qmake uses backslashes on Windows, this code corrects them to forward slashes
                 // bw.write("\t@sed -e 's:\\\\\\(.\\):/\\1:g' nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".mk >nbproject/qt-"+MakeConfiguration.CND_CONF_MACRO+".tmp\n"); // NOI18N
@@ -781,7 +784,7 @@ public class ConfigurationMakefileWriter {
         }
         return "${LINK.c}" + " "; // NOI18N
     }
-    
+
     private static int hasCpp11(MakeConfigurationDescriptor configurationDescriptor, MakeConfiguration conf) {
         Item[] items = configurationDescriptor.getProjectItems();
         // Base it on actual files added to project
@@ -801,7 +804,7 @@ public class ConfigurationMakefileWriter {
                         return CCCompilerConfiguration.STANDARD_CPP11;
                     } else if (cppConf.getInheritedCppStandard() == CCCompilerConfiguration.STANDARD_CPP14) {
                         return CCCompilerConfiguration.STANDARD_CPP14;
-                    } 
+                    }
                 }
             }
         }
@@ -827,12 +830,12 @@ public class ConfigurationMakefileWriter {
                     output = CppUtils.normalizeDriveLetter(cs, output);
                     String command = getLinkerTool(projectDescriptor, conf, testLinkerConfiguration, compilerSet);
                     for (LinkerConfiguration lc : linkerConfigurations) {
-                        command += lc.getCommandLineConfiguration().getValue() + " "; // NOI18N                    
+                        command += lc.getCommandLineConfiguration().getValue() + " "; // NOI18N
                     }
                     command += "-o " + output + " "; // NOI18N
                     if (cs != null && testLinkerConfiguration.getStripOption().getValue()) {
                         command += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
-                    }                    
+                    }
                     command += "$^" + " "; // NOI18N
                     command += "${LDLIBSOPTIONS}" + " "; // NOI18N
 
@@ -883,7 +886,7 @@ public class ConfigurationMakefileWriter {
             }
         }
     }
-    
+
     private static List<LinkerConfiguration> getLinkerConfigurations(Folder test, MakeConfiguration conf) {
         List<LinkerConfiguration> linkerConfigurations = new ArrayList<>();
         if(test == null || conf == null) {
@@ -910,7 +913,7 @@ public class ConfigurationMakefileWriter {
             getLinkerConfigurations(confs, parentFolder, conf);
         }
         confs.add(testLinkerConfiguration);
-    }    
+    }
 
     public static void writeArchiveTarget(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
@@ -941,7 +944,7 @@ public class ConfigurationMakefileWriter {
         });
         return res.toArray(new Item[res.size()]);
     }
-    
+
     public static void writeCompileTargets(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, Writer bw) throws IOException {
         Item[] items = getSortedProjectItems(projectDescriptor);
         if (conf.isCompileConfiguration()) {
@@ -968,14 +971,14 @@ public class ConfigurationMakefileWriter {
                     continue;
                 }
                 file = CndPathUtilities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                
+
                 DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                 if(provider != null) {
                     if(provider.isProCItem(items[i])) {
                         file = provider.getProCOutput(items[i], conf);
                     }
                 }
-                
+
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -1000,7 +1003,7 @@ public class ConfigurationMakefileWriter {
                                 command += provider.getCompileOptions(items[i], conf);
                             }
                         }
-                        
+
                         command += fromLinker + " "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                             command = "${RM} \"$@.d\"\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
@@ -1100,14 +1103,14 @@ public class ConfigurationMakefileWriter {
                             continue;
                         }
                         file = CndPathUtilities.escapeOddCharacters(CppUtils.normalizeDriveLetter(compilerSet, items[i].getPath(true)));
-                        
+
                         DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
                         if(provider != null) {
                             if(provider.isProCItem(items[i])) {
                                 file = provider.getProCOutput(items[i], conf);
                             }
                         }
-                        
+
                         command = ""; // NOI18N
                         comment = null;
                         additionalDep = null;
@@ -1117,13 +1120,13 @@ public class ConfigurationMakefileWriter {
                             target = compilerConfiguration.getOutputFile(items[i], conf, false);
                             if (compiler != null && compiler.getDescriptor() != null) {
                                 command += compilerConfiguration.getOptions(compiler) + " "; // NOI18N
-                                
+
                                 if(provider != null) {
                                     if(provider.isProCItem(items[i])) {
                                         command += provider.getCompileOptions(items[i], conf);
                                     }
                                 }
-                                
+
                                 if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                                     command = "${RM} \"$@.d\"\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
                                 }
@@ -1180,7 +1183,7 @@ public class ConfigurationMakefileWriter {
             }
 
             writeCompileTargetsWithoutMain(projectDescriptor, conf, bw);
-            
+
             DatabaseProjectProvider provider = Lookup.getDefault().lookup(DatabaseProjectProvider.class);
             if(provider != null) {
                 provider.writeProCTargets(projectDescriptor, conf, bw);
@@ -1233,7 +1236,7 @@ public class ConfigurationMakefileWriter {
                         file = provider.getProCOutput(items[i], conf);
                     }
                 }
-                
+
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
@@ -1258,13 +1261,13 @@ public class ConfigurationMakefileWriter {
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler);
-                        
+
                         if(provider != null) {
                             if(provider.isProCItem(items[i])) {
                                 command += provider.getCompileOptions(items[i], conf);
                             }
                         }
-                        
+
                         command += fromLinker + " -Dmain=__nomain "; // NOI18N
                         if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
                             command = "${RM} \"$@.d\";\\\n\t    " + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
@@ -1591,8 +1594,9 @@ public class ConfigurationMakefileWriter {
         try {
             Map<String, String> old = getOldVariables(nbprojectFileObject);
             FileObject vars = FileUtil.createData(nbprojectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
+            Charset encoding = FileEncodingQuery.getEncoding(vars);
             os = SmartOutputStream.getSmartOutputStream(vars);
-            bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw = new BufferedWriter(new OutputStreamWriter(os, encoding));
             writeMakefileFixedVariablesBody(bw, okConfs, old);
             writeMakefileVariablesRedirector(bw);
         } finally {
@@ -1607,22 +1611,24 @@ public class ConfigurationMakefileWriter {
         try {
             Map<String, String> old = getOldVariables(nbPrivateProjectFileObject);
             FileObject vars = FileUtil.createData(nbPrivateProjectFileObject, MakeConfiguration.MAKEFILE_VARIABLES);
+            Charset encoding = FileEncodingQuery.getEncoding(vars);
             os = SmartOutputStream.getSmartOutputStream(vars);
-            bw = new BufferedWriter(new OutputStreamWriter(os));
+            bw = new BufferedWriter(new OutputStreamWriter(os, encoding));
             writeMakefilePrivateVariablesBody(bw, okConfs, old);
         } finally {
             closeWriter(bw);
             closeOutputStream(os);
         }
     }
-    
+
     private Map<String, String> getOldVariables(FileObject nbprojectFileObject) throws IOException {
         Map<String, String> old = new HashMap<>();
         FileObject oldVars = nbprojectFileObject.getFileObject(MakeConfiguration.MAKEFILE_VARIABLES);
         BufferedReader reader = null;
         try {
             if (oldVars != null && oldVars.isValid()) {
-                reader = new BufferedReader(new InputStreamReader(oldVars.getInputStream()));
+                Charset encoding = FileEncodingQuery.getEncoding(oldVars);
+                reader = new BufferedReader(new InputStreamReader(oldVars.getInputStream(), encoding));
                 String current = null;
                 StringBuilder currentBuf = null;
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
@@ -1651,7 +1657,7 @@ public class ConfigurationMakefileWriter {
         } finally {
             closeReader(reader);
         }
-        
+
         return old;
     }
 
@@ -1777,9 +1783,10 @@ public class ConfigurationMakefileWriter {
         FileObject nbProjectFO = projectBaseFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
         if (nbProjectFO == null) {
             return;
-        }            
+        }
+        FileObject outputFO = null;
         try {
-            FileObject outputFO = nbProjectFO.getFileObject(scriptName); // UNIX path // NOI18N
+            outputFO = nbProjectFO.getFileObject(scriptName); // UNIX path // NOI18N
             if (outputFO == null) {
                 outputFO = nbProjectFO.createData(scriptName);
             }
@@ -1790,7 +1797,8 @@ public class ConfigurationMakefileWriter {
             e.printStackTrace(System.err);
             return;
         }
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        Charset encoding = FileEncodingQuery.getEncoding(outputFO);
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, encoding));
         try {
             writePackagingScriptBody(bw, conf);
             bw.flush();

@@ -45,8 +45,10 @@
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -57,20 +59,24 @@ public class DwarfMacinfoEntry {
     public int lineNum;
     public String definition;
     public int fileIdx;
-            
+
     public DwarfMacinfoEntry(MACINFO type) {
         this.type = type;
     }
 
     public void dump(PrintStream out) {
-        out.printf("%s\t%d\t[%d]\t%s\n", type, fileIdx, lineNum, definition); // NOI18N
+        out.printf("%s\t%d\t[%d]\t%s%n", type, fileIdx, lineNum, definition); // NOI18N
     }
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString("UTF-8"); //NOI18N
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 }

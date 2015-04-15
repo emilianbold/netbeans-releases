@@ -82,11 +82,11 @@ import org.openide.util.Exceptions;
  * @author Vladimir Kvashin, Vladimir Voskresensky
  */
 public class Diagnostic {
-    
+
     private static int STATISTICS_LEVEL=Integer.getInteger("cnd.modelimpl.stat.level", 0).intValue(); // NOI18N
-    
+
     private static DiagnosticUnresolved diagnosticUnresolved = null;
-    
+
     private Diagnostic() {
     }
 
@@ -114,7 +114,7 @@ public class Diagnostic {
             if (project != null && !project.isArtificial()) {
                 SlowFilesCollection data = projectStats.get(project.getUID());
                 if (data != null) {
-                    System.err.printf("Slowest Files for %s are:\n%s", project.getName(), data.asString());
+                    System.err.printf("Slowest Files for %s are:%n%s", project.getName(), data.asString());
                     System.err.println();
                     System.err.flush();
                 } else {
@@ -128,7 +128,7 @@ public class Diagnostic {
         public void clear() {
             projectStats.clear();
         }
-        
+
         private final static class SlowFilesCollection {
             private final LinkedList<Entry> times = new LinkedList<>();
 
@@ -186,78 +186,78 @@ public class Diagnostic {
     }
 
     public static class StopWatch {
-        
+
         private long time;
         private long lastStart;
         private boolean running;
-        
+
         public StopWatch() {
             this(true);
         }
-        
+
         public StopWatch(boolean start) {
             time = 0;
             if( start ) {
                 start();
             }
         }
-        
+
         public void start() {
             running = true;
             lastStart = System.currentTimeMillis();
         }
-        
+
         public long stop() {
             running = false;
             time += System.currentTimeMillis() - lastStart;
             return time;
         }
-        
+
         public long stopAndReport(String text) {
             long out = stop();
             report(text);
             return out;
         }
-        
+
         public long report(String text) {
             System.err.println(' ' + text + ' ' + time + " ms");
             return time;
         }
-        
+
         public boolean isRunning() {
             return running;
         }
-        
+
         public long getTime() {
             return time;
         }
-        
+
     }
-    
+
     public static int getStatisticsLevel() {
         return STATISTICS_LEVEL;
     }
-    
+
     public static void setStatisticsLevel(int level) {
         Diagnostic.STATISTICS_LEVEL = level;
     }
-    
+
     public static boolean needStatistics() {
         return STATISTICS_LEVEL > 0;
     }
-    
+
     private static final int step = 4;
-    
+
     private static StringBuilder indentBuffer = new StringBuilder();
-    
+
     public static void indent() {
         setupIndentBuffer(indentBuffer.length() + step);
     }
-    
+
     public static void unindent() {
         setupIndentBuffer(indentBuffer.length() - step);
     }
-    
+
     private static void setupIndentBuffer(int len) {
         if( len <= 0 ) {
             indentBuffer.setLength(0);
@@ -268,17 +268,17 @@ public class Diagnostic {
             }
         }
     }
-    
+
     public static void trace(PrintStream out, Object arg) {
-        if( TraceFlags.DEBUG | needStatistics()) {
+        if( TraceFlags.DEBUG || needStatistics()) {
             out.println(indentBuffer.toString() + arg);
         }
     }
-    
+
     public static void trace(Object arg) {
         trace(System.err, arg);
     }
-    
+
     public static void traceStack(String message) {
         if( TraceFlags.DEBUG ) {
             trace(message);
@@ -296,7 +296,7 @@ public class Diagnostic {
             }
         }
     }
-    
+
     public static void printlnStack(String message, int depth) {
         StringBuilder buf = new StringBuilder(message);
         buf.append('\n');
@@ -323,7 +323,7 @@ public class Diagnostic {
         }
         System.out.println(buf.toString());
     }
-    
+
     public static synchronized void printToFile(String fileName, String format, Object... args) {
         try {
             FileOutputStream fos = new FileOutputStream(fileName, true);
@@ -333,7 +333,7 @@ public class Diagnostic {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     public static void traceThreads(String message) {
         if( TraceFlags.DEBUG ) {
             trace(message);
@@ -351,11 +351,11 @@ public class Diagnostic {
             trace("");
         }
     }
-    
+
     /// handle problems
-    
+
     private static FileStatistics curFileHandler = new FileStatistics(null);
-    
+
     public static void initFileStatistics(String file) {
         // TODO: we can store old data in map, if we are interested in them
         // but for now just delete old data
@@ -363,11 +363,11 @@ public class Diagnostic {
         curFileHandler = null;
         curFileHandler = new FileStatistics(file);
     }
-    
+
     public static void dumpFileStatistics(String dumpFile) throws FileNotFoundException {
         dumpFileStatistics(dumpFile, false);
     }
-    
+
     public static void dumpFileStatistics(String dumpFile, boolean append) throws FileNotFoundException {
         PrintStream dump = new PrintStream(new FileOutputStream(dumpFile, append), true);
         try {
@@ -376,47 +376,47 @@ public class Diagnostic {
             dump.close();
         }
     }
-    
+
     public static void onUnresolvedError(CharSequence[] nameTokens, CsmFile file, int offset) {
         if( STATISTICS_LEVEL > 0 ) {
             getDiagnosticUnresolved().onUnresolved(nameTokens, file, offset);
         }
     }
-    
+
     public static void dumpUnresolvedStatistics(String dumpFile, boolean append) throws FileNotFoundException {
         getDiagnosticUnresolved().dumpStatictics(dumpFile, append);
     }
-    
+
     private static synchronized DiagnosticUnresolved getDiagnosticUnresolved() {
         if( diagnosticUnresolved == null ) {
             diagnosticUnresolved = new DiagnosticUnresolved(STATISTICS_LEVEL);
         }
         return diagnosticUnresolved;
     }
-    
+
     public static void onLexerError(RecognitionException e) {
         curFileHandler.handleLexerError(e);
     }
-    
+
     public static void onParserError(RecognitionException e) {
         curFileHandler.handleParserError(e);
     }
-    
+
     /**
      * Used when type of error is not important, but there is error to report about.
      */
     public static void onError(Exception e, String source) {
         curFileHandler.handleOtherError(e, source);
     }
-    
+
     public static void onInclude(String include, String absBaseFilePath, String resolvedIncludePath) {
         curFileHandler.handleInclude(include, absBaseFilePath, resolvedIncludePath, false);
     }
-    
+
     public static void onRecurseInclude(String resolvedIncludePath, String absBaseFilePath) {
         curFileHandler.handleInclude(null, absBaseFilePath, resolvedIncludePath, true);
     }
-    
+
     /**
      * Collection of file statistics
      *
@@ -426,30 +426,30 @@ public class Diagnostic {
         private final Map<ExceptionWrapper, ExceptionWrapper> parserProblems = new HashMap<>();
         private final Map<ExceptionWrapper, ExceptionWrapper> otherProblems = new HashMap<>();
         private final Map<String, IncludeInfo> includes = new HashMap<>();
-        
+
         /** first and last errors could be interesting */
         private ExceptionWrapper lastError = null;
         private ExceptionWrapper firstError = null;
         private String                lastErrorMsg = null;
-        
+
         private String handledFile;
-        
+
         public FileStatistics(String file) {
             this.handledFile = file;
         }
-        
+
         public void handleLexerError(RecognitionException e) {
             handleError(lexerProblems, new LexerExceptionWrapper(e), true);
         }
-        
+
         public void handleParserError(RecognitionException e) {
             handleError(parserProblems, new ParserExceptionWrapper(e), true);
         }
-        
+
         public void handleOtherError(Exception e, String source) {
             handleError(otherProblems, new ExceptionWrapper(e, source), false);
         }
-        
+
         public void handleInclude(String include, String absBaseFilePath,
                 String resolvedIncludePath, boolean recursion) {
             // if resolvedIncludePath is valid => include path resolving was OK
@@ -462,7 +462,7 @@ public class Diagnostic {
             }
             info.add(absBaseFilePath, recursion);
         }
-        
+
         public void dispose() {
             this.handledFile = null;
             this.lastError = null;
@@ -473,7 +473,7 @@ public class Diagnostic {
             this.otherProblems.clear();
             this.includes.clear();
         }
-        
+
 //        private boolean hasStatistics() {
 //            if (Diagnostic.getStatisticsLevel() == 1) {
 //                // for the first level need to inform only about real problems
@@ -486,19 +486,19 @@ public class Diagnostic {
 //            // for other levels need detailed statistics
 //            return true;
 //        }
-        
+
         private boolean hasLexerProblems() {
             return lexerProblems.size() > 0;
         }
-        
+
         private boolean hasParserProblems() {
             return parserProblems.size() > 0;
         }
-        
+
         private boolean hasOtherProblems() {
             return otherProblems.size() > 0;
         }
-        
+
         private boolean hasIncludeProblems() {
             for (Iterator<IncludeInfo> it = includes.values().iterator(); it.hasNext();) {
                 IncludeInfo elem = it.next();
@@ -508,7 +508,7 @@ public class Diagnostic {
             }
             return false;
         }
-        
+
         public void dump(PrintStream dumpFile) {
             if (lexerProblems.isEmpty() && parserProblems.isEmpty() &&
                     includes.isEmpty()) {
@@ -560,7 +560,7 @@ public class Diagnostic {
                 trace(dumpFile, "*** End of statistics for " + handledFile + '\n'); // NOI18N
             }
         }
-        
+
         private void handleError(Map<ExceptionWrapper, ExceptionWrapper> errors,
                 ExceptionWrapper error, boolean updateFirstLastError) {
             assert (error != null);
@@ -579,7 +579,7 @@ public class Diagnostic {
                 }
             }
         }
-        
+
         private void dumpExceptions(PrintStream dumpFile,
                 Map<ExceptionWrapper, ExceptionWrapper> errors) {
             // sort errors
@@ -590,7 +590,7 @@ public class Diagnostic {
                 trace(dumpFile, elem);
             }
         }
-        
+
         private void dumpIncludes(PrintStream dumpFile, Map<String, IncludeInfo> includes) {
             List<IncludeInfo> values = new ArrayList<>(includes.values());
             // sort to have failed first
@@ -606,14 +606,14 @@ public class Diagnostic {
                 trace(dumpFile, elem);
             }
         }
-        
+
         private static class IncludeInfo {
             /**
              * absolute path of included file, if include string was correctly resolved
              * otherwise the inclusion string ("myIncl.h" or <sys/types.h>)
              */
             private String include;
-            
+
             /** success of inclusion */
             private boolean failedInclusion;
             /** amount of includes from all places*/
@@ -622,7 +622,7 @@ public class Diagnostic {
             private final Map<String, Integer> includedFrom = new HashMap<>();
             /** set of files from which was recursion include */
             private Set<String> recursionFrom = new HashSet<>();
-            
+
             /** comparator */
             static final Comparator<IncludeInfo> COMPARATOR = new Comparator<IncludeInfo>() {
                 @Override
@@ -646,12 +646,12 @@ public class Diagnostic {
                     return i1.include.compareTo(i2.include);
                 }
             };
-            
+
             IncludeInfo(String include, boolean failedInclusion) {
                 this.include = include;
                 this.failedInclusion = failedInclusion;
             }
-            
+
             void add(String absBaseFilePath, boolean recursion) {
                 counter++;
                 Integer fileCounter = includedFrom.containsKey(absBaseFilePath) ?
@@ -661,7 +661,7 @@ public class Diagnostic {
                     recursionFrom.add(absBaseFilePath);
                 }
             }
-            
+
             @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
@@ -676,18 +676,18 @@ public class Diagnostic {
                 retValue &= this.include.equals(other.include);
                 return retValue;
             }
-            
+
             @Override
             public int hashCode() {
                 // hash code by code of include file
                 int retValue = include.hashCode() + 17*(isFailedInclude()?0:1);
                 return retValue;
             }
-            
+
             @Override
             public String toString() {
                 StringBuilder retValue = new StringBuilder();
-                
+
                 retValue.append("===> ").append(include); // NOI18N
                 if (this.isFailedInclude()) {
                     retValue.append(" (FAILED)"); // NOI18N
@@ -733,22 +733,22 @@ public class Diagnostic {
                 }
                 return retValue.toString();
             }
-            
+
             public boolean isFailedInclude() {
                 return failedInclusion;
             }
-            
+
             public boolean hasRecursionInclude() {
                 return !recursionFrom.isEmpty();
             }
-            
+
             public boolean hasErrors() {
                 return isFailedInclude() || hasRecursionInclude();
             }
         }
-        
+
         private static class ExceptionWrapper {
-            
+
             private static final int CKHECKED_STACK_DEPTH = 15;
             // the first recognition exception of the same types
             private Exception e;
@@ -756,10 +756,10 @@ public class Diagnostic {
             private final Set<String> errorMessages = new HashSet<>();
             private int counter = 0;
             private final String source;
-            
+
             /** comparator */
             static final Comparator<ExceptionWrapper> COMPARATOR = new Comparator<ExceptionWrapper>() {
-                
+
                 @Override
                 public int compare(ExceptionWrapper w1, ExceptionWrapper w2) {
                     if (w1 == w2) {
@@ -775,18 +775,18 @@ public class Diagnostic {
                     String msg2 = w2.e.toString();
                     return msg1.compareTo(msg2);
                 }
-                
+
             };
-            
+
             ExceptionWrapper(Exception e, String source) {
                 this.e = e;
                 this.source = source;
             }
-            
+
             public Exception getException() {
                 return e;
             }
-            
+
             @Override
             public boolean equals(Object obj) {
                 if (this == obj) {
@@ -803,29 +803,26 @@ public class Diagnostic {
                 // check stack traces with CKHECKED_STACK_DEPTH depth elements, not more
                 StackTraceElement[] stack = e.getStackTrace();
                 StackTraceElement[] checkStack = check.e.getStackTrace();
-                if (stack != null) {
-                    int length = Math.min(CKHECKED_STACK_DEPTH, Math.min(stack.length, checkStack.length));
-                    for (int i = 0; i < length; i++) {
-                        StackTraceElement curElem = stack[i];
-                        StackTraceElement checkedElem = checkStack[i];
-                        // check if we already can stop checking
-                        if (isStopElement(curElem) || check.isStopElement(checkedElem)) {
-                            // all before was the same, one of current stack elements
-                            // is out of interested stack => equal wrappers
-                            return true;
-                        } else if (!equals(curElem, checkedElem)) {
-                            return false;
-                        }
+                int length = Math.min(CKHECKED_STACK_DEPTH, Math.min(stack.length, checkStack.length));
+                for (int i = 0; i < length; i++) {
+                    StackTraceElement curElem = stack[i];
+                    StackTraceElement checkedElem = checkStack[i];
+                    // check if we already can stop checking
+                    if (isStopElement(curElem) || check.isStopElement(checkedElem)) {
+                        // all before was the same, one of current stack elements
+                        // is out of interested stack => equal wrappers
+                        return true;
+                    } else if (!equals(curElem, checkedElem)) {
+                        return false;
                     }
-                    return true;
                 }
-                return false;
+                return true;
             }
-            
+
             protected String getSourceName() {
                 return this.source;
             }
-            
+
             @Override
             public String toString() {
                 StringBuilder retValue = new StringBuilder();
@@ -856,37 +853,37 @@ public class Diagnostic {
                 }
                 return retValue.toString();
             }
-            
+
             @Override
             public int hashCode() {
                 int retValue;
                 StackTraceElement[] stack = e.getStackTrace();
                 // as hash code try to use the first stack trace element
-                retValue = (stack != null && stack.length > 0)? stack[0].hashCode() : e.hashCode();
+                retValue = (stack.length > 0)? stack[0].hashCode() : e.hashCode();
                 return retValue;
             }
-            
+
             protected boolean isStopElement(StackTraceElement curElem) {
                 return false;
             }
-            
+
             private boolean equals(StackTraceElement elem1, StackTraceElement elem2) {
                 assert (elem1 != null);
                 assert (elem2 != null);
                 return elem1.equals(elem2);
             }
-            
+
             public void add(Exception e) {
                 counter++;
                 errorMessages.add(e.toString());
             }
         }
-        
+
         private static class LexerExceptionWrapper extends ExceptionWrapper {
             LexerExceptionWrapper(RecognitionException e) {
                 super(e, "Lexer"); //NOI18N
             }
-            
+
             @Override
             protected boolean isStopElement(StackTraceElement curElem) {
                 // stop if not in lexer's method
@@ -900,12 +897,12 @@ public class Diagnostic {
                 return false;
             }
         }
-        
+
         private static class ParserExceptionWrapper extends ExceptionWrapper {
             ParserExceptionWrapper(RecognitionException e) {
                 super(e, "Parser");//NOI18N
             }
-            
+
             @Override
             protected boolean isStopElement(StackTraceElement curElem) {
                 // stop if not in parser's method

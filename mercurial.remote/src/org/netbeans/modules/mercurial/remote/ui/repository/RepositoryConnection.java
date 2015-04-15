@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.mercurial.remote.ui.repository;
 
-import org.netbeans.modules.mercurial.remote.config.Scrambler;
+import org.netbeans.modules.remotefs.versioning.api.Scrambler;
 import java.net.URISyntaxException;
 
 /**

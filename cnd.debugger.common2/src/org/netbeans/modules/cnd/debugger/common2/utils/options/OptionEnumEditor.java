@@ -60,6 +60,7 @@ class OptionEnumEditor extends PropertyEditorSupport {
 	this.ops = ops;
     }
 
+    @Override
     public void setAsText(String text) {
 
 	// text = text.trim();	Not all text should be blindly trimmed!
@@ -80,11 +81,13 @@ class OptionEnumEditor extends PropertyEditorSupport {
 	setValue(text); // from PropertyEditorSupport
     }
 
+    @Override
     public String getAsText() {
 	return (String) getValue();
         //return ops.getValue();
     }
 
+    @Override
     public String[] getTags() {
 	/* example of what to return.
 	String[] tags = new String[4];

@@ -67,13 +67,13 @@ import org.netbeans.modules.cnd.editor.fortran.reformat.FortranReformatter.Diff;
  * @author Alexander Simon
  */
 public class FortranPreprocessorFormatter {
-    private FortranReformatterImpl context;
+    private final FortranReformatterImpl context;
     private final FortranExtendedTokenSequence ts;
     private final FortranCodeStyle codeStyle;
     private final FortranDiffLinkedList diffs;
     private int prepocessorDepth = 0;
-    private Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
-    private FortranBracesStack braces;
+    private final Stack<PreprocessorStateStack> stateStack = new Stack<PreprocessorStateStack>();
+    private final FortranBracesStack braces;
 
     
     /*package local*/ FortranPreprocessorFormatter(FortranReformatterImpl context){

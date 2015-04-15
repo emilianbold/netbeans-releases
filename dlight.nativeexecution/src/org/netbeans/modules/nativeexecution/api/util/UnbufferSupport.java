@@ -69,7 +69,7 @@ public class UnbufferSupport {
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final boolean UNBUFFER_DISABLED = Boolean.getBoolean("execution.no_unbuffer"); // NOI18N
     private static final HashMap<ExecutionEnvironment, String> cache =
-            new HashMap<ExecutionEnvironment, String>();
+            new HashMap<>();
 
     private UnbufferSupport() {
     }

@@ -89,7 +89,6 @@ import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.support.RepositoryTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -227,7 +226,7 @@ public class TraceModel extends TraceModelBase {
 
         void parsingFinished(CsmFile file, PreprocHandler preprocHandler);
     }
-    
+
     TestHook hook = new TestHook() {
 
         @Override
@@ -235,7 +234,7 @@ public class TraceModel extends TraceModelBase {
             states.put(file, preprocHandler);
         }
     };
-    
+
     public interface ErrorListener {
         void error(String text, int line, int column);
     }
@@ -262,7 +261,7 @@ public class TraceModel extends TraceModelBase {
                 testAPTWalkerGetFilteredStream = true;
                 printTokens = true;
                 testAPT = true;
-                breakAfterAPT = true;                
+                breakAfterAPT = true;
                 break;
             case 'e':
                 System.setErr(System.out);
@@ -442,7 +441,7 @@ public class TraceModel extends TraceModelBase {
             processArguments(args);
             doTest();
         } catch (Error thr) {
-            System.err.printf("\n");
+            System.err.printf("%n");
             DiagnosticExceptoins.register(thr);
             return;
         } finally {
@@ -795,7 +794,7 @@ public class TraceModel extends TraceModelBase {
                         path = pathFile.getPath();
                         qInc.add(path);
                     }
-                }                
+                }
             }
         }
         StartEntry startEntry = new StartEntry(localFS, fo.getPath(), getProject().getUIDKey());
@@ -819,7 +818,7 @@ public class TraceModel extends TraceModelBase {
         return map;
     }
 
-//    
+//
 //    @Override
 //    protected List<String> getSystemIncludes() {
 //	List<String> result = super.getSystemIncludes();
@@ -942,7 +941,7 @@ public class TraceModel extends TraceModelBase {
                     newLine = true;
                     forceNewLine = true;
                 }
-                print(text, newLine); 
+                print(text, newLine);
             }
             lastLine = t.getLine();
         }
@@ -961,7 +960,7 @@ public class TraceModel extends TraceModelBase {
     private static boolean isIncludeToken(int kind) {
         return kind == APTTokenTypes.INCLUDE || kind == APTTokenTypes.INCLUDE_NEXT;
     }
-    
+
     private long testAPTParser(NativeFileItem item, boolean cleanAPT) throws IOException, RecognitionException, TokenStreamException {
         FileBuffer buffer = ModelSupport.createFileBuffer(item.getFileObject());
         print("Testing APT Parser"); // NOI18N
@@ -970,8 +969,7 @@ public class TraceModel extends TraceModelBase {
             invalidateAPT(buffer);
             time = System.currentTimeMillis();
         }
-        FileImpl fileImpl = null;
-        fileImpl = (FileImpl) getProject().testAPTParseFile(item);
+        FileImpl fileImpl = (FileImpl) getProject().testAPTParseFile(item);
         getProject().waitParse();
         time = System.currentTimeMillis() - time;
 
@@ -1254,7 +1252,7 @@ public class TraceModel extends TraceModelBase {
                     }
                 } finally {
                     CsmCacheManager.leave();
-                }                
+                }
             } else {
                 print("FileImpl is null - not possible to dump File Model"); // NOI18N
             }
@@ -1314,7 +1312,7 @@ public class TraceModel extends TraceModelBase {
     public static void getFileErrors(CsmFile file, ErrorListener errorListener) {
         CsmCorePackageAccessor.get().testFileImplErrors((FileImpl)file, errorListener);
     }
-    
+
 //    private boolean isDummyUnresolved(CsmDeclaration decl) {
 //	return decl == null || decl instanceof Unresolved.UnresolvedClass;
 //    }
@@ -1468,23 +1466,22 @@ public class TraceModel extends TraceModelBase {
         Object platformProject = getProject().getPlatformProject();
         if (platformProject instanceof NativeProject) {
             NativeProject nativeProject = (NativeProject) platformProject;
-            if (nativeProject != null) {
-                result.addAll(nativeProject.getAllFiles());
+            result.addAll(nativeProject.getAllFiles());
 // these are all files specified in command line; it does not make sense to filter them
-//                for(NativeFileItem item : nativeProject.getAllFiles()){
-//                    if (!item.isExcluded()) {
-//                        switch(item.getLanguage()){
-//                            case C:
-//                            case CPP:
-//                            case C_HEADER:
-//                                result.add(item);
-//                                break;
-//                            default:
-//                                break;
-//                        }
+//            for(NativeFileItem item : nativeProject.getAllFiles()){
+//                if (!item.isExcluded()) {
+//                    switch(item.getLanguage()){
+//                        case C:
+//                        case CPP:
+//                        case C_HEADER:
+//                            result.add(item);
+//                            break;
+//                        default:
+//                            break;
 //                    }
 //                }
-            }
+//            }
+
         }
         return result;
     }

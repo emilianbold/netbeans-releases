@@ -45,7 +45,6 @@ package org.netbeans.modules.remote.util;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import javax.xml.ws.ServiceMode;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RemoteFileObject;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;

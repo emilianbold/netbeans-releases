@@ -51,6 +51,7 @@ public class PidEditor extends PropertyEditorSupport {
     public PidEditor() {
     } 
 
+    @Override
     public String getAsText() {
 	Object o = getValue();
 	Long pidObj = (Long) o;

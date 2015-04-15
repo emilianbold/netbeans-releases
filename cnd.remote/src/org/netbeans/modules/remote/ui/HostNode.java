@@ -185,7 +185,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> list = new ArrayList<Action>();
+        List<Action> list = new ArrayList<>();
         for (Action action : Utilities.actionsForPath("Remote/Host/Actions")) { // NOI18N
             if (!(action instanceof SingleHostAction) || ((SingleHostAction) action).isVisible(this)) {
                 list.add(action);
@@ -215,7 +215,7 @@ public final class HostNode extends AbstractNode implements ConnectionListener, 
 
         public HostSubnodeChildren(ExecutionEnvironment execEnv, Collection<? extends HostNodesProvider> providers) {
             this.execEnv = execEnv;
-            this.providers = new ArrayList<HostNodesProvider>(providers.size());
+            this.providers = new ArrayList<>(providers.size());
             for (HostNodesProvider provider : providers) {
                 if (provider.isApplicable(execEnv)) {
                     this.providers.add(provider);

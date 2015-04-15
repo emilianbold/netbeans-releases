@@ -58,9 +58,7 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.explorer.view.ListView;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -76,11 +74,11 @@ import org.netbeans.modules.cnd.asm.model.util.IntervalSet;
 public class NavigatorUI extends javax.swing.JPanel implements 
                                             ExplorerManager.Provider {
     
-    private static Logger LOGGER = 
+    private static final Logger LOGGER = 
             Logger.getLogger(NavigatorUI.class.getName());
     
-    private ListView navigatorPane;
-    private ExplorerManager explorerManager;
+    private final ListView navigatorPane;
+    private final ExplorerManager explorerManager;
     /** Creates new form NavigatorUI */
     public NavigatorUI() {
         initComponents();

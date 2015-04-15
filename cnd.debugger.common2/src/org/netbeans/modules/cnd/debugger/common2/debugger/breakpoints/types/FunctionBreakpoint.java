@@ -95,10 +95,12 @@ public final class FunctionBreakpoint extends NativeBreakpoint {
 	return subEvent.get();
     }
 
+    @Override
     protected final String getSummary() {
 	return getFunction();
     } 
 
+    @Override
     protected String getDisplayNameHelp() {
 	String summary = null;
 	FunctionBreakpoint fb = this;
@@ -115,6 +117,7 @@ public final class FunctionBreakpoint extends NativeBreakpoint {
 	return summary;
     }
 
+    @Override
     protected void processOriginalEventspec(String oeventspec) {
 	assert !IpeUtils.isEmpty(oeventspec);
 	this.function.set(oeventspec);

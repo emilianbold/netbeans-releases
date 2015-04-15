@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author Vladimir Kvashin
  */
 public abstract class StatementBase extends OffsetableBase implements CsmStatement {
-    
+
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
 
@@ -74,14 +74,14 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
     protected StatementBase(CsmFile file, int start, int end, CsmScope scope) {
         this(null, file, start, end, scope);
     }
-    
+
     private StatementBase(AST ast, CsmFile file, int start, int end, CsmScope scope) {
         super(file, start, end);
         if (scope != null) {
             setScope(scope);
         }
     }
-    
+
     @Override
     public synchronized CsmScope getScope() {
         CsmScope scope = this.scopeRef;
@@ -92,17 +92,17 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         }
         return scope;
     }
-    
+
     protected final void setScope(CsmScope scope) {
 	// within bodies scope is a statement - it is not Identifiable
         if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         } else {
             this.scopeRef = scope;
         }
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
@@ -114,20 +114,20 @@ public abstract class StatementBase extends OffsetableBase implements CsmStateme
         super.write(output);
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
     }
-    
+
     protected StatementBase(RepositoryDataInput input) throws IOException {
         super(input);
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
-    }   
+    }
 
     public interface StatementBuilderContainer {
         public void addStatementBuilder(StatementBuilder builder);
     }
-    
+
     public static abstract class StatementBuilder extends ScopedDeclarationBuilder {
         abstract StatementBase create();
-    }    
-    
+    }
+
     @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString(); // NOI18N

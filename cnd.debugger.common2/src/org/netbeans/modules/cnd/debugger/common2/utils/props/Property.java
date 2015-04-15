@@ -140,6 +140,7 @@ public abstract class Property {
 
 
     public abstract Object getAsObject();
+    @Override
     public abstract String toString();
 
     public void setFromObject(Object o) {

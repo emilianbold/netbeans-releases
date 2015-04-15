@@ -107,7 +107,7 @@ public class AsmEditorKit extends NbEditorKit {
             }
         }
     }
-    
+
     private static boolean initLanguage(Document doc) {
         AsmModelAccessor acc = (AsmModelAccessor) doc.getProperty(AsmModelAccessor.class);
         if (acc == null) {

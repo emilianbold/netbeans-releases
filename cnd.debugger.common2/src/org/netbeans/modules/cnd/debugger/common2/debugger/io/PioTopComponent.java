@@ -197,10 +197,12 @@ public final class PioTopComponent extends TopComponent implements IOTopComponen
     //
     private TerminalContainer tc;
 
+    @Override
     public IOContainer ioContainer() {
         return tc.ioContainer();
     }
 
+    @Override
     public TopComponent topComponent() {
         return this;
     }

@@ -54,6 +54,8 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.optional.NonProxyHostsHelper;
 import org.netbeans.modules.weblogic.common.api.WebLogicConfiguration;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -92,6 +94,15 @@ public final class WLConnectionSupport {
                 if (!nonProxyHosts.equals(originalNonProxyHosts)) {
                     nonProxyHostsChanged = true;
                     System.setProperty(NonProxyHostsHelper.HTTP_NON_PROXY_HOSTS, nonProxyHosts);
+                }
+            }
+
+            if (deploymentManager.getCommonConfiguration().isSecured()) {
+                WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+                if (handler != null) {
+                    for (Map.Entry<String, String> e : handler.getTrustProperties(deploymentManager.getCommonConfiguration()).entrySet()) {
+                        System.setProperty(e.getKey(), e.getValue());
+                    }
                 }
             }
 
@@ -151,7 +162,8 @@ public final class WLConnectionSupport {
 
             @Override
             public T call() throws Exception {
-                JMXServiceURL url = new JMXServiceURL("t3", resolvedHost, // NOI18N
+                boolean secured = deploymentManager.getCommonConfiguration().isSecured();
+                JMXServiceURL url = new JMXServiceURL(secured ? "t3s" : "t3", resolvedHost, // NOI18N
                         Integer.parseInt(resolvedPort), action.getPath());
                 
                 String username = deploymentManager.getInstanceProperties().getProperty(

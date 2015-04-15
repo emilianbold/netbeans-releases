@@ -90,12 +90,12 @@ public final class DiscoveryProjectGenerator {
 
     private DiscoveryProjectGenerator() {
     }
-    
+
     public static void generateProjects(DiscoveryDescriptor descriptor) throws IOException {
         DiscoveryProjectGeneratorImpl impl = new DiscoveryProjectGeneratorImpl(descriptor);
         impl.process();
     }
-    
+
     public static boolean fixExcludedHeaderFiles(Project makeProject, Logger logger) {
         if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
             if (logger != null) {
@@ -212,7 +212,6 @@ public final class DiscoveryProjectGenerator {
                         return false;
                     }
                     ProjectBridge bridge = new ProjectBridge(makeProject);
-                    bridge.getBaseFolderFileSystem();
                     if (bridge.isValid()) {
                         if (needAdd.size() > 0) {
                             Map<String, Folder> prefferedFolders = bridge.prefferedFolders();
@@ -267,7 +266,7 @@ public final class DiscoveryProjectGenerator {
                                             if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                                 needCheck.add(path);
                                             }
-                                            isChanged |= ProjectBridge.setExclude((Item) item, true);
+                                            isChanged |= ProjectBridge.setExclude(item, true);
                                             isChanged |= ProjectBridge.excludeItemFromOtherConfigurations(item);
                                         }
                                     }
@@ -306,7 +305,7 @@ public final class DiscoveryProjectGenerator {
             }
         }
     }
-    
+
     public static HashMap<String, Item> initNormalizedNames(Project makeProject) {
         HashMap<String, Item> normalizedItems = new HashMap<>();
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);

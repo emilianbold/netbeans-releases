@@ -156,7 +156,7 @@ public class IntervalSet<E extends AsmOffsetable> implements Iterable<E> {
     
      private static class DummyOffsetable implements AsmOffsetable {
 
-        private int pos;
+        private final int pos;
 
         public DummyOffsetable(int pos) {
             super();

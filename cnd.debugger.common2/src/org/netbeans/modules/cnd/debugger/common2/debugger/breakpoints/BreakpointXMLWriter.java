@@ -69,6 +69,7 @@ class BreakpointXMLWriter extends XMLDocWriter implements UserdirFile.Writer {
     }
 
     // interface UserdirFile.Writer
+    @Override
     public void writeTo(OutputStream os)
 	throws IOException, FileStateInvalidException {
 
@@ -77,6 +78,7 @@ class BreakpointXMLWriter extends XMLDocWriter implements UserdirFile.Writer {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	encoder.encode(xes);
     }

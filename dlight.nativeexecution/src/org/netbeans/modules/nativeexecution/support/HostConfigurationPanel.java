@@ -71,7 +71,7 @@ public final class HostConfigurationPanel extends ValidateablePanel {
     private final List<ValidateablePanel> panels;
 
     public HostConfigurationPanel(final ExecutionEnvironment env) {
-        panels = new ArrayList<ValidateablePanel>();
+        panels = new ArrayList<>();
 
         GridBagConstraints gridBagConstraints;
         GridBagLayout layout = new GridBagLayout();

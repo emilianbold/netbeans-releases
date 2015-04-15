@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 public final class SelectTrackedBranch {
     private final SelectTrackedBranchPanel panel;
     private final String branchName;
-    protected final SelectBranchPanel selectBranchPanel;
+    private final SelectBranchPanel selectBranchPanel;
     private final RevisionDialogController revisionPicker;
     private JButton okButton;
     private DialogDescriptor dd;

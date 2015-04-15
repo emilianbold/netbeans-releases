@@ -101,7 +101,7 @@ public class ExportDiffPanel extends ChangesetPickerPanel {
         if (fileToDiff != null) {
             revStr = new StringBuilder(fileToDiff.getName()).append(" - ").append(revStr).toString(); //NOI18N
         }
-        return revStr.toString();
+        return revStr;
     }
 
     @Override

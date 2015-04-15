@@ -159,7 +159,7 @@ public final class SearchBrowseHostScope {
         }
     }
 
-    private class LastSearchBrowseHostScope extends SearchScopeDefinition {
+    private static class LastSearchBrowseHostScope extends SearchScopeDefinition {
 
         @Override
         public String getTypeId() {

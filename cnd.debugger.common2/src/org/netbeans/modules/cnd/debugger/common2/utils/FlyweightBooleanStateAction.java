@@ -124,6 +124,7 @@ abstract public class FlyweightBooleanStateAction extends FlyweightAction
 
     // interface Action
     // like BooleanStateAction
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent ev) {
 	setBooleanState(!getBooleanState());
     }

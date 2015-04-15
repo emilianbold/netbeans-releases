@@ -33,4 +33,4 @@ ${PR}
 </Project>
 EOF
 
-${fb_home}/bin/findbugs -maxHeap 1536 -textui -project ${prj} -xml -output ${out}
+${fb_home}/bin/findbugs -maxHeap 1536 -textui -project ${prj} -xml -effort:max -low -output ${out}

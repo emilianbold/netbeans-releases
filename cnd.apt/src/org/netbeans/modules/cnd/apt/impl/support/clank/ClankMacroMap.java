@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -74,11 +75,11 @@ public class ClankMacroMap implements PPMacroMap {
         startCRC = calculateCRC(sysMacros);
         this.macros = Collections.unmodifiableList(sysMacros);
     }
-    
+
     //@Override
     public long getCompilationUnitCRC() {
         return startCRC;
-    }    
+    }
 
     protected Collection<String> getMacros() {
         return this.macros;
@@ -87,7 +88,7 @@ public class ClankMacroMap implements PPMacroMap {
     protected static long calculateCRC(List<String> sysMacros) {
 	Checksum checksum = new Adler32();
 	for( String s : sysMacros ) {
-             checksum.update(s.getBytes(), 0, s.length());
+             checksum.update(s.getBytes(SupportAPIAccessor.INTERNAL_CHARSET), 0, s.length());
 	}
 	return checksum.getValue();
     }

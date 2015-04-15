@@ -210,7 +210,7 @@ public final class PasswordManager {
      * @param envs
      */
     public void setServerList(List<ExecutionEnvironment> envs) {
-        Set<String> keys = new HashSet<String>();
+        Set<String> keys = new HashSet<>();
         for (ExecutionEnvironment env : envs) {
             String key = ExecutionEnvironmentFactory.toUniqueID(env);
             keys.add(KEY_PREFIX + key);

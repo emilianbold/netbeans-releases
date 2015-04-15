@@ -64,7 +64,6 @@ import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
-import org.netbeans.spi.project.ActionProvider;
 /**
  *
  * @author Vladimir Kvashin
@@ -127,7 +126,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         } finally {
             is.close();
         }
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         for (Object key : props.keySet()) {
             assertTrue(key instanceof String);
             String path = (String) key;

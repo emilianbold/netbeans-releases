@@ -72,13 +72,13 @@ public class ParseStatistics {
     }
 
     private Map<CsmUID<CsmProject>, Map<CsmUID<CsmFile>, Entry> > projectMaps = null;
-    
+
     private boolean enabled = false;
 
     public static ParseStatistics getInstance() {
         return instance;
     }
-    
+
     private ParseStatistics() {
         if (TraceFlags.PARSE_STATISTICS) {
             setEnabled(true);
@@ -115,7 +115,7 @@ public class ParseStatistics {
             return 0;
         }
     }
-    
+
     private Entry getEntry(FileImpl file) {
         Map<CsmUID<CsmFile>, Entry> map = getProjectMap(file.getProjectUID());
         Entry entry = map.get(file.getUID());
@@ -125,7 +125,7 @@ public class ParseStatistics {
         }
         return entry;
     }
-    
+
     private Map<CsmUID<CsmFile>, Entry> getProjectMap(CsmUID<CsmProject> projectUID) {
         Map<CsmUID<CsmFile>, Entry> map = projectMaps.get(projectUID);
         if (map == null) {
@@ -142,7 +142,7 @@ public class ParseStatistics {
             }
         }
     }
-    
+
     public void clear(CsmProject project) {
         if (enabled) {
             synchronized(this) {
@@ -150,11 +150,11 @@ public class ParseStatistics {
             }
         }
     }
-    
+
     public void printResults(CsmProject project) {
         printResults(project, new PrintWriter(System.out));
     }
-    
+
     public void printResults(CsmProject project, PrintWriter out) {
         if (enabled) {
             synchronized(this) {
@@ -165,13 +165,13 @@ public class ParseStatistics {
         }
         out.flush();
     }
-    
+
     public void printResults() {
         printResults(new PrintWriter(System.out));
     }
 
     public void printResults(PrintWriter out) {
-        out.printf("\nPARSING STATISTICS\n"); //NOI18N
+        out.printf("%nPARSING STATISTICS%n"); //NOI18N
         if (enabled) {
             synchronized(this) {
                 for (CsmUID<CsmProject> projectUID : projectMaps.keySet()) {
@@ -189,7 +189,7 @@ public class ParseStatistics {
         if (entries.isEmpty()) {
             return;
         }
-        out.printf("\nPARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
+        out.printf("%nPARSING STATISTICS FOR %s%n", UIDUtilities.getProjectName(projectUID)); //NOI18N
         Collections.sort(entries, new Comparator<Map.Entry<CsmUID<CsmFile>, Entry>>() {
             @Override
             public int compare(Map.Entry<CsmUID<CsmFile>, Entry> e1, Map.Entry<CsmUID<CsmFile>, Entry> e2) {
@@ -199,11 +199,11 @@ public class ParseStatistics {
         int sum = 0;
         for (Map.Entry<CsmUID<CsmFile>, Entry> entry: entries) {
             int cnt = entry.getValue().cnt;
-            out.printf("\t%6d %s\n", cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
+            out.printf("\t%6d %s%n", cnt, UIDUtilities.getFileName(entry.getKey())); //NOI18N
             sum += cnt;
         }
         float avg = entries.isEmpty() ? 0f : ((float)sum / (float)entries.size());
         out.printf("\t%6.1f avg", avg); //NOI18N
-        out.printf("\nEND OF PARSING STATISTICS FOR %s\n", UIDUtilities.getProjectName(projectUID)); //NOI18N
+        out.printf("%nEND OF PARSING STATISTICS FOR %s%n", UIDUtilities.getProjectName(projectUID)); //NOI18N
     }
 }

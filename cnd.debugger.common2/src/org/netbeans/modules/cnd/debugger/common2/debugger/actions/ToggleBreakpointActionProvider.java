@@ -105,6 +105,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
     */
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
@@ -125,6 +126,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
     }
 
     /* interface ActionsProvider */
+    @Override
     public void doAction(Object action) {
         FileObject currentFileObject = EditorContextBridge.getCurrentFileObject();
         String fileName = currentFileObject.getPath();
@@ -194,6 +196,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
         }
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         int lnum = EditorContextBridge.getCurrentLineNumber();
         String mimeType = EditorContextBridge.getCurrentMIMEType();
@@ -207,6 +210,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	// always enabled
     }
@@ -249,6 +253,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 		// or disabled.
 
 		moduleInfo.addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
 		    public void propertyChange(PropertyChangeEvent evt) {
 			if (evt.getPropertyName().equals(ModuleInfo.PROP_ENABLED )) {
 			    if ( ((boolean) (Boolean) evt.getNewValue()) == true ) {
@@ -278,6 +283,7 @@ public class ToggleBreakpointActionProvider extends NativeActionsProvider implem
 
 	result = Lookup.getDefault().lookupResult(ModuleInfo.class);
 	result.addLookupListener(new LookupListener() {
+            @Override
 	    public void resultChanged(LookupEvent event) {
 		checkForJpdaDebugger();
 	    }

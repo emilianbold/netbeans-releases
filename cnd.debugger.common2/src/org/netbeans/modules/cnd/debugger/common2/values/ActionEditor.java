@@ -49,7 +49,9 @@ package org.netbeans.modules.cnd.debugger.common2.values;
  * PropertyEditor for Action.
  */
 public class ActionEditor extends EnumEditor {
+     @Override
      public String[] getTags() { return Action.getTags(); }
+     @Override
      protected Enum byTag(String s) { return Action.byTag(s); }
 }
 

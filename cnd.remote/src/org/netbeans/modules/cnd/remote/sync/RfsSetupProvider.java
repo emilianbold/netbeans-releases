@@ -75,7 +75,7 @@ import org.openide.util.NbBundle;
 public class RfsSetupProvider implements SetupProvider {
 
     public static final String POSTFIX_64 = "_64"; // NOI18N
-    private Map<String, File> binarySetupMap;
+    private final Map<String, File> binarySetupMap;
     private static final String CONTROLLER = "rfs_controller"; // NOI18N
     private static final String PRELOAD = "rfs_preload.so"; // NOI18N
 
@@ -89,7 +89,7 @@ public class RfsSetupProvider implements SetupProvider {
             , "SunOS-sparc" // NOI18N
             , "SunOS-sparc_64" // NOI18N
         };
-        binarySetupMap = new HashMap<String, File>();
+        binarySetupMap = new HashMap<>();
         for (String dir : dirs) {
             binarySetupMap.put(dir + "/" + PRELOAD, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + PRELOAD, "org.netbeans.modules.cnd.remote", false)); // NOI18N
             binarySetupMap.put(dir + "/" + CONTROLLER, InstalledFileLocator.getDefault().locate("bin/" + dir + "/" + CONTROLLER, "org.netbeans.modules.cnd.remote", false)); // NOI18N
@@ -98,7 +98,7 @@ public class RfsSetupProvider implements SetupProvider {
 
     @Override
     public Map<String, File> getBinaryFiles(ExecutionEnvironment env) {
-        Map<String, File> result = new LinkedHashMap<String, File>();
+        Map<String, File> result = new LinkedHashMap<>();
         Boolean applicable = isApplicable(env);
         if (applicable == null) {
             RemoteUtil.LOGGER.log(Level.WARNING, "Can not determine whether RFS is applicable for {0}", env.getDisplayName());
@@ -135,11 +135,11 @@ public class RfsSetupProvider implements SetupProvider {
         }
         return result;
     }
-    
+
     @Override
     public void failed(Collection<File> files, StringBuilder describeProblem) {
         describeProblem.append(NbBundle.getMessage(RfsSetupProvider.class, "ErrorUploadingBinaries"));
-    }        
+    }
 
     public static String getPreloadName(ExecutionEnvironment execEnv) {
         return PRELOAD;
@@ -156,6 +156,7 @@ public class RfsSetupProvider implements SetupProvider {
         return result;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // three state
     public static Boolean isApplicable(ExecutionEnvironment env) {
         if (env == null) {
             throw new NullPointerException();
@@ -194,7 +195,7 @@ public class RfsSetupProvider implements SetupProvider {
 
         switch (osFamily) {
             case LINUX:
-                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ? 
+                return (cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC) ?
                         Boolean.TRUE : Boolean.FALSE;
             case SUNOS:
                 //BZ #189231 Smart secure copy does not work on (remote) Solaris 8
@@ -217,7 +218,7 @@ public class RfsSetupProvider implements SetupProvider {
         if (versionString.startsWith(prefixToStrip)) {
             versionString = versionString.substring(prefixToStrip.length());
         }
-        
+
         Pattern p = Pattern.compile("[a-zA-Z]+[ ]([\\d]+).*"); // NOI18N
         Matcher m = p.matcher(versionString);
         String result = "-1"; // NOI18N

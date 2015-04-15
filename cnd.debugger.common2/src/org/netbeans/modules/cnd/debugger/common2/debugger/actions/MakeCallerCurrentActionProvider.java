@@ -64,16 +64,19 @@ public class MakeCallerCurrentActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton(ActionsManager.ACTION_MAKE_CALLER_CURRENT);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	getDebugger().makeCallerCurrent();
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = false;
 	if (state != null) {

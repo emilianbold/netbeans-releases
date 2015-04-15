@@ -77,6 +77,7 @@ public class WadlSaasNode extends SaasNode {
     private static final java.awt.Image SERVICE_BADGE =
             ImageUtilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
     
+    @Override
     public Image getGenericIcon(int type) {
         return SERVICE_BADGE;
     }

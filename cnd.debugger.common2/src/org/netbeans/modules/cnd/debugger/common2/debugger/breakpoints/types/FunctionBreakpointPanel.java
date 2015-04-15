@@ -54,6 +54,7 @@ class FunctionBreakpointPanel extends BreakpointPanel {
 
     private FunctionBreakpoint fb;
     
+    @Override
     public void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
 	fb = (FunctionBreakpoint) breakpoint;
@@ -113,6 +114,7 @@ class FunctionBreakpointPanel extends BreakpointPanel {
 	// functionText.requestFocusInWindow();
     }
     
+    @Override
     public void setDescriptionEnabled(boolean enabled) {
 	// functionLabel.setEnabled(false);
 	functionText.setEnabled(false);
@@ -212,6 +214,7 @@ class FunctionBreakpointPanel extends BreakpointPanel {
     private javax.swing.JRadioButton returnToggle;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     protected void assignProperties() {
 	FunctionSubEvent fbe = null;
 	if (functionToggle.isSelected()) {
@@ -232,6 +235,7 @@ class FunctionBreakpointPanel extends BreakpointPanel {
 	    fb.setSubEvent(fbe);
     }
     
+    @Override
     protected boolean propertiesAreValid() {
 	// Actually return whether minimal amount of data has been specified.
 

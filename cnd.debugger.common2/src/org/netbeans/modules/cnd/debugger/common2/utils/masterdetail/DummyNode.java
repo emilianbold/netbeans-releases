@@ -150,10 +150,12 @@ class DummyNode extends FilterNode {
 	//
 	// Methods of Node.Property
 	//
+        @Override
 	public boolean canRead() {
 	    return original.canRead();
 	}
 
+        @Override
 	public boolean canWrite() {
 	    return original.canWrite();
 	}
@@ -175,6 +177,7 @@ class DummyNode extends FilterNode {
 	    return original.getPropertyEditor();
 	}
 
+        @Override
 	public T getValue() throws IllegalAccessException,
 					InvocationTargetException {
 	    return original.getValue();
@@ -202,6 +205,7 @@ class DummyNode extends FilterNode {
 	    listener.propertyChanged();
 	}
 
+        @Override
 	public void setValue(T val) throws IllegalAccessException,
 						InvocationTargetException {
 	    /* DEBUG
@@ -360,6 +364,7 @@ class DummyNode extends FilterNode {
 	private Node.Property<?>[] cachedOriginalProperties;
 	private Node.Property<?>[] newProperties;
 
+        @Override
 	public Node.Property<?>[] getProperties() {
 	    Node.Property<?>[] originalProperties =
 		original.getProperties();

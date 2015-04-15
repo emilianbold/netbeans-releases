@@ -2117,7 +2117,7 @@ public final class MakeActionProvider implements ActionProvider {
         private final String id;
         private Commands(String id, Collection<Command> commands) {
             this.id = id;
-            this.commands = new ArrayList<Command>(commands);
+            this.commands = new ArrayList<>(commands);
         }
         
         private String[] getCommands(Project project, MakeConfiguration conf, Lookup context) {

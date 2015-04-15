@@ -67,7 +67,7 @@ public class ClankFileMacroMap extends ClankMacroMap {
         super(userMacros);
         this.sysMacros = sysMacroMap;
     }
-    
+
     @Override
     public long getCompilationUnitCRC() {
         if (sysMacros == null) {

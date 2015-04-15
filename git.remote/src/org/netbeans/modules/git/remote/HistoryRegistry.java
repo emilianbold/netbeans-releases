@@ -102,9 +102,7 @@ public class HistoryRegistry {
             }
             return history;
         } finally {
-            if (client != null) {
-                client.release();
-            }
+            client.release();
         }
     }
     

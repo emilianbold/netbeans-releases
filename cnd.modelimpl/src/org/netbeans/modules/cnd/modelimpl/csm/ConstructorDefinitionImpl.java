@@ -97,8 +97,6 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl<CsmF
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
-
         ConstructorDefinitionImpl res = new ConstructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
         temporaryRepositoryRegistration(ast, global, res);

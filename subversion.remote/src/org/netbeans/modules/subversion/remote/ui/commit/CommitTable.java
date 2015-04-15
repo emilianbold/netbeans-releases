@@ -551,7 +551,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         }
     }
     
-    private class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
+    private static class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
         private final DefaultTableCellRenderer renderer;
 
         public CheckboxCellRenderer() {
@@ -570,7 +570,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
         }
     }
 
-    private class CheckboxCellEditor extends DefaultCellEditor {
+    private static class CheckboxCellEditor extends DefaultCellEditor {
 
         public CheckboxCellEditor() {
             super(new JCheckBox());

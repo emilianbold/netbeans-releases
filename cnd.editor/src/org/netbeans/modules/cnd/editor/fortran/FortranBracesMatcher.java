@@ -90,6 +90,7 @@ public class FortranBracesMatcher implements BracesMatcher, BracesMatcherFactory
         this.context = context;
     }
 
+    @Override
     public int[] findOrigin() throws BadLocationException, InterruptedException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -151,6 +152,7 @@ public class FortranBracesMatcher implements BracesMatcher, BracesMatcherFactory
         return seq;
     }
     
+    @Override
     public int[] findMatches() throws InterruptedException, BadLocationException {
         ((AbstractDocument) context.getDocument()).readLock();
         try {
@@ -221,6 +223,7 @@ public class FortranBracesMatcher implements BracesMatcher, BracesMatcherFactory
         return null;
     }
 
+    @Override
     public BracesMatcher createMatcher(MatcherContext context) {
         return new FortranBracesMatcher(context);
     }

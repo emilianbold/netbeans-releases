@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
 
     private final static int thisversion = 1;
-    private OptionSetXMLCodec optionsXMLCodec;
+    private final OptionSetXMLCodec optionsXMLCodec;
 
     static final String TAG_ENGINE = "gdb_engine"; // NOI18N
 
@@ -106,19 +106,20 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
     } 
 
     // PathMap stuff
-    private List<Pathmap.Item> pathmaps = new ArrayList<Pathmap.Item>();
+    private final List<Pathmap.Item> pathmaps = new ArrayList<Pathmap.Item>();
 
     // Exception stuff
-    private Vector<String> interceptlist = new Vector<String>();
-    private Vector<String> interceptexlist = new Vector<String>();
+    private final Vector<String> interceptlist = new Vector<String>();
+    private final Vector<String> interceptexlist = new Vector<String>();
     private boolean unhandled;
     private boolean unexpected;
     private boolean all;
 
     // Signal stuff
-    private Vector<Signals.InitialSignalInfo> signals = new Vector<Signals.InitialSignalInfo>();
+    private final Vector<Signals.InitialSignalInfo> signals = new Vector<Signals.InitialSignalInfo>();
     
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
     /* Debug
 	System.out.println("  startElement: " + element);
@@ -217,6 +218,7 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.XML.debug) {
 	    System.out.println("  endElement: " + element); // NOI18N
@@ -253,6 +255,7 @@ public class GdbProfileXMLCodec extends DbgProfileXMLCodec {
     }
 
     // intrface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 
 	xes.elementOpen(tag(), thisversion);

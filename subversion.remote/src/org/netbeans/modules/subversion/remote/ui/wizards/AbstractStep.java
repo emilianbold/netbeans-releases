@@ -200,7 +200,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
         }
     }
 
-    public class WizardMessage {
+    public static class WizardMessage {
         private final boolean info;
         private final String msg;
         public WizardMessage(String msg, boolean isInfo) {

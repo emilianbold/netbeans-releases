@@ -64,11 +64,13 @@ public class OptionSetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return optionSet.tag();
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String what = optionSet.description();
 	int maxVersion = 1;
@@ -76,10 +78,12 @@ public class OptionSetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (TAG_OPTION.equals(element)) {
 	    String name = atts.getValue(ATTR_OPTION_NAME);
@@ -94,10 +98,12 @@ public class OptionSetXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
     }
 
     // interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	xes.elementOpen(tag());
 	    for (int ox = 0; ox < optionSet.values().size(); ox++) {

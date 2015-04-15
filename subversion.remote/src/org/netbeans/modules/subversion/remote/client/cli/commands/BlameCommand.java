@@ -175,7 +175,7 @@ public class BlameCommand extends SvnCommand {
         
     }
     
-    private class XmlEntriesHandler extends DefaultHandler {
+    private static class XmlEntriesHandler extends DefaultHandler {
 
         /*         
         <!-- For "svn blame" -->

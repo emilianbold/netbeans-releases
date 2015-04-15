@@ -142,7 +142,7 @@ public class ListCommand extends SvnCommand {
         
     }
     
-    private class XmlEntriesHandler extends DefaultHandler {
+    private static class XmlEntriesHandler extends DefaultHandler {
         
         private static final String LIST_ELEMENT_NAME   = "list";   // NOI18N
         private static final String ENTRY_ELEMENT_NAME  = "entry";  // NOI18N
@@ -294,7 +294,7 @@ public class ListCommand extends SvnCommand {
         }
     }       
     
-    private class DirEntry implements ISVNDirEntry {
+    private static class DirEntry implements ISVNDirEntry {
 
         private final String path;
         private final Date lastChangedDate;

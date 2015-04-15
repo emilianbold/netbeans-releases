@@ -65,14 +65,17 @@ public interface DisFragModel extends Iterable<DisFragModel.Line> {
             this.instruction = instruction;
         }
 
+        @Override
         public String getAddress() {
             return address;
         }
 
+        @Override
         public int getIdx() {
             return idx;
         }
 
+        @Override
         public void setIdx(int idx) {
             this.idx = idx;
         }

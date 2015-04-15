@@ -42,10 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.text.MessageFormat;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
 

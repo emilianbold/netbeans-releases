@@ -75,7 +75,7 @@ public abstract class SourceDataObject extends MultiDataObject {
         super(pf, loader);
     }
 
-    final InstanceContent getInstanceContent(){
+    final synchronized InstanceContent getInstanceContent(){
         return ic;
     }
 
@@ -118,7 +118,7 @@ public abstract class SourceDataObject extends MultiDataObject {
 
     /**
      *  Creates new object from template. Check to make sure the user
-     *  has entered a valid string. 
+     *  has entered a valid string.
      *
      *  @param df Folder to create the template in
      *  @param name New template name

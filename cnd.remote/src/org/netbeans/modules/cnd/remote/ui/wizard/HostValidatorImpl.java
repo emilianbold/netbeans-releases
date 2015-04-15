@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
@@ -70,7 +69,10 @@ import org.openide.util.NbBundle;
 public class HostValidatorImpl implements HostValidator {
 
     private final ToolsCacheManager cacheManager;
-    private Runnable runOnFinish;
+    private volatile Runnable runOnFinish;
+    private volatile Thread compilerSearchThread;
+    private volatile boolean compilerSearchCancelled;
+    private volatile CompilerSetManager csm;
 
     public HostValidatorImpl(ToolsCacheManager cacheManager) {
         this.cacheManager = cacheManager;
@@ -87,17 +89,32 @@ public class HostValidatorImpl implements HostValidator {
     }
 
     @Override
-    public boolean validate(final ExecutionEnvironment env, final PrintWriter writer) {
+    public void cancelToolSearch() {
+        compilerSearchCancelled = true;
+        CompilerSetManager csmCopy = this.csm;
+        if (csmCopy != null) {
+            csmCopy.cancel();
+        }
+        Thread th = this.compilerSearchThread;
+        if (th != null) {
+            th.interrupt();
+        }
+    }
+
+    @Override
+    public boolean validate(final ExecutionEnvironment env, boolean searchForTools, final PrintWriter writer) {
+        compilerSearchThread = null;
+        compilerSearchCancelled = false;
         final RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
         record.setNeedsValidationOnConnect(false);
         try {
-            return validateImpl(record, writer);
+            return validateImpl(record, searchForTools, writer);
         } finally {
             record.setNeedsValidationOnConnect(true);
         }
     }
-    
-    private boolean validateImpl(final RemoteServerRecord record, final PrintWriter writer) {
+
+    private boolean validateImpl(final RemoteServerRecord record, boolean searchForTools, final PrintWriter writer) {
         final ExecutionEnvironment env = record.getExecutionEnvironment();
         boolean result = false;
         final boolean alreadyOnline = record.isOnline();
@@ -150,26 +167,39 @@ public class HostValidatorImpl implements HostValidator {
                 @Override
                 public void close() throws IOException {
                 }
-            };            
-            final CompilerSetManager csm = cacheManager.getCompilerSetManagerCopy(env, false);
-            StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "CompilerSetManager.initialize"); //NOI18N
-            csm.initialize(false, false, reporter);
-            sw.stop();
-            if (record.hasProblems()) {
+            };          
+            if (searchForTools && ! compilerSearchCancelled) {
+                compilerSearchThread = Thread.currentThread();
                 try {
-                    reporter.append(record.getProblems());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    csm = cacheManager.getCompilerSetManagerCopy(env, false);
+                    StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "CompilerSetManager.initialize"); //NOI18N
+                    csm.initialize(false, false, reporter);
+                    sw.stop();
+                    if (record.hasProblems()) {
+                        try {
+                            reporter.append(record.getProblems());
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    final CompilerSetManager csmCopy = csm;
+                    runOnFinish = new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!compilerSearchCancelled) {
+                                csmCopy.finishInitialization();
+                            }
+                        }
+                    };
+                } finally {
+                    csm = null;
+                    compilerSearchThread = null;
                 }
+                result = true;
+            } else {
+                writer.write(NbBundle.getMessage(getClass(), "HostValidator.Toolchain.Search.Skipped") + '\n');
+                result = true;                
             }
-            runOnFinish = new Runnable() {
-
-                @Override
-                public void run() {
-                    csm.finishInitialization();
-                }
-            };
-            result = true;
         } else {
             writer.write(NbBundle.getMessage(getClass(), "CreateHostVisualPanel2.ErrConn")
                     + '\n' + record.getReason()); //NOI18N

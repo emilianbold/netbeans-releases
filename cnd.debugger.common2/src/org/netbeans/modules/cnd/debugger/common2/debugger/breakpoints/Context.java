@@ -108,6 +108,7 @@ public class Context {
     }
 
     // interface Object
+    @Override
     public String toString() {
 	if (IpeUtils.isEmpty(hostname))
 	    return executable;
@@ -126,6 +127,7 @@ public class Context {
     }
 
     // interface Object
+    @Override
     public boolean equals(Object o) {
 	if (! (o instanceof Context))
 	    return false;
@@ -139,6 +141,7 @@ public class Context {
     }
 
     // interface Object
+    @Override
     public int hashCode() {
 	int result = 7632;
 	if (executable != null)

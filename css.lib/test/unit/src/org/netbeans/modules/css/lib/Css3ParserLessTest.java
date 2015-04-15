@@ -787,4 +787,76 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testAndWithWhen() {
+        String source = ".mixin-filled(@delta:0%) {\n"
+                + "	& when (@delta > 0%) {\n"
+                + "		background:lighten(@mixin-boxcolor, @delta);\n"
+                + "	}\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMultipleAnds() {
+        String source = ".heading {\n"
+                + "    &&--type-small {\n"
+                + "        font-size: 15px;\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testTwoClassesWithoutSpace() {
+        String source = "body {\n"
+                + "    .foo.bar {\n"
+                + "        // any css statement\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMixinCallsWithHash() {
+        String source = ".a, #b {\n"
+                + "  color: red;\n"
+                + "}\n"
+                + ".mixin-class {\n"
+                + "  .a();\n"
+                + "}\n"
+                + ".mixin-id {\n"
+                + "  #b();\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMixinDefWithHash() {
+        String source = "#mymixin(@ruleset) { \n"
+                + "    @ruleset(); \n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testExtendKeyword() {
+        
+        assertParses(".sidenav:extend(.nav, #foo, .bar) {}");
+        assertParses(".big-division,\n"
+                + ".big-bag:extend(.bag),\n"
+                + ".big-bucket:extend(.bucket) {\n"
+                + "  // body\n"
+                + "}");
+        assertParses(".b {\n"
+                + "	&:extend(.a);\n"
+                + "}");
+        assertParses(".aa{\n"
+                + "font-size: 12px;\n"
+                + "&:extend(.clearfix);\n"
+                + "}");
+        
+        String source = ".sidenav:extend(.nav) {}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
 }

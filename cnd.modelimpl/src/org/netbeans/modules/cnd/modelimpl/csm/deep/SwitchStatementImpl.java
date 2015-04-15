@@ -61,38 +61,38 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public final class SwitchStatementImpl extends StatementBase implements CsmSwitchStatement {
-    
+
     private CsmCondition condition;
     private StatementBase body;
-    
+
     private SwitchStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
 
     private SwitchStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
         super(file, start, end, scope);
-    }    
-    
+    }
+
     public static SwitchStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         SwitchStatementImpl stmt = new SwitchStatementImpl(ast, file, scope);
         stmt.init(ast);
         return stmt;
     }
-    
+
     private void init(AST ast) {
         AST token = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_CONDITION);
         if( token != null ) {
             condition = new AstRenderer((FileImpl) getContainingFile()).renderCondition(token, this);
         }
-        
+
         for( AST token2 = ast.getFirstChild(); token2 != null; token2 = token2.getNextSibling() ) {
             if( AstRenderer.isStatement(token2) ) {
                 body = AstRenderer.renderStatement(token2, getContainingFile(), this);
                 break;
             }
         }
-    }    
-    
+    }
+
     @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.SWITCH;
@@ -104,8 +104,8 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         if (condition instanceof Disposable) {
             ((Disposable)condition).dispose();
         }
-        if (body instanceof Disposable) {
-            ((Disposable)body).dispose();
+        if (body != null) {
+            body.dispose();
         }
     }
 
@@ -113,7 +113,7 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
     public CsmCondition getCondition() {
         return condition;
     }
-    
+
     @Override
     public CsmStatement getBody() {
         return body;
@@ -123,7 +123,7 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
     public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
-    
+
     public static class SwitchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         ConditionExpressionBuilder conditionExpression;
@@ -141,7 +141,7 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         public void setBody(StatementBuilder body) {
             this.body = body;
         }
-        
+
         @Override
         public SwitchStatementImpl create() {
             SwitchStatementImpl stmt = new SwitchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
@@ -163,6 +163,6 @@ public final class SwitchStatementImpl extends StatementBase implements CsmSwitc
         public void addStatementBuilder(StatementBuilder builder) {
             body = builder;
         }
-    }    
-    
+    }
+
 }

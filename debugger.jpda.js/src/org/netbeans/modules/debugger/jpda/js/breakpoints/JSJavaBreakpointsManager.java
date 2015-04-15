@@ -491,13 +491,14 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
             this.jslb = jslb;
             this.source = source;
             LineBreakpoint lb = createLineBreakpoint(source.getClassType());
-            DebuggerManager.getDebuggerManager().addBreakpoint(lb);
-            PropertyChangeListener bpPropertyListener = new BPPropertyListener(lb);
-            jslb.addPropertyChangeListener(bpPropertyListener);
             this.lbs.add(lb);
-            this.bpPropertyListeners.add(bpPropertyListener);
             functionClassChangesListener = new FunctionClassChangesListener();
-            source.getFunctionClassTypes().addPropertyChangeListener(functionClassChangesListener);
+            ObservableSet<JPDAClassType> functionClassTypes = source.getFunctionClassTypes();
+            functionClassTypes.addPropertyChangeListener(functionClassChangesListener);
+            for (JPDAClassType fct : functionClassTypes) {
+                LineBreakpoint flb = createLineBreakpoint(fct);
+                lbs.add(flb);
+            }
         }
         
         private LineBreakpoint createLineBreakpoint(JPDAClassType classType) {
@@ -516,6 +517,10 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 lb.disable();
             }
             lb.setCondition(jslb.getCondition());
+            DebuggerManager.getDebuggerManager().addBreakpoint(lb);
+            PropertyChangeListener bpPropertyListener = new BPPropertyListener(lb);
+            jslb.addPropertyChangeListener(bpPropertyListener);
+            bpPropertyListeners.add(bpPropertyListener);
             return lb;
         }
         
@@ -548,11 +553,7 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
                 if (ObservableSet.PROP_ELM_ADDED.equals(evt.getPropertyName())) {
                     JPDAClassType ct = (JPDAClassType) evt.getNewValue();
                     LineBreakpoint lb = createLineBreakpoint(ct);
-                    DebuggerManager.getDebuggerManager().addBreakpoint(lb);
-                    PropertyChangeListener bpPropertyListener = new BPPropertyListener(lb);
-                    jslb.addPropertyChangeListener(bpPropertyListener);
                     lbs.add(lb);
-                    bpPropertyListeners.add(bpPropertyListener);
                 }
             }
             

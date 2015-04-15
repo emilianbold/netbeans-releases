@@ -580,7 +580,7 @@ public class PropertiesPanel extends JPanel implements DocumentListener,
      * Panel whose preferred height is derived from preferred height
      * of another component.
      */
-    private final class DerivedHeightPanel extends JPanel {
+    private static final class DerivedHeightPanel extends JPanel {
         private final Component deriveFrom;
         private final float ratio;
         private Dimension prefSize = null;

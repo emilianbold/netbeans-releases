@@ -522,7 +522,7 @@ public final class VCSFileProxySupport {
         if (!absPath.startsWith("/")) { //NOI18N
             assert absPath.startsWith("/") : "Path "+absPath+"must be absolute";
         }
-        VCSFileProxy parent = file;
+        VCSFileProxy parent;
         while (true) {
             parent = file.getParentFile();
             if (parent == null) {

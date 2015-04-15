@@ -63,7 +63,7 @@ public class HgRepositoryContextCache {
     private HgRepositoryContextCache() {
     }
 
-    public static HgRepositoryContextCache getInstance() {
+    public static synchronized HgRepositoryContextCache getInstance() {
         if(instance == null) {
             instance = new HgRepositoryContextCache();
         }

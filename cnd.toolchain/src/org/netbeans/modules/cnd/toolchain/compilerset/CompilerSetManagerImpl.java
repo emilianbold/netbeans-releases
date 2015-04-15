@@ -113,6 +113,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private int platform = -1;
     private Task initializationTask;
     private CompilerSetProvider provider;
+    private boolean canceled;
     
     private final RequestProcessor requestProcessor;
 
@@ -207,6 +208,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     /** CAUTION: this is a slow method. It should NOT be called from the EDT thread */
     @Override
     public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter) {
+        canceled = false;
         CompilerSetReporter.setWriter(reporter);
         ProgressHandle pHandle = null;
         try {
@@ -230,11 +232,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             if (pHandle != null) {
                 pHandle.finish();
             }
+            canceled = false;
         }
     }
 
     @Override
     public boolean cancel() {
+        this.canceled = true;
         CompilerSetProvider aProvider = provider;
         if (aProvider != null) {
             return aProvider.cancel();
@@ -703,7 +707,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                         }
                         // NB: function itself is synchronized!
                         state = State.STATE_COMPLETE;
-                        CompilerSetReporter.report("CSM_Conigured");//NOI18N
+                        CompilerSetReporter.report(canceled ? "CSM_Canceled" : "CSM_Conigured");//NOI18N
                         if (runCompilerSetDataLoader) {
                             finishInitialization();
                         }

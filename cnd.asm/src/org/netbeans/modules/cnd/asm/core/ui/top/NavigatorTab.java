@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.asm.core.ui.top;
 
 import javax.swing.JPanel;
 
-import org.netbeans.modules.cnd.asm.model.AsmModel;
 import org.openide.loaders.DataObject;
 
 public interface NavigatorTab {

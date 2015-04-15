@@ -50,7 +50,7 @@ public final class FileSearchSupport {
 
     private final static java.util.logging.Logger log = Logger.getInstance();
     private final static TasksCachedProcessor<FileSearchParams, String> processor =
-            new TasksCachedProcessor<FileSearchParams, String>(
+            new TasksCachedProcessor<>(
             new Searcher(), false);
 
     public final String searchFile(final FileSearchParams fileSearchParams) throws InterruptedException {

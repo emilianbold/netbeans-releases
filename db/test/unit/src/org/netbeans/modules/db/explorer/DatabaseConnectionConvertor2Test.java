@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,43 +41,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.db.explorer;
 
-
-package org.netbeans.modules.cnd.asm.model.util;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static org.netbeans.modules.db.explorer.DatabaseConnectionConvertor.CONNECTIONS_PATH;
+import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.Util;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
-public class Util {
-    
-   public static String readFile(File f) {   
-       
-       BufferedReader reader = null;
-       StringBuilder res = new StringBuilder();
-       
-       try {
-           try {
-               reader = new BufferedReader(new FileReader(f));            
+public class DatabaseConnectionConvertor2Test extends TestBase {
 
-               String t;
+    public DatabaseConnectionConvertor2Test(String testName) {
+        super(testName);
+    }
 
-               while ((t = reader.readLine()) != null) {
-                   res.append(t).append('\n');
-               }
-           }
-           finally {
-               if (reader != null)
-                 reader.close();
-           }
-       }
-       catch(IOException ex) {
-           res.setLength(0);
-       }              
-         
-       
-       return res.toString();
-   }
-    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
+        Util.clearConnections();
+    }
+
+    /**
+     * Creating database connection fails if the CONNECTIONS_PATH dir does not
+     * exist. Regression test for issue 251674
+     */
+    public void testCreateAfterConfigDirDelete() throws IOException {
+        // Delete CONNECTIONS_PATH
+        FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH);
+        assertNotNull(fo);
+
+        fo.delete();
+        fo = FileUtil.getConfigFile(CONNECTIONS_PATH);
+        assertNull(fo);
+
+        // Test connection creation
+        DatabaseConnection dbconn = new DatabaseConnection("a", "b", "c", "d", "e", (String) null);
+        DataObject data = DatabaseConnectionConvertor.create(dbconn);
+
+        assertNotNull(data);
+    }
 }

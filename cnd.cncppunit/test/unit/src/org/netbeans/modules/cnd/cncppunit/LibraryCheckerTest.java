@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
-import static org.junit.Assert.*;
 
 /**
  * @author Alexey Vladykin

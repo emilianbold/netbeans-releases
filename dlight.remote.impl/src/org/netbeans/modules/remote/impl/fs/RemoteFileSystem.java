@@ -131,17 +131,17 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /** Directory synchronization statistics */
     private final AtomicInteger dirSyncCount = new AtomicInteger(0);
     private static final Object mainLock = new Object();
-    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private final List<FileSystemProblemListener> problemListeners =
-            new ArrayList<FileSystemProblemListener>();
+            new ArrayList<>();
     transient private final StatusImpl status = new StatusImpl();
-    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
-    private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
-    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<RemoteFileObjectBase>();
-    private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<>();
+    private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
+    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<>();
+    private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
-    private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<Integer>();
+    private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
 
     private final RequestProcessor.Task connectionTask;
 
@@ -295,7 +295,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             ReadWriteLock result = (ref == null) ? null : ref.get();
             if (result == null) {
                 result = new ReentrantReadWriteLock();
-                locks.put(file, new WeakReference<ReadWriteLock>(result));
+                locks.put(file, new WeakReference<>(result));
             }
             return result;
         }
@@ -447,7 +447,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             fileOtputStream = new FileOutputStream(attr);
             table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(new IOException(
+                    "Can not set attribute for " + file + "; attr. cache is " + attr, ex)); // NOI18N
         } finally {
             if (fileOtputStream != null) {
                 try {
@@ -477,7 +478,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
-    private static final Map<String, AttrStat> attrStats = new TreeMap<String, AttrStat> ();
+    private static final Map<String, AttrStat> attrStats = new TreeMap<> ();
 
     private static void logAttrName(String name, boolean write) {
         synchronized(attrStats) {
@@ -502,7 +503,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /*package*/ void dumpAttrStat() {
         Map<String, AttrStat> toDump;
         synchronized(attrStats) {
-            toDump= new TreeMap<String, AttrStat>(attrStats);
+            toDump= new TreeMap<>(attrStats);
         }
         System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size()); // NOI18N
         for (Map.Entry<String, AttrStat> entry : toDump.entrySet()) {
@@ -572,7 +573,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (parent != null) {
             File attr = getAttrFile(parent);
             Properties table = readProperties(attr);
-            List<String> res = new ArrayList<String>();
+            List<String> res = new ArrayList<>();
             Enumeration<Object> keys = table.keys();
             String prefix = file.getNameExt()+"["; // NOI18N
             while(keys.hasMoreElements()) {
@@ -710,7 +711,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private void fireProblemListeners(String path) {
         List<FileSystemProblemListener> listenersCopy;
         synchronized (problemListeners) {
-            listenersCopy = new ArrayList<FileSystemProblemListener>(problemListeners);
+            listenersCopy = new ArrayList<>(problemListeners);
         }
         for (FileSystemProblemListener l : listenersCopy) {
             if (path == null) {
@@ -768,7 +769,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private void releaseResources() {
     	ArrayList<String> toBeDeleted;
         synchronized(deleteOnExitFiles) {
-        	toBeDeleted = new ArrayList<String>(deleteOnExitFiles);
+        	toBeDeleted = new ArrayList<>(deleteOnExitFiles);
         }
     	Collections.reverse(toBeDeleted);
         for (String filename : toBeDeleted) {
@@ -962,9 +963,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             Collection<? extends AnnotationProvider> add;
 
             if (previousProviders != null) {
-                add = new HashSet<AnnotationProvider>(now);
+                add = new HashSet<>(now);
                 add.removeAll(previousProviders);
-                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
+                HashSet<AnnotationProvider> toRemove = new HashSet<>(previousProviders);
                 toRemove.removeAll(now);
                 for (AnnotationProvider ap : toRemove) {
                     ap.removeFileStatusListener(this);
@@ -1093,9 +1094,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             } catch (ConnectException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
                 ConnectionNotifier.addTask(execEnv, this);
-            } catch (InterruptedException ex) {
-                RemoteLogger.finest(ex);
-            } catch (InterruptedIOException ex) {
+            } catch (InterruptedException | InterruptedIOException ex) {
                 RemoteLogger.finest(ex);
             } catch (IOException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);

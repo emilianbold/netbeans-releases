@@ -95,7 +95,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
         @Override
         public synchronized Map<String, String> getEnv() {
             if (envCache == null) {
-                envCache = new HashMap<String, String>();
+                envCache = new HashMap<>();
                 RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "env"); // NOI18N
                 if (support.run() == 0) {
                     String val = support.getOutput();
@@ -124,7 +124,7 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
     }
 
     private final static Map<ExecutionEnvironment, RemoteHostInfo> env2hostinfo =
-            new HashMap<ExecutionEnvironment, RemoteHostInfo>();
+            new HashMap<>();
 
     public static synchronized RemoteHostInfo getHostInfo(ExecutionEnvironment execEnv) {
         RemoteHostInfo hi = env2hostinfo.get(execEnv);

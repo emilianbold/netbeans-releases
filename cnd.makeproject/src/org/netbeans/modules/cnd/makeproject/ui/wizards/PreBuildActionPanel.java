@@ -226,16 +226,7 @@ public class PreBuildActionPanel extends javax.swing.JPanel implements HelpCtx.P
             if (file != null && file.isValid()) {
                 PreBuildArtifact configureScript = PreBuildSupport.scriptToArtifact(file);
                 if (configureScript != null) {
-                    String hostUID = WizardConstants.PROPERTY_HOST_UID.get(wizardDescriptor);
-                    ExecutionEnvironment ee = null;
-                    if (hostUID != null) {
-                        ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
-                    }
-                    CompilerSet cs = null;
-                    if (ee != null) {
-                        cs = WizardConstants.PROPERTY_TOOLCHAIN.get(wizardDescriptor);
-                    }
-                    String arguments = configureScript.getArguments(ee, cs, "");
+                    String arguments = configureArgumentsTextField.getText();
                     WizardConstants.PROPERTY_CONFIGURE_COMMAND.put(wizardDescriptor,
                             configureScript.getCommandLine(arguments, configureRunFolderTextField.getText()));
                 }

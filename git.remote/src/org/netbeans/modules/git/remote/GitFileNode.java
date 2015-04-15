@@ -199,9 +199,8 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
             OptionsPanelColorProvider.AnnotationFormat format;
             switch (info.getStatus()) {
                 case ADDED:
-                    format = AnnotationColorProvider.getInstance().ADDED_FILE;
-                    break;
                 case COPIED:
+                case RENAMED:
                     format = AnnotationColorProvider.getInstance().ADDED_FILE;
                     break;
                 case MODIFIED:
@@ -209,9 +208,6 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
                     break;
                 case REMOVED:
                     format = AnnotationColorProvider.getInstance().REMOVED_FILE;
-                    break;
-                case RENAMED:
-                    format = AnnotationColorProvider.getInstance().ADDED_FILE;
                     break;
                 case UNKNOWN:
                 default:
@@ -225,15 +221,13 @@ public abstract class GitFileNode<T extends FileNodeInformation> extends VCSFile
         public Color getAnnotatedColor () {
             switch (info.getStatus()) {
                 case ADDED:
-                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
                 case COPIED:
+                case RENAMED:
                     return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
                 case MODIFIED:
                     return AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor();
                 case REMOVED:
                     return AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor();
-                case RENAMED:
-                    return AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor();
                 case UNKNOWN:
                 default:
                     return AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor();

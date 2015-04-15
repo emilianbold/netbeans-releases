@@ -20,17 +20,16 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
-import java.util.HashMap;
-import java.util.HashSet;
+import com.sun.source.util.Trees;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -40,14 +39,14 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.suggestions.ExpectedTypeResolver;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.util.NbBundle;
 
 /*
@@ -106,9 +105,20 @@ import org.openide.util.NbBundle;
     "# {0} - name of boxing class",
     "FIX_UnnecessaryBoxing1=Remove new {0}",
     "# {0} - name of boxing class",
-    "FIX_UnnecessaryBoxing2=Remove {0}.valueOf"
+    "FIX_UnnecessaryBoxing2=Remove {0}.valueOf",
+    "# {0} - name of primitive class",
+    "FIX_ChangeBoxingToTypecast=Cast to {0} instead of boxing"
 })
 public class UnnecessaryBoxing {
+    
+    private static final boolean DEFAULT_PREFER_CAST_TO_BOXING = false;
+    
+    @BooleanOption(
+        displayName = "#OPTNAME_PreferCastsToBoxing",
+        tooltip = "#OPTDESC_PreferCastsToBoxing",
+        defaultValue = DEFAULT_PREFER_CAST_TO_BOXING
+    )
+    static final String PREFER_CAST_TO_BOXING = "boxing.prefer.cast"; // NOI18N
     
     @TriggerPatterns({
         @TriggerPattern(value = "new java.lang.Byte($v)"),
@@ -136,6 +146,7 @@ public class UnnecessaryBoxing {
             enabled = true,
             suppressWarnings = "UnnecessaryBoxing"
     )
+    @UseOptions(PREFER_CAST_TO_BOXING)
     public static ErrorDescription run(HintContext ctx) {
         CompilationInfo ci = ctx.getInfo();
         if (ci.getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
@@ -196,12 +207,24 @@ public class UnnecessaryBoxing {
             rk = null;
         }
         
+        String text;
+        if (rk != null) {
+            boolean preferCast = ctx.getPreferences().getBoolean(PREFER_CAST_TO_BOXING, DEFAULT_PREFER_CAST_TO_BOXING);
+            if (!preferCast) {
+                return null;
+            }
+            text = Bundle.FIX_ChangeBoxingToTypecast(ci.getTypeUtilities().getTypeName(valType));
+        } else if (p.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+            text = Bundle.FIX_UnnecessaryBoxing1(tname);
+        } else {
+            text = Bundle.FIX_UnnecessaryBoxing2(tname);
+        }
+        
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(),
                 Bundle.TEXT_UnnecessaryBoxing(tname), 
                 new RemoveBoxingFix(
                     TreePathHandle.create(vp, ci),
-                    p.getLeaf().getKind() == Tree.Kind.NEW_CLASS ?
-                        Bundle.FIX_UnnecessaryBoxing1(tname) : Bundle.FIX_UnnecessaryBoxing2(tname),
+                    text,
                     TreePathHandle.create(ctx.getPath(), ci),
                     rk).toEditorFix());
     }
@@ -290,10 +313,53 @@ public class UnnecessaryBoxing {
     }
     
     private static boolean checkMethodInvocation(HintContext ctx, TreePath invPath, TreePath valPath) {
-        Element e = ctx.getInfo().getTrees().getElement(invPath);
-        if (!(e instanceof ExecutableElement)) {
+        Trees trees = ctx.getInfo().getTrees();
+        Tree invLeaf = invPath.getLeaf();
+        List<? extends ExpressionTree> arguments;
+        TypeMirror m;
+        
+        switch (invLeaf.getKind()) {
+            case METHOD_INVOCATION: {
+                MethodInvocationTree mit = (MethodInvocationTree)invLeaf;
+                arguments = mit.getArguments();
+                m = trees.getTypeMirror(new TreePath(invPath, mit.getMethodSelect()));
+                break;
+            }
+            case NEW_CLASS: {
+                NewClassTree nct = (NewClassTree)invLeaf;
+                arguments = nct.getArguments();
+                Element e = trees.getElement(invPath);
+                TypeMirror cl = trees.getTypeMirror(invPath);
+                if (!Utilities.isValidType(cl) || cl.getKind().isPrimitive()) {
+                    return false;
+                }
+                m = ctx.getInfo().getTypes().asMemberOf((DeclaredType)cl, e);
+                break;
+            }
+            default:
+                return false;
+        }
+        
+        if (!Utilities.isValidType(m) || m.getKind() != TypeKind.EXECUTABLE) {
             return false;
         }
+        int idx = arguments.indexOf(ctx.getPath().getLeaf());
+        if (idx < 0) {
+            return false;
+        }
+        ExecutableType execType = (ExecutableType)m;
+        TypeMirror paramType = execType.getParameterTypes().get(idx);
+        TypeMirror curType = trees.getTypeMirror(ctx.getPath());
+        TypeMirror valType = trees.getTypeMirror(valPath);
+        
+        if (!paramType.getKind().isPrimitive() && valType.getKind().isPrimitive()) {
+            valType = ctx.getInfo().getTypes().boxedClass((PrimitiveType)valType).asType();
+            // ensure that the passed INSTANCE type will not change when the boxing is removed
+            if (!ctx.getInfo().getTypes().isSameType(curType, valType)) {
+                return false;
+            }
+        }
+                
         return Utilities.checkAlternativeInvocation(ctx.getInfo(), invPath, ctx.getPath(), valPath, null);
     }
     

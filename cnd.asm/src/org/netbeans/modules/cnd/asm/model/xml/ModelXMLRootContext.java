@@ -67,8 +67,8 @@ import org.openide.util.Pair;
 public class ModelXMLRootContext implements XMLReaderContext {
         
     private String asmName;
-    private List<Instruction> instrs;
-    private List<Register> regs;
+    private final List<Instruction> instrs;
+    private final List<Register> regs;
     
     public ModelXMLRootContext() {
         instrs = new LinkedList<Instruction>();
@@ -127,8 +127,8 @@ public class ModelXMLRootContext implements XMLReaderContext {
     }       
     
     private class RegisterGroupContext implements XMLReaderContext {
-        private String groupName;
-        private List<RegisterContext> regCtxs;
+        private final String groupName;
+        private final List<RegisterContext> regCtxs;
         
         public RegisterGroupContext(Attributes attributes) {
             this.groupName = checkForName(attributes, REG_NAME_ATTRIBUTE);
@@ -161,8 +161,8 @@ public class ModelXMLRootContext implements XMLReaderContext {
         }
         
         private class RegisterMakeHelper {            
-            private Set<RegisterContext> inProcesses;
-            private XMLBaseRegister []results;
+            private final Set<RegisterContext> inProcesses;
+            private final XMLBaseRegister []results;
             
             public RegisterMakeHelper() {
                 this.inProcesses = new HashSet<RegisterContext>();
@@ -206,9 +206,9 @@ public class ModelXMLRootContext implements XMLReaderContext {
         }
         
         private class RegisterContext implements XMLReaderContext {
-            private String name;
-            private BitWidth width;
-            private List<Pair<String, Integer>> children;
+            private final String name;
+            private final BitWidth width;
+            private final List<Pair<String, Integer>> children;
             
             private Map<String, String> attr;
             
@@ -328,8 +328,8 @@ public class ModelXMLRootContext implements XMLReaderContext {
             }
             
             private class ArgContext implements XMLReaderContext {
-                private String descr;
-                private List<String> params;
+                private final String descr;
+                private final List<String> params;
                 
                 public ArgContext(Attributes attributes) {
                     this.descr = checkForName(attributes, INSTR_DESCR_ATTRIBUTE);

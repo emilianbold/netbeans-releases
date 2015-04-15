@@ -50,6 +50,7 @@ package org.netbeans.modules.cnd.debugger.common2.values;
 
 public class LwpIdEditor extends AsyncEditor {
 
+    @Override
     public void setAsText(String newText) {
 	// Called when an edit is commited through user action
 

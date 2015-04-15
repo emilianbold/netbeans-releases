@@ -1,3 +1,5 @@
+package org.netbeans.api.db.explorer;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -27,7 +29,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,61 +43,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+import java.io.IOException;
+import java.net.URL;
+import org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor;
+import static org.netbeans.modules.db.explorer.driver.JDBCDriverConvertor.DRIVERS_PATH;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
+public class JDBCDriverManager2Test extends DBTestBase {
 
-package org.netbeans.modules.cnd.asm.model.xml;
-
-import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
-
-import org.netbeans.modules.cnd.asm.model.AbstractAsmModel;
-import org.netbeans.modules.cnd.asm.model.lang.Register;
-import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
-
-public abstract class XMLBaseModel extends AbstractAsmModel{
-    
-    private static Map<String, ModelInfoHolder> cash = 
-            new WeakHashMap<String, ModelInfoHolder>();
-    
-    private ModelInfoHolder holder;
-     
-    public XMLBaseModel(String name, InputStream source) {
-                
-        
-       /* holder = cash.get(name);
-        
-        if (holder == null) {
-            ModelXMLRootContext ctx = new ModelXMLRootContext(); 
-            new ModelXMLReader().readModelXml(modelXML, ctx);
-            holder = new ModelInfoHolder()
-        }
-        try {
-            new ModelXMLReader().readModelXml(modelXML, ctx);
-            instr = ctx.getInstructions();
-            regs = ctx.getRegisters();
-        }   
-        catch(ModelXMLReaderException ex) {
-           instr = java.util.Collections.<Instruction>emptyList(); 
-           regs = java.util.Collections.<Register>emptyList();
-       } 
-       init();*/
+    public JDBCDriverManager2Test(String testName) {
+        super(testName);
     }
 
-   /* public List<Instruction> getInstructionSet() {
-    }
+    /**
+     * Creating driver fails if the DRIVERS_PATH dir does not exist. Regression
+     * test for issue 251674
+     */
+    public void testCreateAfterConfigDirDelete() throws IOException {
+        // Delete DRIVERS_PATH
+        FileObject fo = FileUtil.getConfigFile(DRIVERS_PATH);
+        assertNotNull(fo);
 
-    public List<Register> getRegisterSet() {
-    }   */
-    
-    private static class ModelInfoHolder {
-        List<Instruction> instr;
-        List<Register> regs;
-        
-        public ModelInfoHolder(ModelXMLRootContext ctx) {
-            instr = ctx.getInstructions();
-            regs = ctx.getRegisters();
-        }
+        fo.delete();
+        fo = FileUtil.getConfigFile(DRIVERS_PATH);
+        assertNull(fo);
+
+        // Test driver creation
+        JDBCDriver driver = JDBCDriver.create("bar_driver", "Bar Driver", "org.bar.BarDriver", new URL[0]);
+        // We are testing JDBCDriverManager.addDriver(), but that doesn't return a DataObject.
+        DataObject driverDO = JDBCDriverConvertor.create(driver);
+
+        assertNotNull(driverDO);
     }
 }

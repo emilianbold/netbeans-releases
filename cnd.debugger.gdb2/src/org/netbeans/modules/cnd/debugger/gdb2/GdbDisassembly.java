@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -73,7 +73,7 @@ public class GdbDisassembly extends Disassembly {
     private String resolvedFileName = "";
     private String address = "";
     private boolean withSource = true;
-    
+
     private final Map<Integer,String> regNames = new HashMap<Integer,String>();
     private final Map<Integer,String> regValues = new HashMap<Integer,String>();
     private final Set<Integer> regModified = new  HashSet<Integer>();
@@ -86,7 +86,7 @@ public class GdbDisassembly extends Disassembly {
     private static final String FILE_HEADER="file"; // NOI18N
     private static final String NUMBER_HEADER="number"; // NOI18N
     private static final String VALUE_HEADER="value"; // NOI18N
-    
+
     public static final String REGISTER_NAMES_HEADER="^done,register-names="; // NOI18N
     public static final String REGISTER_VALUES_HEADER="^done,register-values="; // NOI18N
     public static final String REGISTER_MODIFIED_HEADER="^done,changed-registers="; // NOI18N
@@ -94,13 +94,13 @@ public class GdbDisassembly extends Disassembly {
     private static final String COMBINED_HEADER="src_and_asm_line={"; // NOI18N
 
     private static final String COMMENT_PREFIX="!"; // NOI18N
-    
+
     private boolean cancelled = false;
 
     public GdbDisassembly(NativeDebuggerImpl debugger, BreakpointModel breakpointModel) {
         super(debugger, breakpointModel);
     }
-    
+
     protected void cancel() {
         cancelled = true;
     }
@@ -119,7 +119,7 @@ public class GdbDisassembly extends Disassembly {
         String currentAddr = getDebugger().getCurrentFrame().getCurrentPC();
 
         attachUpdateListener();
-        
+
         DisText text = new DisText();
 
         int pos = RESPONSE_HEADER.length();
@@ -145,6 +145,7 @@ public class GdbDisassembly extends Disassembly {
                     dialog = DialogDisplayer.getDefault().createDialog(dd);
                     final Dialog dlg = dialog;
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             dlg.setVisible(true);
                             if (dd.getValue() == DialogDescriptor.CANCEL_OPTION) {
@@ -162,7 +163,7 @@ public class GdbDisassembly extends Disassembly {
             }
 
             if (combinedPos != -1 && combinedPos < addressPos) {
-                int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
+                int lineIdx = Integer.parseInt(readValue(LINE_HEADER, msg, combinedPos));
                 if (lineIdx > 0) {
                     //String path = debugger.getRunDirectory();
                     String fileStr = readValue(FILE_HEADER, msg, combinedPos);
@@ -205,6 +206,7 @@ public class GdbDisassembly extends Disassembly {
         if (dialog != null) {
             final Dialog dlg = dialog;
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     dlg.setVisible(false);
                     dlg.dispose();
@@ -223,29 +225,29 @@ public class GdbDisassembly extends Disassembly {
         }
         setText(text);
     }
-    
+
     public void updateRegNames(String msg) {
         assert msg.startsWith(REGISTER_NAMES_HEADER) : "Invalid asm response message"; // NOI18N
         regNames.clear();
         int idx = 0;
-        int pos = msg.indexOf("\"", REGISTER_NAMES_HEADER.length()); // NOI18N
+        int pos = msg.indexOf('"', REGISTER_NAMES_HEADER.length()); // NOI18N
         while (pos != -1) {
-            int end = msg.indexOf("\"", pos+1); // NOI18N
+            int end = msg.indexOf('"', pos+1); // NOI18N
             if (end == -1) {
                 break;
             }
             String value = msg.substring(pos+1, end);
             regNames.put(idx++, value);
-            pos = msg.indexOf("\"", end+1); // NOI18N
+            pos = msg.indexOf('"', end+1); // NOI18N
         }
     }
-    
+
     public void updateRegModified(String msg) {
         assert msg.startsWith(REGISTER_MODIFIED_HEADER) : "Invalid asm response message"; // NOI18N
         regModified.clear();
-        int pos = msg.indexOf("\"", REGISTER_MODIFIED_HEADER.length()); // NOI18N
+        int pos = msg.indexOf('"', REGISTER_MODIFIED_HEADER.length()); // NOI18N
         while (pos != -1) {
-            int end = msg.indexOf("\"", pos+1); // NOI18N
+            int end = msg.indexOf('"', pos+1); // NOI18N
             if (end == -1) {
                 break;
             }
@@ -255,11 +257,11 @@ public class GdbDisassembly extends Disassembly {
             } catch (NumberFormatException nfe) {
                 //do nothing
             }
-            pos = msg.indexOf("\"", end+1); // NOI18N
+            pos = msg.indexOf('"', end+1); // NOI18N
         }
         //RegisterValuesProvider.getInstance().fireRegisterValuesChanged();
     }
-    
+
     public void updateRegValues(String msg) {
         assert msg.startsWith(REGISTER_VALUES_HEADER) : "Invalid asm response message"; // NOI18N
         regValues.clear();
@@ -291,6 +293,7 @@ public class GdbDisassembly extends Disassembly {
 //        return res;
 //    }
 
+    @Override
     public void stateUpdated() {
         reloadDis(true, false);
     }
@@ -299,7 +302,7 @@ public class GdbDisassembly extends Disassembly {
     protected void reload() {
         reloadDis(true, false);
     }
-    
+
     private void reloadDis(boolean withSource, boolean force) {
         this.withSource = withSource;
         if (!opened) {
@@ -352,7 +355,7 @@ public class GdbDisassembly extends Disassembly {
 
         address = curAddress;
     }
-    
+
     /*public String getNextAddress(String address) {
         //TODO : can use binary search
         synchronized (lines) {
@@ -370,7 +373,7 @@ public class GdbDisassembly extends Disassembly {
             return "";
         }
     }*/
-    
+
     /*
      * Reads expressions like param="value"
      * in this case readValue("param") will return "value"
@@ -380,14 +383,14 @@ public class GdbDisassembly extends Disassembly {
         int start = msg.indexOf(paramHeader, pos);
         if (start != -1) {
             start += paramHeader.length();
-            int end = msg.indexOf("\"", start + 1); // NOI18N
+            int end = msg.indexOf('"', start + 1); // NOI18N
             if (end != -1) {
                 return msg.substring(start, end);
             }
         }
         return "";
     }
-    
+
     private String getHeader() {
         String res = NbBundle.getMessage(GdbDisassembly.class, "LBL_Disassembly_Window"); // NOI18N
         if (functionName.length() > 0) {
@@ -401,7 +404,7 @@ public class GdbDisassembly extends Disassembly {
         address = "";
         super.reset();
     }
-    
+
     private static class GdbDisLine implements DisLine {
         private final String address;
         private final String function;
@@ -414,7 +417,7 @@ public class GdbDisassembly extends Disassembly {
             this.function = readValue(FUNCTION_HEADER, msg, pos);
             int tmpOffset = 0;
             try {
-                tmpOffset = Integer.valueOf(readValue(OFFSET_HEADER, msg, pos));
+                tmpOffset = Integer.parseInt(readValue(OFFSET_HEADER, msg, pos));
             } catch (Exception e) {
                 //do nothing
             }
@@ -422,6 +425,7 @@ public class GdbDisassembly extends Disassembly {
             this.instruction = readValue(INSTR_HEADER, msg, pos);
         }
 
+        @Override
         public String getAddress() {
             return address;
         }
@@ -430,10 +434,12 @@ public class GdbDisassembly extends Disassembly {
             return function;
         }
 
+        @Override
         public int getIdx() {
             return idx;
         }
-        
+
+        @Override
         public void setIdx(int idx) {
             this.idx = idx;
         }

@@ -124,7 +124,7 @@
 
     <target name="init-clusters">
         <property name="main.clusters" value="
-                                         cnd(cpp), dlight(cpp),
+                                         cnd(cpp), cndext(cpp), dlight(cpp),
                                          apisupport(javase), profiler(javase), java(javase),                                                                              
 					 groovy(groovy),
                                          php(php), 

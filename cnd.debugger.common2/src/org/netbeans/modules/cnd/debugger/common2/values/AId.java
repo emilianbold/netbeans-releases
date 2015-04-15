@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.values;
 
-import org.openide.util.NbBundle;
-
 /**
  * thread and lwps are collectively known as "active entities" 
  * so their Id's are AId's.
@@ -131,6 +129,7 @@ public class AId {
 	}
     }
 
+    @Override
     public String toString() {
 	return id;
     } 

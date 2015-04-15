@@ -55,7 +55,7 @@ public class FunctionNavigator implements NavigatorPanel {
 
     private NavigatorUI panelUI;
     private Lookup.Result<AsmDataObject> result;
-    private Lookup.Template<AsmDataObject> asmTemplate;
+    private final Lookup.Template<AsmDataObject> asmTemplate;
     private AsmDataObject curDataObject;
     private StateListener stateListener;
     private LookupListener lookupListener;

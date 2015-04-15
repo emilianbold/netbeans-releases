@@ -261,7 +261,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         }
     }
 
-    private final class MyTableModel extends DefaultTableModel {
+    private static final class MyTableModel extends DefaultTableModel {
         private final List<FolderEntry> data;
         private final String columnTitle;
 

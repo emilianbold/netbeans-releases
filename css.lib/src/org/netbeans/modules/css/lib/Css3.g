@@ -398,7 +398,7 @@ mediaBody
 
 mediaBodyItem
     :
-    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+    (SASS_MIXIN | (((DOT IDENT) | HASH) ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
     | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
@@ -464,7 +464,7 @@ mediaFeature
 
 bodyItem
     :
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+        (SASS_MIXIN | (((DOT IDENT) | HASH) ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
         | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
         | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
@@ -496,7 +496,7 @@ vendorAtRule
 
 atRuleId
 	:
-	IDENT | STRING
+	IDENT | STRING | {isCssPreprocessorSource()}? ( cp_variable | sass_interpolation_expression_var )
 	;
 
 generic_at_rule
@@ -533,11 +533,12 @@ webkitKeyframesBlock
 	LBRACE  ws? syncToFollow
 		declarations?
 	RBRACE
+        | {isScssSource()}?  {isScssSource()}? sass_content SEMI?
 	;
 
 webkitKeyframeSelectors
 	:
-	( IDENT | PERCENTAGE ) ( ws? COMMA ws? ( IDENT | PERCENTAGE ) )*
+	( {tokenNameEquals("from")}? IDENT | {tokenNameEquals("to")}? IDENT | PERCENTAGE ) ( ws? COMMA ws? ( {tokenNameEquals("from")}? IDENT | {tokenNameEquals("to")}? IDENT | PERCENTAGE ) )*
 	;
 
 page
@@ -674,11 +675,12 @@ declaration
     | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
-    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration
-    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
-    | (cp_mixin_call)=> {isCssPreprocessorSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_declaration)=>cp_mixin_declaration
     | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
+    | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
+    | {isLessSource()}? LESS_AND pseudo
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
     | {isScssSource()}? sass_extend
@@ -777,7 +779,7 @@ cssClass
 
 //using typeSelector even for the universal selector since the lookahead would have to be 3 (IDENT PIPE (IDENT|STAR) :-(
 elementName
-    : IDENT | GEN | (LESS_AND (IDENT | MINUS | NUMBER)*) | STAR
+    : IDENT | GEN | (LESS_AND+ (IDENT | NUMBER)*) | STAR
     ;
 
 slAttribute
@@ -830,7 +832,9 @@ pseudo
                 )
                 |
                 ( NOT ws? LPAREN ws? simpleSelectorSequence? RPAREN )
-             )
+                | 
+                ({isLessSource()}? {tokenNameEquals("extend")}? IDENT ws? LPAREN ws? selectorsGroup? RPAREN)
+             ) 
     ;
 
 propertyDeclaration
@@ -1099,7 +1103,7 @@ cp_math_expression_atom
 cp_mixin_declaration
     :
     (
-        {isLessSource()}? DOT cp_mixin_name ws? LPAREN ws? cp_args_list? RPAREN (ws? less_mixin_guarded)?
+        {isLessSource()}? (LESS_AND | (((DOT cp_mixin_name) | HASH) ws? LPAREN ws? cp_args_list? RPAREN)) (ws? less_mixin_guarded)?
         |
         {isScssSource()}? SASS_MIXIN ws cp_mixin_name (ws? LPAREN ws? cp_args_list? RPAREN)?
     )
@@ -1111,7 +1115,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? DOT cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
+        {isLessSource()}? (DOT cp_mixin_name | HASH) (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
@@ -1120,7 +1124,8 @@ cp_mixin_call
 cp_mixin_block
     :
     LBRACE ws? syncToFollow
-        declarations?
+        (declarations | (webkitKeyframeSelectors) => 
+		( webkitKeyframesBlock ws? )*)?
     RBRACE
     ;
 
@@ -1685,7 +1690,7 @@ CP_NOT_EQ       : '!='       ;
 LESS            : '<'       ;
 GREATER_OR_EQ   : '>=' | '=>'; //a weird operator variant supported by SASS
 LESS_OR_EQ      : '=<' | '<='; //a weird operator variant supported by SASS
-LESS_AND        : '&'     ;
+LESS_AND        : '&' '-'*    ;
 CP_DOTS         : '...';
 LESS_REST       : '@rest...';
 

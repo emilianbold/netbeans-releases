@@ -180,7 +180,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         outlineView.removeTreeExpansionListener(l);
     }
     
-    private class BrowserOutlineView extends OutlineView {
+    private static class BrowserOutlineView extends OutlineView {
         BrowserOutlineView() {
             setupColumns();
         }

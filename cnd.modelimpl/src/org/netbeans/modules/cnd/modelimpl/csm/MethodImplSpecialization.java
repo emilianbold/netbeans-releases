@@ -46,7 +46,6 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -73,18 +72,16 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
     }
 
     public static<T> MethodImplSpecialization<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
@@ -120,21 +117,19 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
                     break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
         MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<>(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, _abstract, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, methodImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
-        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent), 
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
-        
+
         postObjectCreateRegistration(global, methodImpl);
         nameHolder.addReference(fileContent, methodImpl);
         return methodImpl;
@@ -154,16 +149,16 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         return className;
     }
 
-    
+
     public static class MethodSpecializationBuilder extends MethodBuilder {
-    
+
         @Override
         public MethodImplSpecialization create(CsmParserProvider.ParserErrorDelegate delegate) {
             MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), false, false, isExplicit(),  isStatic(), isConst(), false, getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;
         }
-        
+
         protected void init(FunctionImplEx fun) {
             temporaryRepositoryRegistration(isGlobal(), fun);
 
@@ -174,9 +169,9 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
             postObjectCreateRegistration(isGlobal(), fun);
             addReference(fun);
         }
-        
-    }    
-    
+
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
 

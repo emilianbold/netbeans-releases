@@ -99,7 +99,7 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
         private Task[] scanningTasks;
 
         public Provider(final ExecutionEnvironment env) throws IOException, CancellationException {
-            List<String> paths = new ArrayList<String>();
+            List<String> paths = new ArrayList<>();
             HostInfo info = HostInfoUtils.getHostInfo(env);
             String pathList = info.getEnvironment().get("PATH"); // NOI18N
 
@@ -118,7 +118,7 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
                 return Collections.<String>emptyList();
             }
 
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
 
             for (String exec : scanner.getExecutables()) {
                 if (exec.startsWith(str)) {
@@ -144,12 +144,12 @@ public class ExecutablesCompletionProviderFactory implements AutocompletionProvi
     private final static class Scanner implements Runnable {
 
         private final Iterator<String> pathsIterator;
-        private final Set<String> executables = new HashSet<String>();
+        private final Set<String> executables = new HashSet<>();
         private final ExecutionEnvironment env;
         private volatile boolean isInterrupted;
 
         public Scanner(final ExecutionEnvironment env, final List<String> paths) {
-            List<String> pathsCopy = new ArrayList<String>(paths);
+            List<String> pathsCopy = new ArrayList<>(paths);
             pathsIterator = pathsCopy.iterator();
             this.env = env;
         }

@@ -242,6 +242,7 @@ public final class MemoryWindow extends TopComponent
         return (view_name);
     }
     
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
         memory_start = (String) controlAddressCombo.getSelectedItem();
         updateMems();
@@ -454,6 +455,7 @@ public final class MemoryWindow extends TopComponent
     private class FormatListener implements ActionListener {
 
 	// implement ActionListener
+        @Override
 	public void actionPerformed(java.awt.event.ActionEvent ev) {
 
             String ac = ev.getActionCommand();
@@ -503,6 +505,7 @@ public final class MemoryWindow extends TopComponent
             super(Catalog.get("Mem_ACT_Follow_Selected_Pointer"),// NOI18N
                 new ImageIcon("paste.gif"));			// NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent ev) {
             followSelectedPointer(selected_text);
         }
@@ -514,6 +517,7 @@ public final class MemoryWindow extends TopComponent
             super(Catalog.get("Mem_ACT_Refresh"), 		// NOI18N
                 new ImageIcon("paste.gif"));			// NOI18N
         }
+        @Override
         public void actionPerformed(ActionEvent ev) {
             String s=(String)((controlAddressCombo.getEditor()).getItem());
             if (s.length() > 0) {

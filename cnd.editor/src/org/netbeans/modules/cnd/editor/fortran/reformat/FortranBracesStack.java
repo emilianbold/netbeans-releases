@@ -57,8 +57,8 @@ class FortranBracesStack implements Cloneable {
     private static final boolean TRACE_STACK = false;
     private static final int FIXED_FORMAT_SHIFT = 6;
     
-    private Stack<FortranStackEntry> stack = new Stack<FortranStackEntry>();
-    private FortranCodeStyle codeStyle;
+    private final Stack<FortranStackEntry> stack = new Stack<FortranStackEntry>();
+    private final FortranCodeStyle codeStyle;
     int parenDepth = 0;
 
     FortranBracesStack(FortranCodeStyle codeStyle) {

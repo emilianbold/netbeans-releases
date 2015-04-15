@@ -137,6 +137,7 @@ public final class EditorBridge {
 	    final TopComponent[] tc = new TopComponent[1];
 	    try {
 		SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
 		    public void run() {
 			tc[0] = getActiveEditor();
 		    }

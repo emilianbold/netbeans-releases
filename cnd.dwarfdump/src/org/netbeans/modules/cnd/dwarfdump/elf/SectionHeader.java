@@ -45,7 +45,9 @@
 package org.netbeans.modules.cnd.dwarfdump.elf;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -67,32 +69,36 @@ public class SectionHeader {
     public long getSectionSize() {
         return sh_size;
     }
-    
+
     public long getSectionOffset() {
         return sh_offset;
     }
-    
+
     public long getSectionEntrySize() {
         return sh_entsize;
     }
-    
+
     public String getSectionName(){
         return name;
     }
-    
+
     public void dump(PrintStream out) {
         out.println("Elf section header:"); // NOI18N
-        out.printf("  %-20s %s\n", "Offset:", sh_offset); // NOI18N
-        out.printf("  %-20s %s\n", "Length:", sh_size); // NOI18N
-        out.printf("  %-20s %s\n", "Memory alignment:", sh_addralign); // NOI18N
+        out.printf("  %-20s %s%n", "Offset:", sh_offset); // NOI18N
+        out.printf("  %-20s %s%n", "Length:", sh_size); // NOI18N
+        out.printf("  %-20s %s%n", "Memory alignment:", sh_addralign); // NOI18N
         out.println();
     }
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString("UTF-8"); //NOI18N
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 }

@@ -48,7 +48,7 @@ import java.util.Map;
  * @author vkvashin
  */
 public abstract class StopWatch {
-    
+
     public abstract void stop();
 
     /**
@@ -58,7 +58,7 @@ public abstract class StopWatch {
      * @param key key.toStrinbg() to be used as additional key (2-nd part of key)
      * @param message is printed after prefix and additional key; also acts as 3-st part of key
      * NB: indentation is done by (prefix + additionalKey)
-     * @return 
+     * @return
      */
     public static StopWatch createAndStart(boolean enabled, String category, Object key, String message, Object... arguments) {
         if (!enabled) {
@@ -70,11 +70,11 @@ public abstract class StopWatch {
         int indent = indent(indentKey, +1);
         for (int i = 0; i < indent; i++) {
             text.append("    "); //NOI18N
-        }        
+        }
         text.append(String.format(message, arguments));
         return new Impl(text, indentKey);
     }
-    
+
     private static int indent(String indentKey, int delta) {
         synchronized (lock) {
             Integer indent = indents.get(indentKey);
@@ -83,11 +83,11 @@ public abstract class StopWatch {
             return indent;
         }
     }
-   
+
     private static class Dummy extends StopWatch {
         @Override
         public void stop() {
-        }        
+        }
     }
     private static final StopWatch DUMMY = new Dummy();
     private static final Object lock = new Object();
@@ -104,13 +104,13 @@ public abstract class StopWatch {
             this.text = text;
             this.indentKey = indentKey;
             time = System.currentTimeMillis();
-            System.err.printf("[%d] %s starting...\n", System.currentTimeMillis(), text); //NOI18N
+            System.err.printf("[%d] %s starting...%n", System.currentTimeMillis(), text); //NOI18N
         }
 
         @Override
         public void stop() {
             time = System.currentTimeMillis() - time;
-            System.err.printf("[%d] %s finished in %s ms\n", System.currentTimeMillis(), text, time); //NOI18N
+            System.err.printf("[%d] %s finished in %s ms%n", System.currentTimeMillis(), text, time); //NOI18N
             indent(indentKey, -1);
         }
     }

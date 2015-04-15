@@ -79,7 +79,7 @@ public class MakeExecSupport extends ExecutionSupport {
     private PropertySupport<String> makeTargetsProperty = null;
     private PropertySupport<String> makeEnvironmentProperty = null;;
     /** Store a File of the Build directory */
-    private static ResourceBundle bundle = NbBundle.getBundle(MakeExecSupport.class);
+    private static final ResourceBundle bundle = NbBundle.getBundle(MakeExecSupport.class);
 
     /** Constructor */
     public MakeExecSupport(MultiDataObject.Entry entry) {

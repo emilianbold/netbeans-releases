@@ -225,7 +225,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                 VCSFileProxySupport.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
                 Exception ex = e;
-                if (e.getCause() != null && e.getCause() instanceof SVNClientException) {
+                if (e.getCause() instanceof SVNClientException) {
                     ex = (SVNClientException) e.getCause();
                 }
                 if (SvnClientExceptionHandler.isCancelledAction(ex.getMessage())) {
@@ -315,7 +315,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         }
     }
     
-    private class RollbackAction extends HistoryActionVCSProxyBased {
+    private static class RollbackAction extends HistoryActionVCSProxyBased {
         @Override
         protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             final VCSFileProxy file = files.iterator().next();

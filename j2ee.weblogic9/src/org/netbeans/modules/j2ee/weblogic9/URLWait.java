@@ -50,6 +50,7 @@ import java.net.HttpURLConnection;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.SecureRandom;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -58,7 +59,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
 import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
+import org.netbeans.modules.weblogic.common.spi.WebLogicTrustHandler;
+import org.openide.util.Lookup;
 
 /**
  * Utility class.
@@ -69,6 +78,14 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 public final class URLWait {
 
     private static final Logger LOGGER = Logger.getLogger(URLWait.class.getName());
+
+    private static final HostnameVerifier EMPTY_VERIFIER = new HostnameVerifier() {
+
+        @Override
+        public boolean verify(String string, SSLSession ssls) {
+            return true;
+        }
+    };
 
     private URLWait() {
         super();
@@ -100,6 +117,7 @@ public final class URLWait {
         } catch (ExecutionException ex) {
             LOGGER.log(Level.FINE, null, ex);
         } catch (InterruptedException ex) {
+            LOGGER.log(Level.FINE, null, ex);
             Thread.currentThread().interrupt();
         } catch (TimeoutException ex) {
             task.cancel(true);
@@ -144,6 +162,17 @@ public final class URLWait {
                         con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
                     } else {
                         con = (HttpURLConnection) url.openConnection();
+                        if (con instanceof HttpsURLConnection) {
+                            WebLogicTrustHandler handler = Lookup.getDefault().lookup(WebLogicTrustHandler.class);
+                            if (handler != null) {
+                                SSLContext context = SSLContext.getInstance("TLS"); // NOI18N
+                                context.init(null, new TrustManager[] {handler.getTrustManager(dm.getCommonConfiguration())},
+                                        new SecureRandom());
+                                ((HttpsURLConnection) con).setSSLSocketFactory(
+                                        (SSLSocketFactory) context.getSocketFactory());
+                                ((HttpsURLConnection) con).setHostnameVerifier(EMPTY_VERIFIER);
+                            }
+                        }
                     }
                     int code = con.getResponseCode();
                     if (code == HttpURLConnection.HTTP_BAD_GATEWAY) {

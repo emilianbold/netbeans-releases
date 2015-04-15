@@ -91,7 +91,7 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
     /*package*/ static final Boolean FIX_ERASE_KEY_IN_TERMINAL = Boolean.valueOf(System.getProperty("fixEraseKeyInTerminal", "true")); // NOI18N;
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
-    private final ConcurrentHashMap<String, String> processInfo =  new ConcurrentHashMap<String, String>();
+    private final ConcurrentHashMap<String, String> processInfo =  new ConcurrentHashMap<>();
     protected long creation_ts = -1;
     private final String id;
     private final ExecutionEnvironment execEnv;

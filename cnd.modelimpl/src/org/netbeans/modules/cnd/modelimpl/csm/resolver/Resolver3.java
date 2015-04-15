@@ -162,9 +162,8 @@ public final class Resolver3 implements Resolver {
     
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart, AtomicBoolean outVisibility) {
         outVisibility.set(false);
-        CsmClassifier result = null;
         CsmClassifier backupResult = null;
-        while ( ns != null  && result == null) {
+        while ( ns != null) {
             String fqn = ns.getQualifiedName() + "::" + qualifiedNamePart; // NOI18N
             CsmClassifier aCls = findClassifierUsedInFile(fqn, outVisibility);
             if (aCls != null) {
@@ -179,10 +178,7 @@ public final class Resolver3 implements Resolver {
             }
             ns = ns.getParent();
         }
-        if (result == null) {
-            result = backupResult;
-        }
-        return result;
+        return backupResult;
     }
 
     private CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, AtomicBoolean resultIsVisible) {
@@ -928,7 +924,7 @@ public final class Resolver3 implements Resolver {
             }
         }
         if (result == null) {
-            if (TemplateUtils.isTemplateQualifiedName(fullName.toString())) {
+            if (TemplateUtils.isTemplateQualifiedName(fullName)) {
                 StringBuilder sb2 = new StringBuilder(TemplateUtils.getTemplateQualifiedNameWithoutSiffix(nameTokens[0].toString()));
                 for (int i = 1; i < nameTokens.length; i++) {
                     sb2.append("::"); // NOI18N

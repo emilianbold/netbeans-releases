@@ -54,9 +54,9 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /*package*/ final class RemoteMeasurements {
 
-    private static final ConcurrentHashMap<Integer, String> stacks = new ConcurrentHashMap<Integer, String>();
+    private static final ConcurrentHashMap<Integer, String> stacks = new ConcurrentHashMap<>();
     // [stackid-category-args]-to-statistics
-    private final ConcurrentHashMap<Integer, Stat> stats = new ConcurrentHashMap<Integer, Stat>();
+    private final ConcurrentHashMap<Integer, Stat> stats = new ConcurrentHashMap<>();
     private final AtomicLong upTraffic = new AtomicLong();
     private final AtomicLong downTraffic = new AtomicLong();
     private final String name;
@@ -108,7 +108,7 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     private void dumpCategoriesArgsStatistics(PrintStream out) {
-        HashMap<String, Counters> data = new HashMap<String, Counters>();
+        HashMap<String, Counters> data = new HashMap<>();
 
         for (Stat stat : stats.values()) {
             String id = stat.category + "%" + Arrays.toString(stat.args); // NOI18N
@@ -124,7 +124,7 @@ import java.util.concurrent.atomic.AtomicLong;
         out.printf("== Arguments statistics start ==\n"); // NOI18N
         out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
-        LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
+        LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
 
         for (Map.Entry<String, Counters> entry : dataList) {
@@ -138,7 +138,7 @@ import java.util.concurrent.atomic.AtomicLong;
     }
 
     private void dumpCategoriesStacksStatistics(PrintStream out) {
-        HashMap<String, Counters> data = new HashMap<String, Counters>();
+        HashMap<String, Counters> data = new HashMap<>();
         
         for (Stat stat : stats.values()) {
             String id = stat.stackID + "%" + stat.category; // NOI18N
@@ -154,7 +154,7 @@ import java.util.concurrent.atomic.AtomicLong;
         out.printf("== Categories stacks statistics start ==\n"); // NOI18N
         out.printf("%20s|%8s|%8s|%10s|%s\n", "Category", "Count", "Time", "~Traffic", "Args"); // NOI18N
 
-        LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<Map.Entry<String, Counters>>(data.entrySet());
+        LinkedList<Map.Entry<String, Counters>> dataList = new LinkedList<>(data.entrySet());
         Collections.sort(dataList, new CategoriesStatComparator());
 
         for (Map.Entry<String, Counters> entry : dataList) {
@@ -172,7 +172,7 @@ import java.util.concurrent.atomic.AtomicLong;
     private void dumpCategoriesStatistics(PrintStream out) {
         long totalTime = 0;
         long totalTraffic = 0;
-        HashMap<String, Counters> map = new HashMap<String, Counters>();
+        HashMap<String, Counters> map = new HashMap<>();
         for (Stat stat : stats.values()) {
             Counters counters = map.get(stat.category);
             if (counters == null) {
@@ -293,7 +293,7 @@ import java.util.concurrent.atomic.AtomicLong;
         private final AtomicLong count = new AtomicLong();
         private final AtomicLong time = new AtomicLong();
         private final AtomicLong supposedTraffic = new AtomicLong();
-        private final HashSet<Integer> args = new HashSet<Integer>();
+        private final HashSet<Integer> args = new HashSet<>();
 
         private void add(Stat stat) {
             count.addAndGet(stat.count.get());

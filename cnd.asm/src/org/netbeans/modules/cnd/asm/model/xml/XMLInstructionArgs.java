@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.InstructionArgs;
 import org.netbeans.modules.cnd.asm.model.lang.operand.Operand;
 
 public class XMLInstructionArgs implements InstructionArgs {
-    private List<String> params;
-    private String description;
+    private final List<String> params;
+    private final String description;
     
     public XMLInstructionArgs(List<String> params, String description) {
         this.params = params;

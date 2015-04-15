@@ -60,9 +60,9 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
  */
 /*package-local*/ class IncludedModelImpl implements IncludedModel {
     private Map<CsmFile,Set<CsmFile>> map;
-    private Action[] actions;
+    private final Action[] actions;
     private Action close;
-    private boolean direction;
+    private final boolean direction;
        
     /** Creates a new instance of IncludedModel */
     public IncludedModelImpl(CsmFile file, Action[] actions, boolean whoIncludes, boolean plain, boolean recursive) {

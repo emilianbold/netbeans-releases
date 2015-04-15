@@ -164,7 +164,7 @@ public final class TerminalLocalNativeProcess extends AbstractNativeProcess {
                 terminal = terminal.setTitle(title);
             }
 
-            List<String> terminalArgs = new ArrayList<String>();
+            List<String> terminalArgs = new ArrayList<>();
 
             String shellScriptPath = dorunScript.getAbsolutePath();
             if (osFamily == OSFamily.WINDOWS) {

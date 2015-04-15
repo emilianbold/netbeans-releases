@@ -104,11 +104,11 @@ public class CppFile {
     /** record of initial comment fold information */
     private CppFoldRecord initialCommentFoldRecord;
     /** record of includes block fold information */
-    private List<CppFoldRecord> includesFoldRecords = new ArrayList<CppFoldRecord>();
+    private final List<CppFoldRecord> includesFoldRecords = new ArrayList<CppFoldRecord>();
     /** record of class/struct/union definition fold information */
 //    private ArrayList/*<CppFoldRecord>*/ classFoldRecords;
     /** record of function/method/class/#ifdef/comments fold information */
-    private List<CppFoldRecord> blockFoldRecords;
+    private final List<CppFoldRecord> blockFoldRecords;
 
     public CppFile(String filename) {
         //file = new File(filename);

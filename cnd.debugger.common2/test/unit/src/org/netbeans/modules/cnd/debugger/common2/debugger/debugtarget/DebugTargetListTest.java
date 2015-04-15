@@ -71,12 +71,14 @@ public class DebugTargetListTest extends CndBaseTestCase {
     }
 
     @org.junit.Before
+    @Override
     public void setUp() throws Exception {
         System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
         System.setProperty("debug.engine", "on");
     }
 
     @org.junit.After
+    @Override
     public void tearDown() throws Exception {
     }
 

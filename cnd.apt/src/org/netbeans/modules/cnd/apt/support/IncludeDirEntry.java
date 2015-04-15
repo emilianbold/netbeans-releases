@@ -66,7 +66,7 @@ public final class IncludeDirEntry {
     static {
         SupportAPIAccessor.register(new AccessorImpl());
     }
-    
+
     private static final int MANAGER_DEFAULT_CAPACITY;
     private static final int MANAGER_DEFAULT_SLICED_NUMBER;
     static {
@@ -111,7 +111,7 @@ public final class IncludeDirEntry {
             // #196267 -  slow parsing in Full Remote
             // do expensive work out of sync block
             boolean framework = dir.endsWith("/Frameworks"); // NOI18N
-            // FIXME XXX:FullRemote 
+            // FIXME XXX:FullRemote
             if (dir.contains(File.separatorChar + "remote-files" + File.separatorChar)) { //XXX:fullRemote //NOI18N
                 fs = CndFileUtils.getLocalFileSystem();
             }
@@ -138,7 +138,7 @@ public final class IncludeDirEntry {
                     out = new IncludeDirEntry(exists, framework, entryFS, asCharSeq, key.hashCode());
                     delegate.put(key, out);
                 }
-            } 
+            }
         }
         return out;
     }
@@ -177,7 +177,7 @@ public final class IncludeDirEntry {
     public FileSystem getFileSystem() {
         return fileSystem;
     }
-    
+
     public boolean isFramework() {
         return isFramework;
     }
@@ -204,7 +204,7 @@ public final class IncludeDirEntry {
     private void invalidateDirExistence() {
         exists = null;
     }
-    
+
     /*package*/static void disposeCache() {
         storage.dispose();
         ResolverResultsCache.clearCache();
@@ -220,7 +220,7 @@ public final class IncludeDirEntry {
         }
         ResolverResultsCache.clearCache();
     }
-    
+
     /*package*/static void invalidateFileBasedCache(String file) {
         final CharSequence key = FilePathCache.getManager().getString(file);
         Map<CharSequence, IncludeDirEntry> delegate = storage.getDelegate(key);
@@ -232,7 +232,7 @@ public final class IncludeDirEntry {
         }
         ResolverResultsCache.clearCache();
     }
-    
+
     private static final class IncludeDirStorage {
 
         private final WeakHashMap<CharSequence, IncludeDirEntry>[] instances;
@@ -268,13 +268,13 @@ public final class IncludeDirEntry {
                 if (instances[i].size() > 0) {
                     if (CndTraceFlags.TRACE_SLICE_DISTIBUTIONS) {
                         System.out.println("Include Dir Cache " + instances[i].size()); // NOI18N
-                        Map<Class, Integer> keyClasses = new HashMap<Class, Integer>();
+                        Map<Class<?>, Integer> keyClasses = new HashMap<Class<?>, Integer>();
                         for (Object o : instances[i].keySet()) {
                             if (o != null) {
                                 incCounter( keyClasses, o);
                             }
                         }
-                        for (Map.Entry<Class, Integer> e : keyClasses.entrySet()) {
+                        for (Map.Entry<Class<?>, Integer> e : keyClasses.entrySet()) {
                             System.out.println("   " + e.getValue() + " of " + e.getKey().getName()); // NOI18N
                         }
                     }
@@ -283,7 +283,7 @@ public final class IncludeDirEntry {
             }
         }
 
-        private void incCounter(Map<Class, Integer> uidClasses, Object o) {
+        private void incCounter(Map<Class<?>, Integer> uidClasses, Object o) {
             Integer num = uidClasses.get(o.getClass());
             if (num != null) {
                 num = Integer.valueOf(num.intValue() + 1);

@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
  * @author nk220367
  */
 public class FortranParserEx {
-    
+
     public static final int UNKNOWN_SOURCE_FORM = -1;
     public static final int FREE_FORM = 1;
     public static final int FIXED_FORM = 2;
@@ -76,7 +76,7 @@ public class FortranParserEx {
     private FortranParser parser;
 
     private final int form;
-    
+
     public program_return program() throws RecognitionException {
         return parser.program();
     }
@@ -84,16 +84,16 @@ public class FortranParserEx {
     int getNumberOfSyntaxErrors() {
         return parser.getNumberOfSyntaxErrors();
     }
-    
-    public class ProgramData {
+
+    public static class ProgramData {
         public String name;
         public int startOffset;
         public int endOffset;
-        
+
         public List<Object> members = null;
     }
 
-    public class SubroutineData {
+    public static class SubroutineData {
         public String name;
         public int startOffset;
         public int endOffset;
@@ -101,7 +101,7 @@ public class FortranParserEx {
         public List<String> args = null;
     }
 
-    public class ModuleData {
+    public static class ModuleData {
         public String name;
         public int startOffset;
         public int endOffset;
@@ -147,7 +147,7 @@ public class FortranParserEx {
             prepass.setSourceForm(form);
             prepass.performPrepass();
             tokens.finalizeTokenStream();
-            
+
 //            int i = 0;
 //            Token token = tokens.get(i);
 //            while (token.getType() != -1) {
@@ -156,12 +156,12 @@ public class FortranParserEx {
 //                token = tokens.get(i);
 //            }
 //            System.out.println(token.getType() + " " + token.getText() + " " + token.getLine() + " " + (token.getCharPositionInLine()));
-            
+
         } catch (Throwable t) {
             System.out.println(t);
             t.printStackTrace(System.out);
         }
-        
+
         parser.inputStreams = new Stack<>();
 
         parser.action = new IFortranParserAction() {
@@ -176,7 +176,7 @@ public class FortranParserEx {
                     programData = new ProgramData();
                     programData.name = id.getText();
                     programData.startOffset = ((APTToken) ((MyToken) programKeyword).t).getOffset();
-                    
+
                     programData.members = new ArrayList<>();
                     // System.out.println("program " + id);
                 }
@@ -203,8 +203,6 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(subroutineData);
-                    } else if(programData != null && programData.members != null) {
-                        programData.members.add(subroutineData);
                     } else {
                         parsedObjects.add(subroutineData);
                     }
@@ -219,8 +217,6 @@ public class FortranParserEx {
                     }
                     if(moduleData != null && moduleData.members != null) {
                         moduleData.members.add(functionData);
-                    } else if(programData != null && programData.members != null) {
-                        programData.members.add(functionData);
                     } else {
                         parsedObjects.add(functionData);
                     }
@@ -2874,7 +2870,7 @@ public class FortranParserEx {
         public String toString() {
             return t.toString();
         }
-        
+
     }
 
 
@@ -2882,7 +2878,7 @@ public class FortranParserEx {
         TokenBuffer tb;
 
         int lastMark;
-        
+
         public MyTokenStream(TokenBuffer tb) {
             this.tb = tb;
         }

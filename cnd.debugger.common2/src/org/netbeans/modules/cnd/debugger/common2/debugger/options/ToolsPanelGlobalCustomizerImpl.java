@@ -53,34 +53,42 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelGlobalCustomizer;
 //@org.openide.util.lookup.ServiceProvider(service=ToolsPanelGlobalCustomizer.class, position=100)
 public class ToolsPanelGlobalCustomizerImpl implements ToolsPanelGlobalCustomizer {
 
+    @Override
     public boolean isHostCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isBaseDirCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isCCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isCppCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isFortranCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isAssemblerCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isMakeCustomizable() {
         return true;
     }
 
+    @Override
     public boolean isDebuggerCustomizable() {
         boolean out = false;
         String val = System.getProperty("debug.engine"); // NOI18N
@@ -90,10 +98,12 @@ public class ToolsPanelGlobalCustomizerImpl implements ToolsPanelGlobalCustomize
         return out;
     }
 
+    @Override
     public boolean isQMakeCustomizable() {
         return false;
     }
 
+    @Override
     public boolean isCMakeCustomizable() {
         return false;
     }

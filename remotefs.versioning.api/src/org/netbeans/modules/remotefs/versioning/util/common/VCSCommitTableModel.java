@@ -206,7 +206,6 @@ public class VCSCommitTableModel<F extends VCSFileNode> extends AbstractTableMod
             // XXX this is a mess
             if(rootFile != null) {
                 // must convert from native separators to slashes
-                String relativePath = nodes[rowIndex].getFile().getPath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath;
             } else {
                 shortPath = nodes[rowIndex].getRelativePath();

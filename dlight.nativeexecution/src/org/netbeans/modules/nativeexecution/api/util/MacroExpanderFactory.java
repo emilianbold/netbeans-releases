@@ -55,7 +55,7 @@ import org.netbeans.modules.nativeexecution.api.HostInfo.OS;
 
 public final class MacroExpanderFactory {
 
-    private static final HashMap<String, MacroExpander> expanderCache = new HashMap<String, MacroExpander>();
+    private static final HashMap<String, MacroExpander> expanderCache = new HashMap<>();
 
     public static enum ExpanderStyle {
 

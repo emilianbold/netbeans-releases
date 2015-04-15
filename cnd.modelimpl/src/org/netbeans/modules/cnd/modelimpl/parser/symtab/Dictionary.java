@@ -64,7 +64,7 @@ public class Dictionary {
     int getBucketIndex(CharSequence key) {
         return hash(key) % nbuckets;
     }
-    
+
     DictionaryEntry lookup(CharSequence key) {
         return lookup(key, null);
     }
@@ -75,7 +75,7 @@ public class Dictionary {
      */
     DictionaryEntry lookup(CharSequence key, DictionaryEntry.ObjectType tp) {
         //printf("Dictionary.cpp lookup entered with %s for type %d\n",key,tp);
-        // tp is type to be looked for 
+        // tp is type to be looked for
         // Default, 0, is to look for any symbol irrespective of type
         // Each new DictionaryEntry is stored at start of its list so most
         // recent additions are reached first
@@ -91,7 +91,7 @@ public class Dictionary {
             //	q.getKey(),q.this_scope,getCurrentScopeIndex());
 
             if (h != q.getHashCode()) {
-                System.err.printf("dictionary.cpp lookup, h not equal to q.getHashCode() for %s\n", key);
+                System.err.printf("dictionary.cpp lookup, h not equal to q.getHashCode() for %s%n", key);
             }
 
             if (h == q.getHashCode() && strcmp(key, q.getKey())) {
@@ -116,7 +116,7 @@ public class Dictionary {
     }
 
     void defineInScope(CharSequence key, DictionaryEntry entry, int sc) {
-        int h = getBucketIndex(key);	
+        int h = getBucketIndex(key);
         //printf("Dictionary.cpp defineInScope key %s hash(key) %d bucket %d scope %d\n",
         //	key,hash(key),h,sc);
         entry.this_scope = sc;
@@ -147,7 +147,7 @@ public class Dictionary {
             panic("restoreScope: underflow"); // NOI18N
         }
         currentScope--;
-        //printf("Dictionary restoreScope entered. Scope now %d\n",currentScope);            
+        //printf("Dictionary restoreScope entered. Scope now %d\n",currentScope);
     }
 
     DictionaryEntry getCurrentScope() {
@@ -227,7 +227,7 @@ public class Dictionary {
                 return de;
             }
         }
-        return null;	// should never get here...    
+        return null;	// should never get here...
     }
 
     private boolean strcmp(CharSequence s1, CharSequence s2) {
@@ -337,9 +337,9 @@ public class Dictionary {
 //
 //	strsize = nrCharacters;
 //	strings = new char[nrCharacters];
-//	strp = strings;    
+//	strp = strings;
     }
-    
+
     private DictionaryEntry[] scope, endScope;
     private int nscopes, currentScope;
     private DictionaryEntry[] bucket;

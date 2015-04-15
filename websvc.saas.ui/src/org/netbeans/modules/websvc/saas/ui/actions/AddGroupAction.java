@@ -46,18 +46,18 @@ package org.netbeans.modules.websvc.saas.ui.actions;
 
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 
-/** Add a webservice group node to the root node
+/** 
+ * Action that creates a web services group.
  */
 public class AddGroupAction extends NodeAction {
     
+    @Override
     protected boolean enable(org.openide.nodes.Node[] nodes) {
         if (nodes != null && nodes.length == 1) {
             SaasGroup g = nodes[0].getLookup().lookup(SaasGroup.class);
@@ -66,23 +66,22 @@ public class AddGroupAction extends NodeAction {
         return false;
     }
     
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
-        return new HelpCtx(AddGroupAction.class);
+        return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public String getName() {
-        return NbBundle.getMessage(AddGroupAction.class, "ADD_GROUP");
+        return NbBundle.getMessage(AddGroupAction.class, "ADD_GROUP"); // NOI18N
     }
     
+    @Override
     protected void performAction(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return;
-        }
-        
-        String defaultName = NbBundle.getMessage(AddGroupAction.class, "NEW_GROUP"); 
+        String defaultName = NbBundle.getMessage(AddGroupAction.class, "NEW_GROUP");  // NOI18N
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
-                NbBundle.getMessage(AddGroupAction.class, "CTL_GroupLabel"),
-                NbBundle.getMessage(AddGroupAction.class, "CTL_GroupTitle"));
+                NbBundle.getMessage(AddGroupAction.class, "CTL_GroupLabel"), // NOI18N
+                NbBundle.getMessage(AddGroupAction.class, "CTL_GroupTitle")); // NOI18N
         dlg.setInputText(defaultName);
         
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dlg))) {
@@ -106,6 +105,7 @@ public class AddGroupAction extends NodeAction {
     }
     
     /** @return <code>false</code> to be performed in event dispatch thread */
+    @Override
     protected boolean asynchronous() {
         return false;
     }

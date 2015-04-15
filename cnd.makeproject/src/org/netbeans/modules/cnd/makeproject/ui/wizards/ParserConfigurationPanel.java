@@ -46,9 +46,9 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -115,7 +115,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                             if (listFiles != null) {
                                 for (FileObject sub : listFiles){
                                     if (sub.isFolder()) {
-                                        if (sub.getNameExt().toLowerCase().endsWith("include")) { // NOI18N
+                                        if (sub.getNameExt().toLowerCase(Locale.getDefault()).endsWith("include")) { // NOI18N
                                             buf.append(';');
                                             buf.append(RemoteFileUtil.getAbsolutePath(sub));
                                         }
@@ -132,7 +132,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
 
     void store(WizardDescriptor wizardDescriptor) {
         if (manualButton.isSelected()) {
-            WizardConstants.PROPERTY_INCLUDES.put(wizardDescriptor, includeTextField.getText()); 
+            WizardConstants.PROPERTY_INCLUDES.put(wizardDescriptor, includeTextField.getText());
             WizardConstants.PROPERTY_MACROS.put(wizardDescriptor, macroTextField.getText());
             WizardConstants.PROPERTY_MANUAL_CODE_ASSISTANCE.put(wizardDescriptor, Boolean.TRUE);
             WizardConstants.PROPERTY_BUILD_LOG.put(wizardDescriptor, ""); // NOI18N
@@ -555,24 +555,4 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
     private static String getString(String s) {
         return NbBundle.getMessage(PanelProjectLocationVisual.class, s);
     }
-    
-    private class LogFileFilter extends javax.swing.filechooser.FileFilter {
-        public LogFileFilter() {
-        }
-        @Override
-        public String getDescription() {
-            return(getString("FILECHOOSER_BUILD_LOG_FILEFILTER")); // NOI18N
-        }
-        @Override
-        public boolean accept(File f) {
-            if (f != null) {
-                if (f.isDirectory()) {
-                    return true;
-                }
-                return f.getName().endsWith(".log"); // NOI18N
-            }
-            return false;
-        }
-    }
-
 }

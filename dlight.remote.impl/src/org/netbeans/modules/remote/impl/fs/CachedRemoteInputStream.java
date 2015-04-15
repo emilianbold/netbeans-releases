@@ -64,7 +64,7 @@ final class CachedRemoteInputStream extends InputStream {
 
     private static final int BUFFER_SIZE;
     private final RemotePlainFile remoteFile;
-    private byte[] buffer;
+    private final byte[] buffer;
     private int position;
     private final Writer writer = new PrintWriter(System.err);
     private Object delegate;
@@ -78,10 +78,8 @@ final class CachedRemoteInputStream extends InputStream {
                 field.setAccessible(true);
                 defaultBufferSize = field.getInt(BufferedInputStream.class);
             }
-        } catch (IllegalArgumentException ex) {
-        } catch (IllegalAccessException ex) {
-        } catch (NoSuchFieldException ex) {
-        } catch (SecurityException ex) {
+        } catch (IllegalArgumentException | IllegalAccessException | 
+                NoSuchFieldException | SecurityException ex) {
         }
         if (defaultBufferSize > prefferedBufferSize) {
             BUFFER_SIZE = defaultBufferSize;
@@ -134,11 +132,7 @@ final class CachedRemoteInputStream extends InputStream {
                     }
                     return ((FileInputStream) delegate).read();
                 }
-            } catch (ConnectException ex) {
-                return -1;
-            } catch (InterruptedException ex) {
-                return -1;
-            } catch (CancellationException ex) {
+            } catch (ConnectException | InterruptedException | CancellationException ex) {
                 return -1;
             } catch (ExecutionException ex) {
                 RemoteLogger.finest(ex);

@@ -111,7 +111,7 @@ public class SelectHostWizardPanel implements
     }
 
     public List<WizardDescriptor.Panel<WizardDescriptor>> getAdditionalPanels() {
-        List<WizardDescriptor.Panel<WizardDescriptor>> list = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>(2);
+        List<WizardDescriptor.Panel<WizardDescriptor>> list = new ArrayList<>(2);
         list.add(new CreateHostWizardPanel2(createHostData));
         list.add(new CreateHostWizardPanel3(createHostData));
         return list;

@@ -49,10 +49,10 @@ import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 
 public final class GdbLocal {
     
-    private String name;
-    private String type;
+    private final String name;
+    private final String type;
     private String value;
-    private boolean simple;
+    private final boolean simple;
 
     public GdbLocal(MIValue localvar) {
         final MITList varlist = localvar.asTuple();

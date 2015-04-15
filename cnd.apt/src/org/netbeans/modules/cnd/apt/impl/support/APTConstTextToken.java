@@ -61,7 +61,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
     private static final int MAX_TEXT_ID = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     final static String[] constText = new String[MAX_TEXT_ID];
     final static CharSequence[] constTextID = new CharSequence[MAX_TEXT_ID];
-    
+
     private int type = INVALID_TYPE;
     private int column;
     private int offset;
@@ -71,12 +71,12 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
      */
     public APTConstTextToken() {
     }
-    
+
     static {
         //setup const text values
         constText[EOF]                  =""; // NOI18N
         constText[END_PREPROC_DIRECTIVE]=""; // NOI18N
-        
+
         // 1 symbol:
         constText[GRAVE_ACCENT]          ="`"; // NOI18N
         constText[FUN_LIKE_MACRO_LPAREN]="("; // NOI18N
@@ -113,7 +113,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         constText[BITWISEANDEQUAL]      ="&="; // NOI18N
         constText[AND]                  ="&&"; // NOI18N
         constText[NOTEQUAL]             ="!="; // NOI18N
-        constText[MODEQUAL]             ="%="; // NOI18N        
+        constText[MODEQUAL]             ="%="; // NOI18N
         constText[TIMESEQUAL]           ="*="; // NOI18N
         constText[DIVIDEEQUAL]          ="/="; // NOI18N
         constText[EQUAL]                ="=="; // NOI18N
@@ -138,10 +138,10 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         constText[SHIFTRIGHTEQUAL]      =">>="; // NOI18N
         constText[POINTERTOMBR]         ="->*"; // NOI18N
         constText[ELLIPSIS]             ="..."; // NOI18N
-        
+
         // more
         constText[DEFINED]              ="defined"; // NOI18N
-        
+
         // add literals
         try {
             Field literalsField = APTLexer.class.getDeclaredField("LITERALS_TABLE"); //NOI18N
@@ -166,7 +166,7 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
             constTextID[i] = CharSequences.create(str);
             if (str != null) {
                 if (i > MAX_TEXT_ID) {
-                    System.err.printf("APTConstTextToken: token %s [%d] is higher than MAX_TEXT_ID [%d]\n", str, i, MAX_TEXT_ID);
+                    System.err.printf("APTConstTextToken: token %s [%d] is higher than MAX_TEXT_ID [%d]%n", str, i, MAX_TEXT_ID);
                 }
             } else {
                // System.err.printf("APTConstTextToken: index [%d] does not have text \n", i);
@@ -175,12 +175,12 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
 //        assert TYPE_MASK >= LAST_CONST_TEXT_TOKEN;
 //        System.err.printf("APTConstTextToken: %d\n", LAST_CONST_TEXT_TOKEN);
     }
-    
+
 //    private static void addConstText(String text, int id) {
 //        assert constText[id] == null || constText[id].equals(text) : "Trying to redefine value " + text + " for already defined token type " + id + ", current value is " + constText[id];
 //        constText[id] = text;
 //    }
-    
+
     @Override
     public String getText() {
         //assert(constText[getType()] != null) : "Not initialized ConstText for type " + getType(); // NOI18N

@@ -85,7 +85,7 @@ import org.openide.windows.WindowManager;
 @ActionReference(path = "Remote/Host/Actions", name = "OpenRemoteProjectAction", position = 250)
 public class OpenRemoteProjectAction extends SingleHostAction {
 
-    private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
     
@@ -215,7 +215,7 @@ public class OpenRemoteProjectAction extends SingleHostAction {
     private static final class ProjectSelectionFileView extends FileView implements Runnable {
 
         private final JFileChooser chooser;
-        private final Map<File, Icon> knownProjectIcons = new HashMap<File, Icon>();
+        private final Map<File, Icon> knownProjectIcons = new HashMap<>();
         private final RequestProcessor.Task task = new RequestProcessor("ProjectIconFileView").create(this);//NOI18N
         private File lookingForIcon;
 

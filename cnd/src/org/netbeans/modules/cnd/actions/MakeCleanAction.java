@@ -54,6 +54,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class MakeCleanAction extends MakeBaseAction {
 
+    @Override
     public String getName () {
         return getString("BTN_Clean"); // NOI18N
     }

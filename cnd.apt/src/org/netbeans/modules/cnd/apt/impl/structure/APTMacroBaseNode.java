@@ -62,17 +62,17 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
                                         implements Serializable {
     private static final long serialVersionUID = 1315417078059538898L;
     private APTToken macroName = EMPTY_NAME;
-    
+
     /** Copy constructor */
     /**package*/APTMacroBaseNode(APTMacroBaseNode orig) {
         super(orig);
         this.macroName = orig.macroName;
     }
-    
+
     /** Constructor for serialization **/
     protected APTMacroBaseNode() {
     }
-    
+
     /** Creates a new instance of APTMacroBaseNode */
     public APTMacroBaseNode(APTToken token) {
         super(token);
@@ -93,7 +93,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
     @Override
     public void setFirstChild(APT child) {
         // do nothing
-        assert (false) : "define/undef doesn't support children"; // NOI18N        
+        assert (false) : "define/undef doesn't support children"; // NOI18N
     }
 
     @Override
@@ -108,7 +108,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
             if (macroName != EMPTY_NAME) {
                 // init macro name only once
                 if (DebugUtils.STANDALONE) {
-                    System.err.printf("%s, line %d: warning: extra tokens at end of %s directive\n", // NOI18N
+                    System.err.printf("%s, line %d: warning: extra tokens at end of %s directive%n", // NOI18N
                             APTTraceUtils.toFileString(curFile), getToken().getLine(), getToken().getText().trim()); // NOI18N
                 } else {
                     APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: extra tokens at end of {2} directive", // NOI18N
@@ -121,7 +121,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         } else {
             // everything else is not expected here
             if (DebugUtils.STANDALONE) {
-                System.err.printf("%s, line %d: warning: unexpected token %s\n", // NOI18N
+                System.err.printf("%s, line %d: warning: unexpected token %s%n", // NOI18N
                         APTTraceUtils.toFileString(curFile), getToken().getLine(), token.getText().trim()); // NOI18N
             } else {
                 APTUtils.LOG.log(Level.WARNING, "{0}, line {1}: warning: unexpected token {2}", // NOI18N
@@ -143,7 +143,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         }
         return retValue;
     }
-    
+
     public APTToken getName() {
         return macroName;
     }
@@ -167,14 +167,14 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         hash = 37 * hash + (this.macroName != null ? this.macroName.hashCode() : 0);
         return hash;
     }
-    
+
     private static final NotHandledMacroName EMPTY_NAME = new NotHandledMacroName();
-    
+
     //TODO: what about Serializable
     private static final class NotHandledMacroName extends APTTokenAbstact {
         public NotHandledMacroName() {
         }
-        
+
         @Override
         public String getText() {
             return "<<DUMMY>>"; // NOI18N
@@ -191,5 +191,5 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
             return this == obj;
         }
 
-    };    
+    };
 }

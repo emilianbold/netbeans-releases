@@ -78,17 +78,21 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CustomizableHos
 
 public class CaptureListenAction extends SystemAction implements Presenter.Menu  {
 
+    @Override
     public String getName () {
 	return Catalog.get("LBL_ListenToCaptures"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(CaptureListenAction.class); // FIXUP ???
     }
 
+    @Override
     public void actionPerformed(ActionEvent ev) {
     }
 
+    @Override
     public JMenuItem getMenuPresenter() {
 	JMenu mi = new JMenu();
 	Actions.connect(mi, (Action)this, false);
@@ -97,14 +101,17 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
     }
 
     private class MainItemListener implements MenuListener {
+        @Override
 	public void menuCanceled(MenuEvent e) {
 	}
 
+        @Override
         public void menuDeselected(MenuEvent e) {
             JMenu menu = (JMenu)e.getSource();
             menu.removeAll();
         }
 
+        @Override
         public void menuSelected (MenuEvent e) {
             JMenu menu = (JMenu)e.getSource();
 	    String [] hostChoices = null;
@@ -166,9 +173,11 @@ public class CaptureListenAction extends SystemAction implements Presenter.Menu 
 	    addActionListener(this);
 	}
         
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    final String hn = hostName;
 	    CndRemote.validate(hn, new Runnable() {
+                @Override
 		public void run() {
 		    toggleXstart();
 		}

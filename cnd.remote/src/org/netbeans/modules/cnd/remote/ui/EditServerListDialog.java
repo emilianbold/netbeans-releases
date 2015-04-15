@@ -265,7 +265,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
 
     public List<ServerRecord> getHosts() {
-        List<ServerRecord> result = new ArrayList<ServerRecord>(model.getSize());
+        List<ServerRecord> result = new ArrayList<>(model.getSize());
         for (int i = 0; i < model.getSize(); i++) {
             result.add((ServerRecord) model.get(i));
         }

@@ -66,7 +66,7 @@ import org.openide.util.Exceptions;
 
 public final class SPSLocalImpl extends SPSCommonImpl {
 
-    private static final Map<String, Long> csums = new HashMap<String, Long>();
+    private static final Map<String, Long> csums = new HashMap<>();
     private final String privp;
     private String pid = null;
 

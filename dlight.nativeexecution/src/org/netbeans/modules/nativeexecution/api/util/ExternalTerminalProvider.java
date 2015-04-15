@@ -78,9 +78,9 @@ public final class ExternalTerminalProvider {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final HashMap<String, List<TerminalProfile>> profiles =
-            new HashMap<String, List<TerminalProfile>>();
+            new HashMap<>();
     private static final HashMap<ExternalTerminal.TermEnvPair, TerminalProfile> hash =
-            new HashMap<ExternalTerminal.TermEnvPair, TerminalProfile>();
+            new HashMap<>();
 
     static {
         init();
@@ -214,7 +214,7 @@ public final class ExternalTerminalProvider {
 
     private static final class SAXHandler extends DefaultHandler {
 
-        private Stack<Context> context = new Stack<Context>();
+        private Stack<Context> context = new Stack<>();
         private TerminalProfile info;
         private StringBuilder accumulator = new StringBuilder();
         private int version = 1;
@@ -272,7 +272,7 @@ public final class ExternalTerminalProvider {
             } else {
                 List<TerminalProfile> list = profiles.get(info.getID());
                 if (list == null) {
-                    list = new ArrayList<TerminalProfile>();
+                    list = new ArrayList<>();
                     profiles.put(info.getID(), list);
                 }
 

@@ -70,11 +70,13 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     } 
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
@@ -84,24 +86,28 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
     
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_StepOutInstAction"); // NOI18N
     }
     
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected String iconResource () {
         return "org/netbeans/modules/cnd/debugger/common2/icons/step_out_instruction.png"; // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	putValue(SHORT_DESCRIPTION, Catalog.get("TIP_StepOutInstAction")); // NOI18N
@@ -109,6 +115,7 @@ public class StepOutInstAction extends CallableSystemAction implements StateList
     }    
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	if (state == null) {
 	    setEnabled(false);

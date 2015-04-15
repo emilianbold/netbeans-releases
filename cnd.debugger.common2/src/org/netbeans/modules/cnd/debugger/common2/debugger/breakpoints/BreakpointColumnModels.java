@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints;
 import org.netbeans.modules.cnd.debugger.common2.values.LwpIdEditor;
 import org.netbeans.modules.cnd.debugger.common2.values.ThreadIdEditor;
 import org.netbeans.modules.cnd.debugger.common2.values.CountLimitEditor;
-import org.netbeans.modules.cnd.debugger.common2.values.ActionEditor;
 import org.netbeans.modules.cnd.debugger.common2.values.StringEditor;
 
 

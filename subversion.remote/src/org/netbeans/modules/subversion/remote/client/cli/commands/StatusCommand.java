@@ -417,7 +417,7 @@ public class StatusCommand extends SvnCommand {
         }                
     }       
 
-    public class Status {
+    public static class Status {
         private final VCSFileProxy path;        
         private final SVNStatusKind wcStatus;
         private final SVNStatusKind wcPropsStatus;

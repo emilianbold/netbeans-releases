@@ -74,7 +74,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
     
     private static final RequestProcessor RP = new RequestProcessor("RemoteBinaryServiceImpl", 1); // NOI18N
 
-    private final Map<ExecutionEnvironment, Delegate> impls = new HashMap<ExecutionEnvironment, Delegate>();
+    private final Map<ExecutionEnvironment, Delegate> impls = new HashMap<>();
     private static int downloadCount = 0;
 
     @Override
@@ -117,7 +117,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
     private static class Delegate {
 
         private final ExecutionEnvironment execEnv;
-        private final Map<String, Entry> cache = new HashMap<String, Entry>();
+        private final Map<String, Entry> cache = new HashMap<>();
 
         public Delegate(ExecutionEnvironment execEnv) {
             this.execEnv = execEnv;
@@ -162,7 +162,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                     CndPathUtilities.getDirName(remotePath),
                     CndFileUtils.createLocalFile(localPath).getParentFile())) {
                 if (lastResult == null) {
-                    lastResult = new RemoteBinaryResult(localPath, new FutureTask<Boolean>(new Callable<Boolean>() {
+                    lastResult = new RemoteBinaryResult(localPath, new FutureTask<>(new Callable<Boolean>() {
 
                         @Override
                         public Boolean call() throws Exception {
@@ -218,7 +218,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             final File localFile = File.createTempFile("cnd-remote-binary-", ".bin"); // NOI18N
             localFile.deleteOnExit();
 
-            FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
+            FutureTask<Boolean> task = new FutureTask<>(new Callable<Boolean>() {
 
                 @Override
                 public Boolean call() throws Exception {

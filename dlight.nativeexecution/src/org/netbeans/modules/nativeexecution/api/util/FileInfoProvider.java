@@ -80,7 +80,7 @@ public class FileInfoProvider {
             Door(S_IFDOOR_C, StatInfo.S_IFDOOR & StatInfo.S_IFMT),
             EventPort(S_IFPORT_C, StatInfo.S_IFPORT & StatInfo.S_IFMT),
             Undefined(S_UNDEF_C, 0);
-            
+
             private final char letter;
             private final int fileType;
 
@@ -115,7 +115,7 @@ public class FileInfoProvider {
                 return Undefined;
             }
         }
-        
+
         private static final int  S_IFMT     =  0xF000; //bitmask for the file type bitfields
         private static final int  S_IFIFO    =  0x1000; // named pipe (fifo)
         private static final char S_IFIFO_C  =  'p';    // p|
@@ -133,7 +133,7 @@ public class FileInfoProvider {
         private static final char S_IFMPB_C  =  'M';    // undefined char, just to have code
         private static final int  S_IFREG    =  0x8000; // regular file
         private static final char S_IFREG_C  =  '-';    // -
-        private static final int  S_IFCMP    =  0x9000; // network special (HP-UX) 
+        private static final int  S_IFCMP    =  0x9000; // network special (HP-UX)
         private static final char S_IFCMP_C  =  'n';    // n
         private static final int  S_IFLNK    =  0xA000; // symbolic link
         private static final char S_IFLNK_C  =  'l';    // l
@@ -146,9 +146,9 @@ public class FileInfoProvider {
         private static final int  S_IFPORT   =  0xE000; // Solaris event port (BSD whiteot)
         private static final char S_IFPORT_C =  'P';    // P (w%)
         private static final char S_UNDEF_C  =  'u';    // for other stat info (0x0 and 0xF) to have a default in swithces
-        
+
         private final String name;
-        
+
         private final int gid;
         private final int uid;
         private final long size;
@@ -179,15 +179,15 @@ public class FileInfoProvider {
             assert directory == isDirectory();
             assert link == isLink();
         }
-        
+
         private static boolean isLink(int mode) {
             return (mode & S_IFMT) == S_IFLNK;
         }
-        
+
         private static boolean isDir(int mode) {
             return (mode & S_IFMT) == S_IFDIR;
         }
-        
+
         public int getAccess() {
             return access & ACCESS_MASK;
         }
@@ -253,7 +253,7 @@ public class FileInfoProvider {
             }
             return sb.toString();
         }
-        
+
         public static StatInfo fromExternalForm(String externalForm) {
             String[] parts = externalForm.split(" +"); // NOI18N
             String name = unescape(parts[0]);
@@ -290,11 +290,11 @@ public class FileInfoProvider {
             int gid = Integer.parseInt(parts[next]);
             int uid = Integer.parseInt(parts[next+1]);
             long time = Long.parseLong(parts[next+2]);
-            long size = Long.parseLong(parts[next+3]);            
+            long size = Long.parseLong(parts[next+3]);
             String linkTarget = (parts.length < next+5) ? null : unescape(parts[next+4]);
             return new StatInfo(name, uid, gid, size, dir, link, linkTarget, acc, new Date(time));
         }
-        
+
         private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {
 
             int userId = -1;
@@ -341,43 +341,31 @@ public class FileInfoProvider {
             return can(env, ALL_R, GRP_R, USR_R);
         }
 
-        
+
         public boolean canWrite(ExecutionEnvironment env) {
             return can(env, ALL_W, GRP_W, USR_W);
         }
 
         public boolean canExecute(ExecutionEnvironment env) {
             return can(env, ALL_X, GRP_X, USR_X);
-        }        
+        }
 
         @Override
         public String toString() {
             return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + isDirectory() + ' ' + lastModified + ' ' + (isLink() ? " -> " + linkTarget : size); // NOI18N
         }
     }
-    
+
     public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath) {
-        return SftpSupport.getInstance(env).stat(absPath, new PrintWriter(System.err));
-    }
-    
-    public static Future<StatInfo> stat(ExecutionEnvironment env, String absPath, Writer error) {
-        return SftpSupport.getInstance(env).stat(absPath, error);
+        return SftpSupport.getInstance(env).stat(absPath);
     }
 
     public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath) {
-        return SftpSupport.getInstance(env).lstat(absPath, new PrintWriter(System.err));
-    }
-    
-    public static Future<StatInfo> lstat(ExecutionEnvironment env, String absPath, Writer error) {
-        return SftpSupport.getInstance(env).lstat(absPath, error);
+        return SftpSupport.getInstance(env).lstat(absPath);
     }
 
     public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath) {
-        return ls(env, absPath, new PrintWriter(System.err));
-    }
-        
-    public static Future<StatInfo[]> ls(ExecutionEnvironment env, String absPath, Writer error) {
-        return SftpSupport.getInstance(env).ls(absPath, error);
+        return SftpSupport.getInstance(env).ls(absPath);
     }
 
     public static Future<StatInfo> move(ExecutionEnvironment env, String from, String to) {
@@ -393,8 +381,8 @@ public class FileInfoProvider {
     private static final short GRP_X = 8;
     private static final short ALL_R = 4;
     private static final short ALL_W = 2;
-    private static final short ALL_X = 1;    
-    
+    private static final short ALL_X = 1;
+
     private static short stringToAcces(String accessString) {
         if (accessString.length() < 9) {
             throw new IllegalArgumentException("wrong access string: " + accessString); // NOI18N
@@ -414,8 +402,8 @@ public class FileInfoProvider {
         result |= (accessString.charAt(8) == 'x') ? ALL_X : 0;
 
         return result;
-    }    
-    
+    }
+
     private static String accessToString(int access) {
         char[] accessChars = new char[9];
 
@@ -433,7 +421,7 @@ public class FileInfoProvider {
 
         return new String(accessChars);
     }
-    
+
     private static String escape(String text) {
         try {
             return URLEncoder.encode(text, "UTF-8"); // NOI18N
@@ -453,7 +441,7 @@ public class FileInfoProvider {
             return text;
         }
     }
-    
+
     public static final class SftpIOException extends IOException {
         // from jsch
         //public static final int SSH_FX_OK=                            0;
@@ -465,7 +453,7 @@ public class FileInfoProvider {
         public static final int SSH_FX_NO_CONNECTION=                 6;
         public static final int SSH_FX_CONNECTION_LOST=               7;
         public static final int SSH_FX_OP_UNSUPPORTED=                8;
-        
+
         private final int id;
         private final String path;
         SftpIOException(int id, String message, String path, Throwable cause) {
