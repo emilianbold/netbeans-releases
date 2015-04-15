@@ -352,7 +352,7 @@ UnbufferedComment = "//-"
     {Comment}                       {   yybegin(IN_COMMENT); 
                                         return JadeTokenId.COMMENT_DELIMITER; }
     
-    [#\.]                            {  hasCssId = false;
+    [#\.!]                           {  hasCssId = false;
                                         yypushback(1);
                                         yybegin(AFTER_TAG); }
         
@@ -402,7 +402,7 @@ UnbufferedComment = "//-"
                                         return JadeTokenId.PLAIN_TEXT_DELIMITER; 
                                         
                                     }
-    "#{"                            {   yypushback(2);
+    "#{"|"!{"                       {   yypushback(2);
                                         yybegin(JAVASCRIPT_EXPRESSION);
                                         whereToGo = TEXT_LINE;
                                     }
