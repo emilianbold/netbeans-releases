@@ -43,18 +43,19 @@ package org.netbeans.modules.java.hints.bugs;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
@@ -128,13 +129,28 @@ public class SuspiciousToArray {
         // possible method call result ?
         arrType = SourceUtils.resolveCapturedType(ci, arrType);
         TypeMirror compType = ((ArrayType)arrType).getComponentType();
+                
+        StringBuilder sb = new StringBuilder();
+        if (colPath != null) {
+            int posStart = (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), colPath.getLeaf());
+            int posEnd = (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), colPath.getLeaf());
+            sb.append(ci.getSnapshot().getText().subSequence(posStart, posEnd)).append(".");
+        }
+        // iterator.next is about the only method, which _returns_ something typed by collection type parameter - 
+        // we need to get "capture" type of E, so it could be assigned to E[].
+        sb.append("iterator().next()"); // NOI18N
+        ExpressionTree colItemExpr = ci.getTreeUtilities().parseExpression(sb.toString(), null);
+        if (colItemExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            // something weird in the selector expression, probably
+            return null;
+        }
+        Scope s = ci.getTrees().getScope(ctx.getPath());
+        List<Diagnostic<? extends JavaFileObject>> diags = new ArrayList<>();
+        TypeMirror colItemType = ci.getTreeUtilities().attributeTree(colItemExpr, s);
         
-        DeclaredType declColType = (DeclaredType)colType;
-        
-        Element addMethod = ci.getElementUtilities().findElement("java.util.Collection.add(Object)"); // NOI18N
-        TypeMirror inheritedCollectionType = ci.getTypes().asMemberOf(declColType, addMethod);
-        TypeMirror argType = ((ExecutableType)inheritedCollectionType).getParameterTypes().get(0);
+         TypeMirror argType = colItemType;
         TypeMirror resType = null;
+        
         if (argType == null || argType.getKind() == TypeKind.DECLARED &&
             ((TypeElement)((DeclaredType)argType).asElement()).getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
             argType = null;

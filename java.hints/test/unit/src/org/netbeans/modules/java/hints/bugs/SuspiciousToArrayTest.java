@@ -235,4 +235,23 @@ public class SuspiciousToArrayTest extends NbTestCase {
                 + "}");
         
     }
+    
+    public void testDoNotReportWildcards() throws Exception {
+        HintTest.create().
+                input(
+                "package test;\n"
+                + "import java.util.Collection;\n" +
+                    "\n" +
+                    "class Test {\n" +
+                    "    class Item {\n" +
+                    "    }\n" +
+                    "    static Item[] gen(Collection<? extends Item> col) {\n" +
+                    "        Item[] items = col.toArray(new Item[0]);  //<<<<<< hint\n" +
+                    "        return items;\n" +
+                    "    }\n" +
+                    "}"
+                )
+                .run(SuspiciousToArray.class)
+                .assertWarnings();
+    }
 }
