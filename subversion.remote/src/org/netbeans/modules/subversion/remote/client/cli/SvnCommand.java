@@ -324,7 +324,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         PrintWriter writer = null; 
         try {
-            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile)));
+            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile), "UTF-8"));
             for (int i = 0; i < lines.length; i++) {
                 writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]); //NOI18N
             }

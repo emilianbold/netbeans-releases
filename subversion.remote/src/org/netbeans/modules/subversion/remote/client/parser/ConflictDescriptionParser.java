@@ -47,7 +47,6 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
