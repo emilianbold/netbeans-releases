@@ -48,6 +48,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
@@ -212,7 +213,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void errorText(String line) {
-        if (line.toLowerCase().contains("killed by signal")) { //NOI18N
+        if (line.toLowerCase(Locale.ENGLISH).contains("killed by signal")) { //NOI18N
             // commandline normal output on linux for ssh connections
             return;
         }
@@ -323,7 +324,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         PrintWriter writer = null; 
         try {
-            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile)));
+            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile), "UTF-8"));
             for (int i = 0; i < lines.length; i++) {
                 writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]); //NOI18N
             }

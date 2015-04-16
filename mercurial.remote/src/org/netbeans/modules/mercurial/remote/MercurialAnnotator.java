@@ -145,7 +145,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
     private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
     
-    private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<FileSystem, AnnotationFormat>();
+    private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<>();
 
     public static final class AnnotationFormat {
         private MessageFormat format;
@@ -351,7 +351,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         Set<VCSFileProxy> roots = HgUtils.getRepositoryRoots(ctx);
         boolean noneVersioned = (roots == null || roots.isEmpty());
 
-        List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
+        List<Action> actions = new ArrayList<>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             // XXX use Actions.forID
             Action a;
@@ -731,7 +731,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         return AnnotationColorProvider.getInstance();
     }
     
-    private final Map<WorkingCopyInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new HashMap<WorkingCopyInfo, Set<VCSFileProxy>>(3);
+    private final Map<WorkingCopyInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new HashMap<>(3);
     
     private void addFileWithRepositoryAnnotation (WorkingCopyInfo info, VCSFileProxy file) {
         info.removePropertyChangeListener(this);
@@ -739,7 +739,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         synchronized (filesWithRepositoryAnnotations) {
             Set<VCSFileProxy> files = filesWithRepositoryAnnotations.get(info);
             if (files == null) {
-                filesWithRepositoryAnnotations.put(info, files = new HashSet<VCSFileProxy>());
+                filesWithRepositoryAnnotations.put(info, files = new HashSet<>());
             }
             files.add(file);
         }

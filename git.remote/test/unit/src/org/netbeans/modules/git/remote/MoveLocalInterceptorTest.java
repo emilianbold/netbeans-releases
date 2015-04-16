@@ -63,7 +63,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
     
     @Override
     protected boolean isFailed() {
-        return Arrays.asList().contains(getName());
+        return Arrays.asList("testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO").contains(getName());
     }
 
     @Override

@@ -104,7 +104,7 @@ public class ShowAllChangesAction extends SystemAction {
             });
 
             Project [] projects = OpenProjects.getDefault().getOpenProjects();
-            List<Node> allNodes = new ArrayList<Node>();
+            List<Node> allNodes = new ArrayList<>();
             for (int i = 0; i < projects.length; i++) {
                 AbstractNode node = new AbstractNode(new Children.Array(), projects[i].getLookup());
                 allNodes.add(node);

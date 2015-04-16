@@ -596,7 +596,7 @@ public class SvnConfigFiles {
         file = file.normalizeFile();
         Ini system = null;
         try {            
-            system = new Ini(new InputStreamReader(file.getInputStream(false)));
+            system = new Ini(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
@@ -613,7 +613,7 @@ public class SvnConfigFiles {
         file = VCSFileProxy.createFileProxy(getGlobalConfigPath(fileSystem), fileName);
         Ini global = null;      
         try {
-            global = new Ini(new InputStreamReader(file.getInputStream(false)));
+            global = new Ini(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {

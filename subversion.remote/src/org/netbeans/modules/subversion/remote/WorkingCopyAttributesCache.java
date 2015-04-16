@@ -43,6 +43,7 @@ package org.netbeans.modules.subversion.remote;
 
 import java.awt.EventQueue;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
@@ -173,7 +174,7 @@ public final class WorkingCopyAttributesCache {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            String msg = ex.getMessage().toLowerCase();
+                            String msg = ex.getMessage().toLowerCase(Locale.ENGLISH);
                             if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) 
                                     && (msg.contains("svn upgrade") //NOI18N
                                     || msg.contains("working copy format of ") && msg.contains("is too old") //NOI18N

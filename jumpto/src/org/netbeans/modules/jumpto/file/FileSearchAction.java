@@ -61,6 +61,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,6 +101,7 @@ import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -126,6 +130,15 @@ import org.openide.windows.TopComponent;
 public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
+    /* package */ static final String CAMEL_CASE_SEPARATOR = "\\p{javaUpperCase}|-|_|\\.";    //NOI18N
+    /* package */ static final String CAMEL_CASE_PART = "\\p{javaLowerCase}|\\p{Digit}|\\$";         //NOI18N
+    /* package */ static final Map<String,Object> SEARCH_OPTIONS;
+    static {
+        Map<String,Object> m = new HashMap<>();
+        m.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, CAMEL_CASE_SEPARATOR);
+        m.put(Queries.OPTION_CAMEL_CASE_PART, CAMEL_CASE_PART);
+        SEARCH_OPTIONS = Collections.unmodifiableMap(m);
+    }
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
 
@@ -136,7 +149,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         new Callable<Models.Filter<FileDescriptor>>() {
             @Override
             public Models.Filter<FileDescriptor> call() throws Exception {
-                return new AbstractModelFilter<FileDescriptor>() {
+                return new AbstractModelFilter<FileDescriptor>(SEARCH_OPTIONS) {
                     @NonNull
                     @Override
                     protected String getItemValue(@NonNull final FileDescriptor item) {
@@ -238,7 +251,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
             text = Utils.removeNonNeededWildCards(text);
         }
-        else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
+        else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, CAMEL_CASE_SEPARATOR, CAMEL_CASE_PART)) {
             nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.CAMEL_CASE : QuerySupport.Kind.CASE_INSENSITIVE_CAMEL_CASE;
         }
         else {
@@ -251,7 +264,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             if (currentSearch.isNarrowing(searchType, text)) {
                 itemsComparator.setUsePreferred(panel.isPreferedProject());
                 currentSearch.filter(searchType, text);
-                enableOK(panel.searchCompleted());
+                enableOK(panel.searchCompleted(true));
                 return false;
             } else {
                 final String searchText = text;
@@ -277,7 +290,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     lineNr);
                 final Worker.Collector collector = Worker.newCollector(
                     baseListModel,
-                    new Runnable(){
+                    new Runnable () {
                         @Override
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
@@ -289,14 +302,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                             });
                         }
                     },
-                    new Runnable(){
+                    new Runnable () {
                         @Override
                         public void run() {
                             currentSearch.searchCompleted(searchType, searchText);
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    panel.searchCompleted();
+                                    panel.searchCompleted(true);
                                 }
                             });
                         }
@@ -476,6 +489,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 }
                 running = null;
                 scheduledTasks = null;
+                panel.searchCompleted(false);
             }
         }
     }

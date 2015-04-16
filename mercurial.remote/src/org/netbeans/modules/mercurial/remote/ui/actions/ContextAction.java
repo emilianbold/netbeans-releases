@@ -45,18 +45,8 @@
 package org.netbeans.modules.mercurial.remote.ui.actions;
 
 import java.awt.event.ActionEvent;
-import java.text.MessageFormat;
-import java.util.MissingResourceException;
-import java.util.Set;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.LifecycleManager;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;

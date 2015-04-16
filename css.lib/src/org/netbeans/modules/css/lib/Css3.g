@@ -672,11 +672,11 @@ declaration
     (cp_variable_declaration)=>cp_variable_declaration
     | (sass_map)=> sass_map
     | (sass_nested_properties)=>sass_nested_properties
+    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
     | (propertyDeclaration)=>propertyDeclaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration
     | (cp_mixin_declaration)=>cp_mixin_declaration
-    | (((SASS_AT_ROOT (ws selectorsGroup)? ) | (SASS_AT_ROOT ws LPAREN ws? IDENT ws? COLON ws? IDENT ws? RPAREN) | selectorsGroup) ws? LBRACE)=>rule
     | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
     | {isLessSource()}? AT_IDENT LPAREN RPAREN
@@ -703,6 +703,7 @@ selectorsGroup
 
 selector
     :  (combinator ws?)? simpleSelectorSequence ( ((ws? combinator ws?)|ws) simpleSelectorSequence)*
+       | {isScssSource()}? combinator
     ;
 
 combinator
@@ -712,7 +713,7 @@ combinator
 
 simpleSelectorSequence
 	:
-        (elementSubsequent| {isScssSource()}? sass_selector_interpolation_exp) ((ws? esPred)=>((ws? elementSubsequent) |(ws sass_selector_interpolation_exp)))*
+        (elementSubsequent | {isScssSource()}? sass_selector_interpolation_exp ) ((ws? esPred)=>((ws? elementSubsequent) |(ws {isScssSource()}? sass_selector_interpolation_exp | {isLessSource()}? less_selector_interpolation_exp)))*
 	| (typeSelector)=>typeSelector ((ws? esPred)=>((ws? elementSubsequent) | {isScssSource()}? ws sass_selector_interpolation_exp))* 
 	;
 	catch[ RecognitionException rce] {
@@ -739,7 +740,7 @@ elementSubsequent
     :
     (
         {isScssSource()}? sass_extend_only_selector
-        | {isLessSource()}? less_selector_interpolation // @{var} { ... }
+        | {isLessSource()}? less_selector_interpolation_exp
     	| cssId
     	| cssClass
         | slAttribute
@@ -753,7 +754,7 @@ cssId
       |
         ( HASH_SYMBOL
             ( NAME
-              | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
+              | {isLessSource()}? less_selector_interpolation_exp // #@{var} { ... }
             )
         )
     ;
@@ -769,7 +770,7 @@ cssClass
             | IDENT
             | NOT
             | GEN
-            | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
+            | {isLessSource()}? less_selector_interpolation_exp
         )
     ;
     catch[ RecognitionException rce] {
@@ -934,7 +935,8 @@ term
         | hexColor
         | {isCssPreprocessorSource()}? cp_variable
         | {isScssSource()}? LESS_AND
-        | {isCssPreprocessorSource()}? sass_interpolation_expression_var
+        | {isScssSource()}? sass_interpolation_expression_var
+        | {isLessSource()}? less_selector_interpolation
         | {isCssPreprocessorSource()}? cp_term_symbol //accept any garbage in preprocessors
     )
     ;
@@ -970,7 +972,7 @@ functionName
 
 fnAttributes
     :
-    fnAttribute (ws? COMMA ws? fnAttribute)* ws?
+    fnAttribute (ws? (COMMA | {isLessSource()}? SEMI) ws? fnAttribute)* ws?
     ;
 
 fnAttribute
@@ -1167,6 +1169,7 @@ cp_args_list
 cp_arg
     :
     cp_variable ws? ( COLON ws? cp_expression ws?)?
+    | {isLessSource()}? IDENT
     ;
 
 //.mixin (@a) "when (lightness(@a) >= 50%)" {
@@ -1205,6 +1208,10 @@ less_condition_operator
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
     ;
 
+less_selector_interpolation_exp :
+    less_selector_interpolation (less_selector_interpolation_exp | IDENT | MINUS)?
+    ;
+
 less_selector_interpolation
     :
     AT_SIGN LBRACE ws? IDENT ws? RBRACE
@@ -1212,7 +1219,7 @@ less_selector_interpolation
 
 //SCSS interpolation expression
 sass_selector_interpolation_exp :
-    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | IDENT | MINUS)?
+    (IDENT | MINUS)? sass_interpolation_expression_var (sass_selector_interpolation_exp | ( IDENT | MINUS | DIMENSION)+)?
     ;
 
 sass_interpolation_expression_var

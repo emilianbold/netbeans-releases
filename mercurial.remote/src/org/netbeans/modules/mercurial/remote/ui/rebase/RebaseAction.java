@@ -418,7 +418,7 @@ public class RebaseAction extends ContextAction {
     }
 
     private static HgHookContext.LogEntry[] convertToEntries (HgLogMessage[] messages) {
-        List<HgHookContext.LogEntry> entries = new ArrayList<HgHookContext.LogEntry>(messages.length);
+        List<HgHookContext.LogEntry> entries = new ArrayList<>(messages.length);
         for (HgLogMessage msg : messages) {
             entries.add(new HgHookContext.LogEntry(
                     msg.getMessage(),
@@ -430,7 +430,7 @@ public class RebaseAction extends ContextAction {
     }
     
     private static Map<String, String> findChangesetMapping (HgHookContext.LogEntry[] originalEntries, HgHookContext.LogEntry[] newEntries) {
-        Map<String, String> mapping = new HashMap<String, String>(originalEntries.length);
+        Map<String, String> mapping = new HashMap<>(originalEntries.length);
         for (HgHookContext.LogEntry original : originalEntries) {
             boolean found = false;
             for (HgHookContext.LogEntry newEntry : newEntries) {
@@ -463,7 +463,7 @@ public class RebaseAction extends ContextAction {
         if (VCSFileProxySupport.canRead(info)) {
             BufferedReader br = null;
             try {
-                br = new BufferedReader(new InputStreamReader(info.getInputStream(false)));
+                br = new BufferedReader(new InputStreamReader(info.getInputStream(false), "UTF-8")); //NOI18N
                 String line = br.readLine();
                 if (line != null) {
                     source = line;
@@ -492,7 +492,7 @@ public class RebaseAction extends ContextAction {
         VCSFileProxy info = getNetBeansRebaseInfoFile(context.repository);
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(info)));
+            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(info), "UTF-8")); //NOI18N
             bw.write(context.source);
             bw.newLine();
             bw.write(context.dest);

@@ -242,6 +242,10 @@ public class WildflyClient {
             return getClientConstant(cl, "SUCCESS").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getClientConstant(cl, "OUTCOME"))))
                     && !getClientConstant(cl, "CONTROLLER_PROCESS_STATE_STARTING").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getModelDescriptionConstant(cl, "RESULT"))))
                     && !getClientConstant(cl, "CONTROLLER_PROCESS_STATE_STOPPING").equals(modelNodeAsString(cl, getModelNodeChild(cl, response, getModelDescriptionConstant(cl, "RESULT"))));
+        } catch (InvocationTargetException ex) {
+            LOGGER.log(Level.FINE, null, ex.getTargetException());
+            close();
+            return false;
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, null, ex);
             close();

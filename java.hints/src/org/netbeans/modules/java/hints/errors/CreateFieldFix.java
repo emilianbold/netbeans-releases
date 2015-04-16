@@ -80,7 +80,7 @@ public final class CreateFieldFix implements EnhancedFix {
         this.modifiers = modifiers;
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
-        if (proposedType.getKind() == TypeKind.NULL) {
+        if (proposedType.getKind() == TypeKind.NULL || proposedType.getKind() == TypeKind.NONE) {
             TypeElement te = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
             proposedType = te == null ? null : te.asType();
         }

@@ -49,7 +49,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
+import javax.swing.text.Document;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
@@ -103,23 +105,30 @@ public class OverrideDependencyManagementError implements POMErrorFixProvider {
 
     }
 
-    private void checkDependencyList(List<Dependency> deps, POMModel model, List<ErrorDescription> toRet, Map<String, String> managed) {
+    private void checkDependencyList(List<Dependency> deps, final POMModel model, List<ErrorDescription> toRet, Map<String, String> managed) {
         if (deps != null) {
-            for (Dependency dep : deps) {
+            for (final Dependency dep : deps) {
                 String ver = dep.getVersion();
                 if (ver != null) {
                     String art = dep.getArtifactId();
                     String gr = dep.getGroupId();
                     String key = gr + ":" + art; //NOI18N
                     if (managed.keySet().contains(key)) {
-                        int position = dep.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
-                        Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
-                        String managedver = managed.get(key);
+                        final String managedver = managed.get(key);
+                        Document doc = model.getBaseDocument();
+                        final Line[] line = new Line[1];
+                        doc.render(new Runnable() {
+                            @Override
+                            public void run() {
+                                int position = dep.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
+                                line[0] = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
+                            }
+                        });
                         toRet.add(ErrorDescriptionFactory.createErrorDescription(
-                                       configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
-                                NbBundle.getMessage(OverrideDependencyManagementError.class, "TXT_OverrideDependencyManagementError", managedver),
-                                Collections.<Fix>singletonList(new OverrideFix(dep)),
-                                model.getBaseDocument(), line.getLineNumber() + 1));
+                            configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
+                            NbBundle.getMessage(OverrideDependencyManagementError.class, "TXT_OverrideDependencyManagementError", managedver),
+                            Collections.<Fix>singletonList(new OverrideFix(dep)),
+                            doc, line[0].getLineNumber() + 1));
                     }
                 }
             }

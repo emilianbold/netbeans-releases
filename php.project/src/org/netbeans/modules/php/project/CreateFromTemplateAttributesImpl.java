@@ -132,8 +132,8 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
                 if (pdname != null) {
                     values.put("displayName", pdname); // NOI18N
                 }
-                values.put("webRootPath", getWebRootPath(prj)); // NOI18N
             }
+            values.put("webRootPath", getWebRootPath(prj)); // NOI18N
         } catch (Exception ex) {
             // not really important, just log.
             LOGGER.log(Level.FINE, "", ex);

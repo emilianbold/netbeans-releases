@@ -125,7 +125,9 @@ class Commandline {
                     Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
                 }
                 if(Subversion.LOG.isLoggable(Level.FINER)) {
-                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes)); // NOI18N
+                    // supose that encoding is UTF-8.
+                    // it can be wrong for cat command (ignore because it is a logging)
+                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes, "UTF-8")); // NOI18N
                 }
                 command.output(exitStatus.bytes);
             } else {             

@@ -55,7 +55,6 @@ import org.openide.util.ContextAwareAction;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;

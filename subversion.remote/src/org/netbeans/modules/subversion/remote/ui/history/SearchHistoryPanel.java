@@ -65,6 +65,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
@@ -842,13 +843,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
     boolean applyFilter (RepositoryRevision rev) {
         boolean visible = true;
-        String filterText = txtFilter.getText().trim().toLowerCase();
+        String filterText = txtFilter.getText().trim().toLowerCase(Locale.getDefault());
         Object selectedFilterKind = cmbFilterKind.getSelectedItem();
         if (selectedFilterKind != FilterKind.ALL && !filterText.isEmpty()) {
             if (selectedFilterKind == FilterKind.MESSAGE) {
-                visible = rev.getLog().getMessage().toLowerCase().contains(filterText);
+                visible = rev.getLog().getMessage().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.USER) {
-                visible = rev.getLog().getAuthor().toLowerCase().contains(filterText);
+                visible = rev.getLog().getAuthor().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.ID) {
                 visible = rev.getLog().getRevision().toString().contains(filterText);
             }

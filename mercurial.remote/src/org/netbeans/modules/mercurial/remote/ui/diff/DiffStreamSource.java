@@ -61,7 +61,6 @@ import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.MultiDataObject;
@@ -250,7 +249,7 @@ public class DiffStreamSource extends StreamSource {
                 // DataObject. One example is Form files: data loader removes //GEN:BEGIN comments from the java file but ONLY
                 // if it also finds associate .form file in the same directory
                 Set<VCSFileProxy> allFiles = VCSFileProxySupport.getAllDataObjectFiles(baseFile);
-                Map<VCSFileProxy, VCSFileProxy> allFilePairs = new HashMap<VCSFileProxy, VCSFileProxy>(allFiles.size());
+                Map<VCSFileProxy, VCSFileProxy> allFilePairs = new HashMap<>(allFiles.size());
                 boolean renamed = !baseFile.equals(fileInRevision);
                 for (VCSFileProxy f : allFiles) {
                     if (renamed) {

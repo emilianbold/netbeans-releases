@@ -106,7 +106,7 @@ public class LogAction extends SearchHistoryAction {
     }
     
     public static void openHistory (VCSFileProxy repositoryRoot, VCSFileProxy[] files, String revision) {
-        List<Node> nodes = new ArrayList<Node>(files.length);
+        List<Node> nodes = new ArrayList<>(files.length);
         for (VCSFileProxy file : files) {
             FileObject fo = file.toFileObject();
             if(fo == null) {
@@ -178,7 +178,7 @@ public class LogAction extends SearchHistoryAction {
                 if (files == null) {
                     return null;
                 }
-                Set<VCSFileProxy> originalFiles = new LinkedHashSet<VCSFileProxy>(files.length);
+                Set<VCSFileProxy> originalFiles = new LinkedHashSet<>(files.length);
                 FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                 for (VCSFileProxy file : files) {
                     FileStatus st = cache.getStatus(file).getStatus(null);

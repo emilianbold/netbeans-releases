@@ -138,10 +138,10 @@ abstract class CreateRefreshAction extends ContextAction {
                 protected void perform () {
                     String message = panel.getParameters().getCommitMessage();
                     String patchName = panel.getParameters().getPatchName();
-                    Set<VCSFileProxy> excludedFiles = new HashSet<VCSFileProxy>();
-                    List<VCSFileProxy> addCandidates = new LinkedList<VCSFileProxy>();
-                    List<VCSFileProxy> deleteCandidates = new LinkedList<VCSFileProxy>();
-                    List<VCSFileProxy> commitCandidates = new LinkedList<VCSFileProxy>();
+                    Set<VCSFileProxy> excludedFiles = new HashSet<>();
+                    List<VCSFileProxy> addCandidates = new LinkedList<>();
+                    List<VCSFileProxy> deleteCandidates = new LinkedList<>();
+                    List<VCSFileProxy> commitCandidates = new LinkedList<>();
                     Collection<HgQueueHook> hooks = panel.getHooks();
                     String user = panel.getParameters().getUser();
                     if (user != null) {
@@ -170,7 +170,7 @@ abstract class CreateRefreshAction extends ContextAction {
                     }
                     
                     OutputLogger logger = getLogger();
-                    Set<VCSFileProxy> filesToRefresh = new HashSet<VCSFileProxy>();
+                    Set<VCSFileProxy> filesToRefresh = new HashSet<>();
                     try {
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_TITLE." + bundleKeyPostfix)); //NOI18N
                         logger.outputInRed(NbBundle.getMessage(CreateRefreshAction.class, "MSG_CREATE_REFRESH_TITLE_SEP." + bundleKeyPostfix)); //NOI18N
@@ -303,7 +303,7 @@ abstract class CreateRefreshAction extends ContextAction {
 
             @Override
             void doCmd () throws HgException {
-                Set<VCSFileProxy> files = new HashSet<VCSFileProxy>(candidates);
+                Set<VCSFileProxy> files = new HashSet<>(candidates);
                 files.addAll(excludedFiles); // should be also refreshed because previously included files will now change to modified
                 try {                    
                     runHgCommand(repository, candidates, excludedFiles, patchId, msg, user, logger);
@@ -312,8 +312,8 @@ abstract class CreateRefreshAction extends ContextAction {
                     List<VCSFileProxy> reducedCommitCandidates;
                     StringBuilder offeredFileNames = new StringBuilder();
                     if (rootFiles != null && rootFiles.size() < 5) {
-                        reducedCommitCandidates = new ArrayList<VCSFileProxy>(rootFiles);
-                        files = new HashSet<VCSFileProxy>(rootFiles);
+                        reducedCommitCandidates = new ArrayList<>(rootFiles);
+                        files = new HashSet<>(rootFiles);
                         for (VCSFileProxy f : reducedCommitCandidates) {
                             offeredFileNames.append('\n').append(f.getName());     //NOI18N
                         }

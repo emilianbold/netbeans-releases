@@ -375,7 +375,7 @@ public class CommitAction extends ContextAction {
                     VCSFileProxy[] roots = ctx.getRootFiles().toArray(new VCSFileProxy[ctx.getRootFiles().size()]);
 
                     VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(roots);
-                    List<VCSFileProxy> fileList = new ArrayList<VCSFileProxy>();
+                    List<VCSFileProxy> fileList = new ArrayList<>();
                     for (int c = 0; c < split.length; c++) {
                         roots = split[c];
                         boolean recursive = c == 1;
@@ -403,7 +403,7 @@ public class CommitAction extends ContextAction {
                         }
                     }
 
-                    ArrayList<HgFileNode> nodesList = new ArrayList<HgFileNode>(fileList.size());
+                    ArrayList<HgFileNode> nodesList = new ArrayList<>(fileList.size());
 
                     for (Iterator<VCSFileProxy> it = fileList.iterator(); it.hasNext();) {
                         VCSFileProxy file = it.next();
@@ -437,7 +437,7 @@ public class CommitAction extends ContextAction {
                     recentUsers.remove(userName);
                     recentUsers.add(0, userName);
                 }
-                final ComboBoxModel<String> model = new DefaultComboBoxModel<String>(recentUsers.toArray(new String[recentUsers.size()]));
+                final ComboBoxModel<String> model = new DefaultComboBoxModel<>(recentUsers.toArray(new String[recentUsers.size()]));
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
@@ -537,14 +537,14 @@ public class CommitAction extends ContextAction {
             Map<VCSFileProxy, Set<VCSFileProxy>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks,
             String user, boolean commitAllFiles, boolean closeBranch, boolean afterMerge) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-        Map<VCSFileProxy, List<VCSFileProxy>> addCandidates = new HashMap<VCSFileProxy, List<VCSFileProxy>>();
-        Map<VCSFileProxy, List<VCSFileProxy>> deleteCandidates = new HashMap<VCSFileProxy, List<VCSFileProxy>>();
-        Map<VCSFileProxy, List<VCSFileProxy>> commitCandidates = new HashMap<VCSFileProxy, List<VCSFileProxy>>();
-        Map<VCSFileProxy, Set<VCSFileProxy>> filesToRefresh = new HashMap<VCSFileProxy, Set<VCSFileProxy>>();
+        Map<VCSFileProxy, List<VCSFileProxy>> addCandidates = new HashMap<>();
+        Map<VCSFileProxy, List<VCSFileProxy>> deleteCandidates = new HashMap<>();
+        Map<VCSFileProxy, List<VCSFileProxy>> commitCandidates = new HashMap<>();
+        Map<VCSFileProxy, Set<VCSFileProxy>> filesToRefresh = new HashMap<>();
 
-        List<String> excPaths = new ArrayList<String>();
-        Map<VCSFileProxy, Boolean> locallyModifiedExcluded = new HashMap<VCSFileProxy, Boolean>();
-        List<String> incPaths = new ArrayList<String>();
+        List<String> excPaths = new ArrayList<>();
+        Map<VCSFileProxy, Boolean> locallyModifiedExcluded = new HashMap<>();
+        List<String> incPaths = new ArrayList<>();
         if (commitAllFiles && closeBranch) {
             assert rootFiles.size() == 1;
             for (VCSFileProxy root : rootFiles.keySet()) {
@@ -605,7 +605,7 @@ public class CommitAction extends ContextAction {
 
             VCSFileProxy[] hookFiles = null;
             if(hooks.size() > 0) {
-                List<VCSFileProxy> candidates = new LinkedList<VCSFileProxy>();
+                List<VCSFileProxy> candidates = new LinkedList<>();
                 for (List<VCSFileProxy> values : commitCandidates.values()) {
                     candidates.addAll(values);
                 }
@@ -641,7 +641,7 @@ public class CommitAction extends ContextAction {
     }
 
     private static void refreshFS (Map<VCSFileProxy, Set<VCSFileProxy>> filesPerRepository) {
-        final Set<VCSFileProxy> files = new HashSet<VCSFileProxy>();
+        final Set<VCSFileProxy> files = new HashSet<>();
         for (Set<VCSFileProxy> values : filesPerRepository.values()) {
             files.addAll(values);
         }
@@ -656,7 +656,7 @@ public class CommitAction extends ContextAction {
     private static void putCandidate(Map<VCSFileProxy, List<VCSFileProxy>> m, VCSFileProxy repository, VCSFileProxy file) {
         List<VCSFileProxy> l = m.get(repository);
         if(l == null) {
-            l = new ArrayList<VCSFileProxy>();
+            l = new ArrayList<>();
             m.put(repository, l);
         }
         l.add(file);
@@ -850,14 +850,14 @@ public class CommitAction extends ContextAction {
             @Override
             void doCmd(VCSFileProxy repository, List<VCSFileProxy> candidates) throws HgException {
                 boolean commitAfterMerge = false;
-                Set<VCSFileProxy> refreshFiles = new HashSet<VCSFileProxy>(candidates);
+                Set<VCSFileProxy> refreshFiles = new HashSet<>(candidates);
                 List<VCSFileProxy> commitedFiles = null;
                 try {
                     try {
                         if (afterMerge) {
                             if(commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
                                 HgCommand.doCommit(repository, Collections.<VCSFileProxy>emptyList(), msg, user, closingBranch, logger);
-                                refreshFiles = new HashSet<VCSFileProxy>(Mercurial.getInstance().getSeenRoots(repository));
+                                refreshFiles = new HashSet<>(Mercurial.getInstance().getSeenRoots(repository));
                                 commitAfterMerge = true;
                             } else {
                                 return;
@@ -872,8 +872,8 @@ public class CommitAction extends ContextAction {
                         StringBuilder offeredFileNames = new StringBuilder();
                         Set<VCSFileProxy> roots = rootFilesPerRepository.get(repository);
                         if (roots != null && roots.size() < 5) {
-                            reducedCommitCandidates = new ArrayList<VCSFileProxy>(roots);
-                            refreshFiles = new HashSet<VCSFileProxy>(roots);
+                            reducedCommitCandidates = new ArrayList<>(roots);
+                            refreshFiles = new HashSet<>(roots);
                             for (VCSFileProxy f : reducedCommitCandidates) {
                                 offeredFileNames.append('\n').append(f.getName());     //NOI18N
                             }
@@ -905,7 +905,7 @@ public class CommitAction extends ContextAction {
                             return;
                         } else {
                             HgCommand.doCommit(repository, Collections.<VCSFileProxy>emptyList(), msg, user, closingBranch, logger);
-                            refreshFiles = new HashSet<VCSFileProxy>(Mercurial.getInstance().getSeenRoots(repository));
+                            refreshFiles = new HashSet<>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }
                     } else {

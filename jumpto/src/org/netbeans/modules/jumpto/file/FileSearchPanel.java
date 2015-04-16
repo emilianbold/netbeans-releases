@@ -258,21 +258,26 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         });
     }
 
-    boolean searchCompleted() {
+    boolean searchCompleted(final boolean success) {
         assert SwingUtilities.isEventDispatchThread();
         setWarning(null);
-        String msg = null;
-        boolean res = true;
-        if (resultList.getModel().getSize() == 0) {
-            try {
-               Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
-               msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound");
-           } catch (PatternSyntaxException pse) {
-               msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex());
-           }
-           res = false;
+        boolean res;
+        if (success) {
+            res = true;
+            String msg = null;
+            if (resultList.getModel().getSize() == 0) {
+                try {
+                   Pattern.compile(getText().replace(".", "\\.").replace( "*", ".*" ).replace( '?', '.' ), Pattern.CASE_INSENSITIVE); // NOI18N
+                   msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_NoTypesFound");
+               } catch (PatternSyntaxException pse) {
+                   msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex());
+               }
+               res = false;
+            }
+            setListPanelContent(msg, false);
+        } else {
+            res = false;
         }
-        setListPanelContent(msg, false);
         return res;
     }
 
