@@ -422,7 +422,7 @@ public class ComputeImports {
                     List<TypeMirror> params = new ArrayList<TypeMirror>();
                     for (ExpressionTree realParam : mit.getArguments()) {
                         TypeMirror tm = info.getTrees().getTypeMirror(new TreePath(getCurrentPath().getParentPath(), realParam));
-                        if (tm != null && tm.getKind() == TypeKind.NONE && realParam.getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                        if (tm != null && tm.getKind() == TypeKind.NONE && (realParam.getKind() == Tree.Kind.LAMBDA_EXPRESSION || realParam.getKind() == Kind.MEMBER_REFERENCE)) {
                             tm = info.getTypes().getNullType();
                         }
                         params.add(tm);
