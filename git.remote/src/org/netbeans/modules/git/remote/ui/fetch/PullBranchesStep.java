@@ -88,7 +88,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     public PullBranchesStep (VCSFileProxy repository) {
         this.repository = repository;
-        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(PullBranchesStep.class, "FetchBranchesPanel.jLabel1.text")); //NOI18N
+        this.branches = new ItemSelector<>(NbBundle.getMessage(PullBranchesStep.class, "FetchBranchesPanel.jLabel1.text")); //NOI18N
         this.branches.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -160,7 +160,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
-                final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                final Map<String, GitBranch> localBranches = new HashMap<>();
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refresh();
                 localBranches.putAll(info.getBranches());
@@ -175,8 +175,8 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
-        List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
-        Set<String> displayedBranches = new HashSet<String>(localBranches.size());
+        List<BranchMapping> l = new ArrayList<>(branches.size());
+        Set<String> displayedBranches = new HashSet<>(localBranches.size());
         for (GitBranch branch : localBranches.values()) {
             if (branch.isActive()) {
                 currentBranch = branch;
@@ -217,7 +217,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     public List<String> getSelectedRefSpecs () {
-        List<String> specs = new LinkedList<String>();
+        List<String> specs = new LinkedList<>();
         for (BranchMapping b : branches.getSelectedBranches()) {
             specs.add(b.getRefSpec());
         }
@@ -231,7 +231,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     private void markMergingBranch () {
         mergingBranch = null;
-        List<BranchMapping> candidates = new ArrayList<BranchMapping>(branches.getSelectedBranches().size());
+        List<BranchMapping> candidates = new ArrayList<>(branches.getSelectedBranches().size());
         for (BranchMapping mapping : branches.getSelectedBranches()) {
             if (!mapping.isDeletion()) {
                 candidates.add(mapping);

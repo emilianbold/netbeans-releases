@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -261,8 +262,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             loadBranches(toSelectBranchName);
             return;
         }
-        final List<Revision> branchList = new ArrayList<Revision>(branches.size());
-        List<Revision> remoteBranchList = new ArrayList<Revision>(branches.size());
+        final List<Revision> branchList = new ArrayList<>(branches.size());
+        List<Revision> remoteBranchList = new ArrayList<>(branches.size());
         Revision activeBranch = null;
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             GitBranch branch = e.getValue();
@@ -289,7 +290,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         Collections.sort(remoteBranchList, comp);
         branchList.addAll(remoteBranchList);
         final Revision toSelect = activeBranch;
-        branchModel = new DefaultListModel<Object>();
+        branchModel = new DefaultListModel<>();
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
@@ -316,7 +317,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
                         @Override
                         public boolean contains (Revision rev, String needle) {
-                            return rev.getRevision().toLowerCase().contains(needle.toLowerCase());
+                            return rev.getRevision().toLowerCase(Locale.getDefault()).contains(needle.toLowerCase(Locale.getDefault()));
                         }
                     });
                 }

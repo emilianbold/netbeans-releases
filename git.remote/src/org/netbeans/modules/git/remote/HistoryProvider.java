@@ -85,7 +85,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class HistoryProvider implements VCSHistoryProvider {
     
-    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<>();
     private static final Logger LOG = Logger.getLogger(HistoryProvider.class.getName());
     private Action[] actions;
 
@@ -112,9 +112,9 @@ public class HistoryProvider implements VCSHistoryProvider {
             return null;
         }
         
-        List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-        Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<String, Set<VCSFileProxy>>();
-        Map<String, GitRevisionInfo> rev2LMMap = new LinkedHashMap<String, GitRevisionInfo>();
+        List<HistoryEntry> ret = new LinkedList<>();
+        Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<>();
+        Map<String, GitRevisionInfo> rev2LMMap = new LinkedHashMap<>();
             
         VCSFileProxy repositoryRoot = repositories.iterator().next();
         for (VCSFileProxy file : files) {
@@ -130,7 +130,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     rev2LMMap.put(r, h);
                     Set<VCSFileProxy> s = rev2FileMap.get(r);
                     if(s == null) {
-                        s = new HashSet<VCSFileProxy>();
+                        s = new HashSet<>();
                         rev2FileMap.put(r, s);
                     }
                     s.add(file);
@@ -262,7 +262,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             if(repositories == null || repositories.isEmpty()) {
                 return;
             }
-            List<Node> nodes = new ArrayList<Node>(files.length);
+            List<Node> nodes = new ArrayList<>(files.length);
             for (VCSFileProxy f : files) {
                 nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(f)) {
                     @Override
@@ -358,7 +358,7 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
     
     private static Set<VCSFileProxy> getRepositoryRoots(VCSFileProxy... files) {
-        Set<VCSFileProxy> repositories = GitUtils.getRepositoryRoots(new HashSet<VCSFileProxy>(Arrays.asList(files)));
+        Set<VCSFileProxy> repositories = GitUtils.getRepositoryRoots(new HashSet<>(Arrays.asList(files)));
         if (repositories.size() != 1) {
             LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N
             return null;
@@ -376,7 +376,7 @@ public class HistoryProvider implements VCSHistoryProvider {
             this.info = info;
             this.files = files;
             this.repository = repository;
-            this.commonAncestors = new HashMap<VCSFileProxy, HistoryEntry>(files.length);
+            this.commonAncestors = new HashMap<>(files.length);
         }
 
         @Override

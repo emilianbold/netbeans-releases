@@ -67,10 +67,10 @@ public class RemoteConfig {
 
     private RemoteConfig (String remoteName, List<String> fetchUris, List<String> pushUris, List<String> fetchRefSpecs, List<String> pushRefSpecs) {
         this.remoteName = remoteName;
-        this.fetchUris = new LinkedList<String>(fetchUris);
-        this.fetchRefSpecs = new LinkedList<String>(fetchRefSpecs);
-        this.pushUris = new LinkedList<String>(pushUris);
-        this.pushRefSpecs = new LinkedList<String>(pushRefSpecs);
+        this.fetchUris = new LinkedList<>(fetchUris);
+        this.fetchRefSpecs = new LinkedList<>(fetchRefSpecs);
+        this.pushUris = new LinkedList<>(pushUris);
+        this.pushRefSpecs = new LinkedList<>(pushRefSpecs);
     }
 
     public RemoteConfig (GitRemoteConfig originalConfig) {

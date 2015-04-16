@@ -81,7 +81,7 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
 
     public UpdateBranchReferencesStep (VCSFileProxy repository) {
         this.repository = repository;
-        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(UpdateBranchReferencesStep.class, "UpdateBranchReferencesPanel.jLabel1.text")); //NOI18N
+        this.branches = new ItemSelector<>(NbBundle.getMessage(UpdateBranchReferencesStep.class, "UpdateBranchReferencesPanel.jLabel1.text")); //NOI18N
         this.branches.addChangeListener(this);
         this.panel = new JPanel();
         initializePanel();
@@ -123,7 +123,7 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
-                final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                final Map<String, GitBranch> localBranches = new HashMap<>();
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refresh();
                 localBranches.putAll(info.getBranches());
@@ -138,7 +138,7 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
     }
 
     private void fillRemoteBranches (Map<String, String> branches, Map<String, GitBranch> localBranches) {
-        List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
+        List<BranchMapping> l = new ArrayList<>(branches.size());
         for (Map.Entry<String, String> branch : branches.entrySet()) {
             GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getKey());
             BranchMapping mapping = new BranchMapping(branch.getKey(), branch.getValue(), localBranch, remote, true);
@@ -154,7 +154,7 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
     }
 
     public List<String> getSelectedRefSpecs () {
-        List<String> specs = new LinkedList<String>();
+        List<String> specs = new LinkedList<>();
         for (BranchMapping b : branches.getSelectedBranches()) {
             specs.add(b.getRefSpec());
         }

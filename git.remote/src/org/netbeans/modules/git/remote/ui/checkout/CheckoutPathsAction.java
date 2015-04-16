@@ -60,7 +60,6 @@ import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -88,7 +87,7 @@ public class CheckoutPathsAction extends SingleRepositoryAction {
 
             @Override
             protected void perform () {
-                final Collection<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+                final Collection<VCSFileProxy> notifiedFiles = new HashSet<>();
                 try {
                     final GitClient client = getClient();
                     client.addNotificationListener(new FileListener() {

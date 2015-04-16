@@ -64,7 +64,6 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -182,7 +181,7 @@ public class AnnotateAction extends GitAction {
         if (result == null) {
             return new AnnotateLine[0];
         }
-        List<AnnotateLine> lines = new ArrayList<AnnotateLine>(result.getLineCount());
+        List<AnnotateLine> lines = new ArrayList<>(result.getLineCount());
         for (int i = 0; i < result.getLineCount(); ++i) {
             lines.add(new AnnotateLine(result.getLineDetails(i), i + 1));
         }

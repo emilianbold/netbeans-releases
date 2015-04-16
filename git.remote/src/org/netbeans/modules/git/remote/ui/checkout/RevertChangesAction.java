@@ -93,7 +93,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
             GitProgressSupport supp = new GitProgressSupport() {
                 @Override
                 protected void perform () {
-                    final Collection<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+                    final Collection<VCSFileProxy> notifiedFiles = new HashSet<>();
                     final VCSFileProxy[] actionRoots = GitUtils.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGES);
                     if (actionRoots.length == 0) {
                         return;
@@ -180,7 +180,7 @@ public class RevertChangesAction extends SingleRepositoryAction {
         new GitProgressSupport() {
             @Override
             public void perform() {
-                final Collection<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+                final Collection<VCSFileProxy> notifiedFiles = new HashSet<>();
                 try {
                     GitUtils.runWithoutIndexing(new Callable<Void>() {
 

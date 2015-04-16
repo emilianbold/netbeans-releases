@@ -143,7 +143,7 @@ public class ResultProcessor {
     }
 
     private VCSFileProxy[] getFilesInConflict (String[] conflicts) {
-        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>(conflicts.length);
+        List<VCSFileProxy> files = new ArrayList<>(conflicts.length);
         for (String path : conflicts) {
             files.add(VCSFileProxy.createFileProxy(repository, path));
         }

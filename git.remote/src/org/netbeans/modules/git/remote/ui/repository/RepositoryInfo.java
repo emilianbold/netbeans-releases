@@ -113,11 +113,11 @@ public class RepositoryInfo {
     public static final String PROPERTY_STASH = "prop.stashes"; //NOI18N
 
     private final Reference<VCSFileProxy> rootRef;
-    private static final WeakHashMap<VCSFileProxy, RepositoryInfo> cache = new WeakHashMap<VCSFileProxy, RepositoryInfo>(5);
+    private static final WeakHashMap<VCSFileProxy, RepositoryInfo> cache = new WeakHashMap<>(5);
     private static final Logger LOG = Logger.getLogger(RepositoryInfo.class.getName());
     private static final RequestProcessor rp = new RequestProcessor("RepositoryInfo", 1, true); //NOI18N
     private static final RequestProcessor.Task refreshTask = rp.create(new RepositoryRefreshTask());
-    private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<RepositoryInfo>(2);
+    private static final Set<RepositoryInfo> repositoriesToRefresh = new HashSet<>(2);
     private final PropertyChangeSupport propertyChangeSupport;
     private final Map<String, GitBranch> branches;
     private final Map<String, GitTag> tags;
@@ -131,11 +131,11 @@ public class RepositoryInfo {
     private PushMode pushMode = PushMode.ASK;
     
     private RepositoryInfo (VCSFileProxy root) {
-        this.rootRef = new WeakReference<VCSFileProxy>(root);
+        this.rootRef = new WeakReference<>(root);
         this.name = root.getName();
-        this.branches = new LinkedHashMap<String, GitBranch>();
-        this.tags = new HashMap<String, GitTag>();
-        this.remotes = new HashMap<String, GitRemoteConfig>();
+        this.branches = new LinkedHashMap<>();
+        this.tags = new HashMap<>();
+        this.remotes = new HashMap<>();
         this.stashes = new ArrayList<>();
         this.activeBranch = GitBranch.NO_BRANCH_INSTANCE;
         this.repositoryState = GitRepositoryState.SAFE;
@@ -309,13 +309,13 @@ public class RepositoryInfo {
         Map<String, GitBranch> oldBranches;
         boolean changed = false;
         synchronized (branches) {
-            oldBranches = new LinkedHashMap<String, GitBranch>(branches);
+            oldBranches = new LinkedHashMap<>(branches);
             branches.clear();
             branches.putAll(newBranches);
             changed = !equalsBranches(oldBranches, newBranches);
         }
         if (changed) {
-            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<String, GitBranch>(newBranches))));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_BRANCHES, Collections.unmodifiableMap(oldBranches), Collections.unmodifiableMap(new HashMap<>(newBranches))));
         }
     }
 
@@ -323,7 +323,7 @@ public class RepositoryInfo {
         Map<String, GitTag> oldTags;
         boolean changed = false;
         synchronized (tags) {
-            oldTags = new HashMap<String, GitTag>(tags);
+            oldTags = new HashMap<>(tags);
             if (!equalsTags(oldTags, newTags)) {
                 tags.clear();
                 tags.putAll(newTags);
@@ -331,7 +331,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_TAGS, Collections.unmodifiableMap(oldTags), Collections.unmodifiableMap(new HashMap<String, GitTag>(newTags))));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_TAGS, Collections.unmodifiableMap(oldTags), Collections.unmodifiableMap(new HashMap<>(newTags))));
         }
     }
 
@@ -339,7 +339,7 @@ public class RepositoryInfo {
         Map<String, GitRemoteConfig> oldRemotes;
         boolean changed = false;
         synchronized (remotes) {
-            oldRemotes = new HashMap<String, GitRemoteConfig>(remotes);
+            oldRemotes = new HashMap<>(remotes);
             if (!equalsRemotes(oldRemotes, newRemotes)) {
                 remotes.clear();
                 remotes.putAll(newRemotes);
@@ -347,7 +347,7 @@ public class RepositoryInfo {
             }
         }
         if (changed) {
-            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_REMOTES, Collections.unmodifiableMap(oldRemotes), Collections.unmodifiableMap(new HashMap<String, GitRemoteConfig>(newRemotes))));
+            firePropertyChange(new PropertyChangeEvent(this, PROPERTY_REMOTES, Collections.unmodifiableMap(oldRemotes), Collections.unmodifiableMap(new HashMap<>(newRemotes))));
         }
     }
 
@@ -393,19 +393,19 @@ public class RepositoryInfo {
     
     public Map<String, GitBranch> getBranches () {
         synchronized (branches) {
-            return new LinkedHashMap<String, GitBranch>(branches);
+            return new LinkedHashMap<>(branches);
         }
     }
 
     public Map<String, GitTag> getTags () {
         synchronized (tags) {
-            return new HashMap<String, GitTag>(tags);
+            return new HashMap<>(tags);
         }
     }
 
     public Map<String, GitRemoteConfig> getRemotes () {
         synchronized (remotes) {
-            return new HashMap<String, GitRemoteConfig>(remotes);
+            return new HashMap<>(remotes);
         }
     }
 

@@ -59,6 +59,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -819,7 +820,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
-        List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
+        List<RepositoryRevision> newResults = new ArrayList<>(results.size());
         for (RepositoryRevision rev : results) {
             if (applyFilter(rev)) {
                 newResults.add(rev);
@@ -830,13 +831,13 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     boolean applyFilter (RepositoryRevision rev) {
         boolean visible = true;
-        String filterText = txtFilter.getText().trim().toLowerCase();
+        String filterText = txtFilter.getText().trim().toLowerCase(Locale.getDefault());
         Object selectedFilterKind = cmbFilterKind.getSelectedItem();
         if (selectedFilterKind != FilterKind.ALL && !filterText.isEmpty()) {
             if (selectedFilterKind == FilterKind.MESSAGE) {
-                visible = rev.getLog().getFullMessage().toLowerCase().contains(filterText);
+                visible = rev.getLog().getFullMessage().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.USER) {
-                visible = rev.getLog().getAuthor().toString().toLowerCase().contains(filterText);
+                visible = rev.getLog().getAuthor().toString().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.ID) {
                 visible = rev.getLog().getRevision().contains(filterText)
                         || contains(rev.getBranches(), filterText)
@@ -852,7 +853,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private static boolean contains (GitBranch[] items, String needle) {
         for (GitBranch item : items) {
-            if (item.getName() != GitBranch.NO_BRANCH && item.getName().toLowerCase().contains(needle)) {
+            if (item.getName() != GitBranch.NO_BRANCH && item.getName().toLowerCase(Locale.getDefault()).contains(needle)) {
                 return true;
             }
         }
@@ -861,7 +862,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private static boolean contains (GitTag[] items, String needle) {
         for (GitTag item : items) {
-            if (item.getTagName().toLowerCase().contains(needle)) {
+            if (item.getTagName().toLowerCase(Locale.getDefault()).contains(needle)) {
                 return true;
             }
         }
@@ -892,12 +893,12 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                     @Override
                     public void run () {
                         if (!isCanceled()) {
-                            Set<String> visibleRevisions = new HashSet<String>(results.size());
+                            Set<String> visibleRevisions = new HashSet<>(results.size());
                             for (RepositoryRevision rev : results) {
                                 visibleRevisions.add(rev.getLog().getRevision());
                             }
                             
-                            List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
+                            List<RepositoryRevision> toAdd = new ArrayList<>(newResults.size());
                             for (RepositoryRevision rev : newResults) {
                                 if (!visibleRevisions.contains(rev.getLog().getRevision())) {
                                     toAdd.add(rev);
@@ -928,7 +929,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     List<GitLogEntry> createLogEntries(List<RepositoryRevision> results) {
-        List<GitLogEntry> ret = new LinkedList<GitLogEntry>();
+        List<GitLogEntry> ret = new LinkedList<>();
         for (RepositoryRevision repositoryRevision : results) {
             ret.add(new SummaryView.GitLogEntry(repositoryRevision, this));
         }

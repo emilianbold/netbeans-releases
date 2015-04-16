@@ -508,7 +508,7 @@ public class HgUtils {
         try     {
             if (!ignore.exists()) {
                 fileWriter = new BufferedWriter(
-                        new OutputStreamWriter(VCSFileProxySupport.getOutputStream(ignore), "UTF-8"));
+                        new OutputStreamWriter(VCSFileProxySupport.getOutputStream(ignore), "UTF-8")); // NOI18N
                 for (String name : HG_IGNORE_FILES) {
                     fileWriter.write(name + "\n"); // NOI18N
                 }

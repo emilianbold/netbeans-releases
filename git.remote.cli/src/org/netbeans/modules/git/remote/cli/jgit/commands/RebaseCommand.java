@@ -44,6 +44,8 @@ package org.netbeans.modules.git.remote.cli.jgit.commands;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.git.remote.cli.GitClient;
 import org.netbeans.modules.git.remote.cli.GitConstants;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -54,6 +56,7 @@ import org.netbeans.modules.git.remote.cli.jgit.JGitRepository;
 import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -230,10 +233,18 @@ public class RebaseCommand extends GitCommand {
     }
     
     private String read(VCSFileProxy file) throws IOException {
+        FileObject fo = file.toFileObject();
+        Charset encoding = null;
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(fo);
+        }
+        if (encoding == null) {
+            encoding = Charset.forName("UTF-8"); //NOI18N
+        }
         StringBuilder sb = new StringBuilder();
         BufferedReader r = null;
         try {
-            r = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            r = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
             String s = r.readLine();
             if (s != null) {
                 while( true ) {

@@ -129,7 +129,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
             return null;
         } else {
             GitProgressSupport supp = new GitProgressSupport() {
-                private final Set<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+                private final Set<VCSFileProxy> notifiedFiles = new HashSet<>();
                 private VCSFileProxy[] modifiedIgnores = new VCSFileProxy[0];
                 @Override
                 protected void perform () {
@@ -169,7 +169,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
     }
 
     private static VCSFileProxy[] filterRoots (VCSFileProxy[] roots) {
-        List<VCSFileProxy> toIgnore = new LinkedList<VCSFileProxy>();
+        List<VCSFileProxy> toIgnore = new LinkedList<>();
         FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (VCSFileProxy root : roots) {
             FileInformation info = cache.getStatus(root);
@@ -181,7 +181,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
     }
 
     private static VCSFileProxy[] getForRemovalFromIndex (VCSFileProxy[] roots) {
-        List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>(roots.length);
+        List<VCSFileProxy> ret = new ArrayList<>(roots.length);
         FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (VCSFileProxy root : roots) {
             FileInformation info = cache.getStatus(root);
@@ -195,7 +195,7 @@ public class IgnoreAction extends MultipleRepositoryAction {
     }
 
     private VCSFileProxy[] filterFolders (VCSFileProxy repository, VCSFileProxy[] roots) {
-        List<VCSFileProxy> unignoredFolders = new LinkedList<VCSFileProxy>();
+        List<VCSFileProxy> unignoredFolders = new LinkedList<>();
         Map<VCSFileProxy, GitStatus> statuses;
         GitClient client = null;
         try {
