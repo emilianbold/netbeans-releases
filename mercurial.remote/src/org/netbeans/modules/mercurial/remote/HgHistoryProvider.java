@@ -76,7 +76,7 @@ import org.openide.util.RequestProcessor;
  */
 public class HgHistoryProvider implements VCSHistoryProvider {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"); //NOI18N
-    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
+    private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<>();
     private Action[] actions;
 
     private static final Logger LOG = Logger.getLogger(HgHistoryProvider.class.getName());
@@ -115,9 +115,9 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 return null;
             }
 
-            List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-            Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<String, Set<VCSFileProxy>>();
-            Map<String, HgLogMessage> rev2LMMap = new HashMap<String, HgLogMessage>();
+            List<HistoryEntry> ret = new LinkedList<>();
+            Map<String, Set<VCSFileProxy>> rev2FileMap = new HashMap<>();
+            Map<String, HgLogMessage> rev2LMMap = new HashMap<>();
 
             String fromRevision;
             String toRevision;
@@ -142,7 +142,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                     rev2LMMap.put(r, h);
                     Set<VCSFileProxy> s = rev2FileMap.get(r);
                     if(s == null) {
-                        s = new HashSet<VCSFileProxy>();
+                        s = new HashSet<>();
                         rev2FileMap.put(r, s);
                     }
                     s.add(file);
@@ -354,7 +354,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                                 RevertModificationsAction.performRevert(
                                     root,   
                                     getHgRevision(entry).getRevisionNumber(),                           
-                                    new LinkedList<VCSFileProxy>(files), 
+                                    new LinkedList<>(files), 
                                     HgModuleConfig.getDefault(root).getBackupOnRevertModifications(), 
                                     false, 
                                     this.getLogger());
@@ -438,7 +438,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
     }
 
     private static Set<VCSFileProxy> getRepositoryRoots(VCSFileProxy... files) {
-        Set<VCSFileProxy> repositories = HgUtils.getRepositoryRoots(new HashSet<VCSFileProxy>(Arrays.asList(files)));
+        Set<VCSFileProxy> repositories = HgUtils.getRepositoryRoots(new HashSet<>(Arrays.asList(files)));
         if (repositories.size() != 1) {
             LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N
             return null;

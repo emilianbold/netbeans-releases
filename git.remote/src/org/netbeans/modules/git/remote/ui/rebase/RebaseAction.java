@@ -84,7 +84,6 @@ import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.remotefs.versioning.hooks.GitHook;
 import org.netbeans.modules.remotefs.versioning.hooks.GitHookContext;
 import org.netbeans.modules.remotefs.versioning.hooks.VCSHooks;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -153,7 +152,7 @@ public class RebaseAction extends SingleRepositoryAction {
             JButton btnSkip = new JButton();
             Mnemonics.setLocalizedText(btnSkip, Bundle.CTL_RebaseAction_skipButton_text());
             btnSkip.setToolTipText(Bundle.CTL_RebaseAction_skipButton_TTtext());
-            Map<Object, RebaseOperationType> operations = new HashMap<Object, RebaseOperationType>();
+            Map<Object, RebaseOperationType> operations = new HashMap<>();
             operations.put(btnContinue, RebaseOperationType.CONTINUE);
             operations.put(btnSkip, RebaseOperationType.SKIP);
             operations.put(btnAbort, RebaseOperationType.ABORT);
@@ -263,7 +262,7 @@ public class RebaseAction extends SingleRepositoryAction {
             if (VCSFileProxySupport.canRead(file)) {
                 BufferedReader br = null;
                 try {
-                    br = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+                    br = new BufferedReader(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
                     return br.readLine();
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, null, ex);
@@ -472,9 +471,9 @@ public class RebaseAction extends SingleRepositoryAction {
                 VCSFileProxy rebaseFolder = getRebaseFolder(repository);
                 if (rebaseFolder.canWrite()) {
                     try {
-                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(onto.getBytes()), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_ONTO));
-                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(upstream.getBytes()), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_UPSTREAM));
-                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(origHead.getBytes()), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_ORIGHEAD));
+                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(onto.getBytes("UTF-8")), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_ONTO)); //NOI18N
+                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(upstream.getBytes("UTF-8")), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_UPSTREAM)); //NOI18N
+                        VCSFileProxySupport.copyStreamToFile(new ByteArrayInputStream(origHead.getBytes("UTF-8")), VCSFileProxy.createFileProxy(rebaseFolder, NETBEANS_REBASE_ORIGHEAD)); //NOI18N
                     } catch (IOException ex) {
                         LOG.log(Level.INFO, null, ex);
                     }
@@ -521,7 +520,7 @@ public class RebaseAction extends SingleRepositoryAction {
     }
     
     private static Map<String, String> findChangesetMapping (GitHookContext.LogEntry[] originalEntries, GitHookContext.LogEntry[] newEntries) {
-        Map<String, String> mapping = new HashMap<String, String>(originalEntries.length);
+        Map<String, String> mapping = new HashMap<>(originalEntries.length);
         for (GitHookContext.LogEntry original : originalEntries) {
             boolean found = false;
             for (GitHookContext.LogEntry newEntry : newEntries) {
@@ -553,7 +552,7 @@ public class RebaseAction extends SingleRepositoryAction {
     }    
 
     private static GitHookContext.LogEntry[] convertToEntries (GitRevisionInfo[] messages) {
-        List<GitHookContext.LogEntry> entries = new ArrayList<GitHookContext.LogEntry>(messages.length);
+        List<GitHookContext.LogEntry> entries = new ArrayList<>(messages.length);
         for (GitRevisionInfo msg : messages) {
             entries.add(new GitHookContext.LogEntry(
                     msg.getFullMessage(),

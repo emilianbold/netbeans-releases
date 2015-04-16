@@ -234,9 +234,9 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
     protected class StatusRefreshLogHandler extends Handler {
         private Set<VCSFileProxy> filesToRefresh;
         private boolean filesRefreshed;
-        private final HashSet<VCSFileProxy> refreshedFiles = new HashSet<VCSFileProxy>();
+        private final HashSet<VCSFileProxy> refreshedFiles = new HashSet<>();
         private final VCSFileProxy topFolder;
-        private final Set<String> interestingFiles = new HashSet<String>();
+        private final Set<String> interestingFiles = new HashSet<>();
         private boolean active;
         private CountDownLatch latch;
 
@@ -295,7 +295,7 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
         }
 
         Set<String> getInterestingFiles () {
-            return new HashSet<String>(interestingFiles);
+            return new HashSet<>(interestingFiles);
         }
 
     }
@@ -398,7 +398,7 @@ public abstract class AbstractLocalGitTestCase extends NbTestCase {
     protected class LogHandler extends Handler {
         private VCSFileProxy fileToInitialize;
         private boolean filesInitialized;
-        private final HashSet<VCSFileProxy> initializedFiles = new HashSet<VCSFileProxy>();
+        private final HashSet<VCSFileProxy> initializedFiles = new HashSet<>();
 
         @Override
         public void publish(LogRecord record) {

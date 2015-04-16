@@ -123,7 +123,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
     public ResolveConflictsExecutor(VCSFileProxy[] files) {
         super();
         this.files = files;
-        this.toResolve = new HashSet<VCSFileProxy>();
+        this.toResolve = new HashSet<>();
     }
 
     private void exec (MergeVisualizer merge, VCSFileProxy file) {
@@ -261,7 +261,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
-            diffList = new ArrayList<Difference>();
+            diffList = new ArrayList<>();
         }
         try {
             String line;
@@ -499,7 +499,7 @@ public class ResolveConflictsExecutor extends GitProgressSupport {
                 exec(merge, e.getKey());
             }
             if (!isCanceled()) {
-                List<Node> nodes = new ArrayList<Node>(toResolve.size());
+                List<Node> nodes = new ArrayList<>(toResolve.size());
                 for (VCSFileProxy f : toResolve) {
                     nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(f)));
                 }

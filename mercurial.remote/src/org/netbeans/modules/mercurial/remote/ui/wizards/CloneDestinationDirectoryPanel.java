@@ -52,8 +52,6 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.util.NbBundle;
 
 public final class CloneDestinationDirectoryPanel extends JPanel implements ActionListener {

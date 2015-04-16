@@ -137,7 +137,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
     
     private void fillPanel () {
-        LinkedList<RemoteUri> list = new LinkedList<RemoteUri>();
+        LinkedList<RemoteUri> list = new LinkedList<>();
         for (Map.Entry<String, GitRemoteConfig> e : remotes.entrySet()) {
             boolean empty = true;
             if (mode == Mode.PUSH) {

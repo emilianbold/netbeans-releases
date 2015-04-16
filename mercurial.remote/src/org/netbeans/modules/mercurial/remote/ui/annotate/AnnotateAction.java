@@ -258,7 +258,7 @@ public class AnnotateAction extends ContextAction {
     }
 
     private static List<String> getRevisionNumbers (AnnotateLine[] lines) {
-        Set<String> revisions = new HashSet<String>(lines.length);
+        Set<String> revisions = new HashSet<>(lines.length);
         for (AnnotateLine line : lines) {
             if (!(line instanceof FakeAnnotationLine)) {
                 String revision = line.getRevision();
@@ -270,7 +270,7 @@ public class AnnotateAction extends ContextAction {
                 }
             }
         }
-        List<String> retval = new ArrayList<String>(revisions);
+        List<String> retval = new ArrayList<>(revisions);
         Collections.sort(retval);
         return retval;
     }
@@ -314,7 +314,7 @@ public class AnnotateAction extends ContextAction {
         final int GROUP_LINE_NUMBER = 4;
         final int GROUP_CONTENT = 5;
         
-        List<AnnotateLine> lines = new ArrayList<AnnotateLine>();
+        List<AnnotateLine> lines = new ArrayList<>();
         int i = 0;
         Pattern p = Pattern.compile("^\\s*(\\S+\\b)\\s+(\\d+)\\s+(\\b\\S*):\\s*(\\d+):\\s(.*)$"); //NOI18N
         for (String line : annotations) {

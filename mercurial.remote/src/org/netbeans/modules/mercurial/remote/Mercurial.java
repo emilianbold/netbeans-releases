@@ -118,7 +118,7 @@ public class Mercurial {
     private RootsToFile rootsToFile;
     private static final List<String> allowableFolders;
     static {
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
         try {
             String allowable = System.getProperty("versioning.hg.allowableFolders", "/"); //NOI18N
             files.addAll(Arrays.asList(allowable.split("\\;"))); //NOI18N
@@ -155,7 +155,7 @@ public class Mercurial {
          */
         private boolean gotVersion;
     }
-    private final Map<FileSystem, Version> versions = new HashMap<FileSystem, Version>();
+    private final Map<FileSystem, Version> versions = new HashMap<>();
 
     private Result<? extends VCSHyperlinkProvider> hpResult;
     private RequestProcessor parallelRP;
@@ -485,7 +485,7 @@ public class Mercurial {
      */
     public RequestProcessor getRequestProcessor(HgURL url) {
         if(processorsToUrl == null) {
-            processorsToUrl = new HashMap<HgURL, RequestProcessor>();
+            processorsToUrl = new HashMap<>();
         }
 
         RequestProcessor rp = processorsToUrl.get(url);   //'url' can be null
@@ -530,7 +530,7 @@ public class Mercurial {
             return Collections.<VCSHyperlinkProvider>emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
-        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
+        List<VCSHyperlinkProvider> providersList = new ArrayList<>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }
@@ -584,7 +584,7 @@ public class Mercurial {
                 }
             }
         }
-        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> done = new HashSet<>();
         VCSFileProxy topmost = null;
         for (;file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {

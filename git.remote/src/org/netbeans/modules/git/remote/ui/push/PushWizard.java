@@ -190,7 +190,7 @@ class PushWizard  implements ChangeListener {
                 selectUriStep.storeURI();
             } else if (current() == pushBranchesStep) {
                 Collection<PushMapping> mappings = pushBranchesStep.getSelectedMappings();
-                Map<String, String> remoteBranches = new LinkedHashMap<String, String>(mappings.size());
+                Map<String, String> remoteBranches = new LinkedHashMap<>(mappings.size());
                 for (PushMapping mapping : mappings) {
                     if (!mapping.isDeletion() && mapping instanceof PushMapping.PushBranchMapping) {
                         PushBranchMapping pushMapping = (PushMapping.PushBranchMapping) mapping;

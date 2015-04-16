@@ -92,7 +92,7 @@ public class RepositoryRevision {
     /**
      * List of events associated with the revision.
      */ 
-    private final List<Event> events = new ArrayList<Event>(5);
+    private final List<Event> events = new ArrayList<>(5);
     private final List<Event> dummyEvents;
     private final Set<String> headOfBranches;
     private final Kind kind;
@@ -188,7 +188,7 @@ public class RepositoryRevision {
         "# {0} - revision id", "MSG_SearchHistory.fetching=Fetching {0}"
     })
     Action[] getActions () {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         if (kind != Kind.INCOMING) {
             actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_BackoutRevision")) { //NOI18N
                 @Override
@@ -343,7 +343,7 @@ public class RepositoryRevision {
             "CTL_Action.ViewCurrent.name=View Current"
         })
         Action[] getActions () {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             boolean viewEnabled = getFile() != null && getChangedPath().getAction() != HgLogMessage.HgDelStatus;
             if (getFile() != null) {
                 actions.add(new AbstractAction(NbBundle.getMessage(RepositoryRevision.class, "CTL_SummaryView_RollbackTo", getLogInfoHeader().getLog().getRevisionNumber())) { // NOI18N
@@ -411,7 +411,7 @@ public class RepositoryRevision {
     }
 
     private List<Event> prepareEvents (HgLogMessageChangedPath[] paths) {
-        final List<Event> logEvents = new ArrayList<Event>(paths.length);
+        final List<Event> logEvents = new ArrayList<>(paths.length);
         for (HgLogMessageChangedPath path : paths) {
             logEvents.add(new Event(path));
         }
@@ -485,7 +485,7 @@ public class RepositoryRevision {
                             events.addAll(logEvents);
                             eventsInitialized = true;
                             currentSearch = null;
-                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<Event>(events));
+                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<>(events));
                         }
                     }
                 });

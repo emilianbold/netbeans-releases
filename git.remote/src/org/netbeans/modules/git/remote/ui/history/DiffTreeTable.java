@@ -155,7 +155,7 @@ class DiffTreeTable extends OutlineView {
     }
 
     void setSelection (RepositoryRevision.Event... events) {
-        List<Node> nodes = new ArrayList<Node>(events.length);
+        List<Node> nodes = new ArrayList<>(events.length);
         for (RepositoryRevision.Event event : events) {
             RevisionNode node = (RevisionNode) getNode(rootNode, event);
             if (node != null) {

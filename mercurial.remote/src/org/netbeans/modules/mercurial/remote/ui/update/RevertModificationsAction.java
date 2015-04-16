@@ -145,14 +145,14 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     public static void performRevert(VCSFileProxy repository, String revStr, VCSFileProxy file, boolean doBackup, OutputLogger logger) {
-        List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> revertFiles = new ArrayList<>();
         revertFiles.add(file);        
 
         performRevert(repository, revStr, revertFiles, doBackup, false, logger);
     }
     
     public static void performRevert(VCSFileProxy repository, String revStr, VCSFileProxy[] files, boolean doBackup, boolean removeNewFiles, OutputLogger logger) {
-        List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> revertFiles = new ArrayList<>();
         revertFiles.addAll(Arrays.asList(files));
         performRevert(repository, revStr, revertFiles, doBackup, removeNewFiles, logger);
     }
@@ -224,7 +224,7 @@ public class RevertModificationsAction extends ContextAction {
             HgUtils.notifyException(ex);
         }
 
-        Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, (Set<VCSFileProxy>)new HashSet<VCSFileProxy>(revertFiles)));
+        Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, (Set<VCSFileProxy>)new HashSet<>(revertFiles)));
 
         logger.outputInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,

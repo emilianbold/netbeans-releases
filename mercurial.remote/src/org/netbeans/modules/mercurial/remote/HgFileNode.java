@@ -97,7 +97,7 @@ public final class HgFileNode extends VCSFileNode<FileInformation> {
 
     @Override
     public Object[] getLookupObjects() {
-        List<Object> list = new ArrayList<Object>(2);
+        List<Object> list = new ArrayList<>(2);
         list.add(file);
         FileObject fo = getFileObject();
         if (fo != null) {

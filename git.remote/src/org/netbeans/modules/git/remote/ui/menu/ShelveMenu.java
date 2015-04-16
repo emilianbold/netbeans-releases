@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.git.remote.ui.menu;
 
-import javax.swing.JComponent;
 import javax.swing.JMenu;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator.ActionDestination;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.shelve.ShelveUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

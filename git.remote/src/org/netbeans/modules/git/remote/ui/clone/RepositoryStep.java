@@ -66,11 +66,9 @@ import org.netbeans.modules.git.remote.ui.wizards.AbstractWizardPanel;
 import org.netbeans.modules.git.remote.utils.WizardStepProgressSupport;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -334,7 +332,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ChangeListene
             try {
                 client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
                 client.init(getProgressMonitor());
-                branches = new HashMap<String, GitBranch>();
+                branches = new HashMap<>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), getProgressMonitor()));
             } catch (GitException.AuthorizationException ex) {
                 GitClientExceptionHandler.notifyException(ex, false);

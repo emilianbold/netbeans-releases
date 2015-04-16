@@ -157,7 +157,7 @@ public class GitVersioningTopComponent extends TopComponent implements Externali
         if (size == -1) {
             return;
         }
-        List<VCSFileProxy> rootFiles = new ArrayList<VCSFileProxy>(size);
+        List<VCSFileProxy> rootFiles = new ArrayList<>(size);
         for(int i = 0; i < size; i++) {
             URI uri = (URI)in.readObject();
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);

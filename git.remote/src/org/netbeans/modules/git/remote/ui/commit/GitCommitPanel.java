@@ -459,7 +459,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
          */
         @Override
         protected EditorCookie[] getEditorCookies () {
-            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+            LinkedList<EditorCookie> allCookies = new LinkedList<>();
             if (controller != null) {
                 EditorCookie[] cookies = controller.getEditorCookies(true);
                 if (cookies.length > 0) {
@@ -588,7 +588,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                         return;
                     }
 
-                    ArrayList<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(files.length);
+                    ArrayList<GitLocalFileNode> nodesList = new ArrayList<>(files.length);
 
                     for (VCSFileProxy file : files) {
                         GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));

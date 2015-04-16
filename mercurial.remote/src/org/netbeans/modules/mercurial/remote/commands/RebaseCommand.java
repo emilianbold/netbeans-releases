@@ -168,8 +168,8 @@ public final class RebaseCommand extends HgCommand<RebaseCommand.Result> {
 
         private Result (List<String> output) {
             this.output = output;
-            touchedFiles = new LinkedHashSet<VCSFileProxy>();
-            conflicts = new ArrayList<VCSFileProxy>();
+            touchedFiles = new LinkedHashSet<>();
+            conflicts = new ArrayList<>();
         }
 
         public static Result build (VCSFileProxy repo, List<String> output) {

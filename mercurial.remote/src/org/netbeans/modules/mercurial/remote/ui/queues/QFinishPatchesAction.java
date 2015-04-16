@@ -183,7 +183,7 @@ public class QFinishPatchesAction extends ContextAction {
 
             private List<QPatch> getPatchesToFinish (String patchName, VCSFileProxy root) throws HgException {
                 QPatch[] patches = HgCommand.qListSeries(root);
-                List<QPatch> toFinish = new LinkedList<QPatch>();
+                List<QPatch> toFinish = new LinkedList<>();
                 boolean containsTarget = false;
                 for (QPatch patch : patches) {
                     if (patch.isApplied()) {

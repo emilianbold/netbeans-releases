@@ -223,7 +223,7 @@ class SearchExecutor extends GitProgressSupport {
     }
 
     private List<RepositoryRevision> appendResults (GitRevisionInfo[] logMessages, Collection<GitBranch> allBranches, Collection<GitTag> allTags, ProgressMonitor monitor) {
-        List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+        List<RepositoryRevision> results = new ArrayList<>();
         VCSFileProxy dummyFile = null;
         String dummyFileRelativePath = null;
         if (master.getRoots().length == 1) {
@@ -237,8 +237,8 @@ class SearchExecutor extends GitProgressSupport {
                 continue;
             }
             RepositoryRevision rev;
-            Set<GitBranch> branches = new HashSet<GitBranch>();
-            Set<GitTag> tags = new HashSet<GitTag>();
+            Set<GitBranch> branches = new HashSet<>();
+            Set<GitTag> tags = new HashSet<>();
             for (GitBranch b : allBranches) {
                 if (b.getId().equals(logMessage.getRevision())) {
                     branches.add(b);

@@ -302,7 +302,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         add(fromFile);
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         renameDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -327,7 +327,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "to");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -354,7 +354,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -386,7 +386,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileB);
         renameDO(fileB, fileC);
         renameDO(fileC, fileA);
@@ -417,7 +417,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameDO(fileA, fileC);
         renameDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -447,7 +447,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileC);
         renameFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -474,7 +474,7 @@ public class RenameRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
         // rename
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "B");
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         renameDO(fileA, fileB);
         // create from file
         fileA.getParentFile().toFileObject().createData(fileA.getName());
@@ -507,7 +507,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, file.getName());
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -545,7 +545,7 @@ else    getCache().refreshAllRoots(fileA);
 
         // rename
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(repositoryLocation, "to");
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         renameDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -599,7 +599,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -624,7 +624,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(repositoryLocation, "toFile");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -649,7 +649,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -674,7 +674,7 @@ else    getCache().refreshAllRoots(fileA);
         add(fromFile);
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         renameFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -698,7 +698,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "to");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -725,7 +725,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -757,7 +757,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(repositoryLocation, "C");
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         renameFO(fileA, fileB);
         renameFO(fileB, fileC);
         renameFO(fileC, fileA);
@@ -785,12 +785,12 @@ else    getCache().refreshAllRoots(fileA);
 
         // rename
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(repositoryLocation, "B");
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         renameFO(fileA, fileB);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // create from file
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA)));
         fileA.getParentFile().toFileObject().createData(fileA.getName());
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -822,7 +822,7 @@ else    getCache().refreshAllRoots(fileA);
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -860,7 +860,7 @@ else    getCache().refreshAllRoots(fileA);
 
         // rename
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(repositoryLocation, "to");
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         renameFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 

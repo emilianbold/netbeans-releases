@@ -53,7 +53,6 @@ import org.netbeans.modules.git.remote.GitModuleConfig;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 

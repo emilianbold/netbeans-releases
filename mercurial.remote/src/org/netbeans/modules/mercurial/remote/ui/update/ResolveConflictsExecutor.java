@@ -232,7 +232,7 @@ public class ResolveConflictsExecutor extends HgProgressSupport {
         BufferedWriter w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(dest), charset));
         ArrayList<Difference> diffList = null;
         if (generateDiffs) {
-            diffList = new ArrayList<Difference>();
+            diffList = new ArrayList<>();
         }
         try {
             String line;

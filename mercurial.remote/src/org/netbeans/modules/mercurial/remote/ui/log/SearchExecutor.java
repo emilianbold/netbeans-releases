@@ -111,13 +111,13 @@ class SearchExecutor extends HgProgressSupport {
         }
         branchName = criteria.getBranch();
         
-        pathToRoot = new HashMap<String, VCSFileProxy>(); 
+        pathToRoot = new HashMap<>(); 
         VCSFileProxy rootFile = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]);
         if (rootFile == null) {
             rootFile = master.getRoots()[0];
         }
         root = rootFile;
-        files = new HashSet<VCSFileProxy>(Arrays.asList(master.getRoots()));
+        files = new HashSet<>(Arrays.asList(master.getRoots()));
 
     }    
         
@@ -181,7 +181,7 @@ class SearchExecutor extends HgProgressSupport {
      * @param logMessages events in chronological order
      */ 
     private List<RepositoryRevision> appendResults(VCSFileProxy root, HgLogMessage[] logMessages) {
-        List<RepositoryRevision> results = new ArrayList<RepositoryRevision>();
+        List<RepositoryRevision> results = new ArrayList<>();
         // traverse in reverse chronological order
         for (int i = logMessages.length - 1; i >= 0; i--) {
             HgLogMessage logMessage = logMessages[i];
@@ -225,7 +225,7 @@ class SearchExecutor extends HgProgressSupport {
      * @return 
      */
     private Set<String> getBranches (HgLogMessage logMessage) {
-        Set<String> headOfBranches = new HashSet<String>(2);
+        Set<String> headOfBranches = new HashSet<>(2);
         for (HgBranch b : branches) {
             if (b.getRevisionInfo().getCSetShortID().equals(logMessage.getCSetShortID())) {
                 headOfBranches.add(b.getName());

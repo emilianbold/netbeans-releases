@@ -103,13 +103,13 @@ public class FileStatusCache {
      * Keeps cached statuses for managed files
      */
     private final Map<VCSFileProxy, FileInformation> cachedFiles;
-    private final LinkedHashSet<VCSFileProxy> upToDateFiles = new LinkedHashSet<VCSFileProxy>(MAX_COUNT_UPTODATE_FILES);
+    private final LinkedHashSet<VCSFileProxy> upToDateFiles = new LinkedHashSet<>(MAX_COUNT_UPTODATE_FILES);
     private final RequestProcessor rp = new RequestProcessor("MercurialRemote.cacheNG", 1, true); //NOI18N
-    private final HashSet<VCSFileProxy> nestedRepositories = new HashSet<VCSFileProxy>(2); // mainly for logging
+    private final HashSet<VCSFileProxy> nestedRepositories = new HashSet<>(2); // mainly for logging
 
     FileStatusCache (Mercurial hg) {
         this.hg = hg;
-        cachedFiles = new HashMap<VCSFileProxy, FileInformation>();
+        cachedFiles = new HashMap<>();
     }
 
     /**
@@ -374,7 +374,7 @@ public class FileStatusCache {
     private Map<VCSFileProxy, FileInformation> getModifiedFiles (VCSFileProxy root, int includeStatus) {
         boolean check = false;
         assert check = true;
-        Map<VCSFileProxy, FileInformation> modifiedFiles = new HashMap<VCSFileProxy, FileInformation>();
+        Map<VCSFileProxy, FileInformation> modifiedFiles = new HashMap<>();
         FileInformation info = getCachedStatus(root);
         if ((info.getStatus() & includeStatus) != 0) {
             modifiedFiles.put(root, info);
@@ -404,7 +404,7 @@ public class FileStatusCache {
             Map<VCSFileProxy, FileInformation> interestingFiles;
             try {
                 // find all files with not up-to-date or ignored status
-                interestingFiles = HgCommand.getStatus(repository, new LinkedList<VCSFileProxy>(refreshEntry.getValue()), null, null);
+                interestingFiles = HgCommand.getStatus(repository, new LinkedList<>(refreshEntry.getValue()), null, null);
                 for (Map.Entry<VCSFileProxy, FileInformation> interestingEntry : interestingFiles.entrySet()) {
                     // put the file's FI into the cache
                     VCSFileProxy file = interestingEntry.getKey();
@@ -458,7 +458,7 @@ public class FileStatusCache {
         if (files.isEmpty()) {
             return;
         }
-        HashMap<VCSFileProxy, Set<VCSFileProxy>> rootFiles = new HashMap<VCSFileProxy, Set<VCSFileProxy>>(5);
+        HashMap<VCSFileProxy, Set<VCSFileProxy>> rootFiles = new HashMap<>(5);
 
         for (VCSFileProxy file : files) {
             // go through all files and sort them under repository roots
@@ -470,7 +470,7 @@ public class FileStatusCache {
             }
             Set<VCSFileProxy> filesUnderRoot = rootFiles.get(repository);
             if (filesUnderRoot == null) {
-                filesUnderRoot = new HashSet<VCSFileProxy>();
+                filesUnderRoot = new HashSet<>();
                 rootFiles.put(repository, filesUnderRoot);
             }
             HgUtils.prepareRootFiles(repository, filesUnderRoot, file);
@@ -750,7 +750,7 @@ public class FileStatusCache {
     }
 
     private Set<VCSFileProxy> listFilesIntern(VCSFileProxy[] roots, int includeStatus) {
-        Set<VCSFileProxy> listedFiles = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> listedFiles = new HashSet<>();
         for (VCSFileProxy root : roots) {
             if (VersioningSupport.isFlat(root)) {
                 for (VCSFileProxy listed : listFiles(root)) {
