@@ -4020,7 +4020,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         indent = oldIndent;
                         lastIndent = oldLastIndent;
-                        continuationIndent = isLastIndentContinuation = continuation;
+                        continuationIndent = continuation;
                     }
                     spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);                    
                 }
