@@ -747,7 +747,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                      * Notify the listeners so the cursor will be reset;
                      */
                     notifyListeners(null);
-                    errorDialog.show();
+                    errorDialog.showDialog(btnSubmit);
                 }
                 return;
             }

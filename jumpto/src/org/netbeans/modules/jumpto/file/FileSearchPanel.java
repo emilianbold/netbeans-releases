@@ -273,6 +273,8 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                    msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex());
                }
                res = false;
+            } else if (resultList.getSelectedIndex() == -1) {
+                resultList.setSelectedIndex(0);
             }
             setListPanelContent(msg, false);
         } else {
