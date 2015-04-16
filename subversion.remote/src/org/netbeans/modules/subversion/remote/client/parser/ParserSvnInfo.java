@@ -191,6 +191,7 @@ public class ParserSvnInfo implements ISVNInfo{
         return lastDateTextUpdate;
     }
 
+    @Override
     public String getLockComment() {
         return lockComment;
     }

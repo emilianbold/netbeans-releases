@@ -57,6 +57,7 @@ public final class AnnotationMarkInstaller implements MarkProviderCreator {
 
     private static final Object PROVIDER_KEY = new Object();
 
+    @Override
     public MarkProvider createMarkProvider(JTextComponent pane) {
         AnnotationMarkProvider amp = new AnnotationMarkProvider();
         pane.putClientProperty(PROVIDER_KEY, amp);

@@ -196,6 +196,7 @@ public class DiffNode extends AbstractNode {
             super(COLUMN_NAME_NAME, COLUMN_NAME_NAME, COLUMN_NAME_NAME);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return DiffNode.this.getName();
         }
@@ -228,6 +229,7 @@ public class DiffNode extends AbstractNode {
             setValue("sortkey", location + "\t" + DiffNode.this.getName()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return location;
         }

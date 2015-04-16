@@ -69,7 +69,6 @@ import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.modules.Places;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**

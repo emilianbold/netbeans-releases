@@ -60,7 +60,6 @@ import org.netbeans.modules.subversion.remote.ui.wizards.repositorystep.Reposito
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 
 /*

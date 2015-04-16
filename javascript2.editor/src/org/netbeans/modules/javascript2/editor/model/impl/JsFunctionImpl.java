@@ -280,9 +280,17 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     jsObject = ModelUtils.findJsObjectByName(global, type.getType());
                 }
                 if (jsObject != null) {
-                    int index = type.getType().lastIndexOf('.');
-                    int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
-                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                    List<OffsetRange> docOccurrences = docHolder.getOccurencesMap().get(jsObject.getFullyQualifiedName());
+                    if (docOccurrences != null) {
+                        for (OffsetRange offsetRange : docOccurrences) {
+                            jsObject.addOccurrence(offsetRange);
+                        }
+                    }
+                    if (containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
+                        int index = type.getType().lastIndexOf('.');
+                        int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
+                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
+                    }
                 }
             }
         }

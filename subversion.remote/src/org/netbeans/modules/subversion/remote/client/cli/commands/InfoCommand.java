@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
-import org.netbeans.modules.subversion.remote.api.SVNBaseDir;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNNodeKind;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;

@@ -260,7 +260,7 @@ public final class SvnProperties implements ActionListener {
                         if (VCSFileProxySupport.canRead(source)) {
                             StringWriter sw = new StringWriter();
                             try {
-                                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(sw, new InputStreamReader(source.getInputStream(false)));
+                                org.netbeans.modules.versioning.util.Utils.copyStreamsCloseAll(sw, new InputStreamReader(source.getInputStream(false), "UTF-8")); //NOI18N
                                 panel.txtAreaValue.setText(sw.toString());
                             } catch (IOException ex) {
                                 Subversion.LOG.log(Level.SEVERE, null, ex);
