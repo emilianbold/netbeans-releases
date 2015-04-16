@@ -472,12 +472,13 @@ public class SvnClientExceptionHandler {
         return null;
     }
         
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     private void connectProxy(Socket proxy, String host, int port, String proxyHost, String proxyPort, String userName, String password) throws IOException {
       StringBuilder sb = new StringBuilder("CONNECT ").append(host).append(":").append(port).append(" HTTP/1.0\r\n") //NOI18N
               .append("Connection: Keep-Alive\r\n");                    //NOI18N
       if (userName != null && password != null && userName.length() > 0) {
           Subversion.LOG.info("connectProxy: adding proxy authorization field"); //NOI18N
-          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes())).append("\r\n"); //NOI18N
+          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes("UTF-8"))).append("\r\n"); //NOI18N
       }
       String connectString = sb.append("\r\n").toString(); //NOI18N
       byte connectBytes[];

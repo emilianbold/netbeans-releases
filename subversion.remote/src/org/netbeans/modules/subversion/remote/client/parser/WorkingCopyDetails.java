@@ -47,6 +47,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -119,6 +120,7 @@ public class WorkingCopyDetails {
                     public boolean propertiesModified() throws IOException {
                         return getAttributes().containsKey("has-prop-mods");    // NOI18N
                     }            
+                    @Override
                     VCSFileProxy getPropertiesFile() throws IOException {
                         if (propertiesFile == null) {
                             // unchanged properties have only the base file
@@ -325,10 +327,15 @@ public class WorkingCopyDetails {
         return conflictDescriptor;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     private String getPropertyValue(Map<String, byte[]> props, String key) {
         byte[] byteValue = props.get(key);
         if(byteValue != null && byteValue.length > 0) {
-            return new String(byteValue);
+            try {
+                return new String(byteValue, "UTF-8"); //NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                return new String(byteValue);
+            }
         }        
         return  null;
     }
@@ -340,7 +347,7 @@ public class WorkingCopyDetails {
 	if (baseFile != null) {
             BufferedReader reader = null;
             try {
-                reader = new BufferedReader(new InputStreamReader(baseFile.getInputStream(false)));
+                reader = new BufferedReader(new InputStreamReader(baseFile.getInputStream(false), "UTF-8")); //NOI18N
 	        String firstLine = reader.readLine();
 	        returnValue = firstLine.startsWith("link");     // NOI18N
             } finally {
@@ -423,8 +430,8 @@ public class WorkingCopyDetails {
         BufferedReader fileReader = null;
 
         try {
-            baseReader = new BufferedReader(new InputStreamReader(textBaseFile.getInputStream(false)));
-            fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            baseReader = new BufferedReader(new InputStreamReader(textBaseFile.getInputStream(false), "UTF-8"));
+            fileReader = new BufferedReader(new InputStreamReader(file.getInputStream(false), "UTF-8"));
 
             String baseLine = baseReader.readLine();
             String fileLine = fileReader.readLine();

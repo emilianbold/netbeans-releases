@@ -59,18 +59,22 @@ public class SVNLogMessageChangePath implements ISVNLogMessageChangePath {
         this.action = action;
     }
 
+    @Override
     public String getPath() {
        return path;
     }
 
+    @Override
     public SVNRevision.Number getCopySrcRevision() {
         return copySrcRevision;
     }
 
+    @Override
     public String getCopySrcPath() {
         return copySrcPath;
     }
 
+    @Override
     public char getAction() {
         return action;
     }
