@@ -216,7 +216,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
 
     protected void commitIntoRepository (VCSFileProxy repository, VCSFileProxy... files) throws HgException, IOException {
 
-        List<VCSFileProxy> filesToAdd = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> filesToAdd = new ArrayList<>();
         FileInformation status;
         for (VCSFileProxy file : files) {
             if(findStatus(HgCommand.getStatus(repository, Collections.singletonList(file), null, null),
@@ -226,7 +226,7 @@ public abstract class RemoteVersioningTestBase extends RemoteFileTestBase {
         }
 
         HgCommand.doAdd(repository, filesToAdd, null);
-        List<VCSFileProxy> filesToCommit = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> filesToCommit = new ArrayList<>();
         for (VCSFileProxy file : files) {
             if(file.isFile()) {
                 filesToCommit.add(file);

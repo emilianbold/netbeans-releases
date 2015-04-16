@@ -69,7 +69,6 @@ import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.options.AnnotationColorProvider;
-import org.netbeans.modules.mercurial.remote.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.remote.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.remote.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.remote.ui.diff.DiffSetupSource;
@@ -115,7 +114,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     static final class HgLogEntry extends AbstractSummaryView.LogEntry implements PropertyChangeListener {
 
         private final RepositoryRevision revision;
-        private List<Event> events = new ArrayList<Event>(10);
+        private List<Event> events = new ArrayList<>(10);
         private List<Event> dummyEvents;
         private final SearchHistoryPanel master;
         private String complexRevision;
@@ -159,7 +158,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         @Override
         public String getRevision () {
             if (complexRevision == null) {
-                complexRevisionHighlights = new ArrayList<RevisionHighlight>(revision.getLog().getBranches().length + revision.getLog().getTags().length + 1);
+                complexRevisionHighlights = new ArrayList<>(revision.getLog().getBranches().length + revision.getLog().getTags().length + 1);
                 StringBuilder sb = new StringBuilder(revision.getLog().getRevisionNumber()).append(" ("); //NOI18N
                 int pos = sb.length();
                 StringBuilder labelBuilder = new StringBuilder();
@@ -202,7 +201,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public Action[] getActions () {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if (!master.isIncomingSearch()) {
                 actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffRevision")) { //NOI18N
 
@@ -251,7 +250,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         void prepareDummyEvents () {
-            ArrayList<Event> evts = new ArrayList<Event>(revision.getDummyEvents().length);
+            ArrayList<Event> evts = new ArrayList<>(revision.getDummyEvents().length);
             for (RepositoryRevision.Event event : revision.getDummyEvents()) {
                 evts.add(new HgLogEvent(master, event));
             }
@@ -259,11 +258,11 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         void refreshEvents () {
-            ArrayList<Event> evts = new ArrayList<Event>(revision.getEvents().length);
+            ArrayList<Event> evts = new ArrayList<>(revision.getEvents().length);
             for (RepositoryRevision.Event event : revision.getEvents()) {
                 evts.add(new HgLogEvent(master, event));
             }
-            List<Event> newEvents = new ArrayList<Event>(evts);
+            List<Event> newEvents = new ArrayList<>(evts);
             dummyEvents.clear();
             events = evts;
             eventsChanged(null, newEvents);
@@ -308,7 +307,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
         @Override
         public Action[] getUserActions () {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if (!master.isIncomingSearch()) {
                 actions.add(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious")) { // NOI18N
                     @Override
@@ -338,7 +337,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
-        final Map<String, String> colors = new HashMap<String, String>();
+        final Map<String, String> colors = new HashMap<>();
         colors.put("A", HgUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor())); //NOI18N
         colors.put("C", HgUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor())); //NOI18N
         colors.put("R", HgUtils.getColorString(AnnotationColorProvider.getInstance().MOVED_LOCALY_FILE.getActualColor())); //NOI18N
@@ -354,7 +353,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
             @Override
             public File[] getRoots(){
-                List<File> files = new ArrayList<File>();
+                List<File> files = new ArrayList<>();
                 for(VCSFileProxy proxy : master.getRoots()) {
                     File file = proxy.toFile();
                     if (file != null) {
@@ -397,8 +396,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             return master.getSetups(results.toArray(new RepositoryRevision[results.size()]), new RepositoryRevision.Event[0]);
         }
     
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        Set<RepositoryRevision.Event> events = new HashSet<>();
+        Set<RepositoryRevision> revisions = new HashSet<>();
 
         Object [] sel = getSelection();
         for (Object revCon : sel) {
@@ -503,7 +502,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                         @Override
                         public void actionPerformed (ActionEvent e) {
                             VCSFileProxy[] roots = master.getRoots();
-                            List<Node> nodes = new ArrayList<Node>(roots.length);
+                            List<Node> nodes = new ArrayList<>(roots.length);
                             for (final VCSFileProxy root : roots) {
                                 nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)) {
                                     @Override
@@ -599,8 +598,8 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     public void revertModifications(Object[] selection) {
-        Set<RepositoryRevision.Event> events = new HashSet<RepositoryRevision.Event>();
-        Set<RepositoryRevision> revisions = new HashSet<RepositoryRevision>();
+        Set<RepositoryRevision.Event> events = new HashSet<>();
+        Set<RepositoryRevision> revisions = new HashSet<>();
         for (Object o : selection) {
             if (o instanceof RepositoryRevision) {
                 revisions.add((RepositoryRevision) o);
@@ -637,7 +636,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     }
 
     private static void revertImpl(RepositoryRevision[] revisions, RepositoryRevision.Event[] events, HgProgressSupport progress) {
-        List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> revertFiles = new ArrayList<>();
         if (revisions != null) {
             for (RepositoryRevision revision : revisions) {
                 VCSFileProxy root = revision.getRepositoryRoot();
@@ -654,7 +653,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             }
         }
         
-        Map<VCSFileProxy, List<RepositoryRevision.Event>> revertMap = new HashMap<VCSFileProxy, List<RepositoryRevision.Event>>();
+        Map<VCSFileProxy, List<RepositoryRevision.Event>> revertMap = new HashMap<>();
         for (RepositoryRevision.Event event : events) {
             if (event.getFile() == null) {
                 continue;
@@ -663,7 +662,7 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
             VCSFileProxy root = Mercurial.getInstance().getRepositoryRoot(event.getFile());
             List<RepositoryRevision.Event> revEvents = revertMap.get(root);
             if(revEvents == null){
-                revEvents = new ArrayList<RepositoryRevision.Event>();
+                revEvents = new ArrayList<>();
                 revertMap.put(root, revEvents);
             }
             revEvents.add(event);            

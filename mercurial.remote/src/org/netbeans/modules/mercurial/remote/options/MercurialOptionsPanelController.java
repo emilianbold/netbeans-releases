@@ -223,7 +223,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public boolean acceptKeywords (List<String> keywords) {
-        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        Set<String> allKeywords = new HashSet<>(panel.getKeywords());
         allKeywords.retainAll(keywords);
         return !allKeywords.isEmpty();
     }
@@ -337,7 +337,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     private void onAddClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<LabelVariable>(MercurialAnnotator.LABELS.length);
+        List<LabelVariable> variables = new ArrayList<>(MercurialAnnotator.LABELS.length);
         for (int i = 0; i < MercurialAnnotator.LABELS.length; i++) {   
             LabelVariable variable = new LabelVariable(
                     MercurialAnnotator.LABELS[i], 

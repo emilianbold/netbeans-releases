@@ -43,6 +43,7 @@ package org.netbeans.modules.mercurial.remote.ui.queues;
 
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,7 +85,7 @@ class FailedPatchResolver {
     private void initialize (List<String> unfilteredOutput) {
         String patchedFile = null;
         for (String line : unfilteredOutput) {
-            String normalizedLine = line.toLowerCase();
+            String normalizedLine = line.toLowerCase(Locale.getDefault());
             if (normalizedLine.startsWith(PREFIX_APPLYING)) {
                 patchedFile = null;
                 failedPatch = line.substring(PREFIX_APPLYING.length());
@@ -106,7 +107,7 @@ class FailedPatchResolver {
 
     private void addToRejects (String patchedFilePath, String rejectedFilePath) {
         if (rejects == null) {
-            rejects = new LinkedHashMap<VCSFileProxy, VCSFileProxy>(5);
+            rejects = new LinkedHashMap<>(5);
         }
         rejects.put(VCSFileProxy.createFileProxy(root, patchedFilePath),
                 VCSFileProxy.createFileProxy(root, rejectedFilePath));

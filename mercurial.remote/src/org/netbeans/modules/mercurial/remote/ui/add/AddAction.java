@@ -105,13 +105,13 @@ public class AddAction extends ContextAction {
             }
 
             private Map<VCSFileProxy, List<VCSFileProxy>> filterUnderRepository (VCSFileProxy[] allFilesToAdd) {
-                Map<VCSFileProxy, List<VCSFileProxy>> filtered = new HashMap<VCSFileProxy, List<VCSFileProxy>>(5);
+                Map<VCSFileProxy, List<VCSFileProxy>> filtered = new HashMap<>(5);
                 Mercurial hg = Mercurial.getInstance();
                 for (VCSFileProxy file : allFilesToAdd) {
                     VCSFileProxy repository = hg.getRepositoryRoot(file);
                     List<VCSFileProxy> repoFiles = filtered.get(repository);
                     if (repoFiles == null) {
-                        repoFiles = new LinkedList<VCSFileProxy>();
+                        repoFiles = new LinkedList<>();
                         filtered.put(repository, repoFiles);
                     }
                     repoFiles.add(file);
@@ -141,7 +141,7 @@ public class AddAction extends ContextAction {
                                 for (VCSFileProxy file : files) {
                                     logger.output(file.getPath());
                                 }
-                                Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.<VCSFileProxy, Set<VCSFileProxy>>singletonMap(root, new HashSet<VCSFileProxy>(files)));
+                                Mercurial.getInstance().getFileStatusCache().refreshAllRoots(Collections.<VCSFileProxy, Set<VCSFileProxy>>singletonMap(root, new HashSet<>(files)));
                             } catch (HgException.HgCommandCanceledException ex) {
                                 // canceled by user, do nothing
                             } catch (HgException ex) {

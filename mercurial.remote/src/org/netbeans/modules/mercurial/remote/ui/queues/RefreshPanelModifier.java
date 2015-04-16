@@ -51,11 +51,11 @@ import org.openide.util.NbBundle;
  */
 final class RefreshPanelModifier extends VCSCommitPanelModifier {
 
-    private static final Map<String, RefreshPanelModifier> instances = new HashMap<String, RefreshPanelModifier>(2);
+    private static final Map<String, RefreshPanelModifier> instances = new HashMap<>(2);
     private final Map<BundleMessage, String> messages;
     
     private RefreshPanelModifier () {
-        messages = new EnumMap<BundleMessage, String>(BundleMessage.class);
+        messages = new EnumMap<>(BundleMessage.class);
     }
 
     static RefreshPanelModifier getDefault (String budleSuffixKey) {

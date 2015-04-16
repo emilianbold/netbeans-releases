@@ -83,7 +83,7 @@ public class HgLogMessage {
     private final boolean bMerged;
     private final String rootURL;
     private OutputLogger logger;
-    private final HashMap<VCSFileProxy, HgRevision> ancestors = new HashMap<VCSFileProxy, HgRevision>();
+    private final HashMap<VCSFileProxy, HgRevision> ancestors = new HashMap<>();
     private final String[] branches;
     private final String[] tags;
     private static final String MARK_ACTIVE_HEAD = "*"; //NOI18N
@@ -113,10 +113,10 @@ public class HgLogMessage {
         }
         this.bMerged = this.parentOneRev != null && this.parentTwoRev != null && !this.parentOneRev.getRevisionNumber().equals("-1") && !this.parentTwoRev.getRevisionNumber().equals("-1"); //NOI18N
 
-        this.paths = new ArrayList<HgLogMessageChangedPath>();
-        List<String> apathsStrings = new ArrayList<String>();
-        List<String> dpathsStrings = new ArrayList<String>();
-        List<String> cpathsStrings = new ArrayList<String>();
+        this.paths = new ArrayList<>();
+        List<String> apathsStrings = new ArrayList<>();
+        List<String> dpathsStrings = new ArrayList<>();
+        List<String> cpathsStrings = new ArrayList<>();
 
         // Mercurial Bug: Currently not seeing any file_copies coming back from Mercurial
         if (fd != null && !fd.equals("")) { //NOI18N
@@ -158,7 +158,7 @@ public class HgLogMessage {
                 }
             }
         }
-        this.dummyPaths = new ArrayList<HgLogMessageChangedPath>(filesShortPaths.size());
+        this.dummyPaths = new ArrayList<>(filesShortPaths.size());
         for (String fileSP : filesShortPaths) {
             dummyPaths.add(new HgLogMessageChangedPath(fileSP, null, '?'));
         }

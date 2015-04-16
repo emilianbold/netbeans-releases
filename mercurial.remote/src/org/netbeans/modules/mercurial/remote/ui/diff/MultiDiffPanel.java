@@ -63,7 +63,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import org.openide.awt.UndoRedo;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
 import javax.swing.*;
 import java.awt.*;
@@ -1056,7 +1055,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private Setup[] computeSetups(VCSFileProxy[] files) {
-        List<Setup> newSetups = new ArrayList<Setup>(files.length);
+        List<Setup> newSetups = new ArrayList<>(files.length);
         Mercurial hg = Mercurial.getInstance();
         for (int i = 0; i < files.length; i++) {
             VCSFileProxy file = files[i];
@@ -1130,11 +1129,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
             // optimalization, let's not run the command when the revisions are the same
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
-                Map<VCSFileProxy, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<VCSFileProxy>(context.getRootFiles()),
+                Map<VCSFileProxy, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<>(context.getRootFiles()),
                         revisionLeft.getChangesetId(), revisionRight.getChangesetId(), isLocalToBase());
                 statuses.keySet().retainAll(VCSFileProxySupport.flattenFiles(context.getRootFiles().toArray(
                         new VCSFileProxy[context.getRootFiles().size()]), statuses.keySet()));
-                List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
+                List<Setup> newSetups = new ArrayList<>(statuses.size());
                 Mercurial hg = Mercurial.getInstance();
                 for (Map.Entry<VCSFileProxy, FileInformation> e : statuses.entrySet()) {
                     VCSFileProxy file = e.getKey();
@@ -1209,8 +1208,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         @Override
         public void run () {
             VCSFileProxy repository = HgUtils.getRootFile(context);
-            final List<Object> modelRight = new ArrayList<Object>(10);
-            final List<Object> modelLeft = new ArrayList<Object>(10);
+            final List<Object> modelRight = new ArrayList<>(10);
+            final List<Object> modelLeft = new ArrayList<>(10);
             modelLeft.add(revisionOriginalLeft);
             if (revisionOriginalLeft != HgRevision.BASE) {
                 modelLeft.add(HgRevision.BASE);
