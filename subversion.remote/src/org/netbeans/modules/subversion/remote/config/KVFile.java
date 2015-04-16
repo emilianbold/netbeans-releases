@@ -245,8 +245,8 @@ public class KVFile {
             baos.write(b);
             b = (byte) is.read();
         }
-        String line = baos.toString();
-        return Integer.decode(line.substring(2)).intValue();
+        String line = baos.toString("UTF-8"); //NOI18N
+        return Integer.decode(line.substring(2));
     }          
 
     public void store() throws IOException {        
@@ -276,9 +276,9 @@ public class KVFile {
                 sb.append("\n"); // NOI18N
                 os.write(sb.toString().getBytes("UTF8")); //NOI18N
                 os.write(value);            
-                os.write("\n".getBytes()); // NOI18N
+                os.write("\n".getBytes("UTF8")); //NOI18N
             }
-            os.write("END\n".getBytes()); // NOI18N
+            os.write("END\n".getBytes("UTF8")); //NOI18N
             os.flush();
             
         } finally {
@@ -296,8 +296,13 @@ public class KVFile {
         return file;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     void setValue(Key key, String value) {
-        setValue(key, value.getBytes());
+        try {
+            setValue(key, value.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            setValue(key, value.getBytes());
+        }
     }
 
     /**

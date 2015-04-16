@@ -43,11 +43,13 @@
  */
 package org.netbeans.modules.subversion.remote.config;
 
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.util.Exceptions;
 
 /**
  * Handles the Subversion credential files.
@@ -68,12 +70,17 @@ public abstract class SVNCredentialFile extends KVFile {
     /**
      * Returns the filename for a realmString as a MD5 value in hex form.
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     protected static String getFileName(String realmString) {
         assert realmString != null;        
         StringBuilder fileName = new StringBuilder();
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5"); // NOI18N
-            md5.update(realmString.getBytes());
+            try {
+                md5.update(realmString.getBytes("UTF-8")); // NOI18N
+            } catch (UnsupportedEncodingException ex) {
+                md5.update(realmString.getBytes());
+            }
             byte[] md5digest = md5.digest();
             for (int i = 0; i < md5digest.length; i++) {
                 String hex = Integer.toHexString(md5digest[i] & 0x000000FF);

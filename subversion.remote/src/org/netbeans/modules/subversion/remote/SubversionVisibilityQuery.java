@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.subversion.remote;
 
-import java.io.FilenameFilter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
