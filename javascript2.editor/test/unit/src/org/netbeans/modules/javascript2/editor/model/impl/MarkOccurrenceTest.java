@@ -1319,6 +1319,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue251823.js", "MyL^ib.ObjB = function (arg) {", true); 
     }
     
+    public void testIssue251883_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251823.js", "return new MyLib.O^bjB(); ", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
