@@ -355,6 +355,7 @@ public class RemoteFileSystemUtils {
         return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public static Boolean isLinux(ExecutionEnvironment env) {
         if (HostInfoUtils.isHostInfoAvailable(env)) {
             try {
