@@ -104,7 +104,11 @@ public class APTHandlersSupport {
 //    public static PreprocHandler.State copyPreprocState(PreprocHandler.State orig) {
 //        return APTHandlersSupportImpl.copyPreprocState(orig);
 //    }
-    
+
+    public static PreprocHandler.State preparePreprocStateCachesIfPossible(PreprocHandler.State orig) {
+        return APTHandlersSupportImpl.preparePreprocStateCachesIfPossible(orig);
+    }
+
     public static PreprocHandler.State createCleanPreprocState(PreprocHandler.State orig) {
         return APTHandlersSupportImpl.createCleanPreprocState(orig);
     }

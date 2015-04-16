@@ -196,6 +196,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         private final static byte COMPILE_CONTEXT_FLAG = 1 << 0;
         private final static byte CLEANED_FLAG = 1 << 1;
         private final static byte VALID_FLAG = 1 << 2;
+        private final static byte CACHE_READY_FLAG = 1 << 3;
 
         private static byte createAttributes(boolean compileContext, boolean cleaned, boolean valid) {
             byte out = 0;
@@ -340,6 +341,10 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return (this.attributes & COMPILE_CONTEXT_FLAG) == COMPILE_CONTEXT_FLAG;
         }
 
+        public boolean isCacheReady() {
+            return (this.attributes & CACHE_READY_FLAG) == CACHE_READY_FLAG;
+        }
+
         @Override
         public boolean isCleaned() {
             return (this.attributes & CLEANED_FLAG) == CLEANED_FLAG;
@@ -352,6 +357,17 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
 
         /*package*/ APTPreprocHandler.State copy() {
             return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid());
+        }
+
+        /*package*/ APTPreprocHandler.State prepareCachesIfPossible() {
+            if (this.isCleaned()) {
+              // can not prepare from clean
+              return this;
+            } else if (this.isCacheReady()) {
+              // all is ready
+              return this;
+            }
+            return new StateImpl(this, true, this.isCompileContext(), this.isValid());
         }
 
         /*package*/ APTPreprocHandler.State copyCleaned() {

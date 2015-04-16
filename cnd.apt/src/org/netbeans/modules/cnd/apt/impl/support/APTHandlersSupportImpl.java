@@ -124,6 +124,10 @@ public class APTHandlersSupportImpl {
         return fileMap;
     }
 
+    public static APTPreprocHandler.State preparePreprocStateCachesIfPossible(APTPreprocHandler.State orig) {
+        return ((APTPreprocHandlerImpl.StateImpl)orig).prepareCachesIfPossible();
+    }
+
     public static APTPreprocHandler.State createCleanPreprocState(APTPreprocHandler.State orig) {
         return ((APTPreprocHandlerImpl.StateImpl)orig).copyCleaned();
     }
