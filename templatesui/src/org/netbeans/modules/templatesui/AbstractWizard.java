@@ -70,6 +70,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.java.html.boot.fx.FXBrowsers;
 import net.java.html.js.JavaScriptBody;
+import net.java.html.json.Model;
 import net.java.html.json.Models;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -80,6 +81,8 @@ import org.openide.util.NbBundle;
 
 /**
  */
+@Model(className = "InitWizard", targetId = "", properties = {
+})
 abstract class AbstractWizard 
 implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
     private static final Logger LOG = Logger.getLogger(AbstractWizard.class.getName());
@@ -282,6 +285,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                             public void run() {
                                 try {
                                     v.setContextMenuEnabled(false);
+                                    Models.toRaw(new InitWizard());
                                     Object ret = initSequence(l);
                                     
                                     if (ret instanceof String) {
@@ -309,7 +313,7 @@ implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
                                     initializationDone(ex);
                                 }
                             }
-                        }, l, getTechIds());
+                        }, l, (Object[])getTechIds());
                     }
                 }
             });

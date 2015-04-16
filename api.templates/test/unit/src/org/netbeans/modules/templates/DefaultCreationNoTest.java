@@ -66,23 +66,20 @@ import org.openide.util.MapFormat;
  *
  * @author sdedic
  */
-public class DefaultCreationTest extends NbTestCase {
+public class DefaultCreationNoTest extends NbTestCase {
 
-    public DefaultCreationTest(String name) {
+    public DefaultCreationNoTest(String name) {
         super(name);
     }
     
     /**
-     * Checks that FileEntry.Format properly formats the template. Part of parameters is provided
-     * by the DataLoader while part is provided by the API caller.
-     * 
+     * Checks that a file without CreateFromTemplate handler creates OK as copy of the template
      * @throws Exception 
      */
-    public void testCreateDefaultFormat() throws Exception {
-        MockServices.setServices(Pool.class);
+    public void testCreateNoHandler() throws Exception {
         FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        FileObject templ = FileUtil.createData(root, "simpleTemplate.prim");
-        String txt = "{a}{b}";
+        FileObject templ = FileUtil.createData(root, "simpleTemplate.txt");
+        String txt = "{a}";
         OutputStream os = templ.getOutputStream();
         os.write(txt.getBytes());
         os.close();
@@ -93,9 +90,9 @@ public class DefaultCreationTest extends NbTestCase {
         m.put("a", "eeee");
         DataObject x = obj.createFromTemplate(folder, "nue", m);
         
-        assertEquals("eeeexxxx\n", x.getPrimaryFile().asText());
+        assertEquals(txt + "\n", x.getPrimaryFile().asText());
     }
-
+    
     public static final class Pool extends DataLoaderPool {
         protected Enumeration<DataLoader> loaders() {
             return Enumerations.<DataLoader>array(new DataLoader[] { 
