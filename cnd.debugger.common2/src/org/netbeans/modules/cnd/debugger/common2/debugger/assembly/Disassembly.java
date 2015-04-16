@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -266,6 +268,21 @@ public abstract class Disassembly implements StateModel.Listener {
         }
     }
     
+    private static final Charset charset = Charset.forName("UTF-8"); //NOI18N
+    
+    @org.openide.util.lookup.ServiceProvider(service=FileEncodingQueryImplementation.class)
+    public static class DisassemblyFileEncodingQueryImplementation extends FileEncodingQueryImplementation {
+
+        @Override
+        public Charset getEncoding(FileObject file) {
+            if (file == getFileObject()) {
+                return charset;
+            }
+            return null;
+        }
+        
+    }
+    
     protected static DataObject getDataObject() {
         return DataObjectHolder.DOBJ;
     }
@@ -446,7 +463,7 @@ public abstract class Disassembly implements StateModel.Listener {
         public void save() {
             disLength = getLength();
             try {
-                Writer writer = new OutputStreamWriter(getFileObject().getOutputStream());
+                Writer writer = new OutputStreamWriter(getFileObject().getOutputStream(), charset);
                 try {
                     writer.write(data.toString());
                 } catch (IOException ex) {
