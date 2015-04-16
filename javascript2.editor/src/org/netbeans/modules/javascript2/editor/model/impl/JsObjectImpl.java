@@ -493,6 +493,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
 
+        if (!isAnonymous()) {
+            List<OffsetRange> docOccurrences = jsDocHolder.getOccurencesMap().get(getFullyQualifiedName());
+            if (docOccurrences != null) {
+                for (OffsetRange offsetRange : docOccurrences) {
+                    addOccurrence(offsetRange);
+                }
+            }
+        }
+        
         if (!isAnonymous() && assignments.isEmpty()) {
             // try to recount occurrences
             JsObject global = ModelUtils.getGlobalObject(parent);
