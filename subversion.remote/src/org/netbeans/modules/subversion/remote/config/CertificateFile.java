@@ -45,12 +45,14 @@
 package org.netbeans.modules.subversion.remote.config;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 
 /**
  * Represents a Subversions file holding a X509Certificate for a realmstring.
@@ -75,15 +77,22 @@ public class CertificateFile extends SVNCredentialFile {
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     private void setCert(X509Certificate cert) throws CertificateEncodingException {
         String encodedCert = Base64Encoder.encode(cert.getEncoded());                
-        setValue(getCertKey(), encodedCert.getBytes());
+        try {
+            setValue(getCertKey(), encodedCert.getBytes("UTF-8")); //NOI18N
+        } catch (UnsupportedEncodingException ex) {
+            setValue(getCertKey(), encodedCert.getBytes());
+        }
     }
         
+    @Override
     protected void setRealmString(String realm) {
         setValue(getRealmstringKey(), realm);
     }
 
+    @Override
     protected String getRealmString() {
         return getStringValue(getRealmstringKey());
     }

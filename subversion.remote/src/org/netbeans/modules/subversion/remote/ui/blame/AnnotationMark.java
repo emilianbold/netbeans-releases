@@ -64,26 +64,32 @@ final class AnnotationMark implements Mark {
         this.message = message;
     }
 
+    @Override
     public String getShortDescription() {
         return message;
     }
     
+    @Override
     public int[] getAssignedLines() {
         return new int[] {line, line};
     }
     
+    @Override
     public Color getEnhancedColor() {
         return COLOR;
     }
     
+    @Override
     public int getPriority() {
         return PRIORITY_DEFAULT;
     }
     
+    @Override
     public Status getStatus() {
         return Status.STATUS_OK;
     }
     
+    @Override
     public int getType() {
         return TYPE_ERROR_LIKE;
     }

@@ -46,12 +46,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
@@ -113,9 +115,8 @@ import org.netbeans.modules.subversion.remote.client.parser.SvnWcParser;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -672,8 +673,14 @@ public class CommandlineClient implements SvnClient {
                 return name;
             }
             @Override
+            @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
             public String getValue() {
-                return new String(bytes);
+                try {
+                    return new String(bytes, "UTF-8"); //NOI18N
+                } catch (UnsupportedEncodingException ex) {
+                    // ignore error
+                    return new String(bytes);
+                }
             }
             @Override
             public VCSFileProxy getFile() {
@@ -734,10 +741,10 @@ public class CommandlineClient implements SvnClient {
         propertySet(file, ISVNProperty.IGNORE, buf.toString(), false);
     }
 
-    @Override
-    public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
-        return annotate(new BlameCommand(fileSystem, url, revStart, revEnd), new CatCommand(fileSystem, url, revEnd, null));
-    }
+    //@Override
+    //public ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
+    //    return annotate(new BlameCommand(fileSystem, url, revStart, revEnd), new CatCommand(fileSystem, url, revEnd, null));
+    //}
 
     @Override
     public ISVNAnnotations annotate(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException {
@@ -750,18 +757,26 @@ public class CommandlineClient implements SvnClient {
         } else {
             blameCommand = new BlameCommand(fileSystem, file, revStart, revEnd);
         }
-        return annotate(blameCommand, new CatCommand(fileSystem, file, revEnd));
+        return annotate(file, blameCommand, new CatCommand(fileSystem, file, revEnd));
     }
 
     @Override
-    public ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
+    public ISVNAnnotations annotate(VCSFileProxy file, BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException {
         exec(blameCmd);
         Annotation[] annotations = blameCmd.getAnnotation();
         exec(catCmd);
         InputStream is = catCmd.getOutput();
+        FileObject fo = file.toFileObject();
+        Charset encoding = null;
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(null);
+        }
+        if (encoding == null) {
+            encoding = FileEncodingQuery.getDefaultEncoding();
+        }
 
         Annotations ret = new Annotations();
-        BufferedReader r = new BufferedReader(new InputStreamReader(is));
+        BufferedReader r = new BufferedReader(new InputStreamReader(is, encoding));
         try {
             for (Annotation annotation : annotations) {
                 String line = null;

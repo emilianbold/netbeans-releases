@@ -1471,7 +1471,7 @@ public class SvnUtils {
             try {
                 byte [] mimeProperty = client.getProperties().get("svn:mime-type"); //NOI18N
                 if (mimeProperty != null) {
-                    String mimePath = new String(mimeProperty);
+                    String mimePath = new String(mimeProperty, "UTF-8"); //NOI18N
                     int pos = mimePath.indexOf('/');
                     if (pos > 0) {
                         while (pos < mimePath.length()) {
