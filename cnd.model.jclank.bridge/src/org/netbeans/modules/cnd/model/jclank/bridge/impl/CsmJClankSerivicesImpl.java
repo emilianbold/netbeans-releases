@@ -142,13 +142,6 @@ public final class CsmJClankSerivicesImpl {
         public CollectIncludeInfoCallback(raw_ostream llvm_err) {
             super(llvm_err);
         }
-
-        @Override
-        public void onExit(FileInfoCallback.FileInfo file) {
-            if (file.isFile()) {
-                
-            }
-        }
     }
 
 }

@@ -107,13 +107,13 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected void onInclusionDirective(InclusionDirectiveInfo directive) {
+    protected void onInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
         
     }
 
     @Override
-    protected void onSkippedInclusionDirective(InclusionDirectiveInfo directive) {
-      super.onSkippedInclusionDirective(directive);
+    protected void onSkippedInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
+      
     }
 
     @Override
@@ -122,45 +122,45 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected void onEnter(FileInfoCallback.FileInfo fileInfo) {
+    protected void onEnter(FileInfoCallback.FileInfo enteredFrom, FileInfoCallback.FileInfo enteredTo) {
         if (ClankDriverImpl.TRACE) {
-            traceOS.$out("Enter: " + fileInfo).$out("\n").flush();
+            traceOS.$out("Enter: " + enteredTo).$out("\n").flush();
         }
-        if (fileInfo.isFile()) {
-          ClankDriver.ClankFileInfo enteredFrom;
-          ClankFileInfoImpl enteredTo = new ClankFileInfoImpl(fileInfo, ppHandler);
+        if (enteredTo.isFile()) {
+          ClankDriver.ClankFileInfo enteredFromWrapper;
+          ClankFileInfoImpl enteredToWrapper = new ClankFileInfoImpl(enteredTo, ppHandler);
           // main file is not pushed as include, all others are
           if (includeStack.isEmpty()) {
-            assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(fileInfo.getName())) :
-                    includeHandler.getStartEntry() + " vs. " + fileInfo; // NOI18N
+            assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
+                    includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
             assert includeHandler.getInclStackIndex() == 0 : " expected zero: " + includeHandler.getInclStackIndex();
-            assert enteredTo.getFileIndex() == 0 : " expected zero: " + enteredTo.getFileIndex();
-            enteredFrom = null;
+            assert enteredToWrapper.getFileIndex() == 0 : " expected zero: " + enteredToWrapper.getFileIndex();
+            enteredFromWrapper = null;
           } else {
-            ResolvedPath resolvedPath = enteredTo.getResolvedPath();
+            ResolvedPath resolvedPath = enteredToWrapper.getResolvedPath();
             includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(),
-                    0/*should not be used by client*/, fileInfo.getIncludeStartOffset(), resolvedPath.getIndex());
-            includeHandler.cacheTokens(enteredTo);
-            enteredFrom = includeStack.get(includeStack.size() - 1);
+                    0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex());
+            includeHandler.cacheTokens(enteredToWrapper);
+            enteredFromWrapper = includeStack.get(includeStack.size() - 1);
           }
           // keep stack of active files
-          includeStack.add(enteredTo);
+          includeStack.add(enteredToWrapper);
           
-          delegate.onEnter(enteredFrom, enteredTo);
+          delegate.onEnter(enteredFromWrapper, enteredToWrapper);
         }
     }
 
     @Override
-    protected void onExit(FileInfoCallback.FileInfo fileInfo) {
+    protected void onExit(FileInfoCallback.FileInfo exitedFrom, FileInfoCallback.FileInfo exitedTo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Exit from ");
-            if (fileInfo.isFile()) {
-                traceOS.$out(fileInfo.getName());
+            if (exitedFrom.isFile()) {
+                traceOS.$out(exitedFrom.getName());
             } else {
-                traceOS.$out(fileInfo.getFileID());
+                traceOS.$out(exitedFrom.getFileID());
             }
-            traceOS.$out(" with #Token: ").$out(fileInfo.getNrTokens()).$out("\n");
-            int[] offs = fileInfo.getSkippedRanges();
+            traceOS.$out(" with #Token: ").$out(exitedFrom.getNrTokens()).$out("\n");
+            int[] offs = exitedFrom.getSkippedRanges();
             if (offs.length > 0) {
                 for (int i = 0; i < offs.length; i += 2) {
                     int st = offs[i];
@@ -171,26 +171,26 @@ public final class ClankPPCallback extends FileInfoCallback {
             }
             traceOS.flush();
         }
-        if (fileInfo.isFile()) {
+        if (exitedFrom.isFile()) {
           assert includeStack.size() > 0 : "empty include stack?";
-          ClankDriver.ClankFileInfo exitedTo;
-          ClankFileInfoImpl exitedFrom = includeStack.remove(includeStack.size() - 1);
-          assert exitedFrom.current == fileInfo;
+          ClankDriver.ClankFileInfo exitedToWrapper;
+          ClankFileInfoImpl exitedFromWrapper = includeStack.remove(includeStack.size() - 1);
+          assert exitedFromWrapper.current == exitedFrom;
           // we cache possibly collected tokens in include handler
           // to allow delegate to use them
-          includeHandler.cacheTokens(exitedFrom.onExit());
+          includeHandler.cacheTokens(exitedFromWrapper.onExit());
           // init where we returned to
           if (includeStack.isEmpty()) {
-            exitedTo = null;
+            exitedToWrapper = null;
           } else {
-            exitedTo = includeStack.get(includeStack.size() - 1);
+            exitedToWrapper = includeStack.get(includeStack.size() - 1);
           }
 
           // ask if delegate wish to continue 
-          if (!delegate.onExit(exitedFrom, exitedTo)) {
+          if (!delegate.onExit(exitedFromWrapper, exitedToWrapper)) {
             interrupter.cancel();
           }
-          if (exitedTo != null) {
+          if (exitedToWrapper != null) {
             includeHandler.popInclude();
           }
         }
