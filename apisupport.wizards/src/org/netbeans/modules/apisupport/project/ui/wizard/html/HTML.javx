@@ -19,7 +19,7 @@ import org.openide.awt.ActionReferences;
 /**
  * HTML page which displays a window and also a dialog.
  */
-@Model(className="${TEMPLATENAME}", properties={
+@Model(className="${TEMPLATENAME}", targetId="", properties={
   @Property(name = "text", type = String.class)
 })
 public final class ${TEMPLATENAME}Cntrl {
@@ -62,7 +62,7 @@ public final class ${TEMPLATENAME}Cntrl {
     new ${TEMPLATENAME}Dialog(t, false).applyBindings();
   }
 
-  @Model(className="${TEMPLATENAME}Dialog", properties={
+  @Model(className="${TEMPLATENAME}Dialog", targetId = "", properties={
     @Property(name = "text", type = String.class),
     @Property(name = "ok", type = boolean.class),
   })
