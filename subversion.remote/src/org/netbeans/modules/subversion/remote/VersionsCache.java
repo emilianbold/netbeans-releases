@@ -232,7 +232,7 @@ public class VersionsCache {
                         if (url != null) {
                             in = getInputStream(client, url, revision, pegRevision);
                         } else {
-                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes("UTF-8")); // NOI18N
                         }                
                     }
                 } catch (SVNClientException e) {

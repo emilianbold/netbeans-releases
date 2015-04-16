@@ -174,6 +174,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction"); //NOI18N
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }

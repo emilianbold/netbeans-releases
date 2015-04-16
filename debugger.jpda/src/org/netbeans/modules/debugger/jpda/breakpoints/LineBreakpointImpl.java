@@ -133,6 +133,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     private int                 lineNumber;
     private int                 breakpointLineNumber;
     private int                 lineNumberForUpdate = -1;
+    private final Object        lineLock = new Object();
     private BreakpointsReader   reader;
     
     
@@ -158,8 +159,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         int theLineNumber = EditorContextBridge.getContext().getLineNumber(
                 lb,
                 getDebugger());
-        synchronized (this) {
-            breakpointLineNumber = lb.getLineNumber();
+        int lbln = lb.getLineNumber();
+        synchronized (lineLock) {
+            breakpointLineNumber = lbln;
             lineNumber = theLineNumber;
         }
    }
@@ -322,7 +324,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         int lineNumberToSet;
         final int origBreakpointLineNumber;
         int newBreakpointLineNumber;
-        synchronized (this) {
+        synchronized (lineLock) {
             lineNumberToSet = lineNumber;
             newBreakpointLineNumber = origBreakpointLineNumber = breakpointLineNumber;
         }
@@ -399,7 +401,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } // for
         if (submitted) {
             if (origBreakpointLineNumber != newBreakpointLineNumber) {
-                synchronized (this) {
+                synchronized (lineLock) {
                     lineNumberForUpdate = newBreakpointLineNumber;
                 }
                 breakpoint.setLineNumber(newBreakpointLineNumber);
@@ -524,7 +526,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (LineBreakpoint.PROP_LINE_NUMBER.equals(evt.getPropertyName())) {
-            synchronized (this) {
+            synchronized (lineLock) {
                 if (lineNumberForUpdate != -1) {
                     lineNumber = lineNumberForUpdate;
                     lineNumberForUpdate = -1;

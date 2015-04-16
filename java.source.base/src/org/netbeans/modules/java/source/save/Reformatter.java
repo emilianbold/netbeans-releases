@@ -1782,7 +1782,24 @@ public class Reformatter implements ReformatTask {
                     wrapTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
                 }
             } else {
-                wrapOperatorAndTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
+                boolean old = continuationIndent;
+                int oldIndent = indent;
+                int oldLastIndent = lastIndent;
+                boolean oldLastIndentContinuation = isLastIndentContinuation;
+                if (node.getBodyKind() == BodyKind.STATEMENT) {
+                    if (continuationIndent) {
+                        lastIndent = indent;
+                        continuationIndent = false;
+                    }
+                }
+                try {
+                    wrapOperatorAndTree(cs.wrapLambdaArrow(), -1, cs.spaceAroundLambdaArrow() ? 1 : 0, node.getBody());
+                } finally {
+                    continuationIndent = old;
+                    indent = oldIndent;
+                    lastIndent = oldLastIndent; 
+                    isLastIndentContinuation = oldLastIndentContinuation;
+                }
             }
             return true;
         }
@@ -1911,10 +1928,22 @@ public class Reformatter implements ReformatTask {
                 }
                 accept(RPAREN);
                 continuationIndent = old;
+                int oldIndent = indent;
+                int oldLastIndent = lastIndent;
+                boolean oldLastIndentContinuation = isLastIndentContinuation;
                 ClassTree body = node.getClassBody();
                 if (body != null) {
-                    continuationIndent = isLastIndentContinuation;
-                    scan(body, p);
+                    if (continuationIndent) {
+                        lastIndent = indent;
+                        continuationIndent = false;
+                    }
+                    try {
+                        scan(body, p);
+                    } finally {
+                        indent = oldIndent;
+                        lastIndent = oldLastIndent;
+                        isLastIndentContinuation = oldLastIndentContinuation;
+                    }
                 }
             } finally {
                 continuationIndent = old;
@@ -3991,7 +4020,7 @@ public class Reformatter implements ReformatTask {
                     } finally {
                         indent = oldIndent;
                         lastIndent = oldLastIndent;
-                        continuationIndent = isLastIndentContinuation = continuation;
+                        continuationIndent = continuation;
                     }
                     spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);                    
                 }

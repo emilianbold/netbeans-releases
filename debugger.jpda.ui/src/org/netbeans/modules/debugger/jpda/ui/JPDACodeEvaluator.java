@@ -42,12 +42,9 @@
 
 package org.netbeans.modules.debugger.jpda.ui;
 
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -55,25 +52,22 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ui.CodeEvaluator.Result.DefaultHistoryItem;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Martin Entlicher
  */
-@CodeEvaluator.EvaluatorService.Registration(path = "netbeans-JPDASession/Java")
+@CodeEvaluator.EvaluatorService.Registration(path = "netbeans-JPDASession")
 public class JPDACodeEvaluator extends CodeEvaluator.EvaluatorService {
     
     private final JPDADebugger debugger;
     private final DebuggerChangeListener debuggerListener;
-    private final Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
     private final CodeEvaluator.DefaultExpressionsHistoryPersistence historyPersistence;
     //private final History history;
     //private HistoryRecord lastEvaluationRecord = null;
