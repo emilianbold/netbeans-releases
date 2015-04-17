@@ -50,6 +50,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -132,7 +135,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     public static final String ANNOTATION_STATUS      = "status";       //NOI18N
     public static final String ANNOTATION_FOLDER      = "folder";       //NOI18N
 
-    public static final String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
+    public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(ANNOTATION_STATUS, ANNOTATION_FOLDER));
     public static final String ACTIONS_PATH_PREFIX = "Actions/MercurialRemote/"; //NOI18N
 
     private final FileStatusCache cache;

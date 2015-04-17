@@ -111,7 +111,7 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
         panel.fileSystemChanged(fileSystem);
 
-        String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS); // NOI18N
+        String tooltip = NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.annotationTextField.toolTipText", MercurialAnnotator.LABELS.toArray(new String[MercurialAnnotator.LABELS.size()])); // NOI18N
 
         panel.annotationTextField.setToolTipText(tooltip);
         panel.addButton.addActionListener(this);
@@ -337,11 +337,11 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
 
     private void onAddClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<>(MercurialAnnotator.LABELS.length);
-        for (int i = 0; i < MercurialAnnotator.LABELS.length; i++) {   
+        List<LabelVariable> variables = new ArrayList<>(MercurialAnnotator.LABELS.size());
+        for (int i = 0; i < MercurialAnnotator.LABELS.size(); i++) {
             LabelVariable variable = new LabelVariable(
-                    MercurialAnnotator.LABELS[i], 
-                    "{" + MercurialAnnotator.LABELS[i] + "} - " + NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.label." + MercurialAnnotator.LABELS[i]) // NOI18N
+                    MercurialAnnotator.LABELS.get(i),
+                    "{" + MercurialAnnotator.LABELS.get(i) + "} - " + NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.label." + MercurialAnnotator.LABELS.get(i)) // NOI18N
             );
             variables.add(variable);   
         }       

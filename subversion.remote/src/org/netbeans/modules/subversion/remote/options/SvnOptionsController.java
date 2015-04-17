@@ -110,7 +110,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.manageConnSettingsButton.addActionListener(this);
         panel.manageLabelsButton.addActionListener(this);
         
-        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
+        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS.toArray(new String[Annotator.LABELS.size()]));
         panel.annotationTextField.setToolTipText(tooltip);                
         panel.addButton.addActionListener(this);         
         panel.cbBuildHost.addItemListener(this);
@@ -393,11 +393,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onAddClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<>(Annotator.LABELS.length);
-        for (int i = 0; i < Annotator.LABELS.length; i++) {   
+        List<LabelVariable> variables = new ArrayList<>(Annotator.LABELS.size());
+        for (int i = 0; i < Annotator.LABELS.size(); i++) {
             LabelVariable variable = new LabelVariable(
-                    Annotator.LABELS[i], 
-                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
+                    Annotator.LABELS.get(i),
+                    "{" + Annotator.LABELS.get(i) + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS.get(i))
             );
             variables.add(variable);   
         }       
