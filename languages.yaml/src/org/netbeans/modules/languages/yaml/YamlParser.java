@@ -163,6 +163,7 @@ public class YamlParser extends Parser {
     private static String replaceCommonSpecialCharacters(String source) {
         source = source.replace('@', '_'); //NOI18N
         source = source.replace('?', '_'); //NOI18N
+        source = source.replaceAll("!(?!(omap|!omap))", "_"); //NOI18N
         return source;
     }
 
