@@ -1323,6 +1323,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue251823.js", "return new MyLib.O^bjB(); ", true); 
     }
     
+    public void testIssue250434_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250434.js", "function TripDayFormCtrl($scope, TripMo^del, TripHandler) { // lineA", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
