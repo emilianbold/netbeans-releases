@@ -1279,7 +1279,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 if (mapping == null || mapping.ts < ts) {
                     BufferedReader br = null;
                     try {
-                        br = new BufferedReader(new InputStreamReader(gitFolder.getInputStream(false)));
+                        br = new BufferedReader(new InputStreamReader(gitFolder.getInputStream(false), "UTF-8")); //NOI18N
                         for (String line = br.readLine(); line != null; line = br.readLine()) {
                             line = line.trim();
                             if (line.startsWith("gitdir:")) { //NOI18N

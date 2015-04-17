@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
@@ -119,9 +120,9 @@ final class MercurialPanel extends javax.swing.JPanel {
             keywords = new String[] {
                 "HG", //NOI18N
                 "MERCURIAL", //NOI18N
-                Bundle.MercurialPanel_kw1().toUpperCase(),
-                Bundle.MercurialPanel_kw2().toUpperCase(),
-                Bundle.MercurialPanel_kw3().toUpperCase()
+                Bundle.MercurialPanel_kw1().toUpperCase(Locale.getDefault()),
+                Bundle.MercurialPanel_kw2().toUpperCase(Locale.getDefault()),
+                Bundle.MercurialPanel_kw3().toUpperCase(Locale.getDefault())
             };
         }
         return Collections.unmodifiableList(Arrays.asList(keywords));

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.remote;
 
+import java.util.Locale;
 import javax.swing.JButton;
 import java.util.logging.Level;
 import org.openide.DialogDisplayer;
@@ -86,7 +87,7 @@ public class ExceptionHandler {
         if(msg == null || msg.trim().equals("")) { // NOI18N
             return EX_UNKNOWN;
         }
-        msg = msg.toLowerCase();        
+        msg = msg.toLowerCase(Locale.getDefault());
         if(isCancelledAction(msg)) {
             return EX_ACTION_CANCELED_BY_USER;
         } else if(isNoRepository(msg)) {
@@ -108,12 +109,12 @@ public class ExceptionHandler {
     }
     
     public static boolean isNoRepository(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("abort: There is no Mercurial repository here") > -1;                                   // NOI18N
     }
         
     public static boolean isUpdateSpansBranches(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("abort: update spans branches") > -1;                                   // NOI18N
     }
 

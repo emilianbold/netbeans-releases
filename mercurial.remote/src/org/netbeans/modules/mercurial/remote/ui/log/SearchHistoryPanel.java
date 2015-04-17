@@ -55,11 +55,10 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.AbstractAction;
@@ -80,7 +79,6 @@ import org.netbeans.modules.mercurial.remote.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.remote.ui.diff.Setup;
 import org.netbeans.modules.mercurial.remote.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.mercurial.remote.ui.log.SummaryView.HgLogEntry;
-import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight.Kind;
@@ -449,7 +447,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         long toRevision = Long.MIN_VALUE;
         HgLogMessage from = null;
         HgLogMessage to = null;
-        Set<VCSFileProxy> filesToDiff = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> filesToDiff = new HashSet<>();
         
         for (RepositoryRevision revision : revisions) {
             long rev = Long.parseLong(revision.getLog().getRevisionNumber());
@@ -485,7 +483,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
             }
         }
 
-        List<Setup> setups = new ArrayList<Setup>();
+        List<Setup> setups = new ArrayList<>();
         for (VCSFileProxy file : filesToDiff) {
             HgRevision fromHgRevision = from.getHgRevision();
             if (from.getRevisionNumber().equals(to.getRevisionNumber())) {
@@ -832,7 +830,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     private List<RepositoryRevision> filter (List<RepositoryRevision> results) {
-        List<RepositoryRevision> newResults = new ArrayList<RepositoryRevision>(results.size());
+        List<RepositoryRevision> newResults = new ArrayList<>(results.size());
         for (RepositoryRevision rev : results) {
             if (applyFilter(rev)) {
                 newResults.add(rev);
@@ -843,14 +841,14 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
 
     boolean applyFilter (RepositoryRevision rev) {
         boolean visible = true;
-        String filterText = txtFilter.getText().trim().toLowerCase();
+        String filterText = txtFilter.getText().trim().toLowerCase(Locale.getDefault());
         Object selectedFilterKind = cmbFilterKind.getSelectedItem();
         if (selectedFilterKind != FilterKind.ALL && !filterText.isEmpty()) {
             if (selectedFilterKind == FilterKind.MESSAGE) {
-                visible = rev.getLog().getMessage().toLowerCase().contains(filterText);
+                visible = rev.getLog().getMessage().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.USER) {
-                visible = rev.getLog().getUsername().toLowerCase().contains(filterText)
-                        || rev.getLog().getAuthor().toLowerCase().contains(filterText);
+                visible = rev.getLog().getUsername().toLowerCase(Locale.getDefault()).contains(filterText)
+                        || rev.getLog().getAuthor().toLowerCase(Locale.getDefault()).contains(filterText);
             } else if (selectedFilterKind == FilterKind.ID) {
                 visible = rev.getLog().getRevisionNumber().contains(filterText)
                         || rev.getLog().getCSetShortID().contains(filterText)
@@ -863,7 +861,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     
     private static boolean contains (String[] items, String needle) {
         for (String item : items) {
-            if (item.toLowerCase().contains(needle)) {
+            if (item.toLowerCase(Locale.getDefault()).contains(needle)) {
                 return true;
             }
         }
@@ -887,12 +885,12 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
                     @Override
                     public void run () {
                         if (!isCanceled()) {
-                            Set<String> visibleRevisions = new HashSet<String>(results.size());
+                            Set<String> visibleRevisions = new HashSet<>(results.size());
                             for (RepositoryRevision rev : results) {
                                 visibleRevisions.add(rev.getLog().getCSetShortID());
                             }
                             
-                            List<RepositoryRevision> toAdd = new ArrayList<RepositoryRevision>(newResults.size());
+                            List<RepositoryRevision> toAdd = new ArrayList<>(newResults.size());
                             for (RepositoryRevision rev : newResults) {
                                 if (!visibleRevisions.contains(rev.getLog().getCSetShortID())) {
                                     toAdd.add(rev);
@@ -922,7 +920,7 @@ private void fileInfoCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//
     }
 
     List<HgLogEntry> createLogEntries(List<RepositoryRevision> results) {
-        List<HgLogEntry> ret = new LinkedList<HgLogEntry>();
+        List<HgLogEntry> ret = new LinkedList<>();
         for (RepositoryRevision repositoryRevision : results) {
             ret.add(new SummaryView.HgLogEntry(repositoryRevision, this));
         }

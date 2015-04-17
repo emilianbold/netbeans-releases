@@ -124,7 +124,8 @@ public class RemoteVcsSupportUtil {
         }
     }
     
-    public static Boolean isDirectoryFast(FileSystem fs, String path) throws IOException {        
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
+    public static Boolean isDirectoryFast(FileSystem fs, String path) throws IOException {
         if (fs instanceof RemoteFileSystem) {
             return ((RemoteFileSystem) fs).vcsSafeIsDirectory(path);
         }

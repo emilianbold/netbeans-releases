@@ -120,7 +120,7 @@ public final class DeleteLocalAction extends ContextAction {
                         public Void call () throws Exception {
                             for (Map.Entry<VCSFileProxy, Set<VCSFileProxy>> e : sortedFiles.entrySet()) {
                                 try {
-                                    HgCommand.doRevert(e.getKey(), new ArrayList<VCSFileProxy>(e.getValue()), null, false, OutputLogger.getLogger(null));
+                                    HgCommand.doRevert(e.getKey(), new ArrayList<>(e.getValue()), null, false, OutputLogger.getLogger(null));
                                 } catch (HgException ex) {
                                     Mercurial.LOG.log(Level.INFO, null, ex);
                                 }

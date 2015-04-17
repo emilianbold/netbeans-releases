@@ -57,6 +57,7 @@ import org.netbeans.modules.mercurial.remote.util.HgUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Locale;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -265,7 +266,7 @@ class DiffNode extends VCSStatusNode<HgFileNode> {
             super(COLUMN_NAME_STATUS, String.class, COLUMN_NAME_STATUS, COLUMN_NAME_STATUS);
             String shortPath = HgUtils.getRelativePath(setup.getBaseFile());
             String sortable = Integer.toString(HgUtils.getComparableStatus(setup.getInfo().getStatus()));
-            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase()); // NOI18N
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase(Locale.getDefault())); // NOI18N
         }
 
         @Override

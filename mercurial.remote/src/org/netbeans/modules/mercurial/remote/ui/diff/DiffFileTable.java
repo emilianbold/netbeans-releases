@@ -102,7 +102,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
     /**
      * Defines labels for Diff view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);
 
     static {
         ResourceBundle loc = NbBundle.getBundle(DiffFileTable.class);
@@ -515,7 +515,7 @@ class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListS
             // single selection
             master.nodeSelected(getSelectedNode());
         } else {
-            List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
+            List<DiffNode> selectedNodes = new ArrayList<>();
             if (min == -1) {
                 master.nodeSelected(null);
             } else {

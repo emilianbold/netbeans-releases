@@ -145,7 +145,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         Set<VCSFileProxy> roots = GitUtils.getRepositoryRoots(context);
         boolean noneVersioned = (roots == null || roots.isEmpty());
 
-        List<Action> actions = new LinkedList<Action>();
+        List<Action> actions = new LinkedList<>();
         if (destination.equals(ActionDestination.MainMenu)) {
             if (noneVersioned) {
                 addAction("org-netbeans-modules-git-remote-ui-clone-CloneAction", null, actions, true);
@@ -415,7 +415,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         return retval;
     }
 
-    private final Map<RepositoryInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new WeakHashMap<RepositoryInfo, Set<VCSFileProxy>>(3);
+    private final Map<RepositoryInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new WeakHashMap<>(3);
     
     private String annotateFolderNameHtml (String name, VCSContext context, FileInformation mostImportantInfo, VCSFileProxy mostImportantFile) {
         boolean annotationsVisible = VersioningSupport.getPreferences().getBoolean(VersioningSupport.PREF_BOOLEAN_TEXT_ANNOTATIONS_VISIBLE, false);
@@ -480,7 +480,7 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
         synchronized (filesWithRepositoryAnnotations) {
             Set<VCSFileProxy> files = filesWithRepositoryAnnotations.get(info);
             if (files == null) {
-                filesWithRepositoryAnnotations.put(info, files = new HashSet<VCSFileProxy>());
+                filesWithRepositoryAnnotations.put(info, files = new HashSet<>());
             }
             files.add(file);
         }

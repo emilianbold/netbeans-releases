@@ -564,7 +564,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         }
     }
 
-    private final Map<VCSFileProxy, FileStatusCache.ChangedEvent> changes = new HashMap<VCSFileProxy, FileStatusCache.ChangedEvent>();
+    private final Map<VCSFileProxy, FileStatusCache.ChangedEvent> changes = new HashMap<>();
     /**
      * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
      */
@@ -574,7 +574,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         public void run() {
             final Set<FileStatusCache.ChangedEvent> events;
             synchronized (changes) {
-                events = new HashSet<FileStatusCache.ChangedEvent>(changes.values());
+                events = new HashSet<>(changes.values());
                 changes.clear();
             }
             // remove irrelevant changes
@@ -592,9 +592,9 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 }
             });
             // sort changes
-            final List<GitStatusNodeImpl> toRemove = new LinkedList<GitStatusNodeImpl>();
-            final List<GitStatusNodeImpl> toRefresh = new LinkedList<GitStatusNodeImpl>();
-            final List<GitStatusNodeImpl> toAdd = new LinkedList<GitStatusNodeImpl>();
+            final List<GitStatusNodeImpl> toRemove = new LinkedList<>();
+            final List<GitStatusNodeImpl> toRefresh = new LinkedList<>();
+            final List<GitStatusNodeImpl> toAdd = new LinkedList<>();
             for (FileStatusCache.ChangedEvent evt : events) {
                 FileInformation newInfo = evt.getNewInfo();
                 GitStatusNodeImpl node = nodes.get(evt.getFile());

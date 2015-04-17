@@ -322,7 +322,7 @@ public class CommitPanel extends javax.swing.JPanel {
     private ComboBoxModel prepareUserModel (List<String> authors, String user) {
         DefaultComboBoxModel model;
         if (authors == null) {
-            authors = new LinkedList<String>();
+            authors = new LinkedList<>();
         }
         authors.remove(user);
         authors.add(0, user);

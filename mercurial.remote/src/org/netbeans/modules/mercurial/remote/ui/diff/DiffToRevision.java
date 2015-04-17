@@ -70,8 +70,8 @@ public class DiffToRevision  implements ActionListener {
     private final JButton cancelButton;
     private final VCSFileProxy repository;
     private final HgRevision baseRevision;
-    private final Map<JRadioButton, HgRevision> selectionsFirst = new HashMap<JRadioButton, HgRevision>();
-    private final Map<JRadioButton, HgRevision> selectionsSecond = new HashMap<JRadioButton, HgRevision>();
+    private final Map<JRadioButton, HgRevision> selectionsFirst = new HashMap<>();
+    private final Map<JRadioButton, HgRevision> selectionsSecond = new HashMap<>();
     private JRadioButton selectedOption;
     
     @Messages({

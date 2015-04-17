@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -223,7 +224,7 @@ class ManageTags implements ListSelectionListener, ActionListener {
 
                 @Override
                 public boolean contains (GitTag item, String needle) {
-                    return item.getTagName().toLowerCase().contains(needle.toLowerCase());
+                    return item.getTagName().toLowerCase(Locale.getDefault()).contains(needle.toLowerCase(Locale.getDefault()));
                 }
             });
         }

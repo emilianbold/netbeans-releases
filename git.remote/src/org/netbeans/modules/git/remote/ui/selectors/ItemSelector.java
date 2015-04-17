@@ -113,7 +113,7 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
     
     @SuppressWarnings("unchecked")
     public List<I> getSelectedBranches() {
-        List<I> ret = new ArrayList<I>(panel.list.getModel().getSize());
+        List<I> ret = new ArrayList<>(panel.list.getModel().getSize());
         for (int i = 0; i < panel.list.getModel().getSize(); i++) {
             I item = (I)panel.list.getModel().getElementAt(i);
             if(item.isSelected) {

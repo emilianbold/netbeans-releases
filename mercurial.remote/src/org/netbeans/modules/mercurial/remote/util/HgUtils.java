@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +83,7 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.remote.FileInformation;
 import org.netbeans.modules.mercurial.remote.FileStatusCache;
@@ -219,7 +221,7 @@ public class HgUtils {
             return null;
         }
 
-        List<String> out = new ArrayList<String>(list.size());
+        List<String> out = new ArrayList<>(list.size());
         for(String s: list){
             out.add(replaceHttpPassword(s));
         } 
@@ -344,8 +346,8 @@ public class HgUtils {
 
     private static Set<Pattern> getIgnorePatterns(VCSFileProxy file) {
         if (ignorePatterns == null) {
-            ignoreFilesTimestamps = new HashMap<String, Long>();
-            ignorePatterns = new HashMap<String, Set<Pattern>>();
+            ignoreFilesTimestamps = new HashMap<>();
+            ignorePatterns = new HashMap<>();
         }
         String key = file.getPath();
         Set<Pattern> patterns = ignorePatterns.get(key);
@@ -357,7 +359,7 @@ public class HgUtils {
             ts = VCSFileProxy.createFileProxy(file, FILENAME_HGIGNORE).lastModified(); //check for external modification
         }
         if (patterns == null || oldTs == null && ts > 0 || oldTs != null && (ts == 0 || oldTs < ts)) {
-            patterns = new HashSet<Pattern>(5);
+            patterns = new HashSet<>(5);
             ignoreFilesTimestamps.put(key, ts);
             addIgnorePatterns(patterns, file);
             ignorePatterns.put(key, patterns);
@@ -366,13 +368,13 @@ public class HgUtils {
     }
 
     // cached not sharable files and folders
-    private static final Map<VCSFileProxy, Set<String>> notSharable = new HashMap<VCSFileProxy, Set<String>>(5);
+    private static final Map<VCSFileProxy, Set<String>> notSharable = new HashMap<>(5);
     private static void addNotSharable (VCSFileProxy topFile, String ignoredPath) {
         synchronized (notSharable) {
             // get cached patterns
             Set<String> ignores = notSharable.get(topFile);
             if (ignores == null) {
-                ignores = new HashSet<String>();
+                ignores = new HashSet<>();
             }
             String patternCandidate = ignoredPath;
             // test for duplicate patterns
@@ -506,7 +508,7 @@ public class HgUtils {
         try     {
             if (!ignore.exists()) {
                 fileWriter = new BufferedWriter(
-                        new OutputStreamWriter(VCSFileProxySupport.getOutputStream(ignore)));
+                        new OutputStreamWriter(VCSFileProxySupport.getOutputStream(ignore), "UTF-8")); // NOI18N
                 for (String name : HG_IGNORE_FILES) {
                     fileWriter.write(name + "\n"); // NOI18N
                 }
@@ -553,8 +555,8 @@ public class HgUtils {
                 return;
             }
             
-            br = new BufferedReader(new InputStreamReader(hgignoreFile.getInputStream(false)));
-            pw = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile)));
+            br = new BufferedReader(new InputStreamReader(hgignoreFile.getInputStream(false), "UTF-8")); //NOI18N
+            pw = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(tempFile), "UTF-8")); //NOI18N
 
             String line = null;            
             while ((line = br.readLine()) != null) {
@@ -686,7 +688,7 @@ public class HgUtils {
         String s;
         BufferedReader r = null;
         try {
-            r = new BufferedReader(new InputStreamReader(hgIgnore.getInputStream(false)));
+            r = new BufferedReader(new InputStreamReader(hgIgnore.getInputStream(false), "UTF-8")); //NOI18N
             while ((s = r.readLine()) != null) {
                 String line = s.trim();
                 line = removeCommentsInIgnore(line);
@@ -715,7 +717,7 @@ public class HgUtils {
     private static Set<String> readIgnoreEntries(VCSFileProxy directory, boolean transformEntries) throws IOException {
         VCSFileProxy hgIgnore = VCSFileProxy.createFileProxy(directory, FILENAME_HGIGNORE);
 
-        Set<String> entries = new LinkedHashSet<String>(5);
+        Set<String> entries = new LinkedHashSet<>(5);
         if (!VCSFileProxySupport.canRead(hgIgnore)) {
             return entries;
         }
@@ -724,7 +726,7 @@ public class HgUtils {
         BufferedReader r = null;
         boolean glob = false;
         try {
-            r = new BufferedReader(new InputStreamReader(hgIgnore.getInputStream(false)));
+            r = new BufferedReader(new InputStreamReader(hgIgnore.getInputStream(false), "UTF-8")); //NOI18N
             while ((s = r.readLine()) != null) {
                 String line = s;
                 if (transformEntries) {
@@ -786,11 +788,12 @@ public class HgUtils {
             fo = fo.createData(FILENAME_HGIGNORE);
         }
         FileLock lock = fo.lock();
-        PrintWriter w = null;
+        BufferedWriter w = null;
         try {
-            w = new PrintWriter(fo.getOutputStream(lock));
+            w = new BufferedWriter(new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8")); //NOI18N
             for (Iterator i = entries.iterator(); i.hasNext();) {
-                w.println(i.next());
+                w.write(i.next().toString());
+                w.write('\n');
             }
         } finally {
             lock.releaseLock();
@@ -951,7 +954,7 @@ itor tabs #66700).
      * @return repository roots
      */
     public static Set<VCSFileProxy> getRepositoryRoots (Set<VCSFileProxy> roots) {
-        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> ret = new HashSet<>();
 
         // filter managed roots
         for (VCSFileProxy file : roots) {
@@ -972,7 +975,7 @@ itor tabs #66700).
      */
     public static VCSFileProxy[] getActionRoots(VCSContext ctx) {
         Set<VCSFileProxy> rootsSet = ctx.getRootFiles();
-        Map<VCSFileProxy, List<VCSFileProxy>> map = new HashMap<VCSFileProxy, List<VCSFileProxy>>();
+        Map<VCSFileProxy, List<VCSFileProxy>> map = new HashMap<>();
 
         // filter managed roots
         for (VCSFileProxy file : rootsSet) {
@@ -981,7 +984,7 @@ itor tabs #66700).
                 if(repoRoot != null) {
                     List<VCSFileProxy> l = map.get(repoRoot);
                     if(l == null) {
-                        l = new LinkedList<VCSFileProxy>();
+                        l = new LinkedList<>();
                         map.put(repoRoot, l);
                     }
                     l.add(file);
@@ -1026,7 +1029,7 @@ itor tabs #66700).
             files = s.toArray(new VCSFileProxy[s.size()]);
         }
         if (files != null) {
-            List<VCSFileProxy> l = new LinkedList<VCSFileProxy>();
+            List<VCSFileProxy> l = new LinkedList<>();
             for (VCSFileProxy file : files) {
                 VCSFileProxy r = Mercurial.getInstance().getRepositoryRoot(file);
                 if (r != null && r.equals(repository)) {
@@ -1060,12 +1063,12 @@ itor tabs #66700).
     public static Map<VCSFileProxy, Set<VCSFileProxy>> sortUnderRepository (Set<VCSFileProxy> files) {
         Map<VCSFileProxy, Set<VCSFileProxy>> sortedRoots = null;
         if (files != null) {
-            sortedRoots = new HashMap<VCSFileProxy, Set<VCSFileProxy>>();
+            sortedRoots = new HashMap<>();
             for (VCSFileProxy file : files) {
                 VCSFileProxy r = Mercurial.getInstance().getRepositoryRoot(file);
                 Set<VCSFileProxy> repositoryRoots = sortedRoots.get(r);
                 if (repositoryRoots == null) {
-                    repositoryRoots = new HashSet<VCSFileProxy>();
+                    repositoryRoots = new HashSet<>();
                     sortedRoots.put(r, repositoryRoots);
                 }
                 repositoryRoots.add(file);
@@ -1185,7 +1188,7 @@ itor tabs #66700).
      */
 
     public static VCSFileProxy[] flatten(VCSFileProxy[] files, int status) {
-        LinkedList<VCSFileProxy> ret = new LinkedList<VCSFileProxy>();
+        LinkedList<VCSFileProxy> ret = new LinkedList<>();
 
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         for (int i = 0; i<files.length; i++) {
@@ -1218,7 +1221,7 @@ itor tabs #66700).
      */
     public static VCSFileProxy [] getModifiedFiles(VCSContext context, int includeStatus, boolean testCommitExclusions) {
         VCSFileProxy[] all = Mercurial.getInstance().getFileStatusCache().listFiles(context, includeStatus);
-        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> files = new ArrayList<>();
         for (int i = 0; i < all.length; i++) {
             VCSFileProxy file = all[i];
             if (!testCommitExclusions || !HgModuleConfig.getDefault(HgUtils.getRootFile(context)).isExcludedFromCommit(file.getPath())) {
@@ -1371,9 +1374,17 @@ itor tabs #66700).
         }
         BufferedReader r1 = null;
         BufferedReader r2 = null;
+        Charset encoding = null;
+        FileObject fo = fileToOpen.toFileObject();
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(fo);
+        }
+        if (encoding == null) {
+            encoding = Charset.forName("UTF-8"); //NOI18N
+        }
         try {
-            r1 = new BufferedReader(new InputStreamReader(fileRevision1.getInputStream(false)));
-            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            r1 = new BufferedReader(new InputStreamReader(fileRevision1.getInputStream(false), encoding));
+            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
             int matchingLine = DiffUtils.getMatchingLine(r1, r2, lineNumber);
             openFile(file, fileToOpen, matchingLine, revisionToOpen, showAnnotations);
         } finally {
@@ -1459,7 +1470,7 @@ itor tabs #66700).
     }
 
     public static boolean isRepositoryLocked (VCSFileProxy repository) {
-        List<String> locks = new ArrayList<String>();
+        List<String> locks = new ArrayList<>();
         final VCSFileProxy[] files = getHgFolderForRoot(repository).listFiles();
         if (files != null) {
             for(VCSFileProxy file : files) {
@@ -1537,13 +1548,13 @@ itor tabs #66700).
             if (set == null) {
                 ignored = Collections.<String>emptyList();
             } else {
-                ignored = new ArrayList<String>(set);
+                ignored = new ArrayList<>(set);
             }
         }
         if (ignored.size() > 10 && !roots.contains(repository)) {
             // we could optimize and return only a subset of ignored files/folders
             // there are applicable to the selected context
-            Set<String> acceptedPaths = new HashSet<String>(ignored.size());
+            Set<String> acceptedPaths = new HashSet<>(ignored.size());
             for (VCSFileProxy root : roots) {
                 String relPath = getRelativePath(root, repository);
                 for (String ignoredPath : ignored) {
@@ -1552,7 +1563,7 @@ itor tabs #66700).
                     }
                 }
             }
-            ignored = new ArrayList<String>(acceptedPaths);
+            ignored = new ArrayList<>(acceptedPaths);
         }
         return ignored;
     }
@@ -1650,7 +1661,7 @@ itor tabs #66700).
         String lbDate =      NbBundle.getMessage(HgUtils.class, "LB_DATE");        // NOI18N
         String lbSummary =   NbBundle.getMessage(HgUtils.class, "LB_SUMMARY");     // NOI18N
         int l = 0;
-        List<String> list = new LinkedList<String>(Arrays.asList(new String[] {lbChangeset, lbUser, lbDate, lbSummary}));
+        List<String> list = new LinkedList<>(Arrays.asList(new String[] {lbChangeset, lbUser, lbDate, lbSummary}));
         if (log.getBranches().length > 0) {
             list.add(lbBranch);
         }
@@ -1900,13 +1911,13 @@ itor tabs #66700).
      * @return 
      */
     public static Map<String, Collection<HgLogMessage>> sortByBranch (HgLogMessage[] heads) {
-        Map<String, Collection<HgLogMessage>> branchHeadsMap = new HashMap<String, Collection<HgLogMessage>>(heads.length);
+        Map<String, Collection<HgLogMessage>> branchHeadsMap = new HashMap<>(heads.length);
         for (HgLogMessage head : heads) {
             String[] branches = head.getBranches().length > 0 ? head.getBranches() : new String[] { HgBranch.DEFAULT_NAME };
             for (String branch : branches) {
                 Collection<HgLogMessage> branchHeads = branchHeadsMap.get(branch);
                 if (branchHeads == null) {
-                    branchHeads = new LinkedList<HgLogMessage>();
+                    branchHeads = new LinkedList<>();
                     branchHeadsMap.put(branch, branchHeads);
                 }
                 branchHeads.add(head);
@@ -1916,7 +1927,7 @@ itor tabs #66700).
     }
     
     public static VCSContext buildVCSContext (VCSFileProxy[] roots) {
-        List<Node> nodes = new ArrayList<Node>(roots.length);
+        List<Node> nodes = new ArrayList<>(roots.length);
         for (VCSFileProxy root : roots) {
             nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(root)));
         }
@@ -1927,7 +1938,7 @@ itor tabs #66700).
         return runWithoutIndexing(callable, files.toArray(new VCSFileProxy[files.size()]));
     }
 
-    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<Set<VCSFileProxy>>();
+    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<>();
     public static <T> T runWithoutIndexing (Callable<T> callable, final VCSFileProxy... files) throws HgException {
         try {
             Set<VCSFileProxy> recursiveRoots = indexingFiles.get();
@@ -1941,7 +1952,7 @@ itor tabs #66700).
                     if (Mercurial.LOG.isLoggable(Level.FINER)) {
                         Mercurial.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
-                    indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
+                    indexingFiles.set(new HashSet<>(Arrays.asList(files)));
                     return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
                     indexingFiles.remove();

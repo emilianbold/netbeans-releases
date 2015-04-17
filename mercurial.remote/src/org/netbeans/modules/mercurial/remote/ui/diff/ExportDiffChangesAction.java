@@ -173,11 +173,11 @@ public class ExportDiffChangesAction extends ContextAction {
         TopComponent activated = TopComponent.getRegistry().getActivated();
         if (activated instanceof DiffSetupSource) {
             if (!singleDiffSetup) {
-                setups = new ArrayList<Setup>(((DiffSetupSource) activated).getSetups());
+                setups = new ArrayList<>(((DiffSetupSource) activated).getSetups());
             } else {
                 DiffNode node = context.getElements().lookup(DiffNode.class);
                 if (node != null) {
-                    setups = new ArrayList<Setup>(Collections.singletonList(node.getSetup()));
+                    setups = new ArrayList<>(Collections.singletonList(node.getSetup()));
                 } else {
                     LOG.log(Level.INFO, "No DiffNode in the context: {0}", new Object[]{context.getElements().lookup(Object.class)}); //NOI18N
                     return;
@@ -193,7 +193,7 @@ public class ExportDiffChangesAction extends ContextAction {
             }
         } else {
             VCSFileProxy [] files = HgUtils.getModifiedFiles(context, FileInformation.STATUS_LOCAL_CHANGE, false);
-            setups = new ArrayList<Setup>(files.length);
+            setups = new ArrayList<>(files.length);
             for (int i = 0; i < files.length; i++) {
                 VCSFileProxy file = files[i];
                 if (root.equals(hg.getRepositoryRoot(file)))  {
@@ -388,7 +388,7 @@ public class ExportDiffChangesAction extends ContextAction {
     }
 
     private VCSFileProxy[] getRoots (Collection<Setup> setups) {
-        HashSet<VCSFileProxy> roots = new HashSet<VCSFileProxy>(setups.size());
+        HashSet<VCSFileProxy> roots = new HashSet<>(setups.size());
         for (Setup setup : setups) {
             VCSFileProxy f = setup.getBaseFile();
             if (f != null) {

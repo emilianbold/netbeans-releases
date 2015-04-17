@@ -98,9 +98,9 @@ class DiffFileTable extends VCSStatusTable<DiffNode> implements DiffFileViewComp
     @Override
     protected void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(NameProperty.NAME, String.class, NameProperty.DISPLAY_NAME, NameProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<String>(GitStatusProperty.NAME, String.class, GitStatusProperty.DISPLAY_NAME, GitStatusProperty.DESCRIPTION);
-        properties[2] = new ColumnDescriptor<String>(PathProperty.NAME, String.class, PathProperty.DISPLAY_NAME, PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<>(NameProperty.NAME, String.class, NameProperty.DISPLAY_NAME, NameProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<>(GitStatusProperty.NAME, String.class, GitStatusProperty.DISPLAY_NAME, GitStatusProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<>(PathProperty.NAME, String.class, PathProperty.DISPLAY_NAME, PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
     }
 

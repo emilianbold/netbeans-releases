@@ -70,7 +70,6 @@ import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -96,7 +95,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     public FetchBranchesStep (VCSFileProxy repository, Mode mode) {
         this.mode = mode;
         this.repository = repository;
-        this.branches = new ItemSelector<BranchMapping>(NbBundle.getMessage(FetchBranchesStep.class,"FetchBranchesPanel.jLabel1.text"));
+        this.branches = new ItemSelector<>(NbBundle.getMessage(FetchBranchesStep.class,"FetchBranchesPanel.jLabel1.text"));
         this.branches.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -158,7 +157,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                    final Map<String, GitBranch> localBranches = new HashMap<>();
                     RepositoryInfo info = RepositoryInfo.getInstance(repository);
                     info.refresh();
                     localBranches.putAll(info.getBranches());
@@ -174,8 +173,8 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
 
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
-        List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
-        Set<String> displayedBranches = new HashSet<String>(localBranches.size());
+        List<BranchMapping> l = new ArrayList<>(branches.size());
+        Set<String> displayedBranches = new HashSet<>(localBranches.size());
         for (GitBranch branch : branches.values()) {
             String branchName = remote.getRemoteName() + "/" + branch.getName();
             displayedBranches.add(branchName);
@@ -217,8 +216,8 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                         supp = new GitProgressSupport.NoOutputLogging() {
                             @Override
                             protected void perform () {
-                                final Map<String, GitBranch> branches = new HashMap<String, GitBranch>();
-                                final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
+                                final Map<String, GitBranch> branches = new HashMap<>();
+                                final Map<String, GitBranch> localBranches = new HashMap<>();
                                 try {
                                     GitClient client = getClient();
                                     client.init(getProgressMonitor());
@@ -281,7 +280,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
 
     public List<String> getSelectedRefSpecs () {
-        List<String> specs = new LinkedList<String>();
+        List<String> specs = new LinkedList<>();
         for (BranchMapping b : branches.getSelectedBranches()) {
             specs.add(b.getRefSpec());
         }

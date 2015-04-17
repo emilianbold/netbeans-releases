@@ -51,6 +51,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -76,6 +77,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.git.remote.cli.GitBranch;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -142,7 +144,7 @@ public final class GitUtils {
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
     public static final String MASTER = "master"; //NOI18N
-    private static final Set<VCSFileProxy> loggedRepositories = new HashSet<VCSFileProxy>();
+    private static final Set<VCSFileProxy> loggedRepositories = new HashSet<>();
     public static final String REMOTE_ORIGIN = "origin"; //NOI18N
     public static final String ORIGIN = "origin"; //NOI18N
 
@@ -195,7 +197,7 @@ public final class GitUtils {
      */
     public static boolean prepareRootFiles (VCSFileProxy repository, Collection<VCSFileProxy> filesUnderRoot, VCSFileProxy file) {
         boolean added = false;
-        Set<VCSFileProxy> filesToRemove = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> filesToRemove = new HashSet<>();
         for (VCSFileProxy fileUnderRoot : filesUnderRoot) {
             if (file.equals(fileUnderRoot) || fileUnderRoot.equals(repository)) {
                 // file has already been inserted or scan is planned for the whole repository root
@@ -332,7 +334,7 @@ public final class GitUtils {
             // get cached patterns
             Set<String> ignores = notSharable.get(topFile);
             if (ignores == null) {
-                ignores = new HashSet<String>();
+                ignores = new HashSet<>();
             }
             String patternCandidate = ignoredPath;
             // test for duplicate patterns
@@ -437,7 +439,7 @@ public final class GitUtils {
      * @return repository roots
      */
     public static Set<VCSFileProxy> getRepositoryRoots (Collection<VCSFileProxy> roots) {
-        Set<VCSFileProxy> ret = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> ret = new HashSet<>();
 
         // filter managed roots
         for (VCSFileProxy file : roots) {
@@ -458,7 +460,7 @@ public final class GitUtils {
      */
     public static HashMap.SimpleImmutableEntry<VCSFileProxy, VCSFileProxy[]> getActionRoots(VCSContext ctx) {
         Set<VCSFileProxy> rootsSet = ctx.getRootFiles();
-        Map<VCSFileProxy, List<VCSFileProxy>> map = new HashMap<VCSFileProxy, List<VCSFileProxy>>();
+        Map<VCSFileProxy, List<VCSFileProxy>> map = new HashMap<>();
 
         // filter managed roots
         for (VCSFileProxy file : rootsSet) {
@@ -467,7 +469,7 @@ public final class GitUtils {
                 if(repoRoot != null) {
                     List<VCSFileProxy> l = map.get(repoRoot);
                     if(l == null) {
-                        l = new LinkedList<VCSFileProxy>();
+                        l = new LinkedList<>();
                         map.put(repoRoot, l);
                     }
                     l.add(file);
@@ -486,7 +488,7 @@ public final class GitUtils {
             if(fs.show(repoRoots.toArray(new VCSFileProxy[repoRoots.size()]))) {
                 VCSFileProxy selection = fs.getSelectedFile();
                 List<VCSFileProxy> l = map.get(selection);
-                return new HashMap.SimpleImmutableEntry<VCSFileProxy, VCSFileProxy[]>(selection, l.toArray(new VCSFileProxy[l.size()]));
+                return new HashMap.SimpleImmutableEntry<>(selection, l.toArray(new VCSFileProxy[l.size()]));
             } else {
                 return null;
             }
@@ -495,7 +497,7 @@ public final class GitUtils {
         } else {
             VCSFileProxy root = map.keySet().iterator().next();
             List<VCSFileProxy> l = map.get(root);
-            return new HashMap.SimpleImmutableEntry<VCSFileProxy, VCSFileProxy[]>(root, l.toArray(new VCSFileProxy[l.size()]));
+            return new HashMap.SimpleImmutableEntry<>(root, l.toArray(new VCSFileProxy[l.size()]));
         }
     }
 
@@ -512,7 +514,7 @@ public final class GitUtils {
             files = s.toArray(new VCSFileProxy[s.size()]);
         }
         if (files != null) {
-            List<VCSFileProxy> l = new LinkedList<VCSFileProxy>();
+            List<VCSFileProxy> l = new LinkedList<>();
             for (VCSFileProxy file : files) {
                 VCSFileProxy r = Git.getInstance().getRepositoryRoot(file);
                 if (r != null && r.equals(repository)) {
@@ -540,7 +542,7 @@ public final class GitUtils {
      */
 
     public static VCSFileProxy[] flatten(VCSFileProxy[] files, Set<Status> statuses) {
-        LinkedList<VCSFileProxy> ret = new LinkedList<VCSFileProxy>();
+        LinkedList<VCSFileProxy> ret = new LinkedList<>();
 
         FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (int i = 0; i<files.length; i++) {
@@ -568,7 +570,7 @@ public final class GitUtils {
      */
     public static VCSFileProxy[] listFiles (VCSFileProxy[] roots, EnumSet<Status> includedStatuses) {
         VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(roots);
-        List<VCSFileProxy> fileList = new ArrayList<VCSFileProxy>();
+        List<VCSFileProxy> fileList = new ArrayList<>();
         FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (int c = 0; c < split.length; c++) {
             VCSFileProxy[] splitRoots = split[c];
@@ -656,7 +658,7 @@ public final class GitUtils {
     }
     
     public static List<String> getRelativePaths(VCSFileProxy workDir, VCSFileProxy[] roots) {
-        List<String> paths = new ArrayList<String>(roots.length);
+        List<String> paths = new ArrayList<>(roots.length);
         for (VCSFileProxy root : roots) {
             if (workDir.equals(root)) {
                 paths.clear();
@@ -685,7 +687,7 @@ public final class GitUtils {
     }
 
     public static void openInVersioningView (Collection<VCSFileProxy> files, VCSFileProxy repository, ProgressMonitor pm) {
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new LinkedList<>();
         for (VCSFileProxy file : files) {
             Node node = new AbstractNode(Children.LEAF, Lookups.fixed(file));
             nodes.add(node);
@@ -759,7 +761,7 @@ public final class GitUtils {
      */
     public static void headChanged (VCSFileProxy... repositories) {
         Set<VCSFileProxy> openFiles = VCSFileProxySupport.getOpenFiles();
-        Set<VCSFileProxy> repositorySet = new HashSet<VCSFileProxy>(Arrays.asList(repositories));
+        Set<VCSFileProxy> repositorySet = new HashSet<>(Arrays.asList(repositories));
         for (Iterator<VCSFileProxy> it = openFiles.iterator(); it.hasNext(); ) {
             VCSFileProxy file = it.next();
             if (!repositorySet.contains(Git.getInstance().getRepositoryRoot(file))) {
@@ -794,9 +796,17 @@ public final class GitUtils {
         }
         BufferedReader r1 = null;
         BufferedReader r2 = null;
+        FileObject fo = originalFile.toFileObject();
+        Charset encoding = null;
+        if (fo != null) {
+            encoding = FileEncodingQuery.getEncoding(fo);
+        }
+        if(encoding == null) {
+            encoding = FileEncodingQuery.getDefaultEncoding();
+        }
         try {
-            r1 = new BufferedReader(new InputStreamReader(file1.getInputStream(false)));
-            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false)));
+            r1 = new BufferedReader(new InputStreamReader(file1.getInputStream(false), encoding));
+            r2 = new BufferedReader(new InputStreamReader(file.getInputStream(false), encoding));
             int matchingLine = DiffUtils.getMatchingLine(r1, r2, lineNumber);
             openInRevision(file, originalFile, matchingLine, revisionToOpen, showAnnotations, pm);
         } finally {
@@ -856,13 +866,13 @@ public final class GitUtils {
     }
 
     public static Map<VCSFileProxy, Set<VCSFileProxy>> sortByRepository (Collection<VCSFileProxy> files) {
-        Map<VCSFileProxy, Set<VCSFileProxy>> sorted = new HashMap<VCSFileProxy, Set<VCSFileProxy>>(5);
+        Map<VCSFileProxy, Set<VCSFileProxy>> sorted = new HashMap<>(5);
         for (VCSFileProxy f : files) {
             VCSFileProxy repository = Git.getInstance().getRepositoryRoot(f);
             if (repository != null) {
                 Set<VCSFileProxy> repoFiles = sorted.get(repository);
                 if (repoFiles == null) {
-                    repoFiles = new HashSet<VCSFileProxy>();
+                    repoFiles = new HashSet<>();
                     sorted.put(repository, repoFiles);
                 }
                 repoFiles.add(f);
@@ -922,7 +932,7 @@ public final class GitUtils {
         return runWithoutIndexing(callable, files.toArray(new VCSFileProxy[files.size()]));
     }
 
-    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<Set<VCSFileProxy>>();
+    static ThreadLocal<Set<VCSFileProxy>> indexingFiles = new ThreadLocal<>();
     public static <T> T runWithoutIndexing (Callable<T> callable, final VCSFileProxy... files) throws GitException {
         try {
             Set<VCSFileProxy> recursiveRoots = indexingFiles.get();
@@ -936,7 +946,7 @@ public final class GitUtils {
                     if (Git.LOG.isLoggable(Level.FINER)) {
                         Git.LOG.log(Level.FINER, "Running block in indexing bridge: on {0}", Arrays.asList(files)); //NOI18N
                     }
-                    indexingFiles.set(new HashSet<VCSFileProxy>(Arrays.asList(files)));
+                    indexingFiles.set(new HashSet<>(Arrays.asList(files)));
                     return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
                     indexingFiles.remove();
@@ -1014,7 +1024,7 @@ public final class GitUtils {
         }
         List<String> refSpecs;
         if (original != null) {
-            refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
+            refSpecs = new LinkedList<>(original.getFetchRefSpecs());
             if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
                 for (String refSpec : fetchRefSpecs) {
                     if (!refSpecs.contains(refSpec)) {
@@ -1054,7 +1064,7 @@ public final class GitUtils {
             Git.getInstance().getRequestProcessor(repositoryRoot).post(new Runnable() {
                 @Override
                 public void run () {
-                    Set<String> urls = new HashSet<String>();
+                    Set<String> urls = new HashSet<>();
                     GitClient client = null;
                     try {
                         client = Git.getInstance().getClient(repositoryRoot);
@@ -1089,7 +1099,7 @@ public final class GitUtils {
     
     public static <T> QuickSearch attachQuickSearch (List<T> items, JPanel panel, JList listComponent,
             DefaultListModel model, SearchCallback<T> searchCallback) {
-        final QuickSearchCallback callback = new QuickSearchCallback<T>(items, listComponent, model, searchCallback);
+        final QuickSearchCallback callback = new QuickSearchCallback<>(items, listComponent, model, searchCallback);
         final QuickSearch qs = QuickSearch.attach(panel, BorderLayout.SOUTH, callback);
         qs.setAlwaysShown(true);
         listComponent.addKeyListener(new KeyListener() {
@@ -1166,8 +1176,8 @@ public final class GitUtils {
         private boolean internal;
 
         public QuickSearchCallback (List<T> items, JList component, DefaultListModel model, SearchCallback<T> callback) {
-            this.items = new ArrayList<T>(items);
-            results = new ArrayList<T>(items);
+            this.items = new ArrayList<>(items);
+            results = new ArrayList<>(items);
             this.component = component;
             this.model = model;
             this.callback = callback;

@@ -61,13 +61,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.remote.Mercurial;
 import org.netbeans.modules.mercurial.remote.HgProgressSupport;
 import org.netbeans.modules.mercurial.remote.HgModuleConfig;
 import org.netbeans.modules.mercurial.remote.ui.properties.HgPropertiesNode;
 import org.netbeans.modules.mercurial.remote.ui.repository.HgURL;
-import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.RequestProcessor;
@@ -122,9 +120,9 @@ public class HgExtProperties implements ActionListener, DocumentListener {
     }
     
     protected void initPropertyNameCbx() {
-        List<String> lstName = new ArrayList<String>(8);
+        List<String> lstName = new ArrayList<>(8);
 
-        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector<String>(lstName));
+        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector<>(lstName));
         panel.getComboName().setModel(comboModel);
         panel.getComboName().getEditor().setItem(""); // NOI18N
     }
@@ -294,9 +292,9 @@ public class HgExtProperties implements ActionListener, DocumentListener {
             @Override
             public void run() {
                 ComboBoxModel targetsModel;
-                Set<String> initialSet = new LinkedHashSet<String>();
+                Set<String> initialSet = new LinkedHashSet<>();
                 initialSet.add(hgPropertyName);
-                targetsModel = new DefaultComboBoxModel(new Vector<String>(initialSet));
+                targetsModel = new DefaultComboBoxModel(new Vector<>(initialSet));
                 panel.getComboName().setModel(targetsModel);
                 panel.getTxtAreaValue().setText(hgPropertyValue);               
             }

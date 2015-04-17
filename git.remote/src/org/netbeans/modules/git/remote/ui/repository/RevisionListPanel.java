@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -108,7 +109,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     
     /** Creates new form RevisionsPanel */
     public RevisionListPanel() {
-        revisionModel = new ArrayList<GitRevisionInfoDelegate>();
+        revisionModel = new ArrayList<>();
         lstRevisions.setModel(revisionDisplayModel = new DefaultListModel());
         lstRevisions.setFixedCellHeight(-1);
         lstRevisions.setCellRenderer(new RevisionRenderer());
@@ -189,9 +190,9 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
 
     private boolean applyToFilter (GitRevisionInfoDelegate info) {
         boolean apply;
-        String filter = txtFilter.getText().toLowerCase();
-        apply = info.getMessage().toLowerCase().contains(filter)
-                || info.getRevision().toLowerCase().contains(filter);
+        String filter = txtFilter.getText().toLowerCase(Locale.getDefault());
+        apply = info.getMessage().toLowerCase(Locale.getDefault()).contains(filter)
+                || info.getRevision().toLowerCase(Locale.getDefault()).contains(filter);
         return apply;
     }
 
@@ -244,9 +245,9 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                 sd.remove(0, sd.getLength());
                 String text = sb.toString();
                 sd.insertString(0, text, style);
-                String filter = txtFilter.getText().toLowerCase();
+                String filter = txtFilter.getText().toLowerCase(Locale.getDefault());
                 if (!isSelected && !filter.isEmpty()) {
-                    text = text.toLowerCase();
+                    text = text.toLowerCase(Locale.getDefault());
                     int pos = -filter.length();
                     while ((pos = text.indexOf(filter, pos + filter.length())) > -1) {
                         sd.setCharacterAttributes(pos, filter.length(), selectedStyle, false);
@@ -310,8 +311,8 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     
     private class ListHistoryProgressSupport extends GitProgressSupport.NoOutputLogging implements RevisionInfoListener, ListSelectionListener {
         
-        private final List<GitRevisionInfo> revisions = new LinkedList<GitRevisionInfo>();
-        private final Set<String> displayedRevisions = new HashSet<String>(10);
+        private final List<GitRevisionInfo> revisions = new LinkedList<>();
+        private final Set<String> displayedRevisions = new HashSet<>(10);
         private boolean reselected;
         private GitRevisionInfoDelegate selectedRevision;
         private int limit;

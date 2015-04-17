@@ -61,7 +61,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     /**
      * Defines labels for Diff view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);
     private final MultiDiffPanel master;
 
     static {

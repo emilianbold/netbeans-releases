@@ -42,6 +42,7 @@
 package org.netbeans.modules.git.remote.client;
 
 import java.util.Arrays;
+import java.util.Locale;
 import org.netbeans.modules.git.remote.cli.GitClientCallback;
 import org.netbeans.modules.git.remote.GitModuleConfig;
 import org.netbeans.modules.git.remote.ui.repository.remote.ConnectionSettings;
@@ -65,7 +66,7 @@ public class CredentialsCallback extends GitClientCallback {
     @Override
     public String askQuestion (String uri, String prompt) {
         String retval = null;
-        if (prompt.toLowerCase().startsWith("password:")) { //NOI18N
+        if (prompt.toLowerCase(Locale.getDefault()).startsWith("password:")) { //NOI18N
             char[] pwd = getPassword(uri, prompt);
             if (pwd != null) {
                 retval = new String(pwd);

@@ -82,7 +82,7 @@ public class HgConfigFiles {
     public static final String HG_DEFAULT_PULL_VALUE = "default";  // NOI18N
 
     /** The HgConfigFiles instance for user and system defaults */
-    private static final Map<FileSystem, HgConfigFiles> instance = new HashMap<FileSystem,HgConfigFiles>();
+    private static final Map<FileSystem, HgConfigFiles> instance = new HashMap<>();
 
     /** the Ini instance holding the configuration values stored in the <b>hgrc</b>
      * file used by the Mercurial module */    
@@ -329,7 +329,7 @@ public class HgConfigFiles {
             if (file == null) {
                 return new Ini();
             } else {
-                return new Ini(new InputStreamReader(file.getInputStream(false)));
+                return new Ini(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
             }
         } catch (FileNotFoundException ex) {
             // ignore
