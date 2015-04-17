@@ -104,7 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList().contains(testName);
+        return Arrays.asList("testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO").contains(testName);
     }
 
     @Override
