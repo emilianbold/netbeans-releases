@@ -133,7 +133,7 @@ abstract public class VectorNodeProp extends PropertySupport<List> {
         }
         @Override
         public void setAsText(String text) {
-            setValue(VectorNodeProp.this.convertToList(text.trim()));
+            super.setValue(VectorNodeProp.this.convertToList(text.trim()));
         }
 
         @Override
