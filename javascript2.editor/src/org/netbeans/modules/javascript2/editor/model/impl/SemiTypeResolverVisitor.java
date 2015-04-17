@@ -61,6 +61,7 @@ import jdk.nashorn.internal.ir.ObjectNode;
 import jdk.nashorn.internal.ir.ReferenceNode;
 import jdk.nashorn.internal.ir.TernaryNode;
 import jdk.nashorn.internal.ir.UnaryNode;
+import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 import jdk.nashorn.internal.parser.Lexer;
 import jdk.nashorn.internal.parser.TokenType;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -97,7 +98,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     
     private int typeOffset;
 
+    private final FinderOffsetTypeVisitor offsetVisitor;
+    
     public SemiTypeResolverVisitor() {
+        offsetVisitor = new FinderOffsetTypeVisitor();
     }
 
     public Set<TypeUsage> getSemiTypes(Node expression) {
@@ -105,7 +109,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         result = new HashMap<String, TypeUsage>();
         reset();
         expression.accept(this);
-        add(exp, typeOffset == -1 ? expression.getStart() : typeOffset, false);
+        add(exp, typeOffset == -1 ? offsetVisitor.findOffset(expression) : typeOffset, false);
         return new HashSet<TypeUsage>(result.values());
     }
     
@@ -268,10 +272,12 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     @Override
     public Node enter(TernaryNode ternaryNode) {
         ternaryNode.rhs().accept(this);
-        add(exp, ternaryNode.rhs().getStart(), false);
+        add(exp, offsetVisitor.findOffset(ternaryNode.rhs()), false);
         reset();
-        ternaryNode.third().accept(this);
-        add(exp, ternaryNode.third().getStart(), false);
+        Node third = ternaryNode.third();
+        third.accept(this);
+        int typeStart = offsetVisitor.findOffset(third);
+        add(exp, typeStart, false);
         reset();
         return null;
     }
@@ -338,10 +344,10 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
                 return null;
             }
             binaryNode.lhs().accept(this);
-            add(exp, binaryNode.lhs().getStart(), false);
+            add(exp, offsetVisitor.findOffset(binaryNode.lhs()), false);
             reset();
             binaryNode.rhs().accept(this);
-            add(exp, binaryNode.rhs().getStart(), false);
+            add(exp, offsetVisitor.findOffset(binaryNode.rhs()), false);
             reset();
             return null;
         }
@@ -457,6 +463,27 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         public Node enter(ReferenceNode referenceNode) {
             referenceNode.getReference().accept(this);
             return null;
+        }
+    }
+    
+    private static class FinderOffsetTypeVisitor extends NodeVisitor {
+        private int typeOffset = -1;
+        
+        int findOffset (Node expression) {
+            expression.accept(this);
+            return typeOffset;
+        } 
+        
+        @Override
+        public Node enter(IdentNode identNode) {
+            typeOffset = identNode.getStart();
+            return null;
+        }
+
+        @Override
+        public Node enter(AccessNode accessNode) {
+            typeOffset = accessNode.getStart();
+            return null; 
         }
     }
 }

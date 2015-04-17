@@ -75,7 +75,6 @@ import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
