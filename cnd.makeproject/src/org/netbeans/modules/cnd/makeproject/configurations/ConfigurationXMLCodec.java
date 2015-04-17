@@ -240,7 +240,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             projectDescriptor.setExternalFileItems(currentFolder);
             projectDescriptor.getLogicalFolders().addFolder(currentFolder, true);
         } else if (element.equals(LOGICAL_FOLDER_ELEMENT)) {
-            if (currentFolderStack.size() == 0) {
+            if (currentFolderStack.isEmpty()) {
                 currentFolder = projectDescriptor.getLogicalFolders();
                 currentFolderStack.push(currentFolder);
             } else {
@@ -262,7 +262,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolderStack.push(currentFolder);
             }
         } else if (element.equals(DISK_FOLDER_ELEMENT)) {
-            if (currentFolderStack.size() == 0) {
+            if (currentFolderStack.isEmpty()) {
                 currentFolder = projectDescriptor.getLogicalFolders();
                 currentFolderStack.push(currentFolder);
             } else {
@@ -516,8 +516,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String name = getString(atts.getValue(NAME_ATTR)); // NOI18N
             String value = getString(atts.getValue(VALUE_ATTR)); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            PackagerInfoElement infoElement = new PackagerInfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
+                PackagerInfoElement infoElement = new PackagerInfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
                 currentPackagingConfiguration.getInfo().add(infoElement);
             }
         } else if (element.equals(QT_ELEMENT)) {
@@ -608,7 +608,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(DEVELOPMENT_MODE_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getDevelopmentMode().setValue(ol);
             }
@@ -690,13 +690,13 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(ItemXMLCodec.ITEM_TOOL_ELEMENT) || element.equals(ItemXMLCodec.TOOL_ELEMENT)) {
             CndUtils.assertNotNullInConsole(currentItemConfiguration, "null currentItemConfiguration"); //NOI18N
             if (currentItemConfiguration != null) {
-                int tool = new Integer(currentText);
+                int tool = Integer.parseInt(currentText);
                 currentItemConfiguration.setTool(PredefinedToolKind.getTool(tool));
             }
         } else if (element.equals(CONFORMANCE_LEVEL_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(COMPATIBILITY_MODE_ELEMENT)) { // FIXUP: <= 21
         } else if (element.equals(LIBRARY_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             currentCCCompilerConfiguration.getLibraryLevel().setValue(ol);
         } else if (element.equals(CUSTOMTOOL_COMMANDLINE_ELEMENT)) {
             currentCustomToolConfiguration.getCommandLine().setValue(getString(currentText));
@@ -857,8 +857,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentPackagingConfiguration != null) {
                 String type;
                 if (descriptorVersion <= 50) {
-                    int i;
-                    i = new Integer(currentText);
+                    int i = Integer.parseInt(currentText);
                     if (i == 0) {
                         type = "Tar"; // NOI18N
                     } else if (i == 1) {
@@ -901,12 +900,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentBasicCompilerConfiguration.getSixtyfourBits().setValue(ds ? BasicCompilerConfiguration.BITS_64 : BasicCompilerConfiguration.BITS_DEFAULT);
             }
         } else if (element.equals(ARCHITECTURE_ELEMENT)) {
-            int val = new Integer(currentText);
+            int val = Integer.parseInt(currentText);
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getSixtyfourBits().setValue(val);
             }
         } else if (element.equals(STANDARD_ELEMENT)) {
-            int val = new Integer(currentText);
+            int val = Integer.parseInt(currentText);
             if (currentCCCompilerConfiguration != null) {
                 currentCCCompilerConfiguration.setCppStandardExternal(val);
             } else if (currentCCompilerConfiguration != null) {
@@ -943,22 +942,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(WARNING_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentBasicCompilerConfiguration != null) {
                 currentBasicCompilerConfiguration.getWarningLevel().setValue(ol);
             }
         } else if (element.equals(MT_LEVEL_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getMTLevel().setValue(ol);
             }
         } else if (element.equals(STANDARDS_EVOLUTION_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getStandardsEvolution().setValue(ol);
             }
         } else if (element.equals(LANGUAGE_EXTENSION_ELEMENT)) {
-            int ol = new Integer(currentText);
+            int ol = Integer.parseInt(currentText);
             if (currentCCCCompilerConfiguration != null) {
                 currentCCCCompilerConfiguration.getLanguageExt().setValue(ol);
             }
