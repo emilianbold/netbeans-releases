@@ -520,10 +520,10 @@ org.netbeans.modules.cnd.debugger.common.EditorContext
 org.netbeans.modules.cnd.debugger.common.EditorContextBridge
 org.netbeans.modules.cnd.debugger.common.EditorContextImpl
 org.netbeans.modules.cnd.debugger.common.breakpoints.ToggleBreakpointActionProvider
-org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListener
-org.netbeans.modules.debugger.jpda.projects.EditorContextImpl$SessionsListenerRemoval
-org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider
-org.netbeans.modules.debugger.jpda.projects.RunToCursorActionProvider$Listener
+org.netbeans.modules.debugger.jpda.projectsui.EditorContextImpl$SessionsListener
+org.netbeans.modules.debugger.jpda.projectsui.EditorContextImpl$SessionsListenerRemoval
+org.netbeans.modules.debugger.jpda.projectsui.RunToCursorActionProvider
+org.netbeans.modules.debugger.jpda.projectsui.RunToCursorActionProvider$Listener
 org.netbeans.modules.debugger.jpda.ui.actions.ToggleBreakpointActionProvider
 org.netbeans.modules.groovy.support.debug.Context
 org.netbeans.modules.groovy.support.debug.GroovyLineBreakpoint
