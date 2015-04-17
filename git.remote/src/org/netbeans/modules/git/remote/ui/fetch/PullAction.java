@@ -394,7 +394,6 @@ public class PullAction extends SingleRepositoryAction {
                     op = rrp.getNextAction();
                     if (op == null && (result.getRebaseStatus() == GitRebaseResult.RebaseStatus.FAST_FORWARD
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
-                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.OK
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.UP_TO_DATE)) {
                         return new ActionProgress.ActionResult(false, false);
