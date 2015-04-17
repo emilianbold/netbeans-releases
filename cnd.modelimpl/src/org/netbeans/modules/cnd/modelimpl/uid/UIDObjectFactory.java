@@ -125,11 +125,11 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     }
 
     public void writeUID(CsmUID<?> anUID, RepositoryDataOutput aStream) throws IOException {
-        if (!(anUID == null || anUID instanceof SelfPersistent)) {
-            CndUtils.assertTrue(false, anUID + ", " + (anUID == null ? "NULL UID" : anUID.getObject()));
-            return;
+        if (anUID instanceof SelfPersistent) {
+            super.writeSelfPersistent((SelfPersistent) anUID, aStream);
+        } else {
+            CndUtils.assertUnconditional(anUID + ", " + (anUID == null ? "NULL UID" : anUID.getObject()));
         }
-        super.writeSelfPersistent((SelfPersistent) anUID, aStream);
     }
 
     @SuppressWarnings("unchecked") // okay

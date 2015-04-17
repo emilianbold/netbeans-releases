@@ -85,7 +85,7 @@ import org.openide.util.CharSequences;
 
     private static int getFileNameId(FileImpl file) {
         // extra check for #208877
-        assert file != null;
+        CndUtils.assertNotNull(file, "Null file"); //NOI18N
         return file == null ? -1 : file.getFileId();
     }
 
