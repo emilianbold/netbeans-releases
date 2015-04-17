@@ -1192,6 +1192,11 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         public String getName() {
             return getNames()[getValue() - offset];
         }
+
+        @Override
+        public ManagedIntConfiguration clone() {
+            throw new UnsupportedOperationException();
+        }
     }
     
     public MakeProjectCustomizer getProjectCustomizer() {

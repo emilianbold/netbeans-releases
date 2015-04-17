@@ -344,6 +344,10 @@ public class PackagingConfiguration implements Cloneable {
             return i;
         }
 
+        @Override
+        public PackagerIntConfiguration clone() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     private class PackagerIntNodeProp extends IntNodeProp {
