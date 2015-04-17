@@ -194,8 +194,7 @@ public final class CndFileUtils {
         CndUtils.assertTrueInConsole(absolutePath != null, "null path ", fs);
         ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
         if (map == null) {
-            map = new ConcurrentHashMap<CharSequence, FileObject>();
-            foCache.putIfAbsent(fs, map);
+            map = foCache.putIfAbsent(fs, new ConcurrentHashMap<CharSequence, FileObject>());
         }
         FileObject res = map.get(absolutePath);
         if (res == null || !res.isValid()) {
