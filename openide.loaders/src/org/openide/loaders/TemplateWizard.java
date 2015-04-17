@@ -708,7 +708,10 @@ public class TemplateWizard extends WizardDescriptor {
         if (unknownIterator == null) {
             unknownIterator = primary.getAttribute(EA_ITERATOR);
             if (unknownIterator == null) {
-                unknownIterator = primary.getParent().getAttribute(EA_ITERATOR);
+                FileObject parent = primary.getParent();
+                if (parent != null) {
+                    unknownIterator = parent.getAttribute(EA_ITERATOR);
+                }
             }
         }
         Iterator it = null;
