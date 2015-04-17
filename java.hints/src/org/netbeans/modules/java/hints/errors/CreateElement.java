@@ -110,7 +110,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args", CAST_KEY)); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.apply.symbols", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args", CAST_KEY)); // NOI18N
     }
     public static final String CAST_KEY = "compiler.err.prob.found.req";
 

@@ -271,7 +271,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
         
         ts.move(offset);
         if (ts.moveNext()) {
-            Token t = ts.token();
+            Token<JavaTokenId> t = ts.token();
 
             if (t.id() == JavaTokenId.DOT) {
                 ts.moveNext();
@@ -298,8 +298,18 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 t = ts.token();
             }
             
-            if (t.id() == JavaTokenId.IDENTIFIER) {
-                return ts.offsetToken();
+            switch (t.id()) {
+                case IDENTIFIER:
+                case INT_LITERAL:
+                case LONG_LITERAL:
+                case FLOAT_LITERAL:
+                case DOUBLE_LITERAL:
+                case CHAR_LITERAL:
+                case STRING_LITERAL:
+                case TRUE:
+                case FALSE:
+                case NULL:
+                    return ts.offsetToken();
             }
         }
         return null;
