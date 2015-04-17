@@ -167,19 +167,25 @@ public class J2eeMavenSourcesImpl implements Sources, OtherSourcesExclude {
         ProjectWebRootProvider webRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
         if (webRootProvider != null) {
             Collection<FileObject> webRoots = webRootProvider.getWebRoots();
+            String projectDirPath = project.getProjectDirectory().getPath() + "/src/main/webapp"; // NOI18N
             for (FileObject webRoot : webRoots) {
-                sourceGroups.add(new WebResourceGroup(project, webRoot, TYPE_DOC_ROOT, getDisplayName(webRoot)));
+                boolean isDefault = webRoot.getPath().equals(projectDirPath);
+                WebResourceGroup g = new WebResourceGroup(project, webRoot, TYPE_DOC_ROOT, getDisplayName(webRoot, isDefault));
+                // put the /src/main/webapp first; see #248687
+                if (isDefault) {
+                    sourceGroups.add(0, g);
+                } else {
+                    sourceGroups.add(g);
+                }
             }
         }
-
         return sourceGroups;
     }
 
     @NbBundle.Messages("LBL_WebPages=Web Pages")
-    private String getDisplayName(FileObject webRoot) {
-        String projectDirPath = project.getProjectDirectory().getPath() + "/src/main/webapp"; // NOI18N
+    private String getDisplayName(FileObject webRoot, boolean isDefault) {
         // To preserve current behavior, don't show web root name in the node name for default "webapp"
-        if (webRoot.getPath().equals(projectDirPath)) {
+        if (isDefault) {
             return LBL_WebPages();
         } else {
             return LBL_WebPages() + " (" + webRoot.getPath() + ")"; // NOI18N
