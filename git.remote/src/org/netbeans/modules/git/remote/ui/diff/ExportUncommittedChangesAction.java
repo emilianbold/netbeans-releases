@@ -99,7 +99,7 @@ public class ExportUncommittedChangesAction extends SingleRepositoryAction {
     
     private void exportDiff (final VCSFileProxy repository, final VCSFileProxy[] roots, final DiffMode diffMode) {
         final VCSFileProxy[] files;
-        if (roots.length == 0 || (files = Git.getInstance().getFileStatusCache().listFiles(new HashSet<VCSFileProxy>(Arrays.asList(roots)), diffModeToStatusSet(diffMode))).length == 0) {
+        if (roots.length == 0 || (files = Git.getInstance().getFileStatusCache().listFiles(new HashSet<>(Arrays.asList(roots)), diffModeToStatusSet(diffMode))).length == 0) {
             NotifyDescriptor msg = new NotifyDescriptor.Message(NbBundle.getMessage(ExportUncommittedChangesAction.class, "MSG_ExportUncommittedChangesAction.emptyContext"), NotifyDescriptor.INFORMATION_MESSAGE); //NOI18N
             DialogDisplayer.getDefault().notify(msg);
             return;

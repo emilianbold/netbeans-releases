@@ -114,7 +114,7 @@ public class HgModuleConfig {
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
     private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
-    private static final Map<FileSystem,HgModuleConfig> INSTANCE = new HashMap<FileSystem,HgModuleConfig>();
+    private static final Map<FileSystem,HgModuleConfig> INSTANCE = new HashMap<>();
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
     private static final String KEY_REMOVE_NEW_FILES_ON_REVERT = "removeNewFilesOnRevert"; //NOI18N
     
@@ -161,7 +161,7 @@ public class HgModuleConfig {
     }
     
     private Set<String> exclusions;
-    private final Map<String, String> lastCanceledCommitMessages = new HashMap<String, String>(5);
+    private final Map<String, String> lastCanceledCommitMessages = new HashMap<>(5);
 
     // properties ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -195,7 +195,7 @@ public class HgModuleConfig {
     public void addExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
@@ -205,7 +205,7 @@ public class HgModuleConfig {
     public void removeExclusionPaths(Collection<String> paths) {
         Set<String> exclusions = getCommitExclusions();
         if (exclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(exclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(exclusions));
         }
     }
 
@@ -560,8 +560,8 @@ public class HgModuleConfig {
     public List<RepositoryConnection> getRecentUrls() {
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_URL);
-        List<RepositoryConnection> ret = new ArrayList<RepositoryConnection>(urls.size());
-        List<RepositoryConnection> withPassword = new LinkedList<RepositoryConnection>();
+        List<RepositoryConnection> ret = new ArrayList<>(urls.size());
+        List<RepositoryConnection> withPassword = new LinkedList<>();
         for (String urlString : urls) {
             try {
                 RepositoryConnection conn = RepositoryConnection.parse(urlString);
@@ -717,7 +717,7 @@ public class HgModuleConfig {
     
     synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
-            exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
+            exclusions = new HashSet<>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
         }
         return exclusions;
     }

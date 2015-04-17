@@ -60,7 +60,7 @@ abstract public class StringListNodeProp extends PropertySupport<List> {
     private final VectorConfiguration<String> configuration;
     private final BooleanConfiguration inheritValues;
     private final String[] texts;
-    boolean addPathPanel;
+    private final boolean addPathPanel;
     private final HelpCtx helpCtx;
 
     public StringListNodeProp(VectorConfiguration<String> configuration, BooleanConfiguration inheritValues, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
@@ -128,7 +128,7 @@ abstract public class StringListNodeProp extends PropertySupport<List> {
 
         @Override
         public void setAsText(String text) {
-            setValue(StringListNodeProp.this.convertToList(text.trim()));
+            super.setValue(StringListNodeProp.this.convertToList(text.trim()));
         }
 
         @Override

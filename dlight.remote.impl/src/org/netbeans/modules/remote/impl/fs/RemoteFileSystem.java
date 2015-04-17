@@ -808,6 +808,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return fo;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsDirectory(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -847,6 +848,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsFile(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -871,6 +873,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsSymbolicLink(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -887,6 +890,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeCanonicalPathDiffers(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -903,6 +907,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeExists(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase fo = vcsSafeGetFileObject(path);

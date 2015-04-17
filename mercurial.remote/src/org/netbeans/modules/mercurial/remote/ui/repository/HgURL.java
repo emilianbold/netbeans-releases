@@ -554,10 +554,6 @@ public final class HgURL {
     }
 
     public String getUserInfo() {
-        return getUserInfo(true);
-    }
-
-    String getUserInfo(boolean maskedPassword) {
         if (username == null) {
             return null;
         }
@@ -566,9 +562,7 @@ public final class HgURL {
             return username;
         }
 
-        return maskedPassword
-               ? username + ':' + PASSWORD_REPLACEMENT
-               : username + ':' + password;
+        return username + ':' + PASSWORD_REPLACEMENT;
     }
 
     public boolean supportsAuthentication() {

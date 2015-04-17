@@ -43,7 +43,6 @@
 package org.netbeans.modules.git.remote;
 
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import org.netbeans.modules.git.remote.cli.GitException;
@@ -51,7 +50,6 @@ import org.netbeans.modules.git.remote.cli.progress.ProgressMonitor;
 import org.netbeans.modules.git.remote.client.GitClient;
 import org.netbeans.modules.git.remote.utils.GitUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileObject;
 
 /**

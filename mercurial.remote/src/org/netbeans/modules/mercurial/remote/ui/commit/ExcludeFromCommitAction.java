@@ -130,7 +130,7 @@ public final class ExcludeFromCommitAction extends ContextAction {
                 HgModuleConfig config = HgModuleConfig.getDefault(HgUtils.getRootFile(ctx));
                 int status = getActionStatus(ctx);
                 Set<VCSFileProxy> files = ctx.getRootFiles();
-                List<String> paths = new ArrayList<String>(files.size());
+                List<String> paths = new ArrayList<>(files.size());
                 for (VCSFileProxy file : files) {
                     paths.add(file.getPath());
                 }

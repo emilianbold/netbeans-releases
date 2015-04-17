@@ -46,6 +46,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -121,8 +123,8 @@ public class Annotator extends VCSAnnotator {
     public static final String ANNOTATION_COMMIT_DATE = "date"; //NOI18N
     public static final String ANNOTATION_COMMIT_AUTHOR = "author"; //NOI18N
 
-    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
-                                                        ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
+    public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
+                                                        ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR));
     public static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
 
     private final FileStatusCache cache;

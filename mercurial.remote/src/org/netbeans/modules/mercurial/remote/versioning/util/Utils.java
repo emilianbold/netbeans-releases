@@ -53,8 +53,6 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 
 /**
  * clone missed methods from org.netbeans.modules.versioning.util.Utils
@@ -132,7 +130,7 @@ public class Utils {
         if (project == null) {
             return null;
         }
-        Set<VCSFileProxy> set = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> set = new HashSet<>();
 
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup [] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);

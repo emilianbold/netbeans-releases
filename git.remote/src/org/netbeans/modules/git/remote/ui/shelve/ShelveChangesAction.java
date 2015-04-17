@@ -219,7 +219,7 @@ public class ShelveChangesAction extends SingleRepositoryAction {
             "# {0} - repository name", "MSG_ShelveChanges.progress.reverting=Reverting local changes - {0}"
         })
         protected void postExportCleanup () {
-            final Collection<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+            final Collection<VCSFileProxy> notifiedFiles = new HashSet<>();
             if (support.isCanceled()) {
                 return;
             }

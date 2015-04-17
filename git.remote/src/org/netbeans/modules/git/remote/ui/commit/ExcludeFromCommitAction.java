@@ -96,7 +96,7 @@ public class ExcludeFromCommitAction extends MultipleRepositoryAction {
     }
     
     private static List<String> filterRoots (VCSFileProxy[] roots) {
-        List<String> toExclude = new LinkedList<String>();
+        List<String> toExclude = new LinkedList<>();
         GitModuleConfig config = GitModuleConfig.getDefault();
         for (VCSFileProxy root : roots) {
             String path = root.getPath();

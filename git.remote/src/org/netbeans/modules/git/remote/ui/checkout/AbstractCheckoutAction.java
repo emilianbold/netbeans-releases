@@ -103,12 +103,12 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
         GitProgressSupport supp = new GitProgressSupport() {
 
             private String revision;
-            private final Collection<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+            private final Collection<VCSFileProxy> notifiedFiles = new HashSet<>();
 
             @Override
             protected void perform () {
                 Collection<VCSFileProxy> seenRoots = Git.getInstance().getSeenRoots(repository);
-                final Set<String> seenPaths = new HashSet<String>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new VCSFileProxy[seenRoots.size()])));
+                final Set<String> seenPaths = new HashSet<>(GitUtils.getRelativePaths(repository, seenRoots.toArray(new VCSFileProxy[seenRoots.size()])));
                 try {
                     final GitClient client = getClient();
                     revision = revisionToCheckout;
@@ -233,7 +233,7 @@ public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
             }
 
             private VCSFileProxy[] getFilesInConflict (String[] conflicts) {
-                List<VCSFileProxy> files = new ArrayList<VCSFileProxy>(conflicts.length);
+                List<VCSFileProxy> files = new ArrayList<>(conflicts.length);
                 for (String path : conflicts) {
                     files.add(VCSFileProxy.createFileProxy(repository, path));
                 }

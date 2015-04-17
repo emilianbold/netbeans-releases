@@ -487,7 +487,7 @@ import org.openide.util.RequestProcessor;
                                 } else { // this never happens since mapper is fixed, but however:
                                     if (!mapErrorReported && CndUtils.isDebugMode()) {
                                         mapErrorReported = true;
-                                        CndUtils.assertNotNull(remotePath, "null remote file for " + collectorInfo.file.getAbsolutePath()); //NOI18N
+                                        CndUtils.assertUnconditional("null remote file for " + collectorInfo.file.getAbsolutePath()); //NOI18N
                                     }
                                 }
                             }
@@ -507,7 +507,7 @@ import org.openide.util.RequestProcessor;
                 } else {
                     if (!mapErrorReported && CndUtils.isDebugMode()) { // should never be the case
                         mapErrorReported = true;
-                        CndUtils.assertNotNull(localPath, "null local file for " + line); //NOI18N
+                        CndUtils.assertUnconditional("null local file for " + line); //NOI18N
                     }
                 }
                 //fileData.setState(new File, ERROR);

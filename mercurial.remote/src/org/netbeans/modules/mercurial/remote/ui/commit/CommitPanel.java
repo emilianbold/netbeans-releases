@@ -166,7 +166,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private Collection<HgHook> hooks = Collections.emptyList();
     private HgHookContext hookContext;
     private JTabbedPane tabbedPane;
-    private final HashMap<VCSFileProxy, MultiDiffPanel> displayedDiffs = new HashMap<VCSFileProxy, MultiDiffPanel>();
+    private final HashMap<VCSFileProxy, MultiDiffPanel> displayedDiffs = new HashMap<>();
     private UndoRedoSupport um;
     private String warningMessage;
     private boolean userValid;
@@ -582,7 +582,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     @Override
     public void stateChanged(ChangeEvent e) {
         if (e.getSource() == tabbedPane && tabbedPane.getSelectedComponent() == basePanel) {
-            commitTable.setModifiedFiles(new HashSet<VCSFileProxy>(getModifiedFiles().keySet()));
+            commitTable.setModifiedFiles(new HashSet<>(getModifiedFiles().keySet()));
         }
     }
 
@@ -684,7 +684,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
      * @return
      */
     EditorCookie[] getEditorCookies() {
-        LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+        LinkedList<EditorCookie> allCookies = new LinkedList<>();
         for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             EditorCookie[] cookies = e.getValue().getEditorCookies(true);
             if (cookies.length > 0) {
@@ -734,7 +734,7 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     }
 
     private HashMap<VCSFileProxy, SaveCookie> getModifiedFiles () {
-        HashMap<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<VCSFileProxy, SaveCookie>();
+        HashMap<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<>();
         for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             SaveCookie[] cookies = e.getValue().getSaveCookies(false);
             if (cookies.length > 0) {

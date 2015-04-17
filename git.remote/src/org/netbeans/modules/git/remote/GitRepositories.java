@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -88,12 +87,12 @@ public class GitRepositories {
         synchronized (repositories) {
             added = repositories.add(repository);
             if (added) {
-                newValues = new HashSet<VCSFileProxy>(repositories);
+                newValues = new HashSet<>(repositories);
             }
         }
         if (added) {
             closed.remove(repository);
-            oldValues = new HashSet<VCSFileProxy>(newValues);
+            oldValues = new HashSet<>(newValues);
             oldValues.remove(repository);
             support.firePropertyChange(PROP_REPOSITORIES, oldValues, newValues);
         }
@@ -106,14 +105,14 @@ public class GitRepositories {
         synchronized (repositories) {
             removed = repositories.remove(repository);
             if (removed) {
-                newValues = new HashSet<VCSFileProxy>(repositories);
+                newValues = new HashSet<>(repositories);
                 if (byUser) {
                     closed.add(repository);
                 }
             }
         }
         if (removed) {
-            oldValues = new HashSet<VCSFileProxy>(newValues);
+            oldValues = new HashSet<>(newValues);
             oldValues.add(repository);
             support.firePropertyChange(PROP_REPOSITORIES, oldValues, newValues);
         }
@@ -121,7 +120,7 @@ public class GitRepositories {
 
     public Set<VCSFileProxy> getKnownRepositories () {
         synchronized (repositories) {
-            return new HashSet<VCSFileProxy>(repositories);
+            return new HashSet<>(repositories);
         }
     }
 

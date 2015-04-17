@@ -448,7 +448,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         }
         if (!CndPathUtilities.isPathAbsolute(path)) {
             if (RemoteUtil.isWindows(env) ?
-                    (path.contains("\\") | path.contains("/")) : //NOI18N
+                    (path.contains("\\") || path.contains("/")) : //NOI18N
                     path.contains("/")) { //NOI18N
                 // path contains slashes - don't call 'which'
                 return false;

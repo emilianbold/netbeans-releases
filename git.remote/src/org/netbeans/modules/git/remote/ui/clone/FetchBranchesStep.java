@@ -69,7 +69,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
 
     public FetchBranchesStep (FileSystem fs) {
         this.fileSystem = fs;
-        branches = new ItemSelector<Branch>(NbBundle.getMessage(FetchBranchesStep.class, "LBL_RemoteBranchesTitle"));
+        branches = new ItemSelector<>(NbBundle.getMessage(FetchBranchesStep.class, "LBL_RemoteBranchesTitle"));
         branches.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -105,7 +105,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     }
 
     public void fillRemoteBranches (Collection<GitBranch> remoteBranches) {
-        List<Branch> l = new ArrayList<Branch>(remoteBranches.size());
+        List<Branch> l = new ArrayList<>(remoteBranches.size());
         boolean preselected = remoteBranches.size() == 1;
         for (GitBranch gitBranch : remoteBranches) {
             l.add(new Branch(gitBranch, preselected || GitUtils.MASTER.equals(gitBranch.getName())));
@@ -116,7 +116,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
     
     public List<GitBranch> getSelectedBranches () {
         List<Branch> selected = branches.getSelectedBranches();
-        List<GitBranch> l = new ArrayList<GitBranch>(selected.size());
+        List<GitBranch> l = new ArrayList<>(selected.size());
         for (Branch b : selected) {
             l.add(b.branch);
         }
@@ -129,7 +129,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
             selectedBranchNames = Collections.singletonList("*"); //NOI18N
         } else {
             List<Branch> selectedBranches = branches.getSelectedBranches();
-            selectedBranchNames = new ArrayList<String>(selectedBranches.size());
+            selectedBranchNames = new ArrayList<>(selectedBranches.size());
             for (Branch b : selectedBranches) {
                 selectedBranchNames.add(b.branch.getName());
             }

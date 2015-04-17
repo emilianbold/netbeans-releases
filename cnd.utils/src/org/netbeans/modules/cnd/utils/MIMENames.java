@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.utils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -149,16 +150,16 @@ public final class MIMENames {
     public static final Set<String> CND_SCRIPT_MIME_TYPES;
 
     static {
-        CND_SOURCE_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
-                    HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,ASM_MIME_TYPE}));
-        CND_SCRIPT_MIME_TYPES = new HashSet<String>(Arrays.asList(new String[]{
+        CND_SOURCE_MIME_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+                    HEADER_MIME_TYPE, C_HEADER_MIME_TYPE, CPLUSPLUS_MIME_TYPE, C_MIME_TYPE, FORTRAN_MIME_TYPE,ASM_MIME_TYPE)));
+        
+        CND_SCRIPT_MIME_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
                     MAKEFILE_MIME_TYPE, CMAKE_MIME_TYPE, CMAKE_INCLUDE_MIME_TYPE, QTPROJECT_MIME_TYPE, SHELL_MIME_TYPE, BAT_MIME_TYPE,
                     VISU_MIME_TYPE,
                     LEX_MIME_TYPE, YACC_MIME_TYPE,
-                    QT_UI_MIME_TYPE, QT_RESOURCE_MIME_TYPE, QT_TRANSLATION_MIME_TYPE
-                }));
+                    QT_UI_MIME_TYPE, QT_RESOURCE_MIME_TYPE, QT_TRANSLATION_MIME_TYPE)));
         
-        CND_TEXT_MIME_TYPES = new HashSet<String>(CND_SOURCE_MIME_TYPES);
+        CND_TEXT_MIME_TYPES = CND_SOURCE_MIME_TYPES;
     }
 
     public static boolean isCndMimeType(String mime) {

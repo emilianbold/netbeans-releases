@@ -80,7 +80,7 @@ public class CommitTableModel extends AbstractTableModel {
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);   
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);   
 
     {
         ResourceBundle loc = NbBundle.getBundle(CommitTableModel.class);
@@ -138,7 +138,7 @@ public class CommitTableModel extends AbstractTableModel {
      * @return Map&lt;HgFileNode, CommitOptions>
      */
     public Map<HgFileNode, CommitOptions> getCommitFiles() {
-        Map<HgFileNode, CommitOptions> ret = new HashMap<HgFileNode, CommitOptions>(nodes.length);
+        Map<HgFileNode, CommitOptions> ret = new HashMap<>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
             ret.put(nodes[i], commitOptions[i]);
         }

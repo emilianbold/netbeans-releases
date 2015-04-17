@@ -185,7 +185,7 @@ public final class CompletionPopup extends JPopupMenu implements KeyListener {
                     }
 
                     if (option != null) {
-                        boolean leaveVisible = completable.completeWith(option == null ? commonPrefix : option);
+                        boolean leaveVisible = completable.completeWith(option);
                         if (!leaveVisible) {
                             setVisible(false);
                         }

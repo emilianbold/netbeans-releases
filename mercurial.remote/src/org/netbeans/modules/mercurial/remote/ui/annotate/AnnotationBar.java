@@ -319,7 +319,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             wcInfo.removePropertyChangeListener(this);
             wcInfo.addPropertyChangeListener(this);
         }
-        final List<AnnotateLine> lines = new LinkedList<AnnotateLine>(annotateLines);
+        final List<AnnotateLine> lines = new LinkedList<>(annotateLines);
         int lineCount = lines.size();
         /** 0 based line numbers => 1 based line numbers*/
         final int ann2editorPermutation[] = new int[lineCount];
@@ -893,12 +893,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             AnnotationMarkProvider amp = AnnotationMarkInstaller.getMarkProvider(textComponent);
             if (amp != null) {
             
-                List<AnnotationMark> marks = new ArrayList<AnnotationMark>(elementAnnotations.size());
+                List<AnnotationMark> marks = new ArrayList<>(elementAnnotations.size());
                 // I cannot affort to lock elementAnnotations for long time
                 // it's accessed from editor thread too
                 Iterator<Map.Entry<Element, AnnotateLine>> it2;
                 synchronized(elementAnnotations) {
-                    it2 = new HashSet<Map.Entry<Element, AnnotateLine>>(elementAnnotations.entrySet()).iterator();
+                    it2 = new HashSet<>(elementAnnotations.entrySet()).iterator();
                 }
                 while (it2.hasNext()) {
                     Map.Entry<Element, AnnotateLine> next = it2.next();                        

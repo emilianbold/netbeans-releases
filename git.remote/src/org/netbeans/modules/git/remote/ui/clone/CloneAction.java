@@ -208,7 +208,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 // all branches to fetch
                 refSpecs = Collections.<String>singletonList(GitUtils.getGlobalRefSpec(remoteName));
             } else {
-                refSpecs = new ArrayList<String>(branches.size());
+                refSpecs = new ArrayList<>(branches.size());
                 for (String branchName : branches) {
                     refSpecs.add(GitUtils.getRefSpec(branchName, remoteName));
                 }
@@ -342,7 +342,7 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                 }
 
                 public void scanForProjects (VCSFileProxy workingFolder) {
-                    Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+                    Map<Project, Set<Project>> checkedOutProjects = new HashMap<>();
                     checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
                     VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
                     FileObject fo = normalizedWorkingFolder.toFileObject();

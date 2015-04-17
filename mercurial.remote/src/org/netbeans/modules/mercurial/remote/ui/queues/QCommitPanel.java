@@ -267,7 +267,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
     private static class DiffProvider extends VCSCommitDiffProvider {
 
-        final Map<VCSFileProxy, MultiDiffPanel> panels = new HashMap<VCSFileProxy, MultiDiffPanel>();
+        final Map<VCSFileProxy, MultiDiffPanel> panels = new HashMap<>();
 
         @Override
         public Set<VCSFileProxy> getModifiedFiles () {
@@ -275,7 +275,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         }
 
         private Map<VCSFileProxy, SaveCookie> getSaveCookiesPerFile () {
-            Map<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<VCSFileProxy, SaveCookie>();
+            Map<VCSFileProxy, SaveCookie> modifiedFiles = new HashMap<>();
             for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : panels.entrySet()) {
                 SaveCookie[] cookies = e.getValue().getSaveCookies(false);
                 if (cookies.length > 0) {
@@ -307,7 +307,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
          */
         @Override
         protected EditorCookie[] getEditorCookies () {
-            LinkedList<EditorCookie> allCookies = new LinkedList<EditorCookie>();
+            LinkedList<EditorCookie> allCookies = new LinkedList<>();
             for (Map.Entry<VCSFileProxy, MultiDiffPanel> e : panels.entrySet()) {
                 EditorCookie[] cookies = e.getValue().getEditorCookies(true);
                 if (cookies.length > 0) {
@@ -346,13 +346,13 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         public QFileNode[] getNodes (VCSFileProxy repository, VCSFileProxy[] roots, boolean[] refreshFinished) {
             // Ensure that cache is uptodate
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-            cache.refreshAllRoots(Collections.<VCSFileProxy, Set<VCSFileProxy>>singletonMap(repository, new HashSet<VCSFileProxy>(Arrays.asList(roots))));
+            cache.refreshAllRoots(Collections.<VCSFileProxy, Set<VCSFileProxy>>singletonMap(repository, new HashSet<>(Arrays.asList(roots))));
             // the realy time consuming part is over;
             // no need to show the progress component,
             // which only makes the dialog flicker
             refreshFinished[0] = true;
             VCSFileProxy[][] split = VCSFileProxySupport.splitFlatOthers(roots);
-            List<VCSFileProxy> fileList = new ArrayList<VCSFileProxy>();
+            List<VCSFileProxy> fileList = new ArrayList<>();
             for (int c = 0; c < split.length; c++) {
                 VCSFileProxy[] splitRoots = split[c];
                 boolean recursive = c == 1;
@@ -381,7 +381,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                 return null;
             }
 
-            ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(fileList.size());
+            ArrayList<QFileNode> nodesList = new ArrayList<>(fileList.size());
 
             for (Iterator<VCSFileProxy> it = fileList.iterator(); it.hasNext();) {
                 VCSFileProxy file = it.next();
@@ -412,7 +412,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                 if (parent != null && parent != HgLogMessage.HgRevision.EMPTY) {
                     Map<VCSFileProxy, FileInformation> patchChanges = HgCommand.getStatus(repository, Collections.singletonList(repository), parent.getRevisionNumber(), QPatch.TAG_QTIP);
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-                    Set<VCSFileProxy> toRefresh = new HashSet<VCSFileProxy>(Arrays.asList(roots));
+                    Set<VCSFileProxy> toRefresh = new HashSet<>(Arrays.asList(roots));
                     toRefresh.addAll(patchChanges.keySet());
                     cache.refreshAllRoots(Collections.<VCSFileProxy, Set<VCSFileProxy>>singletonMap(repository, toRefresh));
                     
@@ -439,7 +439,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
                         return null;
                     }
 
-                    ArrayList<QFileNode> nodesList = new ArrayList<QFileNode>(statuses.size());
+                    ArrayList<QFileNode> nodesList = new ArrayList<>(statuses.size());
                     for (Map.Entry<VCSFileProxy, FileInformation> e : statuses.entrySet()) {
                         VCSFileProxy f = e.getKey();
                         FileInformation fi = e.getValue();
@@ -462,7 +462,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
         // should contain only patch changes that apply to current selection
         private Set<VCSFileProxy> getPatchChangesUnderSelection(Map<VCSFileProxy, FileInformation> patchChanges, VCSFileProxy[] roots) {
-            Set<VCSFileProxy> patchChangesUnderSelection = new HashSet<VCSFileProxy>(patchChanges.keySet());
+            Set<VCSFileProxy> patchChangesUnderSelection = new HashSet<>(patchChanges.keySet());
             for (Iterator<VCSFileProxy> it = patchChangesUnderSelection.iterator(); it.hasNext(); ) {
                 VCSFileProxy f = it.next();
                 boolean isUnderRoots = false;
@@ -482,7 +482,7 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
 
         private Map<VCSFileProxy, FileInformation> getLocalChanges (VCSFileProxy[] roots, FileStatusCache cache) {
             VCSFileProxy[] files = cache.listFiles(roots, FileInformation.STATUS_LOCAL_CHANGE);
-            Map<VCSFileProxy, FileInformation> retval = new HashMap<VCSFileProxy, FileInformation>(files.length);
+            Map<VCSFileProxy, FileInformation> retval = new HashMap<>(files.length);
             for (VCSFileProxy file : files) {
                 retval.put(file, cache.getCachedStatus(file));
             }

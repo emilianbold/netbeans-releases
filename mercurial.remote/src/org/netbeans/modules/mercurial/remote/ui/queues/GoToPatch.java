@@ -180,7 +180,7 @@ class GoToPatch {
         if (patches == null || patches.isEmpty()) {
             panel.lstPatches.setListData(new String[] { NO_PATCHES });
         } else {
-            List<Object> toAdd = new LinkedList<Object>();
+            List<Object> toAdd = new LinkedList<>();
             for (Map.Entry<Queue, QPatch[]> e : patches.entrySet()) {
                 if (!toAdd.isEmpty()) {
                     toAdd.add(SEP);

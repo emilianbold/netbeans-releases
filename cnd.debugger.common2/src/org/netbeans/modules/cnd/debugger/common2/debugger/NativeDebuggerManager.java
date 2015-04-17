@@ -1845,19 +1845,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     }
 
     /*
-     * Status display mgmt
-     */
-
-    private static StatusDisplayer statusDisplayer;
-
-    /*
      * Put the given text into the status area
      */
     public void setStatusText(String text) {
-        if (statusDisplayer == null) {
-            statusDisplayer = StatusDisplayer.getDefault();
-        }
-        statusDisplayer.setStatusText(text);
+        StatusDisplayer.getDefault().setStatusText(text);
     }
 
     /*

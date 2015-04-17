@@ -48,7 +48,7 @@ package org.netbeans.modules.git.remote.options;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.spi.options.OptionsPanelController;
+import java.util.Locale;
 import org.openide.util.NbBundle;
 
 //@OptionsPanelController.Keywords(keywords={"git", "#GitOptionsPanel.kw1", "#GitOptionsPanel.kw2", "#GitOptionsPanel.kw3", "#GitOptionsPanel.kw4"},
@@ -82,10 +82,10 @@ final class GitOptionsPanel extends javax.swing.JPanel {
         if (keywords == null) {
             keywords = new String[] {
                 "GIT",
-                Bundle.GitOptionsPanel_kw1().toUpperCase(),
-                Bundle.GitOptionsPanel_kw2().toUpperCase(),
-                Bundle.GitOptionsPanel_kw3().toUpperCase(),
-                Bundle.GitOptionsPanel_kw4().toUpperCase()
+                Bundle.GitOptionsPanel_kw1().toUpperCase(Locale.getDefault()),
+                Bundle.GitOptionsPanel_kw2().toUpperCase(Locale.getDefault()),
+                Bundle.GitOptionsPanel_kw3().toUpperCase(Locale.getDefault()),
+                Bundle.GitOptionsPanel_kw4().toUpperCase(Locale.getDefault())
             };
         }
         return Collections.unmodifiableList(Arrays.asList(keywords));

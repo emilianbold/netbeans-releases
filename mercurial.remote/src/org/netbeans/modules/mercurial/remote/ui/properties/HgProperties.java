@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.mercurial.remote.ui.properties;
 
-import java.awt.Font;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.Enumeration;

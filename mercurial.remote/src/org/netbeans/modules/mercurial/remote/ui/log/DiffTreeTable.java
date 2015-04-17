@@ -147,7 +147,7 @@ class DiffTreeTable extends OutlineView {
     }
 
     void setSelection (RepositoryRevision.Event... events) {
-        List<Node> nodes = new ArrayList<Node>(events.length);
+        List<Node> nodes = new ArrayList<>(events.length);
         for (RepositoryRevision.Event event : events) {
             RevisionNode node = (RevisionNode) getNode(rootNode, event);
             if (node != null) {
@@ -209,7 +209,7 @@ class DiffTreeTable extends OutlineView {
 
     private static class MessageRenderer implements TableCellRenderer {
         private final TableCellRenderer delegate;
-        private final Map<String, String> tooltips = new HashMap<String, String>();
+        private final Map<String, String> tooltips = new HashMap<>();
 
         public MessageRenderer (TableCellRenderer delegate) {
             this.delegate = delegate;

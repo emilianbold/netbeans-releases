@@ -50,6 +50,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -132,7 +135,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
     public static final String ANNOTATION_STATUS      = "status";       //NOI18N
     public static final String ANNOTATION_FOLDER      = "folder";       //NOI18N
 
-    public static final String[] LABELS = new String[] {ANNOTATION_STATUS, ANNOTATION_FOLDER};
+    public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(ANNOTATION_STATUS, ANNOTATION_FOLDER));
     public static final String ACTIONS_PATH_PREFIX = "Actions/MercurialRemote/"; //NOI18N
 
     private final FileStatusCache cache;
@@ -145,7 +148,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
     private static final Logger LOG = Logger.getLogger(MercurialAnnotator.class.getName());
     
-    private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<FileSystem, AnnotationFormat>();
+    private final Map<FileSystem, AnnotationFormat> annotationFormat = new HashMap<>();
 
     public static final class AnnotationFormat {
         private MessageFormat format;
@@ -351,7 +354,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         Set<VCSFileProxy> roots = HgUtils.getRepositoryRoots(ctx);
         boolean noneVersioned = (roots == null || roots.isEmpty());
 
-        List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
+        List<Action> actions = new ArrayList<>(INITIAL_ACTION_ARRAY_LENGTH);
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             // XXX use Actions.forID
             Action a;
@@ -731,7 +734,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         return AnnotationColorProvider.getInstance();
     }
     
-    private final Map<WorkingCopyInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new HashMap<WorkingCopyInfo, Set<VCSFileProxy>>(3);
+    private final Map<WorkingCopyInfo, Set<VCSFileProxy>> filesWithRepositoryAnnotations = new HashMap<>(3);
     
     private void addFileWithRepositoryAnnotation (WorkingCopyInfo info, VCSFileProxy file) {
         info.removePropertyChangeListener(this);
@@ -739,7 +742,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         synchronized (filesWithRepositoryAnnotations) {
             Set<VCSFileProxy> files = filesWithRepositoryAnnotations.get(info);
             if (files == null) {
-                filesWithRepositoryAnnotations.put(info, files = new HashSet<VCSFileProxy>());
+                filesWithRepositoryAnnotations.put(info, files = new HashSet<>());
             }
             files.add(file);
         }

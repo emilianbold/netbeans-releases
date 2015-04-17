@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,50 +34,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.common2.debugger.options;
+package org.netbeans.modules.cnd.debugger.common2.debugger.assembly.impl;
 
-import java.beans.PropertyChangeSupport;
+import java.nio.charset.Charset;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
 
-
-public abstract class ProfileCategory implements Cloneable {
-    protected DbgProfile owner;
-    protected String propertyName;
-
-    ProfileCategory(DbgProfile owner, String propertyName) {
-	this.owner = owner;
-	this.propertyName = propertyName;
+/**
+ *
+ * @author Nikolay Koldunov
+ */
+@org.openide.util.lookup.ServiceProvider(service = FileEncodingQueryImplementation.class)
+public class DisassemblyFileEncodingQueryImplementation extends FileEncodingQueryImplementation {
+    
+    public static final Charset CHARSET = Charset.forName("UTF-8"); //NOI18N
+    
+    @Override
+    public Charset getEncoding(FileObject file) {
+        if (file == Disassembly.getFileObject()) {
+            return CHARSET;
+        }
+        return null;
     }
 
-    /**
-     * We've been mutated
-     */
-    protected void delta(Object o, Object n) {
-	// clones don't have an owner
-	if (owner == null)
-	    return;
-
-	PropertyChangeSupport pcs = owner.pcs;
-	// clones don't have a pcs
-	if (pcs != null) {
-	    // SHOULD do some kind of comparison here
-	    // e.g. if pathmap == newvars we know there is nothing to do...
-	    pcs.firePropertyChange(propertyName, o, n);
-	}
-	owner.needSave = true;
-    }
-
-    @Override
-    public abstract boolean equals(Object o);
-
-    @Override
-    public int hashCode() {
-        assert false : "hashCode not designed"; // NOI18N
-        return 5;
-    }
-
-    @Override
-    public abstract Object clone();
-    public abstract void assign(Object that);
 }

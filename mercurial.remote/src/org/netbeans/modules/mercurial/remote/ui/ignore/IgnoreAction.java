@@ -125,7 +125,7 @@ public class IgnoreAction extends ContextAction {
     protected void performContextAction(Node[] nodes) {
         final VCSContext context = HgUtils.getCurrentContext(nodes);
         final Set<VCSFileProxy> repositories = HgUtils.getRepositoryRoots(context);
-        if(repositories == null || repositories.isEmpty()) {
+        if(repositories.isEmpty()) {
             return;
         }
 
