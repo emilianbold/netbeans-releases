@@ -410,7 +410,7 @@ public class StatusCommand extends SvnCommand {
                     rev = new SVNRevision.Number(Long.parseLong(revisionValue));
                 } catch (NumberFormatException e) {
                     // ignore
-                    new SVNRevision.Number(-1);
+                    rev = new SVNRevision.Number(-1);
                 }
             }
             return rev;
