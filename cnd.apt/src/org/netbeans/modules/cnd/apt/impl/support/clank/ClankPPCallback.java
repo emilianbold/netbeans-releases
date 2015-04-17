@@ -46,11 +46,15 @@ import org.clang.basic.SrcMgr;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.support.Casts;
+import org.clank.support.Native;
+import org.clank.support.NativePointer;
+import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
+import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -118,7 +122,21 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected boolean onNotFoundInclusionDirective(FileInfoCallback.FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
-      return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
+        APTFileSearch fileSearch = includeHandler.getStartEntry().getFileSearch();
+        if (fileSearch != null) {
+            String headerPath = fileSearch.searchInclude(
+                    Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFile.getName()));
+            if (headerPath != null) {
+                headerPath = CndPathUtilities.getDirName(headerPath);
+                if (headerPath == null) {
+                    headerPath = "/"; //NOI18N
+                }
+                final char$ptr charPtr = NativePointer.create_char$ptr(headerPath);
+                RecoveryPath.assign(charPtr, charPtr.$add(headerPath.length()));
+                return true;
+            }
+        }
+        return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
     }
 
     @Override
