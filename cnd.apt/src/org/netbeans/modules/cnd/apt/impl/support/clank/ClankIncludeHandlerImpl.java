@@ -84,7 +84,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     private static final ClankDriver.APTTokenStreamCache NO_TOKENS = new APTTokenStreamCacheImpl(-1);
 
     private int inclStackIndex;
-    private ClankDriver.APTTokenStreamCache cachedTokens = NO_TOKENS;
+    private ClankDriver.APTTokenStreamCache cachedContent = NO_TOKENS;
     private LinkedList<IncludeInfo> inclStack = null;    
 
     public  ClankIncludeHandlerImpl(StartEntry startFile) {
@@ -179,10 +179,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     }
     
     public ClankDriver.APTTokenStreamCache getCachedTokens() {
-        if (cachedTokens == NO_TOKENS) {
+        if (cachedContent == NO_TOKENS) {
             return new APTTokenStreamCacheImpl(inclStackIndex);
         } else {
-            return cachedTokens;
+            return cachedContent;
         }
     }
 
@@ -193,9 +193,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     void cacheTokens(ClankDriver.APTTokenStreamCache cache) {
         assert cache != null;
         if (!cache.hasTokenStream()) {
-            this.cachedTokens = NO_TOKENS;
+            this.cachedContent = NO_TOKENS;
         } else {
-            this.cachedTokens = cache;
+            this.cachedContent = cache;
         }
         this.inclStackIndex = cache.getFileIndex();
     }
@@ -212,11 +212,12 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final StartEntry   startFile;
 
         private final int inclStackIndex;
-        private final ClankDriver.APTTokenStreamCache cachedTokens;
+        private final ClankDriver.APTTokenStreamCache cachedContent;
         private static final IncludeInfo[] EMPTY_STACK = new IncludeInfo[0];
         private final IncludeInfo[] inclStack;        
         private int hashCode = 0;
         private final boolean cleaned;
+        private final boolean alreadyTriedCachePreparation;
         
         protected StateImpl(ClankIncludeHandlerImpl handler) {
             this.systemIncludePaths = handler.systemIncludePaths;
@@ -231,12 +232,13 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             }
             
             this.inclStackIndex = handler.inclStackIndex;
-            this.cachedTokens = handler.cachedTokens;
+            this.cachedContent = handler.cachedContent;
             this.cleaned = false;
-            assert this.cachedTokens != null;
+            this.alreadyTriedCachePreparation = false;
+            assert this.cachedContent != null;
         }
         
-        private StateImpl(StateImpl other, boolean cleanState) {
+        private StateImpl(StateImpl other, boolean cleanState, boolean prepareCachesIfPossible) {
             assert cleanState == true;
             // shared information
             this.startFile = other.startFile;
@@ -250,14 +252,24 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
                 this.systemIncludePaths = CLEANED_MARKER;
                 this.userIncludePaths = CLEANED_MARKER;
                 this.userIncludeFilePaths = CLEANED_MARKER;
-                this.cachedTokens = NO_TOKENS;
             } else {
                 this.systemIncludePaths = other.systemIncludePaths;
                 this.userIncludePaths = other.userIncludePaths;
                 this.userIncludeFilePaths = other.userIncludeFilePaths;
-                this.cachedTokens = other.cachedTokens;
             }
-            assert this.cachedTokens != null;
+            // handle cached information
+            if (cleanState) {
+              this.alreadyTriedCachePreparation = true;
+              this.cachedContent = NO_TOKENS;
+            } else if (prepareCachesIfPossible) {
+              this.alreadyTriedCachePreparation = true;
+              // TODO: convert to cached if possible
+              this.cachedContent = other.cachedContent;
+            } else {
+              this.alreadyTriedCachePreparation = other.alreadyTriedCachePreparation;
+              this.cachedContent = other.cachedContent;
+            }
+            assert this.cachedContent != null;
         }
         
         int getIncludeStackDepth() {
@@ -293,14 +305,14 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 //                    }
             }
             handler.inclStackIndex = this.inclStackIndex;
-            handler.cachedTokens = this.cachedTokens;
+            handler.cachedContent = this.cachedContent;
         }
 
         @Override
         public String toString() {
             return ClankIncludeHandlerImpl.toString(startFile.getStartFile(),
                     systemIncludePaths, userIncludePaths, userIncludeFilePaths,
-                    inclStackIndex, Arrays.asList(inclStack), cachedTokens);
+                    inclStackIndex, Arrays.asList(inclStack), cachedContent);
         }
         
         public void write(RepositoryDataOutput output) throws IOException {
@@ -335,13 +347,14 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
             // read state is always clean
             this.cleaned = true;
+            this.alreadyTriedCachePreparation = true;
             this.systemIncludePaths = CLEANED_MARKER;
             this.userIncludePaths = CLEANED_MARKER;
             this.userIncludeFilePaths = CLEANED_MARKER;
 
             inclStackIndex = input.readInt();
-            cachedTokens = NO_TOKENS;
-            assert this.cachedTokens != null;
+            cachedContent = NO_TOKENS;
+            assert this.cachedContent != null;
             
             int size = input.readInt();
             
@@ -411,7 +424,11 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 //        }
         
         public  ClankIncludeHandlerImpl.State copyCleaned() {
-            return this.cleaned ? this : new StateImpl(this, true);
+            return this.cleaned ? this : new StateImpl(this, true, false);
+        }
+
+        public  ClankIncludeHandlerImpl.State prepareCachesIfPossible() {
+            return this.alreadyTriedCachePreparation ? this : new StateImpl(this, true, true);
         }
         
         public  List<IncludeDirEntry> getSysIncludePaths() {
@@ -594,7 +611,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
     public String toString() {
         return ClankIncludeHandlerImpl.toString(startFile.getStartFile(),
                 systemIncludePaths, userIncludePaths, userIncludeFilePaths,
-                inclStackIndex, this.inclStack, this.cachedTokens);
+                inclStackIndex, this.inclStack, this.cachedContent);
     }    
     
     private static String toString(CharSequence startFile,

@@ -253,6 +253,17 @@ public class APTHandlersSupportImpl {
         }
     }
 
+    /*package*/ static PPIncludeHandler.State prepareIncludeStateCachesIfPossible(PPIncludeHandler.State inclState) {
+        if (inclState == null) {
+          return null;
+        }
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).prepareCachesIfPossible();
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).prepareCachesIfPossible();
+        }
+    }
+
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {
         APTMacroMap.State out = null;
         if (macroState != null) {

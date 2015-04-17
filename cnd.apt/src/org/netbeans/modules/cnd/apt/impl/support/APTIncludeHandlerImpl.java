@@ -371,6 +371,10 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         /*package*/ APTIncludeHandler.State copyCleaned() {
             return new StateImpl(this, true);
         }
+
+        /*package*/ APTIncludeHandler.State prepareCachesIfPossible() {
+            return this;
+        }
         
         /*package*/ List<IncludeDirEntry> getSysIncludePaths() {
             return this.systemIncludePaths;

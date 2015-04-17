@@ -196,9 +196,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         private final static byte COMPILE_CONTEXT_FLAG = 1 << 0;
         private final static byte CLEANED_FLAG = 1 << 1;
         private final static byte VALID_FLAG = 1 << 2;
-        private final static byte CACHE_READY_FLAG = 1 << 3;
+        private final static byte ALREADY_TRIED_CACHE_PREPARATION_FLAG = 1 << 3;
 
-        private static byte createAttributes(boolean compileContext, boolean cleaned, boolean valid) {
+        private static byte createAttributes(boolean compileContext, boolean cleaned, boolean valid, boolean alreadyTriedCachePreparation) {
             byte out = 0;
             if (compileContext) {
                 out |= COMPILE_CONTEXT_FLAG;
@@ -215,6 +215,11 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             } else {
                 out &= ~VALID_FLAG;
             }
+            if (alreadyTriedCachePreparation) {
+                out |= ALREADY_TRIED_CACHE_PREPARATION_FLAG;
+            } else {
+                out &= ~ALREADY_TRIED_CACHE_PREPARATION_FLAG;
+            }
             return out;
         }
 
@@ -229,27 +234,38 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             } else {
                 this.inclState = null;
             }
-            this.attributes = createAttributes(handler.isCompileContext(), false, handler.isValid());
+            this.attributes = createAttributes(handler.isCompileContext(), false, handler.isValid(), false);
             this.lang = handler.lang;
             this.flavor = handler.flavor;
             this.cuCRC = handler.cuCRC;
         }
 
-        private StateImpl(StateImpl other, boolean cleanState, boolean compileContext, boolean valid) {
+        private StateImpl(StateImpl other, boolean cleanState, boolean compileContext, boolean valid, boolean prepareCacheIfPossible) {
             boolean cleaned;
+            boolean alreadyTriedCachePreparation = false;
+            PPIncludeHandler.State newIncludeState;
+             PPMacroMap.State newMacroState;
             if (cleanState && !other.isCleaned()) {
                 // first time cleaning
                 // own copy of include information and macro state
-                this.inclState = APTHandlersSupportImpl.copyCleanIncludeState(other.inclState);
-                this.macroState = APTHandlersSupportImpl.createCleanMacroState(other.macroState);
+                newIncludeState = APTHandlersSupportImpl.copyCleanIncludeState(other.inclState);
+                newMacroState = APTHandlersSupportImpl.createCleanMacroState(other.macroState);
                 cleaned = true;
             } else {
                 // share states
-                this.macroState = other.macroState;
+                newMacroState = other.macroState;
                 cleaned = other.isCleaned();
-                this.inclState = other.inclState;
+                newIncludeState = other.inclState;
             }
-            this.attributes = createAttributes(compileContext, cleaned, valid);
+            if (cleaned) {
+              alreadyTriedCachePreparation = true;
+            } else if (prepareCacheIfPossible) {
+              alreadyTriedCachePreparation = true;
+              newIncludeState = APTHandlersSupportImpl.prepareIncludeStateCachesIfPossible(newIncludeState);
+            }
+            this.inclState = newIncludeState;
+            this.macroState = newMacroState;
+            this.attributes = createAttributes(compileContext, cleaned, valid, alreadyTriedCachePreparation);
             this.lang = other.lang;
             this.flavor = other.flavor;
             this.cuCRC = other.cuCRC;
@@ -341,8 +357,8 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             return (this.attributes & COMPILE_CONTEXT_FLAG) == COMPILE_CONTEXT_FLAG;
         }
 
-        public boolean isCacheReady() {
-            return (this.attributes & CACHE_READY_FLAG) == CACHE_READY_FLAG;
+        private boolean isAlreadyTriedCachePreparation() {
+            return (this.attributes & ALREADY_TRIED_CACHE_PREPARATION_FLAG) == ALREADY_TRIED_CACHE_PREPARATION_FLAG;
         }
 
         @Override
@@ -356,26 +372,26 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         }
 
         /*package*/ APTPreprocHandler.State copy() {
-            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid());
+            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid(), false);
         }
 
         /*package*/ APTPreprocHandler.State prepareCachesIfPossible() {
             if (this.isCleaned()) {
               // can not prepare from clean
               return this;
-            } else if (this.isCacheReady()) {
-              // all is ready
+            } else if (this.isAlreadyTriedCachePreparation()) {
+              // no need to make it twice
               return this;
             }
-            return new StateImpl(this, true, this.isCompileContext(), this.isValid());
+            return new StateImpl(this, true, this.isCompileContext(), this.isValid(), true);
         }
 
         /*package*/ APTPreprocHandler.State copyCleaned() {
-            return new StateImpl(this, true, this.isCompileContext(), this.isValid());
+            return new StateImpl(this, true, this.isCompileContext(), this.isValid(), false);
         }
 
         /*package*/ APTPreprocHandler.State copyInvalid() {
-            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), false);
+            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), false, false);
         }
 
         ////////////////////////////////////////////////////////////////////////
