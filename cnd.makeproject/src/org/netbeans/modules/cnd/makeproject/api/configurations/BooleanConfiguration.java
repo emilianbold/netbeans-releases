@@ -102,7 +102,7 @@ public class BooleanConfiguration implements Cloneable {
     }
 
     @Override
-    @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass must override it method
+    @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
     public BooleanConfiguration clone() {
         BooleanConfiguration clone = new BooleanConfiguration(def);
         clone.setValue(getValue());
