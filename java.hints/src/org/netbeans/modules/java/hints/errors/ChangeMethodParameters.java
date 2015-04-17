@@ -68,8 +68,10 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
 
     @Override
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.apply.symbol.1",
-                                                 "compiler.err.cant.apply.symbols")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.apply.symbol",
+                                                 "compiler.err.cant.apply.symbol.1",
+                                                 "compiler.err.cant.apply.symbols",
+                                                 "compiler.err.prob.found.req")); // NOI18N
     }
 
     @Override
