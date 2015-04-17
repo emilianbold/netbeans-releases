@@ -345,6 +345,8 @@ public class ExportDiffAction extends ContextAction {
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
 
+        r1 = null;
+        r2 = null;
         VCSFileProxy file = setup.getBaseFile();
         try {
             InputStream is;
