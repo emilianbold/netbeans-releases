@@ -203,8 +203,8 @@ public final class CndFileUtils {
         FileObject res = map.get(absolutePath);
         if (res == null || !res.isValid()) {
             res = toFileObjectImpl(fs, absolutePath);
-            if (res != null) {
-                map.putIfAbsent(absolutePath, res);
+            if (res != null && res.isValid()) {
+                map.put(absolutePath, res);
             }
         }
         return res;
