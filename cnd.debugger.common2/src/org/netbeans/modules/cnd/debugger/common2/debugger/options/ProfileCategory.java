@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 import java.beans.PropertyChangeSupport;
 
 
-public abstract class ProfileCategory implements Cloneable {
+public abstract class ProfileCategory {
     protected DbgProfile owner;
     protected String propertyName;
 
