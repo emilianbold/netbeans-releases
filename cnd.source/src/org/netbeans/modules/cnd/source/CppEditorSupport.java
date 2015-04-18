@@ -255,10 +255,9 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
             if (language != null) {
                 InputAttributes lexerAttrs = (InputAttributes)doc.getProperty(InputAttributes.class);
                 if (lexerAttrs == null) {
+                    CndUtils.assertUnconditional("no language attributes for " + doc);
                     lexerAttrs = new InputAttributes();
                     doc.putProperty(InputAttributes.class, lexerAttrs);
-                } else {
-                    CndUtils.assertUnconditional("no language attributes for " + doc);
                 }
                 Filter<?> filter = getDefaultFilter(language, doc);
                 if (filter != null) {
