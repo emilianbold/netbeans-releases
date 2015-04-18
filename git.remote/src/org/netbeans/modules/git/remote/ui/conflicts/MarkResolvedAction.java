@@ -89,7 +89,7 @@ public class MarkResolvedAction extends SingleRepositoryAction {
                             NbBundle.getMessage(MarkResolvedAction.class, "LBL_NoConflicts"), //NOI18N
                             NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.INFORMATION_MESSAGE, new Object[] { NotifyDescriptor.OK_OPTION }, NotifyDescriptor.OK_OPTION));
                 } else {
-                    List<VCSFileProxy> toAdd = new LinkedList<VCSFileProxy>(), toRemove = new LinkedList<VCSFileProxy>();
+                    List<VCSFileProxy> toAdd = new LinkedList<>(), toRemove = new LinkedList<>();
                     for (VCSFileProxy f : conflicts) {
                         (f.exists() ? toAdd : toRemove).add(f);
                     }
@@ -107,7 +107,7 @@ public class MarkResolvedAction extends SingleRepositoryAction {
                         LOG.log(Level.WARNING, null, ex);
                     } finally {
                         setDisplayName(NbBundle.getMessage(GitAction.class, "LBL_Progress.RefreshingStatuses")); //NOI18N
-                        Collection<VCSFileProxy> toRefresh = new ArrayList<VCSFileProxy>(toAdd.size() + toRemove.size());
+                        Collection<VCSFileProxy> toRefresh = new ArrayList<>(toAdd.size() + toRemove.size());
                         toRefresh.addAll(toAdd);
                         toRefresh.addAll(toRemove);
                         Git.getInstance().getFileStatusCache().refreshAllRoots(Collections.singletonMap(repository, toRefresh));

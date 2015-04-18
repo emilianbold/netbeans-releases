@@ -1499,7 +1499,7 @@ public final class FileImpl implements CsmFile,
         }
         APTPreprocHandler preprocHandler = parseParams.getCurrentPreprocHandler();
         APTFile aptFull = parseParams.fullAPT;
-        assert preprocHandler != null;
+        CndUtils.assertNotNull(preprocHandler, "Null preprocessor handler"); //NOI18N
         if (preprocHandler == null) {
             return null;
         }

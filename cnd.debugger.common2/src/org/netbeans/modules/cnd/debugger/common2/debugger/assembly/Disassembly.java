@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.impl.DisassemblyFileEncodingQueryImplementation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
@@ -265,7 +266,7 @@ public abstract class Disassembly implements StateModel.Listener {
             return null;
         }
     }
-    
+        
     protected static DataObject getDataObject() {
         return DataObjectHolder.DOBJ;
     }
@@ -446,7 +447,10 @@ public abstract class Disassembly implements StateModel.Listener {
         public void save() {
             disLength = getLength();
             try {
-                Writer writer = new OutputStreamWriter(getFileObject().getOutputStream());
+                Writer writer = new OutputStreamWriter(
+                                        getFileObject().getOutputStream(),
+                                        DisassemblyFileEncodingQueryImplementation.CHARSET
+                                    );
                 try {
                     writer.write(data.toString());
                 } catch (IOException ex) {

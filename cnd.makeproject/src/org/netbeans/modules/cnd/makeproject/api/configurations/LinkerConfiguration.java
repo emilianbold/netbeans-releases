@@ -353,7 +353,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         String linkDriver = null;
         String[] texts;
         if (compilerSet != null) {
-            linker = compilerSet == null ? null : compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
+            linker = compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker();
             if (conf.hasCPPFiles(configurationDescriptor)) {
                 AbstractCompiler ccCompiler = (AbstractCompiler) compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 linkDriver = ccCompiler.getName();

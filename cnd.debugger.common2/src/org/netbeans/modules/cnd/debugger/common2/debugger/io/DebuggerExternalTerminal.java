@@ -174,7 +174,7 @@ class DebuggerExternalTerminal {
         log.finest("ExternalTerminal: tty=" + tty);
         long pidTemp = 0;
         try {
-            pidTemp = Long.valueOf(pid_line);
+            pidTemp = Long.parseLong(pid_line);
         } catch (Exception ex) {
             log.warning("Error parsing pid: " + pid_line);
         }

@@ -140,6 +140,12 @@ public class CndUtils {
         }
     }
 
+    public static void assertUnconditional(String message) {
+        if (isDebugMode()) {
+            severe(message);
+        }
+    }
+
     public static void assertNotNull(Object object, CharSequence prefix, Object message) {
         if (object == null && isDebugMode()) {
             severe(prefix.toString() + message);

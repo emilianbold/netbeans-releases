@@ -85,8 +85,8 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private final FileStatusCache   cache;
 
-    private final ConcurrentLinkedQueue<VCSFileProxy> filesToRefresh = new ConcurrentLinkedQueue<VCSFileProxy>();
-    private final Map<VCSFileProxy, Set<VCSFileProxy>> lockedRepositories = new HashMap<VCSFileProxy, Set<VCSFileProxy>>(5);
+    private final ConcurrentLinkedQueue<VCSFileProxy> filesToRefresh = new ConcurrentLinkedQueue<>();
+    private final Map<VCSFileProxy, Set<VCSFileProxy>> lockedRepositories = new HashMap<>(5);
 
     private final RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
     private final RequestProcessor.Task refreshOwnersTask;
@@ -376,7 +376,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 }
                 final OutputLogger logger = hg.getLogger(root.getPath());
                 try {
-                    List<VCSFileProxy> revertFiles = new ArrayList<VCSFileProxy>();
+                    List<VCSFileProxy> revertFiles = new ArrayList<>();
                     revertFiles.add(file);
                     HgCommand.doRevert(root, revertFiles, null, false, logger);
                 } catch (HgException ex) {
@@ -521,7 +521,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private class CommandUsageLogger {
         
-        private final Map<VCSFileProxy, Events> events = new HashMap<VCSFileProxy, Events>();
+        private final Map<VCSFileProxy, Events> events = new HashMap<>();
         
         private void locked (VCSFileProxy file) {
             VCSFileProxy hgFolder = getHgFolderFor(file);
@@ -682,7 +682,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 return;
             }
             // fill a fileset with all the modified files
-            Collection<VCSFileProxy> files = new HashSet<VCSFileProxy>(filesToRefresh.size());
+            Collection<VCSFileProxy> files = new HashSet<>(filesToRefresh.size());
             VCSFileProxy file;
             while ((file = filesToRefresh.poll()) != null) {
                 files.add(file);
@@ -700,13 +700,13 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private Collection<VCSFileProxy> checkLockedRepositories (Collection<VCSFileProxy> additionalFilesToRefresh, boolean keepCached) {
-        List<VCSFileProxy> retval = new LinkedList<VCSFileProxy>();
+        List<VCSFileProxy> retval = new LinkedList<>();
         // at first sort the files under repositories
         Map<VCSFileProxy, Set<VCSFileProxy>> sortedFiles = sortByRepository(additionalFilesToRefresh);
         for (Map.Entry<VCSFileProxy, Set<VCSFileProxy>> e : sortedFiles.entrySet()) {
             Set<VCSFileProxy> alreadyPlanned = lockedRepositories.get(e.getKey());
             if (alreadyPlanned == null) {
-                alreadyPlanned = new HashSet<VCSFileProxy>();
+                alreadyPlanned = new HashSet<>();
                 lockedRepositories.put(e.getKey(), alreadyPlanned);
             }
             alreadyPlanned.addAll(e.getValue());
@@ -739,13 +739,13 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private Map<VCSFileProxy, Set<VCSFileProxy>> sortByRepository (Collection<VCSFileProxy> files) {
-        Map<VCSFileProxy, Set<VCSFileProxy>> sorted = new HashMap<VCSFileProxy, Set<VCSFileProxy>>(5);
+        Map<VCSFileProxy, Set<VCSFileProxy>> sorted = new HashMap<>(5);
         for (VCSFileProxy f : files) {
             VCSFileProxy repository = hg.getRepositoryRoot(f);
             if (repository != null) {
                 Set<VCSFileProxy> repoFiles = sorted.get(repository);
                 if (repoFiles == null) {
-                    repoFiles = new HashSet<VCSFileProxy>();
+                    repoFiles = new HashSet<>();
                     sorted.put(repository, repoFiles);
                 }
                 repoFiles.add(f);
@@ -785,7 +785,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         public HgFolderTimestamps (VCSFileProxy hgFolder) {
             this.hgFolder = hgFolder;
-            Map<String, Long> ts = new HashMap<String, Long>(INTERESTING_FILENAMES.length);
+            Map<String, Long> ts = new HashMap<>(INTERESTING_FILENAMES.length);
             for (String fn : INTERESTING_FILENAMES) {
                 ts.put(fn, VCSFileProxy.createFileProxy(hgFolder, fn).lastModified());
             }
@@ -800,8 +800,8 @@ public class MercurialInterceptor extends VCSInterceptor {
                 newer = dirstateSize != other.dirstateSize;
                 for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
                     // has a newer (higher) ts or the file is deleted
-                    if (e.getValue() > other.interestingTimestamps.get(e.getKey())
-                            || e.getValue() == 0 && other.interestingTimestamps.get(e.getKey()) != e.getValue()) {
+                    if (e.getValue() > other.interestingTimestamps.get(e.getKey()) ||
+                        e.getValue() == 0 && other.interestingTimestamps.get(e.getKey()).longValue() != e.getValue().longValue()) {
                         newer = true;
                         break;
                     }
@@ -836,12 +836,12 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private class HgFolderEventsHandler {
-        private final HashMap<VCSFileProxy, HgFolderTimestamps> hgFolders = new HashMap<VCSFileProxy, HgFolderTimestamps>(5);
-        private final HashMap<VCSFileProxy, FileChangeListener> hgFolderRLs = new HashMap<VCSFileProxy, FileChangeListener>(5);
-        private final HashMap<VCSFileProxy, Set<VCSFileProxy>> seenRoots = new HashMap<VCSFileProxy, Set<VCSFileProxy>>(5);
-        private final HashSet<VCSFileProxy> disabledEvents = new HashSet<VCSFileProxy>(5);
+        private final HashMap<VCSFileProxy, HgFolderTimestamps> hgFolders = new HashMap<>(5);
+        private final HashMap<VCSFileProxy, FileChangeListener> hgFolderRLs = new HashMap<>(5);
+        private final HashMap<VCSFileProxy, Set<VCSFileProxy>> seenRoots = new HashMap<>(5);
+        private final HashSet<VCSFileProxy> disabledEvents = new HashSet<>(5);
 
-        private final HashSet<VCSFileProxy> filesToInitialize = new HashSet<VCSFileProxy>();
+        private final HashSet<VCSFileProxy> filesToInitialize = new HashSet<>();
         private final RequestProcessor rp = new RequestProcessor("MercurialInterceptorEventsHandlerRP", 1); //NOI18N
         private final RequestProcessor.Task initializingTask = rp.create(new Runnable() {
             @Override
@@ -858,13 +858,13 @@ public class MercurialInterceptor extends VCSInterceptor {
                 }
             }
         });
-        private final Set<VCSFileProxy> historyChandegRepositories = new HashSet<VCSFileProxy>(5);
+        private final Set<VCSFileProxy> historyChandegRepositories = new HashSet<>(5);
         private final RequestProcessor.Task refreshHistoryTabTask = rp.create(new Runnable() {
             @Override
             public void run() {
                 List<VCSFileProxy> toRefresh;
                 synchronized (historyChandegRepositories) {
-                    toRefresh = new ArrayList<VCSFileProxy>(historyChandegRepositories);
+                    toRefresh = new ArrayList<>(historyChandegRepositories);
                     historyChandegRepositories.clear();
                 }
                 if (!toRefresh.isEmpty()) {
@@ -978,7 +978,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         }
 
         private Set<VCSFileProxy> getSeenRoots (VCSFileProxy repositoryRoot) {
-            Set<VCSFileProxy> retval = new HashSet<VCSFileProxy>();
+            Set<VCSFileProxy> retval = new HashSet<>();
             Set<VCSFileProxy> seenRootsForRepository = getSeenRootsForRepository(repositoryRoot);
             synchronized (seenRootsForRepository) {
                  retval.addAll(seenRootsForRepository);
@@ -1003,7 +1003,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             synchronized (seenRoots) {
                  Set<VCSFileProxy> seenRootsForRepository = seenRoots.get(repositoryRoot);
                  if (seenRootsForRepository == null) {
-                     seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<VCSFileProxy>());
+                     seenRoots.put(repositoryRoot, seenRootsForRepository = new HashSet<>());
                  }
                  return seenRootsForRepository;
             }

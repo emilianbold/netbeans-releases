@@ -130,7 +130,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     /**
      * Defines labels for Versioning view table columns.
      */ 
-    private static final Map<String, String[]> columnLabels = new HashMap<String, String[]>(4);
+    private static final Map<String, String[]> columnLabels = new HashMap<>(4);
     static {
         ResourceBundle loc = NbBundle.getBundle(SyncTable.class);
         columnLabels.put(SyncFileNode.COLUMN_NAME_BRANCH, new String [] {
@@ -319,7 +319,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
     }
 
     private SyncFileNode[] getSelectedNodes () {
-        List<SyncFileNode> selectedNodes = new ArrayList<SyncFileNode>();
+        List<SyncFileNode> selectedNodes = new ArrayList<>();
         ListSelectionModel selectionModel = table.getSelectionModel();
         int min = selectionModel.getMinSelectionIndex();
         if (min != -1) {
@@ -335,7 +335,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
 
     private Collection<VCSFileProxy> getSelectedFiles () {
         SyncFileNode[] selectedNodes = getSelectedNodes();
-        Collection<VCSFileProxy> files = new HashSet<VCSFileProxy>(selectedNodes.length);
+        Collection<VCSFileProxy> files = new HashSet<>(selectedNodes.length);
         for (SyncFileNode node : selectedNodes) {
             files.add(node.getFile());
         }

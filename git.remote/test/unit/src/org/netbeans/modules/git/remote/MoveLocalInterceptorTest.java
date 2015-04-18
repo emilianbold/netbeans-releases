@@ -377,7 +377,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -402,7 +402,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile)));
         moveDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -426,7 +426,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folder, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -455,7 +455,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileC);
         moveDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -486,7 +486,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileC);
         moveFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -516,7 +516,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileC);
         moveDO(fileC, fileA);
@@ -531,13 +531,13 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileB).getStatus());
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileC).getStatus());
 
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileB, fileC)));
         moveDO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileC)));
         moveDO(fileC, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -563,7 +563,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
 
         // create from file
@@ -594,7 +594,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, file.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -634,7 +634,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -687,7 +687,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -712,7 +712,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -736,7 +736,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -761,7 +761,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -787,7 +787,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         add(fromFile);
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -814,7 +814,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         assertFalse(fileB.exists());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -842,7 +842,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -875,7 +875,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
         moveFO(fileC, fileA);
@@ -903,12 +903,12 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // create from file
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA)));
         fileA.getParentFile().toFileObject().createData(fileA.getName());
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -939,7 +939,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -979,7 +979,7 @@ public class MoveLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 

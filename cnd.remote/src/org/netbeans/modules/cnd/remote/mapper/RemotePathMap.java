@@ -184,8 +184,8 @@ public abstract class RemotePathMap extends PathMap {
     // PathMap
     @Override
     public String getRemotePath(String lpath, boolean useDefault) {
-        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
+            CndUtils.assertUnconditional("local path should not be null"); // nOI18N
             return null;
         }
         String ulpath = unifySeparators(lpath); // NB: adds a trailing slash
@@ -215,8 +215,8 @@ public abstract class RemotePathMap extends PathMap {
 
     @Override
     public String getLocalPath(String rpath, boolean useDefault) {
-        CndUtils.assertNotNull(rpath, "remote path should not be null"); // nOI18N
         if (rpath == null) {
+            CndUtils.assertUnconditional("remote path should not be null"); // nOI18N
             return null;
         }
         String urpath = unifySeparators(rpath); // NB: adds a trailing slash
@@ -288,8 +288,8 @@ public abstract class RemotePathMap extends PathMap {
 
 
     private boolean checkRemotePath(String lpath) {
-        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
+            CndUtils.assertUnconditional("local path should not be null"); // nOI18N
             return false;
         }
         String ulpath = unifySeparators(lpath);
@@ -555,8 +555,8 @@ public abstract class RemotePathMap extends PathMap {
 
         @Override
         public String getRemotePath(String lpath, boolean useDefault) {
-            CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
             if (lpath == null) {
+                CndUtils.assertUnconditional("local path should not be null"); // nOI18N
                 return null;
             }
             initRemoteBase(true);

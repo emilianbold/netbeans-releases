@@ -257,7 +257,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
 
             if (anObject instanceof RepositoryConnection) {
                 RepositoryConnection repoConn = (RepositoryConnection) anObject;
-                repoConnRef = new WeakReference<RepositoryConnection>(repoConn);
+                repoConnRef = new WeakReference<>(repoConn);
                 origEditor.setItem(repoConn.getUrl().toUrlStringWithoutUserInfo());
             } else {
                 clearRepoConnRef();
@@ -335,7 +335,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
         urlComboEditor.selectAll();
     }
 
-    private static final Set<String> SKIPPED_PATHS = new HashSet<String>(Arrays.asList(HgConfigFiles.HG_DEFAULT_PULL, 
+    private static final Set<String> SKIPPED_PATHS = new HashSet<>(Arrays.asList(HgConfigFiles.HG_DEFAULT_PULL, 
             HgConfigFiles.HG_DEFAULT_PULL_VALUE, 
             HgConfigFiles.HG_DEFAULT_PUSH, 
             HgConfigFiles.HG_DEFAULT_PUSH_VALUE));
@@ -378,7 +378,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
                     it.remove();
                 }
             }
-            pathNames = new ArrayList<String>(paths.keySet());
+            pathNames = new ArrayList<>(paths.keySet());
             for (String skippedPath : SKIPPED_PATHS) {
                 // add the default paths as URLs into the recent list
                 String predefinedUrl = paths.get(skippedPath);
@@ -398,7 +398,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
             storedPaths = paths;
         }
 
-        result = new Vector<Object>(recentUrls.size() + schemes.length + pathNames.size());
+        result = new Vector<>(recentUrls.size() + schemes.length + pathNames.size());
         result.addAll(pathNames);
         result.addAll(recentUrls);
         for (Scheme scheme : schemes) {
@@ -689,7 +689,7 @@ public class Repository implements ActionListener, FocusListener, ItemListener {
 
     public void addChangeListener(ChangeListener l) {
         if(listeners==null) {
-            listeners = new ArrayList<ChangeListener>(4);
+            listeners = new ArrayList<>(4);
         }
         listeners.add(l);
     }

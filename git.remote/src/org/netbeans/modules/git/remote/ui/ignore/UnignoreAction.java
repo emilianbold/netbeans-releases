@@ -108,7 +108,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
             return null;
         } else {
             GitProgressSupport supp = new GitProgressSupport() {
-                private final Set<VCSFileProxy> notifiedFiles = new HashSet<VCSFileProxy>();
+                private final Set<VCSFileProxy> notifiedFiles = new HashSet<>();
                 private VCSFileProxy[] modifiedIgnores = new VCSFileProxy[0];
                 @Override
                 protected void perform () {
@@ -144,7 +144,7 @@ public class UnignoreAction extends MultipleRepositoryAction {
     }
     
     private static VCSFileProxy[] filterRoots (VCSFileProxy[] roots) {
-        List<VCSFileProxy> toUnignore = new LinkedList<VCSFileProxy>();
+        List<VCSFileProxy> toUnignore = new LinkedList<>();
         FileStatusCache cache = Git.getInstance().getFileStatusCache();
         for (VCSFileProxy root : roots) {
             FileInformation info = cache.getStatus(root);

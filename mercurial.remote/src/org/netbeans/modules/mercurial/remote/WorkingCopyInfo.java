@@ -74,18 +74,18 @@ public class WorkingCopyInfo {
      */
     public static final String PROPERTY_CURRENT_BRANCH = WorkingCopyInfo.class.getName() + ".currBranch"; //NOI18N
 
-    private static final WeakHashMap<VCSFileProxy, WorkingCopyInfo> cache = new WeakHashMap<VCSFileProxy, WorkingCopyInfo>(5);
+    private static final WeakHashMap<VCSFileProxy, WorkingCopyInfo> cache = new WeakHashMap<>(5);
     private static final Logger LOG = Logger.getLogger(WorkingCopyInfo.class.getName());
     private static final RequestProcessor rp = new RequestProcessor("WorkingCopyInfo", 1, true); //NOI18N
     private static final RequestProcessor.Task refreshTask = rp.create(new RepositoryRefreshTask());
-    private static final Set<WorkingCopyInfo> repositoriesToRefresh = new HashSet<WorkingCopyInfo>(2);
+    private static final Set<WorkingCopyInfo> repositoriesToRefresh = new HashSet<>(2);
     private final WeakReference<VCSFileProxy> rootRef;
     private final PropertyChangeSupport propertyChangeSupport;
     private HgLogMessage[] parents = new HgLogMessage[0];
     private String branch = HgBranch.DEFAULT_NAME;
 
     private WorkingCopyInfo (VCSFileProxy root) {
-        rootRef = new WeakReference<VCSFileProxy>(root);
+        rootRef = new WeakReference<>(root);
         propertyChangeSupport = new PropertyChangeSupport(this);
     }
 
@@ -177,7 +177,7 @@ public class WorkingCopyInfo {
                 for (HgLogMessage oldParent : oldParents) {
                     if (oldParent.getCSetShortID().equals(newParent.getCSetShortID())
                             && oldParent.getTags().length == newParent.getTags().length
-                            && new HashSet<String>(Arrays.asList(oldParent.getTags())).equals(new HashSet<String>(Arrays.asList(newParent.getTags())))) {
+                            && new HashSet<>(Arrays.asList(oldParent.getTags())).equals(new HashSet<>(Arrays.asList(newParent.getTags())))) {
                         contains = true;
                         break;
                     }

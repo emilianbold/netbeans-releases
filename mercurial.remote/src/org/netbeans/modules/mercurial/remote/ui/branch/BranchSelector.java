@@ -57,6 +57,7 @@ import org.openide.util.HelpCtx;
 import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -337,7 +338,7 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
 
     private boolean applies (String filter, HgBranch branch) {
         boolean applies = filter.isEmpty();
-        filter = filter.toLowerCase();
+        filter = filter.toLowerCase(Locale.getDefault());
         String inactiveLabel = NbBundle.getMessage(BranchSelector.class, "LBL_BranchSelector.branch.inactive"); //NOI18N
         if (!applies) {
             HgLogMessage message = branch.getRevisionInfo();
@@ -345,13 +346,13 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
                     || branch.isActive() && "active".startsWith(filter) //NOI18N
                     || !branch.isActive() && inactiveLabel.startsWith(filter) //NOI18N
                     || message.getRevisionNumber().contains(filter)
-                    || message.getAuthor().toLowerCase().contains(filter)
-                    || message.getCSetShortID().toLowerCase().contains(filter)
-                    || message.getMessage().toLowerCase().contains(filter)
-                    || message.getUsername().toLowerCase().contains(filter)
+                    || message.getAuthor().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getCSetShortID().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getMessage().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getUsername().toLowerCase(Locale.getDefault()).contains(filter)
                     || applies(filter, message.getBranches())
                     || applies(filter, message.getTags())
-                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase().contains(filter)
+                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase(Locale.getDefault()).contains(filter)
                     ) {
                 applies = true;
             }
@@ -361,7 +362,7 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
     
     private boolean applies (String format, String[] array) {
         for (String v : array) {
-            if (v.toLowerCase().contains(format)) {
+            if (v.toLowerCase(Locale.getDefault()).contains(format)) {
                 return true;
             }
         }

@@ -421,7 +421,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         this.branchMergeWith = revision;
     }
 
-    private static final HashMap<String, Image> cachedIcons = new HashMap<String, Image>(2);
+    private static final HashMap<String, Image> cachedIcons = new HashMap<>(2);
 
     @NbBundle.Messages({
         "RepoBrowserPanel.DeleteAction.name=Delete"
@@ -570,7 +570,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         RP.post(new Runnable () {
                             @Override
                             public void run () {
-                                java.util.Map<VCSFileProxy, RepositoryNode> nodes = new HashMap<VCSFileProxy, RepositoryNode>();
+                                java.util.Map<VCSFileProxy, RepositoryNode> nodes = new HashMap<>();
                                 for (VCSFileProxy r : newValues) {
                                     RepositoryInfo info = RepositoryInfo.getInstance(r);
                                     if (info == null) {
@@ -720,7 +720,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super.addNotify();
             if (!initialized) {
                 initialized = true;
-                List<AbstractNode> keys = new LinkedList<AbstractNode>();
+                List<AbstractNode> keys = new LinkedList<>();
                 if (options.contains(Option.DISPLAY_BRANCHES_LOCAL) || options.contains(Option.DISPLAY_BRANCHES_REMOTE)) {
                     keys.add(new BranchesTopNode(((RepositoryNode) getNode()).getRepository()));
                 }
@@ -826,7 +826,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     
     private class BranchesTopChildren extends Children.Keys<BranchNodeType> implements PropertyChangeListener {
         private final VCSFileProxy repository;
-        private final java.util.Map<String, GitBranchInfo> branches = new TreeMap<String, GitBranchInfo>();
+        private final java.util.Map<String, GitBranchInfo> branches = new TreeMap<>();
         private BranchesNode local, remote;
 
         private BranchesTopChildren (VCSFileProxy repository) {
@@ -842,7 +842,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected void addNotify () {
             super.addNotify();
-            List<BranchNodeType> keys = new LinkedList<BranchNodeType>();
+            List<BranchNodeType> keys = new LinkedList<>();
             if (options.contains(Option.DISPLAY_BRANCHES_LOCAL)) {
                 keys.add(BranchNodeType.LOCAL);
             }
@@ -906,7 +906,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (branches.isEmpty()) {
                 BranchesTopChildren.this.branches.clear();
             } else {
-                branches = new java.util.HashMap<String, GitBranch>(branches);
+                branches = new java.util.HashMap<>(branches);
                 BranchesTopChildren.this.branches.keySet().retainAll(branches.keySet());
                 for (java.util.Map.Entry<String, GitBranchInfo> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
@@ -1049,7 +1049,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         }
 
         private void refreshKeys () {
-            List<GitBranchInfo> keys = new LinkedList<GitBranchInfo>();
+            List<GitBranchInfo> keys = new LinkedList<>();
             for (java.util.Map.Entry<String, GitBranchInfo> e : branches.entrySet()) {
                 GitBranchInfo branchInfo = e.getValue();
                 if (type == BranchNodeType.REMOTE && branchInfo.branch.isRemote() 
@@ -1058,7 +1058,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }
             }
             if (branchMergeWith != null) {
-                keys = new ArrayList<GitBranchInfo>(keys);
+                keys = new ArrayList<>(keys);
                 Collections.sort(keys, new Comparator<GitBranchInfo>() {
                     @Override
                     public int compare (GitBranchInfo i1, GitBranchInfo i2) {
@@ -1186,7 +1186,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             "LBL_SetTrackedBranchAction_PopupName=Setup Tracked Branch"
         })
         protected Action[] getPopupActions (boolean context) {
-            List<Action> actions = new LinkedList<Action>();
+            List<Action> actions = new LinkedList<>();
             if (currRepository != null && branchName != null) {
                 final VCSFileProxy repo = currRepository;
                 final String branch = branchName;
@@ -1546,7 +1546,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     }
 
     private class TagChildren extends Children.Keys<GitTag> implements PropertyChangeListener {
-        private final java.util.Map<String, GitTag> tags = new TreeMap<String, GitTag>();
+        private final java.util.Map<String, GitTag> tags = new TreeMap<>();
         private final VCSFileProxy repository;
 
         private TagChildren (VCSFileProxy repository) {
@@ -1599,7 +1599,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (tags.isEmpty()) {
                 this.tags.clear();
             } else {
-                tags = new java.util.HashMap<String, GitTag>(tags);
+                tags = new java.util.HashMap<>(tags);
                 this.tags.keySet().retainAll(tags.keySet());
                 for (java.util.Map.Entry<String, GitTag> e : this.tags.entrySet()) {
                     GitTag newTagInfo = tags.get(e.getKey());
@@ -1712,7 +1712,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            List<Action> actions = new LinkedList<Action>();
+            List<Action> actions = new LinkedList<>();
             if (currRepository != null && tagName != null) {
                 final VCSFileProxy repo = currRepository;
                 final String tag = tagName;
@@ -2015,7 +2015,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            List<Action> actions = new LinkedList<Action>();
+            List<Action> actions = new LinkedList<>();
             if (currRepository != null && item != null) {
                 final Stash stash = item;
                 actions.add(stash.getApplyAction());
@@ -2191,7 +2191,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         
         @Override
         protected Action[] getPopupActions (boolean context) {
-            List<Action> actions = new LinkedList<Action>();
+            List<Action> actions = new LinkedList<>();
             actions.add(new AbstractAction(NbBundle.getMessage(FetchAction.class, "LBL_FetchAction_PopupName")) { //NOI18N
                 @Override
                 public void actionPerformed (ActionEvent e) {
@@ -2218,7 +2218,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     GitBranch tracked = getTrackedBranch(info);
                     if (tracked != null) {
                         GitRemoteConfig remote = getLookup().lookup(GitRemoteConfig.class);
-                        List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                        List<PushMapping> pushMappings = new LinkedList<>();
                         String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
                                 remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
                         if (remoteBranchName != null) {
@@ -2266,7 +2266,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         @Override
         protected void addNotify () {
             super.addNotify();
-            ArrayList<RemoteUri> urls = new ArrayList<RemoteUri>(remote.getPushUris().size() + remote.getUris().size());
+            ArrayList<RemoteUri> urls = new ArrayList<>(remote.getPushUris().size() + remote.getUris().size());
             for (String s : remote.getUris()) {
                 urls.add(new RemoteUri(s, false));
             }
@@ -2310,7 +2310,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
         @Override
         protected Action[] getPopupActions (boolean context) {
-            List<Action> actions = new LinkedList<Action>();
+            List<Action> actions = new LinkedList<>();
             if (uri.push) {
                 actions.add(new AbstractAction(NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName")) { //NOI18N
                     @Override
@@ -2320,7 +2320,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         GitBranch activeBranch = info.getActiveBranch();
                         GitBranch tracked = getTrackedBranch(info);
                         if (tracked != null) {
-                            List<PushMapping> pushMappings = new LinkedList<PushMapping>();
+                            List<PushMapping> pushMappings = new LinkedList<>();
                             String remoteBranchName = PushToUpstreamAction.guessRemoteBranchName(
                                     remote.getFetchRefSpecs(), tracked.getName(), remote.getRemoteName());
                             if (remoteBranchName != null) {

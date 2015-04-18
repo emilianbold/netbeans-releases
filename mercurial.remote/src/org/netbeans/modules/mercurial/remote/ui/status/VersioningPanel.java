@@ -373,7 +373,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         VCSFileProxy [] files = Mercurial.getInstance().getFileStatusCache().listFiles(rootFiles.toArray(new VCSFileProxy[rootFiles.size()]), includeStatus);
         Set<VCSFileProxy> repositories = HgUtils.getRepositoryRoots(context);
 
-        java.util.List<HgFileNode> fnodes = new LinkedList<HgFileNode>();
+        java.util.List<HgFileNode> fnodes = new LinkedList<>();
         for (VCSFileProxy file : files) {
             VCSFileProxy repository = mercurial.getRepositoryRoot(file);
             if(repositories.contains(repository)) {
@@ -590,7 +590,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         /** Guard for above cache. */
         private Dimension parentSize;
         
-        private final Set<JComponent> adjusted = new HashSet<JComponent>();
+        private final Set<JComponent> adjusted = new HashSet<>();
         
         @Override
         public void removeLayoutComponent(Component comp) {

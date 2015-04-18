@@ -585,6 +585,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 	// interface CheckNodeModelFilter
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL") // This method is allowed to return null in case the state is unknown
 	public Boolean isSelected(NodeModel originalNM, Object node) throws UnknownTypeException {
 		if (node instanceof NativeBreakpoint) {
 			NativeBreakpoint b = (NativeBreakpoint) node;

@@ -47,6 +47,9 @@ import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
@@ -57,11 +60,11 @@ import org.openide.util.Exceptions;
  */
 public final class EnvWriter {
 
-    public static final String[] wellKnownVars = new String[]{
+    public static final Collection<String> wellKnownVars = Collections.unmodifiableList(Arrays.asList(
         "LANG", "LC_COLLATE", "LC_CTYPE", "LC_MESSAGES", "LC_MONETARY", // NOI18N
         "LC_NUMERIC", "LC_TIME", "TMPDIR", "PATH", "LD_LIBRARY_PATH", // NOI18N
-        "LD_PRELOAD" // NOI18N
-    };
+        "LD_PRELOAD")); // NOI18N
+
     private final OutputStreamWriter writer;
 
     public EnvWriter(final OutputStream os, final boolean remote) {

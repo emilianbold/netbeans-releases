@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -511,7 +512,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
         OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
         MessageInfoFetcher fetcher = getMessageInfoFetcher();
-        HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<VCSFileProxy>(Arrays.asList(roots)), fetchRevisionLimit, logger);
+        HgLogMessage[] fetchedMessages = fetcher.getMessageInfo(repository, roots == null ? null : new HashSet<>(Arrays.asList(roots)), fetchRevisionLimit, logger);
         if (!supp.isCanceled() && fetchedMessages.length > 0) {
             WorkingCopyInfo wcInfo = WorkingCopyInfo.getInstance(repository);
             wcInfo.refresh();
@@ -667,16 +668,16 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     private boolean applies (String filter, HgLogMessage message) {
         boolean applies = filter.isEmpty();
-        filter = filter.toLowerCase();
+        filter = filter.toLowerCase(Locale.getDefault());
         if (!applies) {
             if (message.getRevisionNumber().contains(filter)
-                    || message.getAuthor().toLowerCase().contains(filter)
-                    || message.getCSetShortID().toLowerCase().contains(filter)
-                    || message.getMessage().toLowerCase().contains(filter)
-                    || message.getUsername().toLowerCase().contains(filter)
+                    || message.getAuthor().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getCSetShortID().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getMessage().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getUsername().toLowerCase(Locale.getDefault()).contains(filter)
                     || applies(filter, message.getBranches())
                     || applies(filter, message.getTags())
-                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase().contains(filter)
+                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase(Locale.getDefault()).contains(filter)
                     ) {
                 applies = true;
             }
@@ -686,7 +687,7 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     
     private boolean applies (String format, String[] array) {
         for (String v : array) {
-            if (v.toLowerCase().contains(format)) {
+            if (v.toLowerCase(Locale.getDefault()).contains(format)) {
                 return true;
             }
         }

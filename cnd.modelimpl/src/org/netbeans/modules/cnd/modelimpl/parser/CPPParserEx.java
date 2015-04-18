@@ -726,22 +726,24 @@ public class CPPParserEx extends CPPParser {
                         getLine(1), qi, _td, id);
             }
 
-            c = new CPPSymbol(id, CPPSymbol.otTypedef);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otTypedef);
             symbols.defineInScope(id, c, externalScope);
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otTypedef);
                 printf("declaratorID[%d]: Declare %s in external scope 1, " + // NOI18N
                         "ObjectType %d\n", getLine(1), id, c.getType()); // NOI18N
             }
         // DW 04/08/03 Scoping not fully implemented
         // Typedefs all recorded in 'external' scope and therefor never removed
         } else if (qi == qiFun) {	// For function declaration
-            c = new CPPSymbol(id, CPPSymbol.otFunction);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otFunction);
             symbols.define(id, c);	// Add to current scope
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otFunction);
                 printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
                         "ObjectType %d\n", getLine(1), id, // NOI18N
                         /*symbols.getCurrentScopeIndex()*/ 0, c.getType());
@@ -753,11 +755,12 @@ public class CPPParserEx extends CPPParser {
             }
 
             // Used to leave otInvalid DW 02/07/03 Think this should be otVariable
-            c = new CPPSymbol(id, CPPSymbol.otVariable);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otVariable);
             symbols.define(id, c);	// Add to current scope
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otVariable);
                 printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
                         "ObjectType %d\n", getLine(1), // NOI18N
                         id, /*symbols.getCurrentScopeIndex()*/ 0, c.getType());
@@ -1192,9 +1195,13 @@ public class CPPParserEx extends CPPParser {
     }
     private static final int MAX_GUESS = 256;
     public static int MAX_GUESS_IDX = 0;
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingTimes = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingCount = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingFailures = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final String[] guessingNames = new String[MAX_GUESS];
 
 

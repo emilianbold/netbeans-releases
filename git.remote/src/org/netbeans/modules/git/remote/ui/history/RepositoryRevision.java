@@ -100,9 +100,9 @@ public class RepositoryRevision {
     /**
      * List of events associated with the revision.
      */ 
-    private final List<Event> events = new ArrayList<Event>(5);
+    private final List<Event> events = new ArrayList<>(5);
     private final List<Event> dummyEvents;
-    private final Map<VCSFileProxy, String> commonAncestors = new HashMap<VCSFileProxy, String>();
+    private final Map<VCSFileProxy, String> commonAncestors = new HashMap<>();
     private final Set<GitTag> tags;
     private final Set<GitBranch> branches;
     private boolean eventsInitialized;
@@ -123,7 +123,7 @@ public class RepositoryRevision {
         this.tags = tags;
         this.branches = branches;
         support = new PropertyChangeSupport(this);
-        dummyEvents = new ArrayList<Event>(1);
+        dummyEvents = new ArrayList<>(1);
         if (dummyFile != null && dummyFileRelativePath != null) {
             dummyEvents.add(new Event(dummyFile, dummyFileRelativePath));
         }
@@ -229,7 +229,7 @@ public class RepositoryRevision {
             // repository deleted? Then return no actions, nothing makes sense any more.
             return new Action[0];
         }
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         final String revision = getPreferredRevision();
         actions.add(new AbstractAction(Bundle.LBL_Action_CheckoutRevision(revision)) {
             @Override
@@ -407,7 +407,7 @@ public class RepositoryRevision {
         }
         
         Action[] getActions (boolean forNodes) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             if (isViewEnabled()) {
                 actions.add(getViewAction(forNodes ? null : this));
                 actions.add(getAnnotateAction(forNodes ? null : this));
@@ -475,7 +475,7 @@ public class RepositoryRevision {
         }
 
         private Action createAction (Collection<? extends RevisionNode> nodes) {
-            List<Event> events = new ArrayList<Event>(nodes.size());
+            List<Event> events = new ArrayList<>(nodes.size());
             VCSFileProxy root = null;
             for (RevisionNode n : nodes) {
                 root = n.getEvent().getLogInfoHeader().getRepositoryRoot();
@@ -569,7 +569,7 @@ public class RepositoryRevision {
 
         @Override
         protected Action createAction (VCSFileProxy repositoryRoot, Event... events) {
-            Set<VCSFileProxy> fileSet = new HashSet<VCSFileProxy>(events.length);
+            Set<VCSFileProxy> fileSet = new HashSet<>(events.length);
             for (Event e : events) {
                 if (e.isViewEnabled()) {
                     fileSet.add(e.getFile());
@@ -642,7 +642,7 @@ public class RepositoryRevision {
         @Override
         protected Action createAction (VCSFileProxy repositoryRoot, Event... events) {
             String rev = null;
-            List<VCSFileProxy> fileList = new ArrayList<VCSFileProxy>(events.length);
+            List<VCSFileProxy> fileList = new ArrayList<>(events.length);
             for (Event e : events) {
                 String eventRevision = e.getLogInfoHeader().getShortRevision();
                 if (rev == null) {
@@ -690,7 +690,7 @@ public class RepositoryRevision {
                             events.addAll(logEvents);
                             eventsInitialized = true;
                             currentSearch = null;
-                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<Event>(events));
+                            support.firePropertyChange(RepositoryRevision.PROP_EVENTS_CHANGED, null, new ArrayList<>(events));
                         }
                     }
                 });
@@ -717,8 +717,8 @@ public class RepositoryRevision {
         }
 
         private List<Event> prepareEvents (Map<VCSFileProxy, GitFileInfo> files) {
-            final List<Event> logEvents = new ArrayList<Event>(files.size());
-            Set<VCSFileProxy> renamedFilesOriginals = new HashSet<VCSFileProxy>(files.size());
+            final List<Event> logEvents = new ArrayList<>(files.size());
+            Set<VCSFileProxy> renamedFilesOriginals = new HashSet<>(files.size());
             for (Map.Entry<VCSFileProxy, GitFileInfo> e : files.entrySet()) {
                 if (e.getValue().getStatus() == Status.RENAMED) {
                     renamedFilesOriginals.add(e.getValue().getOriginalFile());

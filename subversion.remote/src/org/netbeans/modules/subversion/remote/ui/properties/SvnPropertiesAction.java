@@ -115,6 +115,7 @@ public final class SvnPropertiesAction extends ContextAction {
         openProperties(ctx, ctxDisplayName);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DLS")
     public static void openProperties(Context ctx, String ctxDisplayName) {
         if(!Subversion.getInstance().checkClientAvailable(ctx)) {            
             return;

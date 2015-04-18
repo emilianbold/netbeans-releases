@@ -140,7 +140,12 @@ public final class Launcher {
             return ((Launcher) obj).getDisplayedName().equals(getDisplayedName());
         }
         return false;
-    }    
+    }
+
+    public int hashCode() {
+        assert false : "hashCode is not designed";
+        return 17;
+    }
 
     boolean isLauncherEquals(Launcher other) {
         if (other == null) {

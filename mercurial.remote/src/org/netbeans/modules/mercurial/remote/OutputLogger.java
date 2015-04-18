@@ -74,7 +74,7 @@ public class OutputLogger {
     private static final RequestProcessor rp = new RequestProcessor("MercurialRemoteOutput", 1); //NOI18N
     public static final int MAX_LINES_TO_PRINT = 500;
 
-    private static final HashSet<String> openedWindows = new HashSet<String>(5);
+    private static final HashSet<String> openedWindows = new HashSet<>(5);
 
 
     static OutputLogger getLogger(String repositoryRoot) {

@@ -94,7 +94,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener {
     protected static final Logger LOG = Logger.getLogger(DiffResultsView.class.getName());
     private final PropertyChangeListener list;
     private Node[] selectedNodes;
-    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<RepositoryRevision>(2);
+    private final Set<RepositoryRevision> revisionsToRefresh = new HashSet<>(2);
     private int lastDividerLoc;
 
     public DiffResultsView (SearchHistoryPanel parent, List<RepositoryRevision> results) {

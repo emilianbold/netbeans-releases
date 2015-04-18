@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -103,7 +104,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     protected final CsmProject getProject() {
         CsmFile file = this.getContainingFile();
-        assert file != null;
+        CndUtils.assertNotNull(file, "Null containing file"); //NOI18N
         return file != null ? file.getProject() : null;
     }    
     

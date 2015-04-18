@@ -132,13 +132,9 @@ public class CherryPickAction extends SingleRepositoryAction {
             operations.put(btnContinue, CherryPickOperation.CONTINUE);
             operations.put(btnQuit, CherryPickOperation.QUIT);
             operations.put(btnAbort, CherryPickOperation.ABORT);
-            Object[] options = interrupted
-                    ? new Object[] { btnContinue, btnAbort, btnQuit, NotifyDescriptor.CANCEL_OPTION }
-                    : new Object[] { btnContinue, btnAbort, NotifyDescriptor.CANCEL_OPTION };
+            Object[] options = new Object[] { btnContinue, btnAbort, btnQuit, NotifyDescriptor.CANCEL_OPTION };
             Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                    interrupted
-                            ? Bundle.MSG_CherryPick_cherryPickingScheduledState_text(repository.getName())
-                            : Bundle.MSG_CherryPick_cherryPickingState_text(repository.getName()),
+                    Bundle.MSG_CherryPick_cherryPickingScheduledState_text(repository.getName()),
                     Bundle.LBL_CherryPick_cherryPickingState_title(),
                     NotifyDescriptor.YES_NO_CANCEL_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,

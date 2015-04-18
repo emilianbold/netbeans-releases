@@ -66,7 +66,7 @@ public class CloneCompleted {
     }
 
     public void scanForProjects(HgProgressSupport support) {
-        Map<Project, Set<Project>> checkedOutProjects = new HashMap<Project, Set<Project>>();
+        Map<Project, Set<Project>> checkedOutProjects = new HashMap<>();
         checkedOutProjects.put(null, new HashSet<Project>()); // initialize root project container
         VCSFileProxy normalizedWorkingFolder = workingFolder.normalizeFile();
         FileObject fo = normalizedWorkingFolder.toFileObject();

@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.git.remote.cli.GitURI;
 import org.netbeans.modules.git.remote.FileInformation.Mode;
-import org.netbeans.modules.git.remote.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.remote.ui.repository.remote.ConnectionSettings;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
@@ -150,7 +149,7 @@ public final class GitModuleConfig {
     public void addExclusionPaths(Collection<String> paths) {
         Set<String> commitExclusions = getCommitExclusions();
         if (commitExclusions.addAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(commitExclusions));
         }
     }
 
@@ -160,7 +159,7 @@ public final class GitModuleConfig {
     public void removeExclusionPaths(Collection<String> paths) {
         Set<String> commitExclusions = getCommitExclusions();
         if (commitExclusions.removeAll(paths)) {
-            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<String>(commitExclusions));
+            Utils.put(getPreferences(), PROP_COMMIT_EXCLUSIONS, new ArrayList<>(commitExclusions));
         }
     }   
 
@@ -188,7 +187,7 @@ public final class GitModuleConfig {
     
     synchronized Set<String> getCommitExclusions() {
         if (exclusions == null) {
-            exclusions = new HashSet<String>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
+            exclusions = new HashSet<>(Utils.getStringList(getPreferences(), PROP_COMMIT_EXCLUSIONS));
         }
         return exclusions;
     }  
@@ -337,7 +336,7 @@ public final class GitModuleConfig {
         getPreferences().putBoolean(KEY_SHOW_FILE_INFO, info);
     }
     
-    private final HashMap<String, ConnectionSettings> cachedConnectionSettings = new HashMap<String, ConnectionSettings>(5);
+    private final HashMap<String, ConnectionSettings> cachedConnectionSettings = new HashMap<>(5);
     public void insertRecentConnectionSettings (ConnectionSettings toStore) {
         assert !EventQueue.isDispatchThread();
         String guriString = getUriStringWithoutCredentials(toStore.getUri());
@@ -401,7 +400,7 @@ public final class GitModuleConfig {
         
         Preferences prefs = getPreferences();
         List<String> urls = Utils.getStringList(prefs, RECENT_GURI);
-        List<ConnectionSettings> ret = new ArrayList<ConnectionSettings>(urls.size());
+        List<ConnectionSettings> ret = new ArrayList<>(urls.size());
         for (String guriString : urls) {
             GitConnectionSettingsEntry entry = GitConnectionSettingsEntry.create(guriString);
             if (entry == null) {

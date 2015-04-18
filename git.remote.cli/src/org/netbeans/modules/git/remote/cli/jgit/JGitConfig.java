@@ -98,7 +98,7 @@ public class JGitConfig {
         VCSFileProxy config = VCSFileProxy.createFileProxy(location, CONFIG_LOCATION);
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new InputStreamReader(config.getInputStream(false)));
+            reader = new BufferedReader(new InputStreamReader(config.getInputStream(false), "UTF-8")); //NOI18N
             SectionKey section = null;
             String line;
             map.clear();
@@ -154,7 +154,7 @@ public class JGitConfig {
         VCSFileProxy config = VCSFileProxy.createFileProxy(location, CONFIG_LOCATION);
         BufferedWriter bw = null;
         try {
-            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(config)));
+            bw = new BufferedWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(config), "UTF-8")); //NOI18N
             for(Map.Entry<SectionKey, TreeMap<String,String>> entry : map.entrySet()) {
                 SectionKey key = entry.getKey();
                 bw.write('[');

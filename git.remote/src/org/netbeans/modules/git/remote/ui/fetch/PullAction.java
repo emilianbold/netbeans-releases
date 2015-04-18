@@ -187,7 +187,7 @@ public class PullAction extends SingleRepositoryAction {
             }
             try {
                 final GitClient client = getClient();
-                final Set<String> toDelete = new HashSet<String>();
+                final Set<String> toDelete = new HashSet<>();
                 for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
                     String refSpec = it.next();
                     if (refSpec.startsWith(GitUtils.REF_SPEC_DEL_PREFIX)) {
@@ -393,7 +393,6 @@ public class PullAction extends SingleRepositoryAction {
                     rrp.processResult(result);
                     op = rrp.getNextAction();
                     if (op == null && (result.getRebaseStatus() == GitRebaseResult.RebaseStatus.FAST_FORWARD
-                            || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.NOTHING_TO_COMMIT
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.OK
                             || result.getRebaseStatus() == GitRebaseResult.RebaseStatus.UP_TO_DATE)) {

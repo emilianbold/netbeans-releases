@@ -214,7 +214,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
 
         // copy
         copyDO(fromFolder, toFolder);
-        getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fromFile, toFile)));
 
         // test
         assertTrue(fromFolder.exists());
@@ -264,7 +264,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileB, fileC)));
         copyDO(fileA, fileB);
         copyDO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -617,7 +617,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // copy
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileB, fileC)));
         copyFO(fileA, fileB);
         copyFO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -648,7 +648,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
 
         // copy
         copyFO(fromFile, toFile);
-        getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fromFile, toFile)));
 
         // test
         assertTrue(fromFile.exists());
@@ -674,7 +674,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
 
         // copy
         copyFO(fromFolder, toFolder);
-        getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fromFile, toFile)));
 
         // test
         assertTrue(fromFile.exists());
@@ -896,7 +896,7 @@ public class CopyLocalInterceptorTest extends AbstractLocalGitTestCase {
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // copy
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileC, fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileC, fileA)));
         copyFO(fileA, fileC);
         copyFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());

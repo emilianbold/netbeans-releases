@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -256,7 +257,7 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
                         logger.output(NbBundle.getMessage(TagManager.class, "MSG_DELETE_TAG_INFO_SEP", tagToRemove.getName(), repository.getPath())); //NOI18N
                         HgCommand.removeTag(repository, tagToRemove.getName(), tagToRemove.isLocal(), removeMessage, getLogger());
                         HgTag[] toReorg = tags;
-                        List<HgTag> newTags = new ArrayList<HgTag>(toReorg.length);
+                        List<HgTag> newTags = new ArrayList<>(toReorg.length);
                         for (HgTag tag : toReorg) {
                             if (isCanceled()) {
                                 return;
@@ -413,7 +414,7 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
 
     private boolean applies (String filter, HgTag tag) {
         boolean applies = filter.isEmpty();
-        filter = filter.toLowerCase();
+        filter = filter.toLowerCase(Locale.getDefault());
         String localLabel = NbBundle.getMessage(TagManager.class, "LBL_TagManager.tag.local"); //NOI18N
         if (!applies) {
             HgLogMessage message = tag.getRevisionInfo();
@@ -421,11 +422,11 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
                     || !tag.isLocal() && "global".startsWith(filter) //NOI18N
                     || tag.isLocal() && localLabel.startsWith(filter)
                     || message.getRevisionNumber().contains(filter)
-                    || message.getAuthor().toLowerCase().contains(filter)
-                    || message.getCSetShortID().toLowerCase().contains(filter)
-                    || message.getMessage().toLowerCase().contains(filter)
-                    || message.getUsername().toLowerCase().contains(filter)
-                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase().contains(filter)
+                    || message.getAuthor().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getCSetShortID().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getMessage().toLowerCase(Locale.getDefault()).contains(filter)
+                    || message.getUsername().toLowerCase(Locale.getDefault()).contains(filter)
+                    || DateFormat.getDateTimeInstance().format(message.getDate()).toLowerCase(Locale.getDefault()).contains(filter)
                     ) {
                 applies = true;
             }

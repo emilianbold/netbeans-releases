@@ -99,13 +99,13 @@ public final class GitClient {
     private final GitProgressSupport progressSupport;
     private final boolean handleAuthenticationIssues;
     private static final int CLEANUP_TIME = 15000;
-    private static final List<org.netbeans.modules.git.remote.cli.GitClient> unusedClients = new LinkedList<org.netbeans.modules.git.remote.cli.GitClient>();
+    private static final List<org.netbeans.modules.git.remote.cli.GitClient> unusedClients = new LinkedList<>();
     private static final RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
     
     /**
      * Set of commands that do not need to run under repository lock
      */
-    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener", //NOI18N
+    private static final HashSet<String> PARALLELIZABLE_COMMANDS = new HashSet<>(Arrays.asList("addNotificationListener", //NOI18N
             "blame", //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
@@ -135,7 +135,7 @@ public final class GitClient {
      * Commands triggering last cached timestamp of the index file. This means that after every command that somehow modifies the index, we need to refresh the timestamp
      * otherwise a FS event will come to Interceptor and trigger the full scan.
      */
-    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<String>(Arrays.asList("addNotificationListener",  //NOI18N
+    private static final HashSet<String> WORKING_TREE_READ_ONLY_COMMANDS = new HashSet<>(Arrays.asList("addNotificationListener",  //NOI18N
             "blame", //NOI18N
             "catFile",  //NOI18N
             "catIndexEntry",  //NOI18N
@@ -175,7 +175,7 @@ public final class GitClient {
     /**
      * Commands that will trigger repository information refresh, i.e. those that change HEAD, current branch, etc.
      */
-    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<String>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
+    private static final HashSet<String> NEED_REPOSITORY_REFRESH_COMMANDS = new HashSet<>(Arrays.asList("add",//NOI18N // may change state, e.g. MERGING->MERGED
             "checkout", //NOI18N
             "checkoutRevision", //NOI18N // current head changes
             "cherryPick", //NOI18N
@@ -201,7 +201,7 @@ public final class GitClient {
     /**
      * Commands accessing a remote repository. For these NbAuthenticator must be switched off
      */
-    private static final HashSet<String> NETWORK_COMMANDS = new HashSet<String>(Arrays.asList(
+    private static final HashSet<String> NETWORK_COMMANDS = new HashSet<>(Arrays.asList(
             "fetch", //NOI18N
             "listRemoteBranches", //NOI18N
             "listRemoteTags", //NOI18N
@@ -879,7 +879,7 @@ public final class GitClient {
         public void run () {
             Set<org.netbeans.modules.git.remote.cli.GitClient> toRelease;
             synchronized (unusedClients) {
-                toRelease = new HashSet<org.netbeans.modules.git.remote.cli.GitClient>(unusedClients);
+                toRelease = new HashSet<>(unusedClients);
                 unusedClients.clear();
             }
             for (org.netbeans.modules.git.remote.cli.GitClient unusuedClient : toRelease) {

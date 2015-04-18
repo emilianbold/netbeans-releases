@@ -413,7 +413,7 @@ public final class OptionsPanel extends javax.swing.JPanel implements ExplorerMa
         Children children = manager.getRootContext().getChildren();
         for (Node node : children.getNodes()) {
             if (node instanceof ConfigurationNode) {
-                if (((ConfigurationNode) node).getConfiguration().getID() == cfg.getID()) {
+                if (((ConfigurationNode) node).getConfiguration().getID().intValue() == cfg.getID().intValue()) {
                     try {
                         manager.setSelectedNodes(new Node[]{node});
                     } catch (PropertyVetoException ex) {
