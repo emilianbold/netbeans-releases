@@ -1954,6 +1954,7 @@ org.netbeans.core.xml.FileEntityResolver
 org.netbeans.core.xml.FileEntityResolver$DTDParser
 org.netbeans.core.xml.FileEntityResolver$Lkp
 org.netbeans.core.xml.FileEntityResolver$StopSaxException
+org.netbeans.debugger.registry.ContextAwareServicePath
 org.netbeans.editor.Acceptor
 org.netbeans.editor.AcceptorFactory
 org.netbeans.editor.AcceptorFactory$Char
