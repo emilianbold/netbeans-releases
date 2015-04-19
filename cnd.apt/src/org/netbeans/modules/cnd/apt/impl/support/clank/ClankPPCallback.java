@@ -42,7 +42,9 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import org.clang.basic.FileEntry;
 import org.clang.basic.SrcMgr;
+import org.clang.lex.Preprocessor;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.support.Casts;
@@ -59,7 +61,6 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -93,7 +94,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     private final ClankDriver.ClankPreprocessorCallback delegate;
     private final PreprocHandler ppHandler;
     private final ClankIncludeHandlerImpl includeHandler;
-    private final ArrayList<ClankFileInfoImpl> includeStack = new ArrayList<ClankFileInfoImpl>(16);
+    private final ArrayList<ClankFileInfoWrapper> includeStack = new ArrayList<ClankFileInfoWrapper>(16);
     private final CancellableInterrupter interrupter;
 
     public ClankPPCallback(PreprocHandler ppHandler, 
@@ -112,9 +113,37 @@ public final class ClankPPCallback extends FileInfoCallback {
 
     @Override
     protected void onInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
-        
+        // find ResolvedPath for #include
+        ResolvedPath resolvedPath = createResolvedPath(getPreprocessor(), directive);
+        StringRef fileNameSpelling = directive.getFileNameSpelling();
+        String spelling = Casts.toCharSequence(fileNameSpelling.data(), fileNameSpelling.size()).toString();
+        ClankInclusionDirectiveWrapper inclDirectiveWrapper = new ClankInclusionDirectiveWrapper(directive, resolvedPath, spelling);
+        // keep it as annotation 
+        directive.setAnnotation(inclDirectiveWrapper);
+        ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
+        assert currentFileWrapper.current == curFile;
+        this.delegate.onInclusionDirective(currentFileWrapper, inclDirectiveWrapper);
     }
 
+    private ResolvedPath createResolvedPath(Preprocessor PP, InclusionDirectiveInfo directive) {
+      FileEntry fileEntry = directive.getFileEntry();
+      if (fileEntry == null) {
+        // unresolved #include
+        return null;
+      }
+      // FIXME: file system
+      FileSystem fileSystem = includeHandler.getStartEntry().getFileSystem();
+      String strFileEntryPath = Casts.toCharSequence(fileEntry.getName()).toString();
+      CharSequence pathCharSeq = CharSequences.create(CndFileUtils.normalizeAbsolutePath(fileSystem, strFileEntryPath));
+      SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);
+      String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+      CharSequence folder = CndFileUtils.normalizeAbsolutePath(fileSystem, searchPath);
+      folder = FilePathCache.getManager().getString(CharSequences.create(folder));
+      // FIXME: for now consider user path as isDefaultSearchPath
+      boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
+      return new ResolvedPath(fileSystem, folder, pathCharSeq, isDefaultSearchPath, 0);
+    }
+  
     @Override
     protected void onSkippedInclusionDirective(FileInfo curFile, InclusionDirectiveInfo directive) {
       
@@ -146,7 +175,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
         if (enteredTo.isFile()) {
           ClankDriver.ClankFileInfo enteredFromWrapper;
-          ClankFileInfoImpl enteredToWrapper = new ClankFileInfoImpl(enteredTo, ppHandler);
+          ClankFileInfoWrapper enteredToWrapper = new ClankFileInfoWrapper(enteredTo, ppHandler);
           // main file is not pushed as include, all others are
           if (includeStack.isEmpty()) {
             assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
@@ -192,7 +221,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         if (exitedFrom.isFile()) {
           assert includeStack.size() > 0 : "empty include stack?";
           ClankDriver.ClankFileInfo exitedToWrapper;
-          ClankFileInfoImpl exitedFromWrapper = includeStack.remove(includeStack.size() - 1);
+          ClankFileInfoWrapper exitedFromWrapper = includeStack.remove(includeStack.size() - 1);
           assert exitedFromWrapper.current == exitedFrom;
           // we cache possibly collected tokens in include handler
           // to allow delegate to use them
@@ -229,20 +258,79 @@ public final class ClankPPCallback extends FileInfoCallback {
       return delegate.needMacroExpansion();
     }
 
-    public static final class ClankFileInfoImpl implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
+    private static final class ClankInclusionDirectiveWrapper implements ClankDriver.ClankInclusionDirective {
+        private final InclusionDirectiveInfo clankDelegate;
+        private final ResolvedPath resolvedPath;
+        private final String spelling;
+        private Object externalAnnotation;
+
+        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, ResolvedPath resolvedPath, String spelling) {
+          this.clankDelegate = clankDelegate;
+          this.resolvedPath = resolvedPath;
+          this.spelling = spelling;
+        }
+
+        @Override
+        public void setAnnotation(Object annotation) {
+          assert externalAnnotation == null : "replacing? " + externalAnnotation;
+          this.externalAnnotation = annotation;
+        }
+
+        @Override
+        public Object getAnnotation() {
+          return externalAnnotation;
+        }
+
+        @Override
+        public ResolvedPath getResolvedPath() {
+          return resolvedPath;
+        }
+
+        @Override
+        public String getSpellingName() {
+          return spelling;
+        }
+
+        @Override
+        public boolean isAngled() {
+          return clankDelegate.isAngled();
+        }
+
+        @Override
+        public int getDirectiveStartOffset() {
+          return clankDelegate.getHashOffset();
+        }
+
+        @Override
+        public int getDirectiveEndOffset() {
+          return clankDelegate.getEodOffset();
+        }        
+
+        @Override
+        public String toString() {
+          return "ClankInclusionDirective{" + "clankDelegate=" + clankDelegate + ",\n" // NOI18N
+                  + "resolvedPath=" + resolvedPath + ",\n" // NOI18N
+                  + "spelling=" + spelling + ",\n" // NOI18N
+                  + "attr=" + externalAnnotation + '}'; // NOI18N
+        }
+        
+    }
+          
+    private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
       private final FileInfoCallback.FileInfo current;
-      private final PreprocHandler ppHandler;
-      private final StartEntry startEntry;
-      private CharSequence currentPath;
-      APTToken[] stolenTokens;
-      ResolvedPath resolvedPath;
+      private final ClankInclusionDirectiveWrapper includeDirective;
+
+      private APTToken[] stolenTokens;
+      private boolean hasTokenStream = false;
+
       
-      public ClankFileInfoImpl(FileInfoCallback.FileInfo current,
+      public ClankFileInfoWrapper(FileInfoCallback.FileInfo current,
               PreprocHandler ppHandler) {
         assert current != null;
         this.current = current;
-        this.ppHandler = ppHandler;
-        this.startEntry = ppHandler.getIncludeHandler().getStartEntry();
+        this.includeDirective = (ClankInclusionDirectiveWrapper) current.getInclusionDirective().getAnnotation();
+        assert current.isMainFile() || this.includeDirective != null : "forgot to set up include?" + current;
+        assert current.isMainFile() || this.includeDirective.getResolvedPath() != null;
       }
       
       public APTToken[] getStolenTokens() {
@@ -252,7 +340,6 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       private boolean stealTokensIfAny() {
         if (current.hasTokens()) {
-          // have to be called before stealing tokens
           stolenTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens());
           return true;
         } else {
@@ -262,11 +349,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       @Override
       public CharSequence getFilePath() {
-        if (currentPath == null) {
-          String strPath = Casts.toCharSequence(current.getName()).toString();
-          this.currentPath = CharSequences.create(CndFileUtils.normalizeAbsolutePath(startEntry.getFileSystem(), strPath));
-        }
-        return currentPath;
+        return getResolvedPath().getPath();
       }
 
       @Override
@@ -280,35 +363,13 @@ public final class ClankPPCallback extends FileInfoCallback {
       }
 
       @Override
-      public int getInclusionDirectiveStartOffset() {
-        return current.getIncludeStartOffset();
+      public ClankDriver.ClankInclusionDirective getInclusionDirective() {
+        return includeDirective;
       }
-
-      @Override
-      public int getInclusionDirectiveEndOffset() {
-        return current.getIncludeEndOffset();
-      }
-
-      @Override
-      public ResolvedPath getResolvedPath() {
-        if (resolvedPath == null) {
-          resolvedPath = createResolvedPath(getFilePath());
-        }
-        return resolvedPath;
-      }
-
+      
       @Override
       public int[] getSkippedRanges() {
         return current.getSkippedRanges();
-      }
-
-      private ResolvedPath createResolvedPath(CharSequence pathStr) {
-        FileSystem fileSystem = startEntry.getFileSystem();
-        CharSequence folder = CndFileUtils.normalizeAbsolutePath(fileSystem, CndPathUtilities.getDirName(pathStr.toString()));
-        folder = FilePathCache.getManager().getString(CharSequences.create(folder));
-        // FIXME: for now consider user path as isDefaultSearchPath
-        boolean isDefaultSearchPath = (current.getFileType() == SrcMgr.CharacteristicKind.C_User);
-        return new ResolvedPath(fileSystem, folder, pathStr, isDefaultSearchPath, 0);
       }
 
       @Override
@@ -326,17 +387,16 @@ public final class ClankPPCallback extends FileInfoCallback {
         return this;
       }
       
-      private boolean hasTokenStream = false;
-
       @Override
       public String toString() {
         return "ClankFileInfoImpl{" + "hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"
-                + "startEntry=" + startEntry + ",\n"
-                + "currentPath=" + currentPath + ",\n"
-                + "resolvedPath=" + resolvedPath + '}';
+                + "currentInclude=" + includeDirective + '}';
       }
-      
-      
+
+      private ResolvedPath getResolvedPath() {
+        assert includeDirective != null;
+        return includeDirective.getResolvedPath();
+      }
     }
 }
 

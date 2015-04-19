@@ -215,7 +215,42 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
-            
+            if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
+              // let's resolve include as FileImpl
+              ResolvedPath resolvedPath = directive.getResolvedPath();
+              if (resolvedPath == null) {
+                // broken #include path
+                return;
+              }
+              FileImpl curFile = getCurFile(false);
+              FileImpl includedFile = null;
+              CharSequence path = resolvedPath.getPath();
+              ProjectBase aStartProject = startProject;
+              if (aStartProject != null) {
+                  if (aStartProject.isValid()) {
+                      ProjectBase inclFileOwner = aStartProject.getLibraryManager().resolveFileProjectOnInclude(aStartProject, curFile, resolvedPath);
+                      if (inclFileOwner == null) {
+                          assert false : "something wrong when parsing " + stopFileImpl + " from " + this.startProject;
+                          if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
+                              inclFileOwner = aStartProject;
+                          }
+                      }
+                      assert inclFileOwner != null;
+                      if (CndUtils.isDebugMode()) {
+                          CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
+                      }
+                      includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
+                      if (includedFile == null) {
+                        assert false : "something wrong when including " + path + " from " + curFile;
+                      }
+                  } else {
+                    assert false : "invalid start project when including " + path + " from " + curFile;
+                  }
+              } else {
+                  APTUtils.LOG.log(Level.SEVERE, "FileTokenStreamCallback: file {0} without project!!!", new Object[]{path});// NOI18N
+              }
+              directive.setAnnotation(includedFile);
+            }            
         }
 
         @Override
@@ -235,41 +270,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
                 // let's keep stack of inner includes
                 // then onExit post process headers wthich should be parsed
-                ResolvedPath resolvedPath = enteredTo.getResolvedPath();
-                CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(resolvedPath.getPath(), enteredTo.getFilePath()),
-                        resolvedPath.getPath() + " vs. ", enteredTo.getFilePath());
-                assert ClankDriver.extractTokenStream(ppHandler).getFileIndex() == enteredTo.getFileIndex();
                 FileImpl curFile = getCurFile(false);
-                CharSequence path = resolvedPath.getPath();
-                ProjectBase aStartProject = startProject;
-                if (aStartProject != null) {
-                    if (aStartProject.isValid()) {
-                        ProjectBase inclFileOwner = aStartProject.getLibraryManager().resolveFileProjectOnInclude(aStartProject, curFile, resolvedPath);
-                        if (inclFileOwner == null) {
-                            assert false : "something wrong when parsing " + stopFileImpl + " from " + this.startProject;
-                            if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
-                                inclFileOwner = aStartProject;
-                            }
-                        }
-                        assert inclFileOwner != null;
-                        if (CndUtils.isDebugMode()) {
-                            CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
-                        }
-                        FileImpl includedFile = inclFileOwner.prepareIncludedFile(aStartProject, path, ppHandler);
-                        if (includedFile != null) {
-                          curFiles.add(includedFile);
-                          addInclude(curFile, includedFile, enteredTo);
-                        } else {
-                          assert false : "something wrong when including " + path + " from " + curFile;
-                          curFiles.add(curFile);
-                        }
-                    } else {
-                      assert false : "invalid start project when including " + path + " from " + curFile;
-                      curFiles.add(curFile);
-                    }
+                FileImpl includedFile = (FileImpl) enteredTo.getInclusionDirective().getAnnotation();
+                if (includedFile != null) {
+                  curFiles.add(includedFile);
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: file {0} without project!!!", new Object[]{path});// NOI18N
-                    curFiles.add(curFile);
+                  assert false : "something wrong when including " + enteredTo.getFilePath() + " from " + curFile;
+                  curFiles.add(curFile);
                 }
               }
             }
@@ -352,20 +359,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private void addInclude(FileImpl curFile, FileImpl includedFile, ClankDriver.ClankFileInfo enteredTo) {
           if (triggerParsingActivity && (curFile == stopFileImpl)) {
             FileContent parsingFileContent = fileContent;
-            ResolvedPath resolvedPath = enteredTo.getResolvedPath();
+            ResolvedPath resolvedPath = enteredTo.getInclusionDirective().getResolvedPath();
             String fileName = CndPathUtilities.getBaseName(resolvedPath.getPath().toString());
             boolean system = !resolvedPath.isDefaultSearchPath();
             boolean broken = (includedFile == null);
-            int startOffset = enteredTo.getInclusionDirectiveStartOffset();
-            int endOffset = enteredTo.getInclusionDirectiveEndOffset();
+            int startOffset = enteredTo.getInclusionDirective().getDirectiveStartOffset();
+            int endOffset = enteredTo.getInclusionDirective().getDirectiveEndOffset();
             IncludeImpl incl = IncludeImpl.create(fileName, system, false, includedFile, curFile, startOffset, endOffset);
             parsingFileContent.addInclude(incl, broken);
           }
         }
     }
     
-    private static final String INCLUDE = "#include ";
-
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
         private final PreprocHandler ppHandler;
 
@@ -411,7 +416,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             // TODO: we can collect all included recursively, but not now
             if (enteredFrom != null && enteredFrom.getFileIndex() == includeFileOnwerIndex) {
               // entering from file owner into include directive
-              if (enteredTo.getInclusionDirectiveStartOffset() == this.interestedClankIncludeDirectiveOffset) {
+              if (enteredTo.getInclusionDirective().getDirectiveStartOffset() == this.interestedClankIncludeDirectiveOffset) {
                 assert includedFileInfo == null : "seen twice? " + includedFileInfo;
                 includedFileInfo = enteredTo;
                 insideInterestedFile = true;

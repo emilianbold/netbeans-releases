@@ -85,7 +85,13 @@ public final class ClankDriver {
     }
 
     public interface ClankInclusionDirective {
-      ClankFileInfo getFileInfo();
+      void setAnnotation(Object attr);
+      Object getAnnotation();
+      ResolvedPath getResolvedPath();
+      String getSpellingName();
+      boolean isAngled();
+      int getDirectiveStartOffset();
+      int getDirectiveEndOffset();      
     }
 
     public interface ClankPreprocessorCallback {
@@ -120,12 +126,10 @@ public final class ClankDriver {
     public interface ClankFileInfo {
       CharSequence getFilePath();
       PreprocHandler getHandler();
-      ResolvedPath getResolvedPath();
       boolean hasTokenStream();
       TokenStream getTokenStream();
       int getFileIndex();
-      int getInclusionDirectiveStartOffset();
-      int getInclusionDirectiveEndOffset();
+      ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();
     }
 }
