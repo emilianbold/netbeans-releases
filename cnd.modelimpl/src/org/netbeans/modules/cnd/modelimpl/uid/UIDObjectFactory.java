@@ -129,6 +129,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             super.writeSelfPersistent((SelfPersistent) anUID, aStream);
         } else if (anUID != null){
             CndUtils.assertUnconditional(anUID + ", " +  anUID.getObject());
+            super.writeSelfPersistent(null, aStream);
         } else {
             //CndUtils.assertUnconditional("NULL UID");
             super.writeSelfPersistent(null, aStream);
