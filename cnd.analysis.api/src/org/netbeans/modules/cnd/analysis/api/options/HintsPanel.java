@@ -516,16 +516,16 @@ public class HintsPanel extends AbstractHintsPanel implements TreeCellRenderer  
         }
 
         public void nodeChanged(TreeNode node) {
-            if (node instanceof DefaultMutableTreeNode) {
-                Object data = ((DefaultMutableTreeNode)node).getUserObject();
-                if ( data instanceof CodeAuditProxy ) {
-                    CodeAuditProxy rule = (CodeAuditProxy)data;
-                } else if (data instanceof CodeAuditProvider) {
-                    CodeAuditProvider provider = (CodeAuditProvider)data;
-                } else if (data instanceof NamedOption) {
-                    NamedOption option = (NamedOption)data;
-                }
-            }
+//            if (node instanceof DefaultMutableTreeNode) {
+//                Object data = ((DefaultMutableTreeNode)node).getUserObject();
+//                if ( data instanceof CodeAuditProxy ) {
+//                    CodeAuditProxy rule = (CodeAuditProxy)data;
+//                } else if (data instanceof CodeAuditProvider) {
+//                    CodeAuditProvider provider = (CodeAuditProvider)data;
+//                } else if (data instanceof NamedOption) {
+//                    NamedOption option = (NamedOption)data;
+//                }
+//            }
         }
     }
     
