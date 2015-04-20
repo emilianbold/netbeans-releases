@@ -71,7 +71,7 @@ public final class DbxPathProvider {
 	    else
 		platform = Platform.local();
 	    String variant;
-	    if (host.isLinux64())
+	    if (host != null && host.isLinux64())
 		variant = platform.variant64();
 	    else
 		variant = platform.variant();

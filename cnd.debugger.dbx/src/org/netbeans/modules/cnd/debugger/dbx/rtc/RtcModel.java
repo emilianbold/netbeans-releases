@@ -671,7 +671,7 @@ public class RtcModel {
     }
 
     public void setProfile(RtcProfile profile) {
-	RtcProfile oldProfile = profile;
+	RtcProfile oldProfile = this.profile;
 	this.profile = profile;
 
 	if (oldProfile != profile)
