@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class WorkshopProjectFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"prd"}; // NOI18N
+    private static final String suffixes[] = {"prd"}; // NOI18N
     private static WorkshopProjectFilter instance = null;
 
     public WorkshopProjectFilter() {
