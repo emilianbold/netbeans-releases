@@ -182,7 +182,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             null,
                             null);
                     Object value = DialogDisplayer.getDefault().notify(not);
-                    if (NotifyDescriptor.CANCEL_OPTION == value) {
+                    if (NotifyDescriptor.CANCEL_OPTION == value || checkDevices.equals(Bundle.ERR_AdbNotFound())) {
                         return;
                     } else {
                         checkDevices = checkDevices();
@@ -250,6 +250,9 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     }
 
     private String checkDevices() {
+        if (!AndroidPlatform.getDefault().adbCommandExists()) {
+            return Bundle.ERR_AdbNotFound();
+        }
         try {
             if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
                 for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {
