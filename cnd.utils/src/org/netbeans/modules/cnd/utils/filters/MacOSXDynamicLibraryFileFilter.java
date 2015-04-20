@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class MacOSXDynamicLibraryFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"dylib"}; // NOI18N
+    private static final String suffixes[] = {"dylib"}; // NOI18N
     private static MacOSXDynamicLibraryFileFilter instance = null;
 
     public MacOSXDynamicLibraryFileFilter() {

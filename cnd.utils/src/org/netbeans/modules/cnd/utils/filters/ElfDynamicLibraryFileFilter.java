@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class ElfDynamicLibraryFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"so"}; // NOI18N
+    private static final String suffixes[] = {"so"}; // NOI18N
     private static ElfDynamicLibraryFileFilter instance = null;
 
     public ElfDynamicLibraryFileFilter() {

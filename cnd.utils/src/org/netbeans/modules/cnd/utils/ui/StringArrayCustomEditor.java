@@ -69,10 +69,10 @@ import org.openide.awt.Mnemonics;
 public final class StringArrayCustomEditor extends javax.swing.JPanel {
 
     // the bundle to use
-    private ResourceBundle bundle = NbBundle.getBundle (
+    private final ResourceBundle bundle = NbBundle.getBundle (
                                        StringArrayCustomEditor.class);
 
-    private Vector<String> itemsVector;
+    private final Vector<String> itemsVector;
     private final static int DEFAULT_WIDTH = 400;
 
     static final long serialVersionUID =-4347656479280614636L;

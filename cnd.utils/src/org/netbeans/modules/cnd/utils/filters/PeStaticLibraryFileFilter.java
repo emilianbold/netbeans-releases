@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class PeStaticLibraryFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"a", "lib"}; // NOI18N
+    private static final String suffixes[] = {"a", "lib"}; // NOI18N
     private static PeStaticLibraryFileFilter instance = null;
 
     public PeStaticLibraryFileFilter() {

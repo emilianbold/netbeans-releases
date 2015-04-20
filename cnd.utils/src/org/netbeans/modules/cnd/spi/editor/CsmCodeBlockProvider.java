@@ -49,7 +49,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class CsmCodeBlockProvider {
-    private static CsmCodeBlockProvider DEFAULT = new CsmCodeBlockProvider.Default();
+    private static final CsmCodeBlockProvider DEFAULT = new CsmCodeBlockProvider.Default();
 
     public static CsmCodeBlockProvider getDefault(){
         return DEFAULT;

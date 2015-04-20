@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class PeDynamicLibraryFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"dll"}; // NOI18N
+    private static final String suffixes[] = {"dll"}; // NOI18N
     private static PeDynamicLibraryFileFilter instance = null;
 
     public PeDynamicLibraryFileFilter() {

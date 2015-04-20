@@ -51,7 +51,7 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public abstract class CsmDocGeneratorProvider {
-    private static CsmDocGeneratorProvider DEFAULT = new Default();
+    private static final CsmDocGeneratorProvider DEFAULT = new Default();
 
     public static CsmDocGeneratorProvider getDefault(){
         return DEFAULT;
