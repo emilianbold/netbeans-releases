@@ -187,10 +187,7 @@ public class ImportAnalysis2 {
 
     public void enterVisibleThroughClasses(ClassTree clazz) {
         Set<Element> visible = visibleThroughClasses.peek();
-
         visible.addAll(overlay.getAllVisibleThrough(model, elements, currentFQN.getFQN(), clazz));
-
-        visibleThroughClasses.push(visible);
     }
 
     public void classLeft() {
