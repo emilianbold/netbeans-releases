@@ -48,7 +48,7 @@ import org.openide.util.NbBundle;
 
 public class ResourceFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
+    private static final String suffixes[] = {"gif", "jpg", "png", "htm", "html", "xml", "txt", "mk", "Makefile", "makefile"}; // NOI18N
     private static ResourceFileFilter instance = null;
 
     public static ResourceFileFilter getInstance() {

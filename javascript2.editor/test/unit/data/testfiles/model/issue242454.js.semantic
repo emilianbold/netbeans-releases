@@ -1,4 +1,4 @@
-var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
+var |>METHOD:myLib<| = new function |>METHOD:MyLib<|() {
    
     
     /**
@@ -12,5 +12,5 @@ var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
    
 };
 
-|>GLOBAL:myLib<|.
+myLib.
         

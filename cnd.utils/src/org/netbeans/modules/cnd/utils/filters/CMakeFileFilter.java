@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  */
 public class CMakeFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {}; // NOI18N
+    private static final String suffixes[] = {}; // NOI18N
     private static CMakeFileFilter instance = null;
 
     public CMakeFileFilter() {

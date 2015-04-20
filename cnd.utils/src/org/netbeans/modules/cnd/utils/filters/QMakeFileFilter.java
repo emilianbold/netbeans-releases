@@ -42,8 +42,6 @@
 package org.netbeans.modules.cnd.utils.filters;
 
 import org.netbeans.modules.cnd.utils.FileAndFileObjectFilter;
-import java.io.File;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,7 +50,7 @@ import org.openide.util.NbBundle;
  */
 public class QMakeFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"pro"}; // NOI18N
+    private static final String suffixes[] = {"pro"}; // NOI18N
     private static QMakeFileFilter instance = null;
 
     public QMakeFileFilter() {
