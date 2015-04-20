@@ -76,7 +76,7 @@ class DetailedReportAction extends FlyweightBooleanStateAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public DetailedReportAction(RtcView rtcView) {
 	super(SharedDetailedReportAction.class);

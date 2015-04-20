@@ -169,10 +169,10 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     private final DebuggerSettingsBridge profileBridge;
     private Dbx dbx;				// corresponding glue surrogate
     private final DbxHandlerExpert handlerExpert;
-    private RtcState rtcState = new RtcState();
+    private final RtcState rtcState = new RtcState();
 
-    private DisModel disModel = new DisModel();
-    private DisController disController = new DisController();
+    private final DisModel disModel = new DisModel();
+    private final DisController disController = new DisController();
     private final DbxDisassembly disassembly;
     private boolean update_dis = true;
     
@@ -3032,7 +3032,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     public String getCurrentScope() {
         return dbx.getVar("vscope");	// NOI18N
     }
-    private boolean optionDebugTried = false;
+    private final boolean optionDebugTried = false;
     private boolean optionDebug = false;
 
     private boolean getOptionDebug() {
@@ -3694,7 +3694,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     dbx.mem_notify(0, true);
      */
     }
-    private ArrayBrowserController arrayBrowserController = new DbxArrayBrowserController();
+    private final ArrayBrowserController arrayBrowserController = new DbxArrayBrowserController();
 
 //    private ArrayBrowserWindow currentArrayBrowserWindow = null;
 //    public void registerArrayBrowserWindow(TopComponent aw) {

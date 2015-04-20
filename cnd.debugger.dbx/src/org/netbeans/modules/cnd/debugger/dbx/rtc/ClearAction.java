@@ -72,7 +72,7 @@ class ClearAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public ClearAction(RtcView rtcView) {
 	super(SharedClearAction.class);

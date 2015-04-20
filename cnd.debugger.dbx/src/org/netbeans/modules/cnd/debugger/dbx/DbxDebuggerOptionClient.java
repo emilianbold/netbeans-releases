@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 
 public final class DbxDebuggerOptionClient implements OptionClient {
 
-    private NativeDebugger debugger;
+    private final NativeDebugger debugger;
 
     public DbxDebuggerOptionClient(NativeDebugger debugger) {
 	this.debugger = debugger;

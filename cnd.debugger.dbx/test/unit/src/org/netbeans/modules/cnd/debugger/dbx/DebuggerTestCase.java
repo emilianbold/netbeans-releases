@@ -81,7 +81,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
     protected MakeConfiguration conf = null;
     protected String testapp = null;
     protected String testproj = null;
-    private String testapp_dir = null;
+    private final String testapp_dir = null;
     private String project_dir = null;
     private String executable = "";
     protected VariablesTestCase.MockDebugger debugger;
@@ -127,7 +127,7 @@ public abstract class DebuggerTestCase extends CndBaseTestCase implements Contex
 	}
     }
 
-    private StateListener sl = new TestStateListener();
+    private final StateListener sl = new TestStateListener();
 
     protected void startDebugger(String testproj, String executable, String args) {
         this.testproj = testproj;

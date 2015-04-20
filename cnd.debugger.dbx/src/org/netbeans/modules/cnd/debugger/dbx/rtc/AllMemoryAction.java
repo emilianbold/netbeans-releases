@@ -75,7 +75,7 @@ class AllMemoryAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public AllMemoryAction(RtcView rtcView) {
 	super(SharedAllMemoryAction.class);

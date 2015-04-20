@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.xml.*;
 
 class RtcExperimentXMLCodec extends XMLDecoder implements XMLEncoder {
 
-    private RtcModel model;
+    private final RtcModel model;
 
     // state while decoding
     private static enum Doing {NOTHING, LEAKS, MEMUSE};

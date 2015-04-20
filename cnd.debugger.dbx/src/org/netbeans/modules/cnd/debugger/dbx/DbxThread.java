@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 
 public final class DbxThread extends Thread {
 
-    private GPDbxThread thread;
+    private final GPDbxThread thread;
     int tid;
     int htid;
 

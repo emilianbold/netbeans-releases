@@ -84,8 +84,8 @@ public class LoadobjNodeProp extends PropertySupport<Loadobjs> {
 }
 
 class LoadobjEditor extends PropertyEditorSupport implements ExPropertyEditor {
-    private RtcProfile rtcProfile;
-    private Loadobjs loadobj;
+    private final RtcProfile rtcProfile;
+    private final Loadobjs loadobj;
     private PropertyEnv env;
 
     public LoadobjEditor(Loadobjs loadobj, RtcProfile rtcProfile) {

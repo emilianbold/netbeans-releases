@@ -45,8 +45,6 @@
 
 package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
-import java.util.ArrayList;
-
 /**
    This class represents a hyperlink to be used by ActiveTerm which has
    <ul>

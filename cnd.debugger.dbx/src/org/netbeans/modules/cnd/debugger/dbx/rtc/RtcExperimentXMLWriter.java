@@ -48,15 +48,10 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.File;
 
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileLock;
-import org.openide.filesystems.Repository;
-import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.FileUtil;
 
 

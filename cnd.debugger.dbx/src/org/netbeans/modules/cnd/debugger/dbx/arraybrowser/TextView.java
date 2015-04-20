@@ -53,8 +53,8 @@ import javax.swing.JTextField;
 
 class TextView extends JPanel implements ActionListener {
 
-    private JLabel tvLabel;
-    private JTextField tvTextField;
+    private final JLabel tvLabel;
+    private final JTextField tvTextField;
 
     public TextView() {
         super(new FlowLayout());

@@ -63,7 +63,7 @@ public final class AccessComponent extends RtcComponent {
     public void componentOpened() {
     }
 
-    private RtcModel.Listener listener = new RtcModel.Listener() {
+    private final RtcModel.Listener listener = new RtcModel.Listener() {
 	public void profileChanged() {}
 
 	public void modelChanged() {}

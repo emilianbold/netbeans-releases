@@ -67,7 +67,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Variable;
 
 class DbxVariable extends Variable {
 
-    private DbxDebuggerImpl debugger;
+    private final DbxDebuggerImpl debugger;
 
     // "permanent" attributes
 
@@ -401,7 +401,7 @@ class DbxVariable extends Variable {
     private static class DerefVDLActions implements VDLActions {
 	private final DbxVariable var;
 	private final ModelChangeDelegator updater;
-	private boolean isWatch;
+	private final boolean isWatch;
 
 	DerefVDLActions(DbxVariable var, ModelChangeDelegator updater, boolean isWatch) {
 	    this.var = var;

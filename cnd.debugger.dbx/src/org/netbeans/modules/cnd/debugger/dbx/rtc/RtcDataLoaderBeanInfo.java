@@ -46,10 +46,8 @@ package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
 
 import java.beans.*;
-import java.awt.Image;
 
 import org.openide.ErrorManager;
-import org.openide.util.Utilities;
 
 public class RtcDataLoaderBeanInfo extends SimpleBeanInfo {
 

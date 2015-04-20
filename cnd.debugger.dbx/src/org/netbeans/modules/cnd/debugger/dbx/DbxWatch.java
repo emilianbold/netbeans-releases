@@ -64,8 +64,8 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
  */
 
 class DbxWatch extends DbxVariable implements WatchVariable {
-    private int id;
-    private boolean restricted;
+    private final int id;
+    private final boolean restricted;
     private NativeWatch nativeWatch;
 
     public DbxWatch(DbxDebuggerImpl debugger, ModelChangeDelegator updater,

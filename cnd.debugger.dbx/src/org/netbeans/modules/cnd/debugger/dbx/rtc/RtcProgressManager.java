@@ -44,9 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
-import javax.swing.SwingUtilities;
-
-import org.openide.ErrorManager;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ProgressManager;

@@ -77,10 +77,10 @@ public class RtcModel {
     }
 
     static public class Location {
-	private String func;
-	private String source;
-	private int lineno;
-	private long pc;
+	private final String func;
+	private final String source;
+	private final int lineno;
+	private final long pc;
 
 	public Location(String func,
 			String source,
@@ -99,8 +99,8 @@ public class RtcModel {
     }
 
     static public class Frame extends Location {
-	private String args;
-	private int frameno;
+	private final String args;
+	private final int frameno;
 
 	public Frame(int frameno, 
 		     String func,
@@ -118,8 +118,8 @@ public class RtcModel {
     }
 
     static public class Stack {
-	private Frame frame[];
-	private Run run;
+	private final Frame frame[];
+	private final Run run;
 
 	Stack(Run run, int nframes) {
 	    this.run = run;
@@ -158,7 +158,7 @@ public class RtcModel {
     // aka MprofHeader
     static public class MemoryReportHeader {
 
-	private ErrorCode type;		// one of:
+	private final ErrorCode type;		// one of:
 					// BLOCK_INUSE
 					// MEMORY_LEAK
 					// ADDRESS_IN_BLOCK (possible leak)
@@ -166,13 +166,13 @@ public class RtcModel {
 	private String message;		// aka buf
 
 	// the following are settings in effect at the time of the report
-	private int match;		// -m
-	private int limit;		// -n
-	private boolean verbose;	// -v
-	private boolean all;		// -a (as opposed to incremental)
+	private final int match;		// -m
+	private final int limit;		// -n
+	private final boolean verbose;	// -v
+	private final boolean all;		// -a (as opposed to incremental)
 
-	private int count;		// ... of items
-	private long totalBytes;
+	private final int count;		// ... of items
+	private final long totalBytes;
 
 	public MemoryReportHeader(ErrorCode type,
 	                          String message,
@@ -212,14 +212,14 @@ public class RtcModel {
 
     // aka MprofItem
     public static class MemoryReportItem {
-	private ErrorCode type;
+	private final ErrorCode type;
 	private String message;
-	private int count;		// ... of blocks allocated at this stack
-	private long address;		// of allocated/leaked block
+	private final int count;		// ... of blocks allocated at this stack
+	private final long address;		// of allocated/leaked block
 					// if more than one block, address of 
 					// first one?
-	private long size;		// of allocated/leaked block
-	private int percentage;		// only for BLOCK_INUSE
+	private final long size;		// of allocated/leaked block
+	private final int percentage;		// only for BLOCK_INUSE
 	private Stack stack;		// ... at the time of allocation
 
 	public MemoryReportItem(ErrorCode type,
@@ -258,8 +258,8 @@ public class RtcModel {
     }
 
     static class MemoryReport extends Completable {
-	private MemoryReportHeader header;
-	private ArrayList<MemoryReportItem> items;
+	private final MemoryReportHeader header;
+	private final ArrayList<MemoryReportItem> items;
 	private boolean interrupted;
 
 	MemoryReport(MemoryReportHeader header) {
@@ -650,13 +650,13 @@ public class RtcModel {
 	}
     }
 
-    private ArrayList<Run> runs = new ArrayList<Run>();
+    private final ArrayList<Run> runs = new ArrayList<Run>();
 
     private Run currentRun;
 
     private RtcProfile profile;
 
-    private String name;
+    private final String name;
 
     public RtcModel(String name) {
 	this.name = name;

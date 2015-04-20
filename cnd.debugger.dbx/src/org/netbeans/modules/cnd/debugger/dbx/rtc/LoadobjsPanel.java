@@ -65,8 +65,8 @@ class LoadobjsPanel extends JPanel implements PropertyChangeListener, HelpCtx.Pr
     private Loadobjs loadobj;
     private ListUI loadobjList;
     private JTextField libsTextField;
-    private PropertyEditorSupport editor;
-    private boolean accessEnabled;
+    private final PropertyEditorSupport editor;
+    private final boolean accessEnabled;
 
     /** Creates new form CustomizerCompile */
     public LoadobjsPanel(PropertyEditorSupport editor, PropertyEnv env, boolean access_enabled) {

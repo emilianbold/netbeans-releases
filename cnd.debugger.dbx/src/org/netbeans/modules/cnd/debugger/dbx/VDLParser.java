@@ -157,9 +157,9 @@ class VDLParser {
     }
 
 
-    private static MyLispBox box = new MyLispBox();
+    private static final MyLispBox box = new MyLispBox();
 
-    private VDLActions acts;
+    private final VDLActions acts;
     private int version;
 
     public VDLParser(VDLActions acts) {

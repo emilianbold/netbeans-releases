@@ -52,7 +52,6 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.windows.InputOutput;
 
-import org.netbeans.modules.cnd.builds.*;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 
@@ -69,7 +68,7 @@ class FixExecutor implements Runnable {
     private String errfile;
     
     /** I/O class for writing output to a build tab */
-    private InputOutput io;
+    private final InputOutput io;
 
     /** The BuildCustomizer */
     // Jean private BuildCustomizer customizer;
@@ -78,7 +77,7 @@ class FixExecutor implements Runnable {
     // Jean private ArrayList listeners = new ArrayList(5);
 
     /** Name of the tab in the Output window */
-    private String tabName;
+    private final String tabName;
 
     /** Private PrintStream to output window */
     private PrintStream out;
@@ -272,8 +271,8 @@ class FixExecutor implements Runnable {
     public final class FixReaderThread extends java.lang.Thread {
 
 	/** This is all output, not just stdout */
-	private InputStream input;
-	private PrintStream out;
+	private final InputStream input;
+	private final PrintStream out;
 
 	public FixReaderThread(InputStream input, PrintStream out) {
 	    this.input = input;	    // input is a FileInputStream

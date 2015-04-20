@@ -48,7 +48,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import javax.swing.*;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.values.DebuggerEvent;
 
 class DebuggerBreakpointPanel extends BreakpointPanel {

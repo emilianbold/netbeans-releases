@@ -66,7 +66,7 @@ public final class LeaksComponent extends RtcComponent {
     public void componentOpened() {
     }
 
-    private RtcModel.Listener listener = new RtcModel.Listener() {
+    private final RtcModel.Listener listener = new RtcModel.Listener() {
 
 	// We ignore a memuse or leak report if it doesn't match this views
 	// verbosity level

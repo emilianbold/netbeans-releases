@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Frame;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Thread;
 
 final class DbxFrame extends Frame {
-    private int dbx_frameno;
+    private final int dbx_frameno;
 
     public DbxFrame(DbxDebuggerImpl debugger, GPDbxFrame frame, Thread thread) {
 	super(debugger, thread);

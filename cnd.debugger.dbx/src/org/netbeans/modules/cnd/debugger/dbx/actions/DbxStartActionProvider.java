@@ -66,8 +66,8 @@ import org.netbeans.modules.cnd.debugger.dbx.DbxDebuggerInfo;
 
 public class DbxStartActionProvider extends ActionsProvider {
 
-    private DbxDebuggerImpl debugger;
-    private DbxDebuggerInfo ddi;
+    private final DbxDebuggerImpl debugger;
+    private final DbxDebuggerInfo ddi;
 
     public DbxStartActionProvider(ContextProvider ctx) {
 	// typically resolved via

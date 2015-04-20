@@ -76,7 +76,7 @@ class NewBlocksAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public NewBlocksAction(RtcView rtcView) {
 	super(SharedNewBlocksAction.class);

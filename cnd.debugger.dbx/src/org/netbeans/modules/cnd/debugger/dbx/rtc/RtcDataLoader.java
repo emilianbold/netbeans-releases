@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
 import java.io.IOException;
 
-import org.openide.actions.*;
 
 import org.openide.util.actions.SystemAction;
 

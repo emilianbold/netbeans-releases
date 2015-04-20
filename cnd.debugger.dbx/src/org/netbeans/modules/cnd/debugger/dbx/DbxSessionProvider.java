@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSessionProvider;
 
 public class DbxSessionProvider extends NativeSessionProvider {
 
-    private DbxDebuggerInfo ddi;
+    private final DbxDebuggerInfo ddi;
 
     public DbxSessionProvider(ContextProvider ctx) {
 	super(ctx);

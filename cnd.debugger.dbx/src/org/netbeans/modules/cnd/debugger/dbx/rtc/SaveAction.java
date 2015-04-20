@@ -81,7 +81,7 @@ final class SaveAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public SaveAction(RtcView rtcView) {
 	super(SharedSaveAction.class);

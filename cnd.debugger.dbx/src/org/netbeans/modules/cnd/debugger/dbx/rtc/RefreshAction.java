@@ -77,7 +77,7 @@ class RefreshAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public RefreshAction(RtcView rtcView) {
 	super(SharedRefreshAction.class);

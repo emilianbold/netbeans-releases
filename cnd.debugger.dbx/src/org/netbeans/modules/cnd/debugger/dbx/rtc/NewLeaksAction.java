@@ -76,7 +76,7 @@ class NewLeaksAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public NewLeaksAction(RtcView rtcView) {
 	super(SharedNewLeaksAction.class);

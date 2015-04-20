@@ -77,7 +77,7 @@ class IncrementalMemoryAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public IncrementalMemoryAction(RtcView rtcView) {
 	super(SharedIncrementalMemoryAction.class);

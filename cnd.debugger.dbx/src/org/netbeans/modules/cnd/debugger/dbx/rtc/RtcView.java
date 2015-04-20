@@ -222,20 +222,20 @@ public class RtcView extends JPanel
 	new NonInteractiveController();
 
     private RtcController controller;
-    private Hyperlink.Resolver resolver = new Resolver();
+    private final Hyperlink.Resolver resolver = new Resolver();
     private RtcModel model;
 
     private JTabbedPane tabbedPane;
     private RtcComponent front;
 
-    private TopComponent owner;
+    private final TopComponent owner;
     private AccessComponent access;
     private MemuseComponent memuse;
     private LeaksComponent leaks;
 
     private RtcState state;
 
-    private Lookup lookup;
+    private final Lookup lookup;
 
     private JTextField statusText;
     private JLabel statusLabel_access;
@@ -264,8 +264,8 @@ public class RtcView extends JPanel
     FlyweightBooleanStateAction detailedStackAction;
     FlyweightBooleanStateAction summaryStackAction;
 
-    private Option frontAccessOption;
-    private Option frontMemuseOption;
+    private final Option frontAccessOption;
+    private final Option frontMemuseOption;
 
     RtcModel.Listener listener;
 

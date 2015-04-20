@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.options.Signals;
 public class DbxProfileXMLCodec extends DbgProfileXMLCodec {
 
     private final static int thisversion = 1;
-    private OptionSetXMLCodec optionsXMLCodec;
+    private final OptionSetXMLCodec optionsXMLCodec;
 
     static final String TAG_ENGINE = "engine"; // NOI18N
 
@@ -103,17 +103,17 @@ public class DbxProfileXMLCodec extends DbgProfileXMLCodec {
     } 
 
     // PathMap stuff
-    private Vector<Pathmap.Item> pathmaps = new Vector<Pathmap.Item>();
+    private final Vector<Pathmap.Item> pathmaps = new Vector<Pathmap.Item>();
 
     // Exception stuff
-    private Vector<String> interceptlist = new Vector<String>();
-    private Vector<String> interceptexlist = new Vector<String>();
+    private final Vector<String> interceptlist = new Vector<String>();
+    private final Vector<String> interceptexlist = new Vector<String>();
     private boolean unhandled;
     private boolean unexpected;
     private boolean all;
 
     // Signal stuff
-    private Vector<Signals.InitialSignalInfo> signals = new Vector<Signals.InitialSignalInfo>();
+    private final Vector<Signals.InitialSignalInfo> signals = new Vector<Signals.InitialSignalInfo>();
     
     // interface XMLDecoder
     public void startElement(String element, Attributes atts) {

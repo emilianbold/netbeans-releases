@@ -62,7 +62,7 @@ import com.sun.tools.swdev.glue.dbx.GPDbxVItemStatic;
 
 class ArrayView extends JComponent implements TableModelListener {
 
-    private String avName =
+    private final String avName =
 	Catalog.get("TITLE_ArrayBrowserView");  // NOI18N
 
     private class DimensionInfo {

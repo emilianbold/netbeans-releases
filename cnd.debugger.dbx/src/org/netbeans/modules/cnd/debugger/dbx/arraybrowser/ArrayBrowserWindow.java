@@ -70,9 +70,9 @@ public final class ArrayBrowserWindow extends TopComponent implements ChangeList
     static ArrayBrowserWindow DEFAULT;
 
     // has two views now, will add at least one more for subscripts
-    private TextView abwTextView;
-    private JTabbedPane abwTabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
-    private Vector<ArrayView> abwArrayViewVector;
+    private final TextView abwTextView;
+    private final JTabbedPane abwTabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+    private final Vector<ArrayView> abwArrayViewVector;
 
     private ArrayView abwArrayView = null;
 

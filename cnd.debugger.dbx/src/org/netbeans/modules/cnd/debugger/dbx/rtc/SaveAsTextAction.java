@@ -75,7 +75,7 @@ final class SaveAsTextAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public SaveAsTextAction(RtcView rtcView) {
 	super(SharedSaveAsTextAction.class);

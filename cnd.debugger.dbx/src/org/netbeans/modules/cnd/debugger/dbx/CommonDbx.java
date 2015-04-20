@@ -67,8 +67,6 @@ import org.netbeans.lib.terminalemulator.Coord;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Lookup;
 import org.openide.awt.StatusDisplayer;
 
 import com.sun.tools.swdev.glue.GStr;
@@ -81,7 +79,6 @@ import com.sun.tools.swdev.glue.Surrogate;
 import com.sun.tools.swdev.glue.HostInfo;
 
 import com.sun.tools.swdev.glue.dbx.*;
-import com.sun.tools.swdev.toolscommon.base.InstallDir;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.Executor;
 import org.netbeans.modules.cnd.debugger.common2.utils.PhasedProgress;

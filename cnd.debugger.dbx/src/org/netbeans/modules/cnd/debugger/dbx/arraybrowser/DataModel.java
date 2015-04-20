@@ -47,8 +47,8 @@ package org.netbeans.modules.cnd.debugger.dbx.arraybrowser;
 import javax.swing.table.AbstractTableModel;
 
 class DataModel extends AbstractTableModel {
-    private String[] columnNames;
-    private Object[][] data;
+    private final String[] columnNames;
+    private final Object[][] data;
     private int numberOfRows = 0;
 
     public DataModel(int row, int col) {

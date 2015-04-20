@@ -113,7 +113,7 @@ abstract class Renderer {
 	    term.clear(); // Necessary? couldn't quite tell from docs
 	}
 
-	private Stack<ActiveRegion> regions = new Stack<ActiveRegion>();
+	private final Stack<ActiveRegion> regions = new Stack<ActiveRegion>();
 
 	protected void beginRegion(String url) {
 	    Hyperlink link = new Hyperlink(resolver, url);

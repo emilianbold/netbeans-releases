@@ -85,7 +85,7 @@ final class SuppressAction extends FlyweightAction {
 	}
     }
 
-    private RtcView rtcView;
+    private final RtcView rtcView;
 
     public SuppressAction(RtcView rtcView) {
 	super(SharedSuppressAction.class);
