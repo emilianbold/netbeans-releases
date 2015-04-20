@@ -1327,6 +1327,34 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue250434.js", "function TripDayFormCtrl($scope, TripMo^del, TripHandler) { // lineA", true); 
     }
     
+    public void testIssue251911_01() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "var _my^Lib = this;", true); 
+    }
+    
+    public void testIssue251911_02() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "var TR^UE   = !0,", true); 
+    }
+    
+    public void testIssue251911_03() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "FAL^SE  = !1;", true); 
+    }
+    
+    public void testIssue251911_04() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLi^b_in(item, container) {", true); 
+    }
+    
+    public void testIssue251911_05() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLib_in(it^em, container) {", true); 
+    }
+    
+    public void testIssue251911_06() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLib_in(item, con^tainer) {", true); 
+    }
+    
+    public void testIssue251911_07() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "for( var k^ey in container ) {", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

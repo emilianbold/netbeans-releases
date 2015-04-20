@@ -606,6 +606,17 @@ public class ModelVisitor extends PathNodeVisitor {
                     // private method
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
+                } else if (!functionNode.isAnonymous() && node instanceof CallNode) {
+                    // try to handle case like: var MyLib = new function MyLib () {}
+                    if (pathSize > 5) {
+                        Node node4 = getPreviousFromPath(4);
+                        Node node5 = getPreviousFromPath(5);
+                        if (node4 instanceof UnaryNode && node5 instanceof VarNode) {
+                            name = getName((VarNode)node5, parserResult);
+                            isPrivate = functionStack.size() > 6;
+                        }
+                    }
+                    
                 }
                 if (name != null && !name.isEmpty() && !functionNode.isAnonymous()) {
                     // we need to create just referenci to non anonymous function
