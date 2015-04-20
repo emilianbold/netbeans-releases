@@ -46,6 +46,8 @@ import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -423,5 +425,15 @@ public class AndroidPlatform implements MobilePlatform {
             }
         }
         return null;
+    }
+
+    /**
+     * Performs a check whether adb executable is available
+     *
+     * @return <code>true</code> if adb command has been found,
+     * <code>false</code> otherwise
+     */
+    boolean adbCommandExists() {
+        return Files.exists(Paths.get(getAdbCommand()));
     }
 }

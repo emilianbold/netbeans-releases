@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.indexing.APTUtils;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -95,9 +96,10 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     //@GuardedBy("this")
     private Set<String> rootPkgCache;
     private volatile FileObject cachedRoot;
+    private volatile FileObject[] cachedAptRoots;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static final String REFERENCES = "refs";    // NOI18N
-    
+
     /** Creates a new instance of ClassesAndMembersUQ */
     private PersistentClassIndex(
             final URL root,
@@ -113,27 +115,27 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         this.index = IndexManager.createIndex(getReferencesCacheFolder(cacheRoot), DocumentUtil.createAnalyzer());
         this.indexPath = new IndexPatch();
     }
-    
+
     @Override
     @NonNull
     public BinaryAnalyser getBinaryAnalyser () {
         return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
-    
+
     @Override
     @NonNull
-    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {                
+    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {
         final TransactionContext txCtx = TransactionContext.get();
-        assert  txCtx != null;        
+        assert  txCtx != null;
         final PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
         assert pit != null;
-        
+
         Writer writer = pit.getIndexWriter();
-        if (writer == null) {        
+        if (writer == null) {
             writer = new PIWriter();
             pit.setIndexWriter(writer);
         }
-        return SourceAnalyzerFactory.createStorableAnalyzer(writer);        
+        return SourceAnalyzerFactory.createStorableAnalyzer(writer);
     }
 
     @Override
@@ -141,7 +143,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         return getState() == State.INITIALIZED ? finalType : beforeInitType;
     }
 
-    
+
     @Override
     public boolean isValid() {
         try {
@@ -150,24 +152,38 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             return false;
         }
     }
-    
+
     @Override
     public FileObject[] getSourceRoots () {
-        FileObject[] rootFos;
         if (getType() == Type.SOURCE) {
-            FileObject rootFo = URLMapper.findFileObject (this.root);
-            rootFos = rootFo == null ? new FileObject[0]  : new FileObject[] {rootFo};
+            final FileObject rootFo = getRoot();
+            if (rootFo == null) {
+                return new FileObject[0];
+            }
+            FileObject[] aptRoots = cachedAptRoots;
+            if (!isValid(aptRoots)) {
+                final URL aptGeneratedURL = APTUtils.get(rootFo).sourceOutputDirectory();
+                final FileObject aptGeneratedRoot = aptGeneratedURL == null ?
+                        null:
+                        URLMapper.findFileObject(aptGeneratedURL);
+                aptRoots = cachedAptRoots = aptGeneratedRoot == null ?
+                        new FileObject[0] :
+                        new FileObject[] {aptGeneratedRoot};
+                //Todo: ???? Add cache/s*/java/*/sources as well?
+            }
+            final FileObject[] res = new FileObject[1+aptRoots.length];
+            res[0] = rootFo;
+            System.arraycopy(aptRoots, 0, res, 1, aptRoots.length);
+            return res;
+        } else {
+            return SourceForBinaryQuery.findSourceRoots(this.root).getRoots();
         }
-        else {
-            rootFos = SourceForBinaryQuery.findSourceRoots(this.root).getRoots();
-        }
-        return rootFos;
     }
-    
+
     @Override
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
         try {
-            final Query q = DocumentUtil.binaryNameQuery(binaryName);        
+            final Query q = DocumentUtil.binaryNameQuery(binaryName);
             Set<String> names = new HashSet<String>();
             index.query(names, DocumentUtil.sourceNameConvertor(), DocumentUtil.sourceNameFieldSelector(), cancel.get(), q);
             return names.isEmpty() ? null : names.iterator().next();
@@ -175,20 +191,20 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             return this.<String,IOException>handleException(null ,e, root);
         }
     }
-    
+
 
     // Factory method
-    
+
     public static ClassIndexImpl create(
             final URL root,
             final File cacheRoot,
             final Type beforeInitType,
             final Type finalType)
-	    throws IOException, IllegalArgumentException {        
+	    throws IOException, IllegalArgumentException {
         return new PersistentClassIndex(root, cacheRoot, beforeInitType, finalType);
     }
-    
-    // Implementation of UsagesQueryImpl ---------------------------------------    
+
+    // Implementation of UsagesQueryImpl ---------------------------------------
     @Override
     public <T> void search (
             @NonNull final ElementHandle<?> element,
@@ -255,8 +271,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             this.<Void,IOException>handleException(null, ioe, root);
         }
     }
-    
-                       
+
+
     @Override
     public <T> void getDeclaredTypes (
             @NonNull final String simpleName,
@@ -290,7 +306,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             this.<Void,IOException>handleException(null, ioe, root);
         }
     }
-    
+
     @Override
     public <T> void getDeclaredElements (
             final String ident,
@@ -337,8 +353,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             this.<Void,IOException>handleException(null, ioe, root);
         }
     }
-    
-    
+
+
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         try {
@@ -377,7 +393,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             this.<Void,IOException>handleException(null, ioe, root);
         }
     }
-    
+
     @Override
     public void getReferencesFrequences (
             @NonNull final Map<String,Integer> typeFreq,
@@ -406,7 +422,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             this.<Void,IOException>handleException(null, ioe, root);
         }
     }
-        
+
     @Override
     public void setDirty (final URL url) {
         try {
@@ -415,11 +431,11 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
     public @Override String toString () {
         return "PersistentClassIndex["+this.root.toExternalForm()+"]";     // NOI18N
     }
-            
+
     //Protected methods --------------------------------------------------------
     @Override
     protected final void close () throws IOException {
@@ -427,8 +443,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
 
 
-    // Private methods ---------------------------------------------------------                          
-    
+    // Private methods ---------------------------------------------------------
+
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
         File refRoot = new File (cacheRoot,REFERENCES);
         if (!refRoot.exists()) {
@@ -436,21 +452,21 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         }
         return refRoot;
     }
-    
-    
 
-    private synchronized void resetPkgCache() {        
+
+
+    private synchronized void resetPkgCache() {
         rootPkgCache = null;
     }
-    
+
     private class PIWriter implements Writer {
-        
+
         PIWriter() {
             if (index instanceof Runnable) {
                 ((Runnable)index).run();
             }
         }
-        
+
         @Override
         public void clear() throws IOException {
             resetPkgCache();
@@ -474,28 +490,28 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 ((Index.Transactional)index).commit();
             }
         }
-        
+
         @Override
         public void rollback() throws IOException {
             if (index instanceof Index.Transactional) {
                 ((Index.Transactional)index).rollback();
             }
         }
-        
-        
+
+
         @Override
         public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
             index.store(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor(), true);
         }
     }
-    
+
     private static class TeeCollection<T> extends AbstractCollection<T> {
-        
+
         private Collection<T> primary;
         private Collection<T> secondary;
-              
-        
+
+
         TeeCollection(final @NonNull Collection<T> primary, @NonNull Collection<T> secondary) {
             this.primary = primary;
             this.secondary = secondary;
@@ -518,7 +534,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             return result;
         }
     }
-    
+
     private final class IndexPatch {
 
         //@GuardedBy("this")
@@ -527,10 +543,10 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         private URL dirty;
         //@GuardedBy("this")
         private Set<String> typeFilter;
-        
+
         IndexPatch() {
         }
-        
+
         <T> Pair<Convertor<? super Document, T>,Index> getPatch (
                 @NonNull final Convertor<? super Document, T> delegate) {
             assert delegate != null;
@@ -546,7 +562,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             }
             return Pair.<Convertor<? super Document, T>,Index>of(delegate,null);
         }
-        
+
         synchronized void setDirtyFile(@NullAllowed final URL url) throws IOException {
             this.dirty = url;
             this.indexPatch = null;
@@ -554,7 +570,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 typeFilter = null;
             }
         }
-        
+
         @CheckForNull
         private Pair<Index,Set<String>> updateDirty () throws IOException {
             final URL url;
@@ -572,11 +588,11 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 final List[] dataHolder = new List[1];
                 if (js != null) {
                     final ClassPath scp = js.getClasspathInfo().getClassPath(PathKind.SOURCE);
-                    if (scp != null && scp.contains(file)) {                    
+                    if (scp != null && scp.contains(file)) {
                         js.runUserActionTask(new Task<CompilationController>() {
                             @Override
                             public void run (final CompilationController controller) {
-                                try {                            
+                                try {
                                     if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
                                         return;
                                     }
@@ -672,8 +688,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             }
         }
     }
-        
-    
+
+
     private static class FilterConvertor<T> implements Convertor<Document, T> {
 
         private final Set<String> toExclude;
@@ -702,16 +718,16 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             throw new IllegalStateException();
         }
     }
-    
-    
+
+
     private static final class FreqCollector implements StoppableConvertor<Index.WithTermFrequencies.TermFreq, Void> {
-        
+
         private final int postfixLen = ClassIndexImpl.UsageType.values().length;
         private final String fieldName;
         private final Map<String,Integer> typeFreq;
         private final Map<String,Integer> pkgFreq;
-        
-        
+
+
         FreqCollector(
                 @NonNull final Term startTerm,
                 @NonNull final Map<String,Integer> typeFreqs,
@@ -743,12 +759,24 @@ public final class PersistentClassIndex extends ClassIndexImpl {
         }
     }
 
-    @NonNull
+    @CheckForNull
     private FileObject getRoot() {
         FileObject res = cachedRoot;
         if (res == null || !res.isValid()) {
             cachedRoot = res = URLMapper.findFileObject(root);
         }
         return res;
+    }
+
+    private static boolean isValid(@NullAllowed final FileObject[] roots) {
+        if (roots == null) {
+            return false;
+        }
+        for (FileObject root : roots) {
+            if (!root.isValid()) {
+                return false;
+            }
+        }
+        return true;
     }
 }
