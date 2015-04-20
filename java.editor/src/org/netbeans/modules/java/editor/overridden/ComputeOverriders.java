@@ -323,22 +323,17 @@ public class ComputeOverriders {
             return reverseSourceRootsInOrderOverride;
         }
 
-        Set<URL> sourceRootsSet;
+        final Set<URL> sourceRootsSet = new HashSet<>();
 
         if (sourceDeps.containsKey(thisSourceRoot)) {
-            sourceRootsSet = findReverseSourceRoots(thisSourceRoot, sourceDeps, rootPeers, info.getFileObject());
-        } else {
-            sourceRootsSet = new HashSet<URL>();
-
-            for (URL binary : findBinaryRootsForSourceRoot(thisSourceRootFO, binaryDeps)) {
-                List<URL> deps = binaryDeps.get(binary);
-
-                if (deps != null) {
-                    sourceRootsSet.addAll(deps);
-                }
+            sourceRootsSet.addAll(findReverseSourceRoots(thisSourceRoot, sourceDeps, rootPeers, info.getFileObject()));
+        }
+        for (URL binary : findBinaryRootsForSourceRoot(thisSourceRootFO, binaryDeps)) {
+            final List<URL> deps = binaryDeps.get(binary);
+            if (deps != null) {
+                sourceRootsSet.addAll(deps);
             }
         }
-        
         List<URL> sourceRoots;
         try {
             sourceRoots = new LinkedList<URL>(Utilities.topologicalSort(sourceDeps.keySet(), sourceDeps));
