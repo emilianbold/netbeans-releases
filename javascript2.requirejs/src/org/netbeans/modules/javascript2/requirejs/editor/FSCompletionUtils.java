@@ -386,14 +386,16 @@ public class FSCompletionUtils {
             }
             for (String rootName : sourceRoots) {
                 final FileObject root = project.getProjectDirectory().getFileObject(rootName);
-                for (String mp : modulePaths) {
-                    FileObject targetFO = root.getFileObject(mp);
-                    if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
-                        result.add(targetFO);
-                    }
-                    targetFO = root.getFileObject(mp + ".js"); //NOI18N
-                    if (targetFO != null) {
-                        result.add(targetFO);
+                if (root != null) {
+                    for (String mp : modulePaths) {
+                        FileObject targetFO = root.getFileObject(mp);
+                        if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
+                            result.add(targetFO);
+                        }
+                        targetFO = root.getFileObject(mp + ".js"); //NOI18N
+                        if (targetFO != null) {
+                            result.add(targetFO);
+                        }
                     }
                 }
             }
