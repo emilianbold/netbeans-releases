@@ -130,6 +130,7 @@ public abstract class CacheIndex {
         return ret.toArray(new VCSFileProxy[ret.size()]);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "file != null"
     public void add(VCSFileProxy file) {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "add({0})", new Object[]{file});

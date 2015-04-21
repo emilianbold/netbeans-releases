@@ -610,6 +610,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "guri != null"
         protected void store () {
             GitURI guri = getURI();
             assert guri != null;
@@ -769,6 +770,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "guri != null"
         protected void store () {
             GitURI guri = getURI();
             assert guri != null;
@@ -907,6 +909,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "guri != null"
         protected void store () {
             GitURI guri = getURI();
             assert guri != null;
@@ -973,6 +976,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         }
         
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "guri != null"
         protected void store () {
             GitURI guri = getURI();
             assert guri != null;
