@@ -227,11 +227,6 @@ public class WildflyPluginUtils {
         return true;
     }
 
-    //--------------------------------------------------------------------
-    /**
-     *
-     *
-     */
     public static String getDeployDir(String domainDir) {
         return domainDir + separatorChar + "deployments"; //NOI18N
     }
@@ -242,7 +237,7 @@ public class WildflyPluginUtils {
     }
 
      public static String getManagementConnectorPort(String configFile) {
-        String defaultPort = "9999"; // NOI18N
+        String defaultPort = "9990"; // NOI18N
         return defaultPort;
     }
 
@@ -316,7 +311,7 @@ public class WildflyPluginUtils {
                 props.load(reader);
                 String slot = props.getProperty("slot");
                 if (slot != null) {
-                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + "META-INF" + separatorChar + "MANIFEST.MF");
+                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
                     InputStream stream = new FileInputStream(manifestFile);
                     Manifest manifest = new Manifest(stream);
                     return new Version(manifest.getMainAttributes().getValue("JBoss-Product-Release-Version"));
@@ -337,11 +332,11 @@ public class WildflyPluginUtils {
         return env;
     }
 
-    static class VersionJarFileFilter implements FilenameFilter {
+    private static class VersionJarFileFilter implements FilenameFilter {
 
         @Override
         public boolean accept(File dir, String name) {
-            return name.endsWith(".jar") && name.startsWith("jboss-as-version");
+            return name.endsWith(".jar") && (name.startsWith("jboss-as-version") || name.startsWith("wildfly-version"));
         }
     }
 
