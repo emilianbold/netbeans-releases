@@ -158,11 +158,11 @@ public class CreateBranchCommand extends GitCommand {
         //
         //Branch nova1 set up to track local branch master.
         //
-        for (String line : output.split("\n")) { //NOI18N
-            if (line.startsWith("Branch")) {
-                String[] s = line.split("\\s+");
-                continue;
-            }
-        }
+        //for (String line : output.split("\n")) { //NOI18N
+        //    if (line.startsWith("Branch")) {
+        //        String[] s = line.split("\\s+");
+        //        continue;
+        //    }
+        //}
     }
 }

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.el.refactoring;
 
+import com.sun.el.parser.AstMethodArguments;
 import com.sun.el.parser.Node;
 import com.sun.source.tree.Tree;
 import java.util.ArrayList;
@@ -140,8 +141,17 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
                     newName = renameNewName;
                 }
 
+                // issue #246641
+                PositionRef[] childPosition = null;
+                if (targetNode.jjtGetNumChildren() > 0) {
+                    Node child = targetNode.jjtGetChild(0);
+                    if (child instanceof AstMethodArguments) {
+                        childPosition = RefactoringUtil.getPostionRefs(elem, child);
+                        newName = renameNewName;
+                    }
+                }
                 differences.add(new Difference(Difference.Kind.CHANGE,
-                        position[0], position[1], targetNode.getImage(), newName,
+                        position[0], childPosition != null ? childPosition[0] : position[1], targetNode.getImage(), newName,
                         NbBundle.getMessage(ELRenameRefactoring.class, "LBL_Update", targetNode.getImage())));
             }
         }
