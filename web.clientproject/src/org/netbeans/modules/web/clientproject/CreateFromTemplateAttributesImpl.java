@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
 import org.netbeans.modules.web.clientproject.env.CommonProjectHelper;
+import org.netbeans.modules.web.clientproject.env.Licenses;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -83,9 +84,9 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
         Map<String, String> values = new HashMap<>();
         EditableProperties priv  = helper.getProperties(CommonProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties props = helper.getProperties(CommonProjectHelper.PROJECT_PROPERTIES_PATH);
-        String licensePath = priv.getProperty("project.licensePath");
+        String licensePath = priv.getProperty(Licenses.LICENSE_PATH);
         if (licensePath == null) {
-            licensePath = props.getProperty("project.licensePath");
+            licensePath = props.getProperty(Licenses.LICENSE_PATH);
         }
         if (licensePath != null) {
             licensePath = helper.getStandardPropertyEvaluator().evaluate(licensePath);
@@ -100,9 +101,9 @@ class CreateFromTemplateAttributesImpl implements CreateFromTemplateAttributes {
                 }
             }
         }
-        String license = priv.getProperty("project.license"); // NOI18N
+        String license = priv.getProperty(Licenses.LICENSE_NAME);
         if (license == null) {
-            license = props.getProperty("project.license"); // NOI18N
+            license = props.getProperty(Licenses.LICENSE_NAME);
         }
         if (license != null) {
             values.put("license", license); // NOI18N
