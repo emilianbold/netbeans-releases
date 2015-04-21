@@ -1,6 +1,6 @@
 Name: Hamcrest
 Version: 1.3
-OSR: 19398
+OSR: 15848
 License: BSD
 Description: Provides a library of matcher objects
 Origin: http://search.maven.org/#artifactdetails|org.hamcrest|hamcrest-core|1.3|jar
