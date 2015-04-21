@@ -265,6 +265,7 @@ public class Subversion {
         return getClient(file, null);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "repositoryUrl != null"
     public SvnClient getClient(VCSFileProxy file, SvnProgressSupport support) throws SVNClientException {
         SVNUrl repositoryUrl = SvnUtils.getRepositoryRootUrl(file);
         assert repositoryUrl != null : "Unable to get repository: " + file.getPath() + " is probably unmanaged."; // NOI18N

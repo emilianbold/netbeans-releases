@@ -248,26 +248,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                         if (leftFileRevision == null) {
                             leftFileRevision = line.substring(CHANGE_LEFT.length());
                         }
-                        if (isChangeLeft) {
-                            f1l2 = i - 1;
-                            diffList.add((f1l1 > f1l2) ? new Difference(Difference.ADD,
-                                                                        f1l1 - 1, 0, f2l1, f2l2,
-                                                                        text1.toString(),
-                                                                        text2.toString()) :
-                                         (f2l1 > f2l2) ? new Difference(Difference.DELETE,
-                                                                        f1l1, f1l2, f2l1 - 1, 0,
-                                                                        text1.toString(),
-                                                                        text2.toString())
-                                                       : new Difference(Difference.CHANGE,
-                                                                        f1l1, f1l2, f2l1, f2l2,
-                                                                        text1.toString(),
-                                                                        text2.toString()));
-                            f1l1 = f1l2 = f2l1 = f2l2 = 0;
-                            text1.delete(0, text1.length());
-                            text2.delete(0, text2.length());
-                        } else {
-                            f1l1 = i;
-                        }
+                        f1l1 = i;
                     }
                     isChangeLeft = !isChangeLeft;
                     continue;

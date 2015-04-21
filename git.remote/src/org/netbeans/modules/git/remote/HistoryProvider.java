@@ -150,6 +150,7 @@ public class HistoryProvider implements VCSHistoryProvider {
         return ret.toArray(new HistoryEntry[ret.size()]);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "message != null"
     private HistoryEntry createHistoryEntry (GitRevisionInfo h, VCSFileProxy[] involvedFiles, VCSFileProxy repositoryRoot) {
         GitUser user = h.getAuthor();
         if (user == null) {

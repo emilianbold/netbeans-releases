@@ -118,7 +118,7 @@ public class HgModuleConfig {
     private static final String KEY_SEARCH_ON_BRANCH = "searchOnBranch.enabled."; //NOI18N
     private static final String KEY_REMOVE_NEW_FILES_ON_REVERT = "removeNewFilesOnRevert"; //NOI18N
     
-    private static String userName;
+    private String userName;
     private final FileSystem fileSystem;
 
     public static synchronized HgModuleConfig getDefault(VCSFileProxy root) {
