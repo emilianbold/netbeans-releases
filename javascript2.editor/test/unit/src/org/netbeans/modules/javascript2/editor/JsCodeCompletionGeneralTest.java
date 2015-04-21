@@ -387,6 +387,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/completion/general/issue248132.js", "var w2 = window.Wo^rker;", false);
     }
     
+    public void testIssue251821_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue251821.js", "var res = a1.aproper^ty.toLocaleString(); ", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
