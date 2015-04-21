@@ -60,7 +60,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .input("package test;"
                 + "public class Test {"
                 + "     public void test() {"
-                + "         String g = null;"
+                + "         String g = \"xxx\";"
                 + "         if (g == \"j\") {"
                 + "             System.err.println(1);"
                 + "         } else if (g == \"k\") {"
@@ -72,10 +72,10 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "}")
                 .sourceLevel("1.7")
                 .run(ConvertToStringSwitch.class)
-                .findWarning("0:91-0:93:verifier:Convert to switch")
+                .findWarning("0:92-0:94:verifier:Convert to switch")
                 .applyFix("FIX_ConvertToStringSwitch")
                 .assertCompilable()
-                .assertOutput("package test;public class Test { public void test() { String g = null; switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
+                .assertOutput("package test;public class Test { public void test() { String g = \"xxx\"; switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
     }
 
     public void testSimpleFlow() throws Exception {
@@ -84,7 +84,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .input("package test;"
                 + "public class Test {"
                 + "     public int test(int r) throws Exception {"
-                + "         String g = null;\n"
+                + "         String g = \"xxx\";\n"
                 + "         if (g == \"j\") {"
                 + "             System.err.println(1);"
                 + "             return 1;"
@@ -119,7 +119,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .assertOutput("package test;"
                 + "public class Test {"
                 + "     public int test(int r) throws Exception {"
-                + "         String g = null;"
+                + "         String g = \"xxx\";"
                 + "         switch (g) {\n"
                 + "             case \"j\":\n"
                 + "                 System.err.println(1);"
@@ -154,28 +154,48 @@ public class ConvertToStringSwitchTest extends NbTestCase {
     public void testOr() throws Exception {
         HintTest
                 .create()
-                .input("package test;"
-                + "public class Test {"
-                + "     public void test() {"
-                + "         String g = null;"
-                + "         if (g == \"j\" || g == \"m\") {"
-                + "             System.err.println(1);"
-                + "         } else if (g == \"k\") {"
-                + "             System.err.println(2);"
-                + "         } else if (g == \"l\" || g == \"n\") {"
-                + "             System.err.println(3);"
-                + "         } else {"
-                + "             System.err.println(4);"
-                + "             return;"
-                + "         }"
-                + "     }"
-                + "}")
+                .input("package test;\n"
+                + "public class Test {\n"
+                + "     public void test() {\n"
+                + "         String g = null;\n"
+                + "         if (g == \"j\" || g == \"m\") {\n"
+                + "             System.err.println(1);\n"
+                + "         } else if (g == \"k\") {\n"
+                + "             System.err.println(2);\n"
+                + "         } else if (g == \"l\" || g == \"n\") {\n"
+                + "             System.err.println(3);\n"
+                + "         } else {\n"
+                + "             System.err.println(4);\n"
+                + "             return;\n"
+                + "         }\n"
+                + "     }\n"
+                + "}\n")
                 .sourceLevel("1.7")
                 .run(ConvertToStringSwitch.class)
-                .findWarning("0:91-0:93:verifier:Convert to switch")
+                .findWarning("4:9-4:11:verifier:Convert to switch")
                 .applyFix("FIX_ConvertToStringSwitch")
                 .assertCompilable()
-                .assertOutput("package test;public class Test { public void test() { String g = null; switch (g) { case \"j\": case \"m\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": case \"n\": System.err.println(3); break; default: System.err.println(4); return; } }}");
+                .assertOutput("package test;\n"
+                        + "public class Test {\n"
+                        + "     public void test() {\n"
+                        + "         String g = null;\n"
+                        + "         if (null != g) switch (g) {\n"
+                        + "             case \"j\":\n"
+                        + "             case \"m\":\n"
+                        + "                 System.err.println(1);\n"
+                        + "                 break;\n"
+                        + "             case \"k\":\n"
+                        + "                 System.err.println(2);\n"
+                        + "                 break;\n"
+                        + "             case \"l\":\n"
+                        + "             case \"n\":\n"
+                        + "                 System.err.println(3);\n"
+                        + "                 break;\n"
+                        + "             default:\n"
+                        + "                 System.err.println(4);\n"
+                        + "             return;\n"
+                        + "         }\n"
+                        + "     }\n");
     }
 
     public void testStringEqualsObject() throws Exception {
@@ -206,7 +226,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "public class Test {"
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
-                + "         String g = null;\n"
+                + "         String g = \"xxx\";\n"
                 + "         if (g == \"j\") {"
                 + "             int i = 1;"
                 + "             int z = 1;"
@@ -238,7 +258,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "public class Test {"
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
-                + "         String g = null;"
+                + "         String g = \"xxx\";"
                 + "         switch (g) {\n"
                 + "             case \"j\": {\n"
                 + "                 int i = 1;"
@@ -282,7 +302,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
                 + "         for (;;) {\n"
-                + "             String g = null;\n"
+                + "             String g = \"xxx\";\n"
                 + "             if (g == \"j\") {"
                 + "                 System.err.println(1);"
                 + "                 break;"
@@ -303,7 +323,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
                 + "         OUTER: for (;;) {\n"
-                + "             String g = null;\n"
+                + "             String g = \"xxx\";\n"
                 + "             switch (g) {"
                 + "                 case \"j\":"
                 + "                     System.err.println(1);"
@@ -346,7 +366,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "public class Test {"
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
-                + "         String g = null;\n"
+                + "         String g = \"xxx\";\n"
                 + "         //comment\n"
                 + "         if (g == \"j\") {//foo1\n"
                 + "             System.err.println(1);\n"
@@ -367,7 +387,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "public class Test {"
                 + "     private int a, b;"
                 + "     public void test() throws Exception {"
-                + "         String g = null;"
+                + "         String g = \"xxx\";"
                 + "         //comment\n"
                 + "         switch (g) {\n"
                 + "             case \"j\":\n"

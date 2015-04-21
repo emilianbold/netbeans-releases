@@ -62,6 +62,31 @@ public class IteratorToForTest {
                 + "}\n").run(IteratorToFor.class).assertWarnings("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor());
     }
 
+    @Test public void whileWarningSelf() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test extends ArrayList<String> {\n"
+                + "    void m() {\n"
+                + "        Iterator it = iterator();\n"
+                + "        while (it.hasNext()) {\n"
+                + "            String s = (String) it.next();\n"
+                + "            System.out.println(s);\n"
+                + "            System.err.println(s);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n").run(IteratorToFor.class).findWarning("4:8-4:13:verifier:" + Bundle.ERR_IteratorToFor()).
+                applyFix().assertOutput("package test;\n"
+                + "import java.util.*;"
+                + "public class Test extends ArrayList<String> {\n"
+                + "    void m() {\n"
+                + "        for (String s : this) {\n"
+                + "            System.out.println(s);\n"
+                + "            System.err.println(s);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n");
+    }
+
     @Test public void whileUsedSpecially() throws Exception {
         HintTest.create().input("package test;\n"
                 + "import java.util.*;"

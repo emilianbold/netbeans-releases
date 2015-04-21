@@ -55,6 +55,7 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TryTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 
 import java.io.IOException;
@@ -98,6 +99,7 @@ import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.overridden.AnnotationType;
 import org.netbeans.modules.java.editor.overridden.ComputeOverriding;
 import org.netbeans.modules.java.editor.overridden.ElementDescription;
+import static org.netbeans.modules.java.hints.errors.Utilities.isValidType;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -193,8 +195,17 @@ public final class UncaughtException implements ErrorRule<Void> {
         return filtered;
     }
     
+    static final String ERR_IMPLICIT_CLOSE = "compiler.err.unreported.exception.implicit.close"; // NOI18N
+    static final String ERR_UNREPORTED = "compiler.err.unreported.exception.need.to.catch.or.throw"; // NOI18N
+    
+    private static final Set<String> ERRCODES = new HashSet<String>(Arrays.asList(
+        new String[]{
+            ERR_UNREPORTED,
+            ERR_IMPLICIT_CLOSE
+        }));
+    
     public Set<String> getCodes() {
-        return Collections.singleton("compiler.err.unreported.exception.need.to.catch.or.throw");
+        return ERRCODES;
     }
     
     @SuppressWarnings("fallthrough")
@@ -220,7 +231,24 @@ public final class UncaughtException implements ErrorRule<Void> {
             }
         } catch (IOException ex) {
         }        
-
+        
+        if (ERR_IMPLICIT_CLOSE.equals(diagnosticKey) && path.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+            // JDK 8 : warn about implicit close. The diagnostic is reported on the resource declaration. The resource SHOULD
+            // implement AutoCloseable, but may declare different exception list on its close() method
+            TypeMirror varType = info.getTrees().getTypeMirror(path);
+            if (isValidType(varType) && varType.getKind() == TypeKind.DECLARED) {
+                DeclaredType decl = (DeclaredType)varType;
+                Element jdkClose = info.getElementUtilities().findElement("java.lang.AutoCloseable.close()"); // NOI18N
+                if (jdkClose != null && jdkClose.getKind() == ElementKind.METHOD) { 
+                    Element definedClose = info.getElementUtilities().getImplementationOf((ExecutableElement)jdkClose, (TypeElement)decl.asElement());
+                    TypeMirror varClose = info.getTypes().asMemberOf(decl, definedClose);
+                    if (isValidType(varClose) && varClose.getKind() == TypeKind.EXECUTABLE) {
+                        ExecutableType etype = (ExecutableType)varClose;
+                        uncaught = new ArrayList(etype.getThrownTypes());
+                    }
+                }
+            }
+        } else {
         OUTTER: while (path != null) {
             Tree leaf = path.getLeaf();
             
@@ -269,6 +297,7 @@ public final class UncaughtException implements ErrorRule<Void> {
             }
             
             path = path.getParentPath();
+        }
         }
         
         if (uncaught != null) {
