@@ -64,6 +64,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -100,35 +101,40 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
     
     protected void performWhereUsed(String source, int line, int column, 
             Map<Object, Boolean> params, List<String> selectedFilters) throws Exception {
-        CsmReference ref = super.getReference(source, line, column);
-        assertNotNull(ref);
-        CsmObject targetObject = ref.getReferencedObject();
-        assertNotNull(targetObject);
-        
-        FiltersDescription filtersDescription = new FiltersDescription();
-        if (params == null) {
-            params = Collections.emptyMap();
-        }
-        Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params, filtersDescription);
-        
-        // do filtering
-        TestFiltersManager filtersManager;
-        if (!selectedFilters.isEmpty()) {
-            filtersManager = new TestFiltersManager(selectedFilters);
-        } else {
-            filtersManager = new TestFiltersManager(filtersDescription);
-        }
-        
-        ArrayList<RefactoringElementImplementation> res = new ArrayList<>();
-        for (RefactoringElementImplementation elem : elements) {
-            if (elem instanceof FiltersManager.Filterable) {
-                if (((FiltersManager.Filterable) elem).filter(filtersManager)) {
-                    res.add(elem);
+        CsmCacheManager.enter();
+        try {
+            CsmReference ref = super.getReference(source, line, column);
+            assertNotNull(ref);
+            CsmObject targetObject = ref.getReferencedObject();
+            assertNotNull(targetObject);
+
+            FiltersDescription filtersDescription = new FiltersDescription();
+            if (params == null) {
+                params = Collections.emptyMap();
+            }
+            Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params, filtersDescription);
+
+            // do filtering
+            TestFiltersManager filtersManager;
+            if (!selectedFilters.isEmpty()) {
+                filtersManager = new TestFiltersManager(selectedFilters);
+            } else {
+                filtersManager = new TestFiltersManager(filtersDescription);
+            }
+
+            ArrayList<RefactoringElementImplementation> res = new ArrayList<>();
+            for (RefactoringElementImplementation elem : elements) {
+                if (elem instanceof FiltersManager.Filterable) {
+                    if (((FiltersManager.Filterable) elem).filter(filtersManager)) {
+                        res.add(elem);
+                    }
                 }
             }
+
+            dumpAndCheckResults(res, getName() + ".ref");
+        } finally {
+            CsmCacheManager.leave();
         }
-        
-        dumpAndCheckResults(res, getName() + ".ref");
     }
 
     private void dumpAndCheckResults(Collection<RefactoringElementImplementation> elements, String goldenFileName) throws Exception {
