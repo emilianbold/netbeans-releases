@@ -229,6 +229,25 @@ made subject to such option by the copyright holder.
         <issue number="248626"/>
     </change>
 
+    <change id="GetMIMETypesOnLine">
+        <api name="DebuggerCoreSPI"/>
+        <summary>A method for retrieving a set of language MIME types on a line in a document is added.</summary>
+        <version major="2" minor="50"/>
+        <date day="20" month="04" year="2015"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" addition="yes" semantic="compatible"/>
+        <description>
+            <p>
+                Methods <code>getMIMETypesOnCurrentLine()</code> and
+                <code>getMIMETypesOnLine()</code> added to
+                <code>EditorContextDispatcher</code> class. They provide a set of
+                MIME types of languages found on the line.
+            </p>
+        </description>
+        <class package="org.netbeans.spi.debugger.ui" name="EditorContextDispatcher"/>
+        <issue number="251531"/>
+    </change>
+
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
