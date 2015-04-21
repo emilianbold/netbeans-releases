@@ -65,6 +65,7 @@ import com.sun.jdi.ShortValue;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Type;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyVetoException;
@@ -412,6 +413,9 @@ public class VariableMirrorTranslator {
                                                     InvalidTypeException, ClassNotLoadedException,
                                                     ClassNotPreparedExceptionWrapper, IllegalArgumentExceptionWrapper {
         VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) {
+            throw new VMDisconnectedExceptionWrapper(new VMDisconnectedException());
+        }
         Class clazz = mirror.getClass();
         JPDAThreadImpl currentThread;
         Lock lock;

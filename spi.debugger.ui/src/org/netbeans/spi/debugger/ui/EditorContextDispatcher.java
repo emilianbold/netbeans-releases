@@ -294,7 +294,12 @@ public final class EditorContextDispatcher {
         }
     }
     
-    Set<String> getMIMETypesOnCurrentLine() {
+    /**
+     * Get a list of MIME types of languages found on the current line.
+     * @return A set of MIME types.
+     * @since 2.50
+     */
+    public Set<String> getMIMETypesOnCurrentLine() {
         Line line = getCurrentLine();
         if (line == null) {
             return Collections.EMPTY_SET;
@@ -302,7 +307,13 @@ public final class EditorContextDispatcher {
         return getMIMETypesOnLine(line);
     }
     
-    Set<String> getMIMETypesOnLine(Line line) {
+    /**
+     * Get a list of MIME types of languages found on a line.
+     * @param line The line to search for the MIME types.
+     * @return A set of MIME types.
+     * @since 2.50
+     */
+    public Set<String> getMIMETypesOnLine(Line line) {
         EditorCookie editorCookie = line.getLookup().lookup(EditorCookie.class);
         if (editorCookie == null) {
             DataObject dobj = line.getLookup().lookup(DataObject.class);
