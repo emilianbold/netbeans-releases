@@ -273,17 +273,17 @@ public class PhingExecutable {
     private static final class TargetList implements Future<List<String>> {
 
         private final Future<Integer> task;
-        private final PhingTargetsLineProcessor convertor;
+        private final PhingTargetsLineProcessor processor;
 
         // @GuardedBy("this")
         private List<String> phingTargets = null;
 
 
-        TargetList(Future<Integer> task, PhingTargetsLineProcessor convertor) {
+        TargetList(Future<Integer> task, PhingTargetsLineProcessor processor) {
             assert task != null;
-            assert convertor != null;
+            assert processor != null;
             this.task = task;
-            this.convertor = convertor;
+            this.processor = processor;
         }
 
         @Override
@@ -327,7 +327,7 @@ public class PhingExecutable {
             if (phingTargets != null) {
                 return Collections.unmodifiableList(phingTargets);
             }
-            List<String> targets = new ArrayList<>(convertor.getTargets());
+            List<String> targets = new ArrayList<>(processor.getTargets());
             Collections.sort(targets);
             phingTargets = new CopyOnWriteArrayList<>(targets);
             return Collections.unmodifiableList(phingTargets);

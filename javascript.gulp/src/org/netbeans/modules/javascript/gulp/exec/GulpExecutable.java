@@ -296,17 +296,17 @@ public class GulpExecutable {
     private static final class TaskList implements Future<List<String>> {
 
         private final Future<Integer> task;
-        private final GulpTasksLineProcessor convertor;
+        private final GulpTasksLineProcessor processor;
 
         // @GuardedBy("this")
         private List<String> gulpTasks = null;
 
 
-        TaskList(Future<Integer> task, GulpTasksLineProcessor convertor) {
+        TaskList(Future<Integer> task, GulpTasksLineProcessor processor) {
             assert task != null;
-            assert convertor != null;
+            assert processor != null;
             this.task = task;
-            this.convertor = convertor;
+            this.processor = processor;
         }
 
         @Override
@@ -350,7 +350,7 @@ public class GulpExecutable {
             if (gulpTasks != null) {
                 return Collections.unmodifiableList(gulpTasks);
             }
-            List<String> tasks = new ArrayList<>(convertor.getTasks());
+            List<String> tasks = new ArrayList<>(processor.getTasks());
             Collections.sort(tasks);
             gulpTasks = new CopyOnWriteArrayList<>(tasks);
             return Collections.unmodifiableList(gulpTasks);
