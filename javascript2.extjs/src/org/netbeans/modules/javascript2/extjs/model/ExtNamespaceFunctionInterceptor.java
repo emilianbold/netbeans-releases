@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -65,7 +66,7 @@ public class ExtNamespaceFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope,
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String functionName, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 1) {
             Iterator<FunctionArgument> iterator = args.iterator();

@@ -53,6 +53,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -67,7 +68,8 @@ public class ExtApplyFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String functionName, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String functionName, JsObject globalObject,
+            DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (args.size() == 2) {
             Iterator<FunctionArgument> iterator = args.iterator();
             FunctionArgument arg1 = iterator.next();
