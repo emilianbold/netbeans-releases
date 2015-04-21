@@ -348,6 +348,7 @@
                 <friend>org.netbeans.modules.javascript2.jade</friend>
                 <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
+                <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.latte</friend>
                 <friend>org.netbeans.modules.php.phing</friend>

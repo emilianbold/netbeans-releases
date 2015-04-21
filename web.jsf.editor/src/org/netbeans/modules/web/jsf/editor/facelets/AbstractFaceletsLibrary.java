@@ -307,8 +307,27 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
                {"URL", getUrl() == null ? "N/A" : getUrl().toExternalForm()}}; //NOI18N
             return merge(super.getDescription(), myDescr);
         }
+    }
 
+    public class CompositeComponentTag extends NamedComponent {
 
+        protected String resourceId;
+
+        protected CompositeComponentTag(String name, String resourceId) {
+            super(name);
+            this.resourceId = resourceId;
+        }
+
+        public String getResourceId() {
+            return resourceId;
+        }
+
+        @Override
+        public String[][] getDescription() {
+               String[][] myDescr = new String[][]{{"type", "composite component tag"}, //NOI18N
+               {"resource id", getResourceId() == null ? "N/A" : getResourceId()}}; //NOI18N
+            return merge(super.getDescription(), myDescr);
+        }
     }
 
     public class Function extends NamedComponent {

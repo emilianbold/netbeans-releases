@@ -91,6 +91,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     private static final TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
     private static final TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
     private static final TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+    private static final TypeUsage UNDEFINED_TYPE = new TypeUsageImpl(Type.UNDEFINED, -1, true);
     
     private Map<String, TypeUsage> result;
     
@@ -241,6 +242,8 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         String name = iNode.getPropertyName();
         if ("this".equals(name)) {  //NOI18N
             exp.add(ST_THIS);
+        } else if (Type.UNDEFINED.equals(name)){
+            add(UNDEFINED_TYPE);
         } else {
             if (getPath().isEmpty()) {
                 exp.add(ST_VAR);
