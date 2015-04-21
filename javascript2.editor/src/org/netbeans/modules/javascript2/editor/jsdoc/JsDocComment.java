@@ -50,6 +50,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.model.Type;
@@ -118,7 +119,7 @@ public class JsDocComment extends JsComment {
         for (JsDocElement jsDocElement : getTagsForType(JsDocElementType.TYPE)) {
             return UnnamedParameterElement.create(
                     jsDocElement.getType(),
-                    Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType()),
+                    JsDocElementUtils.parseTypes(((DeclarationElement) jsDocElement).getDeclaredType().getType(), ((DeclarationElement) jsDocElement).getDeclaredType().getOffset()),
                     "");
         }
         return null;

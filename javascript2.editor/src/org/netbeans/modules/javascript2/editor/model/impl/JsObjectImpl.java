@@ -246,6 +246,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public void addAssignment(TypeUsage typeName, int offset) {
+        if (Type.UNDEFINED.equals(typeName) && assignments.size() > 0) {
+            // don't add undefined type, if there are already some types
+            return;
+        }
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
             types = new ArrayList<TypeUsage>();
