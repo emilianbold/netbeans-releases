@@ -45,76 +45,30 @@ package org.netbeans.modules.websvc.rest.editor;
 import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
-import org.netbeans.modules.websvc.rest.model.api.RestServices;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.Trees;
-
+import org.openide.util.Exceptions;
 
 /**
  * @author ads
- *
  */
 public class AsynchronousGenerator extends AsyncConverter implements CodeGenerator {
-    
-    private final Logger log = Logger.getLogger(AsynchronousGenerator.class.getName()); 
 
     private AsynchronousGenerator( CompilationController controller,
             JTextComponent component )
@@ -213,14 +167,14 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 }
             }
             return ret;
         }
     }
     
-    private CompilationController controller;
-    private JTextComponent textComponent;
+    private final CompilationController controller;
+    private final JTextComponent textComponent;
 
 }
