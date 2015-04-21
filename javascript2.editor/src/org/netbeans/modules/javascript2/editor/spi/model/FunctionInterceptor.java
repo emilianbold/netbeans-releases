@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -61,6 +62,7 @@ public interface FunctionInterceptor {
 
     /**
      * 
+     * @param snapshot
      * @param name
      * @param globalObject
      * @param scope
@@ -68,7 +70,7 @@ public interface FunctionInterceptor {
      * @param args
      * @return  the return types of the function, or empty collection.
      */
-    Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope,
+    Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject, DeclarationScope scope,
             ModelElementFactory factory, Collection<FunctionArgument> args);
 
     @Retention(RetentionPolicy.SOURCE)
