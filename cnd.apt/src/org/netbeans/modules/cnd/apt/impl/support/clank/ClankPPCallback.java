@@ -49,6 +49,7 @@ import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.support.Casts;
+import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
@@ -122,7 +124,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         // keep it as annotation 
         directive.setAnnotation(inclDirectiveWrapper);
         ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
-        assert currentFileWrapper.current == curFile;
+        assert currentFileWrapper.current == curFile || !curFile.isFile();
         this.delegate.onInclusionDirective(currentFileWrapper, inclDirectiveWrapper);
     }
 
@@ -132,17 +134,25 @@ public final class ClankPPCallback extends FileInfoCallback {
         // unresolved #include
         return null;
       }
-      // FIXME: file system
-      FileSystem fileSystem = includeHandler.getStartEntry().getFileSystem();
+      // FIXME: get correct file system
+      FileSystem fs = includeHandler.getStartEntry().getFileSystem();
       String strFileEntryPath = Casts.toCharSequence(fileEntry.getName()).toString();
-      CharSequence pathCharSeq = CharSequences.create(CndFileUtils.normalizeAbsolutePath(fileSystem, strFileEntryPath));
-      SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);
-      String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
-      CharSequence folder = CndFileUtils.normalizeAbsolutePath(fileSystem, searchPath);
-      folder = FilePathCache.getManager().getString(CharSequences.create(folder));
-      // FIXME: for now consider user path as isDefaultSearchPath
-      boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
-      return new ResolvedPath(fileSystem, folder, pathCharSeq, isDefaultSearchPath, 0);
+      strFileEntryPath = CndFileUtils.normalizeAbsolutePath(fs, strFileEntryPath);
+      if (directive.getSearchPath().empty()) {
+        // was resolved as absolute path (i.e -include directive)
+        String parent = CndPathUtilities.getDirName(strFileEntryPath);
+        return new ResolvedPath(fs, FilePathCache.getManager().getString(parent), strFileEntryPath, false, 0);
+      } else {
+        CharSequence pathCharSeq = CharSequences.create(strFileEntryPath);
+        SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);
+        String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+        assert CndPathUtilities.isPathAbsolute(searchPath) : "expected to be abs path [" + searchPath + "]";
+        CharSequence folder = CndFileUtils.normalizeAbsolutePath(fs, searchPath);
+        folder = FilePathCache.getManager().getString(CharSequences.create(folder));
+        // FIXME: for now consider user path as isDefaultSearchPath
+        boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
+        return new ResolvedPath(fs, folder, pathCharSeq, isDefaultSearchPath, 0);
+      }
     }
   
     @Override
@@ -320,7 +330,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
       private final FileInfo current;
       private final ClankInclusionDirectiveWrapper includeDirective;
-
+      private final CharSequence filePath;
       private APTToken[] stolenTokens;
       private boolean hasTokenStream = false;
 
@@ -329,9 +339,16 @@ public final class ClankPPCallback extends FileInfoCallback {
               PreprocHandler ppHandler) {
         assert current != null;
         this.current = current;
-        this.includeDirective = (ClankInclusionDirectiveWrapper) current.getInclusionDirective().getAnnotation();
-        assert current.isMainFile() || this.includeDirective != null : "forgot to set up include?" + current;
-        assert current.isMainFile() || this.includeDirective.getResolvedPath() != null;
+        if (current.getInclusionDirective() == null) {
+            assert current.isMainFile() : "forgot to set up include?" + current;
+            this.includeDirective = null;
+            this.filePath = toJavaString(current.getName());
+        } else {
+            this.includeDirective = (ClankInclusionDirectiveWrapper) current.getInclusionDirective().getAnnotation();
+            assert this.includeDirective != null : "forgot to set up include?" + current;
+            assert this.includeDirective.getResolvedPath() != null;
+            this.filePath = this.includeDirective.getResolvedPath().getPath();
+        }
       }
       
       public APTToken[] getStolenTokens() {
@@ -350,7 +367,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       @Override
       public CharSequence getFilePath() {
-        return getResolvedPath().getPath();
+        return this.filePath;
       }
 
       @Override
