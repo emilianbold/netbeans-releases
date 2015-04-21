@@ -107,6 +107,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private final Map<Configuration, RemoteConfigurationPanel> configPanels = new HashMap<>();
     private final RequestProcessor.Task validationTask;
 
+    // @GuardedBy("EDT")
     private RemoteConfigurationPanel configurationPanel = new EmptyConfigurationPanel();
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport notificationLineSupport = null;
@@ -314,15 +315,18 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     }
 
     private void readActiveConfig(Configuration cfg) {
+        assert EventQueue.isDispatchThread();
         configurationPanel.read(cfg);
     }
 
     private void storeActiveConfig(Configuration cfg) {
+        assert EventQueue.isDispatchThread();
         cfg.setDisplayName(nameTextField.getText());
         configurationPanel.store(cfg);
     }
 
     private void switchConfigurationPanel() {
+        assert EventQueue.isDispatchThread();
         configurationPanel.removeChangeListener(this);
 
         String name = null;
@@ -405,10 +409,12 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     }
 
     private String getError() {
+        assert EventQueue.isDispatchThread();
         return configurationPanel.getError();
     }
 
     private String getWarning() {
+        assert EventQueue.isDispatchThread();
         return configurationPanel.getWarning();
     }
 
@@ -450,6 +456,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
     @NbBundle.Messages("RemoteConnectionsPanel.warning.name.empty=Default name will be used.")
     void validateActiveConfig() {
+        assert EventQueue.isDispatchThread();
         boolean valid = configurationPanel.isValidConfiguration();
         String error = getError();
         Configuration cfg = getSelectedConfiguration();

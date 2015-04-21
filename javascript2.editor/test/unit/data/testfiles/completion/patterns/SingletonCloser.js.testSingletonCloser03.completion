@@ -12,4 +12,4 @@ FIELD      myInt: Number                   [PUBLIC]   SingletonCloser.js
 FIELD      myNul                           [PUBLIC]   SingletonCloser.js
 FIELD      myRx: RegExp                    [PUBLIC]   SingletonCloser.js
 FIELD      myStr: String                   [PUBLIC]   SingletonCloser.js
-FIELD      myUnd: undefined                [PUBLIC]   SingletonCloser.js
+FIELD      myUnd                           [PUBLIC]   SingletonCloser.js

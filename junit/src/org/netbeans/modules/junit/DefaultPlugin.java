@@ -46,7 +46,6 @@ package org.netbeans.modules.junit;
 
 import org.netbeans.modules.junit.api.JUnitSettings;
 import org.netbeans.modules.junit.api.JUnitTestUtil;
-import java.util.logging.Level;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
@@ -63,7 +62,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,7 +97,6 @@ import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.Location;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport.LibraryDefiner;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -108,11 +105,8 @@ import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.junit.Bundle.*;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
 import org.netbeans.api.actions.Savable;
@@ -1468,35 +1462,7 @@ public final class DefaultPlugin extends JUnitPlugin {
      * @param  project  project whose configuration file is to be checked
      * @see  #junitVer
      */
-    @Messages({
-        "junitlib_confirm_title=Create Tests",
-        "junitlib_confirm_text=<html><p>To create JUnit tests, the IDE needs to download and install the JUnit library.</p><p>Do you want to proceed?<p>",
-        "junitlib_confirm_accept=Download and Install JUnit"
-    })
     private boolean storeProjectSettingsJUnitVer(final Project project) {
-        if (LibraryManager.getDefault().getLibrary("junit_4") == null) {
-            for (LibraryDefiner definer : Lookup.getDefault().lookupAll(LibraryDefiner.class)) {
-                Callable<Library> download = definer.missingLibrary("junit_4");
-                if (download != null) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(junitlib_confirm_text(), junitlib_confirm_title());
-                    JButton accept = new JButton(junitlib_confirm_accept());
-                    accept.setDefaultCapable(true);
-                    nd.setOptions(new Object[] {accept, NotifyDescriptor.CANCEL_OPTION});
-                    if (DialogDisplayer.getDefault().notify(nd) == accept) {
-                        try {
-                            download.call();
-                        } catch (Exception x) {
-                            LOG_JUNIT_VER.log(Level.INFO, null, x);
-                            return false;
-                        }
-                    } else {
-                        return false;
-                    }
-                    break;
-                }
-            }
-        }
-
         assert junitVer != null;
 
         if (LOG_JUNIT_VER.isLoggable(FINER)) {
@@ -1523,6 +1489,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         Library libraryToAdd = null;
         Collection<Library> librariesToRemove = null;
+        Library libraryHamcrest = null;
 
         LOG_JUNIT_VER.finest(" - checking libraries:");                 //NOI18N
         Library[] libraries = LibraryManager.getDefault().getLibraries();
@@ -1530,6 +1497,10 @@ public final class DefaultPlugin extends JUnitPlugin {
             String name = library.getName().toLowerCase();
             if (LOG_JUNIT_VER.isLoggable(FINEST)) {
                 LOG_JUNIT_VER.finest("    " + name);
+            }
+            if (name.equals("hamcrest")) {                            //NOI18N
+                libraryHamcrest = library;
+                continue;
             }
             if (!name.startsWith("junit")) {                            //NOI18N
                 LOG_JUNIT_VER.finest("     - not a JUnit library");     //NOI18N
@@ -1600,7 +1571,7 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Library[] libsToAdd, libsToRemove;
         if (libraryToAdd != null) {
-            libsToAdd = new Library[] {libraryToAdd};
+            libsToAdd = ((junitVer == JUnitVersion.JUNIT4) && !hasJUnit4) ? new Library[] {libraryToAdd, libraryHamcrest} : new Library[] {libraryToAdd};
         } else{
             libsToAdd = null;
         }

@@ -59,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -77,7 +78,8 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject,
+            DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FileObject fo = globalObject.getFileObject();
         if (fo == null) {
             // no action

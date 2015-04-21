@@ -192,7 +192,7 @@ public final class Model {
                     Collection<ModelVisitor.FunctionCall> fncCalls = entry.getValue();
                     if (fncCalls != null && !fncCalls.isEmpty()) {
                         for (ModelVisitor.FunctionCall call : fncCalls) {
-                            Collection<TypeUsage> returnTypes = entry.getKey().intercept(call.getName(),
+                            Collection<TypeUsage> returnTypes = entry.getKey().intercept(parserResult.getSnapshot(), call.getName(),
                                     visitor.getGlobalObject(), call.getScope(), elementFactory, call.getArguments());
                             if (returnTypes != null) {
                                 Map<Integer, List<TypeUsage>> functionCalls = returnTypesFromFrameworks.get(call.getName());

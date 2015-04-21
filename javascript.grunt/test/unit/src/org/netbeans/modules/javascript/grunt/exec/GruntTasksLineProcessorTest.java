@@ -50,9 +50,9 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
-public class GruntTasksLineConvertorTest extends NbTestCase {
+public class GruntTasksLineProcessorTest extends NbTestCase {
 
-    public GruntTasksLineConvertorTest(String name) {
+    public GruntTasksLineProcessorTest(String name) {
         super(name);
     }
 
@@ -113,11 +113,11 @@ public class GruntTasksLineConvertorTest extends NbTestCase {
     }
 
     private List<String> readTasks(String filename) throws IOException {
-        GruntExecutable.GruntTasksLineConvertor gruntTasksLineConvertor = new GruntExecutable.GruntTasksLineConvertor();
+        GruntExecutable.GruntTasksLineProcessor gruntTasksLineProcessor = new GruntExecutable.GruntTasksLineProcessor();
         for (String line : readLines(new File(getDataDir(), filename))) {
-            gruntTasksLineConvertor.convert(line);
+            gruntTasksLineProcessor.processLine(line);
         }
-        return gruntTasksLineConvertor.getTasks();
+        return gruntTasksLineProcessor.getTasks();
     }
 
     private List<String> readLines(File file) throws IOException {

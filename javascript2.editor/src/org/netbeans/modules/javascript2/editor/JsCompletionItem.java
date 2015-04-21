@@ -758,7 +758,9 @@ public class JsCompletionItem implements CompletionProposal {
                                 HashSet<TypeUsage> toResolve = new HashSet<TypeUsage>();
                                 for (TypeUsage type : assignment) {
                                     if (type.isResolved()) {
-                                        typesToDisplay.add(Utils.getDisplayName(type));
+                                        if (!Type.UNDEFINED.equals(type.getType())) {
+                                            typesToDisplay.add(Utils.getDisplayName(type));
+                                        }
                                     } else {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
                                         if (resolvedType == null) {

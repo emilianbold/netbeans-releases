@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
+import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -92,7 +93,8 @@ public class DefineInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject,
+            DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FunctionArgument fArg = null;
         FunctionArgument modules = null;
 
@@ -134,11 +136,9 @@ public class DefineInterceptor implements FunctionInterceptor {
 
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
-                    Source source = Source.create(fo);
-                    Snapshot snapshot = source.createSnapshot();
-                    List<String> paths = new ArrayList<String>();
+                    List<String> paths = new ArrayList<>();
                     if (modules != null && snapshot != null) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), modules.getOffset());
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), snapshot.getOriginalOffset(modules.getOffset()));
                         if (ts == null) {
                             return Collections.emptyList();
                         } 

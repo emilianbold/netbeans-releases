@@ -230,9 +230,11 @@ public final class PhpCoverageProvider implements CoverageProvider {
     static FileCoverageSummary getFileCoverageSummary(Coverage.File file) {
         assert file != null;
         FileObject fo = FileUtil.toFileObject(new File(file.getPath()));
+        // #250315
+        String displayName = fo != null ? fo.getNameExt() : "???"; // NOI18N
         return new FileCoverageSummary(
                 fo,
-                fo.getNameExt(),
+                displayName,
                 file.getMetrics().getStatements(),
                 file.getMetrics().getCoveredStatements(),
                 -1,
