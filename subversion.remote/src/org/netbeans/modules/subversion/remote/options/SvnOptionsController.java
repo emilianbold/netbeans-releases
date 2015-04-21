@@ -127,6 +127,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.fileSystemChanged(fileSystem);
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
+            @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "displayer != null"
             public void hyperlinkUpdate (HyperlinkEvent e) {
                 if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
                     return;

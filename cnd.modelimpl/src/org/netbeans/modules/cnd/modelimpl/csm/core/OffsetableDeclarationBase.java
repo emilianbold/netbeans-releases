@@ -104,8 +104,12 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     protected final CsmProject getProject() {
         CsmFile file = this.getContainingFile();
-        CndUtils.assertNotNull(file, "Null containing file"); //NOI18N
-        return file != null ? file.getProject() : null;
+        if (file == null) {
+            CndUtils.assertUnconditional("Null containing file"); //NOI18N
+            return null;
+        } else {
+            return file.getProject();
+        }
     }    
     
     public CharSequence getQualifiedNamePostfix() {
