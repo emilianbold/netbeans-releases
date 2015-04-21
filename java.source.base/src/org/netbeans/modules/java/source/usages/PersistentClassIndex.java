@@ -60,6 +60,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -162,7 +163,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             }
             FileObject[] aptRoots = cachedAptRoots;
             if (!isValid(aptRoots)) {
-                final URL aptGeneratedURL = APTUtils.get(rootFo).sourceOutputDirectory();
+                final URL aptGeneratedURL = getAPTSourceOutputDirectory(rootFo);
                 final FileObject aptGeneratedRoot = aptGeneratedURL == null ?
                         null:
                         URLMapper.findFileObject(aptGeneratedURL);
@@ -778,5 +779,13 @@ public final class PersistentClassIndex extends ClassIndexImpl {
             }
         }
         return true;
+    }
+
+    @CheckForNull
+    private static URL getAPTSourceOutputDirectory(@NonNull final FileObject sourceRoot) {
+        final APTUtils au = APTUtils.getIfExist(sourceRoot);
+        return au != null ?
+            au.sourceOutputDirectory():
+            AnnotationProcessingQuery.getAnnotationProcessingOptions(sourceRoot).sourceOutputDirectory();
     }
 }
