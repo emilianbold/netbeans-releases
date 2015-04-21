@@ -1393,6 +1393,7 @@ public class FileStatusCache {
          * @param mimeTypeFlag mime label is needed?
          * @return a cache item or a fake one if the original is null or invalid
          */
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "labelInfo != null"
         public FileLabelInfo getLabelInfo(VCSFileProxy file, boolean mimeTypeFlag) {
             FileLabelInfo labelInfo;
             boolean refreshInfo = false;

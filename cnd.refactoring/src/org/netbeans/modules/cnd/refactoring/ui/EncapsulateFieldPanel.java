@@ -99,6 +99,10 @@ import org.openide.util.NbPreferences;
  * @author  Vladimir Voskresensky
  */
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
+    private static final String ALWAYS_USE_ACCESSORS_PROPERTY = "always_use_accessors"; // NOI18N
+    private static final String FIELD_ACCESS_INDEX_PROPERTY = "field_access_index"; // NOI18N
+    private static final String METHOD_ACCESS_INDEX_PROPERTY = "method_access_index"; // NOI18N
+
     private boolean EXPERIMENTAL = CsmRefactoringUtils.REFACTORING_EXTRA;
 
     private DefaultTableModel model;
@@ -109,9 +113,6 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
     private String classname;
     private boolean isUpperCase;
     private boolean hasOutOfClassMemberDefinitions = false;
-    private static boolean ALWAYS_USE_ACCESSORS = false;
-    private static int FIELD_ACCESS_INDEX = 2;
-    private static int METHOD_ACCESS_INDEX = 0;
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -156,11 +157,11 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
-        jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
+        jCheckAccess.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(EncapsulateFieldPanel.ALWAYS_USE_ACCESSORS_PROPERTY, false));
         jCheckAccess.setEnabled(false && EXPERIMENTAL);
-        jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
+        jComboAccess.setSelectedIndex(NbPreferences.forModule(DeclarationGenerator.class).getInt(EncapsulateFieldPanel.METHOD_ACCESS_INDEX_PROPERTY, 0));
         jComboAccess.setEnabled(false && EXPERIMENTAL);
-        jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
+        jComboField.setSelectedIndex(NbPreferences.forModule(DeclarationGenerator.class).getInt(EncapsulateFieldPanel.FIELD_ACCESS_INDEX_PROPERTY, 2));
         jComboField.setEnabled(false && EXPERIMENTAL);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
@@ -681,13 +682,15 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     public boolean isCheckAccess() {
-        ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
-        return ALWAYS_USE_ACCESSORS;
+        boolean res = jCheckAccess.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(EncapsulateFieldPanel.ALWAYS_USE_ACCESSORS_PROPERTY, res);
+        return res;
     }
     
     public Set<CsmVisibility> getFieldModifiers() {
-        FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
-        CsmVisibility mod = getModifier(FIELD_ACCESS_INDEX);
+        int res = jComboField.getSelectedIndex();
+        NbPreferences.forModule(DeclarationGenerator.class).putInt(EncapsulateFieldPanel.FIELD_ACCESS_INDEX_PROPERTY, res);
+        CsmVisibility mod = getModifier(res);
         if (mod == null) {
             return Collections.emptySet();
         } else {
@@ -696,8 +699,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public Set<CsmVisibility> getMethodModifiers() {
-        METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
-        CsmVisibility mod = getModifier(METHOD_ACCESS_INDEX);
+        int res = jComboAccess.getSelectedIndex();
+        NbPreferences.forModule(DeclarationGenerator.class).putInt(EncapsulateFieldPanel.METHOD_ACCESS_INDEX_PROPERTY, res);
+        CsmVisibility mod = getModifier(res);
         if (mod == null) {
             return Collections.emptySet();
         } else {

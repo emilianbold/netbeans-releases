@@ -77,7 +77,7 @@ import org.openide.filesystems.FileSystem;
  */
 class SearchExecutor extends SvnProgressSupport {
 
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
+    static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
 
     static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
     static final DateFormat [] dateFormats = new DateFormat[] {

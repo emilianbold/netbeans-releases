@@ -222,7 +222,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         synchronized(MakeProject.class) {
             if (templateListener == null) {
-                DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
+                templateListener = MakeTemplateListener.createInstance();
             }
         }
         LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N

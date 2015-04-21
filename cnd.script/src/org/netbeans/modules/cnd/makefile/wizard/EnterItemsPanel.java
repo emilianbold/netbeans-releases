@@ -167,7 +167,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     private JButton nextButton;
 
     /** Remember if Last is enabled */
-    private static boolean lastEnabled;
+    private boolean lastEnabled;
 
 
     /**
