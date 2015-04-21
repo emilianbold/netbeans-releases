@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import org.clang.basic.FileEntry;
 import org.clang.basic.SrcMgr;
 import org.clang.lex.Preprocessor;
+import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
 import org.clank.support.Casts;
@@ -150,7 +151,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected boolean onNotFoundInclusionDirective(FileInfoCallback.FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
+    protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
         APTFileSearch fileSearch = includeHandler.getStartEntry().getFileSearch();
         if (fileSearch != null) {
             String headerPath = fileSearch.searchInclude(
@@ -169,7 +170,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected void onEnter(FileInfoCallback.FileInfo enteredFrom, FileInfoCallback.FileInfo enteredTo) {
+    protected void onEnter(FileInfo enteredFrom, FileInfo enteredTo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Enter: " + enteredTo).$out("\n").flush();
         }
@@ -198,7 +199,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
 
     @Override
-    protected void onExit(FileInfoCallback.FileInfo exitedFrom, FileInfoCallback.FileInfo exitedTo) {
+    protected void onExit(FileInfo exitedFrom, FileInfo exitedTo) {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Exit from ");
             if (exitedFrom.isFile()) {
@@ -317,14 +318,14 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
           
     private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
-      private final FileInfoCallback.FileInfo current;
+      private final FileInfo current;
       private final ClankInclusionDirectiveWrapper includeDirective;
 
       private APTToken[] stolenTokens;
       private boolean hasTokenStream = false;
 
       
-      public ClankFileInfoWrapper(FileInfoCallback.FileInfo current,
+      public ClankFileInfoWrapper(FileInfo current,
               PreprocHandler ppHandler) {
         assert current != null;
         this.current = current;
