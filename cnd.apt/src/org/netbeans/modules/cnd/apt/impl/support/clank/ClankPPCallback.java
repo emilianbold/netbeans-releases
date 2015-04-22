@@ -42,6 +42,9 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import org.clang.basic.FileEntry;
 import org.clang.basic.SrcMgr;
 import org.clang.lex.Preprocessor;
@@ -54,6 +57,8 @@ import org.clank.support.Native;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
+import org.llvm.adt.aliases.SmallVector;
+import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -244,7 +249,7 @@ public final class ClankPPCallback extends FileInfoCallback {
           assert exitedFromWrapper.current == exitedFrom;
           // we cache possibly collected tokens in include handler
           // to allow delegate to use them
-          includeHandler.cacheTokens(exitedFromWrapper.onExit());
+          includeHandler.cacheTokens(exitedFromWrapper.convertToAPTCache());
           // init where we returned to
           if (includeStack.isEmpty()) {
             exitedToWrapper = null;
@@ -280,7 +285,7 @@ public final class ClankPPCallback extends FileInfoCallback {
       return delegate.needMacroExpansion();
     }
 
-    private static final class ClankInclusionDirectiveWrapper implements ClankDriver.ClankInclusionDirective {
+    static final class ClankInclusionDirectiveWrapper implements ClankDriver.ClankInclusionDirective {
         private final InclusionDirectiveInfo clankDelegate;
         private final ResolvedPath resolvedPath;
         private final String spelling;
@@ -338,13 +343,14 @@ public final class ClankPPCallback extends FileInfoCallback {
         
     }
           
-    private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
+    static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
       private final FileInfo current;
       private final ClankInclusionDirectiveWrapper includeDirective;
       private final CharSequence filePath;
-      private APTToken[] stolenTokens;
+      private APTToken[] convertedTokens;
+      private List<ClankDriver.ClankPreprocessorDirective> convertedPPDirectives;
       private boolean hasTokenStream = false;
-
+      private boolean convertedToAPT = false;
       
       public ClankFileInfoWrapper(FileInfo current,
               PreprocHandler ppHandler) {
@@ -362,14 +368,35 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
       }
       
-      public APTToken[] getStolenTokens() {
-        assert (stolenTokens != null);
-        return stolenTokens;
+      public APTToken[] getConvertedTokens() {
+        assert (convertedTokens != null);
+        return convertedTokens;
       }
 
-      private boolean stealTokensIfAny() {
+      private void prepareConvertedPPDirectives() {
+        assert Thread.holdsLock(this);
+        SmallVector<PreprocessorDirectiveInfo> ppDirectives = current.getPreprocessorDirectives();
+        Object[] directives = ppDirectives.$array();
+        int nrDirectives = ppDirectives.size();
+        assert this.convertedPPDirectives == null;
+        this.convertedPPDirectives = new ArrayList<ClankDriver.ClankPreprocessorDirective>(nrDirectives);
+        SmallVectorChar spell = new SmallVectorChar(1024);
+        Preprocessor PP = current.getPreprocessor();
+        for (int i = 0; i < nrDirectives; i++) {
+          PreprocessorDirectiveInfo curDirective = (PreprocessorDirectiveInfo) directives[i];
+          if (curDirective instanceof InclusionDirectiveInfo) {
+            ClankInclusionDirectiveWrapper wrapper = (ClankInclusionDirectiveWrapper)((InclusionDirectiveInfo)curDirective).getAnnotation();
+            this.convertedPPDirectives.add(wrapper);
+          } else if (curDirective instanceof UserDiagnosticDirectiveInfo) {
+            
+          }
+        }
+      }
+
+      private boolean prepareConvertedTokensIfAny() {
+        assert Thread.holdsLock(this);
         if (current.hasTokens()) {
-          stolenTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens());
+          convertedTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens());
           return true;
         } else {
           return false;
@@ -382,8 +409,13 @@ public final class ClankPPCallback extends FileInfoCallback {
       }
 
       @Override
+      public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
+        return Collections.unmodifiableList(convertedPPDirectives);
+      }
+
+      @Override
       public TokenStream getTokenStream() {
-        return new ArrayBasedAPTTokenStream(getStolenTokens());
+        return new ArrayBasedAPTTokenStream(getConvertedTokens());
       }
 
       @Override
@@ -402,17 +434,16 @@ public final class ClankPPCallback extends FileInfoCallback {
       }
 
       @Override
-      public PreprocHandler getHandler() {
-        throw new UnsupportedOperationException("Not supported yet.");
-      }
-
-      @Override
       public boolean hasTokenStream() {
         return hasTokenStream;
       }
 
-      private ClankDriver.APTTokenStreamCache onExit() {
-        hasTokenStream = stealTokensIfAny();
+      synchronized ClankDriver.APTTokenStreamCache convertToAPTCache() {
+        if (!convertedToAPT) {
+          hasTokenStream = prepareConvertedTokensIfAny();
+          prepareConvertedPPDirectives();
+          convertedToAPT = true;
+        }
         return this;
       }
       

@@ -691,6 +691,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return inclStackIndex == -1 ? "<DUMMY>" : "no cache for " + inclStackIndex; // NOI18N
       }
 
+      @Override
+      public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
+        return Collections.emptyList();
+      }
 
     }
 }

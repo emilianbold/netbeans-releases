@@ -141,6 +141,9 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         if (tokenStream == null) {
           return null;
         }
+        if (triggerParsingActivity) {
+          addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
+        }
         skipped = tokStreamCache.getSkippedRanges();
         if (applyLanguageFilter) {
           APTLanguageFilter languageFilter = fileImpl.getLanguageFilter(ppHandler.getState());
@@ -355,20 +358,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         private static final boolean CLEAN_STATE = false;
-        
-        private void addInclude(FileImpl curFile, FileImpl includedFile, ClankDriver.ClankFileInfo enteredTo) {
-          if (triggerParsingActivity && (curFile == stopFileImpl)) {
-            FileContent parsingFileContent = fileContent;
-            ResolvedPath resolvedPath = enteredTo.getInclusionDirective().getResolvedPath();
-            String fileName = CndPathUtilities.getBaseName(resolvedPath.getPath().toString());
-            boolean system = !resolvedPath.isDefaultSearchPath();
-            boolean broken = (includedFile == null);
-            int startOffset = enteredTo.getInclusionDirective().getDirectiveStartOffset();
-            int endOffset = enteredTo.getInclusionDirective().getDirectiveEndOffset();
-            IncludeImpl incl = IncludeImpl.create(fileName, system, false, includedFile, curFile, startOffset, endOffset);
-            parsingFileContent.addInclude(incl, broken);
-          }
-        }
     }
     
     private static final class IncludeDirectiveTokensStreamCallback implements ClankPreprocessorCallback {
@@ -444,5 +433,41 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
+    }
+
+    private static void addPreprocessorDirectives(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+        assert parsingFileContent != null;
+        assert curFile != null;
+        assert cache != null;
+        for (ClankDriver.ClankPreprocessorDirective cur : cache.getPreprocessorDirectives()) {
+            if (cur instanceof ClankDriver.ClankInclusionDirective) {
+                addInclude(curFile, parsingFileContent, (ClankDriver.ClankInclusionDirective)cur);
+            } else if (cur instanceof ClankDriver.ClankErrorDirective) {
+                addError(curFile, parsingFileContent, (ClankDriver.ClankErrorDirective)cur);
+            } else if (cur instanceof ClankDriver.ClankMacroDirective) {
+                addMacro(curFile, parsingFileContent, (ClankDriver.ClankMacroDirective)cur);
+            } else {
+              CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
+            }
+        }
+    }
+
+    private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankMacroDirective ppDirective) {
+    }
+
+    private static void addError(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankErrorDirective ppDirective) {
+    }
+
+    private static void addInclude(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankInclusionDirective ppDirective) {
+        ResolvedPath resolvedPath = ppDirective.getResolvedPath();
+        CharSequence fileName = ppDirective.getSpellingName();
+        boolean system = ppDirective.isAngled();
+        boolean broken = (resolvedPath == null);
+        FileImpl includedFile = (FileImpl) ppDirective.getAnnotation();
+        assert (includedFile == null) == broken : "broken " + broken + " vs. " + includedFile;
+        int startOffset = ppDirective.getDirectiveStartOffset();
+        int endOffset = ppDirective.getDirectiveEndOffset();
+        IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, false, includedFile, curFile, startOffset, endOffset);
+        parsingFileContent.addInclude(incl, broken);
     }
 }

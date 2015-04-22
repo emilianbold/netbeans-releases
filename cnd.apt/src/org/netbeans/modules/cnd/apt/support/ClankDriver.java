@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
-import org.netbeans.modules.cnd.apt.impl.support.clank.ClankPPCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.support.Interrupter;
 
@@ -68,6 +68,7 @@ public final class ClankDriver {
 
       boolean hasTokenStream();
 
+      Collection<ClankPreprocessorDirective> getPreprocessorDirectives();
     }
 
     public static int extractFileIndex(PreprocHandler ppHandler) {
@@ -84,14 +85,28 @@ public final class ClankDriver {
         return ClankDriverImpl.preprocessImpl(buffer, ppHandler, callback, interrupter);
     }
 
-    public interface ClankInclusionDirective {
+    public interface ClankPreprocessorDirective {
+      int getDirectiveStartOffset();
+      int getDirectiveEndOffset();
+    }
+
+    // // #define or #undef directive
+    public interface ClankMacroDirective extends ClankPreprocessorDirective {
+      CharSequence getMacroName();
+      // #define or #undef
+      boolean isDefined();
+    }
+
+    public interface ClankErrorDirective extends ClankPreprocessorDirective {
+      CharSequence getMessage();
+    }
+    
+    public interface ClankInclusionDirective extends ClankPreprocessorDirective {
       void setAnnotation(Object attr);
       Object getAnnotation();
       ResolvedPath getResolvedPath();
-      String getSpellingName();
+      CharSequence getSpellingName();
       boolean isAngled();
-      int getDirectiveStartOffset();
-      int getDirectiveEndOffset();      
     }
 
     public interface ClankPreprocessorCallback {
@@ -125,7 +140,6 @@ public final class ClankDriver {
 
     public interface ClankFileInfo {
       CharSequence getFilePath();
-      PreprocHandler getHandler();
       boolean hasTokenStream();
       TokenStream getTokenStream();
       int getFileIndex();
