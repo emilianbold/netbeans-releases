@@ -983,15 +983,15 @@ public class JavaCompletionTaskBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileTypingInitOfField() throws Exception {
-        performTest("MethodStart", 40, "public int field = ha", "hashCode.pass");
+        performTest("MethodStart", 40, "public int field = ha", "intHashCode.pass");
     }
     
     public void testTypingInitOfField() throws Exception {
-        performTest("FieldNoInit", 56, " = ha", "hashCode.pass");
+        performTest("FieldNoInit", 56, " = ha", "intHashCode.pass");
     }
     
     public void testOnInitOfField() throws Exception {
-        performTest("Field", 61, null, "hashCode.pass");
+        performTest("Field", 61, null, "intHashCode.pass");
     }
     
     public void testEmptyFileTypingMethodInvocationWithinInitOfField() throws Exception {
