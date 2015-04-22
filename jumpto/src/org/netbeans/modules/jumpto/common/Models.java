@@ -46,6 +46,7 @@ package org.netbeans.modules.jumpto.common;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -64,6 +65,7 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Pair;
 
 /**
@@ -98,6 +100,11 @@ public final class Models {
             @NullAllowed final Comparator<? super T> comparator,
             @NullAllowed final Filter<? super T> filter) {
         return new MutableListModelImpl(comparator, filter);
+    }
+
+    @NonNull
+    public static <T> Filter<T> chained(@NonNull final Filter<T>... filters) {
+        return new ChainedFilter(filters);
     }
 
     // Exported types
@@ -411,6 +418,45 @@ public final class Models {
                     }
                 });
             }
+        }
+    }
+
+    private static final class ChainedFilter<T> implements Filter<T>, ChangeListener {
+
+        private final ChangeSupport changeSupport;
+        private final Collection<Filter<T>> filters;
+
+        ChainedFilter(@NonNull final Filter<T>... filters) {
+            this.changeSupport = new ChangeSupport(this);
+            this.filters = Arrays.asList(filters);
+            for (Filter<T> filter : this.filters) {
+                filter.addChangeListener(this);
+            }
+        }
+
+        @Override
+        public boolean accept(@NonNull final T item) {
+            for (Filter<T> filter : filters) {
+                if (!filter.accept(item)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public void addChangeListener(@NonNull final ChangeListener listener) {
+            changeSupport.addChangeListener(listener);
+        }
+
+        @Override
+        public void remmoveChangeListener(@NonNull final ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
+        }
+
+        @Override
+        public void stateChanged(@NonNull final ChangeEvent e) {
+            changeSupport.fireChange();
         }
     }
 
