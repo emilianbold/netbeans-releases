@@ -50,7 +50,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
-import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -73,7 +72,6 @@ import org.netbeans.modules.javascript2.requirejs.editor.FSCompletionUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -215,18 +213,14 @@ public class DefineInterceptor implements FunctionInterceptor {
                 }
             }
         } else if (modules != null && modules.getValue() instanceof String) {
-            Source source = Source.create(fo);
             Project project = FileOwnerQuery.getOwner(fo);
             if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
                 return Collections.emptyList();
             }
-            TokenHierarchy<?> th = null;
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             TokenSequence<? extends JsTokenId> ts = null;
-            if (source != null) {
-                th = source.createSnapshot().getTokenHierarchy();
-                if (th != null) {
-                    ts = LexUtilities.getJsTokenSequence(th, modules.getOffset());
-                }
+            if (th != null) {
+                ts = LexUtilities.getJsTokenSequence(th, modules.getOffset());
             }
             if (ts == null) {
                 return Collections.emptyList();
@@ -236,7 +230,9 @@ public class DefineInterceptor implements FunctionInterceptor {
                 Token<? extends JsTokenId> token = ts.token();
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
                         JsTokenId.STRING_BEGIN, JsTokenId.BRACKET_LEFT_PAREN));
-                if (token.id() == JsTokenId.IDENTIFIER && EditorUtils.REQUIRE.equals(token.text().toString()) && ts.movePrevious()) {
+                if (token.id() == JsTokenId.IDENTIFIER
+                        && (EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))
+                        && ts.movePrevious()) {
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     if (token.id() == JsTokenId.OPERATOR_ASSIGNMENT && ts.movePrevious()) {
                         token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
