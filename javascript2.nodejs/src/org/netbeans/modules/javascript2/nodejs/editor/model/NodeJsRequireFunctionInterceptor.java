@@ -146,7 +146,6 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                     ts.movePrevious();
                                     token = LexUtilities.findNextIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON, JsTokenId.OPERATOR_DOT));
                                     if (token != null && token.id() != JsTokenId.OPERATOR_DOT) {
-                                        jsObject.clearAssignments();
                                         jsObject.addAssignment( modelTypes.get(0), assignmentOffset);
                                         jsObject.addAssignment( modelTypes.get(1), assignmentOffset);
                                     }
