@@ -716,7 +716,7 @@ public class SaasUtil {
             }
 
             String doc = os.toString("UTF-8");      //NOI18N
-            if (doc.contains(Saas.NS_WSDL) || doc.contains(Saas.WSDL_EXT)) {
+            if (doc.contains(Saas.NS_WSDL)) {
                 return Saas.NS_WSDL;
             } 
             else if (doc.contains(Saas.NS_WADL)) {
