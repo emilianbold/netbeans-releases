@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.saas.util;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -108,10 +107,9 @@ import org.xml.sax.XMLReader;
  * @author nam
  */
 public class SaasUtil {
-    
-    public static final String APPLICATION_WADL = "resources/application.wadl";
-    public static final String DEFAULT_SERVICE_NAME = "Service";
-    public static final String CATALOG = "catalog";
+    public static final String APPLICATION_WADL = "resources/application.wadl"; // NOI18N
+    public static final String DEFAULT_SERVICE_NAME = "Service"; // NOI18N
+    public static final String CATALOG = "catalog"; // NOI18N
     
     private static final ReadInputStream IS_READER = new InputStreamJaxbReader(); 
     
@@ -141,7 +139,7 @@ public class SaasUtil {
             } catch (IOException ioe) {
                 jbex = ioe;
             }
-            String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath());
+            String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath()); // NOI18N
             IOException ioe = new IOException(msg);
             if (jbex != null) {
                 ioe.initCause(jbex);
@@ -162,16 +160,7 @@ public class SaasUtil {
             boolean includeAware) throws JAXBException 
     {
         Unmarshaller unmarshaller = getUnmarshaller(type);
-        Object object;
-        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
-        includeAware = false;
-        if (includeAware) {
-            SAXSource saxSource = getSAXSourceWithXIncludeEnabled(reader);
-            object = unmarshaller.unmarshal(saxSource);
-        } 
-        else {
-            object = unmarshaller.unmarshal(reader);
-        }
+        Object object = unmarshaller.unmarshal(reader);
         return cast(type, object);
     }
     
@@ -179,17 +168,7 @@ public class SaasUtil {
             boolean includeAware) throws JAXBException 
     {
         Unmarshaller unmarshaller = getUnmarshaller(type);
-        Object object;
-        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
-        includeAware = false;
-        if (includeAware) {
-            SAXSource saxSource = getSAXSourceWithXIncludeEnabled(in);
-            object = unmarshaller.unmarshal(saxSource);
-        } 
-        else {
-            object = unmarshaller.unmarshal(in);
-        }
-
+        Object object = unmarshaller.unmarshal(in);
         return cast(type, object);
     }
 
@@ -201,7 +180,7 @@ public class SaasUtil {
             return type.cast(e.getValue());
         }
 
-        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName()); // NOI18N
     }
 
     private static <T> Unmarshaller getUnmarshaller( Class<T> type )
@@ -209,7 +188,7 @@ public class SaasUtil {
     {
         ClassLoader original = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader( SaasUtil.class.getClassLoader());
-        JAXBContext jc = null;
+        JAXBContext jc;
         try {
             jc = JAXBContext.newInstance(type.getPackage().getName(), original);
         }
@@ -266,14 +245,12 @@ public class SaasUtil {
         try {
             saveSaasGroup(saasGroup, out);
         } finally {
-            if (out != null) {
-                out.close();
-            }
+            out.close();
         }
     }
 
-    public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-    public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services");
+    public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group"); // NOI18N
+    public static final QName QNAME_SAAS_SERVICES = new QName(Saas.NS_SAAS, "saas-services"); // NOI18N
 
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
@@ -338,20 +315,12 @@ public class SaasUtil {
         return methodsResult.allInstances();
     }
 
-    /*public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
-        JXPathContext context = JXPathContext.newContext(root);
-        context.registerNamespace("", Saas.NS_WADL);
-        return type.cast(context.getValue(xpath));
-    }*/
-
-
     public static Resource getParentResource(Application app, Method wm) {
-        Resource r = null;
         for(org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : 
             app.getResources())
         {
             for (Resource base : wadlResources.getResource()) {
-                r = findParentResource(base, wm);
+                Resource r = findParentResource(base, wm);
                 if (r != null) {
                     return r;
                 }
@@ -367,7 +336,6 @@ public class SaasUtil {
                 if (m == wm) {
                     return base;
                 }
-                continue;
             } else if (o instanceof Resource) {
                 Resource r = findParentResource((Resource)o, wm);
                 if (r != null) {
@@ -383,7 +351,6 @@ public class SaasUtil {
         if (methodId.charAt(0) == '#') {
             methodId = methodId.substring(1);
         }
-        Method result = null;
         for (Object o : app.getResourceTypeOrMethodOrRepresentation()) {
             if (o instanceof Method) {
                 Method m = (Method) o;
@@ -396,7 +363,7 @@ public class SaasUtil {
                 .getResources())
         {
             for (Resource base : wadlResources.getResource()) {
-                result = findMethodById(base, methodId);
+                Method result = findMethodById(base, methodId);
                 if (result != null) {
                     return result;
                 }
@@ -412,7 +379,6 @@ public class SaasUtil {
                 if (methodId.equals(m.getId())) {
                     return m;
                 }
-                continue;
             } else {
                 Method m = findMethodById((Resource)o, methodId);
                 if (m != null) {
@@ -424,13 +390,12 @@ public class SaasUtil {
     }
 
     public static Method wadlMethodFromXPath(Application app, String xpath) {
-        String paths[] = xpath.split("/");
+        String paths[] = xpath.split("/"); // NOI18N
         Resource current = null;
         for (int pathIndex = 0; pathIndex < paths.length; pathIndex++) {
             String path = paths[pathIndex];
-            if ("application".equals(path) || path.length() == 0 || "resources".equals(path)) {
-                continue;
-            } else if (path.startsWith("resource[")) {
+            if ("application".equals(path) || path.length() == 0 || "resources".equals(path)) { // NOI18N
+            } else if (path.startsWith("resource[")) { // NOI18N
                 int i = getIndex(path);
                 if (i > -1) {
                     List<Resource> resources = getCurrentResources(app, current);
@@ -440,7 +405,7 @@ public class SaasUtil {
                     }
                 }
                 return null;
-            } else if (path.startsWith("method[")) {
+            } else if (path.startsWith("method[")) { // NOI18N
                 int iTarget = getIndex(path);
                 if (iTarget > -1) {
                     int i = 0;
@@ -520,24 +485,23 @@ public class SaasUtil {
         Resource[] paths = method.getResourcePath();
         Method m = method.getWadlMethod();
 
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(m.getName());
-        sb.append(" : ");
+        sb.append(" : "); // NOI18N
         sb.append(saas.getBaseURL());
         for (Resource r : paths) {
             sb.append(r.getPath());
             sb.append('/');
         }
-        Param[] params = null;
         if (m.getRequest() != null && m.getRequest().getParam() != null) {
-            params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
+            Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
             if (params.length > 0) {
-                sb.append(" (");
+                sb.append(" ("); // NOI18N
             }
             for (int i=0 ; i < params.length; i++) {
                 Param p = params[i];
                 if (i > 0) {
-                    sb.append(",");
+                    sb.append(","); // NOI18N
                 }
                 if (p.getStyle() == ParamStyle.TEMPLATE) {
                     sb.append('{');
@@ -559,7 +523,7 @@ public class SaasUtil {
                 }
             }
             if (params.length > 0) {
-                sb.append(" )");
+                sb.append(" )"); // NOI18N
             }
         }
         return sb.toString();
@@ -604,7 +568,7 @@ public class SaasUtil {
         FileObject wadlFile;
         try {
             FileObject dir = saas.getSaasFolder();
-            FileObject catalogDir = dir.getFileObject("catalog");
+            FileObject catalogDir = dir.getFileObject("catalog"); // NOI18N
             if (catalogDir == null) {
                 catalogDir = dir.createFolder(CATALOG);
             }
@@ -616,9 +580,7 @@ public class SaasUtil {
             out = wadlFile.getOutputStream();
             FileUtil.copy(in, out);
         } finally {
-            if (in != null) {
-                in.close();
-            }
+            in.close();
             if (out != null) {
                 out.close();
             }
@@ -642,10 +604,10 @@ public class SaasUtil {
             }
             int start = urlPath.lastIndexOf("/") + 1; //NOI18N
             String name = urlPath.substring(start);
-            if (name.endsWith(".wadl") || name.endsWith(".WADL")) {
+            if (name.endsWith(".wadl") || name.endsWith(".WADL")) { // NOI18N
                 name = name.substring(0, name.length()- 5);
             }
-            name = name.replace('.', '-'); // NOI18N
+            name = name.replace('.', '-');
 
             return name;
     }
@@ -709,7 +671,7 @@ public class SaasUtil {
             InputStream is = new URI(url).toURL().openStream();
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
-            int count = 0;
+            int count;
 
             while ((count = is.read(buffer)) != -1) {
                 os.write(buffer, 0, count);
@@ -784,7 +746,7 @@ public class SaasUtil {
     public static String deriveDefaultPackageName(Saas saas) {
         String pack1 = toValidJavaName(saas.getTopLevelGroup().getName());
         String pack2 = toValidJavaName(saas.getDisplayName());
-        return (pack1 + "." + pack2).toLowerCase();
+        return (pack1 + "." + pack2).toLowerCase(); // NOI18N
     }
     
     private static Reader getWadlReader( InputStream inputStream ) 
@@ -826,21 +788,6 @@ public class SaasUtil {
         
         <T> T loadJaxbObject(InputStream inputStream,  Class<T> type, 
                 boolean includeAware) throws JAXBException;
-    }
-    
-    private static class ApplicationReader implements ReadInputStream {
-
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.websvc.saas.util.SaasUtil.ReadInputStream#loadJaxbObject(java.io.InputStream, java.lang.Class, boolean)
-         */
-        @Override
-        public <T> T loadJaxbObject( InputStream inputStream, Class<T> type,
-                boolean includeAware ) throws JAXBException
-        {
-            return SaasUtil.loadJaxbObject(getWadlReader(inputStream), type, 
-                    includeAware);
-        }
-        
     }
     
     private static class InputStreamJaxbReader implements ReadInputStream {
