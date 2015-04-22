@@ -25,4 +25,8 @@ var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
     f2("arg");
 };
 
-|>GLOBAL:myLib<|.f;
+// (2.1) Intellisence is NOT aware about myLib.f1().
+|>GLOBAL:myLib<|.f1();
+
+// (2.2) Intellisence is NOT aware about myLib.f2().
+|>GLOBAL:myLib<|.f2();    

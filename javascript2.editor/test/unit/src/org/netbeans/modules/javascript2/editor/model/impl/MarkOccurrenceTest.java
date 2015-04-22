@@ -1363,6 +1363,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue242454B.js", "this.y2 = f^2;", true); 
     }
     
+    public void testIssue251984_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "var myL^ib = new function MyLib() {", true); 
+    }
+    
+    public void testIssue251984_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "var myLib = new function My^Lib() {", true); 
+    }
+    
+    public void testIssue251984_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "function f^1(f1arg) {", true); 
+    }
+    
+    public void testIssue251984_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "function f^2(f2arg) {", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

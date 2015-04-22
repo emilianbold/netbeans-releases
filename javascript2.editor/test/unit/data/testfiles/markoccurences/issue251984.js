@@ -1,4 +1,4 @@
-var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
+var myLib = new function MyLib() {
    
     this.f1 = f1; 
     
@@ -6,7 +6,7 @@ var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
      * f1 JsDoc, note: "this.f1 = f1;" occurs before function 'f1' in text
      * @param {string} f1arg f1arg JsDoc
      */
-    function |>METHOD:f1<|(|>UNUSED:f1arg<|) {
+    function f1(f1arg) {
         // many lines of text ...
     };
     
@@ -14,7 +14,7 @@ var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
      * f2 JsDoc, note: "this.f2 = f2;" occurs after function 'f2' in text
      * @param {string} f2arg f2arg JsDoc
      */
-    function |>METHOD:f2<|(|>UNUSED:f2arg<|) {
+    function f2(f2arg) {
         // many lines of text ...
     };
     this.f2 = f2;
@@ -25,4 +25,8 @@ var |>GLOBAL:myLib<| = new function |>METHOD:MyLib<|() {
     f2("arg");
 };
 
-|>GLOBAL:myLib<|.f;
+// (2.1) Intellisence is NOT aware about myLib.f1().
+myLib.f1();
+
+// (2.2) Intellisence is NOT aware about myLib.f2().
+myLib.f2();    

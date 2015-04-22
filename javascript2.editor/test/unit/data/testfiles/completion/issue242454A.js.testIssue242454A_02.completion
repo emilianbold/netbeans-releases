@@ -4,7 +4,6 @@ f|2("arg");
 ------------------------------------
 METHOD     f1(f1arg: String): undefined    [PROTECTE  issue242454A.js
 METHOD     f2(f2arg: String): undefined    [PROTECTE  issue242454A.js
-FIELD      f                               [PUBLIC]   issue242454A.js
 KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null

@@ -574,6 +574,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             if (pathSize > 3) {
                 Node node = getPath().get(pathSize - 3);
+                boolean singletoneConstruction = false;
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
@@ -613,7 +614,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         Node node5 = getPreviousFromPath(5);
                         if (node4 instanceof UnaryNode && node5 instanceof VarNode) {
                             name = getName((VarNode)node5, parserResult);
-                            isPrivate = functionStack.size() > 6;
+                            isPrivate = functionStack.size() > 1;
+                            singletoneConstruction = true;
                         }
                     }
                     
@@ -637,10 +639,16 @@ public class ModelVisitor extends PathNodeVisitor {
                             removeFromPathTheLast();
                             return null;
                         }
-                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
-                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        removeFromPathTheLast();
-                        return null; 
+                        if (singletoneConstruction) {
+                            jsObject.addAssignment(new TypeUsageImpl(originalFunction.getFullyQualifiedName(), -1, true), -1);
+                            removeFromPathTheLast();
+                            return null; 
+                        } else {
+                            JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                            jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                            removeFromPathTheLast();
+                            return null; 
+                        }
                 }
             }
         }
