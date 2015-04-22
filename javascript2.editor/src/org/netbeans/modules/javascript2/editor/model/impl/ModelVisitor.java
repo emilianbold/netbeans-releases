@@ -574,6 +574,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             if (pathSize > 3) {
                 Node node = getPath().get(pathSize - 3);
+                boolean singletoneConstruction = false;
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
@@ -613,7 +614,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         Node node5 = getPreviousFromPath(5);
                         if (node4 instanceof UnaryNode && node5 instanceof VarNode) {
                             name = getName((VarNode)node5, parserResult);
-                            isPrivate = functionStack.size() > 6;
+                            isPrivate = functionStack.size() > 1;
+                            singletoneConstruction = true;
                         }
                     }
                     
@@ -637,10 +639,16 @@ public class ModelVisitor extends PathNodeVisitor {
                             removeFromPathTheLast();
                             return null;
                         }
-                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
-                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        removeFromPathTheLast();
-                        return null; 
+                        if (singletoneConstruction) {
+                            jsObject.addAssignment(new TypeUsageImpl(originalFunction.getFullyQualifiedName(), -1, true), -1);
+                            removeFromPathTheLast();
+                            return null; 
+                        } else {
+                            JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                            jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                            removeFromPathTheLast();
+                            return null; 
+                        }
                 }
             }
         }
@@ -1862,6 +1870,21 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
+            if (object != null && fqn.size() == 2) {
+                // try to handle case
+                // function MyF() {
+                //      this.f1 = f1;
+                //      function f1() {};
+                // }
+                // in such case the name after this has to be equal to the declared function. 
+                // -> in the model, just change  the f1 from private to privilaged. 
+                String lastName = fqn.get(1).getName();
+                JsObjectImpl property = (JsObjectImpl)object.getProperty(lastName);
+                if (property != null && lastName.equals(property.getName()) && property.getModifiers().contains(Modifier.PRIVATE)) {
+                    property.getModifiers().remove(Modifier.PRIVATE);
+                    property.getModifiers().add(Modifier.PROTECTED);
+                }
+            }
         }
         
         if (object != null) {
@@ -2097,12 +2120,18 @@ public class ModelVisitor extends PathNodeVisitor {
                 parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
             } else {
                 boolean found = false;
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
-                for (JsObject jsObject : variables) {
-                    if (valueName.equals(jsObject.getName())) {
-                        jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                        found = true;
-                        break;
+                JsObject jsProperty = ((JsObject)scope).getProperty(valueName);
+                if (jsProperty != null && jsProperty instanceof JsFunction) {
+                    found = true;
+                    jsProperty.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                } else {
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
+                    for (JsObject jsObject : variables) {
+                        if (valueName.equals(jsObject.getName())) {
+                            jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                            found = true;
+                            break;
+                        }
                     }
                 }
                 if (!found) {
