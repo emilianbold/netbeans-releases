@@ -1862,6 +1862,21 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
+            if (object != null && fqn.size() == 2) {
+                // try to handle case
+                // function MyF() {
+                //      this.f1 = f1;
+                //      function f1() {};
+                // }
+                // in such case the name after this has to be equal to the declared function. 
+                // -> in the model, just change  the f1 from private to privilaged. 
+                String lastName = fqn.get(1).getName();
+                JsObjectImpl property = (JsObjectImpl)object.getProperty(lastName);
+                if (property != null && lastName.equals(property.getName()) && property.getModifiers().contains(Modifier.PRIVATE)) {
+                    property.getModifiers().remove(Modifier.PRIVATE);
+                    property.getModifiers().add(Modifier.PROTECTED);
+                }
+            }
         }
         
         if (object != null) {
@@ -2097,12 +2112,18 @@ public class ModelVisitor extends PathNodeVisitor {
                 parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
             } else {
                 boolean found = false;
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
-                for (JsObject jsObject : variables) {
-                    if (valueName.equals(jsObject.getName())) {
-                        jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                        found = true;
-                        break;
+                JsObject jsProperty = ((JsObject)scope).getProperty(valueName);
+                if (jsProperty != null && jsProperty instanceof JsFunction) {
+                    found = true;
+                    jsProperty.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                } else {
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
+                    for (JsObject jsObject : variables) {
+                        if (valueName.equals(jsObject.getName())) {
+                            jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                            found = true;
+                            break;
+                        }
                     }
                 }
                 if (!found) {
