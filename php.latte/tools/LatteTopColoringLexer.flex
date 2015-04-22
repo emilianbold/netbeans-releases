@@ -348,7 +348,7 @@ SYNTAX_PYTHON_END="%}"
 }
 
 <ST_POSSIBLE_LATTE> {
-    {SYNTAX_LATTE_START}[a-zA-Z0-9_/\!\?\$] {
+    {SYNTAX_LATTE_START}[a-zA-Z0-9_/\!=\?\$] {
         if (yylength() > 2) {
             yypushback(2);
             return LatteTopTokenId.T_HTML;
