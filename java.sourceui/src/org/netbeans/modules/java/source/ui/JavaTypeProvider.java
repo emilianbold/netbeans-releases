@@ -183,7 +183,7 @@ public class JavaTypeProvider implements TypeProvider {
             Map<URI,CacheItem> sources = null;
 
             if (cpInfo == null) {
-                sources = new HashMap<URI,CacheItem>();
+                sources = new HashMap<>();
 
                 // Sources - ClassPath.SOURCE and translated ClassPath.COMPILE & ClassPath.BOOT
                 Collection<FileObject> srcRoots = QuerySupport.findRoots(
@@ -241,20 +241,21 @@ public class JavaTypeProvider implements TypeProvider {
                     }
                 }
             } else { // user provided classpath
-
                 final List<ClassPath.Entry> bootRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT).entries();
                 final List<ClassPath.Entry> compileRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE).entries();
                 final List<ClassPath.Entry> sourceRoots = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE).entries();
-                sources = new HashMap<URI,CacheItem>(bootRoots.size() + compileRoots.size() + sourceRoots.size());
+                sources = new HashMap<>(bootRoots.size() + compileRoots.size() + sourceRoots.size());
 
                 // bootPath
+                final String[] cpType = new String[1];
                 for (ClassPath.Entry entry : bootRoots) {
                     if ( isCanceled ) {
                         return;
                     }
-                    else {
+                    cpType[0] = ClassPath.BOOT;
+                    for (URL root : translate(entry.getURL(), cpType)) {
                         try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.BOOT, callBack));
+                            sources.put(root.toURI(), new CacheItem(root, cpType[0], callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                         }
@@ -266,9 +267,10 @@ public class JavaTypeProvider implements TypeProvider {
                     if ( isCanceled ) {
                         return;
                     }
-                    else {
+                    cpType[0] = ClassPath.COMPILE;
+                    for (URL root : translate(entry.getURL(), cpType)) {
                         try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.COMPILE, callBack));
+                            sources.put(root.toURI(), new CacheItem(root, cpType[0], callBack));
                         } catch (URISyntaxException ex) {
                             LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                         }
@@ -280,12 +282,10 @@ public class JavaTypeProvider implements TypeProvider {
                     if ( isCanceled ) {
                         return;
                     }
-                    else {
-                        try {
-                            sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.SOURCE, callBack));
-                        } catch (URISyntaxException ex) {
-                            LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
-                        }
+                    try {
+                        sources.put(entry.getURL().toURI(), new CacheItem(entry.getURL(),ClassPath.SOURCE, callBack));
+                    } catch (URISyntaxException ex) {
+                        LOGGER.log(Level.INFO, "Cannot convert root {0} into URI, ignoring.", entry.getURL());  //NOI18N
                     }
                 }
             }
@@ -309,7 +309,7 @@ public class JavaTypeProvider implements TypeProvider {
 
         final Map<URI,CacheItem> c = getRootCache();
         if (c == null) return;
-        final ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(c.size() * 20);
+        final ArrayList<JavaTypeDescription> types = new ArrayList<>(c.size() * 20);
 
         // is scan in progress? If so, provide a message to user.
         final boolean scanInProgress = SourceUtils.isScanInProgress();
@@ -337,7 +337,7 @@ public class JavaTypeProvider implements TypeProvider {
         LOGGER.log(Level.FINE, "Text For Query ''{0}''.", originalText);
         if (customizer != null) {
             for (final CacheItem ci : c.values()) {
-                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (customizer.query(
+                final Set<ElementHandle<TypeElement>> names = new HashSet<> (customizer.query(
                         ci.getClasspathInfo(), textForQuery, nameKind,  //Needs to pass slow cpinfo to keep compatibility
                         EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE)
                 ));
@@ -357,7 +357,7 @@ public class JavaTypeProvider implements TypeProvider {
                 }
             }
         } else {
-            final Collection<CacheItem> nonCached = new ArrayDeque<CacheItem>(c.size());
+            final Collection<CacheItem> nonCached = new ArrayDeque<>(c.size());
             for (CacheItem ci : c.values()) {
                 Collection<? extends JavaTypeDescription> cacheLine = dataCache.get(ci);
                 if (cacheLine != null) {
@@ -377,7 +377,7 @@ public class JavaTypeProvider implements TypeProvider {
                                     return null;
                                 }
                                 try {
-                                    final Collection<JavaTypeDescription> ct = new ArrayList<JavaTypeDescription>();
+                                    final Collection<JavaTypeDescription> ct = new ArrayList<>();
                                     boolean exists = false;
                                     //WB(dataCache[ci], ACTIVE)
                                     dataCache.put(ci, ACTIVE);
@@ -408,10 +408,7 @@ public class JavaTypeProvider implements TypeProvider {
                             return null;
                         }
                     });
-                } catch (IOException ex) {
-                    //Never happens
-                    throw new AssertionError(ex);
-                } catch (InterruptedException ex) {
+                } catch (IOException | InterruptedException ex) {
                     //Never happens
                     throw new AssertionError(ex);
                 }
@@ -548,6 +545,26 @@ public class JavaTypeProvider implements TypeProvider {
         return true;
     }
 
+    @NonNull
+    private static URL[] translate(@NonNull final URL root, @NonNull final String[] cpType) {
+        final SourceForBinaryQuery.Result2 res = SourceForBinaryQuery.findSourceRoots2(root);
+        FileObject[] roots;
+        if (res.preferSources() && (roots = res.getRoots()).length > 0) {
+            cpType[0] = ClassPath.SOURCE;
+            return asURLs(roots);
+        }
+        return new URL[] {root};
+    }
+
+    @NonNull
+    private static URL[] asURLs(@NonNull final FileObject... fos) {
+        final URL[] res = new URL[fos.length];
+        for (int i=0; i<fos.length; i++) {
+            res[i] = fos[i].toURL();
+        }
+        return res;
+    }
+
     //@NotTreadSafe
     static final class CacheItem implements ClassIndexImplListener {
 
@@ -663,7 +680,7 @@ public class JavaTypeProvider implements TypeProvider {
             SearchScopeType searchScope;
             if (packageName != null) {
                 //FQN
-                final Set<String> allPackages = new HashSet<String>();
+                final Set<String> allPackages = new HashSet<>();
                 index.getPackageNames("", false, allPackages);  //NOI18N
                 final Set<? extends String> packages = filterPackages(packageName, allPackages);
                 searchScope = ClassIndex.createPackageSearchScope(baseSearchScope, packages.toArray(new String[packages.size()]));
@@ -734,7 +751,7 @@ public class JavaTypeProvider implements TypeProvider {
         private Set<? extends String> filterPackages(
                 @NonNull final Pattern packageName,
                 @NonNull final Set<? extends String> basePackages) {
-            final Set<String> result = new HashSet<String>();
+            final Set<String> result = new HashSet<>();
             for (String pkg : basePackages) {
                 if (packageName.matcher(pkg).matches()) {
                     result.add(pkg);
@@ -773,7 +790,7 @@ public class JavaTypeProvider implements TypeProvider {
 
             private static final Pattern ANONYMOUS = Pattern.compile(".*\\$\\d+(C|I|E|A|\\$.+)");   //NOI18N
             private static final Convertor<Document,ElementHandle<TypeElement>> HANDLE_CONVERTOR = DocumentUtil.elementHandleConvertor();
-            private static Convertor<Document,String> SOURCE_CONVERTOR = DocumentUtil.sourceNameConvertor();
+            private static final Convertor<Document,String> SOURCE_CONVERTOR = DocumentUtil.sourceNameConvertor();
 
             private final CacheItem ci;
 
@@ -855,6 +872,5 @@ public class JavaTypeProvider implements TypeProvider {
             }
             return cacheInstance;
         }
-
     }
 }
