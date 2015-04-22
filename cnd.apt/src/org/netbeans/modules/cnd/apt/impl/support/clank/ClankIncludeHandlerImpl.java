@@ -198,6 +198,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
         this.inclStackIndex = cache.getFileIndex();
     }
+
+    APTFileSearch getFileSearch() {
+        return this.fileSearch;
+    }
     
     /** immutable state object of include handler */
     // Not SelfPersistent any more because I have to pass unitIndex into write() method
