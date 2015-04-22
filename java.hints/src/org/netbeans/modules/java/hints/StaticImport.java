@@ -125,6 +125,10 @@ public class StaticImport {
             return null;
         }
         String sn = e.getSimpleName().toString();
+        // rules out .class, but who knows what keywords will be abused in the future.
+        if (SourceVersion.isKeyword(sn)) {
+            return null;
+        }
         TreePath cc = getContainingClass(treePath);
         if (cc == null){
             return null;
