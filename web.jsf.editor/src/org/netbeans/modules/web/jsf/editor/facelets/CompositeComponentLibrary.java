@@ -66,6 +66,10 @@ import org.openide.util.WeakListeners;
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
 
+    //https://javaserverfaces.java.net/docs/2.2/vdldocs/facelets/ui/component.html
+    private static final String[] DEFAULT_COMPONENT_ATTRS = new String[]{
+        "id", "binding", "rendered"}; //NOI18N
+
     /**
      * Name of the folder/s where the composite library components are located. 
      * It's usually placed under the META-INF/resources folder inside the library archive.
@@ -233,12 +237,23 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         
         private class LazyLoadingTag extends GenericTag {
 
-            private CompositeComponent cc;
+            private final CompositeComponent cc;
             private Map<String, Attribute> attrs;
             private String description;
 
             public LazyLoadingTag(CompositeComponent cc) {
                 this.cc = cc;
+            }
+
+            @Override
+            protected Map<String, Attribute> getAdditionalGenericAttributes() {
+                Map<String, Attribute> result = new HashMap<>();
+                for (String name : DEFAULT_COMPONENT_ATTRS) {
+                    result.put(name,
+                            new Attribute.DefaultAttribute(name,
+                                    NbBundle.getMessage(CompositeComponentLibrary.class, new StringBuilder().append("HELP_").append(name).toString()), false));
+                }
+                return result;
             }
 
             private synchronized void load() {

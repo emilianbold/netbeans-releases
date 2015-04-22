@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.facelets;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
@@ -63,7 +64,7 @@ public abstract class GenericTag implements Tag {
     private static final String[] DEFAULT_ATTRS = new String[]{"id", "parent", "rendered",
         "rendererType", "transient", "class" /* not in the spec */}; //NOI18N
     
-    private AtomicReference<Map<String, Attribute>> attrs = new AtomicReference<>();
+    private final AtomicReference<Map<String, Attribute>> attrs = new AtomicReference<>();
 
     @Override
     public Collection<Attribute> getAttributes() {
@@ -79,7 +80,11 @@ public abstract class GenericTag implements Tag {
     public boolean hasNonGenenericAttributes() {
         return false;
     }
-    
+
+    protected Map<String, Attribute> getAdditionalGenericAttributes() {
+        return Collections.emptyMap();
+    }
+
     private Map<String, Attribute> getGenericAttributes() {
         if (attrs.compareAndSet(null, new HashMap<String, Attribute>())) {
             //add the default ID attribute
@@ -88,6 +93,11 @@ public abstract class GenericTag implements Tag {
                     attrs.get().put(defaultAttributeName, 
                             new Attribute.DefaultAttribute(defaultAttributeName, 
                             NbBundle.getMessage(GenericTag.class, new StringBuilder().append("HELP_").append(defaultAttributeName).toString()), false)); //NOI18N
+                }
+            }
+            for (Map.Entry<String, Attribute> entry : getAdditionalGenericAttributes().entrySet()) {
+                if (getAttribute(entry.getKey()) == null) {
+                    attrs.get().put(entry.getKey(), entry.getValue());
                 }
             }
         }
