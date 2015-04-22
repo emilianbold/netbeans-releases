@@ -92,6 +92,7 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -101,7 +102,6 @@ import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.jumpto.file.LazyListModel;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
@@ -126,7 +126,7 @@ import org.openide.windows.TopComponent;
  * XXX Don't look for all projects (do it lazy in filter or renderer)
  * @author Petr Hrebejk
  */
-public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider, LazyListModel.Filter {
+public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider {
 
     static final Logger LOGGER = Logger.getLogger(GoToTypeAction.class.getName()); // Used from the panel as well
 
@@ -144,7 +144,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private final TypeBrowser.Filter typeFilter;
     private final String title;
     private final boolean multiSelection;
-    private final CurrentSearch currentSearch;
+    private final CurrentSearch<TypeDescriptor> currentSearch;
 
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
@@ -233,16 +233,6 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     @Override
     public boolean isEnabled () {
         return OpenProjects.getDefault().getOpenProjects().length>0;
-    }
-
-    @Override
-    public boolean accept(Object obj) {
-        return typeFilter == null ? true : typeFilter.accept((TypeDescriptor) obj);
-    }
-
-    @Override
-    public void scheduleUpdate(Runnable run) {
-        SwingUtilities.invokeLater(run);
     }
 
     // Implementation of content provider --------------------------------------
@@ -529,11 +519,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         lastSize = newSize;
                         final ListModel fmodel;
                         if (resultChanged) {
-                            ListModel model = Models.fromList(types, currentSearch.resetFilter());
+                            Models.Filter filter = currentSearch.resetFilter();
                             if (typeFilter != null) {
-                                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                                filter = Models.chained(filter, new FilterAdaptor(typeFilter));
                             }
-                            fmodel = model;
+                            fmodel = Models.fromList(types, filter);
                         } else {
                             fmodel = null;
                         }
@@ -941,7 +931,27 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 Exceptions.printStackTrace(ex);
             }
         }
-
     }
 
+    private static final class FilterAdaptor implements Models.Filter<TypeDescriptor> {
+        private final TypeBrowser.Filter filter;
+
+        FilterAdaptor(@NonNull final TypeBrowser.Filter filter) {
+            Parameters.notNull("filter", filter);   //NOI18N
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean accept(TypeDescriptor item) {
+            return filter.accept(item);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public void remmoveChangeListener(ChangeListener listener) {
+        }
+    }
 }
