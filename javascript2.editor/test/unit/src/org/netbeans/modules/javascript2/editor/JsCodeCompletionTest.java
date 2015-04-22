@@ -315,4 +315,12 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue237878() throws Exception {
         checkCompletion("testfiles/completion/issue237878.js", "a.^", false);
     }
+    
+    public void testIssue242454A_01() throws Exception {
+        checkCompletion("testfiles/completion/issue242454A.js", "myLib.f^;", false);
+    }
+    
+    public void testIssue242454A_02() throws Exception {
+        checkCompletion("testfiles/completion/issue242454A.js", "f^2(\"arg\");", false);
+    }
 }

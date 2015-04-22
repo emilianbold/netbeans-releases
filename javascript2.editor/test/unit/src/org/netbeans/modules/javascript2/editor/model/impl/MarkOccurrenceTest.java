@@ -1355,6 +1355,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/model/issue251911.js", "for( var k^ey in container ) {", true); 
     }
     
+    public void testIssue242454B_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242454B.js", "this.y1 = f^1;", true); 
+    }
+    
+    public void testIssue242454B_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242454B.js", "this.y2 = f^2;", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
