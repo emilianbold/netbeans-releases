@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- * 
+ *
  * @todo Resolve with TypeDescription
  *
  * @author Petr Hrebejk
@@ -112,7 +112,7 @@ public class JavaTypeDescription extends TypeDescriptor {
     }
 
     @Override
-    public void open() {        
+    public void open() {
         final FileObject root = cacheItem.getRoot();
         if (root == null) {
             final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",handle.getQualifiedName());
@@ -139,7 +139,7 @@ public class JavaTypeDescription extends TypeDescriptor {
                 ClassPath.EMPTY,
                 sourcePath);
         }
-        if ( cacheItem.isBinary() ) {            
+        if ( cacheItem.isBinary() ) {
             final ElementHandle<TypeElement> eh = handle;
             if (!ElementOpen.open(ci, eh)) {
                 final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",eh.getQualifiedName());
@@ -176,7 +176,7 @@ public class JavaTypeDescription extends TypeDescriptor {
     public String getSimpleName() {
         return simpleName;
     }
-    
+
     @Override
     public String getOuterName() {
         return outerName;
@@ -225,24 +225,24 @@ public class JavaTypeDescription extends TypeDescriptor {
         }
         return sb.toString();
     }
-    
+
     @Override
     public String getContextName() {
         StringBuilder sb = new StringBuilder();
         sb.append( " (").append( packageName == null ? "Default Package" : packageName).append(")");
         return sb.toString();
-                
-        
+
+
     }
-    
+
     @Override
     public String getProjectName() {
         String projectName = cacheItem.getProjectName();
-        return projectName == null ? "" : projectName; // NOI18N        
+        return projectName == null ? "" : projectName; // NOI18N
     }
-    
+
     @Override
-    public Icon getProjectIcon() {        
+    public Icon getProjectIcon() {
         return cacheItem.getProjectIcon();
     }
 
@@ -289,11 +289,11 @@ public class JavaTypeDescription extends TypeDescriptor {
         JavaTypeDescription otherJTD = (JavaTypeDescription) other;
         return handle.equals(otherJTD.handle) && cacheItem.equals(otherJTD.cacheItem);
     }
-    
+
     public ElementHandle<TypeElement> getHandle() {
         return handle;
     }
-    
+
     private void init() {
         final String typeName = this.handle.getBinaryName();
         int lastDot = typeName.lastIndexOf('.'); // NOI18N
@@ -309,7 +309,7 @@ public class JavaTypeDescription extends TypeDescriptor {
         }
         else {
             packageName = typeName.substring( 0, lastDot );
-            
+
             if (lastDollar < lastDot) {
                 simpleName = typeName.substring( lastDot + 1 ).replace( '$', '.');  //NOI18N
             }
@@ -317,7 +317,7 @@ public class JavaTypeDescription extends TypeDescriptor {
                 simpleName = typeName.substring(lastDollar + 1);
                 outerName = typeName.substring(lastDot + 1, lastDollar ).replace( '$', '.');  //NOI18N;
             }
-                        
+
         }
         icon = Icons.getElementIcon (handle.getKind(), null);
     }
