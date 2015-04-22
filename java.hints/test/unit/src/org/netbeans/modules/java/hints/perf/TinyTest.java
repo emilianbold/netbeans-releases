@@ -177,7 +177,50 @@ public class TinyTest extends NbTestCase {
                               "}\n");
     }
 
-    //XXX: test the 1.6 version
+    public void testStringEqualsEmpty1_6() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.equals(\"\");\n" +
+                       "     }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:16-3:29:verifier:$string.equals(\"\")")
+                .applyFix("$string.isEmpty()")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private boolean test(String aa) {\n" +
+                              "         return aa.isEmpty();\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+
+    public void testStringEqualsIgnoreCaseEmpty1_6() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "     private boolean test(String aa) {\n" +
+                       "         return aa.equalsIgnoreCase(\"\");\n" +
+                       "     }\n" +
+                       "}\n")
+                .sourceLevel("1.6")
+                .run(Tiny.class)
+                .findWarning("3:16-3:39:verifier:$string.equals(\"\")")
+                .applyFix("$string.isEmpty()")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "     private boolean test(String aa) {\n" +
+                              "         return aa.isEmpty();\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+
     public void testLengthOneStringIndexOf1() throws Exception {
         HintTest
                 .create()

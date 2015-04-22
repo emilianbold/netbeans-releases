@@ -43,18 +43,19 @@ package org.netbeans.modules.java.hints.bugs;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
@@ -64,6 +65,8 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.SideEffectVisitor;
 import org.netbeans.modules.java.hints.StopProcessing;
+import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.introduce.TreeUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
@@ -102,30 +105,52 @@ public class SuspiciousToArray {
     public static ErrorDescription run(HintContext ctx) {
         TreePath expr = ctx.getPath();
         TreePath colPath = ctx.getVariables().get("$c");
-        if (colPath == null) {
-            return null;
-        }
         CompilationInfo ci = ctx.getInfo();
         
-        TypeMirror colType = ci.getTrees().getTypeMirror(colPath);
-        if (colType == null || colType.getKind() != TypeKind.DECLARED) {
+        TypeMirror colType;
+        
+        if (colPath != null) {
+            colType = ci.getTrees().getTypeMirror(colPath);
+        } else {
+            TreePath clazz = TreeUtils.findClass(expr);
+            if (clazz == null) {
+                return null;
+            }
+            colType = ci.getTrees().getTypeMirror(clazz);
+        }
+        if (!Utilities.isValidType(colType) || colType.getKind() != TypeKind.DECLARED) {
             return null;
         }
         TreePath arrPath = ctx.getVariables().get("$arr"); // NOI18N
         TypeMirror arrType = ci.getTrees().getTypeMirror(arrPath);
-        if (arrType == null || arrType.getKind() != TypeKind.ARRAY) {
+        if (!Utilities.isValidType(arrType) || arrType.getKind() != TypeKind.ARRAY) {
             return null;
         }
         // possible method call result ?
         arrType = SourceUtils.resolveCapturedType(ci, arrType);
         TypeMirror compType = ((ArrayType)arrType).getComponentType();
+                
+        StringBuilder sb = new StringBuilder();
+        if (colPath != null) {
+            int posStart = (int)ci.getTrees().getSourcePositions().getStartPosition(ci.getCompilationUnit(), colPath.getLeaf());
+            int posEnd = (int)ci.getTrees().getSourcePositions().getEndPosition(ci.getCompilationUnit(), colPath.getLeaf());
+            sb.append(ci.getSnapshot().getText().subSequence(posStart, posEnd)).append(".");
+        }
+        // iterator.next is about the only method, which _returns_ something typed by collection type parameter - 
+        // we need to get "capture" type of E, so it could be assigned to E[].
+        sb.append("iterator().next()"); // NOI18N
+        ExpressionTree colItemExpr = ci.getTreeUtilities().parseExpression(sb.toString(), null);
+        if (colItemExpr.getKind() != Tree.Kind.METHOD_INVOCATION) {
+            // something weird in the selector expression, probably
+            return null;
+        }
+        Scope s = ci.getTrees().getScope(ctx.getPath());
+        List<Diagnostic<? extends JavaFileObject>> diags = new ArrayList<>();
+        TypeMirror colItemType = ci.getTreeUtilities().attributeTree(colItemExpr, s);
         
-        DeclaredType declColType = (DeclaredType)colType;
-        
-        Element addMethod = ci.getElementUtilities().findElement("java.util.Collection.add(Object)"); // NOI18N
-        TypeMirror inheritedCollectionType = ci.getTypes().asMemberOf(declColType, addMethod);
-        TypeMirror argType = ((ExecutableType)inheritedCollectionType).getParameterTypes().get(0);
+         TypeMirror argType = colItemType;
         TypeMirror resType = null;
+        
         if (argType == null || argType.getKind() == TypeKind.DECLARED &&
             ((TypeElement)((DeclaredType)argType).asElement()).getQualifiedName().contentEquals("java.lang.Object")) { // NOI18N
             argType = null;
@@ -153,7 +178,7 @@ public class SuspiciousToArray {
                 return null;
             }
         }
-        if (resType == null || resType.getKind() == TypeKind.ERROR || resType.getKind() == TypeKind.OTHER) {
+        if (!Utilities.isValidType(resType)) {
             return null;
         }
         resType = SourceUtils.resolveCapturedType(ci, resType);
@@ -163,7 +188,7 @@ public class SuspiciousToArray {
         // if the array expression at arrPath is not a 'new xx[]', we should replace the entire expression.
         if (arrPath.getLeaf().getKind() == Tree.Kind.NEW_ARRAY) {
             fix = new ChangeArrayTypeFix(
-                    TreePathHandle.create(arrPath, ci), TreePathHandle.create(colPath, ci),
+                    TreePathHandle.create(arrPath, ci), colPath == null ? null :TreePathHandle.create(colPath, ci),
                     TypeMirrorHandle.create(resType), 
                     ci.getTypeUtilities().getTypeName(resType).toString()
                 ).toEditorFix();
@@ -171,9 +196,11 @@ public class SuspiciousToArray {
             // and if the $c is not a simple identifier / MemberSelect composed of only identifiers, 
             SideEffectVisitor sev = new SideEffectVisitor(ci);
             try {
-                sev.scan(colPath, ci);
+                if (colPath != null) {
+                    sev.scan(colPath, ci);
+                }
                 fix = new ChangeArrayTypeFix(
-                        TreePathHandle.create(arrPath, ci), TreePathHandle.create(colPath, ci),
+                        TreePathHandle.create(arrPath, ci), colPath == null ? null : TreePathHandle.create(colPath, ci),
                         TypeMirrorHandle.create(resType), 
                         ci.getTypeUtilities().getTypeName(resType).toString()
                     ).toEditorFix();
@@ -249,15 +276,19 @@ public class SuspiciousToArray {
                     return;
                 }
             }
-            if (colReference == null) {
-                return;
-            }
             // replace the entire tree
-            TreePath colRef = colReference.resolve(wc);
+            TreePath colRef = null;
+            if (colReference != null) {
+                colRef = colReference.resolve(wc);
+                if (colRef == null) {
+                    return;
+                }
+            }
             GeneratorUtilities gu = GeneratorUtilities.get(wc);
             Tree lc = gu.importComments(l, wc.getCompilationUnit());
             Tree newArrayTree = mk.NewArray(mk.Type(compType), Collections.<ExpressionTree>singletonList(
                     mk.MethodInvocation(Collections.<ExpressionTree>emptyList(), 
+                        colRef == null ? mk.Identifier("size") :
                         mk.MemberSelect((ExpressionTree)colRef.getLeaf(), "size"), // NOI18N
                         Collections.<ExpressionTree>emptyList())),
                     null);

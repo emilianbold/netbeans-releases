@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import com.sun.source.util.TreePath;
-import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
@@ -53,9 +53,19 @@ import org.openide.util.NbBundle;
  * @author lahvac
  */
 public class UncaughtExceptionTest extends ErrorHintsTestBase {
-
+    private Set<String> supportedCodes = Collections.singleton(UncaughtException.ERR_UNREPORTED);
+    
     public UncaughtExceptionTest(String name) {
         super(name, UncaughtException.class);
+    }
+
+    /**
+     * test228693 and others report 2 exceptions, one for the operation itself and
+     * another diag code for uncaught IOException from the implcitly generated close().
+     */
+    @Override
+    protected Set<String> getSupportedErrorKeys() throws Exception {
+        return supportedCodes != null ? supportedCodes : super.getSupportedErrorKeys();
     }
 
     public void test204029() throws Exception {
@@ -196,6 +206,33 @@ public class UncaughtExceptionTest extends ErrorHintsTestBase {
                  "    }\n" +
                  "    void throwing() throws Exception {}\n" +
                  "}").replaceAll("\\s+", " "));
+    }
+    
+    public void testJDK8ResourceImplicitClose() throws Exception {
+        supportedCodes = null;
+        sourceLevel = "1.7";
+        performFixTest("test/Test.java",
+                "package test;\n" +
+                "import java.io.InputStreamReader;\n" +
+                "import java.io.Reader;\n" +
+                "public class Test {\n" +
+                "    public static void main(String[] args) {   \n" +
+                "        try (Reader in = new InputStreamReader(Test.class.getResourceAsStream(\"nashorn.js\"))) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}",
+                -1,
+                "Add throws clause for java.io.IOException",
+                ("package test;\n" +
+                "import java.io.IOException;\n" +
+                "import java.io.InputStreamReader;\n" +
+                "import java.io.Reader;\n" +
+                "public class Test {\n" +
+                "    public static void main(String[] args) throws IOException {   \n" +
+                "        try (Reader in = new InputStreamReader(Test.class.getResourceAsStream(\"nashorn.js\"))) {\n" +
+                "        }\n" +
+                "    }\n" +
+                "}").replaceAll("\\s+", " "));
     }
     
 

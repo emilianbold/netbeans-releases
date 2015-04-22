@@ -588,6 +588,13 @@ public class NPECheck {
             if (isVariableElement(site) && wasNPE && (variable2State.get(site) == null || !variable2State.get(site).isNotNull())) {
                 variable2State.put((VariableElement) site, NOT_NULL_BE_NPE);
             }
+            // special case: if the memberSelect selects enum field = constant, it is never null.
+            if (site != null && site.getKind() == ElementKind.ENUM) {
+                Element enumConst = info.getTrees().getElement(getCurrentPath());
+                if (enumConst != null && enumConst.getKind() == ElementKind.ENUM_CONSTANT) {
+                    return State.NOT_NULL;
+                }
+            }
             
             return getStateFromAnnotations(info, info.getTrees().getElement(getCurrentPath()));
         }
@@ -854,6 +861,10 @@ public class NPECheck {
 
             if (e == null || !isVariableElement(e)) {
                 return State.POSSIBLE_NULL;
+            }
+            if (e.getKind() == ElementKind.ENUM_CONSTANT) {
+                // enum constants are never null
+                return State.NOT_NULL;
             }
             
             if (e != null) {
