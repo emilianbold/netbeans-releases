@@ -47,7 +47,6 @@ import org.clang.basic.tok;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.SmallVectorToken;
 import org.clang.lex.Token;
-import org.clank.java.std;
 import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import org.clank.support.Unsigned;
@@ -66,8 +65,6 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
 import org.clank.support.aliases.*;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *

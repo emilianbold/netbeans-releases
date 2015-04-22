@@ -46,7 +46,6 @@ import java.util.Collections;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
-import org.clang.tools.services.support.Interrupter;
 import org.clank.support.NativePointer;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
