@@ -184,6 +184,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         if (ClankDriverImpl.TRACE) {
             traceOS.$out("Enter: " + enteredTo).$out("\n").flush();
         }
+        // sometimes we enter and leave some built-in buffers
+        // usually it is predefines or cmd line options seen by main file
+        // we'd prefer to stay in main file context
         if (enteredTo.isFile()) {
           ClankDriver.ClankFileInfo enteredFromWrapper;
           ClankFileInfoWrapper enteredToWrapper = new ClankFileInfoWrapper(enteredTo, ppHandler);
@@ -205,6 +208,9 @@ public final class ClankPPCallback extends FileInfoCallback {
           includeStack.add(enteredToWrapper);
           
           delegate.onEnter(enteredFromWrapper, enteredToWrapper);
+        } else {
+          assert includeStack.size() == 1 : "there should be only one main file";
+          assert includeStack.get(0).current.isMainFile() : "there should be only main file";
         }
     }
 
@@ -229,6 +235,9 @@ public final class ClankPPCallback extends FileInfoCallback {
             }
             traceOS.flush();
         }
+        // sometimes we enter and leave some built-in buffers
+        // usually it is predefines or cmd line options seen by main file
+        // we'd prefer to stay in main file context
         if (exitedFrom.isFile()) {
           assert includeStack.size() > 0 : "empty include stack?";
           ClankDriver.ClankFileInfo exitedToWrapper;
@@ -251,6 +260,9 @@ public final class ClankPPCallback extends FileInfoCallback {
           if (exitedToWrapper != null) {
             includeHandler.popInclude();
           }
+        } else {
+          assert includeStack.size() == 1 : "there should be only one main file";
+          assert includeStack.get(0).current.isMainFile() : "there should be only main file";
         }
     }
 
