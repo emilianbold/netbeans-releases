@@ -41,18 +41,15 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import org.clang.basic.IdentifierInfo;
+import static org.clang.basic.ClangGlobals.$first_FileID;
+import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.SmallVectorToken;
 import org.clang.lex.Token;
 import static org.clank.java.std.$second_uint;
-import org.clank.support.Casts;
 import org.clank.support.Unsigned;
-import org.clank.support.aliases.char$ptr;
-import org.llvm.adt.StringMapEntryBase;
-import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorChar;
 import org.netbeans.modules.cnd.apt.impl.support.APTCommentToken;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
@@ -63,7 +60,6 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.util.CharSequences;
-import org.clank.support.aliases.*;
 import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
 /**
@@ -74,7 +70,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
-    static APTToken[] convertToAPT(Preprocessor PP, SmallVectorToken toks) {
+    static APTToken[] convertToAPT(Preprocessor PP, SmallVectorToken toks, boolean needLineColumns) {
         int nrTokens = toks.size();
         Token[] tokens = toks.$array();
         APTToken[] out = new APTToken[nrTokens];
@@ -86,25 +82,33 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
             Token token = tokens[i];
             long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedExpansionLoc(token.getRawLocation());
             int offset = Unsigned.long2uint($second_uint(decomposedLoc));
-            out[i] = ClankToAPTToken.convert(PP, token, offset, spell);
+            out[i] = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
         }
         return out;
     }
 
-    static APTToken convert(Preprocessor PP, Token token, /*uint*/int offset, SmallVectorChar spell) {
+    static APTToken convert(Preprocessor PP, Token token, /*uint*/int offset, SmallVectorChar spell, boolean needLineColumns) {
         if (token.is(tok.TokenKind.eof)) {
             return APTUtils.EOF_TOKEN;
         } else {
+            int tokenLine = FAKE_LINE;
+            int tokenColumn = FAKE_COLUMN;
+            if (needLineColumns) {
+              SourceManager SM = PP.getSourceManager();
+              long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
+              tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+              tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+            }
             int aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
-            if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)) {
-                APTToken out = new APTLiteConstTextToken(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE);
+            if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)) {
+                APTToken out = new APTLiteConstTextToken(aptTokenType, offset, tokenColumn, tokenLine);
                 return out;
             } else if (aptTokenType == APTTokenTypes.COMMENT) {
                 APTCommentToken out = new APTCommentToken();
                 out.setOffset(offset);
                 out.setTextLength(offset + token.getLength());
-                out.setColumn(FAKE_COLUMN);
-                out.setLine(FAKE_LINE);
+                out.setColumn(tokenColumn);
+                out.setLine(tokenLine);
                 return out;
             } else {
                 CharSequence textID = ClankToAPTUtils.getTokenText(token, PP, spell);
@@ -112,17 +116,20 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
                 if (aptTokenType > APTTokenTypes.FIRST_LITERAL_TOKEN && aptTokenType < APTTokenTypes.LAST_LITERAL_TOKEN) {
                     aptTokenType = APTTokenTypes.IDENT;
                 }
-                if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, FAKE_COLUMN, FAKE_LINE, literalType)) {
+                if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, tokenColumn, tokenLine, literalType)) {
                   CharSequence LiteText = APTConstTextToken.getConstTextID(literalType);
                   // check if spelling in clang the same as our token, then reuse
                   // APTLiteLiteralToken otherwise create fallback to APTLiteIdToken with known textID
                   if (CharSequences.comparator().compare(textID, LiteText) == 0) {
-                      return new APTLiteLiteralToken(offset, FAKE_COLUMN, FAKE_LINE, literalType);
+                      return new APTLiteLiteralToken(offset, tokenColumn, tokenLine, literalType);
                   }
                 }
-                if (APTLiteIdToken.isApplicable(aptTokenType, offset, FAKE_COLUMN, FAKE_LINE)){
-                  return new APTLiteIdToken(offset, FAKE_COLUMN, FAKE_LINE, textID);
+                if (APTLiteIdToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)){
+                  return new APTLiteIdToken(offset, tokenColumn, tokenLine, textID);
                 } else {
+                  if (needLineColumns) {
+                    return new ClankToAPTTokenWithLineAndColumn(token, aptTokenType, offset, tokenColumn, tokenLine, textID);
+                  }
                   return new ClankToAPTToken(token, aptTokenType, offset, textID);
                 }
             }
@@ -136,7 +143,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
     private final int aptTokenType;
     private final int offset;
     private final CharSequence textID;
-
+    
     private ClankToAPTToken(Token token, int tokenType, int offset, CharSequence text) {
         this.offset = offset;
         assert offset >= 0 : "negative " + offset + " for " + token;
@@ -260,5 +267,38 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
     @Override
     public void setType(int t) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+    
+    private static final class ClankToAPTTokenWithLineAndColumn extends ClankToAPTToken {
+      private final int line;
+      private final int column;
+      private final int endColumn;
+
+      public ClankToAPTTokenWithLineAndColumn(Token token, int tokenType, int offset, int column, int line, CharSequence text) {
+        super(token, tokenType, offset, text);
+        this.line = line;
+        this.column = column;
+        this.endColumn = column + token.getLength();
+      }
+
+      @Override
+      public int getLine() {
+        return this.line;
+      }
+
+      @Override
+      public int getEndLine() {
+        return this.line;
+      }
+
+      @Override
+      public int getColumn() {
+        return column;
+      }
+
+      @Override
+      public int getEndColumn() {
+        return this.endColumn;
+      }
     }
 }

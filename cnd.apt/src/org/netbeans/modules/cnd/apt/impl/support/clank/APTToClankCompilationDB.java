@@ -86,6 +86,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         return new APTToClankCompilationDB(dbName, Collections.singletonList(entry));
     }
 
+    public static boolean isFortran(PreprocHandler ppHandler) {
+      try {
+        Language language = Language.valueOf(ppHandler.getLanguage().toString());
+        return language == Language.FORTRAN;
+      } catch (Throwable e) {
+        return false;
+      }
+    }
+
     public static ClankCompilationDataBase.Entry createEntry(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
@@ -199,6 +208,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case F77:
             case F90:
             case F95:
+                // FIXME
+                out_lang_std = LangStandard.Kind.lang_cxx03;
+                break;
             default:
                 throw new AssertionError(flavor.name() + " from " + langFlavor);
         }
@@ -221,6 +233,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 out = InputKind.IK_CXX;
                 break;
             case FORTRAN:
+                // FIXME
+                out = InputKind.IK_CXX;
+                break;
             case OTHER:
             default:
                 throw new AssertionError(language + " from " + langStr);

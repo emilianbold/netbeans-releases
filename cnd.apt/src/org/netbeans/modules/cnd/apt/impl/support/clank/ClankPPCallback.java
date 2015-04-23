@@ -433,6 +433,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     }
           
     static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
+      private final boolean needLineColumnsForToken;
       private final FileInfo current;
       private final ClankInclusionDirectiveWrapper includeDirective;
       private final CharSequence filePath;
@@ -444,6 +445,7 @@ public final class ClankPPCallback extends FileInfoCallback {
       public ClankFileInfoWrapper(FileInfo current,
               PreprocHandler ppHandler) {
         assert current != null;
+        this.needLineColumnsForToken = APTToClankCompilationDB.isFortran(ppHandler);
         this.current = current;
         if (current.getInclusionDirective() == null) {
             assert current.isMainFile() : "forgot to set up include?" + current;
@@ -508,7 +510,7 @@ public final class ClankPPCallback extends FileInfoCallback {
       private boolean prepareConvertedTokensIfAny() {
         assert Thread.holdsLock(this);
         if (current.hasTokens()) {
-          convertedTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens());
+          convertedTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens(), needLineColumnsForToken);
           return true;
         } else {
           return false;
