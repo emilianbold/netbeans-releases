@@ -168,9 +168,9 @@ public class AsyncConverterTask extends AsyncConverter implements CancellableTas
             stop = true;
         }
         
-        private Collection<ErrorDescription> descriptions;
+        private final Collection<ErrorDescription> descriptions;
         private volatile boolean stop;
-        private CompilationInfo myInfo;
+        private final CompilationInfo myInfo;
     }
     
     private class AsyncHint implements Fix {
@@ -192,9 +192,9 @@ public class AsyncConverterTask extends AsyncConverter implements CancellableTas
                     "TXT_ConvertMethod");    // NOI18N
         }
         
-        private FileObject myFileObject;
-        private ElementHandle<Element> myHandle;
+        private final FileObject myFileObject;
+        private final ElementHandle<Element> myHandle;
     }
 
-    private AtomicReference<AsyncHintsTask> runTask = new AtomicReference<AsyncHintsTask>();
+    private final AtomicReference<AsyncHintsTask> runTask = new AtomicReference<AsyncHintsTask>();
 }
