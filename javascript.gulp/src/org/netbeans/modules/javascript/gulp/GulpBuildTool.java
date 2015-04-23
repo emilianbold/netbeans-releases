@@ -63,6 +63,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
+@ProjectServiceProvider(
+        service = {
+            BuildToolImplementation.class,
+            GulpBuildTool.class,
+        }, projectType = {
+            "org-netbeans-modules-web-clientproject", // NOI18N
+            "org-netbeans-modules-php-project", // NOI18N
+            "org-netbeans-modules-web-project", // NOI18N
+            "org-netbeans-modules-maven", // NOI18N
+        }
+)
 public final class GulpBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(GulpBuildTool.class.getName());
@@ -75,7 +86,7 @@ public final class GulpBuildTool implements BuildToolImplementation {
     private final GulpPreferences gulpPreferences;
 
 
-    private GulpBuildTool(Project project) {
+    public GulpBuildTool(Project project) {
         assert project != null;
         this.project = project;
         gulpfile = Gulpfile.create(project.getProjectDirectory());
@@ -93,12 +104,7 @@ public final class GulpBuildTool implements BuildToolImplementation {
     @CheckForNull
     public static GulpBuildTool inProject(Project project) {
         assert project != null;
-        for (BuildToolImplementation buildTool : project.getLookup().lookupAll(BuildToolImplementation.class)) {
-            if (buildTool instanceof GulpBuildTool) {
-                return (GulpBuildTool) buildTool;
-            }
-        }
-        return null;
+        return project.getLookup().lookup(GulpBuildTool.class);
     }
 
     @Override
@@ -164,32 +170,6 @@ public final class GulpBuildTool implements BuildToolImplementation {
             }
         }
         return true;
-    }
-
-    //~ Inner classes
-
-    public static final class Registration {
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-        public static BuildToolImplementation forHtml5Project(Project project) {
-            return new GulpBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-        public static BuildToolImplementation forPhpProject(Project project) {
-            return new GulpBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
-        public static BuildToolImplementation forWebProject(Project project) {
-            return new GulpBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
-        public static BuildToolImplementation forMavenProject(Project project) {
-            return new GulpBuildTool(project);
-        }
-
     }
 
 }
