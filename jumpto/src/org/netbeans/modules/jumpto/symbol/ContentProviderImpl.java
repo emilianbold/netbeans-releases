@@ -172,7 +172,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             panel.setModel(new DefaultListModel());
             return false;
         }
-        final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
+        final SearchType searchType = Utils.getSearchType(text, exact, isCaseSensitive, null, null);
+        if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
+            text = Utils.removeNonNeededWildCards(text);
+        }
         // Compute in other thread
         synchronized(this) {
             if (currentSearch.isNarrowing(searchType, text)) {
@@ -518,7 +521,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends SymbolDescriptor> getSymbolNames(String text) {
+        private List<? extends SymbolDescriptor> getSymbolNames(final String text) {
             // TODO: Search twice, first for current project, then for all projects
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
@@ -533,9 +536,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     Level.FINE,
                     "Calling SymbolProvider: {0}", //NOI18N
                     provider);
-                if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
-                    text = Utils.removeNonNeededWildCards(text);
-                }
                 final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
                 final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
                 provider.computeSymbolNames(context, result);
@@ -549,24 +549,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             else {
                 return null;
             }
-        }
-    }
-
-    @NonNull
-    private static SearchType getSearchType(
-            @NonNull final String text,
-            final boolean exact,
-            final boolean isCaseSensitive) {
-        int wildcard = Utils.containsWildCard(text);
-        if (exact) {
-            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            return SearchType.EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
-            return isCaseSensitive ? SearchType.CAMEL_CASE : SearchType.CASE_INSENSITIVE_CAMEL_CASE;
-        } else if (wildcard != -1) {
-            return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
-        } else {
-            return isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
         }
     }
 }

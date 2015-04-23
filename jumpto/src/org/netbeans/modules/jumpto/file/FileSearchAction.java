@@ -241,21 +241,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         } else {
             lineNr = -1;
         }
-        final QuerySupport.Kind nameKind;
-        int wildcard = Utils.containsWildCard(text);
-        if (exact) {
-            //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
-            nameKind = QuerySupport.Kind.EXACT;
-        }
-        else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+        final QuerySupport.Kind nameKind = Utils.toQueryKind(Utils.getSearchType(
+                text,
+                exact,
+                panel.isCaseSensitive(),
+                CAMEL_CASE_SEPARATOR,
+                CAMEL_CASE_PART));
+        if (nameKind == QuerySupport.Kind.REGEXP || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
-        }
-        else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, CAMEL_CASE_SEPARATOR, CAMEL_CASE_PART)) {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.CAMEL_CASE : QuerySupport.Kind.CASE_INSENSITIVE_CAMEL_CASE;
-        }
-        else {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         }
 
         // Compute in other thread
