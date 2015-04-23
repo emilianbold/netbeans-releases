@@ -85,27 +85,23 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
         return librariesPanel;
     }
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org.netbeans.modules.web.clientproject", // NOI18N
-            category = "JsLibs", // NOI18N
-            position = 100)
-    public static ProjectCustomizer.CompositeCategoryProvider createNpmLibraries() {
-        return new LibraryCustomizer();
-    }
+    //~ Factories
 
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-php-project", // NOI18N
-            category = "JsLibs", // NOI18N
-            position = 100)
-    public static ProjectCustomizer.CompositeCategoryProvider forPhpProject() {
-        return new LibraryCustomizer();
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-            projectType = "org-netbeans-modules-web-project", // NOI18N
-            category = "JsLibs", // NOI18N
-            position = 100)
-    public static ProjectCustomizer.CompositeCategoryProvider forWebProject() {
+    @ProjectCustomizer.CompositeCategoryProvider.Registrations({
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = "org.netbeans.modules.web.clientproject", // NOI18N
+                category = "JsLibs", // NOI18N
+                position = 100),
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = "org-netbeans-modules-php-project", // NOI18N
+                category = "JsLibs", // NOI18N
+                position = 100),
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = "org-netbeans-modules-web-project", // NOI18N
+                category = "JsLibs", // NOI18N
+                position = 100),
+    })
+    public static ProjectCustomizer.CompositeCategoryProvider forWebProjects() {
         return new LibraryCustomizer();
     }
 
@@ -113,7 +109,7 @@ public class LibraryCustomizer implements ProjectCustomizer.CompositeCategoryPro
             projectType = "org-netbeans-modules-maven", // NOI18N
             category = "JsLibs", // NOI18N
             position = 100)
-    public static ProjectCustomizer.CompositeCategoryProvider forMavenProject() {
+    public static ProjectCustomizer.CompositeCategoryProvider forOtherProjects() {
         return new LibraryCustomizer(true);
     }
 
