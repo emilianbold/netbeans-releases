@@ -275,7 +275,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
             assert this.cachedContent != null;
         }
         
-        int getIncludeStackDepth() {
+        public int getIncludeStackDepth() {
             return inclStack.length;
         }
         

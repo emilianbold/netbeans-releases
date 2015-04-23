@@ -196,10 +196,18 @@ public class APTHandlersSupportImpl {
     }
 
     public static int getIncludeStackDepth(APTPreprocHandler.State state) {
-        assert !APTTraceFlags.USE_CLANK;
         assert state != null;
-        APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) ((APTPreprocHandlerImpl.StateImpl) state).inclState;
-        return incl == null ? 0 : incl.getIncludeStackDepth();
+        PPIncludeHandler.State inclState = ((APTPreprocHandlerImpl.StateImpl) state).inclState;
+        if (inclState == null) {
+            return 0;
+        }
+        if (inclState instanceof APTIncludeHandlerImpl.StateImpl) {
+            APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) inclState;
+            return incl.getIncludeStackDepth();
+        } else {
+            ClankIncludeHandlerImpl.StateImpl incl = (ClankIncludeHandlerImpl.StateImpl) inclState;
+            return incl.getIncludeStackDepth();
+        }
     }
 
     public static LinkedList<PPIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
