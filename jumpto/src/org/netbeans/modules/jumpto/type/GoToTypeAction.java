@@ -290,25 +290,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         }
 
-        int wildcard = Utils.containsWildCard(text);
-
-        if (exact) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.EXACT_NAME :
-                    SearchType.CASE_INSENSITIVE_EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.CAMEL_CASE:
-                    SearchType.CASE_INSENSITIVE_CAMEL_CASE;
-        } else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.REGEXP :
-                    SearchType.CASE_INSENSITIVE_REGEXP;
+        nameKind = Utils.getSearchType(text, exact, panel.isCaseSensitive(), null, null);
+        if (nameKind == SearchType.REGEXP || nameKind == SearchType.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
-        } else {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.PREFIX :
-                    SearchType.CASE_INSENSITIVE_PREFIX;
         }
 
         // Compute in other thread
