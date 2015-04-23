@@ -94,6 +94,7 @@ public class MavenForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
                     synchronized (map) {
                         for (BinResult res : map.values()) {
                             FileObject[] cached = res.getCached();
+                            res.cached = null; // force refresh to see if we have to fire changes
                             FileObject[] current = res.getRoots();
                             if (preferChanged || !Arrays.equals(cached, current)) {
                                 LOGGER.log(Level.FINE, "SFBQ.Result changed from {0} to {1}", new Object[]{Arrays.toString(cached), Arrays.toString(current)});
@@ -182,6 +183,10 @@ public class MavenForBinaryQueryImpl extends AbstractMavenForBinaryQueryImpl {
         }
         
         public @Override FileObject[] getRoots() {
+            if(cached != null) {
+                return cached;
+            }
+
             int xxx = checkURL(url);
             if (xxx == 0) {
                 results = getProjectSrcRoots(p);

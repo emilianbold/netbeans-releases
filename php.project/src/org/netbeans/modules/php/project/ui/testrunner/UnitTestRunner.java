@@ -45,6 +45,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.gsf.testrunner.ui.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -58,6 +59,8 @@ import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -198,12 +201,47 @@ public final class UnitTestRunner {
     private String getOutputTitle(PhpProject project, TestRunInfo info) {
         StringBuilder sb = new StringBuilder(30);
         sb.append(project.getName());
+        // #248701
+        String testRootName = getTestRootName(project, info);
+        if (testRootName != null) {
+            sb.append("["); // NOI18N
+            sb.append(testRootName);
+            sb.append("]"); // NOI18N
+        }
         String suiteName = info.getSuiteName();
         if (suiteName != null) {
             sb.append(":"); // NOI18N
             sb.append(suiteName);
         }
         return sb.toString();
+    }
+
+    @CheckForNull
+    private String getTestRootName(PhpProject project, TestRunInfo info) {
+        FileObject[] testRoots = project.getTestRoots().getRoots();
+        if (testRoots.length == 1) {
+            return null;
+        }
+        int idx = -1;
+        FIND_ONE_ROOT:
+        for (FileObject file : info.getStartFiles()) {
+            for (int i = 0; i < testRoots.length; ++i) {
+                FileObject testRoot = testRoots[i];
+                if (FileUtil.isParentOf(testRoot, file)) {
+                    if (idx == -1) {
+                        idx = i;
+                        break;
+                    } else if (idx != i) {
+                        idx = -1;
+                        break FIND_ONE_ROOT;
+                    }
+                }
+            }
+        }
+        if (idx == -1) {
+            return null;
+        }
+        return project.getTestRoots().getPureRootNames()[idx];
     }
 
     //~ Mappers

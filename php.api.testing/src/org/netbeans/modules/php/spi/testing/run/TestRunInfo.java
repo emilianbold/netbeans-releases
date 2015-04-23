@@ -119,7 +119,7 @@ public final class TestRunInfo {
      * @since 0.11
      */
     public List<FileObject> getStartFiles() {
-        return startFiles;
+        return Collections.unmodifiableList(startFiles);
     }
 
     /**
