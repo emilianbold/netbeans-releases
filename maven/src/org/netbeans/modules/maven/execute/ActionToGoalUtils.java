@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import org.apache.maven.model.Build;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -62,13 +61,14 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Writer;
+import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -117,7 +117,7 @@ public final class ActionToGoalUtils {
      */
     public static @NonNull List<? extends MavenActionsProvider> actionProviders(@NonNull Project project) {
         List<MavenActionsProvider> providers = new ArrayList<MavenActionsProvider>();
-        providers.addAll(project.getLookup().lookupAll(MavenActionsProvider.class));
+        providers.addAll(project.getLookup().lookupAll(MavenActionsProvider.class));        
         providers.addAll(Lookup.getDefault().lookupAll(MavenActionsProvider.class));
         return providers;
     }
@@ -178,18 +178,34 @@ public final class ActionToGoalUtils {
         }
         return rc;
     }
+ 
+    private static class PackagingProvider {
+        private String packaging;
+        private final NbMavenProjectImpl project;
 
+        public PackagingProvider(NbMavenProjectImpl project) {
+            this.project = project;
+        }
+        
+        String getPackaging() {
+            if(packaging == null) {
+                packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+            }
+            return packaging;
+        }
+    }
     public static boolean isActionEnable(String action, NbMavenProjectImpl project, Lookup lookup) {
        
+        PackagingProvider packProv = new PackagingProvider(project);
         M2ConfigProvider configs = project.getLookup().lookup(M2ConfigProvider.class);
-        if (configs.getActiveConfiguration().isActionEnable(action, project, lookup)) {
+        M2Configuration activeConfiguration = configs.getActiveConfiguration();        
+        if(isActionEnable(activeConfiguration, action, project, packProv, lookup)) {
             return true;
         }
         //check fallback default config as well..
-        if (configs.getDefaultConfig().isActionEnable(action, project, lookup)) {
+        if(isActionEnable(configs.getDefaultConfig(), action, project, packProv, lookup)) {
             return true;
         }
-
         if (ActionProvider.COMMAND_BUILD.equals(action) ||
                 ActionProvider.COMMAND_REBUILD.equals(action)) {
             Build bld = project.getOriginalMavenProject().getBuild();
@@ -202,7 +218,20 @@ public final class ActionToGoalUtils {
         }
         
         for (MavenActionsProvider add : actionProviders(project)) {
-            if (add.isActionEnable(action, project, lookup)) {
+            if(isActionEnable(add, action, project, packProv, lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isActionEnable(MavenActionsProvider activeConfiguration, String action, NbMavenProjectImpl project, PackagingProvider packProv, Lookup lookup) {
+        if (activeConfiguration instanceof AbstractMavenActionsProvider) {
+            if (((AbstractMavenActionsProvider)activeConfiguration).isActionEnable(action, packProv.getPackaging())) {
+                return true;
+            }
+        } else {
+            if (activeConfiguration.isActionEnable(action, project, lookup)) {
                 return true;
             }
         }
