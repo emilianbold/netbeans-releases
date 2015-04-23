@@ -519,11 +519,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         lastSize = newSize;
                         final ListModel fmodel;
                         if (resultChanged) {
-                            Models.Filter filter = currentSearch.resetFilter();
+                            ListModel model = Models.fromList(types, currentSearch.resetFilter());
                             if (typeFilter != null) {
-                                filter = Models.chained(filter, new FilterAdaptor(typeFilter));
+                                model = FilteredListModel.create(model, new FilterAdaptor(typeFilter), NbBundle.getMessage(GoToTypeAction.class, "LBL_Computing"));
                             }
-                            fmodel = Models.fromList(types, filter);
+                            fmodel = model;
                         } else {
                             fmodel = null;
                         }
