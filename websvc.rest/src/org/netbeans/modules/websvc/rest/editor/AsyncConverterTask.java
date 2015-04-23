@@ -140,6 +140,9 @@ public class AsyncConverterTask extends AsyncConverter implements CancellableTas
                         continue;
                     }
                     MethodTree tree = myInfo.getTrees().getTree(method);
+                    if (tree == null) {
+                        continue;
+                    }
                     List<Integer> position = RestScanTask.
                             getElementPosition(myInfo, tree);
                     Fix fix = new AsyncHint(myInfo.getFileObject(), 
