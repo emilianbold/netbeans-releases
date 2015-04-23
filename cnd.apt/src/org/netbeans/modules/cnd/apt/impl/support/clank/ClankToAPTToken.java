@@ -107,56 +107,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
                 out.setLine(FAKE_LINE);
                 return out;
             } else {
-                // all remainings
-                CharSequence textID;
-                IdentifierInfo II = token.getIdentifierInfo();
-                if (II != null) {
-                    StringMapEntryBase entry = II.getEntry();
-                    assert entry != null;
-                    textID = CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
-                } else {
-                    textID = null;
-                    char$ptr SpellingData = null;
-                    int SpellingLen = 0;
-                    if (token.isLiteral()) {
-                        char$ptr literalData = token.getLiteralData();
-                        if (literalData == null) {
-                            // i.e. the case of lazy calculated DATE and TIME based strings
-                            StringRef spelling = PP.getSpelling(token, spell);
-                            SpellingData = spelling.begin();
-                            SpellingLen = spelling.size();
-                            spell.set_size(0);
-                        } else {
-                            SpellingData = literalData;
-                            SpellingLen = token.getLength();
-                        }
-                    } else {
-                        if (token.is(tok.TokenKind.raw_identifier)) {
-                          byte[] $CharPtrData = token.$CharPtrData();
-                          if ($CharPtrData != null) {
-                              textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
-                          } else {
-                              SpellingData = token.getRawIdentifierData();
-                              SpellingLen = token.getLength();
-                          }
-                        }
-                    }
-                    if (textID == null) {
-                        if (SpellingData == null) {
-                            StringRef spelling = PP.getSpelling(token, spell);
-                            SpellingData = spelling.begin();
-                            SpellingLen = spelling.size();
-                            spell.set_size(0);
-                        }
-                        assert SpellingData != null : "" + token;
-                        if (SpellingData instanceof char$ptr$array) {
-                            textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
-                        } else {
-                            textID = Casts.toCharSequence(SpellingData, SpellingLen);
-                        }
-                    }
-                }
-                assert textID != null : "" + token;
+                CharSequence textID = ClankToAPTUtils.getTokenText(token, PP, spell);
                 int literalType = aptTokenType;
                 if (aptTokenType > APTTokenTypes.FIRST_LITERAL_TOKEN && aptTokenType < APTTokenTypes.LAST_LITERAL_TOKEN) {
                     aptTokenType = APTTokenTypes.IDENT;
@@ -177,6 +128,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
             }
         }
     }
+
     private static final int FAKE_LINE = 333;
     private static final int FAKE_COLUMN = 111;
 

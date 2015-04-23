@@ -48,6 +48,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
@@ -71,7 +73,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -464,6 +465,18 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankMacroDirective ppDirective) {
+        if (!ppDirective.isDefined()) {
+            // only #define are handled by old model, not #undef
+            return;
+        }
+        CsmMacro.Kind kind = CsmMacro.Kind.DEFINED;
+        List<CharSequence> params = ppDirective.getParameters();
+        CharSequence name = ppDirective.getMacroName();
+        String body = "";
+        int startOffset = ppDirective.getDirectiveStartOffset();
+        int endOffset = ppDirective.getDirectiveEndOffset();
+        MacroImpl impl = MacroImpl.create(name, params, body/*sb.toString()*/, curFile, startOffset, endOffset, kind);
+        parsingFileContent.addMacro(impl);
     }
 
     private static void addError(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankErrorDirective ppDirective) {

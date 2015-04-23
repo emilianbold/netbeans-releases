@@ -41,8 +41,18 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
+import org.clang.basic.IdentifierInfo;
 import org.clang.basic.tok;
+import org.clang.lex.Preprocessor;
+import org.clang.lex.Token;
+import org.clank.support.Casts;
+import org.clank.support.aliases.char$ptr;
+import org.clank.support.aliases.char$ptr$array;
+import org.llvm.adt.StringMapEntryBase;
+import org.llvm.adt.StringRef;
+import org.llvm.adt.aliases.SmallVectorChar;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -701,5 +711,64 @@ public final class ClankToAPTUtils {
         }
         assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
         return APTTokenTypes.EOF;
-    }        
+    }
+
+    public static CharSequence getIdentifierText(IdentifierInfo II) {
+      assert II != null;
+      StringMapEntryBase entry = II.getEntry();
+      assert entry != null;
+      return CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+    }
+
+    public static CharSequence getTokenText(Token token, Preprocessor PP, SmallVectorChar spell) {
+      // all remainings
+      CharSequence textID;
+      IdentifierInfo II = token.getIdentifierInfo();
+      if (II != null) {
+        textID = getIdentifierText(II);
+      } else {
+        textID = null;
+        char$ptr SpellingData = null;
+        int SpellingLen = 0;
+        if (token.isLiteral()) {
+          char$ptr literalData = token.getLiteralData();
+          if (literalData == null) {
+            // i.e. the case of lazy calculated DATE and TIME based strings
+            StringRef spelling = PP.getSpelling(token, spell);
+            SpellingData = spelling.begin();
+            SpellingLen = spelling.size();
+            spell.set_size(0);
+          } else {
+            SpellingData = literalData;
+            SpellingLen = token.getLength();
+          }
+        } else {
+          if (token.is(tok.TokenKind.raw_identifier)) {
+            byte[] $CharPtrData = token.$CharPtrData();
+            if ($CharPtrData != null) {
+              textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
+            } else {
+              SpellingData = token.getRawIdentifierData();
+              SpellingLen = token.getLength();
+            }
+          }
+        }
+        if (textID == null) {
+          if (SpellingData == null) {
+            StringRef spelling = PP.getSpelling(token, spell);
+            SpellingData = spelling.begin();
+            SpellingLen = spelling.size();
+            spell.set_size(0);
+          }
+          assert SpellingData != null : "" + token;
+          if (SpellingData instanceof char$ptr$array) {
+            textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
+          } else {
+            textID = Casts.toCharSequence(SpellingData, SpellingLen);
+          }
+        }
+      }
+      assert textID != null : "" + token;
+      return textID;
+    }
 }

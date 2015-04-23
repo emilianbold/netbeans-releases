@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Collection;
+import java.util.List;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
@@ -91,9 +92,19 @@ public final class ClankDriver {
 
     // // #define or #undef directive
     public interface ClankMacroDirective extends ClankPreprocessorDirective {
-      CharSequence getMacroName();
       // #define or #undef
       boolean isDefined();
+
+      /**
+       * @return name of #define'd or #undef'ed macro
+       */
+      CharSequence getMacroName();
+
+      /**
+       * @return null for object-like macros, collection of parameter names for
+       *        function-like macros
+       */
+      public List<CharSequence> getParameters();
     }
 
     public interface ClankErrorDirective extends ClankPreprocessorDirective {
