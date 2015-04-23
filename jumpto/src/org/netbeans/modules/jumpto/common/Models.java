@@ -172,11 +172,11 @@ public final class Models {
                         }
                         included = newIncluded;
                         final int newSize = included.size();
-                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        fireContentsChanged(this, 0, Math.max(0,Math.min(oldSize - 1, newSize - 1)));
                         if (oldSize < newSize) {
-                            fireIntervalAdded(this, oldSize, newSize);
+                            fireIntervalAdded(this, oldSize, newSize - 1);
                         } else if (oldSize > newSize) {
-                            fireIntervalRemoved(this, newSize, oldSize);
+                            fireIntervalRemoved(this, newSize, oldSize - 1);
                         }
                         return null;
                     }
@@ -186,7 +186,7 @@ public final class Models {
     }
 
     private static class TranslatingListModel<T,P> implements ListModel {
-    
+
         private Factory<T,P> factory;
         private ListModel listModel;
 
@@ -200,7 +200,7 @@ public final class Models {
         // List implementataion ----------------------------------------------------
 
         //@SuppressWarnings("xlint")
-        public T getElementAt(int index) {        
+        public T getElementAt(int index) {
             @SuppressWarnings("unchecked")
             P original = (P)listModel.getElementAt( index );
             return factory.create( original );
@@ -379,11 +379,11 @@ public final class Models {
                         int oldSize = items.size();
                         items = included = update;
                         int newSize = items.size();
-                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        fireContentsChanged(this, 0, Math.max(0, Math.min(oldSize - 1, newSize - 1)));
                         if (oldSize < newSize) {
-                            fireIntervalAdded(this, oldSize, newSize);
+                            fireIntervalAdded(this, oldSize, newSize - 1);
                         } else if (oldSize > newSize) {
-                            fireIntervalRemoved(this, newSize, oldSize);
+                            fireIntervalRemoved(this, newSize, oldSize - 1);
                         }
                         return true;
                     } else {
@@ -408,11 +408,11 @@ public final class Models {
                         }
                         included = newIncluded;
                         final int newSize = included.size();
-                        fireContentsChanged(this, 0, Math.min(oldSize, newSize));
+                        fireContentsChanged(this, 0, Math.max(0, Math.min(oldSize - 1, newSize - 1)));
                         if (oldSize < newSize) {
-                            fireIntervalAdded(this, oldSize, newSize);
+                            fireIntervalAdded(this, oldSize, newSize - 1);
                         } else if (oldSize > newSize) {
-                            fireIntervalRemoved(this, newSize, oldSize);
+                            fireIntervalRemoved(this, newSize, oldSize - 1);
                         }
                         return null;
                     }
