@@ -46,7 +46,9 @@ import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
@@ -59,6 +61,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -199,6 +202,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
           }
           return false;
+        }
+
+        @Override
+        public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
         }
 
         @Override
@@ -379,6 +386,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         @Override
+        public void onErrorDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankErrorDirective directive) {
+        }
+
+        @Override
         public boolean needTokens() {
           return this.insideInterestedFile;
         }
@@ -456,6 +467,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     private static void addError(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankErrorDirective ppDirective) {
+        CharSequence msg = ppDirective.getMessage();
+        PreprocHandler.State state = ppDirective.getStateWhenMetErrorDirective();
+        int start = ppDirective.getDirectiveStartOffset();
+        int end = ppDirective.getDirectiveEndOffset();
+        ErrorDirectiveImpl impl = ErrorDirectiveImpl.create(curFile, msg, new CsmOffsetableImpl(curFile, start, end), state);
+        parsingFileContent.addError(impl);
     }
 
     private static void addInclude(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankInclusionDirective ppDirective) {
@@ -469,5 +486,48 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         int endOffset = ppDirective.getDirectiveEndOffset();
         IncludeImpl incl = IncludeImpl.create(fileName.toString(), system, false, includedFile, curFile, startOffset, endOffset);
         parsingFileContent.addInclude(incl, broken);
+    }
+
+    private static final class CsmOffsetableImpl implements CsmOffsetable {
+
+        private final CsmFile file;
+        private final int selectionStart;
+        private final int selectionEnd;
+
+        public CsmOffsetableImpl(CsmFile file, int selectionStart, int selectionEnd) {
+            this.file = file;
+            this.selectionStart = selectionStart;
+            this.selectionEnd = selectionEnd;
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return selectionStart;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return selectionEnd;
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public CharSequence getText() {
+            throw new UnsupportedOperationException();
+        }
     }
 }

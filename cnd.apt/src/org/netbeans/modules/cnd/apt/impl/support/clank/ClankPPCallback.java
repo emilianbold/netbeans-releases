@@ -64,11 +64,13 @@ import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
@@ -116,6 +118,19 @@ public final class ClankPPCallback extends FileInfoCallback {
         this.includeHandler.resetIncludeStack();
         this.delegate = delegate;
         this.interrupter = interrupter;
+    }
+
+    @Override
+    protected void onUserDiagnosticDirective(FileInfo curStackElement, UserDiagnosticDirectiveInfo directive) {
+        if (!directive.isWarning()) {
+            StringRef msg = directive.getMessage();
+            String spelling = Casts.toCharSequence(msg.data(), msg.size()).toString();
+            PreprocHandler.State stateWhenMetErrorDirective = APTHandlersSupport.createCleanPreprocState(this.ppHandler.getState());
+            ClankErrorDirectiveWrapper errorDirectiveWrapper = new ClankErrorDirectiveWrapper(directive, stateWhenMetErrorDirective, spelling);
+            directive.setAnnotation(errorDirectiveWrapper);
+            ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
+            this.delegate.onErrorDirective(currentFileWrapper, errorDirectiveWrapper);
+        }
     }
 
     @Override
@@ -285,16 +300,26 @@ public final class ClankPPCallback extends FileInfoCallback {
       return delegate.needMacroExpansion();
     }
 
-    static final class ClankInclusionDirectiveWrapper implements ClankDriver.ClankInclusionDirective {
-        private final InclusionDirectiveInfo clankDelegate;
-        private final ResolvedPath resolvedPath;
-        private final String spelling;
+    private static abstract class ClankPreprocessorDirectiveWrapper implements  ClankDriver.ClankPreprocessorDirective {
+        private final PreprocessorDirectiveInfo delegate;
         private Object externalAnnotation;
 
-        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, ResolvedPath resolvedPath, String spelling) {
-          this.clankDelegate = clankDelegate;
-          this.resolvedPath = resolvedPath;
-          this.spelling = spelling;
+        public ClankPreprocessorDirectiveWrapper(PreprocessorDirectiveInfo delegate) {
+          this.delegate = delegate;
+        }
+
+        protected PreprocessorDirectiveInfo getDelegate() {
+          return delegate;
+        }
+
+        @Override
+        public int getDirectiveStartOffset() {
+          return delegate.getHashOffset();
+        }
+
+        @Override
+        public int getDirectiveEndOffset() {
+          return delegate.getEodOffset();
         }
 
         @Override
@@ -309,6 +334,59 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         @Override
+        public String toString() {
+          return "delegate=" + delegate + "\n"
+                  + "annotation="+externalAnnotation;
+        }
+
+    }
+
+    private static final class ClankErrorDirectiveWrapper extends ClankPreprocessorDirectiveWrapper implements ClankDriver.ClankErrorDirective {
+        private final CharSequence msg;
+        private final PreprocHandler.State stateWhenMetErrorDirective;
+
+        public ClankErrorDirectiveWrapper(UserDiagnosticDirectiveInfo clankDelegate, 
+                PreprocHandler.State stateWhenMetErrorDirective,
+                CharSequence msg) {
+          super(clankDelegate);
+          assert stateWhenMetErrorDirective != null;
+          this.stateWhenMetErrorDirective = stateWhenMetErrorDirective;
+          this.msg = msg;
+        }
+
+        @Override
+        public CharSequence getMessage() {
+          return this.msg;
+        }
+
+        @Override
+        public PreprocHandler.State getStateWhenMetErrorDirective() {
+          return this.stateWhenMetErrorDirective;
+        }
+
+        @Override
+        public String toString() {
+          return "ClankErrorDirectiveWrapper{" + super.toString() + ",\n"
+                  + " msg=" + msg + '}';
+        }
+    }
+
+    private static final class ClankInclusionDirectiveWrapper extends ClankPreprocessorDirectiveWrapper implements ClankDriver.ClankInclusionDirective {
+        private final ResolvedPath resolvedPath;
+        private final String spelling;
+
+        public ClankInclusionDirectiveWrapper(InclusionDirectiveInfo clankDelegate, ResolvedPath resolvedPath, String spelling) {
+          super(clankDelegate);
+          this.resolvedPath = resolvedPath;
+          this.spelling = spelling;
+        }
+
+        @Override
+        protected InclusionDirectiveInfo getDelegate() {
+          return (InclusionDirectiveInfo)super.getDelegate();
+        }
+
+        @Override
         public ResolvedPath getResolvedPath() {
           return resolvedPath;
         }
@@ -320,25 +398,15 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public boolean isAngled() {
-          return clankDelegate.isAngled();
-        }
-
-        @Override
-        public int getDirectiveStartOffset() {
-          return clankDelegate.getHashOffset();
-        }
-
-        @Override
-        public int getDirectiveEndOffset() {
-          return clankDelegate.getEodOffset();
-        }        
+          return getDelegate().isAngled();
+        }  
 
         @Override
         public String toString() {
-          return "ClankInclusionDirective{" + "clankDelegate=" + clankDelegate + ",\n" // NOI18N
+          return "ClankInclusionDirective{\n" + super.toString() + ",\n" // NOI18N
                   + "resolvedPath=" + resolvedPath + ",\n" // NOI18N
                   + "spelling=" + spelling + ",\n" // NOI18N
-                  + "attr=" + externalAnnotation + '}'; // NOI18N
+                  + '}'; // NOI18N
         }
         
     }
@@ -385,10 +453,15 @@ public final class ClankPPCallback extends FileInfoCallback {
         for (int i = 0; i < nrDirectives; i++) {
           PreprocessorDirectiveInfo curDirective = (PreprocessorDirectiveInfo) directives[i];
           if (curDirective instanceof InclusionDirectiveInfo) {
-            ClankInclusionDirectiveWrapper wrapper = (ClankInclusionDirectiveWrapper)((InclusionDirectiveInfo)curDirective).getAnnotation();
+            ClankInclusionDirectiveWrapper wrapper = (ClankInclusionDirectiveWrapper)curDirective.getAnnotation();
+            assert wrapper != null;
             this.convertedPPDirectives.add(wrapper);
           } else if (curDirective instanceof UserDiagnosticDirectiveInfo) {
-            
+            if (!((UserDiagnosticDirectiveInfo)curDirective).isWarning()) {
+              ClankErrorDirectiveWrapper wrapper = (ClankErrorDirectiveWrapper)curDirective.getAnnotation();
+              assert wrapper != null;
+              this.convertedPPDirectives.add(wrapper);
+            }
           }
         }
       }
@@ -410,6 +483,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       @Override
       public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
+        assert convertedPPDirectives != null;
         return Collections.unmodifiableList(convertedPPDirectives);
       }
 

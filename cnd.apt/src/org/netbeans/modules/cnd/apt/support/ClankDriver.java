@@ -52,9 +52,6 @@ import org.netbeans.modules.cnd.support.Interrupter;
  * @author Vladimir Voskresensky
  */
 public final class ClankDriver {
-
-
-
     private ClankDriver() {
     }
 
@@ -86,6 +83,8 @@ public final class ClankDriver {
     }
 
     public interface ClankPreprocessorDirective {
+      void setAnnotation(Object attr);
+      Object getAnnotation();
       int getDirectiveStartOffset();
       int getDirectiveEndOffset();
     }
@@ -99,11 +98,10 @@ public final class ClankDriver {
 
     public interface ClankErrorDirective extends ClankPreprocessorDirective {
       CharSequence getMessage();
+      PreprocHandler.State getStateWhenMetErrorDirective();
     }
     
     public interface ClankInclusionDirective extends ClankPreprocessorDirective {
-      void setAnnotation(Object attr);
-      Object getAnnotation();
       ResolvedPath getResolvedPath();
       CharSequence getSpellingName();
       boolean isAngled();
@@ -121,7 +119,6 @@ public final class ClankDriver {
        * 
        * @param enteredFrom
        * @param enteredTo
-       * @return
        */
       void onEnter(ClankFileInfo enteredFrom, ClankFileInfo enteredTo);
       
@@ -136,6 +133,13 @@ public final class ClankDriver {
       boolean needTokens();
       boolean needSkippedRanges();
       boolean needMacroExpansion();
+
+      /**
+       * 
+       * @param directiveOwner
+       * @param directive
+       */
+      void onErrorDirective(ClankFileInfo directiveOwner, ClankErrorDirective directive);
     }
 
     public interface ClankFileInfo {
