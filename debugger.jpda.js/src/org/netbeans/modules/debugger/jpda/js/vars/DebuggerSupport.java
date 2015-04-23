@@ -62,6 +62,7 @@ import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
+import org.netbeans.modules.debugger.jpda.js.source.Source;
 import org.openide.util.Exceptions;
 
 /**
@@ -72,6 +73,7 @@ public final class DebuggerSupport {
     
     public  static final String DEBUGGER_SUPPORT_CLASS = "jdk.nashorn.internal.runtime.DebuggerSupport";    // NOI18N
     private static final String DEBUGGER_SUPPORT_VALUE_DESC_CLASS = "jdk.nashorn.internal.runtime.DebuggerSupport$DebuggerValueDesc"; // NOI18N
+    private static final String CONTEXT_CLASS = "jdk.nashorn.internal.runtime.Context";    // NOI18N
     
     private static final String METHOD_VALUE_INFO  = "valueInfo";       // NOI18N
     private static final String SIGNAT_VALUE_INFO  = "(Ljava/lang/String;Ljava/lang/Object;Z)Ljdk/nashorn/internal/runtime/DebuggerSupport$DebuggerValueDesc;"; // NOI18N
@@ -79,6 +81,10 @@ public final class DebuggerSupport {
     private static final String SIGNAT_VALUE_INFOS = "(Ljava/lang/Object;Z)[Ljdk/nashorn/internal/runtime/DebuggerSupport$DebuggerValueDesc;";  // NOI18N
     private static final String METHOD_EVAL        = "eval";            // NOI18N
     private static final String SIGNAT_EVAL        = "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/Object;Ljava/lang/String;Z)Ljava/lang/Object;";    // NOI18N
+    private static final String METHOD_FROM_CLASS  = "fromClass";       // NOI18N
+    private static final String SIGNAT_FROM_CLASS  = "(Ljava/lang/Class;)Ljdk/nashorn/internal/runtime/Context;";   // NOI18N
+    private static final String METHOD_CONTEXT_EVAL= "eval";            // NOI18N
+    private static final String SIGNAT_CONTEXT_EVAL= "(Ljdk/nashorn/internal/runtime/ScriptObject;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;Z)Ljava/lang/Object;";  // NOI18N
     private static final String METHOD_VALUE_AS_STRING = "valueAsString";       // NOI18N
     private static final String SIGNAT_VALUE_AS_STRING = "(Ljava/lang/Object;)Ljava/lang/String;";  // NOI18N
     private static final String METHOD_SOURCE_INFO = "getSourceInfo";   // NOI18N
@@ -234,6 +240,37 @@ public final class DebuggerSupport {
             // Can not evaluate
         }
         
+        // Evaluate on the current class' context:
+        Source source = Source.getSource(frame);
+        JPDAClassType sourceClassType = source.getClassType();
+        // Call Context.fromClass(clazz):
+        List<JPDAClassType> contextClassesByName = debugger.getClassesByName(CONTEXT_CLASS);
+        JPDAClassType contextClass = contextClassesByName.get(0);
+        try {
+            Variable contextObj = contextClass.invokeMethod(
+                    METHOD_FROM_CLASS,
+                    SIGNAT_FROM_CLASS,
+                    new Variable[] { sourceClassType.classObject() });
+            
+            Variable[] args = new Variable[5];
+            try {
+                args[0] = scope;
+                args[1] = debugger.createMirrorVar(expression);
+                args[2] = contextVar;
+                args[3] = null; // ScriptRuntime.UNDEFINED, or null for directEval
+                args[4] = debugger.createMirrorVar(false, true);
+            } catch (InvalidObjectException ioex) {
+                Exceptions.printStackTrace(ioex);
+                throw new InvalidExpressionException(ioex);
+            }
+            return ((ObjectVariable) contextObj).invokeMethod(
+                    METHOD_CONTEXT_EVAL,
+                    SIGNAT_CONTEXT_EVAL,
+                    args);
+        } catch (NoSuchMethodException nsmex) {
+            Exceptions.printStackTrace(nsmex);
+        }
+        // Fallback to global evaluation...
         Variable[] args = new Variable[4];
         try {
             args[0] = scope;
