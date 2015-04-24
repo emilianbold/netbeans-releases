@@ -2,7 +2,7 @@
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
     <name>hamcrest</name>
     <type>j2se</type>
-    <localizing-bundle>org.netbeans.libs.junit4.Bundle</localizing-bundle>
+    <localizing-bundle>org.netbeans.modules.junitlib.Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
         <resource>jar:nbinst://org.netbeans.libs.junit4/modules/ext/hamcrest-core-1.3.jar!/</resource>
