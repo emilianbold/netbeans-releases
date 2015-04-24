@@ -233,17 +233,17 @@ public class DefineInterceptor implements FunctionInterceptor {
                 if (token.id() == JsTokenId.IDENTIFIER
                         && (EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))
                         && ts.movePrevious()) {
+                    RequireJsIndex rIndex = null;
+                    try {
+                        rIndex = RequireJsIndex.get(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     if (token.id() == JsTokenId.OPERATOR_ASSIGNMENT && ts.movePrevious()) {
                         token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                         if (token.id() == JsTokenId.IDENTIFIER) {
-                            // now we have the name of the object, that contains the expoert from module
-                            RequireJsIndex rIndex = null;
-                            try {
-                                rIndex = RequireJsIndex.get(project);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                            // now we have the name of the object, that contains the export from module
                             if (rIndex != null) {
                                 FileObject fileObject = FSCompletionUtils.findMappedFileObject(modules.getValue().toString(), fo);
                                 if (fileObject != null) {
@@ -266,6 +266,36 @@ public class DefineInterceptor implements FunctionInterceptor {
                                         }
                                         for (TypeUsage typeUsage : exposedTypes) {
                                             object.addAssignment(typeUsage, nearOccurrenceEnd > -1 ? nearOccurrenceEnd : modules.getOffset());                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // there is no assignment, we should add return type for require/requirejs function to enable CC
+                        // even for case: require('app/myModule').| 
+                        ts.moveNext();
+                        token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        String requireFunctionName = null;
+                        if (token.id() == JsTokenId.IDENTIFIER
+                                && (EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))) {
+                            // find out whether require or requirejs has been used
+                            requireFunctionName = token.text().toString();
+                        }
+                        if (rIndex != null && requireFunctionName != null) {
+                            FileObject fileObject = FSCompletionUtils.findMappedFileObject(modules.getValue().toString(), fo);
+                            if (fileObject != null) {
+                                Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(fileObject.getName(), factory);
+                                JsObject requireObj = globalObject.getProperty(requireFunctionName);
+                                if (!(requireObj instanceof JsFunction)) {
+                                    JsObject parent = requireObj.getParent();
+                                    requireObj = factory.newFunction(scope, requireObj.getParent(), requireObj.getName(), new ArrayList<String>());
+                                    parent.addProperty(requireObj.getName(), requireObj);
+                                }
+                                if (requireObj instanceof JsFunction) {
+                                    JsFunction requireFun = (JsFunction) globalObject.getProperty(requireFunctionName);
+                                    // now add all typeUsages found in index as return types
+                                    for (TypeUsage typeUsage : exposedTypes) {
+                                        requireFun.addReturnType(typeUsage);
                                     }
                                 }
                             }
