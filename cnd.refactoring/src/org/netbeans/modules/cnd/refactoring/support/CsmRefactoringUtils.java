@@ -34,6 +34,7 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -73,7 +74,6 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,8 +94,6 @@ public final class CsmRefactoringUtils {
     public static final String USG_CND_REFACTORING = "USG_CND_REFACTORING"; // NOI18N
     public static final String GENERATE_TRACKING = "GENERATE"; // NOI18N
     public static final String FROM_EDITOR_TRACKING = "FROM_EDITOR"; // NOI18N
-
-    public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
 
     private CsmRefactoringUtils() {
     }
@@ -135,7 +133,7 @@ public final class CsmRefactoringUtils {
     }
 
     public static Collection<CsmProject> getContextCsmProjects(CsmObject contextObject) {
-        Collection<CsmProject> prjs = new HashSet<CsmProject>();
+        Collection<CsmProject> prjs = new HashSet<>();
         CsmFile contextFile = null;
         if (CsmKindUtilities.isOffsetable(contextObject)) {
             contextFile = ((CsmOffsetable)contextObject).getContainingFile();
@@ -181,9 +179,9 @@ public final class CsmRefactoringUtils {
             if (true) {
                 // for now return all...
                 Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
-                out = new HashSet<CsmProject>(all);
+                out = new HashSet<>(all);
             } else {
-                out = new HashSet<CsmProject>();
+                out = new HashSet<>();
                 Collection<CsmProject> prjs = getContextCsmProjects(origObject);
                 out.addAll(prjs);
                 boolean addLibs = false;
@@ -195,7 +193,7 @@ public final class CsmRefactoringUtils {
                 if (addLibs) {
                     // add all libraries as well
                     Collection<CsmProject> all = CsmModelAccessor.getModel().projects();
-                    Set<CsmProject> libs = new HashSet<CsmProject>();
+                    Set<CsmProject> libs = new HashSet<>();
                     for (CsmProject csmProject : all) {
                         libs.addAll(csmProject.getLibraries());
                     }
@@ -208,7 +206,7 @@ public final class CsmRefactoringUtils {
     
     public static Collection<Project> getContextProjects(CsmObject contextObject) {
         Collection<CsmProject> csmProjects = getContextCsmProjects(contextObject);
-        Collection<Project> out = new ArrayList<Project>();
+        Collection<Project> out = new ArrayList<>();
         for (CsmProject csmProject : csmProjects) {
             if (csmProject != null) {
                 Object o = csmProject.getPlatformProject();
@@ -368,7 +366,7 @@ public final class CsmRefactoringUtils {
     }
 
     public static Collection<CsmFunction> getConstructors(CsmClass cls) {
-        Collection<CsmFunction> out = new ArrayList<CsmFunction>();
+        Collection<CsmFunction> out = new ArrayList<>();
         CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
         CsmSelect.CsmFilter filter = filterBuilder.createCompoundFilter(
                 CsmSelect.FUNCTION_KIND_FILTER,
@@ -444,8 +442,8 @@ public final class CsmRefactoringUtils {
                 } else if (CsmKindUtilities.isClass((CsmObject)obj)) {
                     endOffset = ((CsmClass)obj).getLeftBracketOffset()-1;
                 }
-                int startLine = org.netbeans.editor.Utilities.getRowFirstNonWhite(doc, stOffset);
-                int endLine = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, endOffset) + endLineOffset;
+                int startLine = LineDocumentUtils.getLineFirstNonWhitespace(doc, stOffset);
+                int endLine = LineDocumentUtils.getLineLastNonWhitespace(doc, endOffset) + endLineOffset;
                 displayText = CsmDisplayUtilities.getLineHtml(startLine, endLine, -1, -1, doc);
             } catch (BadLocationException ex) {
             }            

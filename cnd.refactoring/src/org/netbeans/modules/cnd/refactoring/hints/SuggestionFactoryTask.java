@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -64,8 +66,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.AssignmentFixImpl;
-import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.IntroduceFixImpl;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.StatementResult;
 import org.netbeans.modules.cnd.refactoring.hints.StatementFinder.AddMissingCasesFixImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -86,6 +86,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -187,7 +188,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
 
     private void detectIntroduceVariable(final CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, boolean assign, final FileObject fileObject, boolean introduce, JTextComponent comp) {
         ExpressionFinder expressionFinder = new ExpressionFinder(doc, file, caretOffset, selectionStart, selectionEnd, canceled);
-         StatementResult res = expressionFinder.findExpressionStatement();
+        StatementResult res = expressionFinder.findExpressionStatement();
         if (res == null) {
             return;
         }
@@ -195,30 +196,30 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
             return;
         }
         if (assign) {
-            CsmExpressionStatement expression = res.expression;
+            CsmExpressionStatement expression = res.getExpression();
             if (expression != null) {
                 createStatementHint(expression, doc, fileObject);
             }
         }
         if (introduce) {
-            if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+            if (res.getContainer() != null && res.getStatementInBody() != null && comp != null && selectionStart < selectionEnd) {
                 if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
                         CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
                         expressionFinder.isExpressionSelection()) {
-                    if (!(res.container.getStartOffset() == selectionStart &&
-                            res.container.getEndOffset() == selectionEnd)) {
+                    if (!(res.getContainer().getStartOffset() == selectionStart &&
+                            res.getContainer().getEndOffset() == selectionEnd)) {
                         CsmOffsetable applicableTextExpression = expressionFinder.applicableTextExpression();
                         if (applicableTextExpression != null) {
-                            createExpressionHint(res.statementInBody, applicableTextExpression, doc, comp, fileObject);
+                            createExpressionHint(res.getStatementInBody(), applicableTextExpression, doc, comp, fileObject);
                         }
                     }
                 }
             }
         }
     }
-    
+
     private void createStatementHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentFixImpl(expression.getExpression(), doc, fo));
+        List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentVariableFix(expression.getExpression(), doc, fo));
         String description = NbBundle.getMessage(SuggestionFactoryTask.class, "AssignVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
@@ -228,7 +229,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
     }
 
     private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, comp, fo));
+        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceVariableFix(st, expression, doc, comp, fo));
         String description = NbBundle.getMessage(SuggestionFactoryTask.class, "IntroduceVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,

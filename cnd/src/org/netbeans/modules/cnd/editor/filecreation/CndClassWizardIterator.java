@@ -42,7 +42,7 @@
 package org.netbeans.modules.cnd.editor.filecreation;
 
 import java.io.IOException;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -55,6 +55,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -91,14 +92,14 @@ public class CndClassWizardIterator extends CCFSrcFileIterator {
             DataObject dobjBro = DataObject.find(bro);
             String headerFileName = (String) wiz.getProperty("headerFileName"); // NOI18N
             DataFolder headerFolderName = (DataFolder) wiz.getProperty("headerFolder"); // NOI18N
-            res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName));
+            res.add(dobjBro.createFromTemplate(headerFolderName, headerFileName, Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, Boolean.TRUE)));
         } else {
             String errmsg = NbBundle.getMessage(CndClassWizardIterator.class, "MSG_missing_class_header_template", sourceTemplate.getName()+".h"); // NOI18N
             NotifyDescriptor.Message msg = new NotifyDescriptor.
                 Message(errmsg, NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(msg);
         }
-        res.add(template.createFromTemplate(targetFolder, sourceFileName ));
+        res.add(template.createFromTemplate(targetFolder, sourceFileName, Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, Boolean.TRUE)));
 
         return res;
     }

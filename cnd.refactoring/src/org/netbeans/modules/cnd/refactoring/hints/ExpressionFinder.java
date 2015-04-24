@@ -41,22 +41,18 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -77,21 +73,10 @@ import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
-import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -161,8 +146,11 @@ public class ExpressionFinder {
                 }
                 if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
                     StatementResult res = findExpressionStatement(st, nexStartOffset);
-                    if (res != null && res.statementInBody == null) {
-                        res.statementInBody = st;
+                    if (res != null && res.getStatementInBody() == null) {
+                        res.setStatementInBody(st);
+                    }
+                    if (res != null && res.getBody() == null) {
+                        res.setBody(body);
                     }
                     return res;
                 }
@@ -181,9 +169,7 @@ public class ExpressionFinder {
                 CsmCondition condition = switchStmt.getCondition();
                 if (condition != null &&
                     condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 final CsmStatement body = switchStmt.getBody();
                 if (body != null) {
@@ -200,9 +186,7 @@ public class ExpressionFinder {
                 CsmStatement initStatement = forStmt.getInitStatement();
                 if (initStatement != null && 
                     initStatement.getStartOffset() <= selectionStart && selectionEnd <= initStatement.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 //CsmExpression iterationExpression = forStmt.getIterationExpression();
                 //if (iterationExpression != null && 
@@ -287,9 +271,7 @@ public class ExpressionFinder {
                 CsmCondition condition = ifStmt.getCondition();
                 if (condition != null && 
                     condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 CsmStatement thenStmt = ifStmt.getThen();
                 CsmStatement elseStmt = ifStmt.getElse();
@@ -314,9 +296,7 @@ public class ExpressionFinder {
             }
             case RETURN:
             {
-                StatementResult res = new StatementResult();
-                res.container = st;
-                return res;
+                return new StatementResult(st, null);
             }
             case DECLARATION:
             {
@@ -329,9 +309,7 @@ public class ExpressionFinder {
                             CsmExpression initialValue = d.getInitialValue();
                             if (initialValue != null) {
                                 if (initialValue.getStartOffset() <= selectionStart && selectionEnd <= initialValue.getEndOffset()) {
-                                    StatementResult res = new StatementResult();
-                                    res.container = st;
-                                    return res;
+                                    return new StatementResult(st, null);
                                 }
                             }
                         }
@@ -365,14 +343,9 @@ public class ExpressionFinder {
                 });
                 if (startOffset <= selectionStart && selectionEnd <= trueEndOffset.get()) {
                     if(isApplicable((CsmExpressionStatement) st)) {
-                        StatementResult res = new StatementResult();
-                        res.expression = (CsmExpressionStatement) st;
-                        res.container = (CsmExpressionStatement) st;
-                        return res;
+                        return new StatementResult(st, (CsmExpressionStatement) st);
                     } else {
-                        StatementResult res = new StatementResult();
-                        res.container = (CsmExpressionStatement) st;
-                        return res;
+                        return new StatementResult(st, null);
                     }
                 }
                 return null;
@@ -385,7 +358,7 @@ public class ExpressionFinder {
         return isApplicableExpression(st.getExpression());        
     }
     
-    CsmOffsetable applicableTextExpression() {
+    public CsmOffsetable applicableTextExpression() {
         try {
             String text = doc.getText(selectionStart, selectionEnd - selectionStart);
             if (text.length() > 0) {
@@ -457,7 +430,7 @@ public class ExpressionFinder {
         return true;
     }
     
-    boolean isExpressionSelection() {
+    public boolean isExpressionSelection() {
         final AtomicBoolean applicableSelection = new AtomicBoolean(false);
         if (selectionStart < selectionEnd) {
             doc.render(new Runnable() {
@@ -517,221 +490,64 @@ public class ExpressionFinder {
     }
     
     
-    static final class StatementResult {
-        CsmExpressionStatement expression;
-        CsmStatement container;
-        CsmStatement statementInBody;
-    }
-    
-    static abstract class BaseFixImpl implements Fix {
-        protected final CsmOffsetable expression;
-        protected final BaseDocument doc;
-        protected String name;
-        
-        protected BaseFixImpl(CsmOffsetable expression, Document doc) {
+    public static final class StatementResult {
+        private final CsmStatement container;
+        private final CsmExpressionStatement expression;
+        private CsmStatement statementInBody;
+        private CsmCompoundStatement body;
+        public StatementResult(CsmStatement container, CsmExpressionStatement expression) {
             this.expression = expression;
-            this.doc = (BaseDocument) doc;
+            this.container = container;
         }
-        
-        abstract protected boolean isC();
 
-        protected String suggestName() {
-            doc.render(new Runnable() {
+        public CsmStatement getContainer() {
+            return container;
+        }
 
-                @Override
-                public void run() {
-                    TokenHierarchy<? extends Document> hi = TokenHierarchy.get(doc);
-                    TokenSequence<?> ts = hi.tokenSequence();
-                    ts.move(expression.getStartOffset());
-                    String lastCandidate = null;
-                    String bestCandidate = null;
-                    int parenDepth = 0;
-                    while (ts.moveNext()) {
-                        Token<?> token = ts.token();
-                        if (ts.offset() > expression.getEndOffset()) {
-                            break;
-                        }
-                        if (CppTokenId.IDENTIFIER.equals(token.id())) {
-                            lastCandidate = token.text().toString();
-                        } else if (CppTokenId.LPAREN.equals(token.id())) {
-                            if (parenDepth == 0) {
-                                bestCandidate = lastCandidate;
-                            }
-                            parenDepth++;
-                        } else if (CppTokenId.RPAREN.equals(token.id())) {
-                            parenDepth--;
-                        }
+        public CsmExpressionStatement getExpression() {
+            return expression;
+        }
+
+        public CsmStatement getStatementInBody() {
+            return statementInBody;
+        }
+
+        public void setStatementInBody(CsmStatement statementInBody) {
+            this.statementInBody = statementInBody;
+        }
+
+        public CsmCompoundStatement getBody() {
+            return body;
+        }
+
+        public void setBody(CsmCompoundStatement body) {
+            this.body = body;
+        }
+
+        public List<Pair<Integer, Integer>> getOccurrences(CsmOffsetable applicableTextExpression) {
+            List<Pair<Integer, Integer>> occurrences = new ArrayList<>();
+            if (getBody() != null) {
+                String bodyText = getBody().getText().toString();
+                String expressionText = applicableTextExpression.getText().toString();
+                int since = applicableTextExpression.getEndOffset() - getBody().getStartOffset();
+                int count = 0;
+                int i = 0;
+                // TODO make searching by token stream
+                while(true) {
+                    int found = bodyText.indexOf(expressionText, i);
+                    if (found < 0) {
+                        break;
                     }
-                    if (bestCandidate != null) {
-                        name = bestCandidate;
-                    } else {
-                        name = lastCandidate;
+                    if (found >= since) {
+                        // TODO check space or separator before and after occurrence
+                        occurrences.add(Pair.of(getBody().getStartOffset() + found, getBody().getStartOffset() + found + expressionText.length()));
                     }
-                }
-            });
-            if (name == null) {
-                name = "variable"; //NOI18N
-            } else {
-                if ((name.toLowerCase().startsWith("get") || name.toLowerCase().startsWith("has")) && name.length() > 3) { //NOI18N
-                    name = name.substring(3);
-                } else if (name.toLowerCase().startsWith("is") && name.length() > 2) { //NOI18N
-                    name = name.substring(2);
+                    i = found + expressionText.length();
                 }
             }
-            return name;
+            return occurrences;
         }
 
-        protected CharSequence getExpressionType() {
-            CsmCacheManager.enter();
-            try {
-                CharSequence typeText;
-                CsmType resolveType = CsmExpressionResolver.resolveType(expression, null);
-                if (resolveType == null) {
-                    return null;
-                }
-//                if (resolveType.isTemplateBased()) {
-//                    CsmClassifier classifier = CsmBaseUtilities.getClassifier(resolveType, expression.getContainingFile(), expression.getStartOffset(), true);
-//                    if (!CsmKindUtilities.isTemplate(classifier)) {
-//                        CsmTypes.TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(resolveType.isConst(), resolveType.isReference(), resolveType.getPointerDepth(), resolveType.getArrayDepth());
-//                        CsmTypes.OffsetDescriptor offsetDescriptor = new CsmTypes.OffsetDescriptor(expression.getContainingFile(), expression.getStartOffset(), expression.getEndOffset());
-//                        resolveType = CsmTypes.createType(classifier, typeDescriptor, offsetDescriptor);
-//                    }
-//                }
-                typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(resolveType);
-                if (isC()) {
-                    CsmClassifier classifier = resolveType.getClassifier();
-                    if (classifier != null) {
-                        if (classifier.getKind() == CsmDeclaration.Kind.STRUCT && !CharSequenceUtils.startsWith(typeText, "struct")) { //NOI18N
-                            typeText = "struct "+typeText; //NOI18N
-                        }
-                    }
-                }
-                return typeText;
-            } finally {
-                CsmCacheManager.leave();
-            }
-        }
-    }
-    
-    static final class AssignmentFixImpl extends BaseFixImpl {
-        private final FileObject fo;
-
-        AssignmentFixImpl(CsmExpression expression, Document doc, FileObject fo) {
-            super(expression, doc);
-            this.fo = fo;
-        }
-
-        @Override
-        public String getText() {
-            return NbBundle.getMessage(SuggestionFactoryTask.class, "FIX_AssignResultToVariable"); //NOI18N
-        }
-
-        @Override
-        protected boolean isC() {
-            return MIMENames.C_MIME_TYPE.equals(fo.getMIMEType());
-        }
-        
-        @Override
-        public ChangeInfo implement() throws Exception {
-            final CharSequence typeText = getExpressionType();
-            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
-                return null;
-            }
-            final String aName = suggestName();
-            final String text = typeText+" "+aName+" = "; //NOI18N
-            doc.insertString(expression.getStartOffset(), text, null);
-            Position startPosition = new Position() {
-                
-                @Override
-                public int getOffset() {
-                    return expression.getStartOffset()+typeText.length()+1;
-                }
-            };
-            Position endPosition = new Position() {
-                
-                @Override
-                public int getOffset() {
-                    return expression.getStartOffset()+text.length() - 3;
-                }
-            };
-            ChangeInfo changeInfo = new ChangeInfo(fo, startPosition, endPosition);
-            return changeInfo;
-        }        
-    }
-    
-    static final class IntroduceFixImpl extends BaseFixImpl {
-        private final CsmStatement st;
-        private final FileObject fo;
-        private final JTextComponent comp;
-
-        IntroduceFixImpl(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
-            super(expression, doc);
-            this.fo = fo;
-            this.st = st;
-            this.comp = comp;
-        }
-
-        @Override
-        public String getText() {
-            return NbBundle.getMessage(SuggestionFactoryTask.class, "FIX_IntroduceVariable"); //NOI18N
-        }
-
-        @Override
-        protected boolean isC() {
-            return MIMENames.C_MIME_TYPE.equals(fo.getMIMEType());
-        }
-        
-        @Override
-        public ChangeInfo implement() throws Exception {
-            final CharSequence typeText = getExpressionType();
-            if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
-                return null;
-            }            
-            final String aName = suggestName();
-            final String exprText = expression.getText().toString();
-            final ChangeInfo changeInfo = new ChangeInfo();
-            final String typeTextPrefix = typeText+" ";//NOI18N
-            final String text = typeTextPrefix+aName+" = "+expression.getText()+";\n"; //NOI18N
-            doc.runAtomicAsUser(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        doc.remove(expression.getStartOffset(), exprText.length());
-                        doc.insertString(expression.getStartOffset(), aName, null);
-                        Position exprStart = NbDocument.createPosition(doc, expression.getStartOffset(), Position.Bias.Forward);
-                        Position exprEnd = NbDocument.createPosition(doc, expression.getStartOffset() + aName.length(), Position.Bias.Backward);
-                        doc.insertString(st.getStartOffset(), text, null);
-                        Position stmtStart = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length(), Position.Bias.Forward);
-                        Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length() +aName.length(), Position.Bias.Backward);
-                        changeInfo.add(fo, stmtStart, stmtEnd);
-                        changeInfo.add(fo, exprStart, exprEnd);
-                        Indent indent = Indent.get(doc);
-                        indent.lock();
-                        try {
-                            indent.reindent(st.getStartOffset()+text.length()+1);
-                        } finally {
-                            indent.unlock();
-                        }
-                    }   catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            });
-            if (comp != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            comp.setCaretPosition(changeInfo.get(0).getEnd().getOffset());
-                            InstantRenamePerformer.invokeInstantRename(comp, changeInfo);
-                        } catch (BadLocationException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                });
-            }
-            return changeInfo;
-        }        
     }
     
     private static class CsmOffsetableImpl implements CsmOffsetable {
@@ -811,5 +627,4 @@ public class ExpressionFinder {
         }
     }
     
-
 }
