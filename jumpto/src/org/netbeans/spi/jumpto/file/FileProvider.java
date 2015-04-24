@@ -195,6 +195,10 @@ public interface FileProvider {
                 public boolean isFromCurrentProject(FileDescriptor desc) {
                     return desc.isFromCurrentProject();
                 }
+                @Override
+                public void setLineNumber(@NonNull final FileDescriptor desc, final int lineNo) {
+                    desc.setLineNumber(lineNo);
+                }
             });
         }
         //</editor-fold>
@@ -235,14 +239,12 @@ public interface FileProvider {
          */
         public void addFile (final FileObject file) {
             Parameters.notNull("file", file);   //NOI18N
-
             String path = FileUtil.getRelativePath(ctx.getRoot(), file);
             if (path == null) {
                 path = FileUtil.getFileDisplayName(file);
             }
             final Project prj = ctx.getProject();
-            final int lineNr = ctx.getLineNumber();
-            result.add(setFromCurrentProject(new FileDescription(file, path, prj, lineNr)));
+            addFileDescriptor(new FileDescription(file, path, prj));
         }
 
         /**
@@ -251,7 +253,7 @@ public interface FileProvider {
          */
         public void addFileDescriptor(final FileDescriptor desc) {
             Parameters.notNull("desc", desc);
-            result.add(setFromCurrentProject(desc));
+            result.add(setLineNumber(setFromCurrentProject(desc)));
         }
 
         /**
@@ -286,6 +288,11 @@ public interface FileProvider {
             final Project prj = ctx.getProject();
             final Project curPrj = ctx.getCurrentProject();
             desc.setFromCurrentProject(curPrj != null && prj != null && curPrj.getProjectDirectory() == prj.getProjectDirectory());
+            return desc;
+        }
+
+        private FileDescriptor setLineNumber(@NonNull final FileDescriptor desc) {
+            desc.setLineNumber(ctx.getLineNumber());
             return desc;
         }
         //</editor-fold>

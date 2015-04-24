@@ -59,7 +59,7 @@ public class HighlightingNameFormatterTest {
 
     @Before
     public void before() {
-        cut = HighlightingNameFormatter.createCustomFormatter("[%s]");    //NOI18N
+        cut = HighlightingNameFormatter.Builder.create().buildCustomFormatter("[%s]");    //NOI18N
     }
 
     @Test
@@ -101,7 +101,7 @@ public class HighlightingNameFormatterTest {
 
     @Test
     public void testFormatTypeName_FullFormat() {
-        cut = HighlightingNameFormatter.createColorFormatter(fg, bg);
+        cut = HighlightingNameFormatter.Builder.create().buildColorFormatter(fg, bg);
         String typeName = "AbstractDummyBarTest";
         assertEquals("<font style=\"background-color:ffffff; font-weight:bold; color:000000; white-space:nowrap\">A</font>bstract<font style=\"background-color:ffffff; font-weight:bold; color:000000; white-space:nowrap\">D</font>ummy<font style=\"background-color:ffffff; font-weight:bold; color:000000; white-space:nowrap\">B</font>ar<font style=\"background-color:ffffff; font-weight:bold; color:000000; white-space:nowrap\">Test</font>", cut.formatName(typeName, "ADBTest", false));
     }

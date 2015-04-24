@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.TestKit;
@@ -102,7 +103,7 @@ public class RepositorySelectorTest extends NbTestCase {
     private String getErrroLabelText(SelectorPanel sp) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         RepositorySelectorBuilder builder = (RepositorySelectorBuilder) getField(sp, "builder");
         RepositoryFormPanel form = (RepositoryFormPanel) getField(builder, "repositoryFormsPanel");
-        JLabel label = (JLabel) getField(form, "errorLabel");
+        JTextArea label = (JTextArea) getField(form, "errorText");
         return label.getText();
     }
 

@@ -74,4 +74,6 @@ public abstract class TypeProviderAccessor {
 
     @NonNull
     public abstract String getHighlightText(@NonNull TypeDescriptor td);
+
+    public abstract void setHighlightText(@NonNull TypeDescriptor td, @NonNull String text);
 }
