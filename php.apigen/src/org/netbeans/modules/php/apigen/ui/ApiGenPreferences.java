@@ -42,9 +42,9 @@
 package org.netbeans.modules.php.apigen.ui;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -139,7 +139,6 @@ public final class ApiGenPreferences {
     static final Property<Object> TARGET = new Property<>("target"); // NOI18N
 
     private static final String ENABLED = "enabled"; // NOI18N
-    private static final String DEFAULT_VALUE = ""; // NOI18N
     private static final String SEPARATOR = ","; // NOI18N
 
 
@@ -171,19 +170,15 @@ public final class ApiGenPreferences {
         put(phpModule, TARGET, target);
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("ES_COMPARING_STRINGS_WITH_EQ")
     public static String get(PhpModule phpModule, Property<? extends Object> property) {
         // get default value lazyly since it can do anything...
-        String value = getPreferences(phpModule).get(property.getKey(), DEFAULT_VALUE);
-        if (value == DEFAULT_VALUE) {
+        String value = getPreferences(phpModule).get(property.getKey(), null);
+        if (value == null) {
             Object defaultValue = property.getDefaultValue(phpModule);
             if (defaultValue == null) {
                 return null;
             }
             return defaultValue.toString();
-        }
-        if (!StringUtils.hasText(value)) {
-            return null;
         }
         return value;
     }
@@ -196,17 +191,16 @@ public final class ApiGenPreferences {
         return Boolean.parseBoolean(get(phpModule, property));
     }
 
-    public static void put(PhpModule phpModule, Property<? extends Object> property, String value) {
-        if (StringUtils.hasText(value) && !value.equals(property.getDefaultValue(phpModule))) {
-            getPreferences(phpModule).put(property.getKey(), value);
-        } else {
+    public static void put(PhpModule phpModule, Property<? extends Object> property, @NullAllowed String value) {
+        if (value == null) {
             getPreferences(phpModule).remove(property.getKey());
+        } else {
+            getPreferences(phpModule).put(property.getKey(), value);
         }
     }
 
-    public static void putMore(PhpModule phpModule, Property<? extends Object> property, List<String> values) {
-        if (values.isEmpty()
-                || Collections.singletonList(property.getDefaultValue(phpModule)).equals(values)) {
+    public static void putMore(PhpModule phpModule, Property<? extends Object> property, @NullAllowed List<String> values) {
+        if (values == null) {
             put(phpModule, property, null);
         } else {
             put(phpModule, property, StringUtils.implode(values, SEPARATOR));
