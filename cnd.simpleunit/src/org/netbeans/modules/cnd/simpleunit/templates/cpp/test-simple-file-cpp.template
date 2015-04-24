@@ -1,3 +1,8 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
 /* 
  * File:   ${nameAndExt}
  * Author: ${user}
