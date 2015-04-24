@@ -64,8 +64,8 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.AssignmentFixImpl;
-import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.IntroduceFixImpl;
+import org.netbeans.modules.cnd.refactoring.hints.AssignmentVariableFix;
+import org.netbeans.modules.cnd.refactoring.hints.IntroduceVariableFix;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.StatementResult;
 import org.netbeans.modules.cnd.refactoring.hints.StatementFinder.AddMissingCasesFixImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -218,7 +218,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
     }
     
     private void createStatementHint(CsmExpressionStatement expression, Document doc, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentFixImpl(expression.getExpression(), doc, fo));
+        List<Fix> fixes = Collections.<Fix>singletonList(new AssignmentVariableFix(expression.getExpression(), doc, fo));
         String description = NbBundle.getMessage(SuggestionFactoryTask.class, "AssignVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
@@ -228,7 +228,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
     }
 
     private void createExpressionHint(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceFixImpl(st, expression, doc, comp, fo));
+        List<Fix> fixes = Collections.<Fix>singletonList(new IntroduceVariableFix(st, expression, doc, comp, fo));
         String description = NbBundle.getMessage(SuggestionFactoryTask.class, "IntroduceVariable.name"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,

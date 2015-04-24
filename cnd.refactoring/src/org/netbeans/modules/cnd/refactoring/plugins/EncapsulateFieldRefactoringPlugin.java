@@ -274,7 +274,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
         private int startOffset = -1;
         private int endOffset = -1;
         private CharSequence origParamsText = "";
-        private List<CharSequence> paramText = new ArrayList<CharSequence>();
+        private List<CharSequence> paramText = new ArrayList<>();
 
         public CharSequence getOriginalParamsText() {
             return origParamsText;
@@ -664,7 +664,7 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
             // do not interrupt refactoring
             Collection<CsmReference> refs = CsmReferenceRepository.getDefault().getReferences(field, csmFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
             if (refs.size() > 0) {
-                List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+                List<CsmReference> sortedRefs = new ArrayList<>(refs);
                 Collections.sort(sortedRefs, new Comparator<CsmReference>() {
 
                     @Override

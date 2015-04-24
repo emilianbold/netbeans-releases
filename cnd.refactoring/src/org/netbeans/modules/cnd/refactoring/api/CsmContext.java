@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
@@ -74,6 +75,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 public final class CsmContext {
+    private final JTextComponent component;
     private final CsmFile file;
     private final Document doc;
     private final FileObject fo;
@@ -88,7 +90,8 @@ public final class CsmContext {
     private CsmFunction enclosingFun = null;
     private CsmOffsetable objectUnderOffset = null;
 
-    private CsmContext(CsmFile file, CsmReference ref, FileObject fo, Document doc, int startOffset, int endOffset, int caretOffset) {
+    private CsmContext(JTextComponent component, CsmFile file, CsmReference ref, FileObject fo, Document doc, int startOffset, int endOffset, int caretOffset) {
+        this.component = component;
         this.file = file;
         this.fo = fo;
         this.doc = doc;
@@ -102,7 +105,7 @@ public final class CsmContext {
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         if (csmFile != null) {
             final CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, offset);
-            return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, start, end, offset);
+            return new CsmContext(EditorRegistry.lastFocusedComponent(), csmFile, ref, CsmUtilities.getFileObject(doc), doc, start, end, offset);
         }
         return null;
     }
@@ -112,7 +115,7 @@ public final class CsmContext {
         final Document doc = getDocument(dob);
         if (doc != null) {
             final CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, offset);
-            return new CsmContext(csmFile, ref, CsmUtilities.getFileObject(doc), doc, offset, offset, offset);
+            return new CsmContext(null, csmFile, ref, CsmUtilities.getFileObject(doc), doc, offset, offset, offset);
         }
         return null;
     }
@@ -136,7 +139,7 @@ public final class CsmContext {
                 final Document compDoc = component.getDocument();
                 final FileObject compFO = CsmUtilities.getFileObject(compDoc);
                 final CsmReference ref = CsmReferenceResolver.getDefault().findReference(compDoc, caret);
-                return new CsmContext(csmFile, ref, compFO, compDoc, start, end, caret);
+                return new CsmContext(component, csmFile, ref, compFO, compDoc, start, end, caret);
             }
         }
         return null;
@@ -148,6 +151,10 @@ public final class CsmContext {
     
     public FileObject getFileObject() {
         return fo;
+    }
+
+    public JTextComponent getComponent() {
+        return component;
     }
 
     /**
@@ -235,7 +242,7 @@ public final class CsmContext {
         }
     }
     private void initPathImpl() {
-        path = new ArrayList<CsmObject>(5);
+        path = new ArrayList<>(5);
         path.add(file);
         CsmFilter offsetFilter = CsmSelect.getFilterBuilder().createOffsetFilter(startOffset);
         Iterator<? extends CsmObject> fileElements = getInnerObjectsIterator(offsetFilter, file);

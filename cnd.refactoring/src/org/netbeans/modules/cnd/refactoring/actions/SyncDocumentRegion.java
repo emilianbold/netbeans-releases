@@ -84,7 +84,7 @@ public final class SyncDocumentRegion {
         if (regionsSortPerformed) {
             sortedRegions = regions;
         } else {
-            sortedRegions = new ArrayList<MutablePositionRegion>(regions);
+            sortedRegions = new ArrayList<>(regions);
             Collections.sort(sortedRegions, PositionRegion.getComparator());
         }
     }

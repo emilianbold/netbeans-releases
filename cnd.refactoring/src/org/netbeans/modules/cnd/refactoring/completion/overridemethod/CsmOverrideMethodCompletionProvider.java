@@ -179,7 +179,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                             if (leftBracketOffset >= caretOffset) {
                                 return null;
                             }
-                            List<CsmMember> members = new ArrayList<CsmMember>(cls.getMembers());
+                            List<CsmMember> members = new ArrayList<>(cls.getMembers());
                             for(int i = 0; i < members.size(); i++) {
                                 CsmMember member = members.get(i);
                                 if (member.getStartOffset() <= caretOffset && caretOffset <= member.getEndOffset()) {
@@ -210,7 +210,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
         }
 
         private Collection<CsmOverrideMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
-            Collection<CsmOverrideMethodCompletionItem> items = new ArrayList<CsmOverrideMethodCompletionItem>();
+            Collection<CsmOverrideMethodCompletionItem> items = new ArrayList<>();
             CsmCacheManager.enter();
             try {
                 if (init(doc, caretOffset)) {
@@ -218,7 +218,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
                     if (csmFile != null) {
                         CsmClass cls = visitDeclarations(csmFile.getDeclarations(), caretOffset);
                         if (cls != null) {
-                            Set<CsmMethod> virtual = new HashSet<CsmMethod>();
+                            Set<CsmMethod> virtual = new HashSet<>();
                             getVirtualMethods(virtual, cls, new HashSet<AntiLoopElement>());
                             boolean hasDestructor = false;
                             for(CsmMember member : cls.getMembers()) {
@@ -314,7 +314,7 @@ public class CsmOverrideMethodCompletionProvider implements CompletionProvider {
             if (prefix == null) {
                 out = data;
             } else {
-                List<CsmOverrideMethodCompletionItem> ret = new ArrayList<CsmOverrideMethodCompletionItem>(data.size());
+                List<CsmOverrideMethodCompletionItem> ret = new ArrayList<>(data.size());
                 for (CsmOverrideMethodCompletionItem itm : data) {
                     if (matchPrefix(itm, prefix)) {
                         ret.add(itm);

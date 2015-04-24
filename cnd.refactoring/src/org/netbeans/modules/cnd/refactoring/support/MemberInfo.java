@@ -178,7 +178,7 @@ public final class MemberInfo<H> {
             g=Group.METHOD;
         }
 
-        MemberInfo<T> mi = new MemberInfo<T>(elem, htmlText.toString(), CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
+        MemberInfo<T> mi = new MemberInfo<>(elem, htmlText.toString(), CsmImageLoader.getIcon(elem), elem.getName().toString(), g, EnumSet.of(elem.getVisibility()), false);
         return mi;
     }
 
