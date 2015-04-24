@@ -145,19 +145,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
-    private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(
-        new Callable<Models.Filter<FileDescriptor>>() {
-            @Override
-            public Models.Filter<FileDescriptor> call() throws Exception {
-                return new AbstractModelFilter<FileDescriptor>(SEARCH_OPTIONS) {
-                    @NonNull
-                    @Override
-                    protected String getItemValue(@NonNull final FileDescriptor item) {
-                        return item.getFileName();
-                    }
-                };
-            }
-        });
+    private final FilterFactory filterFactory = new FilterFactory();
+    private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(filterFactory);
     //@GuardedBy("this")
     private FileComarator itemsComparator;
     //@GuardedBy("this")
@@ -256,6 +245,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             final SearchType searchType = Utils.toSearchType(nameKind);
             if (currentSearch.isNarrowing(searchType, text)) {
                 itemsComparator.setUsePreferred(panel.isPreferedProject());
+                filterFactory.setLineNumber(lineNr);
                 currentSearch.filter(searchType, text);
                 enableOK(panel.searchCompleted(true));
                 return false;
@@ -828,4 +818,28 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
 
      }
+
+    //@NotThreadSafe
+    private static final class FilterFactory implements Callable<Models.Filter<FileDescriptor>> {
+        private int currentLineNo;
+
+        void setLineNumber(final int lineNo) {
+            this.currentLineNo = lineNo;
+        }
+
+        @Override
+        public Models.Filter<FileDescriptor> call() throws Exception {
+            return new AbstractModelFilter<FileDescriptor>(SEARCH_OPTIONS) {
+                @NonNull
+                @Override
+                protected String getItemValue(@NonNull final FileDescriptor item) {
+                    return item.getFileName();
+                }
+                @Override
+                protected void update(@NonNull final FileDescriptor item) {
+                    FileProviderAccessor.getInstance().setLineNumber(item, currentLineNo);
+                }
+            };
+        }
+    }
 }

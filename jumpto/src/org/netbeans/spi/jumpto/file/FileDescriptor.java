@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
 public abstract class FileDescriptor {
 
     private boolean preferred;
+    private int lineNr = -1;
 
     /**
      * Returns a file display name
@@ -125,6 +126,14 @@ public abstract class FileDescriptor {
         return fo == null ? "" : FileUtil.getFileDisplayName(fo); // NOI18N
     }
 
+     /**
+      * Returns a line number on which the file should be opened.
+      * @return the preferred line number or -1 if no preferred line number is given.
+      * @since 1.47
+      */
+     protected final int getLineNumber() {
+         return lineNr;
+     }
 
     //<editor-fold defaultstate="collapsed" desc="Package private methods">
     final boolean isFromCurrentProject() {
@@ -133,6 +142,10 @@ public abstract class FileDescriptor {
 
     final void setFromCurrentProject(final boolean preferred) {
         this.preferred = preferred;
+    }
+
+    final void setLineNumber(final int lineNr) {
+        this.lineNr = lineNr;
     }
     //</editor-fold>
 

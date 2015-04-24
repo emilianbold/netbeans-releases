@@ -50,7 +50,6 @@ package org.netbeans.modules.jumpto.file;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -62,7 +61,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -94,7 +92,6 @@ public class FileDescription extends FileDescriptor {
     private final FileObject fileObject;
     private final String ownerPath;
     private final Project project; // Project the file belongs to
-    private final int lineNr;
     private volatile Icon icon;
     private volatile String projectName;
     private volatile Icon projectIcon;
@@ -103,14 +100,12 @@ public class FileDescription extends FileDescriptor {
     public FileDescription(
             @NonNull final FileObject file,
             @NonNull final String ownerPath,
-            @NullAllowed final Project project,
-            final int lineNr) {
+            @NullAllowed final Project project) {
         Parameters.notNull("file", file);   //NOI18N
         Parameters.notNull("ownerPath", ownerPath); //NOI18N
         this.fileObject = file;
         this.ownerPath = ownerPath;
         this.project = project;
-        this.lineNr = lineNr;
     }
 
     @Override
@@ -172,11 +167,11 @@ public class FileDescription extends FileDescriptor {
             if (fo != od.getPrimaryFile()) {
                 open(od);
             } else {
-                edit(od, lineNr);
+                edit(od, getLineNumber());
             }
         }
     }
-    
+
     @Override
     public FileObject getFileObject() {
         return fileObject;
