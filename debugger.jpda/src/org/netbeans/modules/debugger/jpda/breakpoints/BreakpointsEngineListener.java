@@ -156,13 +156,26 @@ implements PropertyChangeListener, DebuggerManagerListener {
 //        if (action == ActionsManager.ACTION_FIX)
 //            fixBreakpointImpls ();
     }
+    
+    private boolean acceptBreakpoint(Breakpoint breakpoint) {
+        if (breakpoint instanceof JPDABreakpoint) {
+            JPDADebugger bDebugger = ((JPDABreakpoint) breakpoint).getSession();
+            if (bDebugger == null || bDebugger.equals(debugger)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public void breakpointAdded (final Breakpoint breakpoint) {
+        if (!acceptBreakpoint(breakpoint)) {
+            return ;
+        }
         final boolean[] started = new boolean[] { false };
         if (!Mutex.EVENT.isReadAccess() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
-                createBreakpointImpl (breakpoint);
+                createBreakpointImpl ((JPDABreakpoint) breakpoint);
             } finally {
                 debugger.accessLock.readLock().unlock();
             }
@@ -177,7 +190,7 @@ implements PropertyChangeListener, DebuggerManagerListener {
                         started[0] = true;
                         started.notify();
                     }
-                    createBreakpointImpl (breakpoint);
+                    createBreakpointImpl ((JPDABreakpoint) breakpoint);
                 } finally {
                     debugger.accessLock.readLock().unlock();
                 }
@@ -196,6 +209,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     @Override
     public void breakpointRemoved (final Breakpoint breakpoint) {
+        if (!acceptBreakpoint(breakpoint)) {
+            return ;
+        }
         final boolean[] started = new boolean[] { false };
         if (!Mutex.EVENT.isReadAccess() && debugger.accessLock.readLock().tryLock()) { // Was already locked or can be easily acquired
             try {
@@ -252,14 +268,17 @@ implements PropertyChangeListener, DebuggerManagerListener {
 
     // helper methods ..........................................................
     
-    private final Map<Breakpoint, BreakpointImpl> breakpointToImpl = new IdentityHashMap<Breakpoint, BreakpointImpl>();
+    private final Map<JPDABreakpoint, BreakpointImpl> breakpointToImpl = new IdentityHashMap<>();
     private final BreakpointImpl preliminaryBreakpointImpl = new PreliminaryBreakpointImpl();
     
     private void createBreakpointImpls () {
         Breakpoint[] bs = DebuggerManager.getDebuggerManager ().getBreakpoints ();
         int i, k = bs.length;
-        for (i = 0; i < k; i++)
-            createBreakpointImpl (bs [i]);
+        for (i = 0; i < k; i++) {
+            if (acceptBreakpoint(bs[i])) {
+                createBreakpointImpl ((JPDABreakpoint) bs [i]);
+            }
+        }
         Properties p = Properties.getDefault().getProperties("debugger.options.JPDA");
         boolean doCatchExceptions = p.getBoolean("CatchExceptions", false);
         if (doCatchExceptions) {
@@ -308,14 +327,9 @@ implements PropertyChangeListener, DebuggerManagerListener {
         }
     }
 
-    private void createBreakpointImpl (Breakpoint b) {
+    private void createBreakpointImpl (JPDABreakpoint b) {
         synchronized (breakpointToImpl) {
             if (breakpointToImpl.containsKey (b)) return;
-            if (!(b instanceof JPDABreakpoint)) return ;
-            JPDADebugger bDebugger = ((JPDABreakpoint) b).getSession();
-            if (bDebugger != null && !bDebugger.equals(debugger)) {
-                return ;
-            }
             breakpointToImpl.put(b, preliminaryBreakpointImpl);
         }
         BreakpointImpl bpi;

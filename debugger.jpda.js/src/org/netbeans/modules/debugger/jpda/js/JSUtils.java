@@ -58,6 +58,7 @@ public class JSUtils {
     
     public static final String VAR_THIS = ":this";     // NOI18N
     public static final String VAR_SCOPE = ":scope";   // NOI18N
+    public static final String VAR_CALLEE = ":callee"; // NOI18N
     
     public static Line getCurrentLine() {
         FileObject fo = EditorContextDispatcher.getDefault().getCurrentFile();
