@@ -337,8 +337,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     delLen = c.length() - p.length();
                 } else if (helper.getToken().getTokenID() == XMLTokenIDs.VALUE) {
                     String c = helper.getToken().getImage();
-                    String p = helper.getPreText();
-                    delLen = c.length() - p.length();
+                    delLen = c.length();
                     if (c.charAt(0) == '"' ||
                         c.charAt(0) == '\'') {
                         delLen--;
