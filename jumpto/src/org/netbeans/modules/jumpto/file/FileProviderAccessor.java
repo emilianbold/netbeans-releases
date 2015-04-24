@@ -90,7 +90,9 @@ public abstract class FileProviderAccessor {
 
     public abstract int getRetry(FileProvider.Result result);
 
-    public abstract void setFromCurrentProject(final FileDescriptor desc, final boolean value);
+    public abstract void setFromCurrentProject(@NonNull FileDescriptor desc, boolean value);
 
-    public abstract boolean isFromCurrentProject(final FileDescriptor desc);
+    public abstract boolean isFromCurrentProject(@NonNull FileDescriptor desc);
+
+    public abstract void setLineNumber(@NonNull FileDescriptor desc, int lineNo);
 }

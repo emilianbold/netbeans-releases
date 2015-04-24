@@ -102,7 +102,6 @@ import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -170,6 +169,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     @NonNull
                     protected String getItemValue(@NonNull final TypeDescriptor item) {
                         return item.getTypeName();
+                    }
+                    @Override
+                    protected void update(@NonNull final TypeDescriptor item) {
+                        String searchText = getSearchText();
+                        if (searchText == null) {
+                            searchText = "";    //NOI18N
+                        }
+                        TypeProviderAccessor.DEFAULT.setHighlightText(item, searchText);
                     }
                 };
             }
@@ -746,7 +753,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             );
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
-            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            this.typeNameFormatter = HighlightingNameFormatter.Builder.create().buildBoldFormatter();
             caseSensitive.addActionListener(this);
             jlName.setOpaque( true );
         }

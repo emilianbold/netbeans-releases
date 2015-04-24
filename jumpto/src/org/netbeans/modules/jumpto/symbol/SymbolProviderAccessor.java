@@ -76,4 +76,6 @@ public abstract class SymbolProviderAccessor {
 
     @NonNull
     public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
+
+    public abstract void setHighlightText(@NonNull SymbolDescriptor desc, @NonNull String text);
 }

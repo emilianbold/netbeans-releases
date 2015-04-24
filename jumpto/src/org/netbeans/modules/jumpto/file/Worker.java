@@ -585,12 +585,12 @@ final class Worker implements Runnable {
                 FileDescriptor fd = new FileDescription(
                         file,
                         r.getRelativePath(),
-                        project,
-                        request.getLine());
+                        project);
                 boolean preferred = project != null && request.getCurrentProject() != null ?
                         project.getProjectDirectory() == request.getCurrentProject().getProjectDirectory() :
                         false;
                 FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                 files.add(fd);
                 LOG.log(
                     Level.FINER,
@@ -703,9 +703,9 @@ final class Worker implements Runnable {
                             FileDescriptor fd = new FileDescription(
                                 file,
                                 relativePath,
-                                project,
-                                request.getLine());
+                                project);
                             FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                            FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                             files.add(fd);
                         }
                     }

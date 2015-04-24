@@ -63,6 +63,8 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
     private final Map<String,Object> options;
     //GuardedBy("this")
     private NameMatcher matcher;
+    //GuardedBy("this")
+    private String searchText;
 
     protected AbstractModelFilter() {
         this(Collections.<String,Object>emptyMap());
@@ -75,19 +77,24 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
     }
 
     @Override
-    public boolean accept(@NonNull final T item) {
+    public final boolean accept(@NonNull final T item) {
+        boolean res = true;
         final NameMatcher m = getMatcher();
         if (m != null) {
             final String itemValue = getItemValue(item);
-            return m.accept(itemValue);
+            res = m.accept(itemValue);
+            if (res) {
+                update(item);
+            }
         }
-        return true;
+        return res;
     }
 
     public final void configure(
             @NullAllowed final SearchType searchType,
             @NullAllowed final String searchText) {
         synchronized (this) {
+            this.searchText = searchText;
             this.matcher = createNameMatcher(searchType, searchText, options);
         }
         changeSupport.fireChange();
@@ -105,6 +112,14 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
 
     @NonNull
     protected abstract String getItemValue(@NonNull final T item);
+
+    protected void update(@NonNull final T item) {
+    }
+
+    @CheckForNull
+    protected synchronized final String getSearchText() {
+        return searchText;
+    }
 
     @CheckForNull
     private synchronized NameMatcher getMatcher() {

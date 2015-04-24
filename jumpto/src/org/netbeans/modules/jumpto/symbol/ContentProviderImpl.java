@@ -111,6 +111,14 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     protected String getItemValue(@NonNull final SymbolDescriptor item) {
                         return item.getSymbolName();
                     }
+                    @Override
+                    protected void update(@NonNull final SymbolDescriptor item) {
+                        String searchText = getSearchText();
+                        if (searchText == null) {
+                            searchText = "";    //NOI18N
+                        }
+                        SymbolProviderAccessor.DEFAULT.setHighlightText(item, searchText);
+                    }
                 };
             }
         });
@@ -354,7 +362,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                             );
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
-            symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            symbolNameFormatter = HighlightingNameFormatter.Builder.create().buildBoldFormatter();
             caseSensitive.addActionListener(this);
         }
 
