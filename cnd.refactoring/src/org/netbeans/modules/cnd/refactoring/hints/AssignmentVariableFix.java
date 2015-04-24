@@ -5,6 +5,8 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -12,6 +14,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -43,6 +46,11 @@ public class AssignmentVariableFix extends IntroduceVariableBaseFix {
     @Override
     protected boolean declareConst() {
         return false;
+    }
+
+    @Override
+    protected List<Pair<Integer, Integer>> replaceOccurrences() {
+        return Collections.emptyList();
     }
 
     @Override

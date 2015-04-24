@@ -5,6 +5,8 @@
  */
 package org.netbeans.modules.cnd.refactoring.introduce;
 
+import java.util.Collections;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -15,15 +17,20 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
-    private int numDuplicates;
+    private final int numDuplicates;
     private final IntroduceKind kind;
     private boolean declareConst = false;
+    private boolean replaceOccurrences = false;
+    private final List<Pair<Integer, Integer>> occurrences;
 
-    public ExtendedIntroduceVariableFix(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
+    public ExtendedIntroduceVariableFix(CsmStatement st, CsmOffsetable expression, List<Pair<Integer, Integer>> occurrences, Document doc, JTextComponent comp, FileObject fo) {
         super(st, expression, doc, comp, fo);
         kind = IntroduceKind.CREATE_VARIABLE;
+        this.occurrences = occurrences;
+        numDuplicates = occurrences.size();
     }
 
     public String getKeyExt() {
@@ -53,6 +60,15 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
     }
 
     @Override
+    protected List<Pair<Integer, Integer>> replaceOccurrences() {
+        if (!replaceOccurrences) {
+            return Collections.emptyList();
+        } else {
+            return occurrences;
+        }
+    }
+
+    @Override
     protected String suggestName() {
         String guessedName = super.suggestName();
         JButton btnOk = new JButton(NbBundle.getMessage(ExtendedIntroduceVariableFix.class, "LBL_Ok"));
@@ -65,6 +81,7 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
         }
         guessedName = panel.getVariableName();
         declareConst = panel.isDeclareFinal();
+        replaceOccurrences = panel.isReplaceAll();
         return guessedName;
     }
 }

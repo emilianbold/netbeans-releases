@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,6 +76,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.openide.util.Pair;
 
 /**
  *
@@ -144,8 +146,11 @@ public class ExpressionFinder {
                 }
                 if (startOffset <= selectionStart && selectionEnd < nexStartOffset) {
                     StatementResult res = findExpressionStatement(st, nexStartOffset);
-                    if (res != null && res.statementInBody == null) {
-                        res.statementInBody = st;
+                    if (res != null && res.getStatementInBody() == null) {
+                        res.setStatementInBody(st);
+                    }
+                    if (res != null && res.getBody() == null) {
+                        res.setBody(body);
                     }
                     return res;
                 }
@@ -164,9 +169,7 @@ public class ExpressionFinder {
                 CsmCondition condition = switchStmt.getCondition();
                 if (condition != null &&
                     condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 final CsmStatement body = switchStmt.getBody();
                 if (body != null) {
@@ -183,9 +186,7 @@ public class ExpressionFinder {
                 CsmStatement initStatement = forStmt.getInitStatement();
                 if (initStatement != null && 
                     initStatement.getStartOffset() <= selectionStart && selectionEnd <= initStatement.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 //CsmExpression iterationExpression = forStmt.getIterationExpression();
                 //if (iterationExpression != null && 
@@ -270,9 +271,7 @@ public class ExpressionFinder {
                 CsmCondition condition = ifStmt.getCondition();
                 if (condition != null && 
                     condition.getStartOffset() <= selectionStart && selectionEnd <= condition.getEndOffset()) {
-                    StatementResult res = new StatementResult();
-                    res.container = st;
-                    return res;
+                    return new StatementResult(st, null);
                 }
                 CsmStatement thenStmt = ifStmt.getThen();
                 CsmStatement elseStmt = ifStmt.getElse();
@@ -297,9 +296,7 @@ public class ExpressionFinder {
             }
             case RETURN:
             {
-                StatementResult res = new StatementResult();
-                res.container = st;
-                return res;
+                return new StatementResult(st, null);
             }
             case DECLARATION:
             {
@@ -312,9 +309,7 @@ public class ExpressionFinder {
                             CsmExpression initialValue = d.getInitialValue();
                             if (initialValue != null) {
                                 if (initialValue.getStartOffset() <= selectionStart && selectionEnd <= initialValue.getEndOffset()) {
-                                    StatementResult res = new StatementResult();
-                                    res.container = st;
-                                    return res;
+                                    return new StatementResult(st, null);
                                 }
                             }
                         }
@@ -348,14 +343,9 @@ public class ExpressionFinder {
                 });
                 if (startOffset <= selectionStart && selectionEnd <= trueEndOffset.get()) {
                     if(isApplicable((CsmExpressionStatement) st)) {
-                        StatementResult res = new StatementResult();
-                        res.expression = (CsmExpressionStatement) st;
-                        res.container = (CsmExpressionStatement) st;
-                        return res;
+                        return new StatementResult(st, (CsmExpressionStatement) st);
                     } else {
-                        StatementResult res = new StatementResult();
-                        res.container = (CsmExpressionStatement) st;
-                        return res;
+                        return new StatementResult(st, null);
                     }
                 }
                 return null;
@@ -501,13 +491,64 @@ public class ExpressionFinder {
     
     
     public static final class StatementResult {
-        public CsmExpressionStatement expression;
-        public CsmStatement container;
-        public CsmStatement statementInBody;
+        private final CsmStatement container;
+        private final CsmExpressionStatement expression;
+        private CsmStatement statementInBody;
+        private CsmCompoundStatement body;
+        public StatementResult(CsmStatement container, CsmExpressionStatement expression) {
+            this.expression = expression;
+            this.container = container;
+        }
+
+        public CsmStatement getContainer() {
+            return container;
+        }
+
+        public CsmExpressionStatement getExpression() {
+            return expression;
+        }
+
+        public CsmStatement getStatementInBody() {
+            return statementInBody;
+        }
+
+        public void setStatementInBody(CsmStatement statementInBody) {
+            this.statementInBody = statementInBody;
+        }
+
+        public CsmCompoundStatement getBody() {
+            return body;
+        }
+
+        public void setBody(CsmCompoundStatement body) {
+            this.body = body;
+        }
+
+        public List<Pair<Integer, Integer>> getOccurrences(CsmOffsetable applicableTextExpression) {
+            List<Pair<Integer, Integer>> occurrences = new ArrayList<>();
+            if (getBody() != null) {
+                String bodyText = getBody().getText().toString();
+                String expressionText = applicableTextExpression.getText().toString();
+                int since = applicableTextExpression.getEndOffset() - getBody().getStartOffset();
+                int count = 0;
+                int i = 0;
+                // TODO make searching by token stream
+                while(true) {
+                    int found = bodyText.indexOf(expressionText, i);
+                    if (found < 0) {
+                        break;
+                    }
+                    if (found >= since) {
+                        // TODO check space or separator before and after occurrence
+                        occurrences.add(Pair.of(getBody().getStartOffset() + found, getBody().getStartOffset() + found + expressionText.length()));
+                    }
+                    i = found + expressionText.length();
+                }
+            }
+            return occurrences;
+        }
+
     }
-    
-    
-    
     
     private static class CsmOffsetableImpl implements CsmOffsetable {
 
@@ -586,5 +627,4 @@ public class ExpressionFinder {
         }
     }
     
-
 }

@@ -5,6 +5,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -20,6 +21,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.hints.Fix;
+import org.openide.util.Pair;
 
 /**
  *
@@ -40,6 +42,8 @@ public abstract class IntroduceVariableBaseFix implements Fix {
     protected abstract boolean isInstanceRename();
 
     protected abstract boolean declareConst();
+
+    protected abstract List<Pair<Integer, Integer>> replaceOccurrences();
 
     protected String suggestName() {
         doc.render(new Runnable() {

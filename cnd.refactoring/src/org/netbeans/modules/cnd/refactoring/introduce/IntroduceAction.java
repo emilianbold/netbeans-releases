@@ -51,6 +51,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * based on  org.netbeans.modules.java.hints.introduce.IntroduceAction
@@ -173,19 +174,20 @@ public final class IntroduceAction extends HintAction {
         if (canceled.get()) {
             return;
         }
-        CsmExpressionStatement expression = res.expression;
+        CsmExpressionStatement expression = res.getExpression();
         if (expression != null) {
             fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedAssignmentVariableFix(expression.getExpression(), doc, fileObject));
         }
-        if (res.container != null && res.statementInBody != null && comp != null && selectionStart < selectionEnd) {
+        if (res.getContainer() != null && res.getStatementInBody() != null && comp != null && selectionStart < selectionEnd) {
             if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
                     CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
                     expressionFinder.isExpressionSelection()) {
-                if (!(res.container.getStartOffset() == selectionStart &&
-                        res.container.getEndOffset() == selectionEnd)) {
+                if (!(res.getContainer().getStartOffset() == selectionStart &&
+                        res.getContainer().getEndOffset() == selectionEnd)) {
                     CsmOffsetable applicableTextExpression = expressionFinder.applicableTextExpression();
                     if (applicableTextExpression != null) {
-                        fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedIntroduceVariableFix(res.statementInBody, applicableTextExpression, doc, comp, fileObject));
+                        List<Pair<Integer, Integer>> occurrences = res.getOccurrences(applicableTextExpression);
+                        fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedIntroduceVariableFix(res.getStatementInBody(), applicableTextExpression, occurrences, doc, comp, fileObject));
                     }
                 }
             }

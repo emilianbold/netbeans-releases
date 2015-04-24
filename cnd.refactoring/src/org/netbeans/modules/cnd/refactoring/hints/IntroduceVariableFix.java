@@ -5,6 +5,9 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -20,6 +23,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -58,6 +62,11 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
     }
 
     @Override
+    protected List<Pair<Integer, Integer>> replaceOccurrences() {
+        return Collections.emptyList();
+    }
+
+    @Override
     public ChangeInfo implement() throws Exception {
         final CharSequence typeText = getExpressionType();
         if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
@@ -67,6 +76,7 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
         if (aName == null) {
             return null;
         }
+        final List<Pair<Integer, Integer>> replaceOccurrences = replaceOccurrences();
         final String exprText = expression.getText().toString();
         final ChangeInfo changeInfo = new ChangeInfo();
         final String typeTextPrefix = typeText + " " + (declareConst() ? "const ":""); //NOI18N
@@ -75,6 +85,15 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
             @Override
             public void run() {
                 try {
+                    List<Pair<Position,Position>> other = new ArrayList<>();
+                    for (int i = replaceOccurrences.size() - 1; i >= 0; i--) {
+                        Pair<Integer, Integer> occurrence = replaceOccurrences.get(i);
+                        doc.remove(occurrence.first(), occurrence.second() - occurrence.first());
+                        doc.insertString(occurrence.first(), aName, null);
+                        Position exprStart = NbDocument.createPosition(doc, occurrence.first(), Position.Bias.Forward);
+                        Position exprEnd = NbDocument.createPosition(doc, occurrence.first() + aName.length(), Position.Bias.Backward);
+                        other.add(Pair.of(exprStart, exprEnd));
+                    }
                     doc.remove(expression.getStartOffset(), exprText.length());
                     doc.insertString(expression.getStartOffset(), aName, null);
                     Position exprStart = NbDocument.createPosition(doc, expression.getStartOffset(), Position.Bias.Forward);
@@ -84,6 +103,9 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
                     Position stmtEnd = NbDocument.createPosition(doc, st.getStartOffset() + typeTextPrefix.length() + aName.length(), Position.Bias.Backward);
                     changeInfo.add(fo, stmtStart, stmtEnd);
                     changeInfo.add(fo, exprStart, exprEnd);
+                    for(Pair<Position,Position> pos : other) {
+                        changeInfo.add(fo, pos.first(), pos.second());
+                    }
                     Indent indent = Indent.get(doc);
                     indent.lock();
                     try {
