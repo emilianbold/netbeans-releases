@@ -88,7 +88,9 @@ import java.awt.Color;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.Parameters;
 
 /**
@@ -102,11 +104,16 @@ public class HighlightingNameFormatter {
     private static final String BOLD_FORMAT_PATTERN = "<b>%s</b>";    //NOI18N
     private static final String BASE_COLOR_FORMAT_PATTERN = "<font color=\"#%s\">%s</font>";    //NOI18N
     private final String formatPattern;
+    private final Pattern camelCasePattern;
 
     private HighlightingNameFormatter(
-            @NonNull final String pattern) {
+            @NonNull final String pattern,
+            @NullAllowed final String camelCaseStart) {
         Parameters.notNull("pattern", pattern); //NOI18N
         this.formatPattern = pattern;
+        this.camelCasePattern = camelCaseStart == null ?
+                null :
+                Pattern.compile(camelCaseStart);
     }
 
     @NonNull
@@ -173,39 +180,64 @@ public class HighlightingNameFormatter {
         //AbcDeFGhiJo -> [Abc, De, F, Ghi, Jo]
         StringBuilder sb = new StringBuilder(searchText.length());
         for (char c : searchText.toCharArray()) {
-            if (Character.isUpperCase(c)) {
-                //add magic split marker into text before the uppercase char
+            if (isCamelCaseStart(c) || c == '?') {  //NOI18N
+                //add split marker into text before the uppercase char and replace '?' by '*'
                 //example: AbcDeFGhiJo -> &Abc&De&F&Ghi&Jo
-                sb.append("&");
+                sb.append("*"); //NOI18N
                 sb.append(c);
             } else {
                 sb.append(c);
             }
         }
         //split by camelcase (using the split marker) or the wildcards *,?
-        String[] split = sb.toString().split("[&|\\*|\\?]");
+        String[] split = sb.toString().split("\\*");    //NOI18N
         return Arrays.asList(split);
     }
 
-    @NonNull
-    public static HighlightingNameFormatter createColorFormatter(
-            @NonNull final Color bgColor,
-            @NonNull final Color fgColor) {
-        final String bgColorHighlight = Integer.toHexString(bgColor.getRGB()).substring(2);
-        final String fgColorHighlight = Integer.toHexString(fgColor.getRGB()).substring(2);
-        return new HighlightingNameFormatter(
-            String.format(COLOR_FORMAT_PATTERN, bgColorHighlight, fgColorHighlight, "%s"));  //NOI18N
+    private boolean isCamelCaseStart(final char c) {
+        if (camelCasePattern == null) {
+            return Character.isUpperCase(c);
+        } else {
+            return camelCasePattern.matcher(Character.toString(c)).matches();
+        }
     }
 
-    @NonNull
-    public static HighlightingNameFormatter createBoldFormatter() {
-        return new HighlightingNameFormatter(
-            String.format(BOLD_FORMAT_PATTERN, "%s"));  //NOI18N
-    }
+    public static final class Builder {
+        private String camelCaseStart;
 
-    @NonNull
-    /*test*/ static HighlightingNameFormatter createCustomFormatter(
-            @NonNull final String format) {
-        return new HighlightingNameFormatter(format);
+        private Builder() {}
+
+        public void setCamelCaseSeparator(@NullAllowed final String separatorPattern) {
+            this.camelCaseStart = separatorPattern;
+        }
+
+        @NonNull
+        public HighlightingNameFormatter buildColorFormatter(
+                @NonNull final Color bgColor,
+                @NonNull final Color fgColor) {
+            final String bgColorHighlight = Integer.toHexString(bgColor.getRGB()).substring(2);
+            final String fgColorHighlight = Integer.toHexString(fgColor.getRGB()).substring(2);
+            return new HighlightingNameFormatter(
+                String.format(COLOR_FORMAT_PATTERN, bgColorHighlight, fgColorHighlight, "%s"),   //NOI18N
+                camelCaseStart);
+        }
+
+        @NonNull
+        public HighlightingNameFormatter buildBoldFormatter() {
+            return new HighlightingNameFormatter(
+                String.format(BOLD_FORMAT_PATTERN, "%s"),     //NOI18N
+                camelCaseStart);
+        }
+
+        @NonNull
+        /*test*/ HighlightingNameFormatter buildCustomFormatter(
+                @NonNull final String format) {
+            return new HighlightingNameFormatter(format, camelCaseStart);
+        }
+
+        @NonNull
+        public static Builder create () {
+            return new Builder();
+        }
     }
 }

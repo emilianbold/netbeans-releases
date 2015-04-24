@@ -700,7 +700,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                                     Math.abs(bgColorDarker.getRed() - 35),
                                     Math.min(255, bgColorDarker.getGreen() + 5 ),
                                     Math.abs(bgColorDarker.getBlue() - 35) );
-            fileNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            final HighlightingNameFormatter.Builder b = HighlightingNameFormatter.Builder.create();
+            b.setCamelCaseSeparator(CAMEL_CASE_SEPARATOR);
+            fileNameFormatter = b.buildBoldFormatter();
             nameDocument.addDocumentListener(this);
             caseSensitive.addActionListener(this);
             jlName.setOpaque(true);

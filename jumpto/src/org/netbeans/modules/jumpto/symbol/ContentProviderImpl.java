@@ -354,7 +354,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                             );
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
-            symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
+            symbolNameFormatter = HighlightingNameFormatter.Builder.create().buildBoldFormatter();
             caseSensitive.addActionListener(this);
         }
 
