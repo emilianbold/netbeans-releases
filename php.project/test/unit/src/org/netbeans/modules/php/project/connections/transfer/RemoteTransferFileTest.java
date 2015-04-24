@@ -152,4 +152,16 @@ public class RemoteTransferFileTest extends NbTestCase {
         assertEquals("mydir/readme.txt", transferFile2.getRemotePath());
     }
 
+    // #249861
+    public void testRemoteName() {
+        // sanitized
+        assertEquals("readme.txt", RemoteTransferFile.sanitizeName("readme.txt:0"));
+        assertEquals("channel-nodes", RemoteTransferFile.sanitizeName("channel-nodes:025337c61078a3f150bebf6ac1474553"));
+        // not sanitized
+        assertEquals("readme.txt", RemoteTransferFile.sanitizeName("readme.txt"));
+        assertEquals("readme.txt:0a", RemoteTransferFile.sanitizeName("readme.txt:0a"));
+        assertEquals("channel-nodes:025337c61078a3f150bebf6ac147455X", RemoteTransferFile.sanitizeName("channel-nodes:025337c61078a3f150bebf6ac147455X"));
+        assertEquals("channel-nodes:025337c61078a3f150bebf6ac1474553aaa", RemoteTransferFile.sanitizeName("channel-nodes:025337c61078a3f150bebf6ac1474553aaa"));
+    }
+
 }

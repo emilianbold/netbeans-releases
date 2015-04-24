@@ -43,6 +43,8 @@ package org.netbeans.modules.php.project.connections.transfer;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.php.project.connections.RemoteClientImplementation;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
@@ -53,6 +55,9 @@ import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 final class RemoteTransferFile extends TransferFile {
 
     private static final Logger LOGGER  = Logger.getLogger(RemoteTransferFile.class.getName());
+
+    // #249861 - try to be as defensive as possible
+    private static final Pattern INVALID_NAME_PATTERN = Pattern.compile("^(.*)\\:(\\d|[\\da-f]{32})$"); // NOI18N
 
     // @GuardedBy(file)
     private final RemoteFile file;
@@ -80,9 +85,11 @@ final class RemoteTransferFile extends TransferFile {
 
     @Override
     public String getName() {
+        String name;
         synchronized (file) {
-            return file.getName();
+            name = file.getName();
         }
+        return sanitizeName(name);
     }
 
     @Override
@@ -161,6 +168,17 @@ final class RemoteTransferFile extends TransferFile {
                 || (!root && !(parentDirectory + REMOTE_PATH_SEPARATOR).startsWith(baseRemoteDirectory + REMOTE_PATH_SEPARATOR))) {
             throw new IllegalArgumentException("Parent directory '" + parentDirectory + "' must be underneath base directory '" + baseRemoteDirectory + "'");
         }
+    }
+
+    static String sanitizeName(String name) {
+        if (!name.contains(":")) { // NOI18N
+            return name;
+        }
+        Matcher matcher = INVALID_NAME_PATTERN.matcher(name);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        }
+        return name;
     }
 
 }
