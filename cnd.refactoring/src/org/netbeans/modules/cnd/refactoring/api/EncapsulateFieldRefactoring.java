@@ -49,7 +49,6 @@ import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -185,7 +184,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
      */
     public void setMethodModifiers(Set<CsmVisibility> methodModifiers) {
         this.methodModifiers = Collections.unmodifiableSet(
-                new HashSet<CsmVisibility>(methodModifiers));
+                new HashSet<>(methodModifiers));
     }
 
     /**
@@ -194,7 +193,7 @@ public final class EncapsulateFieldRefactoring extends AbstractRefactoring {
      */
     public void setFieldModifiers(Set<CsmVisibility> fieldModifiers) {
         this.fieldModifiers = Collections.unmodifiableSet(
-                new HashSet<CsmVisibility>(fieldModifiers));
+                new HashSet<>(fieldModifiers));
     }
 
     /**

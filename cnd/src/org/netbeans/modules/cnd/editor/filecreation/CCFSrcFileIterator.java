@@ -64,6 +64,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.CreateFromTemplateHandler;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -165,7 +166,7 @@ public class CCFSrcFileIterator implements TemplateWizard.ProgressInstantiatingI
 
         String filename = wiz.getTargetName();
 
-        DataObject result = template.createFromTemplate(targetFolder, filename);
+        DataObject result = template.createFromTemplate(targetFolder, filename, Collections.singletonMap(CreateFromTemplateHandler.FREE_FILE_EXTENSION, Boolean.TRUE));
 
         if (result != null) {
             fireWizardEvent(new EventObject(result));

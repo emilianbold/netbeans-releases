@@ -48,11 +48,15 @@ import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.fortran.options.FortranCodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,7 +65,7 @@ import org.openide.util.NbBundle;
  */
 public class FortranReformatter implements ReformatTask {
     private Context context;
-    private Document doc;
+    private final Document doc;
     private FortranCodeStyle codeStyle;
     private boolean expandTabToSpaces = true;
     private int tabSize = 8;
@@ -86,6 +90,20 @@ public class FortranReformatter implements ReformatTask {
         tabSize = codeStyle.getTabSize();
         if (tabSize <= 1) {
             tabSize = 8;
+        }
+        if (Boolean.TRUE.equals(doc.getProperty("code-template-insert-handler"))) { // NOI18N
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                if (fo != null) {
+                    String lf = (String)fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                    if (lf != null) {
+                        doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, lf);
+                        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, lf);
+                    }
+                    doc.insertString(0, "", null); // NOI18N
+                }
+            }
         }
         if (context != null) {
             if (MIMENames.FORTRAN_MIME_TYPE.equals(context.mimePath())) {

@@ -85,7 +85,7 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testComputeSupportMetric() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
@@ -93,7 +93,7 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testCustomerGetName() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true); // NOW we have zero usages, but this should be fixed soon
@@ -101,27 +101,27 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testModuleAllSubtypes() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_SUBCLASSES, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("memory.h", 46, 25, props);
     }
     
     public void testModuleDirectSubtypes() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("memory.h", 46, 25, props);
     }
     
     public void testModuleGetType() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
         performWhereUsed("module.h", 68, 25, props);
     }
 
     public void testModuleGetTypeNoOverriden() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, false);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);
@@ -129,14 +129,14 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     }
 
     public void testModuleGetTypeOverriden() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("module.h", 68, 25, props);
     }
 
     public void testMemoryGetTypeNoOverriden() throws Exception {
-        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        Map<Object, Boolean> props = new HashMap<>();
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, false);
         props.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
         props.put(WhereUsedQuery.FIND_REFERENCES, true);

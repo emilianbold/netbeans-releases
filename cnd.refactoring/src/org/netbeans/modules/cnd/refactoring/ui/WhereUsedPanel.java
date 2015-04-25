@@ -214,7 +214,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
             Collection<Project> ps = CsmRefactoringUtils.getContextProjects(this.origObject);
             if (!ps.isEmpty()) {
                 defaultScope = Scope.USER_SPECIFIED;
-                currentProjects = new ArrayList<ProjectScope>();
+                currentProjects = new ArrayList<>();
                 Icon icon = null;
                 for (Project p : ps) {
                     ProjectInformation pi = ProjectUtils.getInformation(p);
@@ -232,7 +232,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         } else if (CsmKindUtilities.isLocalVariable(refObject) && refObjectPrj != null) {
             defaultScope = Scope.CURRENT;
             ProjectScope prjScope = new ProjectScope(null, refObjectPrj);
-            currentProjects = new ArrayList<ProjectScope>();
+            currentProjects = new ArrayList<>();
             currentProjects.add(prjScope);
             allProjects = null;
         } else {

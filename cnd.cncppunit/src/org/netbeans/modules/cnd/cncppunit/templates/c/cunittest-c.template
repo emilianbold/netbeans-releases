@@ -1,8 +1,13 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
 /* 
- * File:   %<%NAME%>%.%<%EXTENSION%>%
- * Author: %<%USER%>%
+ * File:   ${NAME}.${EXTENSION}
+ * Author: ${user}
  * 
- * Created on %<%DATE%>%, %<%TIME%>%
+ * Created on ${DATE}, ${TIME}
  */
 
 
@@ -113,7 +118,7 @@ int main()
       return CU_get_error();
 
    /* add a suite to the registry */
-   pSuite = CU_add_suite("%<%NAME%>%", init_suite1, clean_suite1);
+   pSuite = CU_add_suite("${NAME}", init_suite1, clean_suite1);
    if (NULL == pSuite) {
       CU_cleanup_registry();
       return CU_get_error();

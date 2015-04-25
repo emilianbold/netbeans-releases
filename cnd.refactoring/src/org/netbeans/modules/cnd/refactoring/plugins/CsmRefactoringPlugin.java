@@ -107,7 +107,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     protected abstract ModificationResult processFiles(Collection<CsmFile> files, AtomicReference<Problem> outProblem);
 
     private Collection<ModificationResult> processFiles(Iterable<? extends List<CsmFile>> fileGroups, AtomicReference<Problem> outProblem) {
-        Collection<ModificationResult> results = new LinkedList<ModificationResult>();
+        Collection<ModificationResult> results = new LinkedList<>();
         for (List<CsmFile> list : fileGroups) {
             if (isCancelled()) {
                 // may be return partial "results"?
@@ -123,15 +123,15 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
 
     protected final Problem createAndAddElements(Collection<CsmFile> files, RefactoringElementsBag elements, AbstractRefactoring refactoring) {
         Iterable<? extends List<CsmFile>> fileGroups = groupByRoot(files);
-        AtomicReference<Problem> outProblem = new AtomicReference<Problem>(null);
+        AtomicReference<Problem> outProblem = new AtomicReference<>(null);
         final Collection<ModificationResult> results = processFiles(fileGroups, outProblem);
-        final Map<FileObject, Set<Difference>> antiDuplicates = new HashMap<FileObject, Set<Difference>>(1000);
+        final Map<FileObject, Set<Difference>> antiDuplicates = new HashMap<>(1000);
         elements.registerTransaction(new RefactoringCommit(results));
         for (ModificationResult result : results) {
             for (FileObject fo : result.getModifiedFileObjects()) {
                 Set<Difference> added = antiDuplicates.get(fo);
                 if (added == null) {
-                    added = new HashSet<Difference>();
+                    added = new HashSet<>();
                     antiDuplicates.put(fo, added);
                 }
                 final Iterator<? extends Difference> differences = result.getDifferences(fo).iterator();
@@ -173,13 +173,13 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
     }
 
     private Iterable<? extends List<CsmFile>> groupByRoot(Iterable<? extends CsmFile> files) {
-        Map<CsmProject, List<CsmFile>> result = new HashMap<CsmProject, List<CsmFile>>();
+        Map<CsmProject, List<CsmFile>> result = new HashMap<>();
         for (CsmFile file : files) {
             CsmProject prj = file.getProject();
             if (prj != null) {
                 List<CsmFile> group = result.get(prj);
                 if (group == null) {
-                    group = new LinkedList<CsmFile>();
+                    group = new LinkedList<>();
                     result.put(prj, group);
                 }
                 group.add(file);
@@ -220,21 +220,21 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
         if (startFile.equals(scopeFile)) {
             return Collections.singleton(scopeFile);
         } else {
-            Collection<CsmFile> relevantFiles = new HashSet<CsmFile>();
-            Collection<CsmProject> relevantPrjs = new HashSet<CsmProject>();
+            Collection<CsmFile> relevantFiles = new HashSet<>();
+            Collection<CsmProject> relevantPrjs = new HashSet<>();
             CsmProject[] prjs = refactoring.getContext().lookup(CsmProject[].class);
             CsmFile declFile = CsmRefactoringUtils.getCsmFile(referencedObject);
             if (prjs == null || prjs.length == 0 || declFile == null) {
                 CsmProject prj = startFile.getProject();
                 relevantPrjs.add(prj);
             } else {
-                Collection<FileObject> toCheck = new HashSet<FileObject>();
+                Collection<FileObject> toCheck = new HashSet<>();
                 for (FileObject curFO : Arrays.asList(declFile.getFileObject(), startFile.getFileObject())) {
                     if (curFO != null) {
                         toCheck.add(curFO);
                     }
                 }
-                Collection<CsmProject> declProjects = new HashSet<CsmProject>();
+                Collection<CsmProject> declProjects = new HashSet<>();
                 for (FileObject curFO : toCheck) {
                     CsmFile[] csmFiles = CsmModelAccessor.getModel().findFiles(FSPath.toFSPath(curFO), false, false);
                     for (CsmFile csmFile : csmFiles) {
@@ -318,7 +318,7 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                 FileObject fo = file.getFileObject();
                 FSPath fsPath = FSPath.toFSPath(fo);
                 CsmFile[] findFiles = CsmModelAccessor.getModel().findFiles(fsPath, false, false);
-                Collection<CsmObject> out = new HashSet<CsmObject>(findFiles.length);
+                Collection<CsmObject> out = new HashSet<>(findFiles.length);
                 out.add(csmObject);
                 CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(decl.getStartOffset()+1);
                 for (CsmFile csmFile : findFiles) {

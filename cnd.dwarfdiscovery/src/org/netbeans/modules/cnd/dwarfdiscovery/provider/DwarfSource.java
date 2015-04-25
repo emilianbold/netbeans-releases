@@ -1016,8 +1016,31 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             return res;
         }
         res = new GrepEntry();
+        String dirName = CndPathUtilities.getDirName(fileName);
+        if (dirName != null) {
+            GrepEntry dirInfo = grepBase.get(dirName);
+            if (dirInfo != null && !dirInfo.exists) {
+                grepBase.put(fileName,res);
+                return res;
+            }
+        }
         FileObject file = fs.findResource(fileName);
+        if (file == null || !file.isValid()) {
+            if (dirName != null) {
+                FileObject dir = fs.findResource(dirName);
+                if (dir != null && dir.isValid()) {
+                    GrepEntry dirInfo = new GrepEntry();
+                    dirInfo.exists = true;
+                    grepBase.put(dirName, dirInfo);
+                } else {
+                    GrepEntry dirInfo = new GrepEntry();
+                    dirInfo.exists = false;
+                    grepBase.put(dirName, dirInfo);
+                }
+            }
+        }
         if (file != null && file.isValid() && file.canRead() && file.isData()){
+            res.exists = true;
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(file.getInputStream()));
                 int lineNo = 0;

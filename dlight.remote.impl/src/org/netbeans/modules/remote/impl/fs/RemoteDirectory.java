@@ -426,7 +426,9 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         } else if (delegate instanceof RemotePlainFile) {
             fireFileDataCreatedEvent(getListeners(), e);
         } else {
-            RemoteLogger.getInstance().warning("firing fireFileDataCreatedEvent for a link");
+            if (delegate instanceof RemoteLinkBase) {
+                RemoteLogger.warning("firing fireFileDataCreatedEvent for a link {0} [{1}]", delegate, delegate.getClass().getSimpleName());
+            }
             fireFileDataCreatedEvent(getListeners(), e);
         }
 //            if (fo.isFolder()) { // fo.isFolder() very slow if it is a link

@@ -154,13 +154,13 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     private void initReferencedObjects() {
         CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
         if (primaryObject != null) {            
-            Collection<CsmObject> objects = new HashSet<CsmObject>();
+            Collection<CsmObject> objects = new HashSet<>();
             objects.add(primaryObject);
             for (CsmRenameExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
                 objects.addAll(provider.getExtraObjects(primaryObject));
             }
-            this.referencedObjects = new LinkedHashSet<CsmObject>();
-            Collection<CsmObject> allObjects = new HashSet<CsmObject>();            
+            this.referencedObjects = new LinkedHashSet<>();
+            Collection<CsmObject> allObjects = new HashSet<>();            
             for (CsmObject csmObject : objects) {
                 allObjects.addAll(getEqualObjects(csmObject));
             }
@@ -208,7 +208,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         if (objs == null || objs.isEmpty()) {
             return Collections.emptySet();
         }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
+        Collection<CsmFile> files = new HashSet<>();
         CsmFile startFile = getStartCsmFile();
         for (CsmObject obj : objs) {
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, null);
@@ -234,7 +234,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private Collection<? extends CsmObject> getRenamingClassObjects(CsmClass clazz) {
-        Collection<CsmObject> out = new ArrayList<CsmObject>(5);
+        Collection<CsmObject> out = new ArrayList<>(5);
         if (clazz != null) {
             out.add(clazz);
             for (CsmMember member : clazz.getMembers()) {
@@ -253,7 +253,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        Collection<CsmReference> refs = new LinkedHashSet<>();
         // do not interrupt refactoring
         for (CsmObject obj : refObjects) {
             // if we rename file, check include directives
@@ -273,7 +273,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         Collection<CsmReference> extraRefs = getExtraRenameModificationsInFile(refObjects, csmFile, CsmReferenceKind.ALL);
         refs.addAll(extraRefs); 
         if (!refs.isEmpty()) {
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            List<CsmReference> sortedRefs = new ArrayList<>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
                 @Override
                 public int compare(CsmReference o1, CsmReference o2) {
@@ -300,7 +300,7 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
     }
 
     private Collection<CsmReference> getExtraRenameModificationsInFile(Collection<? extends CsmObject> objs, CsmFile csmFile, Set<CsmReferenceKind> kinds) {
-        Collection<CsmReference> out = new HashSet<CsmReference>();
+        Collection<CsmReference> out = new HashSet<>();
         for (CsmRenameExtraObjectsProvider prov : Lookup.getDefault().lookupAll(CsmRenameExtraObjectsProvider.class)) {
             out.addAll(prov.getExtraFileReferences(objs, csmFile, kinds));
         }
