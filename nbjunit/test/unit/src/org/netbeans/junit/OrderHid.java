@@ -37,10 +37,14 @@
  */
 package org.netbeans.junit;
 
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
+
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@FixMethodOrder(MethodSorters.JVM)
 public class OrderHid extends NbTestCase {
     private static int cnt = 1;
 
