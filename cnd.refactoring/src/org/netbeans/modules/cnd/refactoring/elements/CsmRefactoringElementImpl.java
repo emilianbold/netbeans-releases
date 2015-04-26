@@ -34,8 +34,8 @@ import java.util.EnumSet;
 import javax.swing.Icon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -101,8 +101,8 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         if (stDoc instanceof BaseDocument) {
             BaseDocument doc = (BaseDocument) stDoc;
             try {
-                int startLine = Utilities.getRowFirstNonWhite(doc, stToken);
-                int endLine = Utilities.getRowLastNonWhite(doc, endToken) + 1;
+                int startLine = LineDocumentUtils.getLineFirstNonWhitespace(doc, stToken);
+                int endLine = LineDocumentUtils.getLineLastNonWhitespace(doc, endToken) + 1;
                 String restText = doc.getText(endToken, endLine - startLine).trim();
                 return restText.startsWith("::"); //NOI18N
             } catch (BadLocationException ex) {

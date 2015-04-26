@@ -1,8 +1,13 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "${project.licensePath}">
+
 /* 
- * File:   %<%NAME%>%.%<%EXTENSION%>%
- * Author: %<%USER%>%
+ * File:   ${NAME}.${EXTENSION}
+ * Author: ${user}
  *
- * Created on %<%DATE%>%, %<%TIME%>%
+ * Created on ${DATE}, ${TIME}
  */
 
 #include <stdio.h>

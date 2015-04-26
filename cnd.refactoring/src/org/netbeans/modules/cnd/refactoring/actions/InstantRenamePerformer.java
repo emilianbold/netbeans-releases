@@ -124,7 +124,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
 	this.doc = target.getDocument();
 	
 	MutablePositionRegion mainRegion = null;
-	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+	List<MutablePositionRegion> regions = new ArrayList<>();
         bag = new PositionsBag(doc);
         
 	for (CsmReference h : highlights) {
@@ -420,7 +420,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
         private final Reference<InstantRenamePerformer> performer;
 
         public CancelInstantRenameUndoableEdit(InstantRenamePerformer performer) {
-            this.performer = new WeakReference<InstantRenamePerformer>(performer);
+            this.performer = new WeakReference<>(performer);
         }
 
         @Override

@@ -85,7 +85,7 @@ public final class CsmRefactoringQuerySupport {
     }
     
     // Default params for find usages
-    private static final Map<Object, Boolean> DEFAULT_PARAMS = new HashMap<Object, Boolean>();
+    private static final Map<Object, Boolean> DEFAULT_PARAMS = new HashMap<>();
     static {
         DEFAULT_PARAMS.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
     }

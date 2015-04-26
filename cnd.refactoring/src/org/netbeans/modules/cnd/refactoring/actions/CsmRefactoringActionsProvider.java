@@ -76,7 +76,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
     
     @Override
     public boolean canChangeParameters(Lookup lookup) {
-        Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        Collection<? extends Node> nodes = new HashSet<>(lookup.lookupAll(Node.class));
         if(nodes.size() != 1) {
             return false;
         }
@@ -120,7 +120,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
     
     @Override
     public boolean canEncapsulateFields(Lookup lookup) {
-        Collection<? extends Node> nodes = new HashSet<Node>(lookup.lookupAll(Node.class));
+        Collection<? extends Node> nodes = new HashSet<>(lookup.lookupAll(Node.class));
         if (nodes.size() != 1) {
             return false;
         }

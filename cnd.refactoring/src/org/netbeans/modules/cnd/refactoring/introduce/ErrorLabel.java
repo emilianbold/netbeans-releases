@@ -44,7 +44,6 @@
 package org.netbeans.modules.cnd.refactoring.introduce;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;

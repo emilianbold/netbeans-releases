@@ -144,7 +144,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         PrintStream streamOut = new PrintStream(output);
 
         assertNotNull("Result should not be null", elements);
-        List<RefactoringElementImplementation> sortedElems = new ArrayList<RefactoringElementImplementation>(elements);
+        List<RefactoringElementImplementation> sortedElems = new ArrayList<>(elements);
         Collections.sort(sortedElems, COMPARATOR);
         FileObject lastFO = null;
         for (RefactoringElementImplementation elem : sortedElems) {

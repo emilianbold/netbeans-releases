@@ -82,7 +82,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             JTextComponent component = context.lookup(JTextComponent.class);
             CsmContext path = context.lookup(CsmContext.class);
             if (component == null || path == null) {
@@ -98,10 +98,10 @@ public class GetterSetterGenerator implements CodeGenerator {
                 return ret;
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
-            Map<String, List<CsmMethod>> methods = new HashMap<String, List<CsmMethod>>();
-            Map<CsmClass, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
-            Map<CsmClass, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
-            Map<CsmClass, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<CsmClass, List<ElementNode.Description>>();
+            Map<String, List<CsmMethod>> methods = new HashMap<>();
+            Map<CsmClass, List<ElementNode.Description>> gDescriptions = new LinkedHashMap<>();
+            Map<CsmClass, List<ElementNode.Description>> sDescriptions = new LinkedHashMap<>();
+            Map<CsmClass, List<ElementNode.Description>> gsDescriptions = new LinkedHashMap<>();
             Boolean isUpperCase = null;
             for (CsmMember member : GeneratorUtils.getAllMembers(typeElement)) {
                 if (CsmKindUtilities.isMethod(member)) {
@@ -109,7 +109,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     String name = method.getName().toString();
                     List<CsmMethod> l = methods.get(name);
                     if (l == null) {
-                        l = new ArrayList<CsmMethod>();
+                        l = new ArrayList<>();
                         methods.put(method.getName().toString(), l);
                     }
                     l.add(method);
@@ -133,7 +133,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     if (!hasGetter) {
                         List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getContainingClass());
                         if (descriptions == null) {
-                            descriptions = new ArrayList<ElementNode.Description>();
+                            descriptions = new ArrayList<>();
                             gDescriptions.put(variableElement.getContainingClass(), descriptions);
                         }
                         descriptions.add(description);
@@ -141,7 +141,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     if (!hasSetter) {
                         List<ElementNode.Description> descriptions = sDescriptions.get(variableElement.getContainingClass());
                         if (descriptions == null) {
-                            descriptions = new ArrayList<ElementNode.Description>();
+                            descriptions = new ArrayList<>();
                             sDescriptions.put(variableElement.getContainingClass(), descriptions);
                         }
                         descriptions.add(description);
@@ -149,7 +149,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                     if (!hasGetter && !hasSetter) {
                         List<ElementNode.Description> descriptions = gsDescriptions.get(variableElement.getContainingClass());
                         if (descriptions == null) {
-                            descriptions = new ArrayList<ElementNode.Description>();
+                            descriptions = new ArrayList<>();
                             gsDescriptions.put(variableElement.getContainingClass(), descriptions);
                         }
                         descriptions.add(description);
@@ -173,12 +173,12 @@ public class GetterSetterGenerator implements CodeGenerator {
 
         private List<Description> prepareDescriptions(Map<CsmClass, List<Description>> descripti) {
             boolean selectIfOnlyOne = descripti.size() == 1;
-            List<ElementNode.Description> out = new ArrayList<ElementNode.Description>();
+            List<ElementNode.Description> out = new ArrayList<>();
             for (Map.Entry<CsmClass, List<ElementNode.Description>> entry : descripti.entrySet()) {
                 List<Description> values = entry.getValue();
                 if (selectIfOnlyOne && values.size() == 1) {
                     ElementNode.Description orig = values.get(0);
-                    values = new ArrayList<ElementNode.Description>(1);
+                    values = new ArrayList<>(1);
                     values.add(ElementNode.Description.create(orig.getElementHandle(), null, true, true));
                 }
                 out.add(ElementNode.Description.create(entry.getKey(), values, false, false));
