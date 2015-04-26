@@ -4,7 +4,6 @@
 
     <folder name="Templates">
         <folder name="cFiles">
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
             <file name="CUnitMain.c" url="templates/c/cunittest-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.Bundle"/>
                 <attr name="position" intvalue="500"/>

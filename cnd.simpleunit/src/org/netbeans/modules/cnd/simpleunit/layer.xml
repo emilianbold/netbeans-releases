@@ -34,7 +34,6 @@
 
 
         <folder name="cFiles">
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
 
             <file name="CSimpleTest.c" url="templates/c/simple-test-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.Bundle"/>
@@ -49,7 +48,6 @@
         </folder> <!-- End cFiles folder -->
 
         <folder name="cppFiles">
-            <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
 
             <file name="cppsimpletest.cc" url="templates/cpp/simple-test-cc.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.simpleunit.Bundle"/>
