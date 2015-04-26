@@ -358,7 +358,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * <p>
      * The problem of this method lays exactly in the definition of <em>sporadic</em>.
      * Often one needs to process something at some <em>sporadic</em> moment,
-     * but, for examle
+     * but, for example
      * due to <em>storm of events</em>, one needs to execute more than one tasks
      * at the same <em>sporadic</em> moment. In this situation
      * using {@link #getDefault()} is horribly inefficient. All such tasks
@@ -570,7 +570,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     /** Creates request that can be later started by setting its delay.
-     * The request is not immediatelly put into the queue. It is planned after
+     * The request is not immediately put into the queue. It is planned after
      * setting its delay by setDelay method.
      * @param run action to run in the process
      * @return the task to control execution of given action
@@ -594,7 +594,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     //------------------------------------------------------------------------------
 
     /** Place the Task to the queue of pending tasks for immediate processing.
-     * If there is no other Task planned, this task is immediatelly processed
+     * If there is no other Task planned, this task is immediately processed
      * in the Processor.
      */
     void enqueue(Item item) {
