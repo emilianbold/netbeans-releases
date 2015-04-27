@@ -65,7 +65,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         accessPrivate.setVisible(introduceConstant);
 
         Preferences pref = getPreferences(introduceConstant);
-        if (numDuplicates == 1) {
+        if (numDuplicates == 0) {
             replaceAll.setEnabled(false);
             replaceAll.setSelected(false);
         } else {
