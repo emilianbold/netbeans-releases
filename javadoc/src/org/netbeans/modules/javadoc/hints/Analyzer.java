@@ -641,8 +641,9 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     @Override
     @Messages({"# {0} - Tag name",
                "TAG_UNKNOWN=Unknown HTML Tag: <{0}>",
-                "# {0} - Tag name",
-               "TAG_END_UNKNOWN=Unknown HTML End Tag: </{0}>"})
+               "# {0} - Tag name",
+               "TAG_END_UNKNOWN=Unknown HTML End Tag: </{0}>",
+               "TAG_SELF_CLOSING=Self-closing element not allowed"})
     public Void visitStartElement(StartElementTree node, List<ErrorDescription> errors) {
         DocTreePath currentDocPath = getCurrentPath();
         DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
@@ -663,6 +664,11 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 tagStack.push(node);
             }
         }
+        
+        if (node.isSelfClosing()) {
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, TAG_SELF_CLOSING()));
+        }
+        
         return super.visitStartElement(node, errors);
     }
 

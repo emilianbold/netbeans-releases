@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.util.TreePath;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -241,7 +242,6 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         }
         try {
             getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
-                private String propName;
 
                 @Override
                 public void run(CompilationController p) throws Exception {
@@ -250,7 +250,7 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                     Element propertyElement = property.resolveElement(p);
                     isStatic = propertyElement.getModifiers().contains(Modifier.STATIC);
                     isBoolean = propertyElement.asType().getKind() == TypeKind.BOOLEAN;
-                    propName = RefactoringUtils.removeFieldPrefixSuffix(propertyElement, codeStyle);
+                    String propName = RefactoringUtils.removeFieldPrefixSuffix(propertyElement, codeStyle);
                     String paramName = RefactoringUtils.addParamPrefixSuffix(propName, codeStyle);
                     String newParam = RefactoringUtils.addParamPrefixSuffix(
                             CodeStyleUtils.removePrefixSuffix(
@@ -258,7 +258,10 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
                             isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
                             isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix()), codeStyle);
                     for (ExecutableElement el : ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
-                        if (RefactoringUtils.isGetter(p, el, propertyElement)) {
+                        TreePath elPath = p.getTrees().getPath(el);
+                        if(elPath == null || p.getTreeUtilities().isSynthetic(elPath)) {
+                            continue;
+                        } else if (RefactoringUtils.isGetter(p, el, propertyElement)) {
                             getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
                             String gettername = CodeStyleUtils.computeGetterName(
                                     refactoring.getNewName(), isBoolean, isStatic, codeStyle);
