@@ -33,6 +33,7 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
     final CsmStatement st;
     final FileObject fo;
     final JTextComponent comp;
+    private String type;
 
     public IntroduceVariableFix(CsmStatement st, CsmOffsetable expression, Document doc, JTextComponent comp, FileObject fo) {
         super(expression, doc);
@@ -67,9 +68,14 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
     }
 
     @Override
+    protected String getType() {
+        return type;
+    }
+
+    @Override
     public ChangeInfo implement() throws Exception {
-        final CharSequence typeText = getExpressionType();
-        if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
+        type = suggestType();
+        if (type == null) {
             return null;
         }
         final String aName = suggestName();
@@ -79,7 +85,7 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
         final List<Pair<Integer, Integer>> replaceOccurrences = replaceOccurrences();
         final String exprText = expression.getText().toString();
         final ChangeInfo changeInfo = new ChangeInfo();
-        final String typeTextPrefix = typeText + " " + (declareConst() ? "const ":""); //NOI18N
+        final String typeTextPrefix = getType() + " " + (declareConst() ? "const ":""); //NOI18N
         final String text = typeTextPrefix + aName + " = " + expression.getText() + ";\n"; //NOI18N
         doc.runAtomicAsUser(new Runnable() {
             @Override

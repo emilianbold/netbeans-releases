@@ -25,6 +25,7 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
     private boolean declareConst = false;
     private boolean replaceOccurrences = false;
     private final List<Pair<Integer, Integer>> occurrences;
+    private String type;
 
     public ExtendedIntroduceVariableFix(CsmStatement st, CsmOffsetable expression, List<Pair<Integer, Integer>> occurrences, Document doc, JTextComponent comp, FileObject fo) {
         super(st, expression, doc, comp, fo);
@@ -69,11 +70,17 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
     }
 
     @Override
+    protected String getType() {
+        return type;
+    }
+
+    @Override
     protected String suggestName() {
         String guessedName = super.suggestName();
+        type = super.getType();
         JButton btnOk = new JButton(NbBundle.getMessage(ExtendedIntroduceVariableFix.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(ExtendedIntroduceVariableFix.class, "LBL_Cancel"));
-        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
+        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, type, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
         String caption = NbBundle.getMessage(ExtendedIntroduceVariableFix.class, "CAP_" + getKeyExt()); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
@@ -82,6 +89,7 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
         guessedName = panel.getVariableName();
         declareConst = panel.isDeclareFinal();
         replaceOccurrences = panel.isReplaceAll();
+        type = panel.getType();
         return guessedName;
     }
 }
