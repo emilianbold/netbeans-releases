@@ -258,10 +258,8 @@ public class MiscPrivateUtilities {
                                 if (text.contains(className)) {
                                     has[0] = true;
                                 }
-                            }
-                            catch(BadLocationException e ){
-                                // should not happen inside document lock
-                                assert false;
+                            } catch(BadLocationException blex) {
+                                Logger.getLogger(MiscPrivateUtilities.class.getName()).log(Level.INFO, null, blex);
                             }
                         }
                     });
