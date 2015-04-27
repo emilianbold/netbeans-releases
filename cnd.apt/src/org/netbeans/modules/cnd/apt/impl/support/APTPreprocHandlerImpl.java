@@ -383,7 +383,7 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
               // no need to make it twice
               return this;
             }
-            return new StateImpl(this, true, this.isCompileContext(), this.isValid(), true);
+            return new StateImpl(this, this.isCleaned(), this.isCompileContext(), this.isValid(), true);
         }
 
         /*package*/ APTPreprocHandler.State copyCleaned() {

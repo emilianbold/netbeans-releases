@@ -77,6 +77,11 @@ public final class ClankDriver {
       return ClankDriverImpl.extractTokenStream(ppHandler);
     }
 
+    public static APTTokenStreamCache extractPreparedCachedTokenStream(PreprocHandler ppHandler) {
+      ClankDriverImpl.APTTokenStreamCacheImplementation cache = ClankDriverImpl.extractTokenStream(ppHandler);
+      return cache.prepareCachesIfPossible();
+    }
+
     public static boolean preprocess(APTFileBuffer buffer,
             PreprocHandler ppHandler, 
             ClankPreprocessorCallback callback, Interrupter interrupter) {
@@ -155,8 +160,6 @@ public final class ClankDriver {
 
     public interface ClankFileInfo {
       CharSequence getFilePath();
-      boolean hasTokenStream();
-      TokenStream getTokenStream();
       int getFileIndex();
       ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();

@@ -322,7 +322,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             if (stopAtIndex == exitedFrom.getFileIndex()) {
               CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath()) ,
                       "expected " + stopFileImpl.getAbsolutePath(), exitedFrom);
-              foundTokens = ClankDriver.extractTokenStream(ppHandler);
+              foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
               assert foundTokens.hasTokenStream();
               // stop all activity
               alreadySeenInterestedFileEnter = State.EXITED;
@@ -433,7 +433,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             assert exitedFrom != null;
             if (exitedFrom == includedFileInfo) {
               // stop all activity on exit from interested include directive
-              foundTokens = ClankDriver.extractTokenStream(ppHandler);
+              foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
               assert foundTokens.hasTokenStream();
               return false;
             }

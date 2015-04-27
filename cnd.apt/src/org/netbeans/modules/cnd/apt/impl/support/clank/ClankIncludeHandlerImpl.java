@@ -80,10 +80,10 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
 
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
-    private static final ClankDriver.APTTokenStreamCache NO_TOKENS = new APTTokenStreamCacheImpl(-1);
+    private static final ClankDriverImpl.APTTokenStreamCacheImplementation NO_TOKENS = new APTTokenStreamCacheImpl(-1);
 
     private int inclStackIndex;
-    private ClankDriver.APTTokenStreamCache cachedContent = NO_TOKENS;
+    private ClankDriverImpl.APTTokenStreamCacheImplementation cachedContent = NO_TOKENS;
     private LinkedList<IncludeInfo> inclStack = null;    
 
     public  ClankIncludeHandlerImpl(StartEntry startFile) {
@@ -177,7 +177,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return inclStack == null || inclStack.isEmpty();
     }
     
-    public ClankDriver.APTTokenStreamCache getCachedTokens() {
+    public ClankDriverImpl.APTTokenStreamCacheImplementation getCachedTokens() {
         if (cachedContent == NO_TOKENS) {
             return new APTTokenStreamCacheImpl(inclStackIndex);
         } else {
@@ -189,7 +189,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return inclStackIndex;
     }
 
-    void cacheTokens(ClankDriver.APTTokenStreamCache cache) {
+    void cacheTokens(ClankDriverImpl.APTTokenStreamCacheImplementation cache) {
         assert cache != null;
         if (!cache.hasTokenStream()) {
             this.cachedContent = NO_TOKENS;
@@ -215,7 +215,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         private final StartEntry   startFile;
 
         private final int inclStackIndex;
-        private final ClankDriver.APTTokenStreamCache cachedContent;
+        private final ClankDriverImpl.APTTokenStreamCacheImplementation cachedContent;
         private static final IncludeInfo[] EMPTY_STACK = new IncludeInfo[0];
         private final IncludeInfo[] inclStack;        
         private int hashCode = 0;
@@ -242,7 +242,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
         
         private StateImpl(StateImpl other, boolean cleanState, boolean prepareCachesIfPossible) {
-            assert cleanState == true;
+            assert cleanState == true || prepareCachesIfPossible == true;
             // shared information
             this.startFile = other.startFile;
             
@@ -266,8 +266,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
               this.cachedContent = NO_TOKENS;
             } else if (prepareCachesIfPossible) {
               this.alreadyTriedCachePreparation = true;
-              // TODO: convert to cached if possible
-              this.cachedContent = other.cachedContent;
+              this.cachedContent = other.cachedContent.prepareCachesIfPossible();
             } else {
               this.alreadyTriedCachePreparation = other.alreadyTriedCachePreparation;
               this.cachedContent = other.cachedContent;
@@ -431,7 +430,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
 
         public  ClankIncludeHandlerImpl.State prepareCachesIfPossible() {
-            return this.alreadyTriedCachePreparation ? this : new StateImpl(this, true, true);
+            return this.alreadyTriedCachePreparation ? this : new StateImpl(this, this.cleaned, true);
         }
         
         public  List<IncludeDirEntry> getSysIncludePaths() {
@@ -660,7 +659,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return retValue.toString();
     }
 
-    private static class APTTokenStreamCacheImpl implements ClankDriver.APTTokenStreamCache {
+    private static class APTTokenStreamCacheImpl implements ClankDriverImpl.APTTokenStreamCacheImplementation {
       private final int inclStackIndex;
       public APTTokenStreamCacheImpl(int inclStackIndex) {
         this.inclStackIndex = inclStackIndex;
@@ -696,5 +695,9 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         return Collections.emptyList();
       }
 
+      @Override
+      public ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
+        return this;
+      }
     }
 }

@@ -373,6 +373,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
 
         /*package*/ APTIncludeHandler.State prepareCachesIfPossible() {
+            // this state is already cache-ready
             return this;
         }
         

@@ -64,6 +64,9 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public class ClankDriverImpl {
+    public interface APTTokenStreamCacheImplementation extends ClankDriver.APTTokenStreamCache {
+        APTTokenStreamCacheImplementation prepareCachesIfPossible();
+    }
 
     static final boolean TRACE = false;
 
@@ -108,9 +111,9 @@ public class ClankDriverImpl {
         return asciis;
     }
 
-    public static ClankDriver.APTTokenStreamCache extractTokenStream(PreprocHandler ppHandler) {
+    public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
-        ClankDriver.APTTokenStreamCache cached = includeHandler.getCachedTokens();
+        ClankDriverImpl.APTTokenStreamCacheImplementation cached = includeHandler.getCachedTokens();
         return cached;
     }
 

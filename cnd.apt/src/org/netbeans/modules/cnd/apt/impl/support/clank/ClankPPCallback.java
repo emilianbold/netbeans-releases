@@ -262,7 +262,8 @@ public final class ClankPPCallback extends FileInfoCallback {
           assert exitedFromWrapper.current == exitedFrom;
           // we cache possibly collected tokens in include handler
           // to allow delegate to use them
-          includeHandler.cacheTokens(exitedFromWrapper.convertToAPTCache());
+          exitedFromWrapper.exited();
+          includeHandler.cacheTokens(exitedFromWrapper);
           // init where we returned to
           if (includeStack.isEmpty()) {
             exitedToWrapper = null;
@@ -432,14 +433,16 @@ public final class ClankPPCallback extends FileInfoCallback {
         
     }
           
-    static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriver.APTTokenStreamCache {
+    private static final class ClankFileInfoWrapper implements ClankDriver.ClankFileInfo, ClankDriverImpl.APTTokenStreamCacheImplementation {
       private final boolean needLineColumnsForToken;
       private final FileInfo current;
       private final ClankInclusionDirectiveWrapper includeDirective;
       private final CharSequence filePath;
+      private final int includeIndex;
       private APTToken[] convertedTokens;
       private List<ClankDriver.ClankPreprocessorDirective> convertedPPDirectives;
       private boolean hasTokenStream = false;
+      private int[] skippedRanges = null;
       private boolean convertedToAPT = false;
       
       public ClankFileInfoWrapper(FileInfo current,
@@ -447,6 +450,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         assert current != null;
         this.needLineColumnsForToken = APTToClankCompilationDB.isFortran(ppHandler);
         this.current = current;
+        this.includeIndex = current.getIncludeIndex();
         if (current.getInclusionDirective() == null) {
             assert current.isMainFile() : "forgot to set up include?" + current;
             this.includeDirective = null;
@@ -459,7 +463,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
       }
       
+      @SuppressWarnings("ReturnOfCollectionOrArrayField")
       public APTToken[] getConvertedTokens() {
+        assert convertedToAPT : "was not prepared yet";
         assert (convertedTokens != null);
         return convertedTokens;
       }
@@ -507,13 +513,10 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
       }
 
-      private boolean prepareConvertedTokensIfAny() {
+      private void prepareConvertedTokensIfAny() {
         assert Thread.holdsLock(this);
         if (current.hasTokens()) {
           convertedTokens = ClankToAPTToken.convertToAPT(current.getPreprocessor(), current.getTokens(), needLineColumnsForToken);
-          return true;
-        } else {
-          return false;
         }
       }
 
@@ -524,6 +527,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       @Override
       public Collection<ClankDriver.ClankPreprocessorDirective> getPreprocessorDirectives() {
+        assert convertedToAPT : "was not prepared yet";
         assert convertedPPDirectives != null;
         return Collections.unmodifiableList(convertedPPDirectives);
       }
@@ -535,7 +539,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
       @Override
       public int getFileIndex() {
-        return current.getIncludeIndex();
+        return includeIndex;
       }
 
       @Override
@@ -544,8 +548,9 @@ public final class ClankPPCallback extends FileInfoCallback {
       }
       
       @Override
+      @SuppressWarnings("ReturnOfCollectionOrArrayField")
       public int[] getSkippedRanges() {
-        return current.getSkippedRanges();
+        return skippedRanges;
       }
 
       @Override
@@ -553,9 +558,10 @@ public final class ClankPPCallback extends FileInfoCallback {
         return hasTokenStream;
       }
 
-      synchronized ClankDriver.APTTokenStreamCache convertToAPTCache() {
+      @Override
+      public synchronized ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
         if (!convertedToAPT) {
-          hasTokenStream = prepareConvertedTokensIfAny();
+          prepareConvertedTokensIfAny();
           prepareConvertedPPDirectives();
           convertedToAPT = true;
         }
@@ -564,13 +570,18 @@ public final class ClankPPCallback extends FileInfoCallback {
       
       @Override
       public String toString() {
-        return "ClankFileInfoImpl{" + "hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"
+        return "ClankFileInfoImpl{" + "convertedToAPT=" + convertedToAPT + "; hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"
                 + "currentInclude=" + includeDirective + '}';
       }
 
       private ResolvedPath getResolvedPath() {
         assert includeDirective != null;
         return includeDirective.getResolvedPath();
+      }
+
+      private void exited() {
+        hasTokenStream = current.hasTokens();
+        skippedRanges = current.getSkippedRanges();
       }
     }
 }
