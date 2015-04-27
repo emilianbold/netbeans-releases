@@ -115,6 +115,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -287,8 +288,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         }
 
-        boolean exact = text.endsWith(" "); // NOI18N
-
+        final boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
 
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
@@ -302,13 +302,23 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             text = Utils.removeNonNeededWildCards(text);
         }
 
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
+        final String name = nameAndScope.first();
+        final String scope = nameAndScope.second();
+        if (name.length() == 0) {
+            //Empty name, wait for next char
+            currentSearch.resetFilter();
+            panel.setModel(EMPTY_LIST_MODEL);
+            return false;
+        }
+
         // Compute in other thread
-        if (currentSearch.isNarrowing(nameKind, text)) {
-            currentSearch.filter(nameKind, text);
+        if (currentSearch.isNarrowing(nameKind, name, scope)) {
+            currentSearch.filter(nameKind, name);
             enableOK(panel.revalidateModel());
             return false;
         } else {
-            running = new Worker( text , panel.isCaseSensitive());
+            running = new Worker(text, panel.isCaseSensitive());
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -525,7 +535,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             @Override
                             public void run() {
                                 if (done) {
-                                    currentSearch.searchCompleted(nameKind, text);
+                                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
                                 }
                                 if (fmodel != null && !isCanceled) {
                                     enableOK(panel.setModel(fmodel));
