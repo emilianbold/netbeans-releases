@@ -610,6 +610,21 @@ public final class RequestProcessor implements ScheduledExecutorService {
                 if (processors.size() < throughput) {
                     Processor proc = Processor.get();
                     processors.add(proc);
+                    if (proc.getContextClassLoader() != item.ctxLoader) {
+                        if (loggable) {
+                            em.log(Level.FINE, "Setting ctxLoader for old:{0} loader:{1}#{2} new:{3} loader:{4}#{5}",
+                                new Object[] {
+                                 proc.getName(),
+                                 proc.getContextClassLoader().getClass().getName(),
+                                 Integer.toHexString(System.identityHashCode(proc.getContextClassLoader())),
+                                 name,
+                                 item.ctxLoader.getClass().getName(),
+                                 Integer.toHexString(System.identityHashCode(item.ctxLoader))
+                                }
+                            );
+                        }
+                        proc.setContextClassLoader(item.ctxLoader);
+                    }
                     proc.setName(name);
                     proc.attachTo(this);
                 }
@@ -1731,6 +1746,7 @@ outer:  do {
         private final RequestProcessor owner;
         private final int cnt;
         final Lookup current;
+        final ClassLoader ctxLoader;
         Object action;
         boolean enqueued;
         String message;
@@ -1742,6 +1758,7 @@ outer:  do {
             owner = rp;
             cnt = counter++;
             current = Lookup.getDefault();
+            ctxLoader = Thread.currentThread().getContextClassLoader();
         }
 
         final Task getTask() {
