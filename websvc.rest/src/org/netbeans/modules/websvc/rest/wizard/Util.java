@@ -741,6 +741,9 @@ public class Util {
         final Set<String> entities = new HashSet<String>();
         for (FileObject file : files) {
             final JavaSource source = JavaSource.forFileObject(file);
+            if (source == null) {
+                continue;
+            }
             final EntityCollector collector = new EntityCollector();
             source.runUserActionTask( collector, true);
             if ( collector.isIncomplete() && 

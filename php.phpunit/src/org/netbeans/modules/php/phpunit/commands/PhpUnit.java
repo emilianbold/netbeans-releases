@@ -107,8 +107,6 @@ public final class PhpUnit {
     public static final String SCRIPT_NAME = "phpunit"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
     public static final String SCRIPT_NAME_PHAR = SCRIPT_NAME + ".phar"; // NOI18N
-    // for keeping log files to able to evaluate and fix issues
-    public static final boolean KEEP_LOGS = Boolean.getBoolean("nb.php.phpunit.keeplogs"); // NOI18N
     // test files suffix
     public static final String TEST_CLASS_SUFFIX = "Test"; // NOI18N
     private static final String TEST_FILE_SUFFIX = TEST_CLASS_SUFFIX + ".php"; // NOI18N
