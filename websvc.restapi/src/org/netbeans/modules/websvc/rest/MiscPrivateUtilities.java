@@ -163,10 +163,7 @@ public class MiscPrivateUtilities {
             return false;
         }
         FileObject resourceFile = classPath.findResource(resource);
-        if (resourceFile != null) {
-            return true;
-        }
-        return false;
+        return resourceFile != null;
     }
 
     public static void removeProperty(final AntProjectHelper helper, String[] propertyNames, String propertiesPath) {
@@ -337,9 +334,9 @@ public class MiscPrivateUtilities {
      * Generates test client.  Typically RunTestClientAction would need to call
      * this before invoke the build script target.
      *
-     * @param destDir directory to write test client files in.
-     * @param url base url of rest service
+     * @param testdir directory to write test client files in.
      * @return test file object, containing token BASE_URL_TOKEN whether used or not.
+     * @throws IOException when the generation of some file fails.
      */
     public static FileObject generateTestClient(File testdir) throws IOException {
 
@@ -456,12 +453,13 @@ public class MiscPrivateUtilities {
 
 
     public static class JerseyFilter implements FileFilter {
-        private Pattern pattern;
+        private final Pattern pattern;
 
         public JerseyFilter(String regexp) {
             pattern = Pattern.compile(regexp);
         }
 
+        @Override
         public boolean accept(File pathname) {
             return pattern.matcher(pathname.getName()).matches();
         }
