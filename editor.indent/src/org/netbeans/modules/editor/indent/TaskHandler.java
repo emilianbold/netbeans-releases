@@ -421,6 +421,11 @@ public final class TaskHandler {
         public List<Context.Region> indentRegions() {
             Document doc = handler.document();
             List<Context.Region> indentRegions = new ArrayList<Context.Region>();
+            AbstractDocument adoc = null;
+            if (doc instanceof AbstractDocument) {
+                adoc = (AbstractDocument) doc;
+                adoc.readLock();
+            }
             try {
                 int startOffset = handler.startPos().getOffset();
                 int endOffset = handler.endPos().getOffset();
@@ -502,6 +507,10 @@ public final class TaskHandler {
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
                 indentRegions = Collections.emptyList();
+            } finally {
+                if (adoc != null) {
+                    adoc.readUnlock();
+                }
             }
             return indentRegions;
         }
