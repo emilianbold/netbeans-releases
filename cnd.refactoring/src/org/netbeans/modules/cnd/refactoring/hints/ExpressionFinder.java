@@ -530,45 +530,72 @@ public class ExpressionFinder {
                 String bodyText = getBody().getText().toString();
                 String expressionText = applicableTextExpression.getText().toString();
                 int since = applicableTextExpression.getEndOffset() - getBody().getStartOffset();
-                int count = 0;
-                int i = 0;
-                // TODO make searching by token stream
-                while(true) {
-                    int found = bodyText.indexOf(expressionText, i);
-                    if (found < 0) {
-                        break;
-                    }
-                    if (found >= since) {
-                        if (isBeginning(bodyText, found) && isEnd(bodyText, found + expressionText.length())) {
-                            occurrences.add(Pair.of(getBody().getStartOffset() + found, getBody().getStartOffset() + found + expressionText.length()));
-                        }
-                    }
-                    i = found + expressionText.length();
-                }
+                findByTokenStream(occurrences, bodyText, expressionText, since, getBody().getStartOffset());
             }
             return occurrences;
         }
 
-        private boolean isBeginning(String text, int start) {
-            if (start > 0) {
-                char separator = text.charAt(start-1);
-                char beginning = text.charAt(start);
-                if (Character.isJavaIdentifierPart(separator) && Character.isJavaIdentifierStart(beginning)) {
-                    return false;
+        private void findByTokenStream(List<Pair<Integer, Integer>> occurrences, String text, String sample, int start, int shift) {
+            TokenHierarchy<?> hi1 = TokenHierarchy.create(text, CppTokenId.languageCpp());
+            TokenSequence<?> textTS = hi1.tokenSequence();
+            TokenHierarchy<?> hi2 = TokenHierarchy.create(sample, CppTokenId.languageCpp());
+            TokenSequence<?> sampleTS = hi2.tokenSequence();
+            textTS.move(start);
+            while(textTS.moveNext()) {
+                Token<?> textToken = textTS.token();
+                if (ignoredToken(textToken)) {
+                    continue;
+                }
+                int savedIndex = textTS.index();
+                int startOffset = textTS.offset();
+                int endOffset = -1;
+                boolean match = true;
+                sampleTS.moveStart();
+                while(sampleTS.moveNext()) {
+                    Token<?> sampleToken = sampleTS.token();
+                    if (ignoredToken(sampleToken)) {
+                        continue;
+                    }
+                    if (textToken.id() == sampleToken.id()) {
+                        if (textToken.text().toString().equals(sampleToken.text().toString())) {
+                            endOffset = textTS.offset()+textToken.length();
+                            boolean hasNext = false;
+                            while(textTS.moveNext()) {
+                                textToken = textTS.token();
+                                if (ignoredToken(textToken)) {
+                                    continue;
+                                }
+                                hasNext = true;
+                                break;
+                            }
+                            if (!hasNext) {
+                                match = false;
+                                break;
+                            }
+                            continue;
+                        }
+                    }
+                    match = false;
+                    break;
+                }
+                if (!match) {
+                    textTS.moveIndex(savedIndex);
+                    textTS.moveNext();
+                } else {
+                    occurrences.add(Pair.of(shift + startOffset, shift + endOffset));
                 }
             }
-            return true;
         }
 
-        private boolean isEnd(String text, int end) {
-            if (end < text.length()) {
-                char beginning = text.charAt(end-1);
-                char separator = text.charAt(end);
-                if (Character.isJavaIdentifierPart(beginning) && Character.isJavaIdentifierStart(separator)) {
-                    return false;
-                }
-            }
-            return true;
+        private boolean ignoredToken(Token<?> token) {
+            return CppTokenId.WHITESPACE.equals(token.id()) ||
+                   CppTokenId.BLOCK_COMMENT.equals(token.id()) ||
+                   CppTokenId.DOXYGEN_COMMENT.equals(token.id()) ||
+                   CppTokenId.DOXYGEN_LINE_COMMENT.equals(token.id()) ||
+                   CppTokenId.LINE_COMMENT.equals(token.id()) ||
+                   CppTokenId.ESCAPED_LINE.equals(token.id()) ||
+                   CppTokenId.ESCAPED_WHITESPACE.equals(token.id()) ||
+                   CppTokenId.NEW_LINE.equals(token.id());
         }
     }
 
