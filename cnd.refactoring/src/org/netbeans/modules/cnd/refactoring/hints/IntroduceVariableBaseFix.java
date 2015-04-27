@@ -19,6 +19,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
+import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.Pair;
@@ -44,6 +45,8 @@ public abstract class IntroduceVariableBaseFix implements Fix {
     protected abstract boolean declareConst();
 
     protected abstract List<Pair<Integer, Integer>> replaceOccurrences();
+
+    protected abstract String getType();
 
     protected String suggestName() {
         doc.render(new Runnable() {
@@ -90,7 +93,15 @@ public abstract class IntroduceVariableBaseFix implements Fix {
         return name;
     }
 
-    protected CharSequence getExpressionType() {
+    protected String suggestType() {
+        final CharSequence typeText = getExpressionType();
+        if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
+            return null;
+        }
+        return typeText.toString();
+    }
+
+    private CharSequence getExpressionType() {
         CsmCacheManager.enter();
         try {
             CharSequence typeText;
@@ -106,6 +117,7 @@ public abstract class IntroduceVariableBaseFix implements Fix {
             //        resolveType = CsmTypes.createType(classifier, typeDescriptor, offsetDescriptor);
             //    }
             //}
+            //typeText = CsmDisplayUtilities.getTypeText(resolveType, true, false).toString();
             typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(resolveType);
             if (isC()) {
                 CsmClassifier classifier = resolveType.getClassifier();

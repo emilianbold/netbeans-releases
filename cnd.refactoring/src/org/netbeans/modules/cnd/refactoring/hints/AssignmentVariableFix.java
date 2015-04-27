@@ -22,6 +22,7 @@ import org.openide.util.Pair;
  */
 public class AssignmentVariableFix extends IntroduceVariableBaseFix {
     final FileObject fo;
+    private String type;
 
     public AssignmentVariableFix(CsmExpression expression, Document doc, FileObject fo) {
         super(expression, doc);
@@ -54,21 +55,27 @@ public class AssignmentVariableFix extends IntroduceVariableBaseFix {
     }
 
     @Override
+    protected String getType() {
+        return type;
+    }
+
+    @Override
     public ChangeInfo implement() throws Exception {
-        final CharSequence typeText = getExpressionType();
-        if (typeText == null || "void".contentEquals(typeText)) { //NOI18N
+        type = suggestType();
+        if (type == null) {
             return null;
         }
+
         final String aName = suggestName();
         if (aName == null) {
             return null;
         }
-        final String text = typeText + " " + (declareConst() ? "const ":"") + aName + " = "; //NOI18N
+        final String text = getType() + " " + (declareConst() ? "const ":"") + aName + " = "; //NOI18N
         doc.insertString(expression.getStartOffset(), text, null);
         Position startPosition = new Position() {
             @Override
             public int getOffset() {
-                return expression.getStartOffset() + typeText.length() + 1;
+                return expression.getStartOffset() + getType().length() + 1;
             }
         };
         Position endPosition = new Position() {

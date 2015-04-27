@@ -52,7 +52,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private boolean introduceConstant;
     private JButton btnOk;
 
-    public IntroduceVariablePanel(int numDuplicates, String defaultName, boolean introduceConstant, JButton btnOk) {
+    public IntroduceVariablePanel(int numDuplicates, String type, String defaultName, boolean introduceConstant, JButton btnOk) {
         this.btnOk = btnOk;
 
         initComponents();
@@ -91,6 +91,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                     break;
             }
         }
+        typeField.setText(type);
         if (introduceConstant) {
             name.setText(defaultName.toUpperCase());
         } else {
@@ -155,6 +156,8 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         accessProtected = new javax.swing.JRadioButton();
         accessPrivate = new javax.swing.JRadioButton();
         errorLabel = createErrorLabel();
+        typeLabel = new javax.swing.JLabel();
+        typeField = new javax.swing.JTextField();
 
         lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceVariablePanel.class).getString("LBL_Name")); // NOI18N
@@ -162,27 +165,25 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         name.setColumns(20);
 
         org.openide.awt.Mnemonics.setLocalizedText(replaceAll, org.openide.util.NbBundle.getBundle(IntroduceVariablePanel.class).getString("LBL_ReplaceAll")); // NOI18N
-        replaceAll.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(declareFinal, org.openide.util.NbBundle.getBundle(IntroduceVariablePanel.class).getString("LBL_DeclareFinal")); // NOI18N
-        declareFinal.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(lblAccess, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "LBL_Access")); // NOI18N
 
         accessGroup.add(accessPublic);
         accessPublic.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(accessPublic, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "LBL_public")); // NOI18N
-        accessPublic.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         accessGroup.add(accessProtected);
         org.openide.awt.Mnemonics.setLocalizedText(accessProtected, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "LBL_protected")); // NOI18N
-        accessProtected.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         accessGroup.add(accessPrivate);
         org.openide.awt.Mnemonics.setLocalizedText(accessPrivate, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "LBL_private")); // NOI18N
-        accessPrivate.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "IntroduceVariablePanel.errorLabel.text")); // NOI18N
+
+        typeLabel.setLabelFor(typeField);
+        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(IntroduceVariablePanel.class, "IntroduceVariablePanel.typeLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -191,13 +192,12 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 486, Short.MAX_VALUE)
-                    .addComponent(replaceAll)
-                    .addComponent(declareFinal)
+                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 489, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblAccess)
-                            .addComponent(lblName))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(lblAccess, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(typeLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(lblName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
@@ -206,16 +206,26 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(accessProtected)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(accessPrivate)))))
+                                .addComponent(accessPrivate))
+                            .addComponent(typeField, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(replaceAll)
+                            .addComponent(declareFinal))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblName)
                     .addComponent(name, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(typeLabel)
+                    .addComponent(typeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblAccess)
@@ -226,7 +236,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 .addComponent(declareFinal)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(replaceAll)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 32, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel)
                 .addContainerGap())
         );
@@ -251,11 +261,17 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblName;
     private javax.swing.JTextField name;
     private javax.swing.JCheckBox replaceAll;
+    private javax.swing.JTextField typeField;
+    private javax.swing.JLabel typeLabel;
     // End of variables declaration//GEN-END:variables
     private CsmVisibility testAccess;
 
     public String getVariableName() {
         return name.getText();
+    }
+
+    public String getType() {
+        return typeField.getText();
     }
 
     public boolean isReplaceAll() {

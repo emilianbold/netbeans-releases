@@ -58,6 +58,7 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     private int numDuplicates;
     private final IntroduceKind kind;
     private boolean declareConst = false;
+    private String type;
 
     public ExtendedAssignmentVariableFix(CsmExpression expression, Document doc, FileObject fo) {
         super(expression, doc, fo);
@@ -91,11 +92,17 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     }
 
     @Override
+    protected String getType() {
+        return type;
+    }
+
+    @Override
     protected String suggestName() {
+        type = super.getType();
         String guessedName = super.suggestName();
         JButton btnOk = new JButton(NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "LBL_Cancel"));
-        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
+        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, type, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
         String caption = NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "CAP_" + getKeyExt()); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
@@ -103,6 +110,7 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
         }
         guessedName = panel.getVariableName();
         declareConst = panel.isDeclareFinal();
+        type = panel.getType();
         return guessedName;
     }
 }
