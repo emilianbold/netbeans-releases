@@ -86,6 +86,7 @@ import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -184,10 +185,19 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
         }
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
+        final String name = nameAndScope.first();
+        final String scope = nameAndScope.second();
+        if (name.length() == 0) {
+            //Empty name, wait for next char
+            currentSearch.resetFilter();
+            panel.setModel(new DefaultListModel());
+            return false;
+        }
         // Compute in other thread
         synchronized(this) {
-            if (currentSearch.isNarrowing(searchType, text)) {
-                currentSearch.filter(searchType, text);
+            if (currentSearch.isNarrowing(searchType, text, scope)) {
+                currentSearch.filter(searchType, name);
                 enableOK(panel.revalidateModel());
                 return false;
             } else {
@@ -503,7 +513,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    currentSearch.searchCompleted(searchType, text);
+                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                    currentSearch.searchCompleted(searchType, nameAndScope.first(), nameAndScope.second());
                     if (!isCanceled) {
                         enableOK(panel.setModel(fmodel));
                     }
