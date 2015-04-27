@@ -217,19 +217,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         //Extract linenumber from search text
         //Pattern is like 'My*Object.java:123'
-        final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
-        int lineNr;
-        if (matcher.matches()) {
-            text = matcher.group(1);
-            try {
-                lineNr = Integer.parseInt(matcher.group(2));
-            } catch (NumberFormatException numberFormatException) {
-                //prevent non convertable numbers
-                lineNr=-1;
-            }
-        } else {
-            lineNr = -1;
-        }
+        final Pair<String,Integer> nameLinePair = splitNameLine(text);
+        text = nameLinePair.first();
+        final int lineNr = nameLinePair.second();
         final QuerySupport.Kind nameKind = Utils.toQueryKind(Utils.getSearchType(
                 text,
                 exact,
@@ -380,9 +370,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         Mnemonics.setLocalizedText(openBtn, NbBundle.getMessage(FileSearchAction.class, "CTL_Open"));
         openBtn.getAccessibleContext().setAccessibleDescription(openBtn.getText());
         openBtn.setEnabled( false );
-        
+
         final Object[] buttons = new Object[] { openBtn, DialogDescriptor.CANCEL_OPTION };
-        
+
         String title = NbBundle.getMessage(FileSearchAction.class, "MSG_FileSearchDlgTitle");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 panel,
@@ -391,18 +381,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 buttons,
                 openBtn,
                 DialogDescriptor.DEFAULT_ALIGN,
-                HelpCtx.DEFAULT_HELP, 
+                HelpCtx.DEFAULT_HELP,
                 new DialogButtonListener(panel));
         dialogDescriptor.setClosingOptions(buttons);
 
         Dialog d = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         d.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FileSearchAction.class, "AN_FileSearchDialog"));
         d.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSearchAction.class, "AD_FileSearchDialog"));
-                
+
         // Set size
         d.setPreferredSize( new Dimension(  FileSearchOptions.getWidth(),
                                                  FileSearchOptions.getHeight() ) );
-        
+
         // Center the dialog after the size changed.
         Rectangle r = Utilities.getUsableScreenBounds();
         int maxW = (r.width * 9) / 10;
@@ -420,7 +410,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         return d;
     }
-    
+
     /** For original of this code look at:
      *  org.netbeans.modules.project.ui.actions.ActionsUtil
      */
@@ -477,17 +467,32 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         }
     }
 
+    @NonNull
+    private static Pair<String,Integer> splitNameLine(@NonNull String text) {
+        final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
+        int lineNr = -1;
+        if (matcher.matches()) {
+            text = matcher.group(1);
+            try {
+                lineNr = Integer.parseInt(matcher.group(2));
+            } catch (NumberFormatException e) {
+               //pass
+            }
+        }
+        return Pair.of(text,lineNr);
+    }
+
     // Private classes ---------------------------------------------------------
     private class DialogButtonListener implements ActionListener {
-        
+
         private FileSearchPanel panel;
-        
+
         public DialogButtonListener(FileSearchPanel panel) {
             this.panel = panel;
         }
-        
+
         @Override
-        public void actionPerformed(ActionEvent e) {       
+        public void actionPerformed(ActionEvent e) {
             if ( e.getSource() == openBtn) {
                 panel.setSelectedFile();
             }
@@ -803,7 +808,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         @Override
         public void changedUpdate(DocumentEvent e) {
             try {
-                textToFind = e.getDocument().getText(0, e.getDocument().getLength());
+                textToFind = splitNameLine(e.getDocument().getText(0, e.getDocument().getLength())).first();
             } catch (BadLocationException ex) {
                 textToFind = "";    //NOI18N
             }
