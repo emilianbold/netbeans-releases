@@ -539,8 +539,9 @@ public class ExpressionFinder {
                         break;
                     }
                     if (found >= since) {
-                        // TODO check space or separator before and after occurrence
-                        occurrences.add(Pair.of(getBody().getStartOffset() + found, getBody().getStartOffset() + found + expressionText.length()));
+                        if (isBeginning(bodyText, found) && isEnd(bodyText, found + expressionText.length())) {
+                            occurrences.add(Pair.of(getBody().getStartOffset() + found, getBody().getStartOffset() + found + expressionText.length()));
+                        }
                     }
                     i = found + expressionText.length();
                 }
@@ -548,8 +549,29 @@ public class ExpressionFinder {
             return occurrences;
         }
 
+        private boolean isBeginning(String text, int start) {
+            if (start > 0) {
+                char separator = text.charAt(start-1);
+                char beginning = text.charAt(start);
+                if (Character.isJavaIdentifierPart(separator) && Character.isJavaIdentifierStart(beginning)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean isEnd(String text, int end) {
+            if (end < text.length()) {
+                char beginning = text.charAt(end-1);
+                char separator = text.charAt(end);
+                if (Character.isJavaIdentifierPart(beginning) && Character.isJavaIdentifierStart(separator)) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
-    
+
     private static class CsmOffsetableImpl implements CsmOffsetable {
 
         private final CsmFile file;
