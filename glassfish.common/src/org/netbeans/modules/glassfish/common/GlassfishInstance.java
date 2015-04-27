@@ -1767,19 +1767,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             return false;
         }
         // Domain name can be null so we shall avoid NPE.
-        boolean domainName = (
-                getDomainName() == null && other.getDomainName() == null)
-                || ((getDomainName() != null && other.getDomainName() != null)
-                && getDomainName().equals(other.getDomainName()));
+        boolean domainName = Objects.equals(getDomainName(), other.getDomainName());
         // Domains root can be null so we shall avoid NPE.
-        boolean domainsRoot = (
-                getDomainsRoot() == null && other.getDomainsRoot() == null)
-                || ((getDomainsRoot() != null && other.getDomainsRoot() != null)
-                && getDomainsRoot().equals(other.getDomainsRoot()));
+        boolean domainsRoot = Objects.equals(getDomainsRoot(), other.getDomainsRoot());
         return domainName && domainsRoot
-                && getDeployerUri().replace("127.0.0.1", "localhost").
-                equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
-                && getDomainName().equals(other.getDomainName()) 
+                && getDeployerUri().replace("127.0.0.1", "localhost")
+                        .equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
                 && getHttpPort().equals(other.getHttpPort());
     }
 
