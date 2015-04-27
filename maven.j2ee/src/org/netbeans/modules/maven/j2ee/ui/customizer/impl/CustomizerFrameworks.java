@@ -167,11 +167,14 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
 
         if (provider != null) {
-            ServerInstance si = Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
-            try {
-                return si.getDisplayName();
-            } catch (InstanceRemovedException ex) {
-                return null;
+            String instanceString = provider.getServerInstanceID();
+            if (instanceString != null) {
+                ServerInstance si = Deployment.getDefault().getServerInstance(instanceString);
+                try {
+                    return si.getDisplayName();
+                } catch (InstanceRemovedException ex) {
+                    return null;
+                }
             }
         }
         return null;
