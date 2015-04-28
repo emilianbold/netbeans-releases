@@ -54,12 +54,14 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import javax.swing.ButtonModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
 import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -69,7 +71,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
-import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.EntityComparator;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Parameters;
@@ -78,7 +80,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public final class ItemRenderer<T> extends EntitiesListCellRenderer {
+public final class ItemRenderer<T> extends DefaultListCellRenderer implements ChangeListener {
 
     public static interface Convertor<T> {
         String getName(T item);
@@ -147,6 +149,7 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer {
     private static final String STRATEGY_COLOR="color";     //NOI18N
     private final HighlightStrategy highlightStrategy;
 
+    private final String mainProjectName = EntityComparator.getMainProjectName();
     private final Convertor<T> convertor;
     private final MyPanel<T> rendererComponent;
     private final JLabel jlName;
@@ -357,6 +360,26 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer {
         return clzCache != null && clzCache.isInstance(obj) ?
             clzCache.cast(obj) :
             null;
+    }
+
+    private void setProjectName(JLabel jlPrj, String projectName) {
+        if(isMainProject(projectName)) {
+            jlPrj.setText(getBoldText(projectName));
+        } else {
+            jlPrj.setText(projectName);
+        }
+    }
+
+    private String getBoldText(String text) {
+        StringBuilder sb = new StringBuilder("<html><b>"); // NOI18N
+        sb.append(text);
+        sb.append("</b></html>"); // NOI18N
+        return sb.toString();
+    }
+
+    private boolean isMainProject(String projectName) {
+        return projectName != null && projectName.equals(mainProjectName) ?
+            true : false;
     }
 
     private static class MyPanel<T> extends JPanel {
