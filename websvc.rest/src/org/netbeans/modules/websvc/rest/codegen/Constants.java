@@ -53,7 +53,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
  */
 public class Constants {
     
-    public static final String RESOURCE_SUFFIX = "Resource";
+    public static final String RESOURCE_SUFFIX = "Resource"; // NOI18N
         
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
     
@@ -137,8 +137,8 @@ public class Constants {
         HTML("text/html", "Html"),          //NOI18N
         IMAGE("image/png", "Image");          //NOI18N
         
-        private String value;
-        private String suffix;
+        private final String value;
+        private final String suffix;
         
         MimeType(String value, String suffix) {
             this.value = value;
@@ -155,12 +155,14 @@ public class Constants {
         
         public static MimeType find(String value) {
             for(MimeType m:values()) {
-                if(m.value().equals(value))
+                if(m.value().equals(value)) {
                     return m;
+                }
             }
             return null;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -172,8 +174,8 @@ public class Constants {
         POST("post", RestConstants.POST), //NOI18N
         DELETE("delete", RestConstants.DELETE); //NOI18N
         
-        private String prefix; 
-        private String annotationType;
+        private final String prefix; 
+        private final String annotationType;
         
         HttpMethodType(String prefix, String annotationType) {
             this.prefix = prefix;

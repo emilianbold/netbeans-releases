@@ -58,11 +58,6 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
     }
 
     @Override
-    protected boolean declareConst() {
-        return false;
-    }
-
-    @Override
     protected List<Pair<Integer, Integer>> replaceOccurrences() {
         return Collections.emptyList();
     }
@@ -85,7 +80,7 @@ public class IntroduceVariableFix extends IntroduceVariableBaseFix {
         final List<Pair<Integer, Integer>> replaceOccurrences = replaceOccurrences();
         final String exprText = expression.getText().toString();
         final ChangeInfo changeInfo = new ChangeInfo();
-        final String typeTextPrefix = getType() + " " + (declareConst() ? "const ":""); //NOI18N
+        final String typeTextPrefix = getType() + " "; //NOI18N
         final String text = typeTextPrefix + aName + " = " + expression.getText() + ";\n"; //NOI18N
         doc.runAtomicAsUser(new Runnable() {
             @Override

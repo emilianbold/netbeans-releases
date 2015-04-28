@@ -39,8 +39,10 @@
  */
 package org.netbeans.modules.glassfish.tooling.admin;
 
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -371,7 +373,7 @@ public class PasswordFile {
         Writer out = null;
         createFilePosix();
         try {
-            out = new FileWriter(file.toFile());
+            out = new OutputStreamWriter(new FileOutputStream(file.toFile()), "UTF-8");
             out.write(dataToWrite());
         } catch (IOException ioe) {
             success = false;

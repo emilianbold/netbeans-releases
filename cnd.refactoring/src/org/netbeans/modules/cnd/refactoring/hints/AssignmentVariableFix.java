@@ -45,11 +45,6 @@ public class AssignmentVariableFix extends IntroduceVariableBaseFix {
     }
 
     @Override
-    protected boolean declareConst() {
-        return false;
-    }
-
-    @Override
     protected List<Pair<Integer, Integer>> replaceOccurrences() {
         return Collections.emptyList();
     }
@@ -70,7 +65,7 @@ public class AssignmentVariableFix extends IntroduceVariableBaseFix {
         if (aName == null) {
             return null;
         }
-        final String text = getType() + " " + (declareConst() ? "const ":"") + aName + " = "; //NOI18N
+        final String text = getType() + " " + aName + " = "; //NOI18N
         doc.insertString(expression.getStartOffset(), text, null);
         Position startPosition = new Position() {
             @Override
