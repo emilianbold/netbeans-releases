@@ -1205,9 +1205,9 @@ public class Css3ParserTest extends CssTestBase {
     //Just a partial hotfix for nested MQ
     //complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
     public void testNestedMediaQuery() throws ParseException, BadLocationException {
-        String source = "@media print { // rule (1)\n"
+        String source = "@media print { \n"
                 + "  #navigation { display: none }\n"
-                + "  @media (max-width: 12cm) { // rule (2)\n"
+                + "  @media (max-width: 12cm) { \n"
                 + "    .note { float: none }\n"
                 + "  }\n"
                 + "}";
@@ -1385,6 +1385,17 @@ public class Css3ParserTest extends CssTestBase {
         String source = "a.oj>.oj {}";
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
+    }
+    
+    public void testLineCommentThrowsErrorInCSS() {
+        String source = ".div {\n"
+                + "    color: red\n"
+                + "    // hello\n"
+                + "    font-family: Ariel\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+        assertEquals(1, result.getDiagnostics().size());
     }
 
 }
