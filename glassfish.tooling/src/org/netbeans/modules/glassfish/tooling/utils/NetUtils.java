@@ -390,9 +390,9 @@ public class NetUtils {
                     getNetworkInterfaces();
             while (ifaces.hasMoreElements()) {
                 NetworkInterface iface = ifaces.nextElement();
-                List<InterfaceAddress> iAddrs = iface.getInterfaceAddresses();
-                for (InterfaceAddress iAddr : iAddrs) {
-                    addrs.add(iAddr.getAddress());
+                for (Enumeration<InetAddress> e = iface.getInetAddresses(); e.hasMoreElements(); ) {
+                    InetAddress a = e.nextElement();
+                    addrs.add(a);
                 }
             }
         } catch (SocketException se) {
@@ -408,24 +408,11 @@ public class NetUtils {
      * @return {@link Set} of IPv4 addresses of this host.
      */
     public static Set<Inet4Address> getHostIP4s() {
-        final String METHOD = "getHostIP4s";
         Set<Inet4Address> addrs = new TreeSet<>(INET_ADDRESS_COMPARATOR);
-        try {
-            Enumeration<NetworkInterface> ifaces = NetworkInterface.
-                    getNetworkInterfaces();
-            while (ifaces.hasMoreElements()) {
-                NetworkInterface iface = ifaces.nextElement();
-                List<InterfaceAddress> iAddrs = iface.getInterfaceAddresses();
-                for (InterfaceAddress iAddr : iAddrs) {
-                    InetAddress addr = iAddr.getAddress();
-                    if (addr instanceof Inet4Address) {
-                        addrs.add((Inet4Address)addr);
-                    }
-                }
+        for (InetAddress a : getHostIPs()) {
+            if (a instanceof Inet4Address) {
+                addrs.add((Inet4Address) a);
             }
-        } catch (SocketException se) {
-            addrs = null;
-            throw new GlassFishIdeException(LOGGER.excMsg(METHOD, "exception"));
         }
         return addrs;
     }
@@ -436,24 +423,11 @@ public class NetUtils {
      * @return {@link Set} of IPv6 addresses of this host.
      */
     public static Set<Inet6Address> getHostIP6s() {
-        final String METHOD = "getHostIP6s";
         Set<Inet6Address> addrs = new TreeSet<>(INET_ADDRESS_COMPARATOR);
-        try {
-            Enumeration<NetworkInterface> ifaces = NetworkInterface.
-                    getNetworkInterfaces();
-            while (ifaces.hasMoreElements()) {
-                NetworkInterface iface = ifaces.nextElement();
-                List<InterfaceAddress> iAddrs = iface.getInterfaceAddresses();
-                for (InterfaceAddress iAddr : iAddrs) {
-                    InetAddress addr = iAddr.getAddress();
-                    if (addr instanceof Inet6Address) {
-                        addrs.add((Inet6Address)addr);
-                    }
-                }
+        for (InetAddress a : getHostIPs()) {
+            if (a instanceof Inet6Address) {
+                addrs.add((Inet6Address) a);
             }
-        } catch (SocketException se) {
-            addrs = null;
-            throw new GlassFishIdeException(LOGGER.excMsg(METHOD, "exception"));
         }
         return addrs;
     }
