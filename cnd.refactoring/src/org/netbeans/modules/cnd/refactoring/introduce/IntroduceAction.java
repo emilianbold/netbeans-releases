@@ -179,9 +179,9 @@ public final class IntroduceAction extends HintAction {
             fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedAssignmentVariableFix(expression.getExpression(), doc, fileObject));
         }
         if (res.getContainer() != null && res.getStatementInBody() != null && comp != null && selectionStart < selectionEnd) {
-            if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
-                    CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
-                    expressionFinder.isExpressionSelection()) {
+            if (/*CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
+                  CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                */expressionFinder.isExpressionSelection()) {
                 if (!(res.getContainer().getStartOffset() == selectionStart &&
                         res.getContainer().getEndOffset() == selectionEnd)) {
                     CsmOffsetable applicableTextExpression = expressionFinder.applicableTextExpression();

@@ -203,9 +203,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
         if (introduce) {
             if (res.getContainer() != null && res.getStatementInBody() != null && comp != null && selectionStart < selectionEnd) {
-                if (CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
-                        CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
-                        expressionFinder.isExpressionSelection()) {
+                if (/*CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
+                      CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                    */expressionFinder.isExpressionSelection()) {
                     if (!(res.getContainer().getStartOffset() == selectionStart &&
                             res.getContainer().getEndOffset() == selectionEnd)) {
                         CsmOffsetable applicableTextExpression = expressionFinder.applicableTextExpression();
