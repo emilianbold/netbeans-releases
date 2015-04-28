@@ -44,7 +44,6 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
@@ -358,17 +357,17 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                     // add @Produces annotation
                     String[] produces = option.getProduces();
                     if (produces != null) {
-                        ExpressionTree annArguments = null;
+                        ExpressionTree annArguments;
                         if (produces.length == 1) {
-                            annArguments = maker.Literal(produces[0]);
+                            annArguments = mimeTypeTree(maker, produces[0]);
                         } else {
-                            List<LiteralTree> literals = new ArrayList<LiteralTree>();
+                            List<ExpressionTree> mimeTypes = new ArrayList<ExpressionTree>();
                             for (int i=0; i< produces.length; i++) {
-                                literals.add(maker.Literal(produces[i]));
+                                mimeTypes.add(mimeTypeTree(maker, produces[i]));
                             }
-                            annArguments = maker.NewArray(null, 
+                            annArguments = maker.NewArray(null,
                                     Collections.<ExpressionTree>emptyList(), 
-                                    literals);
+                                    mimeTypes);
                         }
                         modifiersTree =
                                 maker.addModifiersAnnotation(modifiersTree,
@@ -379,16 +378,16 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                     // add @Consumes annotation
                     String[] consumes = option.getConsumes();
                     if (consumes != null) {
-                        ExpressionTree annArguments = null;
+                        ExpressionTree annArguments;
                         if (consumes.length == 1) {
-                            annArguments = maker.Literal(consumes[0]);
+                            annArguments = mimeTypeTree(maker, consumes[0]);
                         } else {
-                            List<LiteralTree> literals = new ArrayList<LiteralTree>();
+                            List<ExpressionTree> mimeTypes = new ArrayList<ExpressionTree>();
                             for (int i=0; i< consumes.length; i++) {
-                                literals.add(maker.Literal(consumes[i]));
+                                mimeTypes.add(mimeTypeTree(maker, consumes[i]));
                             }
                             annArguments = maker.NewArray(null, 
-                                    Collections.<ExpressionTree>emptyList(), literals);
+                                    Collections.<ExpressionTree>emptyList(), mimeTypes);
                         }
                         modifiersTree =
                                 maker.addModifiersAnnotation(modifiersTree,
@@ -515,6 +514,26 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         modifyEntityManager( methodOptions, facade);
 
         return createdFiles;
+    }
+
+    private ExpressionTree mimeTypeTree(TreeMaker maker, String mimeType) {
+        String mediaTypeMember = null;
+        if (mimeType.equals("application/xml")) { // NOI18N
+            mediaTypeMember = "APPLICATION_XML"; // NOI18N
+        } else if (mimeType.equals("application/json")) { // NOI18N
+            mediaTypeMember = "APPLICATION_JSON"; // NOI18N
+        } else if (mimeType.equals("text/plain")) { // NOI18N
+            mediaTypeMember = "TEXT_PLAIN"; // NOI18N
+        }
+        ExpressionTree result;
+        if (mediaTypeMember == null) {
+            result = maker.Literal(mimeType);
+        } else {
+            // Use a field of MediaType class if possible
+            ExpressionTree typeTree = maker.QualIdent("javax.ws.rs.core.MediaType"); // NOI18N
+            result = maker.MemberSelect(typeTree, mediaTypeMember);
+        }
+        return result;
     }
 
     private void modifyEntityManager( List<GenerationOptions> methodOptions ,

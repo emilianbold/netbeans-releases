@@ -134,13 +134,15 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     List<String> fArgumentValue = ((List<String>) fArgument.getValue());
                     functionName = fArgumentValue.isEmpty() ? null : fArgumentValue.get(0);
                     if (functionName != null) {
-                        JsFunction func = (JsFunction) globalObject.getProperty(functionName);
+                        JsObject funcObj = globalObject.getProperty(functionName);
+                        JsFunction func = funcObj != null && (funcObj instanceof JsFunction) ? (JsFunction) funcObj : null;
                         if (func == null) {
                             // try to find it enclosed in IIFE
                             JsObject argumentObject = ModelUtils.findJsObject(globalObject, fArgument.getOffset());
                             if (argumentObject != null && argumentObject instanceof JsFunction) {
                                 JsFunction iife = (JsFunction) argumentObject;
-                                func = (JsFunction) iife.getProperty(functionName);
+                                funcObj = iife.getProperty(functionName);
+                                func = funcObj != null && (funcObj instanceof JsFunction) ? (JsFunction) iife.getProperty(functionName) : null;
                             }
                         }
                         if (func != null && !func.isAnonymous()) {
@@ -178,6 +180,15 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         if (controllerName != null && functionName != null) {
             // we need to find the function itself
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
+            if (controllerDecl != null
+                    && !functionName.equals(TypeUsage.FUNCTION)
+                    && !controllerDecl.getFullyQualifiedName().endsWith(functionName)) {
+                // Probably controller function is assigned to the variable in IIFE (issue #251909)
+                JsObject functProp = controllerDecl.getProperty(functionName);
+                if (functProp != null && functProp.getFullyQualifiedName().endsWith(functionName)) {
+                    controllerDecl = functProp;
+                }
+            }
             if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
                 fqnOfController = controllerDecl.getFullyQualifiedName();
                 FileObject fo = globalObject.getFileObject();

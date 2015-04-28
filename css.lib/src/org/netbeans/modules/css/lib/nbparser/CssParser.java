@@ -116,7 +116,7 @@ public class CssParser extends Parser {
             //parse just an empty string in case of an oversize snapshot
             CharSequence source = tooLargeSnapshot ? "" : snapshot.getText();
             
-            ExtCss3Lexer lexer = new ExtCss3Lexer(source);
+            ExtCss3Lexer lexer = new ExtCss3Lexer(source, mimeType);
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
             ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, mimeType);
