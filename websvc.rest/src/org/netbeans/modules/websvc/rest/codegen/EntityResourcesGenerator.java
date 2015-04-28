@@ -49,7 +49,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,13 +63,11 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
@@ -154,6 +151,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
      * @return
      * @throws java.io.IOException
      */
+    @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if (pHandle != null) {
             initProgressReporting(pHandle);
@@ -594,6 +592,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         JavaSource javaSource = JavaSource.forFileObject( fileObject );
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree tree = workingCopy.getCompilationUnit();
