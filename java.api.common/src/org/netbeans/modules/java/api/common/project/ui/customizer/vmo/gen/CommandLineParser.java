@@ -37,15 +37,20 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo.gen;
 
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.JavaVMOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.SwitchNode;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UserPropertyNode;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UnrecognizedOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UnknownOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.ParametrizedNode;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.regex.Pattern;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.*;
 
 
 import org.antlr.runtime.*;

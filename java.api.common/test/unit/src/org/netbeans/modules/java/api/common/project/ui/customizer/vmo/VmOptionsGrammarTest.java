@@ -37,8 +37,16 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.JavaVMOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.VMOptionTreeAdaptor;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.OptionValue;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.ParametrizedNode;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.SwitchNode;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UnrecognizedOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UnknownOption;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.UserPropertyNode;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
@@ -46,8 +54,8 @@ import org.antlr.runtime.tree.BaseTree;
 import org.antlr.runtime.tree.CommonTree;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen.CommandLineLexer;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen.CommandLineParser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.gen.CommandLineLexer;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.gen.CommandLineParser;
 
 import java.util.*;
 

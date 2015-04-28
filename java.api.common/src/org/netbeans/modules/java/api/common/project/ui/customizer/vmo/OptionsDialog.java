@@ -37,7 +37,7 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
 import javax.swing.*;
 import java.awt.*;
@@ -79,7 +79,7 @@ public class OptionsDialog extends JDialog {
     }
 
 
-    public static String showCustomizer(Object owner, String options) throws Exception {
+    public static String showCustomizer(Window owner, String options) throws Exception {
         final String[] result = {options};
         final OptionsDialog od;
         if (owner instanceof Frame) {

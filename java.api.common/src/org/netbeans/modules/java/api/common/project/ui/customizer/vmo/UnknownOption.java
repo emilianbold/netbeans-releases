@@ -37,62 +37,41 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
 import org.antlr.runtime.Token;
 
 /**
  * @author Rastislav Komara
  */
-public class ParametrizedNode extends JavaVMOption<OptionValue.SimpleString> {
-    private String delimiter;
+public class UnknownOption extends SwitchNode {
 
-    public ParametrizedNode(Token token, int splitIndex) {
-        super(token);
-        final String string = token.getText();
-        if (string != null) {
-            setName(string.substring(0, splitIndex));
-            setValue(new OptionValue.SimpleString(string.substring(splitIndex)));
-            delimiter = "";
-            setValid(true);
-        } else {
-            setName("");
-            setValid(false);
+    public UnknownOption(Token t) {
+        super(t);
+        if (t != null) {
+            setName(t.getText());
+            setValue(new OptionValue.SwitchOnly(true));
         }
     }
 
-    public ParametrizedNode(Token name, String delimiter, String parameter) {
-        this(name,delimiter, parameter, true);
-    }
-    public ParametrizedNode(Token name, String delimiter, String parameter, boolean isValid) {
+    public UnknownOption(String name) {
         super(name);
-        setName(name.getText());
-        this.delimiter = delimiter;
-        if (parameter != null) {
-            setValue(new OptionValue.SimpleString(parameter));
-        }
-        setValid(isValid);
-    }
-
-    public ParametrizedNode(String name, String delimiter) {
-        super(name);
-        this.delimiter = delimiter;
-        setValue(new OptionValue.SimpleString());
-    }
-
-    public ParametrizedNode(Token token, String name, String delimiter, String value) {
-        super(token);
-        setName(name);
-        this.delimiter = delimiter;
-        setValue(new OptionValue.SimpleString(value));
+        setValue(new OptionValue.SwitchOnly(true));
     }
 
     @Override
     public StringBuilder print(StringBuilder builder) {
-        StringBuilder sb = super.print(builder);
-        if (getValue().isPresent()) {
-                sb.append(SPACE).append(HYPHEN).append(getName()).append(delimiter).append(getValue().getValue());
-        }
+        final StringBuilder sb = ensureBuilder(builder);
+        sb.append(getName());
         return sb;
     }
+
+    public String toString() {
+        return "UnknownOption{" +
+                "name='" + getName() + '\'' +
+                ", value=" + getValue() +
+                ", valid=" + isValid() +
+                '}';
+    }
+
 }

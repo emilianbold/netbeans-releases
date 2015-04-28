@@ -37,12 +37,12 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen.CommandLineLexer;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.gen.CommandLineParser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.gen.CommandLineLexer;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.gen.CommandLineParser;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.*;

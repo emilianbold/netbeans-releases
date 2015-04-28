@@ -105,6 +105,23 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="java-vm-options-customizer">
+            <api name="java-api-common"/>
+            <summary>Added a utility method to open a java VM options customizer - <code>ProjectUISupport.showVMOptionCustomizer</code></summary>
+            <version major="1" minor="72"/>
+            <date day="28" month="4" year="2015"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Moved the java VM options customizer from <code>java.j2seproject</code> to <code>java.api.common</code> and 
+                    added a utility method to open a java VM options customizer - <code>ProjectUISupport.showVMOptionCustomizer</code> 
+                    so that it is possible to use the customizer from j2se projects as well as from maven java projects.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.project.ui" name="ProjectUISupport"/>
+            <issue number="251934"/>
+        </change>
         <change id="SourceLevelQuery-platformType">
             <api name="java-api-common"/>
             <summary>Added a <code>SourceLevelQueryImplementation2</code> factory for non J2SE platform</summary>
