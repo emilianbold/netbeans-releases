@@ -78,9 +78,9 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-public final class ItemRenderer<T> extends EntitiesListCellRenderer implements ActionListener {
+public final class ItemRenderer<T> extends EntitiesListCellRenderer {
 
-    public static interface ItemConvertor<T> {
+    public static interface Convertor<T> {
         String getName(T item);
         String getHighlightText(T item);
         String getOwnerName(T item);
@@ -88,6 +88,54 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
         String getFilePath(T item);
         Icon getItemIcon(T item);
         Icon getProjectIcon(T item);
+        boolean isFromCurrentProject(T item);
+    }
+
+    public static final class Builder<T> {
+        private final JList list;
+        private final ButtonModel caseSensitive;
+        private final Convertor<T> convertor;
+        private String separatorPattern;
+        private ButtonModel colorPrefered;
+
+        private Builder(
+            @NonNull final JList<T> list,
+            @NonNull final ButtonModel caseSensitive,
+            @NonNull final Convertor<T> convertor) {
+            this.list = list;
+            this.caseSensitive = caseSensitive;
+            this.convertor = convertor;
+        }
+
+        @NonNull
+        public ItemRenderer<T> build() {
+            return new ItemRenderer(
+                    list,
+                    caseSensitive,
+                    colorPrefered,
+                    convertor,
+                    separatorPattern);
+        }
+
+        @NonNull
+        public Builder setCamelCaseSeparator(@NullAllowed final String separatorPattern) {
+            this.separatorPattern = separatorPattern;
+            return this;
+        }
+
+        @NonNull
+        public Builder setColorPreferedProject(@NullAllowed final ButtonModel colorPrefered) {
+            this.colorPrefered = colorPrefered;
+            return this;
+        }
+
+        @NonNull
+        public static <T> Builder<T> create(
+            @NonNull final JList<T> list,
+            @NonNull final ButtonModel caseSensitive,
+            @NonNull final Convertor<T> convertor) {
+            return new Builder(list, caseSensitive, convertor);
+        }
     }
 
     @StaticResource
@@ -97,19 +145,11 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
     private static final String PROP_HIGHLIGHT="jumpto.highlight";  //NOI18N
     private static final String STRATEGY_BOLD="bold";       //NOI18N
     private static final String STRATEGY_COLOR="color";     //NOI18N
-    private static final HighlightStrategy HIGHLIGHT_STRATEGY;
-    static {
-        final String strategyName = System.getProperty(PROP_HIGHLIGHT);
-        if (STRATEGY_COLOR.equals(strategyName)) {
-            HIGHLIGHT_STRATEGY = new Background();
-        } else {
-            HIGHLIGHT_STRATEGY = new Bold();
-        }
-    }
+    private final HighlightStrategy highlightStrategy;
 
-    private final ItemConvertor<T> convertor;
+    private final Convertor<T> convertor;
     private final MyPanel<T> rendererComponent;
-    private final JLabel jlName = HIGHLIGHT_STRATEGY.createNameLabel();
+    private final JLabel jlName;
     private final JLabel jlOwner = new JLabel();
     private final JLabel jlPrj = new JLabel();
     private final Color fgColor;
@@ -118,29 +158,36 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
     private final Color bgColorDarker;
     private final Color bgSelectionColor;
     private final Color fgSelectionColor;
+    private final Color bgColorGreener;
+    private final Color bgColorDarkerGreener;
     private final JList jList;
 
     private boolean caseSensitive;
+    private boolean colorPrefered;
     private Class<T> clzCache;
 
-    public ItemRenderer(
+    private ItemRenderer(
             @NonNull final JList<T> list,
             @NonNull final ButtonModel caseSensitive,
-            @NonNull final ItemConvertor<T> convertor) {
+            @NullAllowed final ButtonModel colorPrefered,
+            @NonNull final Convertor<T> convertor,
+            @NullAllowed final String separatorPattern) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
         jList = list;
         this.caseSensitive = caseSensitive.isSelected();
+        this.colorPrefered = colorPrefered != null && colorPrefered.isSelected();
         this.convertor = convertor;
-
-        HIGHLIGHT_STRATEGY.resetNameLabel(jlName, jList.getFont());
+        this.highlightStrategy = createHighlightStrategy(separatorPattern);
+        this.jlName = this.highlightStrategy.createNameLabel();
+        highlightStrategy.resetNameLabel(jlName, jList.getFont());
         Container container = list.getParent();
         if ( container instanceof JViewport ) {
             ((JViewport)container).addChangeListener(this);
             stateChanged(new ChangeEvent(container));
         }
-        rendererComponent = new MyPanel<T>(convertor);
+        rendererComponent = new MyPanel<>(convertor);
         rendererComponent.setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
@@ -199,10 +246,34 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
                         );
         bgSelectionColor = list.getSelectionBackground();
         fgSelectionColor = list.getSelectionForeground();
-        caseSensitive.addActionListener(this);
+        bgColorGreener = new Color(
+                                    Math.abs(bgColor.getRed() - 20),
+                                    Math.min(255, bgColor.getGreen() + 10 ),
+                                    Math.abs(bgColor.getBlue() - 20) );
+
+
+        bgColorDarkerGreener = new Color(
+                                Math.abs(bgColorDarker.getRed() - 35),
+                                Math.min(255, bgColorDarker.getGreen() + 5 ),
+                                Math.abs(bgColorDarker.getBlue() - 35) );
+        caseSensitive.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ItemRenderer.this.caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+            }
+        });
+        if (colorPrefered != null) {
+            colorPrefered.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    ItemRenderer.this.colorPrefered = ((ButtonModel)e.getSource()).isSelected();
+                }
+            });
+        }
     }
 
     @NonNull
+    @Override
     public Component getListCellRendererComponent(
             @NonNull final JList list,
             @NullAllowed final Object value,
@@ -217,7 +288,7 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
             Dimension size = new Dimension( width, height );
             rendererComponent.setMaximumSize(size);
             rendererComponent.setPreferredSize(size);
-            HIGHLIGHT_STRATEGY.resetNameLabel(jlName, jList.getFont());
+            highlightStrategy.resetNameLabel(jlName, jList.getFont());
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlOwner.setForeground(fgSelectionColor);
@@ -234,8 +305,8 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
             if (item != null) {
                 jlName.setIcon(convertor.getItemIcon(item));
                 final String formatedName;
-                if (isSelected || HIGHLIGHT_STRATEGY.isHighlightAll()) {
-                    formatedName = HIGHLIGHT_STRATEGY.highlight(
+                if (isSelected || highlightStrategy.isHighlightAll()) {
+                    formatedName = highlightStrategy.highlight(
                             convertor.getName(item),
                             convertor.getHighlightText(item),
                             caseSensitive,
@@ -247,6 +318,14 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
                 jlOwner.setText(convertor.getOwnerName(item));
                 setProjectName(jlPrj, convertor.getProjectName(item));
                 jlPrj.setIcon(convertor.getProjectIcon(item));
+                if (!isSelected) {
+                    final boolean cprj = convertor.isFromCurrentProject(item) && colorPrefered;
+                    final Color bgc =  index % 2 == 0 ?
+                        (cprj ? bgColorGreener : bgColor ) :
+                        (cprj ? bgColorDarkerGreener : bgColorDarker );
+                    jlName.setBackground(bgc);  //Html does not support transparent bg
+                    rendererComponent.setBackground(bgc);
+                }
 		rendererComponent.setItem(item);
             } else {
                 jlName.setText(String.valueOf(value));
@@ -263,18 +342,13 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
         jList.setFixedCellWidth(jv.getExtentSize().width);
     }
 
-    @Override
-    public void actionPerformed(@NonNull final ActionEvent e) {
-        caseSensitive = ((ButtonModel)e.getSource()).isSelected();
-    }
-
     @CheckForNull
     @SuppressWarnings("unchecked")
     private T dynamic_cast (
             @NullAllowed final Object obj) {
         if (clzCache == null) {
             for (Type type : convertor.getClass().getGenericInterfaces()) {
-                if (type instanceof ParameterizedType && ItemConvertor.class == ((ParameterizedType)type).getRawType()) {
+                if (type instanceof ParameterizedType && Convertor.class == ((ParameterizedType)type).getRawType()) {
                     clzCache = (Class<T>) ((ParameterizedType)type).getActualTypeArguments()[0];
                     break;
                 }
@@ -287,10 +361,10 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
 
     private static class MyPanel<T> extends JPanel {
 
-        private final ItemConvertor<T> convertor;
+        private final Convertor<T> convertor;
 	private T item;
 
-        MyPanel(@NonNull final ItemConvertor<T> convertor) {
+        MyPanel(@NonNull final Convertor<T> convertor) {
             this.convertor = convertor;
         }
 
@@ -316,6 +390,16 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
 	}
     }
 
+    @NonNull
+    private HighlightStrategy createHighlightStrategy(@NullAllowed final String separatorPattern) {
+        final String strategyName = System.getProperty(PROP_HIGHLIGHT);
+        if (STRATEGY_COLOR.equals(strategyName)) {
+            return new Background(separatorPattern);
+        } else {
+            return new Bold(separatorPattern);
+        }
+    }
+
     private static interface HighlightStrategy {
         boolean isHighlightAll();
         @NonNull
@@ -330,8 +414,10 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
 
         private final HighlightingNameFormatter nameFormater;
 
-        Bold() {
-            nameFormater = HighlightingNameFormatter.Builder.create().buildBoldFormatter();
+        Bold(@NullAllowed String separatorPattern) {
+            nameFormater = HighlightingNameFormatter.Builder.create().
+                    setCamelCaseSeparator(separatorPattern).
+                    buildBoldFormatter();
         }
 
         @Override
@@ -375,7 +461,7 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
 
         private final HighlightingNameFormatter nameFormater;
 
-        Background() {
+        Background(@NullAllowed final String separatorPattern) {
             Color back = new Color(255,180,66);
             Color front = Color.BLACK;
             final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
@@ -392,7 +478,9 @@ public final class ItemRenderer<T> extends EntitiesListCellRenderer implements A
                     }
                 }
             }
-            nameFormater = HighlightingNameFormatter.Builder.create().buildColorFormatter(back, front);
+            nameFormater = HighlightingNameFormatter.Builder.create().
+                    setCamelCaseSeparator(separatorPattern).
+                    buildColorFormatter(back, front);
         }
 
         @Override

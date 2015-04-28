@@ -254,10 +254,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new ItemRenderer(
+        return ItemRenderer.Builder.create(
                 list,
                 caseSensitive,
-                new TypeDescriptorConvertor());
+                new TypeDescriptorConvertor()).build();
     }
 
 
@@ -452,7 +452,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     // Private classes ---------------------------------------------------------
 
 
-    private static final class TypeDescriptorConvertor implements ItemRenderer.ItemConvertor<TypeDescriptor> {
+    private static final class TypeDescriptorConvertor implements ItemRenderer.Convertor<TypeDescriptor> {
         @Override
         public String getName(@NonNull final TypeDescriptor item) {
             return item.getTypeName();
@@ -486,6 +486,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         @Override
         public Icon getProjectIcon(@NonNull final TypeDescriptor item) {
             return item.getProjectIcon();
+        }
+
+        @Override
+        public boolean isFromCurrentProject(@NonNull final TypeDescriptor item) {
+            return false;
         }
     }
 

@@ -132,10 +132,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new ItemRenderer(
+        return ItemRenderer.Builder.create(
             list,
             caseSensitive,
-            new SymbolDescriptorCovertor());
+            new SymbolDescriptorCovertor()).build();
     }
 
     @Override
@@ -242,7 +242,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         return res;
     }
 
-    private static final class SymbolDescriptorCovertor implements ItemRenderer.ItemConvertor<SymbolDescriptor> {
+    private static final class SymbolDescriptorCovertor implements ItemRenderer.Convertor<SymbolDescriptor> {
         @Override
         public String getName(@NonNull final SymbolDescriptor item) {
             return item.getSymbolName();
@@ -276,6 +276,11 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         @Override
         public Icon getProjectIcon(@NonNull final SymbolDescriptor item) {
             return item.getProjectIcon();
+        }
+
+        @Override
+        public boolean isFromCurrentProject(@NonNull final SymbolDescriptor item) {
+            return false;
         }
     }
 
