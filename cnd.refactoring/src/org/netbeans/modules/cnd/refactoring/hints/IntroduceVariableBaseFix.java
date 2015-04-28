@@ -42,8 +42,6 @@ public abstract class IntroduceVariableBaseFix implements Fix {
 
     protected abstract boolean isInstanceRename();
 
-    protected abstract boolean declareConst();
-
     protected abstract List<Pair<Integer, Integer>> replaceOccurrences();
 
     protected abstract String getType();

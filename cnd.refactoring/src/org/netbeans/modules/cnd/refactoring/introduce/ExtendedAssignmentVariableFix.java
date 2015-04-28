@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     private int numDuplicates;
     private final IntroduceKind kind;
-    private boolean declareConst = false;
     private String type;
 
     public ExtendedAssignmentVariableFix(CsmExpression expression, Document doc, FileObject fo) {
@@ -87,11 +86,6 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     }
 
     @Override
-    protected boolean declareConst() {
-        return declareConst;
-    }
-
-    @Override
     protected String getType() {
         return type;
     }
@@ -109,7 +103,6 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
             return null; //cancel
         }
         guessedName = panel.getVariableName();
-        declareConst = panel.isDeclareFinal();
         type = panel.getType();
         return guessedName;
     }
