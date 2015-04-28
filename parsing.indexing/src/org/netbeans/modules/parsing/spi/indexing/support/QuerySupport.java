@@ -577,10 +577,13 @@ public final class QuerySupport {
              * Sets a regular expression for camel case separator.
              * @param camelCaseSeparator the regular expression for camel case separator.
              * When null the default (upper case letter) is used.
+             * @return the {@link Factory}
              * @since 9.5
              */
-            public void setCamelCaseSeparator(@NullAllowed final String camelCaseSeparator) {
+            @NonNull
+            public Factory setCamelCaseSeparator(@NullAllowed final String camelCaseSeparator) {
                 this.camelCaseSeparator = camelCaseSeparator;
+                return this;
             }
 
             /**
@@ -588,10 +591,13 @@ public final class QuerySupport {
              * Sets a regular expression for camel case part content.
              * @param camelCasePart  the regular expression for camel case part.
              * When null the default (lower case letter, digit) is used.
+             * @return the {@link Factory}
              * @since 9.5
              */
-            public void setCamelCasePart(@NullAllowed final String camelCasePart) {
+            @NonNull
+            public Factory setCamelCasePart(@NullAllowed final String camelCasePart) {
                 this.camelCasePart = camelCasePart;
+                return this;
             }
         }
 

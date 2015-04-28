@@ -207,8 +207,10 @@ public class HighlightingNameFormatter {
 
         private Builder() {}
 
-        public void setCamelCaseSeparator(@NullAllowed final String separatorPattern) {
+        @NonNull
+        public Builder setCamelCaseSeparator(@NullAllowed final String separatorPattern) {
             this.camelCaseStart = separatorPattern;
+            return this;
         }
 
         @NonNull
