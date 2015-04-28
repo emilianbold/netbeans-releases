@@ -547,6 +547,11 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
         if (dbxInitFile.equals(DebuggerOption.DBX_INIT_FILE.getDefaultValue())) {
             dbxInitFile = null;
+        } else {
+            boolean preventInitPathConvertion = dbxInitFile.startsWith("///"); // NOI18N
+            if (!preventInitPathConvertion) {
+                dbxInitFile = localToRemote("dbxInitFile", dbxInitFile); // NOI18N
+            }
         }
 
         // figure out 32-bit or 64-bit debuggee, only on Linux and not user pre-chosen 
