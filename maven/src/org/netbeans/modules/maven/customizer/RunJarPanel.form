@@ -16,7 +16,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
+          <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="lblWorkDir" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="lblVMOptions" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -26,22 +26,26 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="txtVMOptions" alignment="0" pref="225" max="32767" attributes="0"/>
-                  <Component id="txtWorkDir" alignment="0" pref="225" max="32767" attributes="2"/>
-                  <Component id="txtArguments" alignment="0" pref="225" max="32767" attributes="2"/>
-                  <Component id="txtMainClass" alignment="0" pref="225" max="32767" attributes="2"/>
-                  <Component id="comConfiguration" alignment="0" pref="225" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="lblHint" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
+                          <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
+                          <Component id="txtWorkDir" alignment="0" max="32767" attributes="2"/>
+                          <Component id="txtArguments" alignment="0" max="32767" attributes="2"/>
+                          <Component id="txtMainClass" alignment="0" max="32767" attributes="2"/>
+                          <Component id="comConfiguration" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="btnWorkDir" max="32767" attributes="0"/>
+                          <Component id="btnMainClass" alignment="0" max="32767" attributes="0"/>
+                          <Component id="customizeOptionsButton" alignment="0" max="32767" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="btnWorkDir" min="-2" max="-2" attributes="0"/>
-                  <Component id="btnMainClass" alignment="0" min="-2" max="-2" attributes="0"/>
-              </Group>
-          </Group>
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="128" pref="128" max="128" attributes="0"/>
-              <Component id="lblHint" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="246" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -70,13 +74,14 @@
                   <Component id="btnWorkDir" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="lblVMOptions" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="txtVMOptions" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="lblVMOptions" min="-2" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" min="-2" pref="67" max="-2" attributes="0"/>
+                  <Component id="customizeOptionsButton" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="lblHint" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="139" max="32767" attributes="0"/>
+              <EmptySpace pref="91" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -160,11 +165,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="txtVMOptions">
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="VM options"/>
-      </AccessibilityProperties>
-    </Component>
     <Component class="javax.swing.JLabel" name="lblHint">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -196,6 +196,37 @@
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" value="Configuration"/>
       </AccessibilityProperties>
+    </Component>
+    <Container class="javax.swing.JScrollPane" name="jScrollPane1">
+      <AuxValues>
+        <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+
+      <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
+      <SubComponents>
+        <Component class="javax.swing.JTextArea" name="txtVMOptions">
+          <Properties>
+            <Property name="columns" type="int" value="20"/>
+            <Property name="lineWrap" type="boolean" value="true"/>
+            <Property name="rows" type="int" value="5"/>
+          </Properties>
+          <AccessibilityProperties>
+            <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="RunJarPanel.txtVMOptions.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </AccessibilityProperties>
+        </Component>
+      </SubComponents>
+    </Container>
+    <Component class="javax.swing.JButton" name="customizeOptionsButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="RunJarPanel.customizeOptionsButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="customizeOptionsButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

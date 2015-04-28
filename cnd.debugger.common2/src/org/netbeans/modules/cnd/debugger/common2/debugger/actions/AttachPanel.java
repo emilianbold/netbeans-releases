@@ -782,7 +782,7 @@ public final class AttachPanel extends TopComponent {
     private final static RequestProcessor getPcRP =  
 				new RequestProcessor("processes"); // throughput 1 // NOI18N
 
-    private PsProvider.PsData psData = null;
+    private volatile PsProvider.PsData psData = null;
 
     private void setPsData (PsProvider.PsData data) {
 	psData = data;
@@ -1052,6 +1052,10 @@ public final class AttachPanel extends TopComponent {
 
         @Override
         public boolean load(Properties props) {
+            if (psData == null) {
+                NativeDebuggerManager.warning(Catalog.get("MSG_Uninitialized_Process_Table"));
+                return false;
+            }
             Vector<Vector<String>> processes = psData.processes(Pattern.compile(props.getString(COMMAND_PROP, NO_EXISTING_PROCESS), Pattern.LITERAL));
             if (processes.isEmpty()) {
                 return false;

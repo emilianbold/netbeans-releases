@@ -46,10 +46,9 @@ package org.netbeans.modules.websvc.rest.wadl.design.view.actions;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.ComboBoxModel;
-import javax.swing.event.ListDataListener;
 import org.netbeans.modules.websvc.rest.wadl.design.Util;
-import org.netbeans.modules.websvc.rest.wadl.model.*;
+import org.netbeans.modules.websvc.rest.wadl.model.Application;
+import org.netbeans.modules.websvc.rest.wadl.model.Resource;
 
 /**
  *
@@ -57,21 +56,18 @@ import org.netbeans.modules.websvc.rest.wadl.model.*;
  */
 public class AddResourcePanel extends javax.swing.JPanel {
     
-    private Object resourceParent;
-
     /** Creates new form NewJPanel */
     public AddResourcePanel(Object resourceParent) {
         initComponents();
-        this.resourceParent = resourceParent;
-        
         
          //Find unique name
         List<String> existingNames = new ArrayList<String>();
         if(resourceParent instanceof Application && !((Application)resourceParent).getResources().isEmpty()) {
             for(Resource r:((Application)resourceParent).getResources().iterator().next().getResource()) {
                 String id = r.getPath();
-                if(id != null && id.length() > 0)
+                if(id != null && id.length() > 0) {
                     existingNames.add(id);
+                }
             }
         } else if(resourceParent instanceof Resource &&
                 !((Resource)resourceParent).getResource().isEmpty()) {
@@ -82,18 +78,12 @@ public class AddResourcePanel extends javax.swing.JPanel {
                 }
             }
         }
-        tfResourceName.setText(Util.generateUniqueName("newResource", existingNames));
+        tfResourceName.setText(Util.generateUniqueName("newResource", existingNames)); // NOI18N
     }
     
     public String getResourceName(){
         return tfResourceName.getText();
     }
-     
-//    public List<ParamModel> getParameterTypes() {
-//        return parametersPanel.getParameters();
-//    }
-
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -142,37 +132,5 @@ private WSDLModel getWsdlModel() {
     private javax.swing.JLabel nameLabel;
     private javax.swing.JTextField tfResourceName;
     // End of variables declaration//GEN-END:variables
-  
-    private class MimeTypesModel implements ComboBoxModel {
 
-        private transient List mimeTypes = new ArrayList();
-        private Object selectedItem;
-
-        public MimeTypesModel() {
-            this.mimeTypes.add("application/xml");
-            this.mimeTypes.add("application/json");
-        }
-
-        public void setSelectedItem(Object selectedItem) {
-            this.selectedItem = selectedItem;
-        }
-
-        public Object getSelectedItem() {
-            return selectedItem;
-        }
-
-        public int getSize() {
-            return mimeTypes.size();
-        }
-
-        public Object getElementAt(int index) {
-            return mimeTypes.get(index);
-        }
-
-        public void addListDataListener(ListDataListener l) {
-        }
-
-        public void removeListDataListener(ListDataListener l) {
-        }
-    }
 }

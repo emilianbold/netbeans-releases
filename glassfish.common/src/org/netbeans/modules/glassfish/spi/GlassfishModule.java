@@ -83,6 +83,7 @@ public interface GlassfishModule {
     public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
     public static final String START_DERBY_FLAG = "derbyStartOn";
     public static final String USE_IDE_PROXY_FLAG = "useIDEProxyOn";
+    public static final String LOOPBACK_FLAG = "loopbackOn";
     public static final String HTTPHOST_ATTR = "httphostname";  // NOI18N -- necessary for cluster and instance support
     
     public static final String USE_SHARED_MEM_ATTR = "use.shared.mem"; // NOI18N

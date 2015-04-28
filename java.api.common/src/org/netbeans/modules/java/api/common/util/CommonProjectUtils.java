@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.api.common.util;
 
+import java.awt.Window;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -61,6 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.OptionsDialog;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
