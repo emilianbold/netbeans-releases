@@ -286,16 +286,18 @@ public class DefineInterceptor implements FunctionInterceptor {
                             if (fileObject != null) {
                                 Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(fileObject.getName(), factory);
                                 JsObject requireObj = globalObject.getProperty(requireFunctionName);
-                                if (!(requireObj instanceof JsFunction)) {
-                                    JsObject parent = requireObj.getParent();
-                                    requireObj = factory.newFunction(scope, requireObj.getParent(), requireObj.getName(), new ArrayList<String>());
-                                    parent.addProperty(requireObj.getName(), requireObj);
-                                }
-                                if (requireObj instanceof JsFunction) {
-                                    JsFunction requireFun = (JsFunction) globalObject.getProperty(requireFunctionName);
-                                    // now add all typeUsages found in index as return types
-                                    for (TypeUsage typeUsage : exposedTypes) {
-                                        requireFun.addReturnType(typeUsage);
+                                if (requireObj != null) {
+                                    if (!(requireObj instanceof JsFunction)) {
+                                        JsObject parent = requireObj.getParent();
+                                        requireObj = factory.newFunction(scope, requireObj.getParent(), requireObj.getName(), new ArrayList<String>());
+                                        parent.addProperty(requireObj.getName(), requireObj);
+                                    }
+                                    if (requireObj instanceof JsFunction) {
+                                        JsFunction requireFun = (JsFunction) globalObject.getProperty(requireFunctionName);
+                                        // now add all typeUsages found in index as return types
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            requireFun.addReturnType(typeUsage);
+                                        }
                                     }
                                 }
                             }
