@@ -112,6 +112,15 @@ abstract class CppFoldManagerBase implements FoldManager {
     /** Collapse initial comment by default */
     public static final String CODE_FOLDING_COLLAPSE_INITIAL_COMMENT = "code-folding-collapse-initial-comment"; //NOI18N
     
+    /**
+     * Collapse code blocks by default
+     */
+    public static final String CODE_FOLDING_COLLAPSE_CODE_BLOCK = "code-folding-collapse-code-block"; // NOI18N
+    /**
+     * Collapse code comments by default
+     */
+    public static final String CODE_FOLDING_COLLAPSE_COMMENT = "code-folding-collapse-comment"; // NOI18N
+    
     /* Copied from JavaFoldManger in java/editor/lib */
     protected static final class FoldTemplate {
         
