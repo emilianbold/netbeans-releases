@@ -74,8 +74,10 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             replaceAll.setSelected(pref.getBoolean("replaceAll", true)); //NOI18N
         }
 
-        declareFinal.setEnabled(!introduceConstant);
-        declareFinal.setSelected(introduceConstant ? true : pref.getBoolean("declareFinal", true)); //NOI18N
+        // Do not support const check box. Instead edit type
+        declareFinal.setVisible(false);
+        //declareFinal.setEnabled(!introduceConstant);
+        //declareFinal.setSelected(introduceConstant ? true : pref.getBoolean("declareFinal", true)); //NOI18N
 
         if (!introduceConstant) {
             int accessModifier = pref.getInt("accessModifier", ACCESS_PUBLIC); //NOI18N
@@ -280,11 +282,11 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         return ret;
     }
 
-    public boolean isDeclareFinal() {
-        boolean ret = declareFinal.isSelected();
-        getPreferences(introduceConstant).putBoolean("declareFinal", ret); //NOI18N
-        return ret;
-    }
+    //public boolean isDeclareFinal() {
+    //    boolean ret = declareFinal.isSelected();
+    //    getPreferences(introduceConstant).putBoolean("declareFinal", ret); //NOI18N
+    //    return ret;
+    //}
 
     public CsmVisibility getAccess() {
         if (testAccess != null) {
@@ -312,9 +314,9 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
         this.name.setText(name);
     }
 
-    void setDeclareFinal(boolean declareFinal) {
-        this.declareFinal.setSelected(declareFinal);
-    }
+    //void setDeclareFinal(boolean declareFinal) {
+    //    this.declareFinal.setSelected(declareFinal);
+    //}
 
     void setReplaceAll(boolean replaceAll) {
         this.replaceAll.setSelected(replaceAll);

@@ -22,7 +22,6 @@ import org.openide.util.Pair;
 final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
     private final int numDuplicates;
     private final IntroduceKind kind;
-    private boolean declareConst = false;
     private boolean replaceOccurrences = false;
     private final List<Pair<Integer, Integer>> occurrences;
     private String type;
@@ -56,11 +55,6 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
     }
 
     @Override
-    protected boolean declareConst() {
-        return declareConst;
-    }
-
-    @Override
     protected List<Pair<Integer, Integer>> replaceOccurrences() {
         if (!replaceOccurrences) {
             return Collections.emptyList();
@@ -87,7 +81,6 @@ final class ExtendedIntroduceVariableFix extends IntroduceVariableFix {
             return null; //cancel
         }
         guessedName = panel.getVariableName();
-        declareConst = panel.isDeclareFinal();
         replaceOccurrences = panel.isReplaceAll();
         type = panel.getType();
         return guessedName;

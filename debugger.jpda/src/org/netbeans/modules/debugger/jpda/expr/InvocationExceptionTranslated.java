@@ -294,7 +294,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     
     
     
-    private String getOriginalLocalizedMessage() {
+    public String getOriginalLocalizedMessage() {
         getLocalizedMessage();
         return localizedMessage;
     }

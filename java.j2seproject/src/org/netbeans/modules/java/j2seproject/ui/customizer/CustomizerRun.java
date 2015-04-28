@@ -51,7 +51,6 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChoos
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SERunConfigProvider;
-import org.netbeans.modules.java.j2seproject.ui.customizer.vmo.OptionsDialog;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -88,7 +87,9 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
 import org.netbeans.api.java.queries.SourceLevelQuery;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.api.J2SERuntimePlatformProvider;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Parameters;
@@ -620,12 +621,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void customizeVMOptionsByDialog(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeVMOptionsByDialog
         String origin = jTextVMOptions.getText();
         try {
-            String result = OptionsDialog.showCustomizer(SwingUtilities.getWindowAncestor(this), origin);
+            String result = ProjectUISupport.showVMOptionCustomizer(SwingUtilities.getWindowAncestor(this), origin);
             jTextVMOptions.setText(result);
         } catch (Exception e) {
             log.log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
         }
-
     }//GEN-LAST:event_customizeVMOptionsByDialog
 
     private void jButtonManagePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonManagePlatformsActionPerformed

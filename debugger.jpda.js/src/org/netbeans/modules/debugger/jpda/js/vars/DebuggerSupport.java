@@ -207,6 +207,24 @@ public final class DebuggerSupport {
     }
     
     public static Variable evaluate(JPDADebugger debugger, CallStackFrame frame, String expression, ObjectVariable contextVar) throws InvalidExpressionException {
+        try {
+            return doEvaluate(debugger, frame, expression, contextVar);
+        } catch (InvalidExpressionException ieex) {
+            Throwable targetException = ieex.getTargetException();
+            if (targetException == null) {
+                throw ieex;
+            }
+            String name;
+            try {
+                name = (String) targetException.getClass().getMethod("getOriginalLocalizedMessage").invoke(targetException);
+            } catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+                name = targetException.getLocalizedMessage();
+            }
+            throw new InvalidExpressionException(name, targetException);
+        }
+    }
+    
+    private static Variable doEvaluate(JPDADebugger debugger, CallStackFrame frame, String expression, ObjectVariable contextVar) throws InvalidExpressionException {
         List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
         if (supportClasses.isEmpty()) {
             return null;
@@ -291,7 +309,10 @@ public final class DebuggerSupport {
         if (var instanceof ObjectVariable) {
             ObjectVariable ov = (ObjectVariable) var;
             List<JPDAClassType> supportClasses = debugger.getClassesByName(DEBUGGER_SUPPORT_CLASS);
-            if (supportClasses.isEmpty()) {
+            JPDAClassType ct;
+            if (supportClasses.isEmpty() ||
+                ((ct = ov.getClassType()) != null && String.class.getCanonicalName().equals(ct.getName()))) {
+
                 try {
                     return ov.getToStringValue();
                 } catch (InvalidExpressionException ex) {
