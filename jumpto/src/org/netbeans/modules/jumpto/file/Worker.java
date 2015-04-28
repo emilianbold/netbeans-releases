@@ -564,9 +564,9 @@ final class Worker implements Runnable {
                 FileIndexer.ID,
                 FileIndexer.VERSION,
                 roots.toArray(new FileObject[roots.size()]));
-            final QuerySupport.Query.Factory f = q.getQueryFactory();
-            f.setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR);
-            f.setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
+            final QuerySupport.Query.Factory f = q.getQueryFactory().
+                    setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR).
+                    setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
             if (isCancelled()) {
                 return false;
             }
