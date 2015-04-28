@@ -37,64 +37,98 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
-import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
-import org.antlr.runtime.TokenStream;
+import org.antlr.runtime.tree.CommonTree;
 
 /**
  * @author Rastislav Komara
  */
-public class UnrecognizedOption extends SwitchNode {
-    private final TokenStream input;
-    private final Token start;
-    private final Token stop;
-    private final RecognitionException e;
+public class JavaVMOption<V extends OptionValue<?>> extends CommonTree implements Comparable<JavaVMOption<?>>{
+    private String name;
+    private V value;
+    /**
+     * Indicated that this option should not be specified by user alone (e.g. classpath, bootclasspath)
+     */
+    private boolean valid = true;
+    protected static final String SPACE = " ";
+    protected static final char HYPHEN = '-';
 
-    public UnrecognizedOption(TokenStream input, Token start, Token stop, RecognitionException e) {
-        super(start);        
-        this.input = input;
-        this.start = start;
-        this.stop = stop;
-        this.e = e;
-        if (start != null) {
-            setName(start.getText());
+    protected JavaVMOption(Token t) {
+        super(t);
+    }
+
+    protected JavaVMOption(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public V getValue() {
+        return value;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
+    }
+    
+    public void setValue(V value) {
+        this.value = value;
+    }
+
+    public StringBuilder print(StringBuilder builder) {
+        return ensureBuilder(builder);
+    }
+
+    protected StringBuilder ensureBuilder(StringBuilder builder) {
+        if (builder == null) {
+            builder = new StringBuilder();
         }
-        setValue(new OptionValue.SwitchOnly(true));
-    }
-
-    public UnrecognizedOption(Token start) {
-        this(null, start, null, null);
-    }
-
-    public UnrecognizedOption(String name) {
-        this(null, null, null, null);
-        setName(name);
-        setValue(new OptionValue.SwitchOnly(true));
-    }
-
-    @Override
-    public StringBuilder print(StringBuilder sb) {
-        sb = ensureBuilder(sb);
-        if (input != null) {
-            for (int i = start.getTokenIndex(); i <= stop.getTokenIndex(); i++) {
-                sb.append(input.get(i).getText());
-            }
-        } else {
-            sb.append(HYPHEN).append(getName());
-        }
-        return sb;
+        return builder;
     }
 
     @Override
     public String toString() {
-        return "UnrecognizedOption{" +
-                "input=" + input +
-                ", start=" + start +
-                ", stop=" + stop +
-                ", e=" + e +
-                " as " + super.toString() + 
+        return "JavaVMOption{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                ", valid=" + valid +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JavaVMOption<V> other = (JavaVMOption<V>) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        return true;
+    }
+        
+    @Override
+    public int hashCode() {
+        int result = name.hashCode();
+        return result;
+    }
+
+    protected void setValid(boolean valid) {
+        this.valid = valid;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public int compareTo(JavaVMOption<?> o) {
+        return getName().compareTo(o.getName());
     }
 }

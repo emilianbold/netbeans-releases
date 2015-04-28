@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.api.common.project.ui;
 
+import java.awt.Window;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
@@ -52,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.customizer.vmo.OptionsDialog;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
@@ -125,4 +127,16 @@ public final class ProjectUISupport{
         return new JavaSourceNodeFactory.PreselectPropertiesAction(project, nodeName, panelName);
     }
 
+    /**
+     * Opens the java VM Options customizer.
+     * 
+     * @param owner the customizer dialog owner
+     * @param options the origin options to be preselected in the customizer
+     * @return the options selected in the customizer dialog
+     * @throws Exception if it isn't possible to parse the vm options.
+     */
+    @NonNull
+    public static String showVMOptionCustomizer(Window owner, String options) throws Exception {
+        return OptionsDialog.showCustomizer(owner, options != null ? options : ""); //NOI18N
+    }    
 }

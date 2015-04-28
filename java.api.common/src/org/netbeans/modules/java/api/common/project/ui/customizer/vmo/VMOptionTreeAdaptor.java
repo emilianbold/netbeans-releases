@@ -37,36 +37,21 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.Token;
+import org.antlr.runtime.TokenStream;
+import org.antlr.runtime.tree.CommonTreeAdaptor;
 
 /**
  * @author Rastislav Komara
  */
-public class SwitchNode extends JavaVMOption<OptionValue.SwitchOnly> {
-
-    public SwitchNode(Token t) {
-        super(t);
-        if (t != null) {
-            setName(t.getText());
-            setValue((OptionValue.SwitchOnly) OptionValue.createSwitch());
-        }
-    }
-        
-    public SwitchNode(int ttype, Token t) {
-        this(t);
-    }
-
-    public SwitchNode(String name) {
-        super(name);
-        setValue(new OptionValue.SwitchOnly(false));
-    }
+public class VMOptionTreeAdaptor extends CommonTreeAdaptor {
 
     @Override
-    public StringBuilder print(StringBuilder builder) {
-        StringBuilder sb = super.print(builder);
-        return getValue().isPresent() ? sb.append(SPACE).append(HYPHEN).append(getName()) : sb;
+    public Object errorNode(TokenStream input, Token start, Token stop, RecognitionException e) {
+        return nil();
+//        return new UnrecognizedOption(input, start, stop, e);
     }
-    
 }

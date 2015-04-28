@@ -37,98 +37,62 @@
  * therefore, elected the GPL Version 2 license, then the option applies only
  * if the new code is made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.java.j2seproject.ui.customizer.vmo;
+package org.netbeans.modules.java.api.common.project.ui.customizer.vmo;
 
 import org.antlr.runtime.Token;
-import org.antlr.runtime.tree.CommonTree;
 
 /**
  * @author Rastislav Komara
  */
-public class JavaVMOption<V extends OptionValue<?>> extends CommonTree implements Comparable<JavaVMOption<?>>{
-    private String name;
-    private V value;
-    /**
-     * Indicated that this option should not be specified by user alone (e.g. classpath, bootclasspath)
-     */
-    private boolean valid = true;
-    protected static final String SPACE = " ";
-    protected static final char HYPHEN = '-';
+public class ParametrizedNode extends JavaVMOption<OptionValue.SimpleString> {
+    private String delimiter;
 
-    protected JavaVMOption(Token t) {
-        super(t);
-    }
-
-    protected JavaVMOption(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
+    public ParametrizedNode(Token token, int splitIndex) {
+        super(token);
+        final String string = token.getText();
+        if (string != null) {
+            setName(string.substring(0, splitIndex));
+            setValue(new OptionValue.SimpleString(string.substring(splitIndex)));
+            delimiter = "";
+            setValid(true);
+        } else {
+            setName("");
+            setValid(false);
+        }
     }
 
-    public V getValue() {
-        return value;
+    public ParametrizedNode(Token name, String delimiter, String parameter) {
+        this(name,delimiter, parameter, true);
     }
-    
-    public void setName(String name) {
-        this.name = name;
-    }
-    
-    public void setValue(V value) {
-        this.value = value;
+    public ParametrizedNode(Token name, String delimiter, String parameter, boolean isValid) {
+        super(name);
+        setName(name.getText());
+        this.delimiter = delimiter;
+        if (parameter != null) {
+            setValue(new OptionValue.SimpleString(parameter));
+        }
+        setValid(isValid);
     }
 
+    public ParametrizedNode(String name, String delimiter) {
+        super(name);
+        this.delimiter = delimiter;
+        setValue(new OptionValue.SimpleString());
+    }
+
+    public ParametrizedNode(Token token, String name, String delimiter, String value) {
+        super(token);
+        setName(name);
+        this.delimiter = delimiter;
+        setValue(new OptionValue.SimpleString(value));
+    }
+
+    @Override
     public StringBuilder print(StringBuilder builder) {
-        return ensureBuilder(builder);
-    }
-
-    protected StringBuilder ensureBuilder(StringBuilder builder) {
-        if (builder == null) {
-            builder = new StringBuilder();
+        StringBuilder sb = super.print(builder);
+        if (getValue().isPresent()) {
+                sb.append(SPACE).append(HYPHEN).append(getName()).append(delimiter).append(getValue().getValue());
         }
-        return builder;
-    }
-
-    @Override
-    public String toString() {
-        return "JavaVMOption{" +
-                "name='" + name + '\'' +
-                ", value=" + value +
-                ", valid=" + valid +
-                '}';
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final JavaVMOption<V> other = (JavaVMOption<V>) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        return true;
-    }
-        
-    @Override
-    public int hashCode() {
-        int result = name.hashCode();
-        return result;
-    }
-
-    protected void setValid(boolean valid) {
-        this.valid = valid;
-    }
-
-    public boolean isValid() {
-        return valid;
-    }
-
-    public int compareTo(JavaVMOption<?> o) {
-        return getName().compareTo(o.getName());
+        return sb;
     }
 }

@@ -52,6 +52,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
@@ -60,6 +61,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -68,6 +70,8 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
@@ -319,10 +323,12 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         txtWorkDir = new javax.swing.JTextField();
         btnWorkDir = new javax.swing.JButton();
         lblVMOptions = new javax.swing.JLabel();
-        txtVMOptions = new javax.swing.JTextField();
         lblHint = new javax.swing.JLabel();
         lblConfiguration = new javax.swing.JLabel();
         comConfiguration = new javax.swing.JComboBox();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        txtVMOptions = new javax.swing.JTextArea();
+        customizeOptionsButton = new javax.swing.JButton();
 
         lblMainClass.setLabelFor(txtMainClass);
         org.openide.awt.Mnemonics.setLocalizedText(lblMainClass, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "LBL_MainClass")); // NOI18N
@@ -352,11 +358,24 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
 
         comConfiguration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
+        txtVMOptions.setColumns(20);
+        txtVMOptions.setLineWrap(true);
+        txtVMOptions.setRows(5);
+        jScrollPane1.setViewportView(txtVMOptions);
+        txtVMOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RunJarPanel.class, "RunJarPanel.txtVMOptions.AccessibleContext.accessibleDescription")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(customizeOptionsButton, org.openide.util.NbBundle.getMessage(RunJarPanel.class, "RunJarPanel.customizeOptionsButton.text")); // NOI18N
+        customizeOptionsButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                customizeOptionsButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblWorkDir)
                     .addComponent(lblVMOptions)
@@ -365,19 +384,21 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                     .addComponent(lblMainClass))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtVMOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .addComponent(txtWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .addComponent(txtArguments, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .addComponent(txtMainClass, javax.swing.GroupLayout.DEFAULT_SIZE, 225, Short.MAX_VALUE)
-                    .addComponent(comConfiguration, 0, 225, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(btnWorkDir)
-                    .addComponent(btnMainClass)))
             .addGroup(layout.createSequentialGroup()
-                .addGap(128, 128, 128)
                 .addComponent(lblHint)
-                .addContainerGap(246, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtWorkDir, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtArguments, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtMainClass, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(comConfiguration, javax.swing.GroupLayout.Alignment.LEADING, 0, 230, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(btnWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnMainClass, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(customizeOptionsButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -400,12 +421,13 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                     .addComponent(txtWorkDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnWorkDir))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblVMOptions)
-                    .addComponent(txtVMOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(customizeOptionsButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint)
-                .addContainerGap(139, Short.MAX_VALUE))
+                .addContainerGap(91, Short.MAX_VALUE))
         );
 
         txtMainClass.getAccessibleContext().setAccessibleDescription("Main class");
@@ -413,7 +435,6 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         txtArguments.getAccessibleContext().setAccessibleDescription("Arguments");
         txtWorkDir.getAccessibleContext().setAccessibleDescription("Working directory");
         btnWorkDir.getAccessibleContext().setAccessibleDescription("Browse working directory");
-        txtVMOptions.getAccessibleContext().setAccessibleDescription("VM options");
         comConfiguration.getAccessibleContext().setAccessibleDescription("Configuration");
     }// </editor-fold>//GEN-END:initComponents
 
@@ -434,6 +455,16 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             txtWorkDir.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_btnWorkDirActionPerformed
+
+    private void customizeOptionsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customizeOptionsButtonActionPerformed
+        String origin = txtVMOptions.getText();
+        try {
+            String result = ProjectUISupport.showVMOptionCustomizer(SwingUtilities.getWindowAncestor(this), origin);
+            txtVMOptions.setText(result);
+        } catch (Exception e) {
+            Logger.getLogger(RunJarPanel.class.getName()).log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
+        }
+    }//GEN-LAST:event_customizeOptionsButtonActionPerformed
 
     void applyChanges() {
         String newMainClass = txtMainClass.getText().trim();
@@ -587,6 +618,8 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private javax.swing.JButton btnMainClass;
     private javax.swing.JButton btnWorkDir;
     private javax.swing.JComboBox comConfiguration;
+    private javax.swing.JButton customizeOptionsButton;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblArguments;
     private javax.swing.JLabel lblConfiguration;
     private javax.swing.JLabel lblHint;
@@ -595,7 +628,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private javax.swing.JLabel lblWorkDir;
     private javax.swing.JTextField txtArguments;
     private javax.swing.JTextField txtMainClass;
-    private javax.swing.JTextField txtVMOptions;
+    private javax.swing.JTextArea txtVMOptions;
     private javax.swing.JTextField txtWorkDir;
     // End of variables declaration//GEN-END:variables
 
