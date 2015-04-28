@@ -41,16 +41,8 @@
  */
 package org.netbeans.modules.jumpto.symbol;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -62,28 +54,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
-import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
-import org.openide.awt.HtmlRenderer;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -147,7 +132,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, caseSensitive);
+        return new ItemRenderer(
+            list,
+            caseSensitive,
+            new SymbolDescriptorCovertor());
     }
 
     @Override
@@ -254,209 +242,42 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         return res;
     }
 
-    private static class MyPanel extends JPanel {
-
-	private SymbolDescriptor td;
-
-	void setDescriptor(SymbolDescriptor td) {
-	    this.td = td;
-	    // since the same component is reused for dirrerent list itens,
-	    // null the tool tip
-	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
-	}
-
-	@Override
-	public String getToolTipText() {
-	    // the tool tip is gotten from the descriptor
-	    // and cached in the standard TOOL_TIP_TEXT_KEY property
-	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
-	    if( text == null ) {
-                if( td != null ) {
-                    text = td.getFileDisplayPath();
-                }
-                putClientProperty(TOOL_TIP_TEXT_KEY, text);
-	    }
-	    return text;
-	}
-    }
-
-    private static class Renderer extends EntitiesListCellRenderer implements ActionListener {
-
-        private final HighlightingNameFormatter symbolNameFormatter;
-
-        private MyPanel rendererComponent;
-        private JLabel jlName = HtmlRenderer.createLabel();
-        private JLabel jlOwner = new JLabel();
-        private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 15;
-        private int LIGHTER_COLOR_COMPONENT = 80;
-        private Color fgColor;
-        private Color fgColorLighter;
-        private Color bgColor;
-        private Color bgColorDarker;
-        private Color bgSelectionColor;
-        private Color fgSelectionColor;
-
-        private JList jList;
-        private boolean caseSensitive;
-
-        public Renderer(
-                @NonNull final JList list,
-                @NonNull final ButtonModel caseSensitive) {
-
-            jList = list;
-            this.caseSensitive = caseSensitive.isSelected();
-            resetName();
-            Container container = list.getParent();
-            if ( container instanceof JViewport ) {
-                ((JViewport)container).addChangeListener(this);
-                stateChanged(new ChangeEvent(container));
-            }
-
-            rendererComponent = new MyPanel();
-            rendererComponent.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlName, c);
-            jlOwner.setOpaque(false);
-            jlOwner.setFont(list.getFont());
-            c = new GridBagConstraints();
-            c.gridx = 1;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlOwner, c);
-
-            c = new GridBagConstraints();
-            c.gridx = 2;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.EAST;
-            rendererComponent.add( jlPrj, c);
-
-
-            jlPrj.setOpaque(false);
-            jlPrj.setFont(list.getFont());
-
-
-            jlPrj.setHorizontalAlignment(RIGHT);
-            jlPrj.setHorizontalTextPosition(LEFT);
-
-            // setFont( list.getFont() );
-            fgColor = list.getForeground();
-            fgColorLighter = new Color(
-                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
-                                  );
-
-            bgColor = new Color( list.getBackground().getRGB() );
-            bgColorDarker = new Color(
-                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
-                            );
-            bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();
-            symbolNameFormatter = HighlightingNameFormatter.Builder.create().buildBoldFormatter();
-            caseSensitive.addActionListener(this);
-        }
-
-        public Component getListCellRendererComponent( JList list,
-                                                       Object value,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean hasFocus) {
-
-            // System.out.println("Renderer for index " + index );
-
-            int height = list.getFixedCellHeight();
-            int width = list.getFixedCellWidth() - 1;
-
-            width = width < 200 ? 200 : width;
-
-            // System.out.println("w, h " + width + ", " + height );
-
-            Dimension size = new Dimension( width, height );
-            rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-            resetName();
-            if ( isSelected ) {
-                jlName.setForeground(fgSelectionColor);
-                jlOwner.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
-                rendererComponent.setBackground(bgSelectionColor);
-            }
-            else {
-                jlName.setForeground(fgColor);
-                jlOwner.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);
-                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
-            }
-
-            if ( value instanceof SymbolDescriptor ) {
-                long time = System.currentTimeMillis();
-                SymbolDescriptor td = (SymbolDescriptor)value;
-                jlName.setIcon(td.getIcon());
-                final String formattedSymbolName = symbolNameFormatter.formatName(
-                        td.getSymbolName(),
-                        SymbolProviderAccessor.DEFAULT.getHighlightText(td),
-                        caseSensitive,
-                        isSelected? fgSelectionColor : fgColor);
-                jlName.setText(formattedSymbolName);
-                jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
-                setProjectName(jlPrj, td.getProjectName());
-                jlPrj.setIcon(td.getProjectIcon());
-		rendererComponent.setDescriptor(td);
-                LOG.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
-            }
-            else {
-                jlName.setText( value.toString() );
-            }
-
-            return rendererComponent;
-        }
-
-        public void stateChanged(ChangeEvent event) {
-
-            JViewport jv = (JViewport)event.getSource();
-
-            jlName.setText( "Sample" ); // NOI18N
-            //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false));
-
-            jList.setFixedCellHeight(jlName.getPreferredSize().height);
-            jList.setFixedCellWidth(jv.getExtentSize().width);
+    private static final class SymbolDescriptorCovertor implements ItemRenderer.ItemConvertor<SymbolDescriptor> {
+        @Override
+        public String getName(@NonNull final SymbolDescriptor item) {
+            return item.getSymbolName();
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        public String getHighlightText(@NonNull final SymbolDescriptor item) {
+            return SymbolProviderAccessor.DEFAULT.getHighlightText(item);
         }
 
-        private void resetName() {
-            ((HtmlRenderer.Renderer)jlName).reset();
-            jlName.setFont(jList.getFont());
-            jlName.setOpaque(false);
-            ((HtmlRenderer.Renderer)jlName).setHtml(true);
-            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
+        @Override
+        public String getOwnerName(@NonNull final SymbolDescriptor item) {
+            return NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn", item.getOwnerName());
         }
 
-     }
+        @Override
+        public String getProjectName(@NonNull final SymbolDescriptor item) {
+            return item.getProjectName();
+        }
+
+        @Override
+        public String getFilePath(@NonNull final SymbolDescriptor item) {
+            return item.getFileDisplayPath();
+        }
+
+        @Override
+        public Icon getItemIcon(@NonNull final SymbolDescriptor item) {
+            return item.getIcon();
+        }
+
+        @Override
+        public Icon getProjectIcon(@NonNull final SymbolDescriptor item) {
+            return item.getProjectIcon();
+        }
+    }
 
     private class Worker implements Runnable {
 
