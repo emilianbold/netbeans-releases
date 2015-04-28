@@ -382,8 +382,8 @@ final class CppFoldManager extends CppFoldManagerBase
                 if (prefs != null) {
                     foldInitialCommentsPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT, false);
                     foldIncludesPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_IMPORT, false);
-                    foldCodeBlocksPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_METHOD, false);
-                    foldCommentPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_JAVADOC, false);
+                    foldCodeBlocksPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_CODE_BLOCK, false);
+                    foldCommentPreset = prefs.getBoolean(CODE_FOLDING_COLLAPSE_COMMENT, false);
                 }
             }
         }
