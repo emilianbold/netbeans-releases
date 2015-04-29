@@ -1095,7 +1095,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 String name = text != null ? text.toString() : null;
                 if (name != null) {
                     for (String part : name.split("\\.")) {
-                        if (part.startsWith(prefix)) {
+                        if (part.startsWith(prefix) && (!(item instanceof LazyCompletionItem) || ((LazyCompletionItem)item).accept())) {
                             return idx;
                         }
                         int d = getDistance(part.toLowerCase(), prefLC);

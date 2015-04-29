@@ -81,7 +81,8 @@ public final class OperationException extends Exception {
          * Lack of write permission to write in installation directory
          * @since 1.33
          */
-        WRITE_PERMISSION
+        WRITE_PERMISSION,
+        MODIFIED
     }       
  
     /**

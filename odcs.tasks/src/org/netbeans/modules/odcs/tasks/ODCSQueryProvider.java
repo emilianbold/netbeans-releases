@@ -94,12 +94,14 @@ public class ODCSQueryProvider implements QueryProvider<ODCSQuery, ODCSIssue> {
     @Override
     public void setIssueContainer(final ODCSQuery q, IssueContainer<ODCSIssue> c) {
         q.getController().setIssueContainer(c);
-        ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                q.getController().fill();
-            }
-        });
+        if (q.isSaved()) {
+            ODCS.getInstance().getParallelRequestProcessor().post(new Runnable() {
+                @Override
+                public void run() {
+                    q.getController().fill();
+                }
+            });
+        }
     }
     
     @Override

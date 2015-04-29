@@ -109,6 +109,7 @@ public class Utilities {
     public static final String SIGNATURE_UNVERIFIED = "SIGNATURE_UNVERIFIED";
     public static final String SIGNATURE_VERIFIED = "SIGNATURE_VERIFIED";
     public static final String TRUSTED = "TRUSTED";
+    public static final String MODIFIED = "MODIFIED";
     
     private Utilities() {}
 
@@ -217,12 +218,12 @@ public class Utilities {
                         //SIGNATURE_UNVERIFIED - result = 0;
                     } catch (CertPathValidatorException ex) {
                         // CertPath cannot be validated
-                        err.log(Level.SEVERE, "Cannot validate certificate path - " + ex.getMessage(), ex);
+                        err.log(Level.INFO, "Cannot validate certificate path - " + ex.getMessage(), ex);
                         //SIGNATURE_UNVERIFIED - result = 0;
                     } catch (SecurityException ex) {
                         // When jar/nbm correctly signed, but content modified                    
-                        err.log(Level.SEVERE, "The content of the jar/nbm has been modified - " + ex.getMessage(), ex);
-                        //SIGNATURE_UNVERIFIED - result = 0;
+                        err.log(Level.INFO, "The content of the jar/nbm has been modified - " + ex.getMessage(), ex);
+                        return MODIFIED;                    
                     }
 
                     if (validResult != null) {
