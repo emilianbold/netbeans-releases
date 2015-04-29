@@ -101,7 +101,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startPath.getFileObject().toURI(), null);
 
-        builder.setLang(getLang(ppHandler.getLanguage()));
+        builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
         
         // -I
@@ -221,7 +221,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
 	C, CPP, FORTRAN, C_HEADER, OTHER
     }
     
-    private static InputKind getLang(CharSequence langStr) throws AssertionError {
+    private static InputKind getLang(CharSequence langStr, String filePath) throws AssertionError {
         InputKind out = InputKind.IK_None;
         Language language = Language.valueOf(langStr.toString());
         switch (language) {
@@ -237,6 +237,12 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 out = InputKind.IK_CXX;
                 break;
             case OTHER:
+                // REVIEW:
+                out = InputKind.IK_CXX;
+                if (filePath.endsWith(".c")) {
+                    out = InputKind.IK_C;
+                }
+                break;
             default:
                 throw new AssertionError(language + " from " + langStr);
         }
