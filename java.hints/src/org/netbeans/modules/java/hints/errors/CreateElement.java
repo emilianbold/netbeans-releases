@@ -60,10 +60,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,12 +79,15 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo.PathKind;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
@@ -96,14 +101,18 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
 import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Pair;
 
 /**
  *
  * @author Jan Lahoda
+ * @author markiewb (contributions)
  */
 public final class CreateElement implements ErrorRule<Void> {
     private static final Logger LOG = Logger.getLogger(CreateElement.class.getName());
+    private static final int PRIO_TESTSOURCEGROUP = 500;
+    private static final int PRIO_MAINSOURCEGROUP = 1000;
     
     /** Creates a new instance of CreateElement */
     public CreateElement() {
@@ -518,6 +527,67 @@ public final class CreateElement implements ErrorRule<Void> {
         return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.parameterTypes, formalArguments.parameterNames, formalArguments.typeParameterTypes, formalArguments.typeParameterNames, targetFile));
     }
 
+    /**
+     * Gets the possible sourceGroups based on the current file.
+     * <ul>
+     * <li>If it is a file from src/main/java it will return only
+     * src/main/java.</li>
+     * <li>If it is a file from src/test/java it will return src/main/java AND
+     * src/test/java. (src/test/java will have a higher prio than src/main/java)</li>
+     * </ul>
+     *
+     * @param fileObject
+     * @return map of sourceGroup and its hint-priority
+     */
+    private static Map<SourceGroup, Integer> getPossibleSourceGroups(FileObject fileObject) {
+        Boolean isInTestSources = isInTestSources(fileObject);
+        if (null == isInTestSources) {
+            return Collections.emptyMap();
+        }
+
+        Project p = FileOwnerQuery.getOwner(fileObject);
+        if (null == p) {
+            return Collections.emptyMap();
+        }
+
+        SourceGroup sourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_MAIN);
+        SourceGroup testSourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+
+        Map<SourceGroup, Integer> list = new HashMap<>();
+        if (isInTestSources) {
+            //in test sources (f.e. src/test/java) -> return main sources and test sources
+            if (null != sourceGroup) {
+                list.put(sourceGroup, PRIO_MAINSOURCEGROUP);
+            }
+
+            if (null != testSourceGroup) {
+                //test source group has a higher prio -> before main source group
+                list.put(testSourceGroup, PRIO_TESTSOURCEGROUP);
+            }
+
+        } else {
+            //in sources (f.e. src/main/java) -> return only main sources
+            if (null != sourceGroup) {
+                list.put(sourceGroup, PRIO_MAINSOURCEGROUP);
+            }
+        }
+        return list;
+    }
+
+    private static Boolean isInTestSources(FileObject fileObject) {
+        Project p = FileOwnerQuery.getOwner(fileObject);
+        if (null == p) {
+            return null;
+        }
+
+        SourceGroup testSourceGroup = SourceGroupModifier.createSourceGroup(p, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST);
+        boolean isInTestSources = false;
+        if (null != testSourceGroup) {
+            isInTestSources = FileUtil.isParentOf(testSourceGroup.getRootFolder(), fileObject);
+        }
+        return isInTestSources;
+    }
+    
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, Element source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : Pair.<List<? extends TypeMirror>, List<String>>of(null, null);
 
@@ -528,17 +598,25 @@ public final class CreateElement implements ErrorRule<Void> {
         if (superType != null && (superType.getKind() == TypeKind.OTHER)) {
             return Collections.<Fix>emptyList();
         }
-
-        ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
-        FileObject root = cp.findOwnerRoot(info.getFileObject());
-
-        if (root == null) { //File not part of any project
-            return Collections.<Fix>emptyList();
+        final FileObject fileObject = info.getFileObject();
+        Project p = FileOwnerQuery.getOwner(fileObject);
+        if (null == p) {
+            return Collections.emptyList();
         }
+        List<Fix> fixes = new ArrayList<>();
 
-        PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
+        for (Map.Entry<SourceGroup, Integer> entrySet : getPossibleSourceGroups(fileObject).entrySet()) {
+            SourceGroup sourceGroup = entrySet.getKey();
+            Integer value = entrySet.getValue();
 
-        return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters));
+            final FileObject sourceGroupRoot = sourceGroup.getRootFolder();
+            String sourceRootName = sourceGroup.getDisplayName();
+            PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
+            final CreateOuterClassFix fix = new CreateOuterClassFix(info, sourceGroupRoot, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, sourceRootName);
+            fix.setPriority(value);
+            fixes.add(fix);
+        }
+        return fixes;
     }
 
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
