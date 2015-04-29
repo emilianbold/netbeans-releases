@@ -164,7 +164,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      */
     @Override
     public HelpCtx getHelp() {
-        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-j2ee-helpset.xml");
+        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-usersguide-helpset.xml");
         if (null != fo)
             return new HelpCtx("registering_app_server_hk2_domain"); //NOI18N
         else
