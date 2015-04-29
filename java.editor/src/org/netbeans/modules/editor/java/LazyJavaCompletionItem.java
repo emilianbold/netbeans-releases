@@ -300,7 +300,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
 
         @Override
         public int getSortPriority() {
-            return 690;
+            return 710;
         }
 
         @Override
@@ -310,7 +310,7 @@ public abstract class LazyJavaCompletionItem<T extends Element> extends JavaComp
 
         @Override
         public CharSequence getInsertPrefix() {
-            return accept() ? getDelegate().getInsertPrefix() : null;
+            return name;
         }
     }
 }
