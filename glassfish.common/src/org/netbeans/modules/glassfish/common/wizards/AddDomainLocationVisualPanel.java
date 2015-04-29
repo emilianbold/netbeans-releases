@@ -179,29 +179,6 @@ public class AddDomainLocationVisualPanel extends javax.swing.JPanel {
                 fireChangeEvent();
             }
         });
-        boolean defaultPortsAreOpen = true;
-        ServerSocket adminPort = null;
-        ServerSocket httpPort = null;
-        try {
-            adminPort = new ServerSocket(4848);
-            httpPort = new ServerSocket(8080);
-        } catch (IOException ex) {
-            defaultPortsAreOpen = false;
-            useDefaultPortsCB.setText(NbBundle.getMessage(AddDomainLocationVisualPanel.class,
-                    "AddDomainLocationVisualPanel.useDefaultPortsCB.text2"));
-            if (null == adminPort) {
-                useDefaultPortsCB.setToolTipText(
-                        NbBundle.getMessage(AddDomainLocationVisualPanel.class, "TIP_ADMIN_IN_USE"));  // NOI18N
-            } else {
-                useDefaultPortsCB.setToolTipText(
-                        NbBundle.getMessage(AddDomainLocationVisualPanel.class, "TIP_HTTP_IN_USE"));  // NOI18N
-            }
-        } finally {
-            if (null != adminPort) { try { adminPort.close(); } catch (IOException ioe) {}}
-            if (null != httpPort) { try { httpPort.close(); } catch (IOException ioe) {}}
-        }
-        useDefaultPortsCB.setEnabled(defaultPortsAreOpen);
-        useDefaultPortsCB.setSelected(defaultPortsAreOpen);
         dasPortField.addKeyListener(kl);
         httpPortField.addKeyListener(kl);
         initPortsFields();

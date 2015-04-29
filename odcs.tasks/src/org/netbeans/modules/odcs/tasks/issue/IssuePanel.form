@@ -5,7 +5,7 @@
     <Container class="javax.swing.JPanel" name="attributesSectionPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -736,7 +736,7 @@
     <Container class="javax.swing.JPanel" name="newCommentSectionPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -799,7 +799,7 @@
     <Container class="javax.swing.JPanel" name="attachmentsSectionPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -840,7 +840,7 @@
     <Container class="javax.swing.JPanel" name="subtasksSectionPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -917,7 +917,7 @@
     <Container class="javax.swing.JPanel" name="commentsSectionPanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -951,7 +951,7 @@
     <Container class="javax.swing.JPanel" name="privatePanel">
       <Properties>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-          <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+          <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
         </Property>
       </Properties>
 
@@ -1168,7 +1168,7 @@
                   <Component id="separatorLabelDismiss" min="-2" pref="2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="btnDeleteTask" min="-2" max="-2" attributes="0"/>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1177,27 +1177,30 @@
               <Group type="102" attributes="0">
                   <EmptySpace min="-2" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="103" groupAlignment="2" attributes="0">
-                          <Component id="refreshButton" alignment="2" min="-2" pref="30" max="-2" attributes="0"/>
-                          <Component id="showInBrowserButton" alignment="2" min="-2" pref="30" max="-2" attributes="0"/>
-                          <Component id="separatorLabel" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                          <Component id="submitButton" alignment="2" min="-2" pref="30" max="-2" attributes="0"/>
-                          <Component id="separatorLabel4" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                          <Component id="cancelButton" alignment="2" min="-2" pref="30" max="-2" attributes="0"/>
-                          <Component id="separatorLabel5" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                          <Component id="btnDeleteTask" alignment="2" min="-2" pref="30" max="-2" attributes="0"/>
-                          <Component id="separatorLabelDismiss" alignment="2" min="-2" pref="18" max="-2" attributes="0"/>
-                      </Group>
                       <Group type="102" attributes="0">
                           <Component id="parentHeaderPanel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="2" attributes="0">
-                              <Component id="headerLabel" alignment="2" min="-2" max="-2" attributes="0"/>
-                              <Component id="headerField" alignment="2" min="-2" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="headerLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="headerField" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Group type="102" attributes="0">
+                          <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="separatorLabel" min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="submitButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="separatorLabel4" min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                              <Component id="separatorLabel5" min="-2" pref="18" max="-2" attributes="0"/>
+                              <Component id="btnDeleteTask" min="-2" max="-2" attributes="0"/>
+                              <Component id="separatorLabelDismiss" min="-2" pref="18" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -1363,7 +1366,7 @@
         <Container class="javax.swing.JPanel" name="mainPanel">
           <Properties>
             <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+              <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
             </Property>
           </Properties>
           <AuxValues>
@@ -1410,7 +1413,7 @@
             <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attributesSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
                 <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="getAttributesSectionActions()" type="code"/>
@@ -1426,7 +1429,7 @@
             <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="attachmentsSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
                 <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="getAttachmentsSectionActions()" type="code"/>
@@ -1443,7 +1446,7 @@
             <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="subtasksSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
                 <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="subtasksSectionPanel"/>
@@ -1457,7 +1460,7 @@
             <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="privateSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
                 <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                   <Connection code="getPrivateSectionActions()" type="code"/>
@@ -1473,7 +1476,7 @@
             <Component class="org.netbeans.modules.bugtracking.commons.SectionPanel" name="newCommentSection">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
                 <Property name="content" type="javax.swing.JComponent" editor="org.netbeans.modules.form.ComponentChooserEditor">
                   <ComponentRef name="newCommentSectionPanel"/>
@@ -1486,7 +1489,7 @@
             <Container class="javax.swing.JPanel" name="jPanel1">
               <Properties>
                 <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                  <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                  <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                 </Property>
               </Properties>
 
@@ -1509,7 +1512,7 @@
                 <Component class="org.netbeans.modules.bugtracking.commons.CollapsibleSectionPanel" name="commentsSection">
                   <Properties>
                     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-                      <Color blue="31" green="1e" id="TextArea.background" palette="3" red="12" type="palette"/>
+                      <Color blue="ff" green="ff" id="TextArea.background" palette="3" red="ff" type="palette"/>
                     </Property>
                     <Property name="actions" type="[Ljavax.swing.Action;" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                       <Connection code="getCommentsSectionActions()" type="code"/>
