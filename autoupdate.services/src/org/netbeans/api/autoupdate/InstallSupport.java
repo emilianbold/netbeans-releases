@@ -229,6 +229,7 @@ public final class InstallSupport {
      * @return true for signed and verified <code>UpdateElement</code>
      * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
      * @see #doValidate
+     * @since 1.50
      */
     public boolean isSignedVerified(Installer validator, UpdateElement uElement) {
         return impl.isSignedVerified(validator, uElement);
@@ -241,6 +242,7 @@ public final class InstallSupport {
      * @return true for signed but not verified <code>UpdateElement</code>
      * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
      * @see #doValidate
+     * @since 1.50
      */
     public boolean isSignedUnverified(Installer validator, UpdateElement uElement) {
         return impl.isSignedUnverified(validator, uElement);
@@ -253,6 +255,7 @@ public final class InstallSupport {
      * @return true for modified <code>UpdateElement</code>
      * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
      * @see #doValidate
+     * @since 1.50
      */
     public boolean isContentModified(Installer validator, UpdateElement uElement) {
         return impl.isContentModified(validator, uElement);
