@@ -41,8 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.test;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,6 +69,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -157,10 +164,53 @@ public class ModelBasedTestCase extends CndBaseTestCase {
 
     protected static boolean diffGoldenFiles(boolean isDumpingPPState, File toCheck, File goldenDataFile, File outDiffOrNull) throws IOException {
         if (isDumpingPPState && APTTraceFlags.USE_CLANK) {
-            // we need to filter out Macro Map state which is not dumped in Clank state
-            return CndCoreTestUtils.diff(toCheck, goldenDataFile, outDiffOrNull);
+            File filteredGoldenDataFile = goldenDataFile;
+            if (filteredGoldenDataFile.exists()) {
+                filteredGoldenDataFile = new File(toCheck.getParentFile(), goldenDataFile.getName() + ".no_macro");
+                filterOutMacroMapState(goldenDataFile, filteredGoldenDataFile);
+            }
+            return CndCoreTestUtils.diff(toCheck, filteredGoldenDataFile, outDiffOrNull);
         } else {
             return CndCoreTestUtils.diff(toCheck, goldenDataFile, outDiffOrNull);
         }
+    }
+
+    private static void filterOutMacroMapState(File goldenDataFile, File filteredGoldenDataFile) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        boolean skip = false;
+        try (BufferedWriter writer = Files.newBufferedWriter(filteredGoldenDataFile.toPath(), charset)) {
+            try (BufferedReader reader = Files.newBufferedReader(goldenDataFile.toPath(), charset)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    if (skip) {
+                        if (isEndOfOwnMacroMap(line)) {
+                            skip = false;
+                            writer.write(line);
+                            writer.write('\n');
+                        }
+                    } else {
+                        writer.write(line);
+                        if (isStartOfOwnMacroMap(line)) {
+                            // Clank doesn't have own macros in state
+                            writer.write("\nMACROS (sorted 0):");
+                            skip = true;
+                        }
+                        writer.write('\n');
+                    }
+                    line = reader.readLine();
+                }
+            }
+        }
+    }
+
+    private static boolean isStartOfOwnMacroMap(String line) {
+        // see cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/APTFileMacroMap.java
+        // FileStateImpl.toString()
+        return line.trim().startsWith("Own Map:");
+    }
+
+    private static boolean isEndOfOwnMacroMap(String line) {
+        // skip till the first empty line
+        return line.trim().startsWith("System Map:");
     }
 }
