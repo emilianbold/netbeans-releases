@@ -70,8 +70,8 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 
     private static final Logger LOG = Logger.getLogger(RunCheckerImpl.class.getName());
     
-//    private static final String EXEC_ARGS = "exec.args"; // NOI18N
-//    private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
+    private static final String VM_ARGS = "vm.args"; // NOI18N
+    private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
 //    private static final String PROFILER_ARGS_PREFIXED = "${profiler.args.prefixed}"; // NOI18N
 //    private static final String EXEC_EXECUTABLE = "exec.executable"; // NOI18N
 //    private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
@@ -139,7 +139,19 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             }
             
             session.setAttribute("mvn-run-checker.config", config);
-                        
+             
+            for (Map.Entry<? extends String, ? extends String> entry : config.getProperties().entrySet()) {
+                if (entry.getKey().equals(VM_ARGS)) {
+                    String value = entry.getValue();
+                    int index = value.indexOf(PROFILER_ARGS);
+                    if(index > -1) {
+                        String agentArg = sProps.get("agent.jvmargs");
+                        value = value.replace(PROFILER_ARGS, sProps.get("profiler.info.jvmargs") // NOI18N
+                                + " " + agentArg); // NOI18N
+                        config.setProperty(entry.getKey(), value);
+                    }
+                }
+            }
             final ProfilerLauncher.Session s = session;
             // Attach profiler engine (in separate thread) to profiled process
             RequestProcessor.getDefault().post(new Runnable() {
