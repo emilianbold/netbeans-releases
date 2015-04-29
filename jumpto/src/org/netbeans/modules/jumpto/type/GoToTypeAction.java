@@ -157,7 +157,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     @Override
                     @NonNull
                     protected String getItemValue(@NonNull final TypeDescriptor item) {
-                        return item.getTypeName();
+                        return item.getSimpleName();
                     }
                     @Override
                     protected void update(@NonNull final TypeDescriptor item) {
