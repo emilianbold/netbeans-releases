@@ -95,7 +95,15 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     @NonNull
                     @Override
                     protected String getItemValue(@NonNull final SymbolDescriptor item) {
-                        return item.getSymbolName();
+                        String name = item.getSimpleName();
+                        if (name == null) {
+                            //The SymbolDescriptor does not provide simple name
+                            //the symbol name contains parameter names, so it's needed to strip them
+                            name = item.getSymbolName();
+                            final String[] nameParts = name.split("\\s+|\\(");  //NOI18N
+                            name = nameParts[0];
+                        }
+                        return name;
                     }
                     @Override
                     protected void update(@NonNull final SymbolDescriptor item) {

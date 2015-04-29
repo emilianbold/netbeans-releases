@@ -249,6 +249,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                         if (idents.contains(getSimpleName(te, null)) && matchesRestrictions(te, restriction)) {
                                                             result.addResult(new JavaSymbolDescriptor(
                                                                     te.getSimpleName().toString(),
+                                                                    null,
                                                                     te.getKind(),
                                                                     te.getModifiers(),
                                                                     owner,
@@ -259,8 +260,10 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                         }
                                                         for (Element ne : te.getEnclosedElements()) {
                                                             if (idents.contains(getSimpleName(ne, te)) && matchesRestrictions(ne, restriction)) {
+                                                                final Pair<String,String> name = getDisplayName(ne, te);
                                                                 result.addResult(new JavaSymbolDescriptor(
-                                                                    getDisplayName(ne, te),
+                                                                    name.first(),
+                                                                    name.second(),
                                                                     ne.getKind(),
                                                                     ne.getModifiers(),
                                                                     owner,
@@ -348,17 +351,18 @@ public class JavaSymbolProvider implements SymbolProvider {
         return false;
     }
 
-    private static String getDisplayName (
+    @NonNull
+    private static Pair<String,String> getDisplayName (
             @NonNull final Element e,
             @NonNull final Element enclosingElement) {
         assert e != null;
+        String name;
+        String suffix = null;
         if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-            StringBuilder sb = new StringBuilder();
-            if (e.getKind() == ElementKind.CONSTRUCTOR) {
-                sb.append(enclosingElement.getSimpleName());
-            } else {
-                sb.append(e.getSimpleName());
-            }
+            name = (e.getKind() == ElementKind.CONSTRUCTOR ?
+                    enclosingElement.getSimpleName():
+                    e.getSimpleName()).toString();
+            final StringBuilder sb = new StringBuilder();
             sb.append('('); //NOI18N
             ExecutableElement ee = (ExecutableElement) e;
             final List<? extends VariableElement> vl = ee.getParameters();
@@ -371,9 +375,11 @@ public class JavaSymbolProvider implements SymbolProvider {
                 }
             }
             sb.append(')');
-            return sb.toString();
+            suffix = sb.toString();
+        } else {
+            name = e.getSimpleName().toString();
         }
-        return e.getSimpleName().toString();
+        return Pair.of(name,suffix);
     }
 
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
