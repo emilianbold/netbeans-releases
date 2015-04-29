@@ -78,7 +78,7 @@ public class ClankDriverImpl {
             // TODO: prepare buffers mapping
             CharSequence path = buffer.getAbsolutePath();
             if (CndUtils.isDebugMode()) {
-              byte[] bytes = toBytes(buffer.getCharBuffer());
+              byte[] bytes = toBytes(path, buffer.getCharBuffer());
               assert bytes != null;
             }
             // prepare params to run preprocessor
@@ -103,10 +103,16 @@ public class ClankDriverImpl {
         }
     }
 
-    private static byte[] toBytes(char[] chars) {
+    private static byte[] toBytes(CharSequence path, char[] chars) {
         byte[] asciis = new byte[chars.length];
         for (int i = 0; i < asciis.length; i++) {
-            asciis[i] = NativePointer.$(chars[i]);
+            char c = chars[i];
+            if (c >= 256) {
+              CndUtils.assertTrueInConsole(false, path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
+            } else if (c >= 128) {
+              CndUtils.assertTrueInConsole(false, path.toString(), ":could be problematic non-ANSII " + c);
+            }
+            asciis[i] = (byte)(c);
         }
         return asciis;
     }
