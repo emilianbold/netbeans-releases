@@ -2267,7 +2267,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     return parent;
                 }
             } else {
-                return parent;
+                if (parent.isDeclared() || modelBuilder.getCurrentWith() != null) {
+                    return parent;
+                } else {
+                    return where;
+                }
             }
         }
         if (isInPropertyNode()) {
