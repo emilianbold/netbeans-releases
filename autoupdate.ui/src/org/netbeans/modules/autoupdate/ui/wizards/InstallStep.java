@@ -60,7 +60,9 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JRootPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -490,77 +492,118 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             tmpInst = support.doValidate (v, handle);
             if (tmpInst == null) return null;
         } catch (OperationException ex) {
-            log.log (Level.INFO, ex.getMessage (), ex);
-            ProblemPanel problem = new ProblemPanel(ex, false);
-            problem.showNetworkProblemDialog ();
+            log.log (Level.INFO, ex.getMessage(), ex);
+            ProblemPanel problem = new ProblemPanel(ex, detailLabel.getText(), false);
+            if (ex.getErrorType() == OperationException.ERROR_TYPE.MODIFIED) {
+                problem.showModifiedProblemDialog(detailLabel.getText());
+            } else {
+                problem.showNetworkProblemDialog();
+            }
             handleCancel ();
             return null;
         }
+        
         final Installer inst = tmpInst;
-        List<UpdateElement> unsigned = new ArrayList<UpdateElement> ();
-        List<UpdateElement> untrusted = new ArrayList<UpdateElement> ();
+        List<UpdateElement> signedVerified = new ArrayList<UpdateElement>();
+        List<UpdateElement> signedUnverified = new ArrayList<UpdateElement>();
+        List<UpdateElement> unsigned = new ArrayList<UpdateElement>();
+        List<UpdateElement> modified = new ArrayList<UpdateElement>();
+        int trustedCount = 0;
         String certs = "";
         for (UpdateElement el : model.getAllUpdateElements ()) {
-            if (! support.isSigned (inst, el)) {
-                unsigned.add (el);
-            } else if (! support.isTrusted (inst, el)) {
-                untrusted.add (el);
+            boolean writeCert = false;
+            if (support.isContentModified(inst, el))  {
+                modified.add(el);
+                continue;
+            } else if(support.isTrusted(inst, el)){
+                trustedCount++;
+                continue;
+            } else if (support.isSignedVerified(inst, el)) {
+                signedVerified.add(el);
+                writeCert = true;
+            } else if (support.isSignedUnverified(inst, el)) {
+                signedUnverified.add(el);
+                writeCert = true;
+            } else {
+                unsigned.add(el);
+            }
+
+            if (writeCert) {
                 String cert = support.getCertificate (inst, el);
                 if (cert != null && cert.length () > 0) {
                     certs += getBundle ("ValidationWarningPanel_ShowCertificateFormat", el.getDisplayName (), cert);
                 }
             }
         }
-        if (untrusted.size () > 0 || unsigned.size () > 0 && ! runInBackground ()) {
-            ValidationWarningPanel p = new ValidationWarningPanel (unsigned, untrusted);
-            final JButton showCertificate = new JButton ();
-            final boolean verifyCertificate = ! untrusted.isEmpty () && certs.length () > 0;
-            Mnemonics.setLocalizedText (showCertificate, getBundle ("ValidationWarningPanel_ShowCertificateButton"));
-            final String certificate = certs;
-            showCertificate.addActionListener (new ActionListener () {
-                @Override
-                public void actionPerformed (ActionEvent e) {
-                    if (showCertificate.equals (e.getSource ())) {
-                        JTextArea ta = new JTextArea (certificate);
-                        ta.setEditable (false);
-                        DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message (ta));
-                    }
-                }
-            });
-            final JButton canContinue = new JButton ();
-            Mnemonics.setLocalizedText (canContinue, getBundle ("ValidationWarningPanel_ContinueButton"));
-            final JButton cancel = model.getCancelButton (wd);
-            DialogDescriptor dd = new DialogDescriptor (p, verifyCertificate ?
-                getBundle ("ValidationWarningPanel_VerifyCertificate_Title") :
-                getBundle ("ValidationWarningPanel_Title"));
-            dd.setOptions (new JButton [] {canContinue, cancel});
-            dd.setClosingOptions (new JButton [] {canContinue, cancel});
-            dd.setMessageType (NotifyDescriptor.WARNING_MESSAGE);
-            if (verifyCertificate) {
-                dd.setAdditionalOptions (new JButton [] {showCertificate});
-            }
-            final Dialog dlg = DialogDisplayer.getDefault ().createDialog (dd);
-            try {
-                SwingUtilities.invokeAndWait (new Runnable () {
+        if (signedVerified.size () > 0 || signedUnverified.size () > 0 || unsigned.size () > 0 || modified.size() > 0 && ! runInBackground ()) {
+            int total = trustedCount + signedVerified.size() + signedUnverified.size() + unsigned.size();
+            ValidationWarningPanel p = new ValidationWarningPanel(signedVerified, signedUnverified, unsigned, modified, total);            
+            final boolean verifyCertificate = (!signedVerified.isEmpty() || !signedUnverified.isEmpty()) && certs.length() > 0;
+            
+            JButton[] options;
+            JButton[] closeOptions;
+            final JButton cancel = model.getCancelButton(wd);
+            DialogDescriptor dd = new DialogDescriptor(p, verifyCertificate ?
+                getBundle("ValidationWarningPanel_VerifyCertificate_Title") :
+                getBundle("ValidationWarningPanel_Title"));
+            JButton canContinue = new JButton();
+            canContinue.setDefaultCapable(false);
+            
+            if (modified.isEmpty()) {                
+                final JButton showCertificate = new JButton();
+                Mnemonics.setLocalizedText (showCertificate, getBundle("ValidationWarningPanel_ShowCertificateButton"));
+                final String certificate = certs;
+                showCertificate.addActionListener (new ActionListener() {
                     @Override
-                    public void run () {
-                        dlg.setVisible (true);
+                    public void actionPerformed (ActionEvent e) {
+                        if (showCertificate.equals(e.getSource())) {
+                            JTextArea ta = new JTextArea(certificate);
+                            ta.setEditable (false);
+                            DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message(ta));
+                        }
+                    }
+                });
+                
+                Mnemonics.setLocalizedText(canContinue, getBundle("ValidationWarningPanel_ContinueButton"));                               
+                if (verifyCertificate) {
+                    dd.setAdditionalOptions (new JButton[] {showCertificate});
+                }
+                options = new JButton[] {canContinue, cancel};
+                closeOptions = new JButton[] {canContinue, cancel};
+            } else {
+                options = new JButton[] {cancel};
+                closeOptions = new JButton[] {cancel};
+            }
+                        
+            dd.setOptions(options);
+            dd.setClosingOptions(closeOptions);
+            dd.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+            final Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
+            JDialog jdlg = (JDialog) dlg;
+            jdlg.getRootPane().setDefaultButton(cancel);
+            try {
+                SwingUtilities.invokeAndWait (new Runnable() {
+                    @Override
+                    public void run() {
+                        dlg.setVisible(true);
                     }
                 });
             } catch (InterruptedException ex) {
-                log.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                log.log (Level.INFO, ex.getLocalizedMessage(), ex);
                 return null;
             } catch (InvocationTargetException ex) {
-                log.log (Level.INFO, ex.getLocalizedMessage (), ex);
+                log.log (Level.INFO, ex.getLocalizedMessage(), ex);
                 return null;
             }
-            if (! canContinue.equals (dd.getValue ())) {
-                if (! cancel.equals (dd.getValue ())) cancel.doClick ();
+            if (! canContinue.equals(dd.getValue())) {
+                if (! cancel.equals(dd.getValue())) {
+                    cancel.doClick();
+                }
                 return null;
             }
-            assert canContinue.equals (dd.getValue ());
+            assert canContinue.equals(dd.getValue());           
         }
-        panel.waitAndSetProgressComponents (mainLabel, progressComponent, new JLabel (getBundle ("InstallStep_Done")));
+        panel.waitAndSetProgressComponents(mainLabel, progressComponent, new JLabel (getBundle("InstallStep_Done")));
         return inst;
     }
     

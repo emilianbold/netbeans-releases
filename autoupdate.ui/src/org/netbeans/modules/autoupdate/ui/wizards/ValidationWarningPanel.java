@@ -45,10 +45,11 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
-import javax.swing.JTextPane;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
@@ -58,34 +59,48 @@ import org.netbeans.api.autoupdate.UpdateElement;
 public class ValidationWarningPanel extends javax.swing.JPanel {
     
     /** Creates new form ValidationWarningPanel */
-    public ValidationWarningPanel (List<UpdateElement> unsigned, List<UpdateElement> untrusted) {
+    public ValidationWarningPanel (List<UpdateElement> signedVerified, List<UpdateElement> signedUnverified, List<UpdateElement> unsigned, List<UpdateElement> modified, int total) {
+        pluginModelRoot = new DefaultMutableTreeNode("Third-party Plugins");
+        pluginsModel = new DefaultTreeModel(pluginModelRoot);
         initComponents ();
+        tPlugins.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         taHead.setBackground( new Color(0,0,0,0) );
         taHead.setBorder(BorderFactory.createEmptyBorder());
         taWarning.setBackground( new Color(0,0,0,0) );
         taWarning.setBorder(BorderFactory.createEmptyBorder());
-        postInitComponents (unsigned, untrusted);
+        postInitComponents (signedVerified, signedUnverified, unsigned, modified, total);
     }
     
-    private void postInitComponents (List<UpdateElement> unsigned, List<UpdateElement> untrusted) {
-        List<UpdateElement> plugins = new ArrayList<UpdateElement> ();
-        plugins.addAll (untrusted);
-        plugins.addAll (unsigned);
-        //taPlugins.setRows (plugins.size ());
-        String s = "";
-        for (UpdateElement el : plugins) {
-            s = s + el.getDisplayName () + "\n";
+    private void postInitComponents (List<UpdateElement> signedVerified, List<UpdateElement> signedUnverified, List<UpdateElement> unsigned, List<UpdateElement> modified, int total) {
+        DefaultMutableTreeNode signedAndValidNode = new DefaultMutableTreeNode("Signed and Valid (" + signedVerified.size() + ")");
+        DefaultMutableTreeNode selfSignedNode = new DefaultMutableTreeNode("Self signed (" + signedUnverified.size() + ")");
+        DefaultMutableTreeNode unsignedNode = new DefaultMutableTreeNode("Unsigned (" + unsigned.size() + ")");
+        
+        for (UpdateElement el : signedVerified) {
+            signedAndValidNode.add(new DefaultMutableTreeNode(el.getDisplayName()));
         }
-        tpPlugins.setBackground(new Color(0, 0, 0, 0));
-        tpPlugins.setOpaque(false);
-        tpPlugins.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-        tpPlugins.setText (s);
-        if (untrusted.isEmpty ()) {
-            // not signed
-            taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotSignedText"));
+        pluginModelRoot.add(signedAndValidNode);
+        
+        for (UpdateElement el : signedUnverified) {
+            selfSignedNode.add(new DefaultMutableTreeNode(el.getDisplayName()));
+        }       
+        pluginModelRoot.add(selfSignedNode);
+        
+        for (UpdateElement el : unsigned) {
+            unsignedNode.add(new DefaultMutableTreeNode(el.getDisplayName()));
+        } 
+        pluginModelRoot.add(unsignedNode);
+        
+        pluginsModel.reload();
+        
+        int requiresAttention = signedVerified.size() + signedUnverified.size() + unsigned.size();
+
+        if (requiresAttention > 1) {
+            taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotTrustedTextPl",
+                    requiresAttention, total));
         } else {
-            // not trusted
-            taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotTrustedText"));
+            taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotTrustedTextSg", 
+                    requiresAttention, total));
         }
     }
     
@@ -99,7 +114,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
 
         taHead = new javax.swing.JTextArea();
         spPlugins = new javax.swing.JScrollPane();
-        tpPlugins = new javax.swing.JTextPane();
+        tPlugins = new javax.swing.JTree();
         taWarning = new javax.swing.JTextArea();
 
         taHead.setEditable(false);
@@ -107,9 +122,8 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         taHead.setWrapStyleWord(true);
         taHead.setOpaque(false);
 
-        tpPlugins.setEditable(false);
-        spPlugins.setViewportView(tpPlugins);
-        tpPlugins.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_tpPlugins_ACN")); // NOI18N
+        tPlugins.setModel(pluginsModel);
+        spPlugins.setViewportView(tPlugins);
 
         taWarning.setEditable(false);
         taWarning.setLineWrap(true);
@@ -137,7 +151,7 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(spPlugins, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(taWarning, javax.swing.GroupLayout.DEFAULT_SIZE, 58, Short.MAX_VALUE)
+                .addComponent(taWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 58, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -152,9 +166,11 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane spPlugins;
+    private javax.swing.JTree tPlugins;
     private javax.swing.JTextArea taHead;
     private javax.swing.JTextArea taWarning;
-    private javax.swing.JTextPane tpPlugins;
     // End of variables declaration//GEN-END:variables
     
+    private final DefaultMutableTreeNode pluginModelRoot;
+    private final DefaultTreeModel pluginsModel;
 }
