@@ -256,7 +256,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             String type = v.getType ();
             if (v instanceof ObjectVariable) {
                 tooltipVariable = (ObjectVariable) v;
-                v = getFormattedValue(d, (ObjectVariable) v);
+                try {
+                    Object jdiValue = v.getClass().getMethod("getJDIValue").invoke(v);
+                    if (jdiValue == null) {
+                        tooltipVariable = null;
+                    }
+                } catch (Exception ex) {}
+                if (tooltipVariable != null) {
+                    v = getFormattedValue(d, (ObjectVariable) v);
+                }
             }
             if (v instanceof ObjectVariable) {
                 try {
