@@ -654,10 +654,11 @@ public class FtpClient implements RemoteClient {
         int counter = keepAliveCounter.incrementAndGet();
         if (counter == 10) {
             keepAliveCounter.set(0);
-            LOGGER.log(Level.FINE, "Keep-alive (LIST FILES) for {0}", configuration.getHost());
+            LOGGER.log(Level.FINE, "Keep-alive (LIST NAMES) for {0}", configuration.getHost());
             removeProtocolCommandListener();
             try {
-                ftpClient.listFiles();
+                // #249730 - workaround, list names does not need parser
+                ftpClient.listNames();
                 ftpClient.getReplyString();
             } finally {
                 addProtocolCommandListener();
