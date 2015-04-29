@@ -212,6 +212,11 @@ public class TraceModel extends TraceModelBase {
     public void setDumpPPState(boolean dumpPPState) {
         this.dumpPPState = dumpPPState;
     }
+
+    public boolean isDumpingPPState() {
+        return this.dumpPPState;
+    }
+    
     private boolean listFilesAtEnd = false;
     private boolean testRawPerformance = false;
     private boolean printUserFileList = false;

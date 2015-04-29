@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 
 /**
  * pre-integration tests for parser
@@ -402,6 +403,10 @@ public class FileModelTest extends TraceModelTestBase {
     }
 
     public void testStringizeMacro() throws Exception {
+        if (APTTraceFlags.USE_CLANK) {
+          // this is the test for non-clank mode only
+          return;
+        }
         // IZ 137465 : wrong macro expansion for #x
         performPreprocessorTest("stringize_macro.cc"); // NOI18N
     }

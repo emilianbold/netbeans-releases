@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.test;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.source.CndSourceTestUtilities;
@@ -73,7 +75,7 @@ public class ModelBasedTestCase extends CndBaseTestCase {
     public ModelBasedTestCase(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -151,5 +153,14 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), true, false);
         assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
         return csmFile;
-    }    
+    }
+
+    protected static boolean diffGoldenFiles(boolean isDumpingPPState, File toCheck, File goldenDataFile, File outDiffOrNull) throws IOException {
+        if (isDumpingPPState && APTTraceFlags.USE_CLANK) {
+            // we need to filter out Macro Map state which is not dumped in Clank state
+            return CndCoreTestUtils.diff(toCheck, goldenDataFile, outDiffOrNull);
+        } else {
+            return CndCoreTestUtils.diff(toCheck, goldenDataFile, outDiffOrNull);
+        }
+    }
 }

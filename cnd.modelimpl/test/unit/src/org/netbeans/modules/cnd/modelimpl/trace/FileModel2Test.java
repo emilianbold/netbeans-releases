@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -262,6 +263,10 @@ public class FileModel2Test extends TraceModelTestBase {
     }
 
     public void testIZ147284isDefined() throws Exception {
+        if (APTTraceFlags.USE_CLANK) {
+          // this is the test for non-clank mode only
+          return;
+        }
         // IZ#147284 APTMacroCallback.isDefined(CharSequence) ignores #undef
         String base = "iz147284_is_defined";
         performTest(base + ".cc");
