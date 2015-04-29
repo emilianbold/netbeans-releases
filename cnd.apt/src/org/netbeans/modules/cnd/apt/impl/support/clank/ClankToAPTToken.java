@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import static org.clang.basic.ClangGlobals.$first_FileID;
-import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.tok;
 import org.clang.lex.Preprocessor;
@@ -67,8 +66,6 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
  * @author Vladimir Voskresensky
  */
 /*package*/class ClankToAPTToken implements APTToken {
-
-    private static final CharSequence COMMENT_TEXT_ID = CharSequences.create("/*COMMENT*/");
 
     static APTToken[] convertToAPT(Preprocessor PP, SmallVectorToken toks, boolean needLineColumns) {
         int nrTokens = toks.size();
@@ -186,7 +183,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setOffset(int o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -196,7 +193,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setEndOffset(int o) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -206,7 +203,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setEndColumn(int c) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -216,17 +213,17 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setEndLine(int l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setTextID(CharSequence id) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Object getProperty(Object key) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -236,7 +233,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setColumn(int c) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -246,7 +243,7 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setLine(int l) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -256,17 +253,17 @@ import org.netbeans.modules.cnd.apt.impl.support.APTConstTextToken;
 
     @Override
     public void setFilename(String name) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setText(String t) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setType(int t) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException();
     }
     
     private static final class ClankToAPTTokenWithLineAndColumn extends ClankToAPTToken {
