@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 
 class GdbWatch extends GdbVariable implements WatchVariable {
 
-    private NativeWatch nativeWatch;
+    private volatile NativeWatch nativeWatch;
 
     public GdbWatch(NativeDebugger debugger, ModelChangeDelegator updater,
 		    String name) {
