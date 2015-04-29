@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="separator"/>
     <fontcolor name="warning" waveUnderlined="yellow"/>
     <fontcolor name="whitespace" foreColor="black"/>
+    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
     
     <!-- OO languages -->    
     <fontcolor name="field" foreColor="ff009900" default="identifier"/>
