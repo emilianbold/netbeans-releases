@@ -25,6 +25,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.glassfish.cloud</friend>
                 <friend>org.netbeans.modules.glassfish.common</friend>
                 <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
