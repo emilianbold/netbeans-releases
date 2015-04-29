@@ -485,11 +485,12 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         private final HighlightingNameFormatter nameFormater;
 
         Background(@NullAllowed final String separatorPattern) {
-            Color back = new Color(255,180,66);
+            Color back = new Color(236,235,163);
             Color front = Color.BLACK;
-            final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+            //Todo: Mark Occurrences is not registered in global MimeLookup, need to use lang specific.
+            final FontColorSettings colors = MimeLookup.getLookup(MimePath.parse("text/x-java")).lookup(FontColorSettings.class);   //NOI18N
             if (colors != null) {
-                final AttributeSet attrs = colors.getFontColors("inc-search");  //NOI18N
+                final AttributeSet attrs = colors.getFontColors("mark-occurrences");  //NOI18N
                 if (attrs != null) {
                     Object o = attrs.getAttribute(StyleConstants.Background);
                     if (o instanceof Color) {
