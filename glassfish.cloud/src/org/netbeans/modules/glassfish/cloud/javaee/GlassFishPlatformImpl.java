@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 import java.awt.Image;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -241,11 +242,11 @@ public abstract class GlassFishPlatformImpl
                     = new J2eeLibraryTypeProvider().createLibrary();
             li.setName(lib.getLibraryID());
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
-                    lib.getClasspath());
+                    translateArchiveUrls(lib.getClasspath()));
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
-                    lib.getJavadocs());
+                    translateArchiveUrls(lib.getJavadocs()));
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC,
-                    lib.getSources());
+                    translateArchiveUrls(lib.getSources()));
             lis[i++] = li;
         }
         return lis;
@@ -393,6 +394,18 @@ public abstract class GlassFishPlatformImpl
                 builder = null;
                 break;
         }
+    }
+
+    private List<URL> translateArchiveUrls(List<URL> urls) {
+        List<URL> result = new ArrayList<URL>(urls.size());
+        for (URL u : urls) {
+            if (FileUtil.isArchiveFile(u)) {
+                result.add(FileUtil.getArchiveRoot(u));
+            } else {
+                result.add(u);
+            }
+        }
+        return result;
     }
     
 }
