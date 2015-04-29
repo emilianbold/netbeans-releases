@@ -154,7 +154,7 @@ public final class SectionPanel extends javax.swing.JPanel {
                 .addComponent(jLabel1))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getMessage(SectionPanel.class, "SectionPanel.title")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblTitle, org.openide.util.NbBundle.getBundle("org.netbeans.modules.bugtracking.commons.Bundle2", java.util.Locale.getDefault(), SectionPanel.class.getClassLoader()).getString("SectionPanel.title")); // NOI18N
 
         javax.swing.GroupLayout headerPanelLayout = new javax.swing.GroupLayout(headerPanel);
         headerPanel.setLayout(headerPanelLayout);

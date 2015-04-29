@@ -116,7 +116,7 @@
         <Component class="javax.swing.JLabel" name="lblTitle">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/bugtracking/commons/Bundle.properties" key="SectionPanel.title" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/bugtracking/commons/Bundle2.properties" key="SectionPanel.title" replaceFormat="org.openide.util.NbBundle.getBundle(&quot;{bundleNameDots}&quot;, java.util.Locale.getDefault(), {sourceFileName}.class.getClassLoader()).getString(&quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>

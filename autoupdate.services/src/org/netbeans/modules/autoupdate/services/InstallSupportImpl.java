@@ -116,9 +116,11 @@ public class InstallSupportImpl {
     private STEP currentStep = STEP.NOTSTARTED;
     
     // validation results
-    private final Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
-    private final Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
-    private final Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
+    private final Collection<UpdateElementImpl> trusted = new ArrayList<>();
+    private final Collection<UpdateElementImpl> signedVerified = new ArrayList<>();
+    private final Collection<UpdateElementImpl> signedUnverified = new ArrayList<>();
+    private final Collection<UpdateElementImpl> modified = new ArrayList<>();
+    private final Map<UpdateElement, Collection<Certificate>> certs = new HashMap<>();
     private List<? extends OperationInfo> infos = null;
     
     private ExecutorService es = null;
@@ -285,10 +287,14 @@ public class InstallSupportImpl {
             }
             Exceptions.printStackTrace(iex);
         } catch(ExecutionException iex) {
-            if (iex.getCause() instanceof OperationException) {
-                throw (OperationException) iex.getCause();
+            if (iex.getCause() instanceof SecurityException) {
+                throw new OperationException(OperationException.ERROR_TYPE.MODIFIED, iex.getLocalizedMessage());
+            } else {
+                if (iex.getCause() instanceof OperationException) {
+                    throw (OperationException) iex.getCause();
+                }
+                Exceptions.printStackTrace(iex);
             }
-            Exceptions.printStackTrace(iex);
         }
         return retval;
     }
@@ -552,40 +558,30 @@ public class InstallSupportImpl {
 
     public boolean isTrusted(Installer validator, UpdateElement uElement) {
         UpdateElementImpl impl = Trampoline.API.impl (uElement);
-        boolean res = false;
-        switch (impl.getType ()) {
-        case KIT_MODULE :
-        case MODULE :
-            res = trusted.contains (impl);
-            break;
-        case STANDALONE_MODULE :
-        case FEATURE :
-            FeatureUpdateElementImpl toUpdateFeatureImpl = (FeatureUpdateElementImpl) impl;
-            Set<ModuleUpdateElementImpl> moduleImpls = toUpdateFeatureImpl.getContainedModuleElements ();
-            res = ! moduleImpls.isEmpty ();
-            for (ModuleUpdateElementImpl moduleImpl : moduleImpls) {
-                // skip installed element
-                if (Utilities.isElementInstalled (moduleImpl.getUpdateElement ())) {
-                    continue;
-                }
-                
-                res &= trusted.contains (moduleImpl);
-            }
-            break;
-        default:
-            // XXX: what other types
-            assert false : "Unsupported type " + impl;
-        }
-        return res;
+        return checkUpdateElement(impl, trusted);
     }
 
-    public boolean isSigned(Installer validator, UpdateElement uElement) {
+    public boolean isSignedVerified(Installer validator, UpdateElement uElement) {
         UpdateElementImpl impl = Trampoline.API.impl (uElement);
+        return checkUpdateElement(impl, signedVerified);
+    }
+    
+    public boolean isSignedUnverified(Installer validator, UpdateElement uElement) {
+        UpdateElementImpl impl = Trampoline.API.impl (uElement);
+        return checkUpdateElement(impl, signedUnverified);
+    }
+    
+    public boolean isContentModified(Installer validator, UpdateElement uElement) {
+        UpdateElementImpl impl = Trampoline.API.impl (uElement);
+        return checkUpdateElement(impl, modified);
+    }
+    
+    private boolean checkUpdateElement(UpdateElementImpl impl, Collection<UpdateElementImpl> elements) {
         boolean res = false;
         switch (impl.getType ()) {
         case KIT_MODULE :
         case MODULE :
-            res = signed.contains (impl);
+            res = elements.contains (impl);
             break;
         case STANDALONE_MODULE :
         case FEATURE :
@@ -598,7 +594,7 @@ public class InstallSupportImpl {
                     continue;
                 }
                 
-                res &= signed.contains (moduleImpl);
+                res &= elements.contains (moduleImpl);
             }
             break;
         default:
@@ -610,7 +606,7 @@ public class InstallSupportImpl {
     
     private void addTrustedCertificates () {
         // find untrusted so far
-        Collection<UpdateElementImpl> untrusted = new HashSet<UpdateElementImpl> (signed);
+        Collection<UpdateElementImpl> untrusted = new HashSet<UpdateElementImpl> (signedVerified);
         untrusted.removeAll (trusted);
         if (untrusted.isEmpty ()) {
             // all are trusted
@@ -1095,11 +1091,22 @@ public class InstallSupportImpl {
             }
             res = Utilities.verifyCertificates(nbmCerts, trustedCerts);
             UpdateElementImpl impl = Trampoline.API.impl(el);
-            if (Utilities.TRUSTED.equals(res) || Utilities.N_A.equals(res)) {
-                trusted.add (impl);
-                signed.add (impl);
-            } else if (Utilities.SIGNATURE_VERIFIED.equals(res) || Utilities.SIGNATURE_UNVERIFIED.equals(res)) {
-                signed.add (impl);
+            if (res != null) {
+                switch (res) {
+                    case Utilities.MODIFIED:
+                        modified.add(impl);
+                        break;
+                    case Utilities.TRUSTED:
+                    case Utilities.N_A:
+                        trusted.add(impl);
+                        break;
+                    case Utilities.SIGNATURE_VERIFIED:
+                        signedVerified.add(impl);
+                        break;
+                    case Utilities.SIGNATURE_UNVERIFIED:
+                        signedUnverified.add(impl);
+                        break;
+                }
             }
         } catch (IOException ioe) {
             LOG.log (Level.INFO, ioe.getMessage (), ioe);

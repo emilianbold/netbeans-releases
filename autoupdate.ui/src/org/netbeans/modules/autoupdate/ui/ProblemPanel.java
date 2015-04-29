@@ -75,9 +75,13 @@ public class ProblemPanel extends javax.swing.JPanel {
     public ProblemPanel(OperationException ex, boolean warning, JButton... buttons) {
         this (ex, null, null, warning, buttons);
     }
-    
+        
     public ProblemPanel(OperationException ex, UpdateElement culprit, boolean warning, JButton... buttons) {
         this (ex, culprit, null, warning, buttons);
+    }
+    
+    public ProblemPanel (OperationException ex, String problemDescription, boolean warning, JButton... buttons) {
+        this (ex, null, problemDescription, true, buttons);
     }
     
     public ProblemPanel (String problemDescription, JButton... buttons) {
@@ -101,6 +105,9 @@ public class ProblemPanel extends javax.swing.JPanel {
                 case INSTALL:
                     initInstallProblem(ex);
                     break;
+                case MODIFIED:
+                    initModifiedProblem(ex, problemDescription);
+                    break;
                 default:
                     assert false : "Unknown type " + ex;
             }
@@ -108,6 +115,20 @@ public class ProblemPanel extends javax.swing.JPanel {
         for (JButton b : buttons) {
             b.getAccessibleContext ().setAccessibleDescription (b.getText ());
         }
+    }
+    
+    @Messages({
+        "# {0} - plugin name",
+        "modified_taTitle_Text=Module {0} has been modified and cannot be installed.", // Module {0} cannot be installed beacase has been 
+        "# {0} - message of exception",
+        "modified_taMessage_ErrorText=The installation of download plugins cannot be completed, cause: {0}"})
+    private void initModifiedProblem(OperationException ex, String problemDescription) {
+        problem = modified_taTitle_Text(problemDescription);
+        enhancedInitComponents();
+        cbShowAgain.setVisible(false);
+        taTitle.setText(problem);
+        taTitle.setToolTipText (problem);
+        tpMessage.setText(modified_taMessage_ErrorText(ex.getLocalizedMessage())); // NOI18N
     }
     
     @Messages({"proxy_taTitle_Text=Unable to connect to the Update Center",
@@ -246,27 +267,18 @@ public class ProblemPanel extends javax.swing.JPanel {
         return dd.getValue();
     }
     
-    private DialogDescriptor getNetworkProblemDescriptor () {
-        Object [] options;
-        if (buttons == null || buttons.length == 0) {
-            options = new Object [] { DialogDescriptor.OK_OPTION };
-        } else {
-            options = buttons;
-        }
+    public Object showModifiedProblemDialog(String detail) {
+        DialogDescriptor dd = getModifiedProblemDescriptor();
+        DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+        return dd.getValue();
+    }
+    
+    private DialogDescriptor getNetworkProblemDescriptor() {
+        DialogDescriptor descriptor = getProblemDesriptor(NbBundle.getMessage(ProblemPanel.class, "CTL_ShowProxyOptions"));
+
         JButton showProxyOptions = new JButton ();
         Mnemonics.setLocalizedText (showProxyOptions, NbBundle.getMessage(ProblemPanel.class, "CTL_ShowProxyOptions"));
-
-        DialogDescriptor descriptor = new DialogDescriptor(
-             this,
-             isWarning ? NbBundle.getMessage(ProblemPanel.class, "CTL_Warning") : NbBundle.getMessage(ProblemPanel.class, "CTL_Error"),
-             true,                                  // Modal
-             options, // Option list
-             null,                         // Default
-             DialogDescriptor.DEFAULT_ALIGN,        // Align
-             null, // Help
-             null
-        );
-
+        
         showProxyOptions.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(ProblemPanel.class, "ACSD_ShowProxyOptions"));
         showProxyOptions.addActionListener (new ActionListener () {
             @Override
@@ -274,17 +286,25 @@ public class ProblemPanel extends javax.swing.JPanel {
                 OptionsDisplayer.getDefault ().open ("General"); // NOI18N
             }
         });
-        
-        descriptor.setMessageType (isWarning ? NotifyDescriptor.WARNING_MESSAGE : NotifyDescriptor.ERROR_MESSAGE);
+                
         if (isWarning) {
             descriptor.setAdditionalOptions(new Object [] {showProxyOptions});
         }
-        descriptor.setClosingOptions (options);
+        
         return descriptor;
     }
     
     @Messages("CTL_WriteError=Write Permissions Problem")
-    private DialogDescriptor getWriteProblemDescriptor () {
+    private DialogDescriptor getWriteProblemDescriptor() {
+        return getProblemDesriptor(CTL_WriteError());
+    }
+    
+    @Messages("CTL_ModifiedError=Module Archive Modified")
+    private DialogDescriptor getModifiedProblemDescriptor() {
+        return getProblemDesriptor(CTL_ModifiedError());
+    }
+    
+    private DialogDescriptor getProblemDesriptor(String message) {
         Object [] options;
         if (buttons == null || buttons.length == 0) {
             options = new Object [] { DialogDescriptor.OK_OPTION };
@@ -293,12 +313,12 @@ public class ProblemPanel extends javax.swing.JPanel {
         }
         DialogDescriptor descriptor = new DialogDescriptor(
              this,
-             isWarning ? NbBundle.getMessage(ProblemPanel.class, "CTL_Warning") : CTL_WriteError(),
-             true,                                  // Modal
-             options, // Option list
-             null,                         // Default
-             DialogDescriptor.DEFAULT_ALIGN,        // Align
-             null, // Help
+             isWarning ? NbBundle.getMessage(ProblemPanel.class, "CTL_Warning") : message,
+             true,                              // Modal
+             options,                           // Option list
+             null,                              // Default
+             DialogDescriptor.DEFAULT_ALIGN,    // Align
+             null,                              // Help
              null
         );
 

@@ -199,10 +199,10 @@ public final class NbErrorManager extends Handler {
      */
     static final class Exc {
         /** the original throwable */
-        private Throwable t;
+        private final Throwable t;
         private Date d;
-        private LogRecord[] arr;
-        private LogRecord[] arrAll; // all - recursively
+        final LogRecord[] arr;      // Accessed from tests
+        final LogRecord[] arrAll;   // all - recursively, accessed from tests
         private Level severity;
         
         /** @param severity if -1 then we will compute the
