@@ -4,11 +4,27 @@ ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
+ARCH = $(shell arch)
+ARCH:sh = arch
 
 ifeq (armv, $(shell expr substr `arch` 1 4))
-    CONF=$(OS)-arm
+    OS_ARCH = $(OS)-arm
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
+endif
+
+ifdef 64BITS
+    CONF=$(OS_ARCH)_64
 else
-    CONF=$(OS)-x86
+    CONF=$(OS_ARCH)
 endif
 
 CC=gcc
@@ -32,6 +48,8 @@ CF_Linux-arm      = $(CF_COMMON) -DLINUX -shared -fPIC
 EX_Linux-arm      = unbuffer.so
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX -shared -fPIC -m64
 EX_Linux-x86_64   = unbuffer.so
+CF_Linux-sparc_64 = $(CF_COMMON) -DLINUX -shared -fPIC -m64
+EX_Linux-sparc_64 = unbuffer.so
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -shared -m32
 EX_MacOSX-x86     = unbuffer.dylib
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -shared -m64

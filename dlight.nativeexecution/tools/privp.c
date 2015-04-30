@@ -47,7 +47,11 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#ifdef SOLARIS
 #include <stropts.h>
+#else
+#include <sys/ioctl.h>
+#endif
 #include <stdio.h>
 #include <errno.h>
 
@@ -133,7 +137,7 @@ int main(int argc, char** argv) {
 
     int slave_fd = open(slave_name, O_RDWR);
 
-
+#if defined (__SVR4) && defined (__sun)
     /*
      * ptem(7M) - STREAMS Pseudo Terminal Emulation module
      * ptem is a STREAMS module that, when used in conjunction with
@@ -158,7 +162,7 @@ int main(int argc, char** argv) {
     /*
      * Read password from stdin and write it to master_fd ...
      */
-
+#endif
     if (readPassword == 1) {
         char pwd[MAX_PASSWORD_LENGTH];
         int passwdLength = read(STDIN_FILENO, pwd, MAX_PASSWORD_LENGTH);
