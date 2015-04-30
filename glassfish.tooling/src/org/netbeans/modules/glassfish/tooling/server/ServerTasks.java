@@ -40,6 +40,7 @@
 package org.netbeans.modules.glassfish.tooling.server;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -171,8 +172,13 @@ public class ServerTasks {
         String domainXmlPath = domainAbsolutePath + File.separator + "config"
                 + File.separator + "domain.xml";
         if (!TreeParser.readXml(new File(domainXmlPath), jvmConfigReader)) {
-            throw new GlassFishIdeException(LOGGER.excMsg(
-                    METHOD, "readXMLerror"), domainXmlPath);
+            // retry with platform default
+            LOGGER.log(Level.INFO, "Retrying with {0} encoding", Charset.defaultCharset());
+            jvmConfigReader = new JvmConfigReader(DAS_NAME);
+            if (!TreeParser.readXml(new File(domainXmlPath), Charset.defaultCharset(), jvmConfigReader)) {
+                throw new GlassFishIdeException(LOGGER.excMsg(
+                        METHOD, "readXMLerror"), domainXmlPath);
+            }
         }
         List<String> optList = jvmConfigReader.getOptList();
         Map<String, String> propMap = jvmConfigReader.getPropMap();
