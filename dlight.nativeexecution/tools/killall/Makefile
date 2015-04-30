@@ -4,11 +4,27 @@ ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
+ARCH = $(shell arch)
+ARCH:sh = arch
 
 ifeq (armv, $(shell expr substr `arch` 1 4))
-    CONF=$(OS)-arm
+    OS_ARCH = $(OS)-arm
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
+endif
+
+ifdef 64BITS
+    CONF=$(OS_ARCH)_64
 else
-    CONF=$(OS)-x86
+    CONF=$(OS_ARCH)
 endif
 
 PNAME=killall
@@ -30,6 +46,7 @@ SOURCES_SunOS-sparc_64=$(SOURCES_SunOS)
 SOURCES_Linux-x86=$(SOURCES_Linux)
 SOURCES_Linux-arm=$(SOURCES_Linux)
 SOURCES_Linux-x86_64=$(SOURCES_Linux)
+SOURCES_Linux-sparc_64=$(SOURCES_Linux)
 SOURCES_MacOSX-x86=$(SOURCES_Mac)
 SOURCES_MacOSX-x86_64=$(SOURCES_Mac)
 
@@ -62,6 +79,7 @@ CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m32
 CF_Windows-x86    = $(CF_COMMON) -DWINDOWS -m32
 
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX -m64
+CF_Linux-sparc_64 = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMACOSX  -m64
 CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64
 CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -m64

@@ -4,11 +4,27 @@ ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
 OS = $(shell uname -s)
 OS:sh = uname -s
+ARCH = $(shell arch)
+ARCH:sh = arch
 
 ifeq (armv, $(shell expr substr `arch` 1 4))
-    CONF=$(OS)-arm
+    OS_ARCH = $(OS)-arm
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
+endif
+
+ifdef 64BITS
+    CONF=$(OS_ARCH)_64
 else
-    CONF=$(OS)-x86
+    CONF=$(OS_ARCH)
 endif
 
 PNAME=pty
@@ -36,8 +52,9 @@ EXEC=$(DIST_DIR)/$(PNAME)
 
 
 CF_COMMON         = --std=c99 -s -O2
-CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
+CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32 
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
+CF_Linux-sparc_64 = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -std=c99
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
