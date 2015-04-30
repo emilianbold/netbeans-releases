@@ -108,6 +108,20 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="SymbolDescriptor-simpleName">
+            <api name="general"/>
+            <summary>Added method <code>getSimpleName</code> to <code>SymbolDescriptor</code></summary>
+            <version major="1" minor="48"/>
+            <date day="29" month="4" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added method <code>getSimpleName</code> to <code>SymbolDescriptor</code> returning the raw symbol
+                name without parameter names or types.
+            </description>
+            <class package="org.netbeans.spi.jumpto.symbol" name="SymbolDescriptor"/>
+        </change>
         <change id="TypeProvider-Result-setHighlightText">
             <api name="general"/>
             <summary>Added method <code>setHighlightText</code> to <code>TypeProvider.Result</code> to allow <code>TypeProvider</code> to set text to highlight.</summary>

@@ -143,10 +143,12 @@ public final class ModRootElement extends AbstractRootElement<ModElement> implem
 
     @Override
     public void removeUpdate(DocumentEvent evt) {
+        insertUpdate(evt);
     }
 
     @Override
     public void changedUpdate(DocumentEvent evt) {
+        insertUpdate(evt);
     }
 
     private boolean isCovered(int offset, int length) {
