@@ -21,7 +21,6 @@
     </fontcolor>
     <fontcolor name="mod-field" default="field"/>
     <fontcolor name="mod-global" foreColor="9F0D79"/>
-    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
 
     <fontcolor name="mod-unused" waveUnderlined="999999"/>
     <fontcolor name="mod-local-variable" default="identifier"/>
