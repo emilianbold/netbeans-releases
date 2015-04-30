@@ -487,8 +487,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         Background(@NullAllowed final String separatorPattern) {
             Color back = new Color(236,235,163);
             Color front = Color.BLACK;
-            //Todo: Mark Occurrences is not registered in global MimeLookup, need to use lang specific.
-            final FontColorSettings colors = MimeLookup.getLookup(MimePath.parse("text/x-java")).lookup(FontColorSettings.class);   //NOI18N
+            final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
             if (colors != null) {
                 final AttributeSet attrs = colors.getFontColors("mark-occurrences");  //NOI18N
                 if (attrs != null) {
