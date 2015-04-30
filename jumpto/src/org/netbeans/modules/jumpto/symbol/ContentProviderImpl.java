@@ -79,7 +79,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-final class ContentProviderImpl implements GoToPanel.ContentProvider {
+final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
 
     private static final Logger LOG = Logger.getLogger(ContentProviderImpl.class.getName());
     private static final RequestProcessor rp = new RequestProcessor (ContentProviderImpl.class);
@@ -199,11 +199,11 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             } else {
                 running = new Worker(text, searchType, panel);
                 task = rp.post( running, 220);
-                if ( panel.time != -1 ) {
+                if ( panel.getStartTime() != -1 ) {
                     LOG.log(
                        Level.FINE,
                        "Worker posted after {0} ms.",   //NOI18N
-                       System.currentTimeMillis() - panel.time);
+                       System.currentTimeMillis() - panel.getStartTime());
                 }
                 return true;
             }
@@ -224,7 +224,16 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
     @Override
     public boolean hasValidContent() {
-        return this.okButton.isEnabled();
+        return this.okButton != null && this.okButton.isEnabled();
+    }
+
+    /*test*/
+    @NonNull
+    Runnable createWorker(
+            @NonNull final String text,
+            @NonNull final SearchType searchType,
+            @NonNull final GoToPanel panel) {
+        return new Worker(text, searchType, panel);
     }
 
     private void enableOK(final boolean enabled) {
@@ -302,7 +311,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
 
-        public Worker(
+        Worker(
                 @NonNull final String text,
                 @NonNull final SearchType searchType,
                 @NonNull final GoToPanel panel ) {
@@ -313,7 +322,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - panel.time});
+                new Object[]{text, System.currentTimeMillis() - panel.getStartTime()});
        }
 
         @Override
@@ -322,42 +331,62 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
                 new Object[]{text, System.currentTimeMillis() - createTime});
-
-            final List<? extends SymbolDescriptor> types = getSymbolNames( text );
-            if ( isCanceled ) {
-                LOG.log(
-                    Level.FINE,
-                    "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});
-                return;
-            }
-            final ListModel fmodel = Models.fromList(types, currentSearch.resetFilter());
-            if ( isCanceled ) {
-                LOG.log(
-                    Level.FINE,
-                    "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});
-                return;
-            }
-
-            LOG.log(
-                Level.FINE,
-                "Worker for text {0} finished after {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - createTime});
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                    currentSearch.searchCompleted(searchType, nameAndScope.first(), nameAndScope.second());
-                    if (!isCanceled) {
-                        enableOK(panel.setModel(fmodel));
+            final int[] retry = new int[1];
+            int lastSize = -1;
+            while(true) {
+                retry[0] = 0;
+                final List<? extends SymbolDescriptor> symbols = getSymbolNames(text, retry);
+                if ( isCanceled ) {
+                    LOG.log(
+                        Level.FINE,
+                        "Worker for {0} exited after cancel {1} ms.", //NOI18N
+                        new Object[]{text, System.currentTimeMillis() - createTime});
+                    return;
+                }
+                final int newSize = symbols.size();
+                final boolean done = retry[0] <= 0;
+                final boolean resultChanged = lastSize != newSize;
+                if (done || resultChanged) {
+                    lastSize = newSize;
+                    final ListModel fmodel = Models.fromList(symbols, currentSearch.resetFilter());
+                    if ( isCanceled ) {
+                        LOG.log(
+                            Level.FINE,
+                            "Worker for {0} exited after cancel {1} ms.", //NOI18N
+                            new Object[]{text, System.currentTimeMillis() - createTime});
+                        return;
+                    }
+                    LOG.log(
+                        Level.FINE,
+                        "Worker for text {0} finished after {1} ms.", //NOI18N
+                        new Object[]{text, System.currentTimeMillis() - createTime});
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (done) {
+                                final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                currentSearch.searchCompleted(searchType, nameAndScope.first(), nameAndScope.second());
+                            }
+                            if (!isCanceled) {
+                                enableOK(panel.setModel(fmodel));
+                            }
+                        }
+                    });
+                }
+                if (done) {
+                    return;
+                } else {
+                    try {
+                        Thread.sleep(retry[0]);
+                    } catch (InterruptedException ex) {
+                        //pass
                     }
                 }
-            });
+            }
         }
 
         public void cancel() {
-            if ( panel.time != -1 ) {
+            if ( panel.getStartTime() != -1 ) {
                 LOG.log(
                     Level.FINE,
                     "Worker for text {0} canceled after {1} ms.", //NOI18N
@@ -374,25 +403,31 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends SymbolDescriptor> getSymbolNames(final String text) {
+        private List<? extends SymbolDescriptor> getSymbolNames(
+                final String text,
+                final int[] retry) {
             // TODO: Search twice, first for current project, then for all projects
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
-            items = new ArrayList<SymbolDescriptor>(128);
+            items = new ArrayList<>(128);
             String[] message = new String[1];
             for (SymbolProvider provider : getTypeProviders()) {
                 current = provider;
-                if (isCanceled) {
-                    return null;
+                try {
+                    if (isCanceled) {
+                        return null;
+                    }
+                    LOG.log(
+                        Level.FINE,
+                        "Calling SymbolProvider: {0}", //NOI18N
+                        provider);
+                    final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
+                    final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
+                    provider.computeSymbolNames(context, result);
+                    retry[0] = mergeRetryTimeOut(retry[0], SymbolProviderAccessor.DEFAULT.getRetry(result));
+                } finally {
+                    current = null;
                 }
-                LOG.log(
-                    Level.FINE,
-                    "Calling SymbolProvider: {0}", //NOI18N
-                    provider);
-                final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
-                final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
-                provider.computeSymbolNames(context, result);
-                current = null;
             }
             if ( !isCanceled ) {
                 Collections.sort(items, new SymbolComparator());
@@ -402,6 +437,18 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             else {
                 return null;
             }
+        }
+
+        private int mergeRetryTimeOut(
+            final int t1,
+            final int t2) {
+            if (t1 == 0) {
+                return t2;
+            }
+            if (t2 == 0) {
+                return t1;
+            }
+            return Math.min(t1,t2);
         }
     }
 }
