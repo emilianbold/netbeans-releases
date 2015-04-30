@@ -631,7 +631,7 @@ public class NodeJsDataProvider {
         String result = null;
         try {
             File cacheFile = getCachedAPIFile();
-            if (!cacheFile.exists()) {
+            if (!cacheFile.exists() && isSupportEnabled()) {
 
                 //if any of the files is not loaded yet, start the loading process
                 if (!loadingStarted) {
@@ -643,7 +643,7 @@ public class NodeJsDataProvider {
 
                 LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
             }
-            result = getFileContent(cacheFile);
+            result = cacheFile.exists() ? getFileContent(cacheFile) : null;
         } catch (URISyntaxException | IOException ex) {
             stopLoading();
             LOG.log(Level.INFO, "Cannot load NodeJS documentation from \"{0}\".", new Object[]{getDocumentationURL()}); //NOI18N
