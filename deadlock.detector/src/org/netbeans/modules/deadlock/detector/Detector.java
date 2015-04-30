@@ -46,7 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.management.LockInfo;
-import static java.lang.management.ManagementFactory.*;
+import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
@@ -84,10 +84,10 @@ class Detector implements Runnable {
     /**
      * The thread bean used for the deadlock detection.
      */
-    private ThreadMXBean threadMXBean;
+    private final ThreadMXBean threadMXBean;
     
     Detector() {
-        threadMXBean = getThreadMXBean();
+        threadMXBean = ManagementFactory.getThreadMXBean();
         Integer pauseFromSysProp = Integer.getInteger("org.netbeans.modules.deadlock.detector.Detector.PAUSE"); // NOI18N
         if (pauseFromSysProp != null) {
             PAUSE = pauseFromSysProp.longValue();
@@ -150,8 +150,7 @@ class Detector implements Runnable {
         if (threadMXBean == null) {
             return;
         }
-        long[] tids;
-        tids = threadMXBean.findDeadlockedThreads();
+        long[] tids = threadMXBean.findDeadlockedThreads();
         if (tids == null) {
             return;
         }
@@ -162,7 +161,7 @@ class Detector implements Runnable {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Deadlock detected"); // NOI18N
         }
-        PrintStream out = null;
+        PrintStream out;
         File file = null;
         try {
             file = File.createTempFile("deadlock", ".txt"); // NOI18N
@@ -182,11 +181,10 @@ class Detector implements Runnable {
             out.println();
         }
         out.println("All threads :"); // NOI18N
-        tids = threadMXBean.getAllThreadIds();
-        ThreadInfo[] infos = threadMXBean.getThreadInfo(tids, true, true);
+        ThreadInfo[] infos = threadMXBean.dumpAllThreads(true, true);
         for (ThreadInfo ti : infos) {
             if (ti == null) {
-                continue; // as per getThreadInfo javadoc null can be returned in the array
+                continue; // null can be returned in the array
             }
             printThreadInfo(ti, out);
             printMonitorInfo(ti, out);
