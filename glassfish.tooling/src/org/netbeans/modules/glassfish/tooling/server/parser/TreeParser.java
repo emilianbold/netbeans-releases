@@ -41,6 +41,7 @@ package org.netbeans.modules.glassfish.tooling.server.parser;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.logging.Level;
 import javax.xml.parsers.ParserConfigurationException;
@@ -88,11 +89,12 @@ public final class TreeParser extends DefaultHandler {
         }
     };
 
-    public static boolean readXml(File xmlFile, XMLReader... pathList)
-            throws IllegalStateException {
+    public static boolean readXml(File xmlFile, XMLReader... pathList) {
+        return readXml(xmlFile, null, pathList);
+    }
+
+    public static boolean readXml(File xmlFile, Charset charset, XMLReader... pathList) {
         final String METHOD = "readXml";
-        boolean result = false;
-        InputStream is = null;
         try {
             // !PW FIXME what to do about entity resolvers?  Timed out when
             // looking up doctype for sun-resources.xml earlier today (Jul 10)
@@ -107,21 +109,36 @@ public final class TreeParser extends DefaultHandler {
             reader.setEntityResolver(DUMMY_RESOLVER);
             DefaultHandler handler = new TreeParser(pathList);
             reader.setContentHandler(handler);
-            is = new BufferedInputStream(new FileInputStream(xmlFile));
-            reader.parse(new InputSource(is));
-            result = true;
-        } catch (ParserConfigurationException | SAXException | IOException ex) {
-            throw new IllegalStateException(ex);
-        } finally {
-            if (is != null) {
+
+            if (charset == null) {
+                InputStream is = new BufferedInputStream(new FileInputStream(xmlFile));
                 try {
-                    is.close();
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, METHOD, "cantClose", ex);
+                    reader.parse(new InputSource(is));
+                    return true;
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, METHOD, "cantClose", ex);
+                    }
+                }
+            } else {
+                Reader r = new InputStreamReader(new BufferedInputStream(new FileInputStream(xmlFile)), charset);
+                try {
+                    reader.parse(new InputSource(r));
+                    return true;
+                } finally {
+                    try {
+                        r.close();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, METHOD, "cantClose", ex);
+                    }
                 }
             }
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
-        return result;
+        return false;
     }
 
     public static boolean readXml(URL xmlFile, XMLReader... pathList)
