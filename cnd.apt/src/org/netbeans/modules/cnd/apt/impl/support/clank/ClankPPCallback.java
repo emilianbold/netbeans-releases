@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -504,6 +505,11 @@ public final class ClankPPCallback extends FileInfoCallback {
                 for (IdentifierInfo arg : arguments) {
                   CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
                   params.add(argName);
+                }
+                if (macroDirective.isVariadic()) {
+                  // replace the last param name by variadic marker
+                  assert params.size() > 0;
+                  params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
                 }
               }
               ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective);
