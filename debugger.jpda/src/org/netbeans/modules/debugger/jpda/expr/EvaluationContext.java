@@ -208,20 +208,13 @@ public class EvaluationContext {
         try {
             // Refresh the stack frame
             frame = ThreadReferenceWrapper.frame(thread.getThreadReference(), frameDepth);
-        } catch (InternalExceptionWrapper ex) {
+        } catch (InternalExceptionWrapper |
+                 ObjectCollectedExceptionWrapper |
+                 IllegalThreadStateExceptionWrapper ex) {
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
-            ieex.initCause(ex);
             throw new IllegalStateException(ieex);
         } catch (VMDisconnectedExceptionWrapper ex) {
             // Ignore
-        } catch (ObjectCollectedExceptionWrapper ex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
-            ieex.initCause(ex);
-            throw new IllegalStateException(ieex);
-        } catch (IllegalThreadStateExceptionWrapper ex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (ex);
-            ieex.initCause(ex);
-            throw new IllegalStateException(ieex);
         }
     }
 

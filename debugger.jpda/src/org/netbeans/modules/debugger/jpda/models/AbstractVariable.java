@@ -492,31 +492,13 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                 v = VariableMirrorTranslator.createValueFromMirror(obj,
                                                                    this instanceof ObjectVariable,
                                                                    getDebugger());
-            } catch (IllegalArgumentExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (InternalExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ObjectCollectedExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (InvalidTypeException ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ClassNotLoadedException ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ClassNotPreparedExceptionWrapper ex) {
+            } catch (IllegalArgumentExceptionWrapper |
+                     InternalExceptionWrapper |
+                     VMDisconnectedExceptionWrapper |
+                     ObjectCollectedExceptionWrapper |
+                     InvalidTypeException |
+                     ClassNotLoadedException |
+                     ClassNotPreparedExceptionWrapper ex) {
                 InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
                 ioex.initCause(ex);
                 throw ioex;
