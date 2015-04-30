@@ -916,6 +916,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             ObjectReference v = null;
             if (var instanceof JDIVariable) {
                 v = (ObjectReference) ((JDIVariable) var).getJDIValue();
+                if (v == null) {
+                    throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class,
+                                             "MSG_CanNotEvaluateInContextOfNull",
+                                             expression.getExpression()));
+                }
             }
             Evaluator.Result result;
             final JPDAThreadImpl[] resumedThread = new JPDAThreadImpl[] { null };
