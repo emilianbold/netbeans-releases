@@ -59,6 +59,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="operator"/>
     <fontcolor name="string" foreColor="E2CE00"/>
     <fontcolor name="whitespace"/>
+    <fontcolor name="mark-occurrences" bgColor="ff38566f"/>
     
     <!-- OO languages -->    
     <fontcolor name="field" default="identifier"/>

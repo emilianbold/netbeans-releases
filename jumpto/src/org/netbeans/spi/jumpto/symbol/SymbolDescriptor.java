@@ -43,6 +43,7 @@
 package org.netbeans.spi.jumpto.symbol;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -137,6 +138,17 @@ public abstract class SymbolDescriptor {
        return fo == null ?
            "" : // NOI18N
            FileUtil.getFileDisplayName(fo);
+    }
+
+    /**
+     * Returns the simple symbol name.
+     * The simple symbol name is just a name without parameters or types.
+     * @return the simple name or null
+     * @since 1.48
+     */
+    @CheckForNull
+    public String getSimpleName() {
+        return null;
     }
 
     final void setHighlightText(@NonNull final String matchedSymbolName) {

@@ -140,9 +140,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-undefined" foreColor="red"/>
     -->
 
-    <!--mark occurrences:-->
-    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
-    
     <!-- eof GSF colors -->
     
     

@@ -91,9 +91,6 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-protected" default="protected" />
     <fontcolor name="mod-public" default="public" />
     
-    <!--mark occurrences:-->
-    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
-
     <!-- JavaStringTokenId categories -->
     <fontcolor name="string-escape" default="string">
         <font style="bold" />

@@ -43,9 +43,6 @@
     </fontcolor>
     <fontcolor name="mod-custom1" default="method" />
 
-    <!--mark occurrences:-->
-    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
-
     <!-- code coverage -->
     <fontcolor name="covered" default="covered" />
     <fontcolor name="uncovered" default="uncovered" />
