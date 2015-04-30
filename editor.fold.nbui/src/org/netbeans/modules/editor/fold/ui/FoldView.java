@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.editor.fold.ui;
 
-import org.netbeans.modules.editor.fold.ui.FoldViewFactory;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
@@ -110,12 +109,31 @@ final class FoldView extends EditorView {
     
     private TextLayout collapsedTextLayout; // 40 + 4 = 44 bytes
     
+    /**
+     * Colors for the text of the placeholder.
+     */
     private AttributeSet    foldingColors;
+    
+    /**
+     * Color for the border, ONLY foreground is used.
+     */
+    private AttributeSet    foldingBorderColors;
     
     private AttributeSet    selectedColors;
     
     private int options;
 
+    /**
+     * Coloring that will be used for code folding icons displayed in editor
+     */
+    public static final String COLORING_PLACEHOLDER_TEXT = "code-folding"; // NOI18N
+
+    /**
+     * Coloring for the placeholder view and tooltip borders
+     */
+    public static final String COLORING_PLACEHOLDER_BORDER = "code-folding-border"; // NOI18N
+
+    
     public FoldView(JTextComponent textComponent, Fold fold, FontColorSettings colorSettings, int options) {
         super(null);
         int offset = fold.getStartOffset();
@@ -126,6 +144,7 @@ final class FoldView extends EditorView {
         this.fold = fold;
         this.foldingColors = colorSettings.getFontColors(FontColorNames.CODE_FOLDING_COLORING);
         this.selectedColors = colorSettings.getFontColors(FontColorNames.SELECTION_COLORING);
+        this.foldingBorderColors = colorSettings.getFontColors(COLORING_PLACEHOLDER_BORDER);
         this.options = options;
     }
 
@@ -345,13 +364,29 @@ final class FoldView extends EditorView {
                     tooltipPane.setEditorKit(kit);
                     tooltipPane.setDocument(doc);
                     tooltipPane.setEditable(false);
-                    return new FoldToolTip(editorPane, tooltipPane, getForegroundColor());
+                    return new FoldToolTip(editorPane, tooltipPane, getBorderColor());
                 } catch (BadLocationException e) {
                     // => return null
                 }
             }
         }
         return null;
+    }
+    
+    /**
+     * Border color for the placeholder view or the tooltip.
+     * If not defined, falls back to the {@link #getForegroundColor()}.
+     * @return Color for the border
+     */
+    private Color getBorderColor() {
+        if (foldingBorderColors == null) {
+            return getForegroundColor();
+        }
+        Object fgColorObj = foldingBorderColors.getAttribute(StyleConstants.Foreground);
+        if (fgColorObj instanceof Color) {
+            return (Color)fgColorObj;
+        }
+        return getForegroundColor();
     }
     
     private Color getForegroundColor() {
@@ -398,14 +433,17 @@ final class FoldView extends EditorView {
             Shape origClip = g.getClip();
             try {
                 // Leave component font
-                g.setColor(getForegroundColor());
+                
                 g.setBackground(getBackgroundColor());
 
                 int xInt = (int) allocBounds.getX();
                 int yInt = (int) allocBounds.getY();
                 int endXInt = (int) (allocBounds.getX() + allocBounds.getWidth() - 1);
                 int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
+                g.setColor(getBorderColor());
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
+                
+                g.setColor(getForegroundColor());
                 g.clearRect(xInt + 1, yInt + 1, endXInt - xInt - 1, endYInt - yInt - 1);
                 g.clip(alloc);
                 TextLayout textLayout = getTextLayout();
