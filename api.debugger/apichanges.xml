@@ -519,6 +519,23 @@ made subject to such option by the copyright holder.
         <issue number="246819"/>
     </change>
 
+    <change id="BreakpointsDeactivation">
+        <api name="DebuggerCoreAPI"/>
+        <summary>A mechanism for activation/deactivation of engine-related breakpoints.</summary>
+        <version major="1" minor="51"/>
+        <date day="30" month="4" year="2015"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            API class <code>ActiveBreakpoints</code> and SPI interface
+            <code>BreakpointsActivationProvider</code> introduced. These classes
+            handle an activation/deactivation of engine-related breakpoints,
+            which is independent on their enabled/disabled state.
+        </description>
+        <class package="org.netbeans.api.debugger" name="ActiveBreakpoints" />
+        <class package="org.netbeans.spi.debugger" name="BreakpointsActivationProvider" />
+        <issue number="242800"/>
+    </change>
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

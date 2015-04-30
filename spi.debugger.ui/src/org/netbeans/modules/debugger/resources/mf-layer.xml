@@ -575,6 +575,13 @@ made subject to such option by the copyright holder.
                         methodvalue="org.netbeans.modules.debugger.ui.models.BreakpointsViewButtons.createNewBreakpointActionButton" name="instanceCreate"/>
                     <attr intvalue="100" name="position"/>
                 </file>
+                <file name="org-netbeans-modules-debugger-ui-models-BreakpointsViewButtons-createActivateBreakpointsActionButton.instance">
+                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
+                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
+                    <attr
+                        methodvalue="org.netbeans.modules.debugger.ui.models.BreakpointsViewButtons.createActivateBreakpointsActionButton" name="instanceCreate"/>
+                    <attr intvalue="150" name="position"/>
+                </file>
                 <file name="org-netbeans-modules-debugger-ui-models-BreakpointsViewButtons-createGroupSelectionButton.instance">
                     <attr name="serviceClass" stringvalue="java.awt.Component"/>
                     <attr name="instanceOf" stringvalue="java.awt.Component"/>

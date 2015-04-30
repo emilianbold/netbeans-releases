@@ -50,19 +50,27 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.List;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.api.debugger.ActiveBreakpoints;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -84,6 +92,8 @@ public class BreakpointsViewButtons {
 
     public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
     public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
+    private static final String DEACTIVATED_LINE_BREAKPOINT =
+        "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                 // NOI18N
 
     public static JButton createNewBreakpointActionButton() {
         JButton button = VariablesViewButtons.createButton(
@@ -96,6 +106,103 @@ public class BreakpointsViewButtons {
             }
         });
         return button;
+    }
+    
+    @NbBundle.Messages({"CTL_DeactivateAllBreakpoints=Deactivate all breakpoints in current session",
+                        "CTL_ActivateAllBreakpoints=Activate all breakpoints in current session",
+                        "CTL_NoDeactivation=The current session does not allow to deactivate breakpoints",
+                        "CTL_NoSession=No debugger session"})
+    public static AbstractButton createActivateBreakpointsActionButton() {
+        ImageIcon icon = ImageUtilities.loadImageIcon(DEACTIVATED_LINE_BREAKPOINT, false);
+        final JToggleButton button = new JToggleButton(icon);
+        // ensure small size, just for the icon
+        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(1, 1, 1, 1));
+        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
+        button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
+        button.setFocusable(false);
+        final BreakpointsActivator ba = new BreakpointsActivator(button);
+        button.addActionListener(ba);
+        DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_CURRENT_ENGINE, new DebuggerManagerAdapter() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                DebuggerEngine de = (DebuggerEngine) evt.getNewValue();
+                ba.setCurrentEngine(de);
+            }
+        });
+        ba.setCurrentEngine(DebuggerManager.getDebuggerManager().getCurrentEngine());
+        return button;
+    }
+    
+    private static class BreakpointsActivator implements ActionListener {
+        
+        private final Reference<JToggleButton> buttonRef;
+        //private DebuggerEngine currentEngine;
+        private volatile ActiveBreakpoints ab;
+        //private String name;
+        
+        public BreakpointsActivator(JToggleButton button) {
+            this.buttonRef = new WeakReference<JToggleButton>(button);
+        }
+        
+        public void setCurrentEngine(DebuggerEngine currentEngine) {
+            //this.currentEngine = currentEngine;
+            //Session session = currentEngine.lookupFirst(null, Session.class);
+            //this.name = session.getName();
+            final JToggleButton button = buttonRef.get();
+            if (button == null) {
+                return ;
+            }
+            ActiveBreakpoints ab;
+            final boolean active;
+            final boolean canDeactivate;
+            if (currentEngine == null) {
+                ab = null;
+                active = canDeactivate = false;
+            } else {
+                ab = ActiveBreakpoints.get(currentEngine);
+                active = ab.areBreakpointsActive();
+                canDeactivate = ab.canDeactivateBreakpoints();
+            }
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    button.setSelected(!active);
+                    button.setEnabled(canDeactivate);
+                    setTooltip(button, active, canDeactivate);
+                }
+            });
+            this.ab = ab;
+        }
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ActiveBreakpoints ab = this.ab;
+            if (ab == null || !ab.canDeactivateBreakpoints()) {
+                return ;
+            }
+            JToggleButton button = (JToggleButton) e.getSource();
+            final boolean active = !button.isSelected();
+            ab.setBreakpointsActive(active);
+            setTooltip(button, active, true);
+        }
+        
+        private static void setTooltip(JToggleButton button, boolean active, boolean canDeactivate) {
+            if (!canDeactivate) {
+                if (active) {
+                    button.setToolTipText(Bundle.CTL_NoDeactivation());
+                } else {
+                    button.setToolTipText(Bundle.CTL_NoSession());
+                }
+            } else {
+                if (active) {
+                    button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
+                } else {
+                    button.setToolTipText(Bundle.CTL_ActivateAllBreakpoints());
+                }
+            }
+        }
     }
 
     public static synchronized JButton createGroupSelectionButton() {
