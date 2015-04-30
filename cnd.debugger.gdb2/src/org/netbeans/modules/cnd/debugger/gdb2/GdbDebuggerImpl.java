@@ -4236,7 +4236,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         outputFile = localToRemote("symbol-file", outputFile); //NOI18N
 
         String tmp_cmd;
-        if (isCore || pid != -1) {
+        if (peculiarity.isLldb()) {
+            tmp_cmd = "-file-exec-and-symbols"; // NOI18N
+        } else if (isCore || pid != -1) {
             tmp_cmd = "-file-symbol-file "; // NOI18N
         } else if (!CndPathUtilities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
