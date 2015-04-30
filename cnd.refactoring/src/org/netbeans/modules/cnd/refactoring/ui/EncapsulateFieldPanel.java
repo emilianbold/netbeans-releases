@@ -70,11 +70,9 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -596,39 +594,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     private void initInsertPoints() {
-        CsmClass encloser = csmClassContainer;
-        List<InsertPoint> result = new ArrayList<>();
-        int idx = 0;
-        hasOutOfClassMemberDefinitions = false;
-        for (CsmMember member : encloser.getMembers()) {
-            if (CsmKindUtilities.isMethod(member)) {
-                CsmMethod method = (CsmMethod) member;
-                CsmFunction definition = ((CsmFunction)method).getDefinition();
-                InsertPoint ip = new InsertPoint(encloser, method, definition, idx + 1, NbBundle.getMessage(
-                        EncapsulateFieldPanel.class,
-                        "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
-                        MemberInfo.create(method).getHtmlText()
-                        ));
-                if (definition != null && definition != method) {
-                    hasOutOfClassMemberDefinitions = true;
-                }
-                result.add(ip);
-            }
-            ++idx;
-        }
-        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
-        if (!result.isEmpty()) {
-            InsertPoint first = new InsertPoint(encloser, null, null, Integer.MIN_VALUE,
-            getString("EncapsulateFieldPanel.jComboInsertPoint.first")); // NOI18N
-            InsertPoint last = new InsertPoint(encloser, null, null, Integer.MAX_VALUE,
-            getString("EncapsulateFieldPanel.jComboInsertPoint.last")); // NOI18N
-            jComboInsertPoint.addItem(first); // NOI18N
-            jComboInsertPoint.addItem(last); // NOI18N
-            for (InsertPoint ip : result) {
-                jComboInsertPoint.addItem(ip);
-            }
-        }
-        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+        hasOutOfClassMemberDefinitions = InsertPoint.initInsertPoints(jComboInsertPoint, csmClassContainer);
         if (hasOutOfClassMemberDefinitions) {
             jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
             jInlineMethods.setEnabled(true);
@@ -916,46 +882,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
     }
     
-    public static final class InsertPoint {
-        
-        public static final InsertPoint DEFAULT = new InsertPoint(null, null, null, Integer.MIN_VALUE,
-                getString("EncapsulateFieldPanel.jComboInsertPoint.default")); // NOI18N
-        private final int index;
-        private final String description;
-        private final CsmOffsetable elemDecl;
-        private final CsmOffsetable elemDef;
-        private final CsmClass clazz;
-
-        private InsertPoint(CsmClass clazz, CsmOffsetable elemDecl, CsmOffsetable elemDef, int index, String description) {
-            this.index = index;
-            this.description = description;
-            this.elemDecl = elemDecl;
-            this.elemDef = elemDef;
-            this.clazz = clazz;
-        }
-
-        public CsmClass getContainerClass() {
-            return clazz;
-        }
-
-        public CsmOffsetable getElementDeclaration() {
-            return elemDecl;
-        }
-
-        public CsmOffsetable getElementDefinition() {
-            return elemDef;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-        
-    }
     
     private static final class EncapsulateCsmFieldTableCellRenderer extends UIUtilities.CsmElementTableCellRenderer {
 

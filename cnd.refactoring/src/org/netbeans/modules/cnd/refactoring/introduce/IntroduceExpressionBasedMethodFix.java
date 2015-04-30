@@ -51,15 +51,14 @@ final class IntroduceExpressionBasedMethodFix implements Fix {
     public ChangeInfo implement() throws Exception {
         JButton btnOk = new JButton(NbBundle.getMessage(IntroduceExpressionBasedMethodFix.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(IntroduceExpressionBasedMethodFix.class, "LBL_Cancel"));
-        IntroduceMethodPanel panel = new IntroduceMethodPanel(""); //NOI18N
-        panel.setOkButton(btnOk);
+        IntroduceMethodPanel panel = new IntroduceMethodPanel(null, btnOk, null); //NOI18N
         String caption = NbBundle.getMessage(IntroduceExpressionBasedMethodFix.class, "CAP_IntroduceMethod");
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {
             return null; //cancel
         }
-        final String name = panel.getMethodName();
-        final CsmVisibility access = panel.getAccess();
+        //final String name = panel.getMethodName();
+        //final CsmVisibility access = panel.getAccess();
         return null;
     }
 

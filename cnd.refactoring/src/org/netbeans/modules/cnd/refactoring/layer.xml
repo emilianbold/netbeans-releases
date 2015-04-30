@@ -61,11 +61,11 @@
                     <file name="IntroduceFieldAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
                         <attr name="position" intvalue="1700"/>
-                    </file>
+                    </file-->
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                         <attr name="position" intvalue="1750"/>
-                    </file-->
+                    </file>
                 </folder>
 
                 <folder name="CodeGeneratorContextProviders">
@@ -144,11 +144,11 @@
                     <file name="IntroduceFieldAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
                         <attr name="position" intvalue="1700"/>
-                    </file>
+                    </file-->
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                         <attr name="position" intvalue="1750"/>
-                    </file-->
+                    </file>
                 </folder>
 
                 <folder name="CodeGeneratorContextProviders">
@@ -237,11 +237,11 @@
                     <file name="IntroduceFieldAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
                         <attr name="position" intvalue="1700"/>
-                    </file>
+                    </file-->
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                         <attr name="position" intvalue="1750"/>
-                    </file-->
+                    </file>
                 </folder>
 
                 <folder name="CodeGeneratorContextProviders">

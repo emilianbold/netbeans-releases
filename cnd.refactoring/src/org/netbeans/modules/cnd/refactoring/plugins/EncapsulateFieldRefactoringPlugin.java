@@ -86,7 +86,7 @@ import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils.InsertInfo;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult.Difference;
-import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.refactoring.ui.InsertPoint;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;

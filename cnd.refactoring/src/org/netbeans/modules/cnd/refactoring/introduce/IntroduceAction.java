@@ -40,8 +40,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
+import org.netbeans.modules.cnd.refactoring.hints.BodyFinder;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -161,7 +161,11 @@ public final class IntroduceAction extends HintAction {
 
     private List<ErrorDescription> computeError(CsmContext info, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
         List<ErrorDescription> hints = new LinkedList<>();
-        detectIntroduceVariable(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
+        if (type == IntroduceKind.CREATE_VARIABLE) {
+            detectIntroduceVariable(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
+        } else if (type == IntroduceKind.CREATE_METHOD) {
+            detectIntroduceMethod(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
+        }
         return hints;
     }
 
@@ -191,6 +195,20 @@ public final class IntroduceAction extends HintAction {
                     }
                 }
             }
+        }
+    }
+
+    private void detectIntroduceMethod(Map<IntroduceKind, Fix> fixesMap, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, final FileObject fileObject, JTextComponent comp) {
+        BodyFinder bodyFinder = new BodyFinder(doc, file, caretOffset, selectionStart, selectionEnd, canceled);
+        BodyFinder.BodyResult res = bodyFinder.findBody();
+        if (res == null) {
+            return;
+        }
+        if (canceled.get()) {
+            return;
+        }
+        if (res.isApplicable(canceled)) {
+            fixesMap.put(IntroduceKind.CREATE_METHOD, new IntroduceMethodFix(res, doc, fileObject));
         }
     }
 }
