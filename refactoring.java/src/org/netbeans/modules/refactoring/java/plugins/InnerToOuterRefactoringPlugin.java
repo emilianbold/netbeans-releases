@@ -49,8 +49,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
@@ -63,6 +65,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 
 /** Plugin that implements the core functionality of "inner to outer" refactoring.
@@ -152,13 +155,15 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
+    @NbBundle.Messages(
+            "ERR_InnerToOuter_ClassNameClash=Inner class named <b>{0}</b> already exists in the target class.")
     protected Problem fastCheckParameters(final CompilationController javac) throws IOException {
         Problem problem = null;
         String name = refactoring.getReferenceName();
-        if(name != null) {
-            javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-            Element resolved = refactoring.getSourceType().resolveElement(javac);
-            if(resolved != null && resolved.getKind().isClass()) {
+        javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+        Element resolved = refactoring.getSourceType().resolveElement(javac);
+        if(resolved != null && resolved.getKind().isClass()) {
+            if(name != null) {
                 List<VariableElement> fieldsIn = ElementFilter.fieldsIn(((TypeElement)resolved).getEnclosedElements());
                 for (VariableElement variableElement : fieldsIn) {
                     if(variableElement.getSimpleName().toString().equals(name)) {
@@ -182,6 +187,23 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
                     for( VariableElement variableElement: parameters ) {
                         if(variableElement.getSimpleName().toString().equals(name)) {
                             return new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_OuterNameClash", name, resolved.getSimpleName())); // NOI18N
+                        }
+                    }
+                }
+            }
+            String className = refactoring.getClassName();
+            if(className != null) {
+                TypeElement outer = javac.getElementUtilities().enclosingTypeElement(resolved);
+                Element outerouter = outer.getEnclosingElement();
+                
+                if (outerouter.getKind() != ElementKind.PACKAGE) {
+                    if(!outerouter.getKind().isClass()) {
+                        outerouter = javac.getElementUtilities().enclosingTypeElement(outerouter);
+                    }
+                    List<TypeElement> types = ElementFilter.typesIn(javac.getElements().getAllMembers((TypeElement)outerouter));
+                    for (TypeElement type : types) {
+                        if (className.contentEquals(type.getSimpleName()) && type != resolved) {
+                            return new Problem(true, ERR_InnerToOuter_ClassNameClash(className)); // NOI18N
                         }
                     }
                 }
