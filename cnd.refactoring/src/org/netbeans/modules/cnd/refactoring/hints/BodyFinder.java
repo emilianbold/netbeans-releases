@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
 import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
@@ -248,8 +250,10 @@ public class BodyFinder {
         private boolean accessBefore;
         private boolean accessAfter;
         private boolean accessInside;
-        private VariableInfo(CsmVariable variable) {
+        private boolean topLevelDeclaration;
+        private VariableInfo(CsmVariable variable, boolean topLevelDeclaration) {
             this.variable = variable;
+            this.topLevelDeclaration = topLevelDeclaration;
         }
         public CsmVariable getVariable() {
             return variable;
@@ -262,6 +266,9 @@ public class BodyFinder {
         }
         public boolean isAccessInside() {
             return accessInside;
+        }
+        public boolean isTopLevelDeclaration() {
+            return topLevelDeclaration;
         }
         public List<CsmReference> getReferences() {
             return refs;
@@ -310,21 +317,35 @@ public class BodyFinder {
         private VariablesInfo() {
             variables = new ArrayList<>();
         }
-        private VariableInfo add(CsmVariable variable) {
+        private VariableInfo add(CsmVariable variable, boolean topLevelDeclaration) {
             for(VariableInfo info: variables) {
                 if (info.variable.equals(variable)) {
                     return info;
                 }
             }
-            VariableInfo res = new VariableInfo(variable);
+            VariableInfo res = new VariableInfo(variable, topLevelDeclaration);
             variables.add(res);
             return res;
         }
         private List<VariableInfo> getImportantVariables() {
             List<VariableInfo> res = new ArrayList<>();
             for(VariableInfo info: variables) {
-                if (info.accessInside) {
+                if (info.isTopLevelDeclaration()) {
+                    continue;
+                }
+                if (info.isAccessInside()) {
                     res.add(info);
+                }
+            }
+            return res;
+        }
+        private List<VariableInfo> topLevelVariablesUsedOutside() {
+            List<VariableInfo> res = new ArrayList<>();
+            for(VariableInfo info: variables) {
+                if (info.isTopLevelDeclaration()) {
+                    if(info.isAccessAfter() || info.accessBefore) {
+                        res.add(info);
+                    }
                 }
             }
             return res;
@@ -388,6 +409,10 @@ public class BodyFinder {
             }
             // gather in-out references
             visit();
+            // check deferred "local" variables
+            if(!vars.topLevelVariablesUsedOutside().isEmpty()) {
+                return false;
+            }
             if (canceled.get()) {
                 return false;
             }
@@ -542,7 +567,7 @@ public class BodyFinder {
                         return;
                     }
                     // Variable is visible outside selection
-                    VariableInfo info = vars.add(var);
+                    VariableInfo info = vars.add(var, false);
                     info.addReference(reference);
                     if (reference.getEndOffset() < startSelection) {
                         // reference before selection
@@ -576,9 +601,17 @@ public class BodyFinder {
                 case DECLARATION:
                     if (hasKind(CsmStatement.Kind.COMPOUND)) {
                         return true;
+                    } else {
+                        // top level declaration
+                        // check later that it is a true "local" variable
+                        CsmDeclarationStatement decl = (CsmDeclarationStatement) st;
+                        for(CsmDeclaration var : decl.getDeclarators()) {
+                            if (CsmKindUtilities.isVariable(var)) {
+                                vars.add((CsmVariable) var, true);
+                            }
+                        }
+                        return true;
                     }
-                    // TODO: need an additional analysis
-                    return false;
                 case EXPRESSION:
                     return true;
                 case CATCH:
