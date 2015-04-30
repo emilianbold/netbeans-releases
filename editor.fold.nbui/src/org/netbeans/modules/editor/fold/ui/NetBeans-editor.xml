@@ -46,24 +46,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="block-search" foreColor="black" bgColor="ffe0e8f1"/>
-    <fontcolor name="guarded" bgColor="ffDFDFDF"/>
-    <fontcolor name="readonly-files" bgColor="ffDFDFDF"/>
-    <fontcolor name="highlight-caret-row" bgColor="ffE9EFF8"/>
-    <fontcolor name="highlight-search" foreColor="black" bgColor="ffFFB442"/>
-    <fontcolor name="inc-search" foreColor="black" bgColor="ffFFB442"/> <!-- ffff9900 -->
-    <fontcolor name="line-number" foreColor="black" bgColor="ffe9e8e2"/>
-    <fontcolor name="indent-guide-lines" foreColor="d3d3d3"/>
-    <fontcolor name="selection" bgColor="ffB0C5E3"/>
-    <fontcolor name="status-bar"/>
-    <fontcolor name="status-bar-bold" foreColor="red"/>
-    <fontcolor name="caret-color-insert-mode" foreColor="black"/>
-    <fontcolor name="caret-color-overwrite-mode" foreColor="black"/>
-    <fontcolor name="text-limit-line-color" foreColor="ffffa8a8"/>
-    <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
-<!--    <fontcolor name="synchronized-text-blocks" bgColor="ff8AC0EC"/> -->
-    <fontcolor name="synchronized-text-blocks-ext" foreColor="ffCC0099"/>
-    <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
-    <fontcolor name="indent-whitespace"/>
-    <fontcolor name="trailing-whitespace"/>
+    <fontcolor name="code-folding" foreColor="ff666666"/>
+    <fontcolor name="code-folding-border" foreColor="ffcccccc"/>
+    <fontcolor name="code-folding-bar" foreColor="ff666666"/>
 </fontscolors>
