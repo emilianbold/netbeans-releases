@@ -80,8 +80,6 @@ public class BreakpointModelActiveSessionFilter extends ViewModelSupport
                                                 implements ExtendedNodeModelFilter,
                                                            PropertyChangeListener {
     
-    private static final String DEACTIVATED_LINE_BREAKPOINT =
-        "org/netbeans/modules/debugger/resources/editor/Breakpoint_stroke.png";                 // NOI18N
     private static final String DEACTIVATED_NONLINE_BREAKPOINT =
         "org/netbeans/modules/debugger/resources/editor/Breakpoint_nonline_stroke.png";         // NOI18N
     private static final String DEACTIVATED_DISABLED_NONLINE_BREAKPOINT =
@@ -166,40 +164,6 @@ public class BreakpointModelActiveSessionFilter extends ViewModelSupport
         if (Debugger.PROP_BREAKPOINTS_ACTIVE.equals(propertyName)) {
             fireChangeEvent(new ModelEvent.NodeChanged(this, null, ModelEvent.NodeChanged.ICON_MASK));
         }
-    }
-    
-    @NbBundle.Messages({"CTL_DeactivateAllBreakpoints=Deactivate all breakpoints",
-                        "CTL_ActivateAllBreakpoints=Activate all breakpoints"})
-    public static AbstractButton createActivateBreakpointsActionButton() {
-        ImageIcon icon = ImageUtilities.loadImageIcon(DEACTIVATED_LINE_BREAKPOINT, false);
-        final JToggleButton button = new JToggleButton(icon);
-        // ensure small size, just for the icon
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
-        button.setPreferredSize(size);
-        button.setMargin(new Insets(1, 1, 1, 1));
-        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
-        button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
-        button.setFocusable(false);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-                final Debugger debugger = engine.lookupFirst(null, Debugger.class);
-                final boolean active = !button.isSelected();
-                if (active) {
-                    button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
-                } else {
-                    button.setToolTipText(Bundle.CTL_ActivateAllBreakpoints());
-                }
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        debugger.setBreakpointsActive(active);
-                    }
-                });
-            }
-        });
-        return button;
     }
 
 }

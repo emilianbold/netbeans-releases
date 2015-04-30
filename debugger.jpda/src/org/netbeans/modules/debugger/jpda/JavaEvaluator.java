@@ -168,7 +168,6 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (EvaluationException e) {
             InvalidExpressionException iee = new InvalidExpressionException (e);
-            iee.initCause (e);
             Exceptions.attachMessage(iee, "Expression = '"+expression.getExpression()+"'");
             throw iee;
         } catch (IncompatibleThreadStateException itsex) {
