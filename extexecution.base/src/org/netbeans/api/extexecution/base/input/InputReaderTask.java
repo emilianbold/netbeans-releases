@@ -224,6 +224,9 @@ public final class InputReaderTask implements Runnable, Cancellable {
             }
         } catch (Exception ex) {
             LOGGER.log(Level.FINE, null, ex);
+        } catch (AssertionError err) {
+            LOGGER.log(Level.WARNING, null, err);
+            throw err;
         } finally {
             // drain the rest
             if (draining) {
