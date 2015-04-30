@@ -108,9 +108,9 @@ public class ClankDriverImpl {
         for (int i = 0; i < asciis.length; i++) {
             char c = chars[i];
             if (c >= 256) {
-              CndUtils.assertTrueInConsole(false, path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
+              CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
             } else if (c >= 128) {
-              CndUtils.assertTrueInConsole(false, path.toString(), ":could be problematic non-ANSII " + c);
+              CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic non-ANSII " + c);
             }
             asciis[i] = (byte)(c);
         }

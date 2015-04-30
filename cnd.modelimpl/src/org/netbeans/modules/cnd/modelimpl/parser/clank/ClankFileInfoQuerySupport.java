@@ -62,7 +62,14 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Voskresensky
  */
 public class ClankFileInfoQuerySupport {
-
+    private static final boolean TRACE_IN_CONSOLE;
+    static {
+      if (CndUtils.isUnitTestMode()) {
+        TRACE_IN_CONSOLE = true;
+      } else {
+        TRACE_IN_CONSOLE = false;
+      }
+    }
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
         FileBuffer buffer = fileImpl.getBuffer();
@@ -70,7 +77,7 @@ public class ClankFileInfoQuerySupport {
         if (interrupter.cancelled()) {
           return out;
         }
-        CndUtils.assertTrueInConsole(false, "getClankMacroUsages Not yet implemented");
+        CndUtils.assertTrueInConsole(TRACE_IN_CONSOLE, "getClankMacroUsages Not yet implemented");
         if (handlers.isEmpty()) {
           DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
           return Collections.<CsmReference>emptyList();
@@ -90,13 +97,13 @@ public class ClankFileInfoQuerySupport {
 
     public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
         assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(false, "not yet");
+        CndUtils.assertTrueInConsole(TRACE_IN_CONSOLE, "not yet");
         return null;
     }
 
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(false, "not yet");
+        CndUtils.assertTrueInConsole(TRACE_IN_CONSOLE, "not yet");
         return code;
     }
 
