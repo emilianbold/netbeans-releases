@@ -358,7 +358,6 @@ public class TreeEvaluator {
             throw ieex;
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
-            ieex.initCause(uoex);
             throw ieex;
         } catch (InternalExceptionWrapper iex) {
             throw new InvalidExpressionException(iex.getLocalizedMessage());

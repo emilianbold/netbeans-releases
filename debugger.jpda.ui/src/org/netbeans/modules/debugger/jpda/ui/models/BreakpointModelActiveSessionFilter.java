@@ -41,22 +41,12 @@
  */
 package org.netbeans.modules.debugger.jpda.ui.models;
 
-import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.datatransfer.Transferable;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractButton;
-import javax.swing.ImageIcon;
-import javax.swing.JToggleButton;
-import javax.swing.border.EmptyBorder;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -68,8 +58,6 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
@@ -206,38 +194,4 @@ public class BreakpointModelActiveSessionFilter implements ExtendedNodeModelFilt
     }
     
     
-    @NbBundle.Messages({"CTL_DeactivateAllBreakpoints=Deactivate all breakpoints",
-                        "CTL_ActivateAllBreakpoints=Activate all breakpoints"})
-    public static AbstractButton createActivateBreakpointsActionButton() {
-        ImageIcon icon = ImageUtilities.loadImageIcon(DEACTIVATED_LINE_BREAKPOINT, false);
-        final JToggleButton button = new JToggleButton(icon);
-        // ensure small size, just for the icon
-        Dimension size = new Dimension(icon.getIconWidth() + 8, icon.getIconHeight() + 8);
-        button.setPreferredSize(size);
-        button.setMargin(new Insets(1, 1, 1, 1));
-        button.setBorder(new EmptyBorder(button.getBorder().getBorderInsets(button)));
-        button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
-        button.setFocusable(false);
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                DebuggerEngine engine = DebuggerManager.getDebuggerManager().getCurrentEngine();
-                final JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-                final boolean active = !button.isSelected();
-                if (active) {
-                    button.setToolTipText(Bundle.CTL_DeactivateAllBreakpoints());
-                } else {
-                    button.setToolTipText(Bundle.CTL_ActivateAllBreakpoints());
-                }
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        debugger.setBreakpointsActive(active);
-                    }
-                });
-            }
-        });
-        return button;
-    }
-
 }
