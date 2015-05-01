@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,7 +61,9 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.ItemRenderer;
@@ -331,20 +334,19 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
                 new Object[]{text, System.currentTimeMillis() - createTime});
-            final int[] retry = new int[1];
             int lastSize = -1;
             while(true) {
-                retry[0] = 0;
-                final List<? extends SymbolDescriptor> symbols = getSymbolNames(text, retry);
-                if ( isCanceled ) {
+                final Result res = getSymbolNames(text);
+                if (isCanceled) {
                     LOG.log(
                         Level.FINE,
                         "Worker for {0} exited after cancel {1} ms.", //NOI18N
                         new Object[]{text, System.currentTimeMillis() - createTime});
                     return;
                 }
+                final List<? extends SymbolDescriptor> symbols = res.symbols;
                 final int newSize = symbols.size();
-                final boolean done = retry[0] <= 0;
+                final boolean done = res.retry <= 0;
                 final boolean resultChanged = lastSize != newSize;
                 if (done || resultChanged) {
                     lastSize = newSize;
@@ -377,7 +379,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                     return;
                 } else {
                     try {
-                        Thread.sleep(retry[0]);
+                        Thread.sleep(res.retry);
                     } catch (InterruptedException ex) {
                         //pass
                     }
@@ -403,14 +405,16 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends SymbolDescriptor> getSymbolNames(
-                final String text,
-                final int[] retry) {
+        @CheckForNull
+        private Result getSymbolNames(
+                final String text) {
             // TODO: Search twice, first for current project, then for all projects
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
             items = new ArrayList<>(128);
             String[] message = new String[1];
+            int retry = 0;
+            final Collection<SymbolProvider> nonFinishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider, Boolean>());
             for (SymbolProvider provider : getTypeProviders()) {
                 current = provider;
                 try {
@@ -424,7 +428,11 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                     final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
                     final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
                     provider.computeSymbolNames(context, result);
-                    retry[0] = mergeRetryTimeOut(retry[0], SymbolProviderAccessor.DEFAULT.getRetry(result));
+                    final int providerRetry = SymbolProviderAccessor.DEFAULT.getRetry(result);
+                    if (providerRetry > 0) {
+                        nonFinishedProviders.add(provider);
+                    }
+                    retry = mergeRetryTimeOut(retry, providerRetry);
                 } finally {
                     current = null;
                 }
@@ -432,9 +440,8 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             if ( !isCanceled ) {
                 Collections.sort(items, new SymbolComparator());
                 panel.setWarning(message[0]);
-                return items;
-            }
-            else {
+                return new Result (items, nonFinishedProviders, retry);
+            } else {
                 return null;
             }
         }
@@ -449,6 +456,25 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 return t1;
             }
             return Math.min(t1,t2);
+        }
+    }
+
+    private static class Result {
+        final List<SymbolDescriptor> symbols;
+        final int retry;
+        final Collection<SymbolProvider> nonFinishedProviders;
+
+        Result (
+                @NonNull final List<SymbolDescriptor> symbols,
+                @NonNull final Collection<SymbolProvider> providers,
+                final int retry) {
+            assert symbols != null;
+            assert providers != null;
+            this.symbols = symbols;
+            this.nonFinishedProviders = providers;
+            this.retry = retry;
+            assert this.retry > 0 ? !this.nonFinishedProviders.isEmpty() :
+                    this.nonFinishedProviders.isEmpty();
         }
     }
 }
