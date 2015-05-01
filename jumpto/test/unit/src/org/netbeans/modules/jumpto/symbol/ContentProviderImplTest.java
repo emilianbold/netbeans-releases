@@ -67,7 +67,8 @@ import org.openide.util.Lookup;
  */
 public class ContentProviderImplTest extends NbTestCase {
 
-    private MockSymbolProvider provider;
+    private MockSymbolProvider mockProvider;
+    private CountingSymbolProvider countingProvider;
 
     public ContentProviderImplTest(final String name) {
         super(name);
@@ -76,26 +77,30 @@ public class ContentProviderImplTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockServices.setServices(MockSymbolProvider.class);
-        provider = MockSymbolProvider.getInstance();
-        assertNotNull(provider);
+        MockServices.setServices(MockSymbolProvider.class, CountingSymbolProvider.class);
+        mockProvider = MockSymbolProvider.getInstance();
+        assertNotNull(mockProvider);
+        countingProvider = CountingSymbolProvider.getInstance();
+        assertNotNull(countingProvider);
+        countingProvider.count.set(0);
     }
 
     @Override
     protected void tearDown() throws Exception {
-        provider = null;
+        mockProvider = null;
+        countingProvider = null;
         super.tearDown();
     }
 
     public void testNoRetry() throws Exception {
         final MockGoToPanel p = new MockGoToPanel();
         final SymbolDescriptor[] expected = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
-        provider.data(new SymbolDescriptor[][]{
+        mockProvider.data(new SymbolDescriptor[][]{
             expected
         });
         final Runnable worker = new ContentProviderImpl(null).createWorker("a", SearchType.PREFIX, p);  //NOI18N
         worker.run();
-        assertTrue(provider.data.isEmpty());
+        assertTrue(mockProvider.data.isEmpty());
         waitForEDT();
         assertEquals(1, p.called.get());
         assertSymbols(Arrays.asList(expected), p.symbols);
@@ -104,13 +109,13 @@ public class ContentProviderImplTest extends NbTestCase {
     public void testSimpleRetry() throws Exception {
         final MockGoToPanel p = new MockGoToPanel();
         final SymbolDescriptor[] expected = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
-        provider.data(new SymbolDescriptor[][]{
+        mockProvider.data(new SymbolDescriptor[][]{
             new SymbolDescriptor[]{expected[0]},
             expected
         });
         final Runnable worker = new ContentProviderImpl(null).createWorker("a", SearchType.PREFIX, p);  //NOI18N
         worker.run();
-        assertTrue(provider.data.isEmpty());
+        assertTrue(mockProvider.data.isEmpty());
         waitForEDT();
         assertEquals(2, p.called.get());
         assertSymbols(Arrays.asList(expected), p.symbols);
@@ -119,14 +124,30 @@ public class ContentProviderImplTest extends NbTestCase {
     public void testNotComputedYetRetry() throws Exception {
         final MockGoToPanel p = new MockGoToPanel();
         final SymbolDescriptor[] expected = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
-        provider.data(new SymbolDescriptor[][]{
+        mockProvider.data(new SymbolDescriptor[][]{
             new SymbolDescriptor[]{expected[0]},
             new SymbolDescriptor[]{expected[0]},
             expected
         });
         final Runnable worker = new ContentProviderImpl(null).createWorker("a", SearchType.PREFIX, p);  //NOI18N
         worker.run();
-        assertTrue(provider.data.isEmpty());
+        assertTrue(mockProvider.data.isEmpty());
+        waitForEDT();
+        assertEquals(2, p.called.get());
+        assertSymbols(Arrays.asList(expected), p.symbols);
+    }
+
+    public void testSimpleRetryCompleteNotCalled() throws Exception {
+        final MockGoToPanel p = new MockGoToPanel();
+        final SymbolDescriptor[] expected = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
+        mockProvider.data(new SymbolDescriptor[][]{
+            new SymbolDescriptor[]{expected[0]},
+            expected
+        });
+        final Runnable worker = new ContentProviderImpl(null).createWorker("a", SearchType.PREFIX, p);  //NOI18N
+        worker.run();
+        assertTrue(mockProvider.data.isEmpty());
+        assertEquals(2, countingProvider.count.get());
         waitForEDT();
         assertEquals(2, p.called.get());
         assertSymbols(Arrays.asList(expected), p.symbols);
@@ -178,6 +199,38 @@ public class ContentProviderImplTest extends NbTestCase {
 
         static MockSymbolProvider getInstance() {
             return Lookup.getDefault().lookup(MockSymbolProvider.class);
+        }
+    }
+
+    public static final class CountingSymbolProvider implements SymbolProvider {
+
+        private final AtomicInteger count = new AtomicInteger();
+
+        @Override
+        public String name() {
+            return "Counting Mock Symbol Provider"; //NOI18N
+        }
+
+        @Override
+        public String getDisplayName() {
+            return name();
+        }
+
+        @Override
+        public void computeSymbolNames(Context context, Result result) {
+            count.incrementAndGet();
+        }
+
+        @Override
+        public void cancel() {
+        }
+
+        @Override
+        public void cleanup() {
+        }
+
+        static CountingSymbolProvider getInstance() {
+            return Lookup.getDefault().lookup(CountingSymbolProvider.class);
         }
     }
 
