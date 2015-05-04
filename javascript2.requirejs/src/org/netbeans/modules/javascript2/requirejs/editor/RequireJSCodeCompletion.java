@@ -238,7 +238,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                                 break;
                             }
                         }
-                    } else {
+                    }
+                    if (topFolder == null) {
                         topFolder = project.getProjectDirectory();
                     }
                     try {
