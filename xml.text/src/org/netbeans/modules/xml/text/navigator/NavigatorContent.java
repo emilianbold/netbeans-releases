@@ -55,11 +55,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import java.util.WeakHashMap;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -71,14 +72,18 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -95,6 +100,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -103,7 +109,7 @@ import org.openide.windows.TopComponent;
  * @author Marek Fukala
  * @version 1.0
  */
-public class NavigatorContent extends AbstractXMLNavigatorContent   {
+public class NavigatorContent extends AbstractXMLNavigatorContent implements CaretListener, Runnable {
     
     private static final boolean DEBUG = false;
     
@@ -113,12 +119,108 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     static boolean showAttributes = true;
     static boolean showContent = true;
     
-    private DataObject peerDO = null;
-    private WeakHashMap uiCache = new WeakHashMap();
+    private volatile DataObject peerDO = null;
+    
+    // @GuardedBy(self)
+    private final WeakHashMap uiCache = new WeakHashMap();
     private boolean editorOpened = false;
+    private Reference<JTextComponent> activeEditor;
+    private CaretListener wCaretL;
     
     public NavigatorContent() {
         setLayout(new BorderLayout());
+    }
+    
+    private void editorReleased() {
+        Reference<JTextComponent> jte = activeEditor;
+        if (jte == null) {
+            return;
+        }
+        JTextComponent c = jte.get();
+        if (c == null) {
+            return;
+        }
+        c.removeCaretListener(wCaretL);
+        wCaretL = null;
+    }
+    
+    private void updateActiveEditor() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this);
+            return;
+        }
+        JTextComponent c = findActivePane();
+        if (c == null) {
+            editorReleased();
+            return;
+        }
+        if (activeEditor != null && activeEditor.get() == c) {
+            return;
+        }
+        editorReleased();
+        activeEditor = new WeakReference<>(c);
+        wCaretL = WeakListeners.create(CaretListener.class, this, c);
+        c.addCaretListener(this);
+        
+        selectCurrentNode();
+    }
+
+    @Override
+    public void caretUpdate(CaretEvent e) {
+        selectCurrentNode();
+    }
+    
+    public void run() {
+        updateActiveEditor();
+    }
+    
+    private void selectCurrentNode() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
+        if (activeEditor == null) {
+            return;
+        }
+        JTextComponent c = activeEditor.get();
+        if (c == null) {
+            return;
+        }
+        int offset = c.getCaret().getDot();
+        DataObject d = peerDO;
+        if (d == null) {
+            return;
+        }
+        NavigatorContentPanel panel;
+        synchronized (uiCache) {
+            Reference<NavigatorContentPanel> cache = (Reference<NavigatorContentPanel>)uiCache.get(d);
+            if (cache == null || ((panel = cache.get()) == null)) {
+                return;
+            }
+        }
+        panel.selectTreeNode(offset);
+    }
+    
+    private JTextComponent findActivePane() {
+        DataObject d = peerDO;
+        if (d == null) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+        JTextComponent focused = EditorRegistry.focusedComponent();
+        if (focused == null) {
+            return null;
+        }
+        JTextComponent[] comps = ec.getOpenedPanes();
+        if (comps == null) {
+            return null;
+        }
+        for (JTextComponent c : comps) {
+            if (c == focused) {
+                return c;
+            }
+        }
+        return null;
     }
     
     public void navigate(DataObject d) {
@@ -129,6 +231,8 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
         } else {
             try {
+                EditorCookie.Observable obs = d.getCookie(EditorCookie.Observable.class);
+                obs.addPropertyChangeListener(WeakListeners.propertyChange(this, obs));
                 if(DEBUG) System.out.println("[xml navigator] navigating to DATAOBJECT " + d.hashCode());
                 //test if the document is opened in editor
                 BaseDocument bdoc = (BaseDocument)ec.openDocument();
@@ -160,24 +264,26 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
         
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
-        WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
-        if(panelWR != null) {
-            NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
-            if(cp != null) {
-                if(DEBUG) System.out.println("panel is cached");
-                //test if the document associated with the panel is the same we got now
-                cachedPanel = bdoc == cp.getDocument() ? cp : null;
-                if(cachedPanel == null) {
-                    if(DEBUG) System.out.println("but the document is different - creating a new UI...");
-                    if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
-                    
-                    //remove the old mapping from the cache
-                    uiCache.remove(documentDO);
-                }
+        synchronized (uiCache) {
+            WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
+            if(panelWR != null) {
+                NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
+                if(cp != null) {
+                    if(DEBUG) System.out.println("panel is cached");
+                    //test if the document associated with the panel is the same we got now
+                    cachedPanel = bdoc == cp.getDocument() ? cp : null;
+                    if(cachedPanel == null) {
+                        if(DEBUG) System.out.println("but the document is different - creating a new UI...");
+                        if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
+
+                        //remove the old mapping from the cache
+                        uiCache.remove(documentDO);
+                    }
+                } else
+                    cachedPanel = null;
             } else
                 cachedPanel = null;
-        } else
-            cachedPanel = null;
+        }
         
         // get the model and create the new UI on background
 
@@ -207,7 +313,9 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                                             panel = new NavigatorContentPanel(model);
                                             //use the document dataobject as a key since the document itself is very easily discarded and hence
                                             //harly usable as a key of the WeakHashMap
-                                            uiCache.put(documentDO, new WeakReference(panel));
+                                            synchronized (uiCache) {
+                                                uiCache.put(documentDO, new WeakReference(panel));
+                                            }
                                             if(DEBUG) System.out.println("[xml navigator] panel created");
                                             
                                             //start to listen to the document property changes - we need to get know when the document is being closed
@@ -262,11 +370,11 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
         final EditorCookie ec;
         
         synchronized (this) {
-            if (peerDO == replaceObject) {
+            dobj = peerDO;
+            if (dobj == replaceObject) {
                 // no change
                 return;
             }
-            dobj = peerDO;
 
             boolean wasOpened = editorOpened;
             editorOpened = false;
@@ -319,6 +427,9 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 //a new pane created
                 editorOpened = true;
             }
+        }
+        if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+            updateActiveEditor();
         }
     }
     
@@ -423,6 +534,38 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                 if(node.getChildCount() > 0)
                     tree.expandPath(new TreePath(new TreeNode[]{rootNode, node}));
             }
+        }
+        
+        public void selectTreeNode(int offset) {
+            TreeNodeAdapter root = (TreeNodeAdapter)tree.getModel().getRoot();
+            
+            int from = root.getStart();
+            int to = root.getEnd();
+            // sanity check:
+            if (offset < from || offset >= to) {
+                // retain the selection path as it is
+                return;
+            }
+            TreePath p = new TreePath(root);
+            boolean cont = true;
+            OUT: while (cont) {
+                cont = false;
+                Enumeration chE = root.children();
+                while (chE.hasMoreElements()) {
+                    TreeNodeAdapter ch = (TreeNodeAdapter)chE.nextElement();
+                    if (offset < ch.getStart()) {
+                        break OUT;
+                    }
+                    if (offset < ch.getEnd()) {
+                        root = ch;
+                        p = p.pathByAddingChild(ch);
+                        cont = true;
+                        break;
+                    }
+                }
+            };
+            tree.scrollPathToVisible(p);
+            tree.setSelectionPath(p);
         }
         
         public Document getDocument() {

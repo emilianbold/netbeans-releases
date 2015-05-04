@@ -95,6 +95,14 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         this.parent = parent;
     }
     
+    public int getStart() {
+        return de.getStartOffset();
+    }
+    
+    public int getEnd() {
+        return de.getEndOffset();
+    }
+    
     /**Returns a text content of this node. The content is fetched from all text  document elements which
      * are children of the element held by this tree node.
      *
