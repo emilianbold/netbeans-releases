@@ -871,6 +871,16 @@ public class ModelVisitor extends PathNodeVisitor {
             List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);
             for (FunctionNode fn : copy) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    if (modelBuilder.getCurrentDeclarationFunction().getProperty(fn.getIdent().getName()) == null
+                            && !(fn.getIdent().getName().startsWith("get ") || fn.getIdent().getName().startsWith("set "))) {
+                        IdentifierImpl fakeObjectName = ModelElementFactory.create(parserResult, fn.getIdent());
+                        JsObjectImpl newObject = new JsObjectImpl(fncScope, fakeObjectName, fakeObjectName.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                        fncScope.addProperty(newObject.getName(), newObject);
+                    }
+                }
+            }
+            for (FunctionNode fn : copy) {
+                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
                     // go through all functions defined via reference
                     String functionName = fn.getIdent().getName();
                     if (!(functionName.startsWith("get ") || functionName.startsWith("set "))) {  //NOI18N

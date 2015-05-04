@@ -1379,6 +1379,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue251984.js", "function f^2(f2arg) {", true); 
     }
     
+    public void testIssue252022_01() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "function fn^2() {", true); 
+    }
+    
+    public void testIssue252022_02() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "fn^2().toLowerCase();  // test", true); 
+    }
+    
+    public void testIssue252022_03() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "fn2().toLower^Case();  // test", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
