@@ -169,7 +169,7 @@ public class NodeJsDataProvider {
                     this.docUrl = support.getDocumentationUrl();
                 }
                 if (support.getVersion() != null) {
-                    this.docApiFilePath = new StringBuilder().append(CACHE_FOLDER_NAME).append(File.separator)
+                    docApiFilePath = new StringBuilder().append(CACHE_FOLDER_NAME).append(File.separator)
                             .append(support.getVersion().toString()).append(File.separator).append(API_ALL_JSON_FILE).toString();
                 }
             }
