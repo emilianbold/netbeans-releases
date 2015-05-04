@@ -52,7 +52,9 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
+import com.oracle.truffle.api.instrument.KillException;
 import com.oracle.truffle.api.instrument.Probe;
+import com.oracle.truffle.api.instrument.QuitException;
 import com.oracle.truffle.api.instrument.SyntaxTag;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
@@ -60,6 +62,7 @@ import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
 import com.oracle.truffle.debug.impl.AbstractDebugEngine;
+import com.oracle.truffle.debug.impl.DebugException;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.ScriptNode;
@@ -67,6 +70,7 @@ import com.oracle.truffle.js.parser.JSEngine;
 import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
+import com.oracle.truffle.js.runtime.UserScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +98,8 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         this.context = context;
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
-        startExecution(null, null);
+        startExecution(null);
+        prepareContinue();
         //nodeProberDelegate.addNodeProber(
         //        new JPDAJSDebugProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
         //System.err.println("new JPDATruffleDebugManager("+engine+")");
@@ -123,14 +128,50 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
     }
     
     @Override
-    public void run(Source source, SyntaxTag stepIntoTag) {
+    public void run(Source source) throws DebugException {
         //System.err.println("JPDATruffleDebugManager.run("+source+")");
-        startExecution(source, stepIntoTag);
+        startExecution(source);
+        prepareContinue();
         try {
-            final ScriptNode scriptNode = JSEngine.getInstance().getParser().parseScriptNode((JSContext) context, source);
-            scriptNode.run();
+            runSource(source);
         } finally {
-            endExecution(source);
+            endExecution();
+        }
+    }
+
+    @Override
+    public void runStepInto(Source source) throws DebugException {
+        startExecution(source);
+        prepareStepInto(1);
+        try {
+            runSource(source);
+        } finally {
+            endExecution();
+        }
+    }
+    
+    private void runSource(Source source) throws DebugException {
+        try {
+            ((TruffleJSEngine) engine).eval(source);
+        } catch (ScriptException e) {
+            final Throwable cause = e.getCause();
+            if (cause instanceof QuitException) {
+                throw (QuitException) cause;
+            }
+            if (cause instanceof KillException) {
+                throw (KillException) cause;
+            }
+            if (cause instanceof UserScriptException) {
+                final UserScriptException uncaught = (UserScriptException) cause;
+                final StackTraceElement[] stackTrace = uncaught.getStackTrace();
+                String location = "";
+                if (stackTrace.length > 0) {
+                    final StackTraceElement elem = stackTrace[0];
+                    location = " at " + elem.getFileName() + ", line " + elem.getLineNumber();
+                }
+                throw new DebugException("Uncaught exception: \"" + uncaught.getLocalizedMessage() + "\" " + location);
+            }
+            throw new DebugException("Can't run source " + source.getName() + ": " + e.getMessage());
         }
     }
     
@@ -141,7 +182,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
     @Override
     public Object eval(Source source, Node node, MaterializedFrame frame) {
         //System.err.println("JPDATruffleDebugManager.eval("+source+", "+node+", "+frame+")");
-        startExecution(source, null);
+        startExecution(source);
         try {
             if (frame == null) {
                 return engine.eval(source.getCode());
@@ -153,7 +194,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
             //throw JSException.create(JSErrorType.EvalError, e.getMessage());
             return null;
         } finally {
-            endExecution(source);
+            endExecution();
         }
     }
     
@@ -176,7 +217,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
     }
 
     void dispose() {
-        endExecution(null);
+        endExecution();
     }
 
     /*
