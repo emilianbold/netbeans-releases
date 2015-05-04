@@ -81,6 +81,16 @@ public final class NodeJsSupportImpl implements NodeJsSupport {
     }
 
     @Override
+    public Version getVersion() {
+        assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
+        NodeExecutable node = NodeExecutable.forProject(project, false);
+        if (node == null) {
+            return null;
+        }
+        return node.getVersion();
+    }
+
+    @Override
     public String getDocumentationUrl() {
         assert !EventQueue.isDispatchThread() : "Should not be called in the UI thread";
         NodeExecutable node = NodeExecutable.forProject(project, false);
