@@ -101,14 +101,7 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
 
         } else {
             TypeNodeData data = (TypeNodeData)node.getUserObject();
-            String type = data.getTypeClass();
-            if(null != value) {
-                if (ReflectionHelper.isSimpleType(type, classLoader)) {
-                    viewerDialog.setText(value.toString());
-                } else {
-                    return null;
-                }
-            }
+            viewerDialog.setText((value == null) ? "null" : value.toString()); // NOI18N
 
             dlg = new DialogDescriptor(viewerDialog, data.getRealTypeName(),
             true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,
