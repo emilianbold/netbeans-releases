@@ -58,6 +58,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
+import com.oracle.truffle.debug.impl.DebugException;
 import com.oracle.truffle.debug.impl.LineBreakpoint;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
@@ -161,11 +162,11 @@ public class JPDATruffleAccessor extends Object {
         switch (stepCmd) {
             case 0: debugManager.prepareContinue();
                     break;
-            case 1: debugManager.prepareStepInto(StandardSyntaxTag.STATEMENT, 1);
+            case 1: debugManager.prepareStepInto(1);
                     break;
-            case 2: debugManager.prepareStepOver(StandardSyntaxTag.STATEMENT, 1);
+            case 2: debugManager.prepareStepOver(1);
                     break;
-            case 3: boolean success = debugManager.prepareStepOut();
+            case 3: debugManager.prepareStepOut();
                     //System.err.println("Successful step out = "+success);
                     break;
         }
@@ -325,10 +326,15 @@ public class JPDATruffleAccessor extends Object {
     private static LineBreakpoint doSetLineBreakpoint(Source source, int line, boolean oneShot) {
         LineLocation bpLineLocation = source.createLineLocation(line);
         LineBreakpoint lb;
-        if (oneShot) {
-            lb = debugManager.setOneShotLineBreakpoint(0, 0, bpLineLocation);
-        } else {
-            lb = debugManager.setLineBreakpoint(0, 0, bpLineLocation);
+        try {
+            if (oneShot) {
+                lb = debugManager.setOneShotLineBreakpoint(0, 0, bpLineLocation);
+            } else {
+                lb = debugManager.setLineBreakpoint(0, 0, bpLineLocation);
+            }
+        } catch (DebugException dex) {
+            System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
+            return null;
         }
         System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
         return lb;
@@ -425,7 +431,7 @@ public class JPDATruffleAccessor extends Object {
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
                         if (!stepIntoPrepared) {
-                            debugManager.prepareStepInto(StandardSyntaxTag.CALL, 1);
+                            debugManager.prepareStepInto(1);
                             stepIntoPrepared = true;
                             //System.err.println("Prepared step into and continue.");
                         }
