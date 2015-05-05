@@ -303,7 +303,9 @@ public class NameHolder {
 	    switch( next.getType() ) {
 		case CPPTokenTypes.CSM_TYPE_BUILTIN:
 		case CPPTokenTypes.CSM_TYPE_COMPOUND:
-		    sb.append(' ');
+                    if (sb.charAt(sb.length()-1) != ' ') {
+                        sb.append(' ');
+                    }
 		    addTypeText(next, sb);
                     break;
 		case CPPTokenTypes.CSM_PTR_OPERATOR:
@@ -320,7 +322,9 @@ public class NameHolder {
 		    sb.append(AstUtil.getText(next));
 		    break;
 		default:
-		    sb.append(' ');
+                    if (sb.charAt(sb.length()-1) != ' ') {
+                        sb.append(' ');
+                    }
                     end = OffsetableBase.getEndOffset(next);
 		    sb.append(AstUtil.getText(next));
 	    }

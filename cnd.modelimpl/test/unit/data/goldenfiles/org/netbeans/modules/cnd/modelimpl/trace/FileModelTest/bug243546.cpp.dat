@@ -15,27 +15,27 @@ NAMESPACE DEFINITOIN bug243546 [1:1/0-15:2/401] SCOPE: bug243546.cpp
     STRUCT AAA_243546 (bug243546::AAA_243546 ) [2:5/26-4:6/92] lcurly=44 SCOPE: bug243546 
         BASE CLASSES:
         MEMBERS:
-            FUNCTION operator  T* [3:7/53-3:39/85] MethodImpl SCOPE: AAA_243546 
-                DEFINITION: operator  T*  [6:5/99-6:63/157]
-                SIGNATURE operator  T*<class>()
-                UNIQUE NAME F:bug243546::AAA_243546::operator  T*<class>()
+            FUNCTION operator T* [3:7/53-3:39/85] MethodImpl SCOPE: AAA_243546 
+                DEFINITION: operator T*  [6:5/99-6:63/157]
+                SIGNATURE operator T*<class>()
+                UNIQUE NAME F:bug243546::AAA_243546::operator T*<class>()
                 PARAMETERS:
-                RETURNS *bug243546::AAA_243546::operator  T*::T TEXT=T*  [3:35/81-3:36/82]
-    FUNCTION DEFINITION operator  T*  [6:5/99-6:63/157] FunctionDefinitionImpl SCOPE: bug243546.cpp
-        SIGNATURE operator  T*<class>()
-        UNIQUE NAME f:bug243546::AAA_243546::operator  T*<class>()
-        DECLARATION: operator  T*  [3:7/53-3:39/85]
+                RETURNS *bug243546::AAA_243546::operator T*::T TEXT=T*  [3:35/81-3:36/82]
+    FUNCTION DEFINITION operator T*  [6:5/99-6:63/157] FunctionDefinitionImpl SCOPE: bug243546.cpp
+        SIGNATURE operator T*<class>()
+        UNIQUE NAME f:bug243546::AAA_243546::operator T*<class>()
+        DECLARATION: operator T*  [3:7/53-3:39/85]
         PARAMETERS:
-        RETURNS *bug243546::AAA_243546::operator  T*::T TEXT=T*  [6:45/139-6:46/140]
-        STATEMENT COMPOUND  [6:50/144-6:63/157] SCOPE: operator  T* 
+        RETURNS *bug243546::AAA_243546::operator T*::T TEXT=T*  [6:45/139-6:46/140]
+        STATEMENT COMPOUND  [6:50/144-6:63/157] SCOPE: operator T* 
             STATEMENT RETURN  [6:52/146-6:61/155] SCOPE: Stmt  [6:50/144-6:63/157] text: 'return 0;'
-    FUNCTION DEFINITION operator  char*  [7:5/162-7:58/215] FunctionDefinitionImpl SCOPE: bug243546.cpp
-        SIGNATURE operator  char*()
-        UNIQUE NAME f:bug243546::AAA_243546::operator  char*()
+    FUNCTION DEFINITION operator char*  [7:5/162-7:58/215] FunctionDefinitionImpl SCOPE: bug243546.cpp
+        SIGNATURE operator char*()
+        UNIQUE NAME f:bug243546::AAA_243546::operator char*()
         DECLARATION: null
         PARAMETERS:
         RETURNS *char TEXT=char*  [7:38/195-7:42/199]
-        STATEMENT COMPOUND  [7:45/202-7:58/215] SCOPE: operator  char* 
+        STATEMENT COMPOUND  [7:45/202-7:58/215] SCOPE: operator char* 
             STATEMENT RETURN  [7:47/204-7:56/213] SCOPE: Stmt  [7:45/202-7:58/215] text: 'return 0;'
     FUNCTION_INSTANTIATION  [8:5/238-8:42/275]
     FUNCTION DEFINITION main_243546  [10:5/308-14:6/399] FunctionDDImpl SCOPE: bug243546 
@@ -58,19 +58,19 @@ NAMESPACE bug243546 (bug243546)
     STRUCT AAA_243546 (bug243546::AAA_243546 ) [2:5/26-4:6/92] lcurly=44 SCOPE: bug243546 
         BASE CLASSES:
         MEMBERS:
-            FUNCTION operator  T* [3:7/53-3:39/85] MethodImpl SCOPE: AAA_243546 
-                DEFINITION: operator  T*  [6:5/99-6:63/157]
-                SIGNATURE operator  T*<class>()
-                UNIQUE NAME F:bug243546::AAA_243546::operator  T*<class>()
+            FUNCTION operator T* [3:7/53-3:39/85] MethodImpl SCOPE: AAA_243546 
+                DEFINITION: operator T*  [6:5/99-6:63/157]
+                SIGNATURE operator T*<class>()
+                UNIQUE NAME F:bug243546::AAA_243546::operator T*<class>()
                 PARAMETERS:
-                RETURNS *bug243546::AAA_243546::operator  T*::T TEXT=T*  [3:35/81-3:36/82]
-    FUNCTION DEFINITION operator  char*  [7:5/162-7:58/215] FunctionDefinitionImpl SCOPE: bug243546.cpp
-        SIGNATURE operator  char*()
-        UNIQUE NAME f:bug243546::AAA_243546::operator  char*()
+                RETURNS *bug243546::AAA_243546::operator T*::T TEXT=T*  [3:35/81-3:36/82]
+    FUNCTION DEFINITION operator char*  [7:5/162-7:58/215] FunctionDefinitionImpl SCOPE: bug243546.cpp
+        SIGNATURE operator char*()
+        UNIQUE NAME f:bug243546::AAA_243546::operator char*()
         DECLARATION: null
         PARAMETERS:
         RETURNS *char TEXT=char*  [7:38/195-7:42/199]
-        STATEMENT COMPOUND  [7:45/202-7:58/215] SCOPE: operator  char* 
+        STATEMENT COMPOUND  [7:45/202-7:58/215] SCOPE: operator char* 
             STATEMENT RETURN  [7:47/204-7:56/213] SCOPE: Stmt  [7:45/202-7:58/215] text: 'return 0;'
     FUNCTION DEFINITION main_243546  [10:5/308-14:6/399] FunctionDDImpl SCOPE: bug243546 
         SIGNATURE main_243546()
