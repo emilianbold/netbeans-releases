@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SrcMgr;
@@ -71,6 +72,7 @@ import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -143,6 +145,17 @@ public final class ClankPPCallback extends FileInfoCallback {
         directive.setAnnotation(inclDirectiveWrapper);
         ClankFileInfoWrapper currentFileWrapper = includeStack.get(includeStack.size() - 1);
         assert currentFileWrapper.current == curFile || !curFile.isFile();
+        if(resolvedPath == null) {
+            if (DebugUtils.STANDALONE) {
+                if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
+                    System.err.println("FAILED INCLUDE: from " + CndPathUtilities.getBaseName(currentFileWrapper.getFilePath().toString()) + " for:\n\t" + spelling);// NOI18N
+                }
+            } else {
+                APTUtils.LOG.log(Level.WARNING,
+                        "failed resolving path from {0} for {1}", // NOI18N
+                        new Object[] { currentFileWrapper.getFilePath(), spelling });
+            }
+        }
         this.delegate.onInclusionDirective(currentFileWrapper, inclDirectiveWrapper);
     }
 
