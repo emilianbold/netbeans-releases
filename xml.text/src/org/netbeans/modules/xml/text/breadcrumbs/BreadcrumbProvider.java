@@ -54,6 +54,7 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
@@ -62,6 +63,8 @@ import org.netbeans.modules.editor.structure.api.DocumentElementListener;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
 import org.netbeans.modules.xml.text.structure.XMLDocumentModelProvider;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -149,6 +152,7 @@ final class BreadcrumbProvider implements CaretListener {
         OUT: while (el != null) {
             switch (el.getType()) {
                 case XMLDocumentModelProvider.XML_TAG:
+                case XMLDocumentModelProvider.XML_EMPTY_TAG:
                 case XMLDocumentModelProvider.XML_PI:
                 case XMLDocumentModelProvider.XML_CDATA:
                 case XMLDocumentModelProvider.XML_DOCTYPE:
@@ -178,7 +182,7 @@ final class BreadcrumbProvider implements CaretListener {
         "LABEL_CDATA=<i>CDATA</i>",
         "LABEL_DOCTYPE=<i>DOCTYPE</i>"
     })
-    private class XE implements BreadcrumbsElement, DocumentElementListener {
+    private class XE implements BreadcrumbsElement, DocumentElementListener, OpenCookie {
         private final DocumentElement docEl;
         private final XE parent;
 
@@ -217,6 +221,7 @@ final class BreadcrumbProvider implements CaretListener {
         public String getHtmlDisplayName() {
             switch (docEl.getType()) {
                 case XMLDocumentModelProvider.XML_TAG:
+                case XMLDocumentModelProvider.XML_EMPTY_TAG:
                     return docEl.getName();
                 case XMLDocumentModelProvider.XML_PI:
                     return docEl.getName();
@@ -239,6 +244,7 @@ final class BreadcrumbProvider implements CaretListener {
             
             switch (docEl.getType()) {
                 case XMLDocumentModelProvider.XML_TAG:
+                case XMLDocumentModelProvider.XML_EMPTY_TAG:
                     resource = TAG_16; 
                     break;
                 case XMLDocumentModelProvider.XML_PI:
@@ -272,6 +278,14 @@ final class BreadcrumbProvider implements CaretListener {
         }
 
         @Override
+        public void open() {
+            int offset = docEl.getStartOffset();
+            if (pane.getDocument().getLength() >= offset) {
+                pane.getCaret().setDot(offset);
+            }
+        }
+
+        @Override
         public List<BreadcrumbsElement> getChildren() {
             if (children != null) {
                 return children;
@@ -280,6 +294,7 @@ final class BreadcrumbProvider implements CaretListener {
             for (DocumentElement ch : docEl.getChildren()) {
                 switch (ch.getType()) {
                     case XMLDocumentModelProvider.XML_TAG:
+                    case XMLDocumentModelProvider.XML_EMPTY_TAG:
                     case XMLDocumentModelProvider.XML_PI:
                     case XMLDocumentModelProvider.XML_CDATA:
                     case XMLDocumentModelProvider.XML_DOCTYPE:
