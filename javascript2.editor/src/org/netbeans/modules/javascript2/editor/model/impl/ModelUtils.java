@@ -1660,9 +1660,6 @@ public class ModelUtils {
                         if (scope instanceof DeclarationScopeImpl) {
                             ((DeclarationScopeImpl)scope).setParentScope(newScope);
                         }  
-                        for (JsObject property : where.getProperties().values()) {
-                            changeDeclarationScope(property, newScope, done);
-                        }
                     }
                     newScope.addDeclaredScope(scope);
                 }

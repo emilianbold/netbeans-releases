@@ -141,8 +141,11 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
         String host = hostNameTextField.getText();
+        if (host != null) {
+            host = host.trim();
+        }
 
-        if (host == null || host.trim().isEmpty()) {
+        if (host == null || host.isEmpty()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_EMPTY_HOST"))); // NOI18N
             return false;
