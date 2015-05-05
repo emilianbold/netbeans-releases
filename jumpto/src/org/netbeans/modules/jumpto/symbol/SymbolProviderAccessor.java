@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,15 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.jumpto.symbol;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -56,7 +57,7 @@ import static org.netbeans.spi.jumpto.symbol.SymbolProvider.*;
  * @author Tomas Zezula
  */
 public abstract class SymbolProviderAccessor {
-    
+
     public static SymbolProviderAccessor DEFAULT;
 
     static {
@@ -70,7 +71,11 @@ public abstract class SymbolProviderAccessor {
     public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
 
     @NonNull
-    public abstract SymbolProvider.Result createResult(@NonNull List<? super SymbolDescriptor> result, @NonNull String[] message, @NonNull Context context);
+    public abstract SymbolProvider.Result createResult(
+            @NonNull List<? super SymbolDescriptor> result,
+            @NonNull String[] message,
+            @NonNull Context context,
+            @NonNull SymbolProvider provider);
 
     public abstract int getRetry(Result result);
 
@@ -78,4 +83,7 @@ public abstract class SymbolProviderAccessor {
     public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
 
     public abstract void setHighlightText(@NonNull SymbolDescriptor desc, @NonNull String text);
+
+    @CheckForNull
+    public abstract SymbolProvider getSymbolProvider(@NonNull SymbolDescriptor desc);
 }
