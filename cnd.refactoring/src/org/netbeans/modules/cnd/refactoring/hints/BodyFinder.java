@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 
 /**
@@ -84,6 +86,7 @@ import org.openide.util.Pair;
  */
 public class BodyFinder {
     private final Document doc;
+    private final FileObject fileObject;
     private final CsmFile file;
     private final int caretOffset;
     private final int selectionStart;
@@ -91,8 +94,9 @@ public class BodyFinder {
     private final AtomicBoolean canceled;
     private BodyResult result;
 
-    public BodyFinder(Document doc, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, AtomicBoolean canceled) {
+    public BodyFinder(Document doc, FileObject fileObject, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, AtomicBoolean canceled) {
         this.doc = doc;
+        this.fileObject = fileObject;
         this.file = file;
         this.caretOffset = caretOffset;
         this.selectionStart = selectionStart;
@@ -165,7 +169,7 @@ public class BodyFinder {
                 }
                 if (begStatement >= 0 && endStatement > begStatement) {
                     //found selection in body
-                    return new BodyResult(doc, body, begStatement, endStatement);
+                    return new BodyResult(doc, fileObject, body, begStatement, endStatement);
                 }
             }
         }
@@ -360,6 +364,7 @@ public class BodyFinder {
 
     public static final class BodyResult {
         private final Document doc;
+        private final FileObject fileObject;
         private final CsmCompoundStatement body;
         private final int startStatment;
         private final int endStatement;
@@ -376,11 +381,16 @@ public class BodyFinder {
         private ArrayList<Pair<Integer,Integer>> innerBlocks;
         private VariablesInfo vars;
 
-        private BodyResult(Document doc, CsmCompoundStatement body, int startStatment, int endStatement) {
+        private BodyResult(Document doc, FileObject fileObject, CsmCompoundStatement body, int startStatment, int endStatement) {
             this.doc = doc;
+            this.fileObject = fileObject;
             this.body = body;
             this.startStatment = startStatment;
             this.endStatement = endStatement;
+        }
+
+        public boolean isC() {
+            return MIMENames.C_MIME_TYPE.equals(fileObject.getMIMEType());
         }
 
         public boolean isApplicable(AtomicBoolean canceled) {
