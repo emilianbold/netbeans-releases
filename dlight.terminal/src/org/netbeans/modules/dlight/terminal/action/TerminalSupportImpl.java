@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -218,6 +219,19 @@ public final class TerminalSupportImpl {
                         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
                             return;
                         }
+
+                        try {
+                            if (dir != null && !HostInfoUtils.directoryExists(env, dir)) {
+                                // Displaying this message always, not just for remote envs.
+                                out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_DirNotExist", dir, env.getDisplayName()));
+                                return;
+                            }
+                        } catch (ConnectException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+
                         hostInfo = HostInfoUtils.getHostInfo(env);
                         boolean isSupported = PtySupport.isSupportedFor(env);
                         if (!isSupported) {
