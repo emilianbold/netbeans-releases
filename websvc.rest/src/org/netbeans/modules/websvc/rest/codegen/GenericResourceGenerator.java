@@ -261,7 +261,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         if (rbean.isGenerateUriTemplate()) {
             result.add(RestConstants.PATH);
         }
-        if (rbean.isRootResource()) {
+        if (rbean.isRootResource() && !rbean.getSubResources().isEmpty()) {
             result.add(RestConstants.PATH_PARAM);
         }
         for (HttpMethodType m : rbean.getMethodTypes()) {
