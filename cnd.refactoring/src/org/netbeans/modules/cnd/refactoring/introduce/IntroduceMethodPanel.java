@@ -81,6 +81,8 @@ import javax.swing.table.TableColumnModel;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -89,6 +91,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes.TypeDescriptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -522,27 +525,48 @@ public class IntroduceMethodPanel extends JPanel {
     }
 
     private void initTableData() {
-        List<BodyFinder.VariableInfo> importantVariables = res.getImportantVariables();
         for(BodyFinder.VariableInfo info : res.getImportantVariables()) {
             CsmVariable variable = info.getVariable();
             CsmType desc = variable.getType();
-            String typeRepresentation = getTypeStringRepresentation(desc);
+            boolean isC = res.isC();
+            String typeRepresentation = getTypeStringRepresentation(desc, isC);
+            if (isC) {
+                CsmClassifier classifier = desc.getClassifier();
+                if (classifier != null) {
+                    if (classifier.getKind() == CsmDeclaration.Kind.STRUCT && !CharSequenceUtils.startsWith(typeRepresentation, "struct")) { //NOI18N
+                        typeRepresentation = "struct " + typeRepresentation; //NOI18N
+                    }
+                }
+            }
             Object[] parRep = new Object[] { variable.getName().toString(), typeRepresentation};
             model.addRow(parRep);
         }
     }
-    
-    private static String getTypeStringRepresentation(CsmType desc) {
-        if (desc.isReference()) {
-            return desc.getCanonicalText().toString();
-        } else if (desc.getArrayDepth() > 0) {
-            TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(false, TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
-            CsmType createType = CsmTypes.createType(desc, typeDescriptor);
-            return createType.getCanonicalText().toString();
+
+    private static String getTypeStringRepresentation(CsmType desc, boolean isC) {
+        if (isC) {
+            CharSequence typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(desc);
+            if (isC) {
+                CsmClassifier classifier = desc.getClassifier();
+                if (classifier != null) {
+                    if (classifier.getKind() == CsmDeclaration.Kind.STRUCT && !CharSequenceUtils.startsWith(typeText, "struct")) { //NOI18N
+                        typeText = "struct " + typeText; //NOI18N
+                    }
+                }
+            }
+            return typeText.toString();
         } else {
-            TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
-            CsmType createType = CsmTypes.createType(desc, typeDescriptor);
-            return createType.getCanonicalText().toString();
+            if (desc.isReference()) {
+                return desc.getCanonicalText().toString();
+            } else if (desc.getArrayDepth() > 0) {
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(false, TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                CsmType createType = CsmTypes.createType(desc, typeDescriptor);
+                return createType.getCanonicalText().toString();
+            } else {
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                CsmType createType = CsmTypes.createType(desc, typeDescriptor);
+                return createType.getCanonicalText().toString();
+            }
         }
     }
 

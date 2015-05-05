@@ -199,7 +199,7 @@ public final class IntroduceAction extends HintAction {
     }
 
     private void detectIntroduceMethod(Map<IntroduceKind, Fix> fixesMap, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, final FileObject fileObject, JTextComponent comp) {
-        BodyFinder bodyFinder = new BodyFinder(doc, file, caretOffset, selectionStart, selectionEnd, canceled);
+        BodyFinder bodyFinder = new BodyFinder(doc, fileObject, file, caretOffset, selectionStart, selectionEnd, canceled);
         BodyFinder.BodyResult res = bodyFinder.findBody();
         if (res == null) {
             return;
