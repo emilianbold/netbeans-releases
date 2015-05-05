@@ -117,8 +117,14 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                         modifiers.remove(Modifier.PUBLIC);
                         modifiers.add(Modifier.PRIVATE);
                     }
-                } else if (!property.isDeprecated() && !module.getName().equals(propertyName)) {
-                    FrameworksUtils.changeDeclarationScope(property, module);
+                } 
+            }
+            DeclarationScope globalScope = (DeclarationScope)global;
+            List<? extends DeclarationScope> childrenScopesCopy = new ArrayList(globalScope.getChildrenScopes());
+            
+            for(DeclarationScope movedScope: childrenScopesCopy) {
+                if (!movedScope.equals(module)) {
+                    FrameworksUtils.changeDeclarationScope((JsObject)movedScope, module);
                 }
             }
         }

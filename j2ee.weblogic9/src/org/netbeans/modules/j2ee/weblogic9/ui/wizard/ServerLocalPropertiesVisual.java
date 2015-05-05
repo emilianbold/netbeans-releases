@@ -487,7 +487,7 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         Object item = localInstancesCombo.getEditor().getItem();
-        if (item != null && item.toString().trim().length() > 0) {
+        if (item != null && !item.toString().trim().isEmpty()) {
             chooser.setSelectedFile(new File(item.toString()));
         } else {
             chooser.setSelectedFile(new File(instantiatingIterator.getServerRoot()));

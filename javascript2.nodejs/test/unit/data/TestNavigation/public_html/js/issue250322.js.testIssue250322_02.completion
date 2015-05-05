@@ -5,6 +5,7 @@ fs.|; // cc here
 CONSTRUCTO ReadStream                      [PUBLIC]   fs.js
 CONSTRUCTO SyncWriteStream                 [PUBLIC]   fs.js
 CONSTRUCTO WriteStream                     [PUBLIC]   fs.js
+CONSTRUCTO read                            [PUBLIC]   fs.js
 CLASS      Stats                           [PUBLIC]   fs.js
 METHOD     _toUnixTimestamp(time): Number  [PUBLIC]   fs.js
 METHOD     appendFile(path, data, options  [PUBLIC]   fs.js
@@ -45,7 +46,6 @@ METHOD     mkdir(path, mode, callback): u  [PUBLIC]   fs.js
 METHOD     mkdirSync(path, mode)           [PUBLIC]   fs.js
 METHOD     open(path, flags, mode, callba  [PUBLIC]   fs.js
 METHOD     openSync(path, flags, mode)     [PUBLIC]   fs.js
-METHOD     read(fd, buffer, offset, lengt  [PUBLIC]   fs.js
 METHOD     readFile(path, options, callba  [PUBLIC]   fs.js
 METHOD     readFileSync(path, options)     [PUBLIC]   fs.js
 METHOD     readSync(fd, buffer, offset, l  [PUBLIC]   fs.js
