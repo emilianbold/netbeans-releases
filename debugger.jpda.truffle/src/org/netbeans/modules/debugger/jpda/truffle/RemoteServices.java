@@ -79,6 +79,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -702,6 +703,54 @@ public class RemoteServices {
         fireServiceClass(debugger);
     }
     
+    public static boolean interruptServiceAccessThread(JPDADebugger debugger) {
+        ClassObjectReference serviceClass = getServiceClass(debugger);
+        if (serviceClass != null) {
+            ThreadReference accessThread;
+            synchronized (remoteServiceAccess) {
+                accessThread = remoteServiceAccess.get(debugger);
+            }
+            if (accessThread == null) {
+                return false;
+            }
+            logger.fine("RemoteServices.interruptServiceAccessThread()");
+            try {
+                ClassType serviceClassType = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClass);
+                Field accessLoopSleepingField = ReferenceTypeWrapper.fieldByName(serviceClassType, "accessLoopSleeping");
+                synchronized (accessThread) {
+                    boolean isSleeping;
+                    int repeatCheck = 10;
+                    do {
+                        BooleanValue sleepingValue = (BooleanValue) serviceClassType.getValue(accessLoopSleepingField);
+                        isSleeping = sleepingValue.booleanValue();
+                        if (isSleeping || --repeatCheck < 0) {
+                            break;
+                        } else {
+                            try {
+                                Thread.sleep(100);
+                            } catch (InterruptedException iex) {}
+                        }
+                        logger.log(Level.FINE, "  isSleeping = {0}", isSleeping);
+                    } while (!isSleeping);
+                    if (isSleeping) {
+                        ThreadReferenceWrapper.interrupt(accessThread);
+                        //System.err.println("  INTERRUPTED.");
+                        return true;
+                    }
+                }
+            } catch (InternalExceptionWrapper |
+                     VMDisconnectedExceptionWrapper |
+                     ObjectCollectedExceptionWrapper |
+                     ClassNotPreparedExceptionWrapper |
+                     IllegalThreadStateExceptionWrapper ex) {
+                logger.log(Level.FINE, "  NOT interrupted: ", ex);
+            }
+            logger.fine("  NOT Interrupted.");
+        }
+        return false;
+    }
+    
+    /*
     public static ThreadReference getServiceAccessThread(JPDADebugger debugger) {
         ClassObjectReference serviceClass = getServiceClass(debugger);
         if (serviceClass != null) {
@@ -714,6 +763,7 @@ public class RemoteServices {
             return null;
         }
     }
+    */
     
     public static ClassObjectReference getServiceClass(JPDADebugger debugger) {
         synchronized (remoteServiceClasses) {

@@ -56,6 +56,8 @@ import com.oracle.truffle.api.instrument.KillException;
 import com.oracle.truffle.api.instrument.Probe;
 import com.oracle.truffle.api.instrument.QuitException;
 import com.oracle.truffle.api.instrument.SyntaxTag;
+import com.oracle.truffle.api.instrument.ToolEvalNodeFactory;
+import com.oracle.truffle.api.instrument.ToolEvalResultListener;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
@@ -196,6 +198,11 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         } finally {
             endExecution();
         }
+    }
+
+    @Override
+    public ToolEvalNodeFactory createExprEvalNodeFactory(String expr, ToolEvalResultListener resultListener) {
+        return ((TruffleJSEngine) engine).createExprEvalNodeFactory((JSContext) context, expr, resultListener);
     }
     
     static SourcePosition getPosition(Node node) {
