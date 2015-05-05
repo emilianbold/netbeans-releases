@@ -85,6 +85,8 @@ public class JPDATruffleAccessor extends Object {
     /** Explicitly set this field to true to step into script calls. */
     static boolean isSteppingInto = false; // Step into was issued in JPDA debugger
     static int steppingIntoTruffle = 0; // = 0 no stepping change, > 0 set step into, < 0 unset stepping into
+    /** A field to test for whether the access loop is sleeping and can be interrupted. */
+    static boolean accessLoopSleeping = false;
     private static boolean stepIntoPrepared;
     /** A step command:
      * 0 no step (continue)
@@ -438,10 +440,12 @@ public class JPDATruffleAccessor extends Object {
         @Override
         public void run() {
             while (accessLoopRunning) {
+                accessLoopSleeping = true;
                 // Wait until we're interrupted
                 try {
                     Thread.sleep(Long.MAX_VALUE);
                 } catch (InterruptedException iex) {}
+                accessLoopSleeping = false;
                 //System.err.println("AccessLoop: steppingIntoTruffle = "+steppingIntoTruffle+", isSteppingInto = "+isSteppingInto+", stepIntoPrepared = "+stepIntoPrepared);
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {

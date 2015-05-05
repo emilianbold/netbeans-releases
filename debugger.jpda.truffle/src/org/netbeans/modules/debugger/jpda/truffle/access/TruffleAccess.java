@@ -471,13 +471,8 @@ public class TruffleAccess implements JPDABreakpointListener {
                 }
             }
             // Was not able to invoke methods
-            ThreadReference serviceAccessThread = RemoteServices.getServiceAccessThread(debugger);
-            if (serviceAccessThread == null) {
-                return false;
-            }
-            try {
-                ThreadReferenceWrapper.interrupt(serviceAccessThread);
-            } catch (InternalExceptionWrapper | VMDisconnectedExceptionWrapper | ObjectCollectedExceptionWrapper | IllegalThreadStateExceptionWrapper ex) {
+            boolean interrupted = RemoteServices.interruptServiceAccessThread(debugger);
+            if (!interrupted) {
                 return false;
             }
             PropertyChangeListener finishListener = new PropertyChangeListener() {
