@@ -280,25 +280,30 @@ public class JPDATruffleAccessor extends Object {
     }
     */
     
-    static LineBreakpoint setLineBreakpoint(String path, int line) {
-        return doSetLineBreakpoint(path, line, false);
+    static LineBreakpoint setLineBreakpoint(String path, int line,
+                                            int ignoreCount, String condition) {
+        return doSetLineBreakpoint(path, line, ignoreCount, condition, false);
     }
     
-    static LineBreakpoint setLineBreakpoint(URL url, int line) {
-        return doSetLineBreakpoint(url, line, false);
+    static LineBreakpoint setLineBreakpoint(URL url, int line,
+                                            int ignoreCount, String condition) {
+        return doSetLineBreakpoint(url, line, ignoreCount, condition, false);
     }
     
     static LineBreakpoint setOneShotLineBreakpoint(String path, int line) {
-        return doSetLineBreakpoint(path, line, true);
+        return doSetLineBreakpoint(path, line, 0, null, true);
     }
     
     static LineBreakpoint setOneShotLineBreakpoint(URL url, int line) {
-        return doSetLineBreakpoint(url, line, true);
+        return doSetLineBreakpoint(url, line, 0, null, true);
     }
     
-    private static LineBreakpoint doSetLineBreakpoint(String path, int line, boolean oneShot) {
+    private static LineBreakpoint doSetLineBreakpoint(String path, int line,
+                                                      int ignoreCount, String condition,
+                                                      boolean oneShot) {
         try {
-            return doSetLineBreakpoint(new File(path).toURI().toURL(), line, oneShot);
+            return doSetLineBreakpoint(new File(path).toURI().toURL(), line,
+                                       ignoreCount, condition, oneShot);
         } catch (MalformedURLException muex) {
             System.err.println(muex.getLocalizedMessage());
             muex.printStackTrace();
@@ -310,20 +315,24 @@ public class JPDATruffleAccessor extends Object {
             //System.err.println("setLineBreakpoint("+path+", "+line+"): "+ioex.getLocalizedMessage());
             return null;
         }
-        return doSetLineBreakpoint(source, line, oneShot);
+        return doSetLineBreakpoint(source, line, ignoreCount, condition, oneShot);
     }
     
-    private static LineBreakpoint doSetLineBreakpoint(URL url, int line, boolean oneShot) {
+    private static LineBreakpoint doSetLineBreakpoint(URL url, int line,
+                                                      int ignoreCount, String condition,
+                                                      boolean oneShot) {
         Source source;
         try {
             source = Source.fromURL(url, url.getPath());
         } catch (IOException ioex) {
             return null;
         }
-        return doSetLineBreakpoint(source, line, oneShot);
+        return doSetLineBreakpoint(source, line, ignoreCount, condition, oneShot);
     }
     
-    private static LineBreakpoint doSetLineBreakpoint(Source source, int line, boolean oneShot) {
+    private static LineBreakpoint doSetLineBreakpoint(Source source, int line,
+                                                      int ignoreCount, String condition,
+                                                      boolean oneShot) {
         LineLocation bpLineLocation = source.createLineLocation(line);
         LineBreakpoint lb;
         try {
@@ -337,6 +346,12 @@ public class JPDATruffleAccessor extends Object {
             return null;
         }
         System.err.println("setLineBreakpoint("+source+", "+line+"): source = "+source+", line location = "+bpLineLocation+", lb = "+lb);
+        if (ignoreCount != 0) {
+            lb.setIgnoreCount(ignoreCount);
+        }
+        if (condition != null) {
+            lb.setCondition(condition);
+        }
         return lb;
     }
     
