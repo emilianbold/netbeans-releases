@@ -45,12 +45,15 @@ import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -158,6 +161,13 @@ public final class TerminalSupportImpl {
                     }
                 };
 
+                private final HyperlinkAdapter retryLink = new HyperlinkAdapter() {
+                    @Override
+                    public void outputLineAction(OutputEvent ev) {
+                        RP.post(delegate);
+                    }
+                };
+
                 @Override
                 public void run() {
                     delegate.run();
@@ -180,12 +190,7 @@ public final class TerminalSupportImpl {
                                 if (verbose) {
                                     try {
                                         out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_ConnectionFailed"));
-                                        out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), new HyperlinkAdapter() {
-                                            @Override
-                                            public void outputLineAction(OutputEvent ev) {
-                                                RP.post(delegate);
-                                            }
-                                        });
+                                        out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), retryLink);
                                     } catch (IOException ignored) {
                                     }
                                 }
@@ -198,12 +203,7 @@ public final class TerminalSupportImpl {
                             if (verbose) {
                                 try {
                                     out.print(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Canceled"));
-                                    out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), new HyperlinkAdapter() {
-                                        @Override
-                                        public void outputLineAction(OutputEvent ev) {
-                                            RP.post(delegate);
-                                        }
-                                    });
+                                    out.println(NbBundle.getMessage(TerminalSupportImpl.class, "LOG_Retry"), retryLink);
                                 } catch (IOException ignored) {
                                 }
                             }
@@ -328,7 +328,15 @@ public final class TerminalSupportImpl {
                         try {
                             // if terminal can not be started then ExecutionException should be thrown
                             // wait one second to see if terminal can not be started. otherwise it's OK to exit by TimeOut
-                            result.get(1, TimeUnit.SECONDS);
+
+                            // IG: I've increased the timeout from 1 to 10 seconds.
+                            // On slow hosts 1 sec was not enougth to get an error code from the pty
+                            // No work is done after this call, so this change should be safe.
+                            Integer rc = result.get(10, TimeUnit.SECONDS);
+                            if (rc != 0) {
+                                Logger.getLogger(TerminalSupportImpl.class.getName())
+                                        .log(Level.INFO, "{0}{1}", new Object[]{NbBundle.getMessage(TerminalSupportImpl.class, "LOG_ReturnCode"), rc});
+                            }
                         } catch (TimeoutException ex) {
                             // we should be there
                         } catch (InterruptedException ex) {
