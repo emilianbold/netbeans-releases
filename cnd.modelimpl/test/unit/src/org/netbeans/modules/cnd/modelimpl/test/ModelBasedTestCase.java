@@ -175,6 +175,23 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         }
     }
 
+    protected static boolean diffErrorFiles(File toCheck, File goldenErrFile, File outDiffOrNull) throws IOException {
+        if (APTTraceFlags.USE_CLANK) {
+            File filteredGoldenErrFile = goldenErrFile;
+            File filteredToCheckErrFile = toCheck;
+            if (filteredGoldenErrFile.exists() && toCheck.exists()) {
+                filteredGoldenErrFile = new File(toCheck.getParentFile(), goldenErrFile.getName() + ".golden.no_failed_inc");
+                filteredToCheckErrFile = new File(toCheck.getParentFile(), toCheck.getName() + ".no_failed_inc");
+
+                filterOutFailedInclude(goldenErrFile, filteredGoldenErrFile);
+                filterOutFailedInclude(toCheck, filteredToCheckErrFile);
+            }
+            return CndCoreTestUtils.diff(filteredToCheckErrFile, filteredGoldenErrFile, outDiffOrNull);
+        } else {
+            return CndCoreTestUtils.diff(toCheck, goldenErrFile, outDiffOrNull);
+        }
+    }
+
     private static void filterOutMacroMapState(File goldenDataFile, File filteredGoldenDataFile) throws IOException {
         Charset charset = Charset.forName("UTF-8");
         boolean skip = false;
@@ -212,5 +229,37 @@ public class ModelBasedTestCase extends CndBaseTestCase {
     private static boolean isEndOfOwnMacroMap(String line) {
         // skip till the first empty line
         return line.trim().startsWith("System Map:");
+    }
+
+    private static void filterOutFailedInclude(File errFile, File filteredErrFile) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        boolean skipTokenOrFileName = false;
+        try (BufferedWriter writer = Files.newBufferedWriter(filteredErrFile.toPath(), charset)) {
+            try (BufferedReader reader = Files.newBufferedReader(errFile.toPath(), charset)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    if (skipTokenOrFileName) {
+                        skipTokenOrFileName = false;
+                    } else {
+                        writer.write(line);
+                        writer.write('\n');
+                        if (isStartOfFailedInclude(line)) {
+                            // Clank and APT has different messages, filter them out
+                            skipTokenOrFileName = true;
+                        }
+                    }
+                    line = reader.readLine();
+                }
+            }
+        }
+    }
+
+    private static boolean isStartOfFailedInclude(String line) {
+        // see cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/APTAbstractWalker.java
+        // onInclude
+        // vs.
+        // cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/clank/ClankPPCallback.java
+        // onInclusionDirective
+        return line.trim().startsWith("FAILED INCLUDE");
     }
 }

@@ -265,13 +265,13 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         if (goldenErrFileName != null && !Boolean.getBoolean("cnd.skip.err.check")) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
             if (goldenErrFile.exists()) {
-                if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {
+                if (diffErrorFiles(error, goldenErrFile, null)) {
                     errTheSame = false;
                     // copy golden
                     goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
                     CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
                     diffErrorFile = new File(workDir, goldenErrFileName + ".diff");
-                    CndCoreTestUtils.diff(error, goldenErrFile, diffErrorFile);
+                    diffErrorFiles(error, goldenErrFile, diffErrorFile);
                 }
             } else {
                 // golden err.file doesn't exist => err.file should be empty
