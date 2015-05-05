@@ -429,8 +429,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
         comment.append( "@param ");
         comment.append(parameters[parameters.length-1]);
-        comment.append(" representation for the resource\n");
-        comment.append( "@return an HTTP response with content of the updated or created resource.");
+        comment.append(" representation for the resource");
         
         return JavaSourceHelper.addMethod(copy, tree,
                 modifiers, annotations, annotationAttrs,
