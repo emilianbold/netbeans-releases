@@ -86,8 +86,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
     private static final String ASSIGNMENT_LIST="assignment_list"; //NOI18N
     private static final String ARGUMENT_LIST="argument_list"; //NOI18N
     
-    private FileObject destDir;
-    private GenericResourceBean bean;
+    private final FileObject destDir;
+    private final GenericResourceBean bean;
     private String template;
     
     public GenericResourceGenerator(FileObject destDir, GenericResourceBean bean) {
@@ -116,36 +116,37 @@ public class GenericResourceGenerator extends AbstractGenerator {
         template = templatePath;
     }
     
+    @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         initProgressReporting(pHandle, false);
         
         reportProgress(NbBundle.getMessage(GenericResourceGenerator.class,
                 "MSG_GeneratingClass", bean.getPackageName() + "." + bean.getName()));  //NOI18N
-        JavaSource source = null;
+        JavaSource source;
         if (bean.isRootResource()) {
             source = JavaSourceHelper.createJavaSource(
                     getTemplate(), getDestDir(), bean.getPackageName(), bean.getName());
         } else {
             Map<String,String> params = new HashMap<String,String>();
             String[] uriParams = bean.getUriParams();
-            StringBuffer fieldList = new StringBuffer();
-            StringBuffer paramList = new StringBuffer();
-            StringBuffer assignmentList = new StringBuffer();
-            StringBuffer argumentList = new StringBuffer();
-            int i=0;
-            for (String param : uriParams) {
-                if (i++>0) {
+            StringBuilder fieldList = new StringBuilder();
+            StringBuilder paramList = new StringBuilder();
+            StringBuilder assignmentList = new StringBuilder();
+            StringBuilder argumentList = new StringBuilder();
+            for (int i=0; i<uriParams.length; i++) {
+                String param = uriParams[i];
+                if (i == 0) {
+                    fieldList.append("private String "); //NOI18N
+                } else {
                     fieldList.append(", "); //NOI18N
                     paramList.append(", "); //NOI18N
                     argumentList.append(", "); //NOI18N
                     assignmentList.append(" "); //NOI18N
-                } else {
-                    fieldList.append("private String "); //NOI18N
                 }
                 fieldList.append(param);
                 argumentList.append(param);
-                paramList.append("String "+param); //NOI18N
-                assignmentList.append("this."+param+"="+param+";"); //NOI18N
+                paramList.append("String ").append(param); //NOI18N
+                assignmentList.append("this.").append(param).append("=").append(param).append(";"); //NOI18N
             }
             if (fieldList.length() > 0) {
                 fieldList.append(";");  //NOI18N
@@ -168,6 +169,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
   
     private void addInputParamFields(JavaSource source) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 List<ParameterInfo> params = bean.getInputParameters();
@@ -181,6 +183,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
     
      private void addConstructorWithInputParams(JavaSource source) throws IOException {
         ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy copy) throws IOException {
                 copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
@@ -213,6 +216,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
     private void modifyResourceClass(JavaSource source) {
         try {
             ModificationResult result = source.runModificationTask(new AbstractTask<WorkingCopy>() {
+                @Override
                 public void run(WorkingCopy copy) throws IOException {
                     copy.toPhase(JavaSource.Phase.RESOLVED);
                     String jsr311Imports[] = getJsr311AnnotationImports(bean);
@@ -484,7 +488,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         Object[] paramTypes = null;
         String[] paramAnnotations = null;
         Object[] paramAnnotationAttrs = null;
-        StringBuffer params = new StringBuffer("");// NOI18N
+        StringBuilder params = new StringBuilder();
         if (parameters != null && parameters.length >= 1) {
             paramTypes = getUriParamTypes(subBean);
             
@@ -553,12 +557,7 @@ public class GenericResourceGenerator extends AbstractGenerator {
         }
 
         String[] attrs = new String [allParamCount];
-        for (int i=0; i<uriParamCount; i++) {
-            attrs[i] = uriParams[i];
-        }
-        for (int i=uriParamCount; i<allParamCount; i++) {
-            attrs[i] = null;
-        }
+        System.arraycopy(uriParams, 0, attrs, 0, uriParamCount);
         return attrs;
     }
     
@@ -586,8 +585,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
             }
         }
         
-        String[] annotations = null;
         for (ParameterInfo param : queryParams) {
+            String[] annotations;
             if (param.getDefaultValue() != null) {
                 annotations = new String[] {
                     RestConstants.QUERY_PARAM_ANNOTATION,
@@ -610,8 +609,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
             }
         }
       
-        Object[] annotationAttrs = null;
         for (ParameterInfo param : queryParams) {
+            Object[] annotationAttrs;
             if (param.getDefaultValue() != null) {
                 annotationAttrs = new Object[] {
                     param.getName(), param.getDefaultValue().toString()
