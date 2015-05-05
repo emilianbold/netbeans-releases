@@ -48,7 +48,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
@@ -334,9 +336,12 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
                 new Object[]{text, System.currentTimeMillis() - createTime});
-            int lastSize = -1;
+            final List<SymbolDescriptor> fixed = new ArrayList<>(512);
+            Collection<? extends SymbolProvider> providers = getTypeProviders();
+            int lastSize = -1, lastProvCount = providers.size();
+            final int[] newSize = new int[1];
             while(true) {
-                final Result res = getSymbolNames(text);
+                final Result res = getSymbolNames(text, providers);
                 if (isCanceled) {
                     LOG.log(
                         Level.FINE,
@@ -344,13 +349,22 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         new Object[]{text, System.currentTimeMillis() - createTime});
                     return;
                 }
-                final List<? extends SymbolDescriptor> symbols = res.symbols;
-                final int newSize = symbols.size();
+                final List<SymbolDescriptor> mergedSymbols = mergeSymbols(
+                        fixed,
+                        res.symbols,
+                        providers,
+                        res.nonFinishedProviders,
+                        newSize);
                 final boolean done = res.retry <= 0;
-                final boolean resultChanged = lastSize != newSize;
+                final int newProvCount = res.nonFinishedProviders.size();
+                final boolean resultChanged = lastSize != newSize[0] || lastProvCount != newProvCount;
                 if (done || resultChanged) {
-                    lastSize = newSize;
-                    final ListModel fmodel = Models.fromList(symbols, currentSearch.resetFilter());
+                    lastSize = newSize[0];
+                    lastProvCount = newProvCount;
+                    Collections.sort(mergedSymbols, new SymbolComparator());
+                    final ListModel fmodel = Models.fromList(
+                            mergedSymbols,
+                            currentSearch.resetFilter());
                     if ( isCanceled ) {
                         LOG.log(
                             Level.FINE,
@@ -378,6 +392,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 if (done) {
                     return;
                 } else {
+                    providers = res.nonFinishedProviders;
                     try {
                         Thread.sleep(res.retry);
                     } catch (InterruptedException ex) {
@@ -407,7 +422,8 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         @SuppressWarnings("unchecked")
         @CheckForNull
         private Result getSymbolNames(
-                final String text) {
+                final String text,
+                final Collection<? extends SymbolProvider> providers) {
             // TODO: Search twice, first for current project, then for all projects
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
@@ -415,7 +431,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             String[] message = new String[1];
             int retry = 0;
             final Collection<SymbolProvider> nonFinishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider, Boolean>());
-            for (SymbolProvider provider : getTypeProviders()) {
+            for (SymbolProvider provider : providers) {
                 current = provider;
                 try {
                     if (isCanceled) {
@@ -426,7 +442,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         "Calling SymbolProvider: {0}", //NOI18N
                         provider);
                     final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
-                    final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
+                    final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context, provider);
                     provider.computeSymbolNames(context, result);
                     final int providerRetry = SymbolProviderAccessor.DEFAULT.getRetry(result);
                     if (providerRetry > 0) {
@@ -438,7 +454,6 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 }
             }
             if ( !isCanceled ) {
-                Collections.sort(items, new SymbolComparator());
                 panel.setWarning(message[0]);
                 return new Result (items, nonFinishedProviders, retry);
             } else {
@@ -456,6 +471,30 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 return t1;
             }
             return Math.min(t1,t2);
+        }
+
+        @NonNull
+        private List<SymbolDescriptor> mergeSymbols(
+            @NonNull final List<SymbolDescriptor> fixedSymbols,
+            @NonNull final List<? extends SymbolDescriptor> newSymbols,
+            @NonNull final Collection<? extends SymbolProvider> usedProviders,
+            @NonNull final Collection<? extends SymbolProvider> nonFinishedProviders,
+            @NonNull final int[] newSize) {
+            newSize[0] = 0;
+            final Set<SymbolProvider> finishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider,Boolean>());
+            finishedProviders.addAll(usedProviders);
+            finishedProviders.removeAll(nonFinishedProviders);
+            final List<SymbolDescriptor> merged = new ArrayList<>(fixedSymbols.size() + newSymbols.size());
+            for (SymbolDescriptor newSymbol : newSymbols) {
+                if (finishedProviders.contains(SymbolProviderAccessor.DEFAULT.getSymbolProvider(newSymbol))) {
+                    fixedSymbols.add(newSymbol);
+                } else {
+                    newSize[0]++;
+                    merged.add(newSymbol);
+                }
+            }
+            merged.addAll(fixedSymbols);
+            return merged;
         }
     }
 
