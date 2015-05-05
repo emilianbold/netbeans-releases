@@ -14,10 +14,10 @@ Macros:
 STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION operator  int& [2:5/24-2:35/54] MethodImpl SCOPE: iz158684_A 
+        FUNCTION operator int& [2:5/24-2:35/54] MethodImpl SCOPE: iz158684_A 
             DEFINITION: null
-            SIGNATURE operator  int&()
-            UNIQUE NAME F:iz158684_A::operator  int&()
+            SIGNATURE operator int&()
+            UNIQUE NAME F:iz158684_A::operator int&()
             PARAMETERS:
             RETURNS &int TEXT=int&  [2:22/41-2:25/44]
 
@@ -25,10 +25,10 @@ STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$
 STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
-        FUNCTION operator  int& [2:5/24-2:35/54] MethodImpl SCOPE: iz158684_A 
+        FUNCTION operator int& [2:5/24-2:35/54] MethodImpl SCOPE: iz158684_A 
             DEFINITION: null
-            SIGNATURE operator  int&()
-            UNIQUE NAME F:iz158684_A::operator  int&()
+            SIGNATURE operator int&()
+            UNIQUE NAME F:iz158684_A::operator int&()
             PARAMETERS:
             RETURNS &int TEXT=int&  [2:22/41-2:25/44]
 
