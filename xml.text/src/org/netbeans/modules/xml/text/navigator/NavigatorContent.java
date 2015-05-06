@@ -270,7 +270,7 @@ public class NavigatorContent extends AbstractXMLNavigatorContent implements Car
     private volatile boolean loading = false;
 
     @Override
-    public boolean isLoading() {
+    protected boolean isLoading() {
         return loading;
     }
     

@@ -135,7 +135,7 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         });
     }
     
-    public boolean isLoading() {
+    protected boolean isLoading() {
         return false;
     }
     
