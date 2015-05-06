@@ -54,12 +54,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Enumeration;
 import java.util.WeakHashMap;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -71,14 +74,18 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.DefaultTreeSelectionModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -95,6 +102,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
+import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
 /**
@@ -103,7 +111,8 @@ import org.openide.windows.TopComponent;
  * @author Marek Fukala
  * @version 1.0
  */
-public class NavigatorContent extends AbstractXMLNavigatorContent   {
+public class NavigatorContent extends AbstractXMLNavigatorContent implements CaretListener, Runnable {
+    private static final Logger LOG = Logger.getLogger(NavigatorContent.class.getName());
     
     private static final boolean DEBUG = false;
     
@@ -113,184 +122,292 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
     static boolean showAttributes = true;
     static boolean showContent = true;
     
-    private DataObject peerDO = null;
-    private WeakHashMap uiCache = new WeakHashMap();
-    private boolean editorOpened = false;
+    private volatile DataObject peerDO = null;
+    private PropertyChangeListener peerWL = null;
+    // @GuardedBy(self)
+    private final WeakHashMap uiCache = new WeakHashMap();
+    // @GuardedBy(EDT)
+    private Reference<JTextComponent> activeEditor;
+    // @GuardedBy(EDT)
+    private CaretListener wCaretL;
     
     public NavigatorContent() {
         setLayout(new BorderLayout());
     }
     
-    public void navigate(DataObject d) {
-        closeDocument(d);
-        
-        EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
-        if(ec == null) {
-            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
-        } else {
-            try {
-                if(DEBUG) System.out.println("[xml navigator] navigating to DATAOBJECT " + d.hashCode());
-                //test if the document is opened in editor
-                BaseDocument bdoc = (BaseDocument)ec.openDocument();
-                //create & show UI
-                if(bdoc != null) {
-                    //there is something we can navigate in
-                    navigate(d, bdoc);
-                    synchronized (this) {
-                        //remember the peer dataobject to be able the call EditorCookie.close() when closing navigator
-                        this.peerDO = d;
-                        //check if the editor for the DO has an opened pane
-                        editorOpened = ec.getOpenedPanes() != null && ec.getOpenedPanes().length > 0;
-                    }
-                }
-                
-            }catch(UserQuestionException uqe) {
-                //do not open a question dialog when the document is just loaded into the navigator
-                showError(AbstractXMLNavigatorContent.ERROR_TOO_LARGE_DOCUMENT);
-            }catch(IOException e) {
-                ErrorManager.getDefault().notify(e);
+    private void editorReleased() {
+        Reference<JTextComponent> jte = activeEditor;
+        if (jte == null) {
+            return;
+        }
+        JTextComponent c = jte.get();
+        if (c == null) {
+            return;
+        }
+        c.removeCaretListener(wCaretL);
+        wCaretL = null;
+    }
+    
+    private void updateActiveEditor() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this);
+            return;
+        }
+        JTextComponent c = findActivePane();
+        if (c == null) {
+            editorReleased();
+            return;
+        }
+        if (activeEditor != null && activeEditor.get() == c) {
+            return;
+        }
+        editorReleased();
+        activeEditor = new WeakReference<>(c);
+        wCaretL = WeakListeners.create(CaretListener.class, this, c);
+        c.addCaretListener(this);
+        selectCurrentNode();
+    }
+
+    @Override
+    public void caretUpdate(CaretEvent e) {
+        selectCurrentNode();
+    }
+    
+    public void run() {
+        updateActiveEditor();
+    }
+    
+    private void selectCurrentNode() {
+        assert SwingUtilities.isEventDispatchThread() : "Must be run in EDT";
+        Reference<JTextComponent> active = activeEditor;
+        if (active == null) {
+            return;
+        }
+        JTextComponent c = active.get();
+        if (c == null) {
+            return;
+        }
+        int offset = c.getCaret().getDot();
+        DataObject d = peerDO;
+        if (d == null) {
+            return;
+        }
+        NavigatorContentPanel panel;
+        synchronized (uiCache) {
+            Reference<NavigatorContentPanel> cache = (Reference<NavigatorContentPanel>)uiCache.get(d);
+            if (cache == null || ((panel = cache.get()) == null)) {
+                return;
             }
+        }
+        panel.selectTreeNode(offset);
+    }
+    
+    private JTextComponent findActivePane() {
+        DataObject d = peerDO;
+        LOG.fine(this + ": findActivePane DataObject=" + d);
+        if (d == null) {
+            return null;
+        }
+        EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+        JTextComponent focused = EditorRegistry.focusedComponent();
+        LOG.fine(this + ": findActivePane focused=" + focused);
+        if (focused == null) {
+            return null;
+        }
+        JTextComponent[] comps = ec.getOpenedPanes();
+        if (comps == null) {
+            return null;
+        }
+        for (JTextComponent c : comps) {
+            if (c == focused) {
+                return c;
+            }
+        }
+        return null;
+    }
+    
+    private void attachEditorObservableListener(DataObject d) {
+        EditorCookie.Observable obs = d.getCookie(EditorCookie.Observable.class);
+        if (obs == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie.Observable!");
+        } else {
+            obs.addPropertyChangeListener(peerWL = WeakListeners.propertyChange(NavigatorContent.this, obs));
         }
     }
     
-    public void navigate(final DataObject documentDO, final BaseDocument bdoc) {
+    public void navigate(final DataObject d) {
+        attachDataObject(d);
+        
+        final EditorCookie ec = (EditorCookie)d.getCookie(EditorCookie.class);
+        if(ec == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + d.getName() + "(class=" + d.getClass().getName() + ") has no EditorCookie!?");
+        } else {
+            RP.post(new Runnable() {
+                public void run() {
+                    try {
+                        if(DEBUG) System.out.println("[xml navigator] navigating to DATAOBJECT " + d.hashCode());
+                        //test if the document is opened in editor
+                        BaseDocument bdoc = (BaseDocument)ec.openDocument();
+                        //create & show UI
+                        if(bdoc != null) {
+                            //there is something we can navigate in
+                            navigate(d, bdoc);
+                        }
+                    } catch(UserQuestionException uqe) {
+                        //do not open a question dialog when the document is just loaded into the navigator
+                        showError(AbstractXMLNavigatorContent.ERROR_TOO_LARGE_DOCUMENT);
+                    }catch(IOException e) {
+                        ErrorManager.getDefault().notify(e);
+                    }
+                }
+            });
+        }
+    }
+    
+    private volatile boolean loading = false;
+
+    @Override
+    public boolean isLoading() {
+        return loading;
+    }
+    
+    private void placeContentPanel(JPanel panel) {
+        //paint the navigator UI
+        removeAll();
+        add(panel, BorderLayout.CENTER);
+        revalidate();
+        //panel.revalidate();
+        repaint();
+        // avoid possible dangling events that display wait node
+        loading = false;
+        updateActiveEditor();
+    }
+    
+    private void navigate(final DataObject documentDO, final BaseDocument bdoc) {
         if(DEBUG) System.out.println("[xml navigator] navigating to DOCUMENT " + bdoc.hashCode());
         //called from AWT thread
-        showWaitPanel();
-        
         //try to find the UI in the UIcache
         final JPanel cachedPanel;
-        WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
-        if(panelWR != null) {
-            NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
-            if(cp != null) {
-                if(DEBUG) System.out.println("panel is cached");
-                //test if the document associated with the panel is the same we got now
-                cachedPanel = bdoc == cp.getDocument() ? cp : null;
-                if(cachedPanel == null) {
-                    if(DEBUG) System.out.println("but the document is different - creating a new UI...");
-                    if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
-                    
-                    //remove the old mapping from the cache
-                    uiCache.remove(documentDO);
-                }
+        synchronized (uiCache) {
+            WeakReference panelWR = (WeakReference)uiCache.get(documentDO);
+            if(panelWR != null) {
+                NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
+                if(cp != null) {
+                    if(DEBUG) System.out.println("panel is cached");
+                    //test if the document associated with the panel is the same we got now
+                    cachedPanel = bdoc == cp.getDocument() ? cp : null;
+                    if(cachedPanel == null) {
+                        if(DEBUG) System.out.println("but the document is different - creating a new UI...");
+                        if(DEBUG) System.out.println("the cached document : " + cp.getDocument());
+
+                        //remove the old mapping from the cache
+                        uiCache.remove(documentDO);
+                    }
+                } else
+                    cachedPanel = null;
             } else
                 cachedPanel = null;
-        } else
-            cachedPanel = null;
+        }
         
-        // get the model and create the new UI on background
-
-        RP.post(new Runnable() {
-            public void run() {
-                //get document model for the file
-                try {
-                    final DocumentModel model;
-                    if(cachedPanel == null && bdoc.getLength() != 0)
-                        model = DocumentModel.getDocumentModel(bdoc);
-                    else
-                        model = null; //if the panel is cached it holds a refs to the model - not need to init it again
-                    
-                    if(cachedPanel != null || model != null) {
-                        
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    showWaitPanel();
-                                    JPanel panel = null;
-                                    if(cachedPanel == null) {
-                                        try {
-                                            //lock the model for modifications during the
-                                            //navigator tree creation
-                                            model.readLock();
-                                            
-                                            //cache the newly created panel
-                                            panel = new NavigatorContentPanel(model);
-                                            //use the document dataobject as a key since the document itself is very easily discarded and hence
-                                            //harly usable as a key of the WeakHashMap
-                                            uiCache.put(documentDO, new WeakReference(panel));
-                                            if(DEBUG) System.out.println("[xml navigator] panel created");
-                                            
-                                            //start to listen to the document property changes - we need to get know when the document is being closed
-                                            EditorCookie.Observable eco = (EditorCookie.Observable)documentDO.getCookie(EditorCookie.Observable.class);
-                                            if(eco != null) {
-                                                eco.addPropertyChangeListener(NavigatorContent.this);
-                                            } else {
-                                                ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The DataObject " + documentDO.getName() + "(class=" + documentDO.getClass().getName() + ") has no EditorCookie.Observable!");
-                                            }
-                                        }finally{
-                                            //unlock the model
-                                            model.readUnlock();
-                                        }
-                                    } else {
-                                        panel = cachedPanel;
-                                        if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
-                                    }
-                                    
-                                    //paint the navigator UI
-                                    removeAll();
-                                    add(panel, BorderLayout.CENTER);
-                                    revalidate();
-                                    //panel.revalidate();
-                                    repaint();
-                                }
-                            });
-                    } else {
-                        MimePath mp = MimePath.parse(DocumentUtilities.getMimeType(bdoc));
-                        if (mp == null || "text/xml".equals(mp.getInheritedType())) {
-                            //model is null => show message
-                            showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
-                        }
-                    }
-                }catch(DocumentModelException dme) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
+        if (cachedPanel != null) {
+            final JPanel cachedPanelFinal = cachedPanel;
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    placeContentPanel(cachedPanelFinal);
                 }
+            });
+            return;
+        }
+        loading = true;
+        showWaitPanel();
+        try {
+            final DocumentModel model;
+            if(bdoc.getLength() != 0) {
+                model = DocumentModel.getDocumentModel(bdoc);
+            } else {
+                model = null; //if the panel is cached it holds a refs to the model - not need to init it again
             }
-        });
+            
+            if (model == null) {
+                MimePath mp = MimePath.parse(DocumentUtilities.getMimeType(bdoc));
+                if (mp == null || "text/xml".equals(mp.getInheritedType())) {
+                    //model is null => show message
+                    showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
+                }
+                return;
+            }
+
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    JPanel panel = null;
+                    if(cachedPanel == null) {
+                        try {
+                            //lock the model for modifications during the
+                            //navigator tree creation
+                            model.readLock();
+
+                            //cache the newly created panel
+                            panel = new NavigatorContentPanel(model);
+                            //use the document dataobject as a key since the document itself is very easily discarded and hence
+                            //harly usable as a key of the WeakHashMap
+                            synchronized (uiCache) {
+                                uiCache.put(documentDO, new WeakReference(panel));
+                            }
+                            if(DEBUG) System.out.println("[xml navigator] panel created");
+                        }finally{
+                            //unlock the model
+                            model.readUnlock();
+                        }
+                    } else {
+                        panel = cachedPanel;
+                        if(DEBUG) System.out.println("[xml navigator] panel gotten from cache");
+                    }
+                    
+                    placeContentPanel(panel);
+                }
+            });
+        } catch(DocumentModelException dme) {
+            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
+        }
     }
     
     public void release() {
         removeAll();
         repaint();
-        closeDocument(null);
+        attachDataObject(null);
     }
     
     /** A hacky fix for XMLSyncSupport - I need to call EditorCookie.close when the navigator
      * is deactivated and there is not view pane for the navigated document. Then a the synchronization
      * support releases a strong reference to NbEditorDocument. */
-    private void closeDocument(DataObject replaceObject) {
+    private void attachDataObject(DataObject replaceObject) {
         final DataObject dobj;
-        final EditorCookie ec;
-        
         synchronized (this) {
-            if (peerDO == replaceObject) {
+            dobj = peerDO;
+            if (dobj == replaceObject) {
                 // no change
                 return;
             }
-            dobj = peerDO;
-
-            boolean wasOpened = editorOpened;
-            editorOpened = false;
-            peerDO = null;
-            // maintains the original logic: if an editor pane was open at navigate() time, but was not open at
-            // closeDocument() time, close the document.
-            if (dobj == null || !wasOpened) {
-                return;
-            }
-            ec = dobj.getLookup().lookup(EditorCookie.class);
-            if (ec == null) {
-                return;
-            }
-        }
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                JEditorPane panes[] = ec.getOpenedPanes();
-                //call EC.close() if there isn't any pane and the editor was opened
-                if((panes == null || panes.length == 0)) {
-                    ec.close();
-                    if(DEBUG) System.out.println("document instance for dataobject " + dobj.hashCode() + " closed.");
+            LOG.fine(this + ": Closing doucment " + dobj + ", replacing with " + replaceObject);
+            peerDO = replaceObject;
+            if (dobj != null) {
+                EditorCookie.Observable cake = dobj.getCookie(EditorCookie.Observable.class);
+                if (cake != null) {
+                    cake.removePropertyChangeListener(peerWL);
                 }
             }
-        });
+            peerWL = null;
+            if (replaceObject != null) {
+                attachEditorObservableListener(replaceObject);
+            }
+        }
+    }
+    
+    public String toString() {
+        return "NavigatorContent[" + Integer.toHexString(System.identityHashCode(this)) + "]";
     }
         
     public void propertyChange(PropertyChangeEvent evt) {
@@ -298,15 +415,11 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             if(evt.getNewValue() == null) {
                 final DataObject dobj = ((DataEditorSupport)evt.getSource()).getDataObject();
                 if(dobj != null) {
-                    editorOpened = false;
                     //document is being closed
                     if(DEBUG) System.out.println("document has been closed for DO: " + dobj.hashCode());
                     
                     //remove the property change listener from the DataObject's EditorSupport
-                    EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
-                    if(ec != null)
-                        ((EditorCookie.Observable)ec).removePropertyChangeListener(this);
-                    
+                    attachDataObject(null);
                     //and navigate the document again (must be called asynchronously
                     //otherwise the ClonableEditorSupport locks itself (new call to CES from CES.propertyChange))
                     SwingUtilities.invokeLater(new Runnable() {
@@ -315,10 +428,10 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                         }
                     });
                 }
-            } else {
-                //a new pane created
-                editorOpened = true;
             }
+        }
+        if (EditorRegistry.FOCUS_GAINED_PROPERTY.equals(evt.getPropertyName())) {
+            SwingUtilities.invokeLater(this);
         }
     }
     
@@ -425,6 +538,38 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             }
         }
         
+        public void selectTreeNode(int offset) {
+            TreeNodeAdapter root = (TreeNodeAdapter)tree.getModel().getRoot();
+            
+            int from = root.getStart();
+            int to = root.getEnd();
+            // sanity check:
+            if (offset < from || offset >= to) {
+                // retain the selection path as it is
+                return;
+            }
+            TreePath p = new TreePath(root);
+            boolean cont = true;
+            OUT: while (cont) {
+                cont = false;
+                Enumeration chE = root.children();
+                while (chE.hasMoreElements()) {
+                    TreeNodeAdapter ch = (TreeNodeAdapter)chE.nextElement();
+                    if (offset < ch.getStart()) {
+                        break OUT;
+                    }
+                    if (offset < ch.getEnd()) {
+                        root = ch;
+                        p = p.pathByAddingChild(ch);
+                        cont = true;
+                        break;
+                    }
+                }
+            };
+            tree.scrollPathToVisible(p);
+            tree.setSelectionPath(p);
+        }
+        
         public Document getDocument() {
             return this.doc;
         }
@@ -437,6 +582,11 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
             final EditorCookie.Observable ec = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
             if(ec == null) return ;
             
+            try {
+                final Document doc = ec.openDocument(); //wait to editor to open
+            }catch(IOException ioe) {
+                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+            }
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     JEditorPane[] panes = ec.getOpenedPanes();
@@ -446,14 +596,9 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                     } else if(!selectLineOnly) {
                         // editor not opened yet
                         ec.open();
-                        try {
-                            ec.openDocument(); //wait to editor to open
-                            panes = ec.getOpenedPanes();
-                            if (panes != null && panes.length > 0) {
-                                selectElementInPane(panes[0], selected, true);
-                            }
-                        }catch(IOException ioe) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
+                        panes = ec.getOpenedPanes();
+                        if (panes != null && panes.length > 0) {
+                            selectElementInPane(panes[0], selected, true);
                         }
                     }
                 }
