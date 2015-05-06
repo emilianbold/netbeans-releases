@@ -65,6 +65,7 @@ import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.Exceptions;
@@ -216,8 +217,8 @@ public final class GetSourcesFromKenaiAction extends AbstractAction {
                 }
                 // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
                 // XXX store the project in preferrences, it will be shown as first for next Get From Kenai
-            }catch (KenaiException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (KenaiException ex) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupActionsProvider.class, "ERROR_CONNECTION_GEN", ex.getAsString()))); //NOI18N
             }
         }
     }
