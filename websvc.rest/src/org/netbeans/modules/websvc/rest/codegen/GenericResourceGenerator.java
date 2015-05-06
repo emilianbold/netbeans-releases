@@ -44,6 +44,7 @@
 package org.netbeans.modules.websvc.rest.codegen;
 
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -326,7 +327,8 @@ public class GenericResourceGenerator extends AbstractGenerator {
         
         Object[] annotationAttrs = new Object[] {
             null,
-            mime.value()};
+            mime.expressionTree(copy.getTreeMaker())
+        };
         
         if (type == null) {
             type = String.class.getName();
@@ -366,11 +368,14 @@ public class GenericResourceGenerator extends AbstractGenerator {
             RestConstants.CONSUME_MIME_ANNOTATION,
             RestConstants.PRODUCE_MIME_ANNOTATION
         };
-        
+
+        ExpressionTree mimeTree = mime.expressionTree(copy.getTreeMaker());
         Object[] annotationAttrs = new Object[] {
             null,
-            mime.value(), mime.value() };
-        
+            mimeTree,
+            mimeTree
+        };
+
         String bodyText = "{ //TODO\n return Response.created(context.getAbsolutePath()).build(); }"; //NOI18N
         String[] parameters = getPostPutParams();
         Object[] paramTypes = getPostPutParamTypes(type);
@@ -408,10 +413,13 @@ public class GenericResourceGenerator extends AbstractGenerator {
             RestConstants.PUT_ANNOTATION,
             RestConstants.CONSUME_MIME_ANNOTATION
         };
-        
+
+        ExpressionTree mimeTree = mime.expressionTree(copy.getTreeMaker());
         Object[] annotationAttrs = new Object[] {
             null,
-            mime.value(), mime.value() };
+            mimeTree,
+            mimeTree
+        };
         Object returnType = Constants.VOID;
         String bodyText = "{ //TODO }";    //NOI18N
 

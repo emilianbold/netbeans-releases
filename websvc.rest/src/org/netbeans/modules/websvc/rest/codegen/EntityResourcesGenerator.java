@@ -672,21 +672,12 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
     }
 
     private ExpressionTree mimeTypeTree(TreeMaker maker, String mimeType) {
-        String mediaTypeMember = null;
-        if (mimeType.equals(Constants.MimeType.XML.value())) {
-            mediaTypeMember = "APPLICATION_XML"; // NOI18N
-        } else if (mimeType.equals(Constants.MimeType.JSON.value())) {
-            mediaTypeMember = "APPLICATION_JSON"; // NOI18N
-        } else if (mimeType.equals(Constants.MimeType.TEXT.value())) {
-            mediaTypeMember = "TEXT_PLAIN"; // NOI18N
-        }
+        Constants.MimeType type = Constants.MimeType.find(mimeType);
         ExpressionTree result;
-        if (mediaTypeMember == null) {
+        if (type == null) {
             result = maker.Literal(mimeType);
         } else {
-            // Use a field of MediaType class if possible
-            ExpressionTree typeTree = maker.QualIdent("javax.ws.rs.core.MediaType"); // NOI18N
-            result = maker.MemberSelect(typeTree, mediaTypeMember);
+            result = type.expressionTree(maker);
         }
         return result;
     }
