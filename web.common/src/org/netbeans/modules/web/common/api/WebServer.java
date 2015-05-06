@@ -204,7 +204,7 @@ public final class WebServer {
                 return findFile(entry, serverURLPath);
             }
         }
-        if (rootEntry != null) {
+        if (rootEntry != null && serverURLPath.startsWith("/")) { // NOI18N
             return findFile(rootEntry, serverURLPath);
         }
         return null;
