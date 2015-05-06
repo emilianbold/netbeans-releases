@@ -54,6 +54,7 @@ import org.netbeans.modules.debugger.jpda.truffle.access.TruffleStrataProvider;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
+import org.netbeans.spi.debugger.ui.DebuggingView;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
@@ -85,7 +86,8 @@ public class DebuggingTruffleTreeModel implements TreeModelFilter {
     @Override
     public Object[] getChildren(TreeModel original, Object parent, int from, int to) throws UnknownTypeException {
         Object[] children = original.getChildren(parent, from, to);
-        if (parent instanceof JPDAThread && children.length > 0) {
+        if (parent instanceof DebuggingView.DVThread && children.length > 0 &&
+            ((DebuggingView.DVThread) parent).getDVSupport().getCurrentThread() == parent) {
             CurrentPCInfo currentPCInfo = TruffleAccess.getCurrentPCInfo(debugger);
             if (currentPCInfo != null) {
                 TruffleStackFrame[] stackFrames = currentPCInfo.getStack().getStackFrames();

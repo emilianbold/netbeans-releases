@@ -53,6 +53,7 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.nodes.NodeVisitor;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.nodes.control.BlockNode;
+import com.oracle.truffle.js.nodes.control.SequenceNode;
 import com.oracle.truffle.js.nodes.control.ThrowNode;
 import com.oracle.truffle.js.nodes.function.JSFunctionCallNode;
 
@@ -67,15 +68,16 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
 
     @Override
     public boolean visit(Node node) {
-        if (node instanceof JavaScriptNode && !(node instanceof InstrumentationNode)) {
+        if (node instanceof JavaScriptNode && node.isInstrumentable()) {
             // Presume that all JS nodes can be probed
             final JavaScriptNode jsNode = (JavaScriptNode) node;
 
-            if (isInBlock(jsNode) && jsNode.getSourceSection() != null) {
+            if (inSequence(jsNode) && jsNode.getSourceSection() != null) {
                 jsNode.probe().tagAs(STATEMENT, null);
             }
 
             if (jsNode instanceof JSFunctionCallNode) {
+                // ? ((JSFunctionCallNode) jsNode).getFunction().getDescription();
                 // TODO
                 jsNode.probe().tagAs(CALL, null);
 
@@ -92,6 +94,14 @@ public class JPDAJSDebugProber implements NodeVisitor, ASTProber {
             parent = parent.getParent();
         }
         return parent instanceof BlockNode;
+    }
+
+    private boolean inSequence(JavaScriptNode node) {
+        Node parent = node.getParent();
+        if (parent instanceof InstrumentationNode) {
+            parent = parent.getParent();
+        }
+        return parent instanceof SequenceNode;
     }
 
     @Override
