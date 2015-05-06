@@ -47,12 +47,20 @@ package org.netbeans.modules.editor.impl;
 import java.util.logging.Level;
 import org.netbeans.modules.editor.*;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -63,14 +71,19 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.WeakEventListenerList;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *  Editor Customizable Side Bar.
@@ -94,6 +107,8 @@ public final class CustomizableSideBar {
 
     private static final Map<MimePath, Lookup.Result<SideBarFactoriesProvider>> LR = new WeakHashMap<MimePath, Lookup.Result<SideBarFactoriesProvider>>(5);
     private static final Map<Lookup.Result<SideBarFactoriesProvider>, LookupListener> LL = new WeakHashMap<Lookup.Result<SideBarFactoriesProvider>, LookupListener>(5);
+    
+    private static final String COLOR_WEST_SIDEBARS = "west-sidebars-color"; // NOI18N
     
     private CustomizableSideBar() {
     }
@@ -195,9 +210,11 @@ public final class CustomizableSideBar {
             for(SideBarPosition pos : sideBarsMap.keySet()) {
                 List<JComponent> sideBars = sideBarsMap.get(pos);
                 
-                JPanel panel = new JPanel();
+                JPanel panel = pos.getPosition() == SideBarPosition.WEST ?
+                        new WestSidebarHolder(target) :
+                        new JPanel();
                 panel.setLayout(new BoxLayout(panel, pos.getAxis()));
-
+                
                 for(JComponent c : sideBars) {
                     panel.add(c);
                 }
@@ -208,6 +225,158 @@ public final class CustomizableSideBar {
 
             CACHE.put(target, panelsMap);
             return map;
+        }
+    }
+    
+    /**
+     * Width of the sidebar separator line
+     */
+    private static final int SIDEBAR_HOLDER_SEPARATOR_WIDTH = 1;
+    
+    /**
+     * Width of the sidebar's gap which has the same background as the main editor
+     */
+    private static final int SIDEBAR_GAP_WIDTH = 1;
+    
+    /**
+     * Degenerated "right line border"; displays line at the right only. Pads
+     * the line with the editor component's background, so the divisor and editor's
+     * graphics (i.e. brace ruler) are separated.
+     */
+    private final static class WestSidebarHolder extends JPanel implements LookupListener, PropertyChangeListener, Runnable {
+        /**
+         * The text editor, whose background will be used as a padding
+         */
+        private final JComponent bkgSource;
+        
+        private final Lookup.Result<FontColorSettings>   colorResult;
+        
+        private Color   lineColor;
+        
+        private Color   textBkColor;
+        
+        private int     thickness = 1;
+        
+        private boolean disableBackground;
+        
+        @SuppressWarnings("LeakingThisInConstructor")
+        public WestSidebarHolder(JTextComponent target) {
+            this.bkgSource = target;
+            
+            String mimeType = NbEditorUtilities.getMimeType(target);
+            colorResult = MimeLookup.getLookup(mimeType).lookupResult(FontColorSettings.class);
+            colorResult.addLookupListener(WeakListeners.create(LookupListener.class, this, colorResult));
+            bkgSource.addPropertyChangeListener(WeakListeners.propertyChange(this, "background", bkgSource));
+            getInsets().set(0, 0, 0, 1);
+            setOpaque(true);
+        }
+
+        @Override
+        public Color getBackground() {
+            if (disableBackground) {
+                return bkgSource.getBackground();
+            } else {
+                return super.getBackground();
+            }
+        }
+
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            run();
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getSource() == bkgSource && "background".equals(evt.getPropertyName())) {
+                run();
+            }
+        }
+
+        @Override
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+                return;
+            }
+            updateUIConfig();
+        }
+
+        public int getThickness() {
+            return SIDEBAR_HOLDER_SEPARATOR_WIDTH;
+        }
+
+        @Override
+        public void addNotify() {
+            updateUIConfig();
+            super.addNotify();
+        }
+        
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            // paint the border:
+            paintBorder(this, g, 0, 0, getWidth(), getHeight());
+        }
+        
+        private void updateUIConfig() {
+            Iterator<? extends FontColorSettings> it = colorResult.allInstances().iterator();
+            if (!it.hasNext()) {
+                return;
+            }
+            FontColorSettings fcs = it.next();
+            Color line;
+            Color back;
+            
+            AttributeSet as = fcs.getFontColors(COLOR_WEST_SIDEBARS);
+            if (as == null) {
+                // backwards - compatible behaviour: use the line number stuff:
+                as = fcs.getFontColors(FontColorNames.LINE_NUMBER_COLORING);
+                back = (Color)as.getAttribute(StyleConstants.Background);
+                line = null;
+            } else {
+                Object o;
+                back = (Color)as.getAttribute(StyleConstants.Background);
+                line = (Color)as.getAttribute(StyleConstants.Foreground);
+            }
+            textBkColor = bkgSource.getBackground();
+            if (back == null) {
+                back = bkgSource.getBackground();
+            }
+            setBackground(back);
+            if (line == null || line.equals(back)) {
+                lineColor = null;
+            } else {
+                this.lineColor = line;
+            }
+            revalidate();
+        }
+
+        @Override
+        public Insets getInsets() {
+            Insets s = super.getInsets();
+            if (lineColor != null) {
+                s.right += getThickness();
+            }
+            s.right += SIDEBAR_GAP_WIDTH;
+            return s;
+        }
+        
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            int thick = getThickness();
+            if (!(g instanceof Graphics2D)) {
+                return;
+            }
+            
+            Graphics2D g2d = (Graphics2D)g.create();
+            if (thick >= 1) {
+                g2d.setColor(this.lineColor);
+                int x2 = x + width - ((thick +1) / 2);
+                g2d.drawLine(x2 - SIDEBAR_GAP_WIDTH, 
+                        0, x2 - SIDEBAR_GAP_WIDTH, y + height - 1);
+            }
+            g2d.setColor(textBkColor);
+            int gap = width - SIDEBAR_GAP_WIDTH;
+            g2d.drawRect(gap, 0, width - gap, height);
         }
     }
     

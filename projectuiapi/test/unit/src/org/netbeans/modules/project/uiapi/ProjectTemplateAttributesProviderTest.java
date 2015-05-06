@@ -42,16 +42,30 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateAttributes;
+import org.netbeans.api.templates.FileBuilder;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.spi.project.ProjectFactory;
+import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.CreateFromTemplateAttributesProvider;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -62,6 +76,7 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
 
     private FileObject scratch;
     private FileObject folder;
+    private FileObject projdir;
 
     public ProjectTemplateAttributesProviderTest(String testName) {
         super(testName);
@@ -72,9 +87,40 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         folder = scratch.createFolder("folder");
-        MockLookup.setInstances(new FEQImpl());
+
+        projdir = scratch.createFolder("proj");
+        
+        createProject(projdir);
+
+        MockLookup.setInstances(new FEQImpl(), new TestProjectFactory());
         assertEquals(FEQImpl.ENCODING, FileEncodingQuery.getEncoding(folder).name());
     }
+
+    private void createProject(FileObject projdir) throws Exception {
+        TestUtil.createFileFromContent(ProjectTemplateAttributesProviderTest.class.getResource("data/test.txt"), projdir, "nbproject/test.txt");
+        TestUtil.createFileFromContent(ProjectTemplateAttributesProviderTest.class.getResource("data/test.txt"), projdir, "src/test/test.txt");
+    }
+    
+    /**
+     * Checks that the attribute providers execute in the correct order and see other provider's data.
+     * Legacy providers should execute first. New providers should execute after that. Each new-style
+     * provider should see all attributes defined by previous providers (legacy or new).
+     * 
+     * @throws Exception 
+     */
+    public void testProjectAttributeProviders() throws Exception {
+        Project prj = ProjectManager.getDefault().findProject(projdir);
+        FileObject folder = projdir.getFileObject("nbproject");
+        FileObject template = FileUtil.toFileObject(getDataDir()).getFileObject("file.txt");
+        Map<String, Object> init = new HashMap();
+        init.put("mama", "se raduje");
+        FileObject result = FileBuilder.createFromTemplate(template, folder, "honza", init, FileBuilder.Mode.FORMAT);
+        
+        assertEquals(
+                "Jedna, 2, Honza jde. Nese 2 pytle s brouky. Mama se raduje, ze bude pect vdolky.\n",
+                result.asText());
+    }
+    
 
     public void testCheckProjectAttrs() throws Exception {
         Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectAttrs(null, folder);
@@ -127,5 +173,81 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
             }
             return null;
         }
+    }
+    
+    private static final class AttrProv1 implements CreateFromTemplateAttributes {
+
+        @Override
+        public Map<String, ?> attributesFor(CreateDescriptor desc) {
+            Map<String, Object> m = new HashMap<String, Object>();
+            m.put("jedna", 2); // used by Prov2
+            m.put("dve", "Honza jde");
+            return m;
+        }
+        
+    }
+    
+    private static final class AttrProv2 implements CreateFromTemplateAttributes {
+        @Override
+        public Map<String, ?> attributesFor(CreateDescriptor desc) {
+            String s = desc.getValue("pytel");
+            s += " brouky";
+            Map m = new HashMap();
+            m.put("pytel", s); // replace /append to legacy-provided value
+            m.put("nese", desc.getValue("jedna")); // copy previous value
+            return m;
+        }
+    }
+    
+    private static final class AttrProvLegacy implements CreateFromTemplateAttributesProvider {
+        @Override
+        public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+            Map m = new HashMap();
+            m.put("pytel", "s"); // appended by Prov2
+            m.put("bude", "bude pect vdolky");
+            return m;
+        }
+    }
+
+    private static final class TestProject implements Project {
+        
+        private final Lookup l;
+        private final FileObject projectDirectory;
+        
+        TestProject(FileObject projectDirectory) throws IOException {
+            l = Lookups.fixed(new AttrProv1(), new AttrProv2(), new AttrProvLegacy());
+            this.projectDirectory = projectDirectory;
+        }
+        
+        public FileObject getProjectDirectory() {
+            return projectDirectory;
+        }
+        
+        public Lookup getLookup() {
+            return l;
+        }
+        
+        public String toString() {
+            return "TestAntBasedProject[" + getProjectDirectory() + "]";
+        }
+        
+    }
+    
+    public static class TestProjectFactory implements ProjectFactory {
+        
+        public boolean isProject(FileObject projectDirectory) {
+            return projectDirectory.getFileObject("nbproject") != null;
+        }
+        
+        public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
+            if (isProject(projectDirectory))
+                return new TestProject(projectDirectory);
+            
+            return null;
+        }
+        
+        public void saveProject(Project project) throws IOException, ClassCastException {
+        }
+        
     }
 }

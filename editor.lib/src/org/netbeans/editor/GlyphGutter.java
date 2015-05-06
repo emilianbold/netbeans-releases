@@ -335,12 +335,13 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             backgroundColor = UIManager.getColor("NbEditorGlyphGutter.background"); //NOI18N
         }
         if( null == backgroundColor ) {
-            if (backColor != null)
+            if (backColor != null) {
                 backgroundColor = backColor;
-            else
-                backgroundColor = defaultColoring.getBackColor();
+            }
         }
-
+        if (backgroundColor != null) {
+            setBackground(backgroundColor);
+        }
         if (lineColoring.getForeColor() != null)
             foreColor = lineColoring.getForeColor();
         else
@@ -514,7 +515,7 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) return;
       
-        g.setColor(backgroundColor);
+        g.setColor(getBackground());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         
         //painting gutter line
