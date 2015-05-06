@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.jumpto.symbol;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -139,18 +142,23 @@ public class ContentProviderImplTest extends NbTestCase {
 
     public void testSimpleRetryCompleteNotCalled() throws Exception {
         final MockGoToPanel p = new MockGoToPanel();
-        final SymbolDescriptor[] expected = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
+        final SymbolDescriptor[] expectedInMoc = new SymbolDescriptor[]{new MockSymbol("a1"), new MockSymbol("a2")};
         mockProvider.data(new SymbolDescriptor[][]{
-            new SymbolDescriptor[]{expected[0]},
-            expected
+            new SymbolDescriptor[]{expectedInMoc[0]},
+            expectedInMoc
         });
+        SymbolDescriptor[] expectedInCounting = new SymbolDescriptor[]{new MockSymbol("aa")};
+        countingProvider.data(expectedInCounting);
         final Runnable worker = new ContentProviderImpl(null).createWorker("a", SearchType.PREFIX, p);  //NOI18N
         worker.run();
         assertTrue(mockProvider.data.isEmpty());
-        assertEquals(2, countingProvider.count.get());
+        assertEquals(1, countingProvider.count.get());
         waitForEDT();
         assertEquals(2, p.called.get());
-        assertSymbols(Arrays.asList(expected), p.symbols);
+        final List<SymbolDescriptor> expectedAll = new ArrayList<>(expectedInMoc.length + expectedInCounting.length);
+        Collections.addAll(expectedAll, expectedInMoc);
+        Collections.addAll(expectedAll, expectedInCounting);
+        assertSymbols(expectedAll, p.symbols);
     }
 
 
@@ -205,6 +213,7 @@ public class ContentProviderImplTest extends NbTestCase {
     public static final class CountingSymbolProvider implements SymbolProvider {
 
         private final AtomicInteger count = new AtomicInteger();
+        private volatile SymbolDescriptor[] data;
 
         @Override
         public String name() {
@@ -219,6 +228,10 @@ public class ContentProviderImplTest extends NbTestCase {
         @Override
         public void computeSymbolNames(Context context, Result result) {
             count.incrementAndGet();
+            SymbolDescriptor[] res = data;
+            if (res != null) {
+                result.addResult(Arrays.asList(res));
+            }
         }
 
         @Override
@@ -227,6 +240,10 @@ public class ContentProviderImplTest extends NbTestCase {
 
         @Override
         public void cleanup() {
+        }
+
+        void data(SymbolDescriptor[] res) {
+            data = res;
         }
 
         static CountingSymbolProvider getInstance() {
