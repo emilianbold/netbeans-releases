@@ -58,11 +58,15 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
+import com.oracle.truffle.debug.impl.AbstractDebugEngine;
 import com.oracle.truffle.debug.impl.DebugException;
 import com.oracle.truffle.debug.impl.LineBreakpoint;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -450,7 +454,11 @@ public class JPDATruffleAccessor extends Object {
                 if (steppingIntoTruffle != 0) {
                     if (steppingIntoTruffle > 0) {
                         if (!stepIntoPrepared) {
-                            debugManager.prepareStepInto(1);
+                            try {
+                                debugManager.prepareStepInto(1);
+                            } catch (IllegalStateException isex) {
+                                forceStepInto();
+                            }
                             stepIntoPrepared = true;
                             //System.err.println("Prepared step into and continue.");
                         }
@@ -466,6 +474,27 @@ public class JPDATruffleAccessor extends Object {
                 if (accessLoopRunning) {
                     debuggerAccess();
                 }
+            }
+        }
+        
+        /** Workaround for inability to prepare step into when continue is prepared. */
+        private void forceStepInto() {
+            try {
+                Field debugContextField = AbstractDebugEngine.class.getDeclaredField("debugContext");
+                debugContextField.setAccessible(true);
+                Object debugContext = debugContextField.get(debugManager);
+                Class stepStrategyClass = Class.forName(AbstractDebugEngine.class.getName()+"$StepStrategy");
+                Method replaceStrategyMethod = debugContext.getClass().getDeclaredMethod("replaceStrategy", stepStrategyClass);
+                replaceStrategyMethod.setAccessible(true);
+                Class stepIntoClass = Class.forName(AbstractDebugEngine.class.getName()+"$StepInto");
+                Constructor[] declaredConstructors = stepIntoClass.getDeclaredConstructors();
+                //System.err.println("  declaredConstructors = "+Arrays.toString(declaredConstructors));
+                Constructor stepIntoConstructor = declaredConstructors[0];//stepIntoClass.getDeclaredConstructor(Integer.TYPE);
+                stepIntoConstructor.setAccessible(true);
+                Object stepInto = stepIntoConstructor.newInstance(debugManager, 1);
+                replaceStrategyMethod.invoke(debugContext, stepInto);
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
         
