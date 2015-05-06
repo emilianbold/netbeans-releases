@@ -151,7 +151,7 @@ public class ConstructorGenerator implements CodeGenerator {
                             fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
                             break;
                         case may:
-                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.first().equals(objectUnderOffset)));
                             break;
                         case cannot:
                             fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));
