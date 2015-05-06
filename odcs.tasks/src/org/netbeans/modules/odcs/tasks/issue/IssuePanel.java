@@ -104,6 +104,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListModel;
@@ -284,8 +285,8 @@ public class IssuePanel extends javax.swing.JPanel {
         commentsPanel.setNewCommentHandler(new CommentsPanel.NewCommentHandler() {
             @Override
             public void append(String text) {
-                addCommentPanel.appendCodeText(text);
-                scrollRectToVisible(addCommentPanel.getBounds());
+                getAddCommentsPanel().appendCodeText(text);
+                scrollRectToVisible(getAddCommentsPanel().getBounds());
             }
         });
         attachmentsPanel = new AttachmentsPanel(this);
@@ -414,13 +415,13 @@ public class IssuePanel extends javax.swing.JPanel {
         if(rc != null) {
             wikiLanguage = rc.getMarkupLanguage();
             addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
-            ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, addCommentPanel);
+            ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, getAddCommentsPanel());
 
             commentsPanel.setWikiLanguage(wikiLanguage);
 
             descriptionPanel = WikiUtils.getWikiPanel(wikiLanguage, false, true);
             ((GroupLayout) attributesSectionPanel.getLayout()).replace(dummyDescriptionPanel, descriptionPanel);
-        }
+        } 
     }
 
     ODCSIssue getIssue() {
@@ -764,9 +765,9 @@ public class IssuePanel extends javax.swing.JPanel {
         UIUtils.keepFocusedComponentVisible(commentsPanel, this);
         UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
         if (isNew) {
-            reloadField(addCommentPanel.getCodePane(), IssueField.DESCRIPTION);
+            reloadField(getAddCommentsPanel().getCodePane(), IssueField.DESCRIPTION);
         } else {
-            reloadField(addCommentPanel.getCodePane(), IssueField.COMMENT);
+            reloadField(getAddCommentsPanel().getCodePane(), IssueField.COMMENT);
         }
         
         boolean hasSubtasks = issue.hasSubtasks();
@@ -835,6 +836,14 @@ public class IssuePanel extends javax.swing.JPanel {
         updateMessagePanel();
         cancelButton.setEnabled(issue.hasLocalEdits() || !unsavedFields.isEmpty());
         reloading = false;
+    }
+
+    private WikiPanel getAddCommentsPanel() {
+        if(addCommentPanel == null) {
+            initWikiPanels();
+        }
+        assert addCommentPanel != null;
+        return addCommentPanel;
     }
     
     private static void fixPrefSize(JTextField textField) {
@@ -1271,7 +1280,7 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(IssueField.TASK_TYPE, issueTypeLabel);
         updateFieldDecorations(issueTypeCombo, IssueField.TASK_TYPE, issueTypeWarning, issueTypeLabel);
         updateFieldStatus(IssueField.MODIFIED, modifiedLabel);
-        updateFieldDecorations(addCommentPanel.getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent());
+        updateFieldDecorations(getAddCommentsPanel().getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent());
 //        for (CustomFieldInfo field : customFields) {
 //            updateFieldStatus(field.field, field.label);
 //        }
@@ -1457,8 +1466,8 @@ public class IssuePanel extends javax.swing.JPanel {
     
     private void setupListeners () {
         if (issue.isNew()) {
-            addCommentPanel.getCodePane().getDocument().addDocumentListener(new FieldChangeListener(
-                    addCommentPanel.getCodePane(), IssueField.DESCRIPTION) {
+            getAddCommentsPanel().getCodePane().getDocument().addDocumentListener(new FieldChangeListener(
+                    getAddCommentsPanel().getCodePane(), IssueField.DESCRIPTION) {
                 @Override
                 void fieldModified () {
                     // still new?
@@ -1468,12 +1477,12 @@ public class IssuePanel extends javax.swing.JPanel {
                 }
             });
         }
-        addCommentPanel.getCodePane().getDocument().addDocumentListener(new FieldChangeListener(
-                addCommentPanel.getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent()) {
+        getAddCommentsPanel().getCodePane().getDocument().addDocumentListener(new FieldChangeListener(
+                getAddCommentsPanel().getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent()) {
             @Override
             void fieldModified () {
                 if (!(reloading || issue.isNew())) {
-                    issue.setFieldValue(IssueField.COMMENT, addCommentPanel.getCodePane().getText().trim());
+                    issue.setFieldValue(IssueField.COMMENT, getAddCommentsPanel().getCodePane().getText().trim());
                     unsavedFields.add(IssueField.COMMENT.getKey());
                     updateDecorations();
                 }
