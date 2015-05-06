@@ -251,12 +251,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
                     } else {
                         bookmark(prj);
                     }
-                } catch (KenaiException ex) {
-                    if(ex.getAsString().contains("403 Forbidden")) {
-                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupActionsProvider.class, "ERROR_CONNECTION_GEN", ex.getAsString()))); //NOI18N
-                    } else {
-                        Exceptions.printStackTrace(ex);
-                    }
+                } catch (KenaiException ex) {                    
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupActionsProvider.class, "ERROR_CONNECTION_GEN", ex.getAsString()))); //NOI18N                    
                 } finally {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
