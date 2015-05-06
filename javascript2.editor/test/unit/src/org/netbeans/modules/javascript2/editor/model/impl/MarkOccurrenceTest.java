@@ -1391,6 +1391,42 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/hints/issue252022.js", "fn2().toLower^Case();  // test", true); 
     }
     
+    public void testIssue249487_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(this.iA^rg);", true); 
+    }
+    
+    public void testIssue249487_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(test.iA^rg);", true); 
+    }
+    
+    public void testIssue249487_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(te^st.iArg);", true); 
+    }
+    
+    public void testIssue249487_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEv^ent = new MyApi.Event(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyA^pi.Event(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyApi.Ev^ent(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyApi.Event(myEv^entArgs);", true); 
+    }
+    
+    public void testIssue249487_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "function myEventArgs(iAr^g) {", true); 
+    }
+    
+    public void testIssue249487_09() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.iA^rg = iArg;", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
