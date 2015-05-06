@@ -52,6 +52,7 @@ import java.beans.DesignMode;
 import java.beans.beancontext.BeanContextChildComponentProxy;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -98,7 +99,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     //private final Map<DebuggerEngine, List<? extends Component>> openedComponents = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<DebuggerEngine, Map<EngineComponentsProvider, List<? extends ComponentInfo>>> openedComponents =
             new HashMap<DebuggerEngine, Map<EngineComponentsProvider, List<? extends ComponentInfo>>>();
-    private static final Set<Reference<Component>> componentsInitiallyOpened = new HashSet<Reference<Component>>();
+    private static final Set<ComponentInitiallyOpened> componentsInitiallyOpened = new HashSet<>();
     private final Map<DebuggerEngine, List<? extends Component>> closedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<DebuggerEngine, List<? extends Component>> usedToolbarButtons = new HashMap<DebuggerEngine, List<? extends Component>>();
     private final Map<Component, Dimension> toolbarButtonsPrefferedSize = new HashMap<Component, Dimension>();
@@ -127,8 +128,12 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 final Map<EngineComponentsProvider, List<? extends ComponentInfo>> componentsToOpen =
                         new LinkedHashMap<EngineComponentsProvider, List<? extends ComponentInfo>>();
                 componentsToOpen.put(null, null); // Going to initialize...
+                final boolean filedOpenedComponents;
                 if (openedComponents.isEmpty() && openedGroups.isEmpty()) {
                     fillOpenedDebuggerComponents(componentsInitiallyOpened);
+                    filedOpenedComponents = true;
+                } else {
+                    filedOpenedComponents = false;
                 }
                 RequestProcessor rp = engine.lookupFirst(null, RequestProcessor.class);
                 if (rp == null) {
@@ -137,6 +142,22 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 rp.post (new Runnable () {
                     @Override
                     public void run () {
+                        if (filedOpenedComponents) {
+                            try {
+                                SwingUtilities.invokeAndWait(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        synchronized (openedComponents) {
+                                            for (ComponentInitiallyOpened cio : componentsInitiallyOpened) {
+                                                cio.initState();
+                                            }
+                                        }
+                                    }
+                                });
+                            } catch (InterruptedException | InvocationTargetException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                         final Map<EngineComponentsProvider, List<? extends ComponentInfo>> ecs =
                                 new LinkedHashMap<EngineComponentsProvider, List<? extends ComponentInfo>>();
                         final List<ComponentInfo> cs = new ArrayList<ComponentInfo>();
@@ -237,12 +258,12 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
     }
 
-    private void fillOpenedDebuggerComponents(Set<Reference<Component>> componentsInitiallyOpened) {
+    private void fillOpenedDebuggerComponents(Set<ComponentInitiallyOpened> componentsInitiallyOpened) {
         // For simplicity, add all opened components. These will not be closed when finishing the debugging session.
         TopComponent.Registry registry = TopComponent.getRegistry();
         synchronized (registry) {
             for (TopComponent tc : registry.getOpened()) {
-                componentsInitiallyOpened.add(new WeakReference<Component>(tc));
+                componentsInitiallyOpened.add(new ComponentInitiallyOpened(tc));
             }
         }
     }
@@ -444,10 +465,14 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                     }
                 }
                 final List<Component> initiallyOpened = new ArrayList<Component>();
-                for (Reference<Component> cref : componentsInitiallyOpened) {
-                    Component c = cref.get();
+                final Set<Component> initiallyOpenedMinimized = new HashSet<>();
+                for (ComponentInitiallyOpened cio : componentsInitiallyOpened) {
+                    Component c = cio.getComponent();
                     if (c != null) {
                         initiallyOpened.add(c);
+                        if (cio.isMinimized()) {
+                            initiallyOpenedMinimized.add(c);
+                        }
                     }
                 }
                 final List<ComponentInfo> windowsToClose = new ArrayList<ComponentInfo>(openedWindows);
@@ -467,7 +492,12 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                             }
                             for (Component c : initiallyOpened) {
                                 if (c != null) {
-                                    retainOpenedComponents.add(c);
+                                    boolean initialOnly = retainOpenedComponents.add(c);
+                                    if (initialOnly && c instanceof TopComponent) {
+                                        WindowManager.getDefault().setTopComponentMinimized(
+                                                (TopComponent) c,
+                                                initiallyOpenedMinimized.contains(c));
+                                    }
                                 }
                             }
                             List<ComponentInfo> windowsToCloseCopy = (ArrayList<ComponentInfo>) ((ArrayList) windowsToClose).clone();
@@ -665,20 +695,31 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         }
         synchronized (OPENED_COMPONENTS) {
             final List<Component> initiallyOpened;
+            final Set<Component> initiallyOpenedMinimized;
             if (componentsInitiallyOpened.isEmpty()) {
                 initiallyOpened = Collections.EMPTY_LIST;
+                initiallyOpenedMinimized = Collections.EMPTY_SET;
             } else {
                 initiallyOpened = new ArrayList<Component>();
-                for (Reference<Component> cref : componentsInitiallyOpened) {
-                    Component c = cref.get();
+                initiallyOpenedMinimized = new HashSet<>();
+                for (ComponentInitiallyOpened cio : componentsInitiallyOpened) {
+                    Component c = cio.getComponent();
                     if (c != null) {
                         initiallyOpened.add(c);
+                        if (cio.isMinimized()) {
+                            initiallyOpenedMinimized.add(c);
+                        }
                     }
                 }
             }
             for (ComponentInfo ci : OPENED_COMPONENTS) {
                 Component c = ci.getComponent();
                 if (initiallyOpened.contains(c)) {
+                    if (c instanceof TopComponent) {
+                        WindowManager.getDefault().setTopComponentMinimized(
+                                (TopComponent) c,
+                                initiallyOpenedMinimized.contains(c));
+                    }
                     continue;
                 }
                 if (c instanceof TopComponent) {
@@ -811,6 +852,34 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
         @Override
         public void willCloseNotify(List<ComponentInfo> components) {
             ComponentInfoFromBeanContext.closing(components);
+        }
+        
+    }
+    
+    private static class ComponentInitiallyOpened {
+        
+        private final Reference<Component> componentRef;
+        private boolean isMinimized;
+
+        public ComponentInitiallyOpened(Component c) {
+            this.componentRef = new WeakReference<Component>(c);
+        }
+        
+        public Component getComponent() {
+            return componentRef.get();
+        }
+        
+        public boolean isMinimized() {
+            return isMinimized;
+        }
+
+        private void initState() {
+            Component c = getComponent();
+            if (c instanceof TopComponent) {
+                this.isMinimized = WindowManager.getDefault().isTopComponentMinimized((TopComponent) c);
+            } else {
+                this.isMinimized = false;
+            }
         }
         
     }
