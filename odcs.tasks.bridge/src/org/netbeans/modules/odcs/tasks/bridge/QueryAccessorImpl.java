@@ -46,6 +46,8 @@ import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -104,8 +106,15 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     @NbBundle.Messages({"LBL_NA=N/A"})
     @Override
     public List<QueryHandle> getQueries (ProjectHandle<ODCSProject> projectHandle) {
-        Repository repo = getRepository(projectHandle);
-        assert repo != null;
+        Repository repo = getRepository(projectHandle);        
+        if(repo == null) {
+            // issue #252241
+            // logged out in the meantime?
+            Logger.getLogger(QueryAccessorImpl.class.getName()).log(Level.WARNING, "No repository found for handle={0}, {1}]", new Object[]{projectHandle.getId(), projectHandle.getDisplayName()});
+            assert repo != null;
+            List<QueryHandle> queryHandles = Collections.emptyList();
+            return Collections.unmodifiableList(queryHandles);
+        }
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
         // listen on repository events - e.g. a changed query list
