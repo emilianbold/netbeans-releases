@@ -67,10 +67,13 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -132,13 +135,25 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
 	    Position end = NbDocument.createPosition(doc, h.getEndOffset(), Bias.Forward);
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
+            AttributeSet attribs;
 	    if (isIn(current, caretOffset)) {
 		mainRegion = current;
+                attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext"); //NOI18N
 	    } else {
 		regions.add(current);
+                attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext-slave"); //NOI18N
 	    }
 	    
-            bag.addHighlight(start, end, COLORING);
+            Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
+            Color background = (Color) attribs.getAttribute(StyleConstants.Background);
+            AttributeSet attribsAll = createAttributeSet(
+                StyleConstants.Background, background,
+                EditorStyleConstants.LeftBorderLineColor, foreground, 
+                EditorStyleConstants.RightBorderLineColor, foreground,
+                EditorStyleConstants.TopBorderLineColor, foreground, 
+                EditorStyleConstants.BottomBorderLineColor, foreground
+            );
+            bag.addHighlight(start, end, attribsAll);
 	}
 	
         if (mainRegion == null) {
@@ -162,7 +177,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
 	regions.add(0, mainRegion);
 	
 	this.region = new SyncDocumentRegion(doc, regions);
-	
+        
         if (doc instanceof BaseDocument) {
             final BaseDocument bdoc = (BaseDocument) doc;
             bdoc.addPostModificationDocumentListener(InstantRenamePerformer.this);
@@ -403,9 +418,35 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
         target = null;
         instance = null;
     }
+    
+    private static AttributeSet createAttributeSet(Object... keyValuePairs) {
+        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
+            "They are key-value pairs of attributes that will be inserted into the set.";
 
+        List<Object> list = new ArrayList<>();
+        
+        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
+            Object attrKey = keyValuePairs[2 * i];
+            Object attrValue = keyValuePairs[2 * i + 1];
+
+            if (attrKey != null && attrValue != null) {
+                list.add(attrKey);
+                list.add(attrValue);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(list.toArray());
+    }
+    
     private static InstantRenamePerformer instance = null;
-    private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    //private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
+    
+    private static AttributeSet getSyncedTextBlocksHighlight(String name) {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs != null ? fcs.getFontColors(name) : null;
+        return as == null ? COLORING : as;
+    }
     
     public static PositionsBag getHighlightsBag(Document doc) {
         PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
