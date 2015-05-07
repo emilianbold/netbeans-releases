@@ -53,6 +53,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -95,7 +96,7 @@ public final class FormattingSupport {
             FileObject root = fs.getRoot();
             String fileName = FileUtil.findFreeFileName(root, "cnd-format", ext);// NOI18N
             FileObject data = FileUtil.createData(root, fileName + "." + ext);// NOI18N
-            Writer writer = new OutputStreamWriter(data.getOutputStream());
+            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");// NOI18N
             try {
                 writer.append(textToFormat);
                 writer.flush();
@@ -164,4 +165,67 @@ public final class FormattingSupport {
         }
         return textToFormat;
     }
+
+    public static CharSequence getIndentedText(Document doc, final int caretOffset, CharSequence textToFormat) {
+        if (doc == null) {
+            System.err.println("original document is not specified for getFormattedText");
+            return textToFormat;
+        }
+        String mimeType = DocumentUtilities.getMimeType(doc);
+        if (!MIMENames.isHeaderOrCppOrC(mimeType)) {
+            System.err.println("Unsupported MIME type of document " + doc);
+            return textToFormat;
+        }
+        String ext = MIMEExtensions.get(mimeType).getDefaultExtension();
+        try {
+            FileSystem fs = FileUtil.createMemoryFileSystem();
+            FileObject root = fs.getRoot();
+            String fileName = FileUtil.findFreeFileName(root, "cnd-format", ext);// NOI18N
+            FileObject data = FileUtil.createData(root, fileName + "." + ext);// NOI18N
+            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");// NOI18N
+            try {
+                writer.append(doc.getText(0, caretOffset));
+                writer.append(textToFormat);
+                writer.flush();
+            } finally {
+                writer.close();
+            }
+            DataObject dob = DataObject.find(data);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec != null) {
+                final StyledDocument fmtDoc = ec.openDocument();
+                final Indent fmt = Indent.get(fmtDoc);
+                fmt.lock();
+                try {
+                    final Runnable runnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                fmt.reindent(caretOffset, fmtDoc.getLength());
+                            } catch (BadLocationException ex) {
+                            }
+                        }
+                    };
+                    if (fmtDoc instanceof BaseDocument) {
+                        ((BaseDocument)fmtDoc).runAtomic(runnable);
+                    } else {
+                        runnable.run();
+                    }
+                } finally {
+                    fmt.unlock();
+                }
+                SaveCookie save = dob.getLookup().lookup(SaveCookie.class);
+                if (save != null) {
+                    save.save();
+                }
+                return fmtDoc.getText(caretOffset, fmtDoc.getLength()-caretOffset);
+            }
+            data.delete();
+        } catch (BadLocationException ex) {
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
+        return textToFormat;
+    }
+
 }
