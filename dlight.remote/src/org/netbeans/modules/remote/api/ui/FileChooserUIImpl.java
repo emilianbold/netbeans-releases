@@ -1132,7 +1132,7 @@ final class FileChooserUIImpl extends BasicFileChooserUI{
                                 message = cannotDelete + " " + getBundle().getString("MSG_Plur_Delete");//NOI18N
                             }
 
-                            setSelected((File[])list.toArray(new File[list.size()]));
+                            setSelected(list.toArray(new File[list.size()]));
 
                             JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.OK_OPTION);//NOI18N
                         } else {
