@@ -421,7 +421,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener, Fo
     
     private static AttributeSet createAttributeSet(Object... keyValuePairs) {
         assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
-            "They are key-value pairs of attributes that will be inserted into the set.";
+            "They are key-value pairs of attributes that will be inserted into the set."; //NOI18N
 
         List<Object> list = new ArrayList<>();
         

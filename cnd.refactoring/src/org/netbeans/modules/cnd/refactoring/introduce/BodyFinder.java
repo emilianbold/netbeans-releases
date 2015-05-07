@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.refactoring.hints;
+package org.netbeans.modules.cnd.refactoring.introduce;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,6 +76,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileReferences.Visitor;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring.IntroduceMethodContext;
+import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring.VariableContext;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
@@ -248,34 +250,45 @@ public class BodyFinder {
         return null;
     }
 
-    public static final class VariableInfo {
+    public static final class VariableInfo implements VariableContext {
         private final CsmVariable variable;
         private final List<CsmReference> refs = new ArrayList<>();
         private boolean accessBefore;
         private boolean accessAfter;
         private boolean accessInside;
         private boolean topLevelDeclaration;
+        private boolean writeAccessInside;
         private VariableInfo(CsmVariable variable, boolean topLevelDeclaration) {
             this.variable = variable;
             this.topLevelDeclaration = topLevelDeclaration;
         }
+
+        @Override
         public CsmVariable getVariable() {
             return variable;
         }
+        @Override
         public boolean isAccessBefore() {
             return accessBefore;
         }
+        @Override
         public boolean isAccessAfter() {
             return accessAfter;
         }
+        @Override
         public boolean isAccessInside() {
             return accessInside;
         }
+        @Override
         public boolean isTopLevelDeclaration() {
             return topLevelDeclaration;
         }
+        @Override
         public List<CsmReference> getReferences() {
             return refs;
+        }
+        public boolean isWriteAccessInside() {
+            return writeAccessInside;
         }
         private void setAccessBefore() {
             accessBefore = true;
@@ -288,6 +301,9 @@ public class BodyFinder {
         }
         private void addReference(CsmReference reference) {
             refs.add(reference);
+        }
+        private void setWriteAccessInside() {
+            this.writeAccessInside = true;
         }
 
         @Override
@@ -316,7 +332,7 @@ public class BodyFinder {
         }
     }
 
-    private static final class VariablesInfo {
+    public static final class VariablesInfo {
         private final List<VariableInfo> variables;
         private VariablesInfo() {
             variables = new ArrayList<>();
@@ -331,8 +347,8 @@ public class BodyFinder {
             variables.add(res);
             return res;
         }
-        private List<VariableInfo> getImportantVariables() {
-            List<VariableInfo> res = new ArrayList<>();
+        private List<VariableContext> getImportantVariables() {
+            List<VariableContext> res = new ArrayList<>();
             for(VariableInfo info: variables) {
                 if (info.isTopLevelDeclaration()) {
                     continue;
@@ -343,6 +359,7 @@ public class BodyFinder {
             }
             return res;
         }
+
         private List<VariableInfo> topLevelVariablesUsedOutside() {
             List<VariableInfo> res = new ArrayList<>();
             for(VariableInfo info: variables) {
@@ -354,15 +371,137 @@ public class BodyFinder {
             }
             return res;
         }
+
+        private void calculateReferencedVariables(final Document doc, final int startSelection, final int endSelection) {
+            doc.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+                    TokenSequence<?> ts = hi.tokenSequence();
+                    calculateReferencedVariables(ts, startSelection, endSelection);
+                }
+            });
+        }
+
+        private void calculateReferencedVariables(TokenSequence<?> ts, int startSelection, int endSelection) {
+            for(VariableInfo info: variables) {
+                if (info.isTopLevelDeclaration()) {
+                    continue;
+                }
+                if (info.isAccessInside()) {
+                    boolean writeAccess = false;
+                    for(CsmReference references : info.getReferences()) {
+                        if (startSelection <= references.getStartOffset() && references.getEndOffset() <= endSelection) {
+                            if (isWriteAccess(ts, references.getStartOffset())) {
+                                writeAccess = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (writeAccess) {
+                        info.setWriteAccessInside();
+                    }
+                }
+            }
+        }
+
+        private boolean isWriteAccess(TokenSequence<?> ts, int offset) {
+            ts.move(offset);
+            if (ts.moveNext()) {
+                Token<?> token = lookNextImportant(ts);
+                // id -- or -=
+                if (token != null &&(
+                    token.id() == CppTokenId.PLUSPLUS ||
+                    token.id() == CppTokenId.MINUSMINUS ||
+                    token.id() == CppTokenId.EQ ||
+                    token.id() == CppTokenId.PLUSEQ ||
+                    token.id() == CppTokenId.MINUSEQ ||
+                    token.id() == CppTokenId.STAREQ ||
+                    token.id() == CppTokenId.SLASHEQ ||
+                    token.id() == CppTokenId.AMPEQ ||
+                    token.id() == CppTokenId.BAREQ ||
+                    token.id() == CppTokenId.CARETEQ ||
+                    token.id() == CppTokenId.PERCENTEQ ||
+                    token.id() == CppTokenId.LTLTEQ ||
+                    token.id() == CppTokenId.GTGTEQ)) {
+                    return true;
+                }
+                token = lookPrevImportant(ts, 1);
+                if (token != null &&(
+                    token.id() == CppTokenId.PLUSPLUS ||
+                    token.id() == CppTokenId.MINUSMINUS)) {
+                    return true;
+                }
+                if (token != null &&(
+                    token.id() == CppTokenId.AMP)) {
+                    token = lookPrevImportant(ts, 2);
+                    if (token != null &&(
+                        token.id() == CppTokenId.LPAREN ||
+                        token.id() == CppTokenId.EQ ||
+                        token.id() == CppTokenId.COMMA)) {
+                        return true;
+                    }
+
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private Token<?> lookNextImportant(TokenSequence<?> ts){
+            int index = ts.index();
+            try {
+                while(ts.moveNext()){
+                    if (ts.token().id() == CppTokenId.WHITESPACE ||
+                        ts.token().id() == CppTokenId.ESCAPED_WHITESPACE ||
+                        ts.token().id() == CppTokenId.NEW_LINE ||
+                        ts.token().id() == CppTokenId.LINE_COMMENT ||
+                        ts.token().id() == CppTokenId.BLOCK_COMMENT ||
+                        ts.token().id() == CppTokenId.DOXYGEN_COMMENT ||
+                        ts.token().id() == CppTokenId.DOXYGEN_LINE_COMMENT ||
+                        ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                        continue;
+
+                    }
+                    return ts.token();
+                }
+                return null;
+            } finally {
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
+        }
+
+        private Token<?> lookPrevImportant(TokenSequence<?> ts, int which){
+            int index = ts.index();
+            try {
+                while(ts.movePrevious()){
+                    if (ts.token().id() == CppTokenId.WHITESPACE ||
+                        ts.token().id() == CppTokenId.ESCAPED_WHITESPACE ||
+                        ts.token().id() == CppTokenId.NEW_LINE ||
+                        ts.token().id() == CppTokenId.LINE_COMMENT ||
+                        ts.token().id() == CppTokenId.BLOCK_COMMENT ||
+                        ts.token().id() == CppTokenId.DOXYGEN_COMMENT ||
+                        ts.token().id() == CppTokenId.DOXYGEN_LINE_COMMENT ||
+                        ts.token().id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
+                        continue;
+
+                    }
+                    which--;
+                    if (which == 0) {
+                        return ts.token();
+                    }
+                }
+                return null;
+            } finally {
+                ts.moveIndex(index);
+                ts.moveNext();
+            }
+        }
     }
 
-    public enum FunctionKind {
-        Function, // function
-        MethodDefinition, // method definition (out of class)
-        MethodDeclarationDefinition // method declaration-definition (inside class)
-    }
-
-    public static final class BodyResult {
+    public static final class BodyResult implements IntroduceMethodContext {
         private final Document doc;
         private final FileObject fileObject;
         private final CsmCompoundStatement body;
@@ -389,10 +528,17 @@ public class BodyFinder {
             this.endStatement = endStatement;
         }
 
+        @Override
+        public Document getDocument() {
+            return doc;
+        }
+
+        @Override
         public boolean isC() {
             return MIMENames.C_MIME_TYPE.equals(fileObject.getMIMEType());
         }
 
+        @Override
         public boolean isApplicable(AtomicBoolean canceled) {
             this.canceled = canceled;
             stack = new LinkedList<>();
@@ -426,37 +572,49 @@ public class BodyFinder {
             if (canceled.get()) {
                 return false;
             }
+            vars.calculateReferencedVariables(doc, startSelection, endSelection);
+            if (canceled.get()) {
+                return false;
+            }
             return true;
         }
 
-        public List<VariableInfo> getImportantVariables() {
+        @Override
+        public List<VariableContext> getImportantVariables() {
             return vars.getImportantVariables();
         }
 
+        @Override
         public int getSelectionFrom() {
             return startSelection;
         }
 
+        @Override
         public int getSelectionTo() {
             return endSelection;
         }
 
+        @Override
         public CsmFunctionDefinition getFunction() {
             return function;
         }
 
+        @Override
         public CsmFunction getFunctionDeclaration() {
             return functionDeclaration;
         }
 
+        @Override
         public CsmClass getEnclosingClass() {
             return enclosingClass;
         }
 
+        @Override
         public CsmScope getInsertScope() {
             return insertScope;
         }
 
+        @Override
         public FunctionKind getFunctionKind() {
             return functionKind;
         }
@@ -490,6 +648,7 @@ public class BodyFinder {
         }
 
         // point before containing function
+        @Override
         public int getInsetionOffset() {
             if (insertionPoint == -1) {
                 final AtomicInteger point = new AtomicInteger(function.getStartOffset());
