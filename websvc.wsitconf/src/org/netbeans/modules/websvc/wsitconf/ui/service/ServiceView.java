@@ -100,14 +100,14 @@ public class ServiceView extends SectionView {
         }
         
         //add binding section
-        Node[] bindingNodes = new Node[bindings.size()];
         Children rootChildren = new Children.Array();
                       
         // if there's only one binding, make the dialog simpler
         Node root = new AbstractNode(rootChildren);
         setRoot(root);
 
-        if (bindingNodes.length > 1) {
+        if (bindings.size() > 1) {
+            Node[] bindingNodes = new Node[bindings.size()];
             int i = 0;
             for (Binding binding : bindings) {
 
@@ -128,8 +128,8 @@ public class ServiceView extends SectionView {
                 bindingNodes[i++] = bindingNodeContainer;
             }
             rootChildren.add(bindingNodes);
-        } else {
-            Binding b = (Binding) bindings.toArray()[0];
+        } else if (bindings.size() == 1) {
+            Binding b = bindings.iterator().next();
 
             if (implClass != null) {
                 Util.refreshOperations(b, implClass);

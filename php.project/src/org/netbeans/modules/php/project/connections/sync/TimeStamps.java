@@ -127,7 +127,7 @@ public final class TimeStamps {
      * @param timestamp timestamp to be saved, <b>in seconds</b>
      * @see #setSyncTimestamp(TransferFile)
      */
-    public void setSyncTimestamp(TransferFile transferFile, long timestamp) {
+    void setSyncTimestamp(TransferFile transferFile, long timestamp) {
         assert transferFile != null;
         if (!transferFile.isDirectory()) {
             LOGGER.log(Level.FINE, "Ignoring non-directory {0}", transferFile.getRemoteAbsolutePath());
