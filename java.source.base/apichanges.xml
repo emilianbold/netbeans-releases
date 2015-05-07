@@ -49,6 +49,19 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="classindex.resources.binaryroots">
+        <api name="javasource_base"/>
+        <summary>ClassIndex returns resources from binaryroots</summary>
+        <version major="1" minor="2.2"/>
+        <date day="7" month="5" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            ClassIndex returns a set of source files containing reference(s) to given type element. If the source file is not found in one of the sourceroots, it will fallback to the binaryroots.
+        </description>
+        <class name="ClassIndex" package="org.netbeans.api.java.source"/>
+        <issue number="XXX"/>
+    </change>
     <change id="generator.sort.dependencies">
         <api name="javasource_base"/>
         <summary>Code Generator uses dependencies between fields</summary>

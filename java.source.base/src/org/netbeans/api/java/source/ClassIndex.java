@@ -404,6 +404,42 @@ public final class ClassIndex {
                 }
             });
     }
+    
+    /**
+     * Returns a set of source files containing reference(s) to given type element.
+     * @param element the {@link ElementHandle} of a {@link TypeElement} for which usages should be found
+     * @param searchKind type of reference, {@see SearchKind}
+     * @param scope to search in {@see SearchScope}
+     * @param sources true if references should be from a source root
+     * @return set of {@link FileObject}s containing the reference(s)
+     * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
+     * inside call of this method.
+     * @since 2.5
+     */
+    public @NullUnknown Set<FileObject> getResources (
+            final @NonNull ElementHandle<TypeElement> element,
+            final @NonNull Set<SearchKind> searchKind,
+            final @NonNull Set<? extends SearchScopeType> scope,
+            final boolean sources) {
+        return searchImpl(
+            element,
+            searchKind,
+            scope,
+            new Convertor<ClassIndexImpl, Convertor<Document,FileObject>>() {
+                @NonNull
+                @Override
+                public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
+                    final FileObject[] sourceRoots = p.getSourceRoots();
+                    if(sources) {
+                        return DocumentUtil.fileObjectConvertor (sourceRoots);
+                    }
+                    final FileObject[] binaryRoots = p.getBinaryRoots();
+                    FileObject[] roots = Arrays.copyOf(sourceRoots, sourceRoots.length + binaryRoots.length);
+                    System.arraycopy(binaryRoots, 0, roots, sourceRoots.length, binaryRoots.length);
+                    return DocumentUtil.fileObjectConvertor (roots);
+                }
+            });
+    }
 
     /**
      * Returns a set of source files containing reference(s) to given package element.
