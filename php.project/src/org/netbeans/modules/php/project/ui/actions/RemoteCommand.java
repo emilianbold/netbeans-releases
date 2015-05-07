@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.awt.Color;
+import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -54,6 +56,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
@@ -62,10 +65,12 @@ import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteClient.Operation;
+import org.netbeans.modules.php.project.connections.sync.TimeStamps;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigRemoteValidator;
+import org.netbeans.modules.php.project.ui.actions.support.RememberAsSyncPanel;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
@@ -102,6 +107,10 @@ public abstract class RemoteCommand extends Command {
             }
         }
     }, true);
+
+    private static final AtomicBoolean ASK_REMEMBER_SYNC = new AtomicBoolean(true);
+    private static final AtomicBoolean DO_SYNC = new AtomicBoolean(true);
+
 
     public RemoteCommand(PhpProject project) {
         super(project);
@@ -346,6 +355,71 @@ public abstract class RemoteCommand extends Command {
             }
         }
         return true;
+    }
+
+    // #142955 - but remember only if one of the selected files is source directory
+    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
+    //  -> upload another file or the whole project [timestamp is irrelevant])
+    protected static boolean isSourcesSelected(FileObject sources, FileObject[] selectedFiles) {
+        for (FileObject fo : selectedFiles) {
+            if (sources.equals(fo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // #250343 remember it also as last sync
+    @NbBundle.Messages("RemoteCommand.sync.remember.title=Remote Synchronization")
+    protected static void storeLastSync(final PhpProject project, final RemoteClient remoteClient, final FileObject sources, boolean possiblyAskUser) {
+        if (!DO_SYNC.get()) {
+            return;
+        }
+        if (possiblyAskUser
+                && ASK_REMEMBER_SYNC.get()) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    RememberAsSyncPanel panel = new RememberAsSyncPanel();
+                    NotifyDescriptor descriptor = new NotifyDescriptor(
+                            panel,
+                            Bundle.RemoteCommand_sync_remember_title(),
+                            NotifyDescriptor.YES_NO_OPTION,
+                            NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[] {NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
+                            NotifyDescriptor.NO_OPTION);
+                    boolean store = DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
+                    if (panel.isDoNotAskAgain()) {
+                        ASK_REMEMBER_SYNC.set(false);
+                        DO_SYNC.set(store);
+                    }
+                    if (store) {
+                        RUNNABLES.add(new Runnable() {
+                            @Override
+                            public void run() {
+                                storeLastSyncInternal(project, remoteClient, sources);
+                            }
+                        });
+                        TASK.schedule(0);
+                    }
+                }
+            });
+            return;
+        }
+        storeLastSyncInternal(project, remoteClient, sources);
+    }
+
+    static void storeLastSyncInternal(PhpProject project, RemoteClient remoteClient, FileObject sources) {
+        assert !EventQueue.isDispatchThread();
+        assert DO_SYNC.get();
+        TimeStamps timeStamps = new TimeStamps(project);
+        timeStamps.setSyncTimestamp(getRemoteRoot(remoteClient, sources));
+    }
+
+    static TransferFile getRemoteRoot(RemoteClient remoteClient, FileObject sources) {
+        File sourceDir = FileUtil.toFile(sources);
+        return TransferFile.fromFile(remoteClient.createRemoteClientImplementation(sourceDir.getAbsolutePath()),
+                null, sourceDir);
     }
 
     //~ Inner classes
