@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="ScopeDependencies">
+        <api name="refactoring"/>
+        <summary>Add property to include dependencies in Scope.</summary>
+        <version major="1" minor="43"/>
+        <date day="7" month="5" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added the property dependencies in class Scope to include dependencies of the specified scope, like libraries, used by WhereUsedQuery.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.api" name="Scope"/>
+        <issue number="XXX"/>
+    </change>
     <change id="FilterSetSelected">
         <api name="refactoring"/>
         <summary>Introduce a way to update a filter's selected state after creation.</summary>
