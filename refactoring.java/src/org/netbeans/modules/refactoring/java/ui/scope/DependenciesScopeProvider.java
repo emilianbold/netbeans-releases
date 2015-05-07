@@ -63,14 +63,20 @@ import org.openide.util.NbBundle;
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@NbBundle.Messages("LBL_AllProjects=Open Projects")
-@ScopeProvider.Registration(id = "all-projects", displayName = "#LBL_AllProjects", position = 100, iconBase = "org/netbeans/modules/refactoring/java/resources/all_projects.png")
+@NbBundle.Messages("LBL_Dependencies=Open Projects & Dependencies")
+@ScopeProvider.Registration(id = "all-projects-dependencies", displayName = "#LBL_Dependencies", position = 50, iconBase = "org/netbeans/modules/refactoring/java/resources/found_item_binary.gif")
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
-public class OpenProjectsScopeProvider extends ScopeProvider {
+public class DependenciesScopeProvider extends ScopeProvider {
+
+    private static final boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
+
     private Scope scope;
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
+        if(!FULL_INDEX) {
+            return false;
+        }
         Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
         
         Project[] projects;
@@ -96,7 +102,7 @@ public class OpenProjectsScopeProvider extends ScopeProvider {
         if(srcRoots.isEmpty()) {
             return false;
         }
-        scope = Scope.create(srcRoots, null, null);
+        scope = Scope.create(srcRoots, null, null, true);
 
         return true;
     }

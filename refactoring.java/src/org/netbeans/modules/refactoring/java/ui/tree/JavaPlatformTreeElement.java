@@ -42,42 +42,39 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.refactoring.plugins;
+package org.netbeans.modules.refactoring.java.ui.tree;
 
 import javax.swing.Icon;
-import org.netbeans.modules.refactoring.api.RefactoringElement;
+import javax.swing.ImageIcon;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
-import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
-import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 
 /**
  *
- * @author Jan Becicka
+ * @author Ralph Benjamin Ruijs
  */
-public class RefactoringTreeElement implements TreeElement {
-
-    RefactoringElement element;
+public class JavaPlatformTreeElement implements TreeElement {
+    
+    private final JavaPlatform platform;
     private final Icon icon;
+    private final String displayName;
+    
+    private static final String PLATFORM_ICON = "org/netbeans/modules/java/platform/resources/platform.gif"; //NOI18N
+//    private static String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; // NOI18N
 
-    RefactoringTreeElement(RefactoringElement element) {
-        this.element = element;
-        icon = element.getLookup().lookup(Icon.class);
+    JavaPlatformTreeElement(JavaPlatform platform) {
+        this.platform = platform;
+
+        icon = new ImageIcon(ImageUtilities.loadImage(PLATFORM_ICON));
+        displayName = platform.getDisplayName();
     }
 
     @Override
     public TreeElement getParent(boolean isLogical) {
-        if (isLogical) {
-            Object composite = element.getLookup().lookup(FileObject.class);
-            if (composite==null) {
-                composite = element.getLookup().lookup(Object.class);
-            }
-            if (composite!=null) {
-                return TreeElementFactory.getTreeElement(composite);
-            }
-        }
-        return TreeElementFactory.getTreeElement(element.getParentFile());
+        return null;
     }
-    
+
     @Override
     public Icon getIcon() {
         return icon;
@@ -85,11 +82,12 @@ public class RefactoringTreeElement implements TreeElement {
 
     @Override
     public String getText(boolean isLogical) {
-        return element.getDisplayText();
+        return displayName;
     }
 
     @Override
     public Object getUserObject() {
-        return element;
+        return platform;
     }
 }
+

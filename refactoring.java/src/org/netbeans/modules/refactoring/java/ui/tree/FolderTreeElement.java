@@ -76,6 +76,10 @@ public class FolderTreeElement implements TreeElement {
             if (sg!=null) {
                 return TreeElementFactory.getTreeElement(sg);
             } else {
+                FileObject arch = FileUtil.getArchiveFile(fo);
+                if(arch != null) {
+                    return TreeElementFactory.getTreeElement(arch);
+                }
                 return null;
             }
         } else {
@@ -83,6 +87,10 @@ public class FolderTreeElement implements TreeElement {
             if (p!=null) {
                 return TreeElementFactory.getTreeElement(p);
             } else {
+                FileObject arch = FileUtil.getArchiveFile(fo);
+                if(arch != null) {
+                    return TreeElementFactory.getTreeElement(arch);
+                }
                 return null;
             }
         }

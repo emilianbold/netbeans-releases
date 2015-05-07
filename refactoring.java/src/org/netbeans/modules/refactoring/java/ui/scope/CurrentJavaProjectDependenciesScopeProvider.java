@@ -41,12 +41,12 @@
  */
 package org.netbeans.modules.refactoring.java.ui.scope;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -56,49 +56,79 @@ import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataFolder;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@NbBundle.Messages("LBL_AllProjects=Open Projects")
-@ScopeProvider.Registration(id = "all-projects", displayName = "#LBL_AllProjects", position = 100, iconBase = "org/netbeans/modules/refactoring/java/resources/all_projects.png")
+@ScopeProvider.Registration(id = "current-project-dependencies", displayName = "#LBL_CurrentProjectDependencies", position = 150)
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
-public class OpenProjectsScopeProvider extends ScopeProvider {
+@Messages({"LBL_CurrentProjectDependencies=Current Project & Dependencies"})
+public final class CurrentJavaProjectDependenciesScopeProvider extends ScopeProvider {
+    
+    private static final boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
+
+    private String detail;
     private Scope scope;
+    private Icon icon;
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
-        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
-        
-        Project[] projects;
-        try {
-            projects = openProjects.get();
-        } catch (InterruptedException | ExecutionException ex) {
+        if(!FULL_INDEX) {
             return false;
         }
-        
-        if(projects == null || projects.length == 0) {
-            return false;
+        FileObject file = context.lookup(FileObject.class);
+        Project selected = null;
+        if (file != null) {
+            selected = FileOwnerQuery.getOwner(file);
         }
-
-        Set<FileObject> srcRoots = new HashSet<>();
-        
-        for (Project project : projects) {
-            ProjectInformation pi = ProjectUtils.getInformation(project);
-            final SourceGroup[] sourceGroups = ProjectUtils.getSources(pi.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (int i = 0; i < sourceGroups.length; i++) {
-                srcRoots.add(sourceGroups[i].getRootFolder());
+        if (selected == null) {
+            selected = context.lookup(Project.class);
+            if (selected == null) {
+                SourceGroup sg = context.lookup(SourceGroup.class);
+                if (sg != null) {
+                    selected = FileOwnerQuery.getOwner(sg.getRootFolder());
+                }
+            }
+            if (selected == null) {
+                DataFolder df = context.lookup(DataFolder.class);
+                if (df != null) {
+                    selected = FileOwnerQuery.getOwner(df.getPrimaryFile());
+                }
             }
         }
-        if(srcRoots.isEmpty()) {
+        if (selected == null || !OpenProjects.getDefault().isProjectOpen(selected)) {
             return false;
         }
-        scope = Scope.create(srcRoots, null, null);
 
+        ProjectInformation pi = ProjectUtils.getInformation(selected);
+        final SourceGroup[] sourceGroups = ProjectUtils.getSources(pi.getProject()).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        FileObject[] projectSources = new FileObject[sourceGroups.length];
+        for (int i = 0; i < sourceGroups.length; i++) {
+            projectSources[i] = sourceGroups[i].getRootFolder();
+        }
+        scope = Scope.create(Arrays.asList(projectSources), null, null, true);
+
+        detail = pi.getDisplayName();
+        icon = new ImageIcon(ImageUtilities.mergeImages(
+                ImageUtilities.icon2Image(pi.getIcon()),
+                ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/binary_badge.gif"),
+                10, 10));
         return true;
+    }
+
+    @Override
+    public String getDetail() {
+        return detail;
+    }
+
+    @Override
+    public Icon getIcon() {
+        return icon;
     }
 
     @Override

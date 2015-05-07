@@ -46,6 +46,7 @@ package org.netbeans.modules.refactoring.java.ui.tree;
 
 import java.util.Map;
 import java.util.WeakHashMap;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
@@ -60,53 +61,49 @@ import org.openide.filesystems.FileObject;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=100)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
-    public Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();
-    public static TreeElementFactoryImpl instance;
-    {
-        instance = this;
-    }
+    private final Map<Object, TreeElement> map = new WeakHashMap<>();
     
     @Override
     public TreeElement getTreeElement(Object o) {
-        TreeElement result = null;
+        TreeElement result;
         if (o instanceof SourceGroup) {
-            result = map.get(((SourceGroup)o).getRootFolder());
+            result = map.get(((SourceGroup) o).getRootFolder());
         } else {
             result = map.get(o);
         }
-        if (result!= null) {
+        if (result != null) {
             return result;
         }
         if (o instanceof FileObject) {
             FileObject fo = (FileObject) o;
             if (fo.isFolder()) {
                 SourceGroup sg = FolderTreeElement.getSourceGroup(fo);
-                if (sg!=null && fo.equals(sg.getRootFolder())) {
+                if (sg != null && fo.equals(sg.getRootFolder())) {
                     result = new SourceGroupTreeElement(sg);
-                }
-                else {
+                } else {
                     result = new FolderTreeElement(fo);
                 }
             } else {
                 result = new FileTreeElement(fo);
             }
         } else if (o instanceof SourceGroup) {
-            result = new SourceGroupTreeElement((SourceGroup)o);
+            result = new SourceGroupTreeElement((SourceGroup) o);
         } else if (o instanceof ElementGrip) {
             result = new ElementGripTreeElement((ElementGrip) o);
-        }
-        else if (o instanceof Project) {
+        } else if (o instanceof Project) {
             result = new ProjectTreeElement((Project) o);
         } else if (o instanceof RefactoringElement) {
             RefactoringElement refactoringElement = (RefactoringElement) o;
             ElementGrip grip = (refactoringElement).getLookup().lookup(ElementGrip.class);
-            if (grip!=null) {
+            if (grip != null) {
                 result = new RefactoringTreeElement(refactoringElement);
-            } 
+            }
+        } else if (o instanceof JavaPlatform) {
+            result = new JavaPlatformTreeElement((JavaPlatform) o);
         }
         if (result != null) {
             if (o instanceof SourceGroup) {
-                map.put(((SourceGroup)o).getRootFolder(), result);
+                map.put(((SourceGroup) o).getRootFolder(), result);
             } else {
                 map.put(o, result);
             }

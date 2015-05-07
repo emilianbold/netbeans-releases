@@ -1013,7 +1013,7 @@ public class RefactoringUtils {
         boolean inTest = false;
         if (cp != null) {
             FileObject root = cp.findOwnerRoot(file);
-            if (UnitTestForSourceQuery.findSources(root).length > 0) {
+            if (root != null && UnitTestForSourceQuery.findSources(root).length > 0) {
                 inTest = true;
             }
         }
