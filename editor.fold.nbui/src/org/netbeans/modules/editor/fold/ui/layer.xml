@@ -11,5 +11,16 @@
                 <attr name="instanceCreate" newvalue="org.netbeans.modules.editor.fold.ui.CodeFoldingSideBar$Factory"/>
             </file>
         </folder>
+        <folder name="FontsColors">
+            <folder name="NetBeans">
+                <folder name="Defaults">
+                    <file name="org-netbeans-modules-editor-fold-ui.xml" url="NetBeans-editor.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.editor.fold.ui.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
+        
     </folder>
 </filesystem>

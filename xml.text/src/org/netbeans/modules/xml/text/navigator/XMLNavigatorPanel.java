@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.text.navigator;
 
+import org.netbeans.api.editor.EditorRegistry;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorContent;
 import org.netbeans.modules.xml.text.navigator.base.AbstractXMLNavigatorPanel;
@@ -72,6 +73,7 @@ public class XMLNavigatorPanel extends AbstractXMLNavigatorPanel {
     protected  AbstractXMLNavigatorContent getNavigatorUI() {
 	if (navigator == null) {
 	    navigator = new NavigatorContent();
+            EditorRegistry.addPropertyChangeListener(navigator);
 	}
 	return navigator;
     }

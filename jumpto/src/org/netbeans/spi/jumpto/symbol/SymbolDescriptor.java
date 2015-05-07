@@ -57,6 +57,7 @@ import org.openide.util.Parameters;
 public abstract class SymbolDescriptor {
 
     private String matchedSymbolName;
+    private SymbolProvider provider;
 
     /**
      * Return an icon that should be shown for this symbol descriptor. The icon
@@ -161,4 +162,13 @@ public abstract class SymbolDescriptor {
         return this.matchedSymbolName;
     }
 
+    final void setSymbolProvider(@NonNull final SymbolProvider provider) {
+        Parameters.notNull("provider", provider);   //NOI18N
+        this.provider = provider;
+    }
+
+    @CheckForNull
+    final SymbolProvider getSymbolProvider() {
+        return this.provider;
+    }
 }
