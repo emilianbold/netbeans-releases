@@ -35,15 +35,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
-import org.netbeans.modules.cnd.refactoring.hints.BodyFinder;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.HintAction;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
@@ -52,12 +53,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.windows.TopComponent;
 
 /**
  * based on  org.netbeans.modules.java.hints.introduce.IntroduceAction
  * @author Vladimir Voskresensky
  */
-public final class IntroduceAction extends HintAction {
+public class IntroduceAction extends HintAction {
 
     private final IntroduceKind type;
     private static final String INTRODUCE_CONSTANT = "introduce-constant";//NOI18N
@@ -126,7 +128,21 @@ public final class IntroduceAction extends HintAction {
     }
 
     public static IntroduceAction createMethod() {
-        return new IntroduceAction(IntroduceKind.CREATE_METHOD);
+        return new IntroduceAction(IntroduceKind.CREATE_METHOD) {
+
+            @Override
+            protected void perform(CsmContext context) {
+                final IntroduceMethodUI ui = IntroduceMethodUI.create(null, context);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TopComponent activetc = TopComponent.getRegistry().getActivated();
+                        UI.openRefactoringUI(ui, activetc);
+                    }
+                });
+            }
+        };
     }
 
     private static String getActionName(IntroduceKind type) {
@@ -163,8 +179,6 @@ public final class IntroduceAction extends HintAction {
         List<ErrorDescription> hints = new LinkedList<>();
         if (type == IntroduceKind.CREATE_VARIABLE) {
             detectIntroduceVariable(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
-        } else if (type == IntroduceKind.CREATE_METHOD) {
-            detectIntroduceMethod(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
         }
         return hints;
     }
@@ -195,20 +209,6 @@ public final class IntroduceAction extends HintAction {
                     }
                 }
             }
-        }
-    }
-
-    private void detectIntroduceMethod(Map<IntroduceKind, Fix> fixesMap, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, final FileObject fileObject, JTextComponent comp) {
-        BodyFinder bodyFinder = new BodyFinder(doc, fileObject, file, caretOffset, selectionStart, selectionEnd, canceled);
-        BodyFinder.BodyResult res = bodyFinder.findBody();
-        if (res == null) {
-            return;
-        }
-        if (canceled.get()) {
-            return;
-        }
-        if (res.isApplicable(canceled)) {
-            fixesMap.put(IntroduceKind.CREATE_METHOD, new IntroduceMethodFix(res, doc, fileObject));
         }
     }
 }
