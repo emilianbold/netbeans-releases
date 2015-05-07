@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -143,10 +144,10 @@ public final class ProxyFileManager implements JavaFileManager {
             final boolean recurse) throws IOException {
         checkSingleOwnerThread();
         try {
-            List<Iterable<JavaFileObject>> iterables = new LinkedList<Iterable<JavaFileObject>>();
-            JavaFileManager[] fms = getFileManagers (l);
+            final JavaFileManager[] fms = getFileManagers (l);
+            List<Iterable<JavaFileObject>> iterables = new ArrayList<>(fms.length);
             for (JavaFileManager fm : fms) {
-                iterables.add( fm.list(l, packageName, kinds, recurse));
+                iterables.add(fm.list(l, packageName, kinds, recurse));
             }
             final Iterable<JavaFileObject> result = Iterators.chained(iterables);
             if (LOG.isLoggable(Level.FINER)) {
@@ -521,7 +522,7 @@ public final class ProxyFileManager implements JavaFileManager {
     }
 
     private static Collection<? extends URL> asURLs(Iterator<? extends String> surls) {
-        final ArrayDeque<URL> result = new ArrayDeque<URL>();
+        final ArrayDeque<URL> result = new ArrayDeque<>();
         while (surls.hasNext()) {
             final String surl = surls.next();
             if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
@@ -531,11 +532,11 @@ public final class ProxyFileManager implements JavaFileManager {
         return result;
     }
 
-    private static Collection<String> copy(final Iterator<String> from) {
+    private static<T> Collection<T> copy(final Iterator<? extends T> from) {
         if (!from.hasNext()) {
-            return Collections.<String>emptyList();
+            return Collections.<T>emptyList();
         } else {
-            final LinkedList<String> result = new LinkedList<String>();
+            final List<T> result = new LinkedList<>();
             while (from.hasNext()) {
                 result.add(from.next());
             }
