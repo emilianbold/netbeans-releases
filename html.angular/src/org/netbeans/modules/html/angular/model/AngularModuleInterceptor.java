@@ -49,7 +49,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.angular.index.AngularJsController;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -74,6 +77,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
             TypeUsage.ARRAY, TypeUsage.BOOLEAN, TypeUsage.FUNCTION, TypeUsage.NULL,
             TypeUsage.NUMBER, TypeUsage.OBJECT, TypeUsage.REGEXP, TypeUsage.STRING,
             TypeUsage.UNDEFINED, TypeUsage.UNRESOLVED);
+    private static final String ROUTECONFIG_PROP = "$routeConfig"; //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -195,7 +199,10 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                 if (fo != null) {
                     AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.toURL(), nameOffset));
                 }
-            }            
+
+                // index Angular "New Router" components in case of using "$routeConfig" property
+                indexComponents(snapshot, fo, controllerDecl);
+            }
         } else if (controllerName == null && controllersMap != null) {
             // we need to find an anonymous object, which contains the controller map
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
@@ -211,5 +218,28 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         }
         return Collections.emptyList();
     }
-    
+
+    /**
+     * Indexes component if registered using $routeConfig property. E.g.:
+     * AppController.$routeConfig = [{ path: '/users/posts', components: {left:
+     * 'users', right: 'posts'} }];
+     *
+     * @param snapshot
+     * @param fo
+     * @param controllerDecl
+     */
+    private void indexComponents(Snapshot snapshot, FileObject fo, JsObject controllerDecl) {
+        JsObject routerConfig = controllerDecl.getProperty(ROUTECONFIG_PROP);
+        if (routerConfig != null && routerConfig instanceof JsArray) {
+            Collection<? extends TypeUsage> assignments = routerConfig.getAssignments();
+            if (assignments.size() == 1 && assignments.iterator().next().getType().equals(TypeUsage.ARRAY)) {
+                int routerConfigOffset = routerConfig.getOffset();
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, routerConfigOffset);
+                if (ts != null && fo != null) {
+                    AngularConfigInterceptor.saveComponentsToIndex(fo, AngularConfigInterceptor.findComponents(ts, routerConfigOffset));
+                }
+            }
+        }
+    }
+
 }

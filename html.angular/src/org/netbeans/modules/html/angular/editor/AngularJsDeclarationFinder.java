@@ -70,6 +70,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.angular.Utils;
 import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndex;
+import org.netbeans.modules.html.angular.model.AngularConfigInterceptor;
 import org.netbeans.modules.html.angular.model.AngularWhenInterceptor;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
@@ -115,6 +116,18 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                     if (range != null) {
                         return findFileLocation(fo, Utils.cutQueryFromTemplateUrl(tokenText));
                     }
+                    range = isValueOfProperty(AngularConfigInterceptor.COMPONENT_PROP, ts, caretOffset);
+                    if (range == null) {
+                        range = isValueOfProperty(AngularConfigInterceptor.COMPONENTS_PROP, ts, caretOffset);
+                        if (range == null) {
+                            range = isInObjectValueOfProperty(AngularConfigInterceptor.COMPONENTS_PROP, ts, caretOffset);
+                        }
+                    }
+                    if (range != null) {
+                        String controllerName = String.valueOf(tokenText.charAt(0)).toUpperCase()
+                                .concat(tokenText.substring(1)).concat(AngularConfigInterceptor.CONTROLLER_SUFFIX);
+                        return findControllerLocation(fo, controllerName);
+                    }
                 }
             }
             
@@ -148,6 +161,18 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
                         return;
                     }
                     value[0] = isValueOfProperty(AngularWhenInterceptor.TEMPLATE_URL_PROP, ts, caretOffset);
+                    if (value[0] != null) {
+                        return;
+                    }
+                    value[0] = isValueOfProperty(AngularConfigInterceptor.COMPONENT_PROP, ts, caretOffset);
+                    if (value[0] != null) {
+                        return;
+                    }
+                    value[0] = isValueOfProperty(AngularConfigInterceptor.COMPONENTS_PROP, ts, caretOffset);
+                    if (value[0] != null) {
+                        return;
+                    }
+                    value[0] = isInObjectValueOfProperty(AngularConfigInterceptor.COMPONENTS_PROP, ts, caretOffset);
                 }
             }
         });
@@ -288,6 +313,34 @@ public class AngularJsDeclarationFinder implements DeclarationFinder {
         return null;
     }
 
+    private OffsetRange isInObjectValueOfProperty(String propertyName, TokenSequence<? extends JsTokenId> ts, int caretOffset) {
+        // e.g. check if "demo" is inside the object which is value of "components" property
+        // components: { propA: 'a', propB: 'demo' }
+        ts.move(caretOffset);
+        if (ts.moveNext()) {
+            JsTokenId id = ts.token().id();
+            if (id == JsTokenId.STRING) {
+                OffsetRange result = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                ts.movePrevious();
+                Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts,
+                        Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL,
+                                JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
+                                JsTokenId.STRING_BEGIN, JsTokenId.STRING, JsTokenId.STRING_END,
+                                JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.IDENTIFIER));
+                if (previous != null && previous.id() == JsTokenId.BRACKET_LEFT_CURLY && ts.movePrevious()) {
+                    previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    if (previous != null && previous.id() == JsTokenId.OPERATOR_COLON && ts.movePrevious()) {
+                        previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (previous != null && previous.id() == JsTokenId.IDENTIFIER
+                                && propertyName.equals(previous.text().toString())) {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
     private static class AngularFileHandle implements ElementHandle {
 
