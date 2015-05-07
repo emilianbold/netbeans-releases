@@ -44,10 +44,14 @@
 
 package org.netbeans.modules.cnd.refactoring.api.ui;
 
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.refactoring.actions.ChangeParametersAction;
 import org.netbeans.modules.cnd.refactoring.actions.EncapsulateFieldsAction;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
+import org.netbeans.spi.editor.codegen.CodeGenerator;
 
 /**
  * Factory class providing instances of refactoring actions.
@@ -86,5 +90,12 @@ public final class CsmRefactoringActionsFactory {
      */
     public static ContextAwareAction changeParametersAction() {
         return ChangeParametersAction.findObject(ChangeParametersAction.class, true);
-    }       
+    }
+    
+    public static void showConstructorsGenerator(Lookup context) {
+        List<? extends CodeGenerator> ctorGensList = (new ConstructorGenerator.Factory()).create(context);
+        if (!ctorGensList.isEmpty()) {
+            ctorGensList.get(0).invoke();
+        }
+    }
 }

@@ -96,7 +96,7 @@ public final class FormattingSupport {
             FileObject root = fs.getRoot();
             String fileName = FileUtil.findFreeFileName(root, "cnd-format", ext);// NOI18N
             FileObject data = FileUtil.createData(root, fileName + "." + ext);// NOI18N
-            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");
+            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");// NOI18N
             try {
                 writer.append(textToFormat);
                 writer.flush();
@@ -182,7 +182,7 @@ public final class FormattingSupport {
             FileObject root = fs.getRoot();
             String fileName = FileUtil.findFreeFileName(root, "cnd-format", ext);// NOI18N
             FileObject data = FileUtil.createData(root, fileName + "." + ext);// NOI18N
-            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");
+            Writer writer = new OutputStreamWriter(data.getOutputStream(), "UTF8");// NOI18N
             try {
                 writer.append(doc.getText(0, caretOffset));
                 writer.append(textToFormat);
