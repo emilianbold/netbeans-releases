@@ -185,7 +185,13 @@ public final class ChangeType implements ErrorRule<Void> {
         
         if (leaf[0] instanceof VariableTree) {
             if (tm[0] != null) {
-
+                // special hack: if the reported path is lambda assigned to the variable, do not offer anything:
+                // I don't know how to compute the desired var type for lambda (lambdas are attributed with respect to the environment) or what the
+                // proper lambda type should be.
+                VariableTree vt = (VariableTree)leaf[0];
+                if (treePath != null && treePath.getLeaf() == vt.getInitializer() && treePath.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                    return null;
+                }
                 //anonymous class?
                 expressionType[0] = org.netbeans.modules.java.hints.errors.Utilities.convertIfAnonymous(expressionType[0]);
 

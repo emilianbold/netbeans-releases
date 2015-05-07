@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -51,36 +51,36 @@ import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.Parameters;
 
 /**
- * 
+ *
  * A Symbol Provider participates in the Goto Symbol dialog by providing SymbolDescriptors,
  * one for each matched symbol, when asked to do so.
- * 
+ *
  * The Symbol Providers are registered in Lookup.
  * @since 1.7
- * 
+ *
  * @author Tomas Zezula
  */
 public interface SymbolProvider {
-    
-    /** 
+
+    /**
      * Describe this provider with an internal name, in case we want to provide
      * some kind of programmatic filtering
-     * 
+     *
      * @return An internal String uniquely identifying this symbol provider, such as
      *   "java"
      */
     String name();
 
-    /** 
+    /**
      * Describe this provider for the user, in case we want to offer filtering
      * capabilities in the Go To Symbol dialog
-     * 
+     *
      * @return A display name describing the symbols being provided by this SymbolProvider,
      *  such as "Java Symbols", "Ruby Symbols", etc.
      */
     String getDisplayName();
-    
-    /** 
+
+    /**
      * Compute a list of SymbolDescriptors that match the given search text for the given
      * search type. This might be a slow operation, and the infrastructure may end
      * up calling {@link #cancel} on the same symbol provider during the operation, in which
@@ -95,12 +95,12 @@ public interface SymbolProvider {
      * keystrokes) is a simple narrowing of the search, just filter the previous search
      * result. There is an explicit {@link #cleanup} call that the Go To Symbol dialog
      * will make at the end of the dialog interaction, which can be used to clean up the cache.
-     * 
+     *
      * @param context search context containg search text and type, optionally project
      * @param result  filled with symbol descriptors and optional message
      */
     void computeSymbolNames(Context context, Result result);
-    
+
     /**
      * Cancel the current operation, if possible. This might be called if the user
      * has typed something (including the backspace key) which makes the current
@@ -112,7 +112,7 @@ public interface SymbolProvider {
     /**
      * The Go To Symbol dialog is dismissed for now - free up resources if applicable.
      * (A new "session" will be indicated by a new call to getSymbolNames.)
-     * 
+     *
      * This allows the SymbolProvider to cache its most recent search result, and if the next
      * search is simply a narrower search, it can just filter the previous result.
      */
@@ -129,7 +129,7 @@ public interface SymbolProvider {
         private final Project project;
         private final String text;
         private final SearchType type;
-        
+
         static {
             SymbolProviderAccessor.DEFAULT = new SymbolProviderAccessor() {
 
@@ -143,8 +143,9 @@ public interface SymbolProvider {
                 public Result createResult(
                     @NonNull final List<? super SymbolDescriptor> result,
                     @NonNull final String[] message,
-                    @NonNull final Context context) {
-                    return new Result(result, message, context);
+                    @NonNull final Context context,
+                    @NonNull final SymbolProvider provider) {
+                    return new Result(result, message, context, provider);
                 }
 
                 @Override
@@ -162,15 +163,20 @@ public interface SymbolProvider {
                 public void setHighlightText(@NonNull final SymbolDescriptor desc, @NonNull final String text) {
                     desc.setHighlightText(text);
                 }
+
+                @Override
+                public SymbolProvider getSymbolProvider(SymbolDescriptor desc) {
+                    return desc.getSymbolProvider();
+                }
             };
         }
-        
+
         Context(Project project, String text, SearchType type) {
             this.project = project;
             this.text = text;
             this.type = type;
         }
-        
+
         /**
          * Return project representing scope of search, if null, the search is not
          * limited.
@@ -194,17 +200,18 @@ public interface SymbolProvider {
          */
         public SearchType getSearchType() { return type; }
     }
-    
+
     /**
-     * Represents a collection of <tt>SymbolDescriptor</tt>s that match 
-     * the given search criteria. Moreover, it can contain message 
+     * Represents a collection of <tt>SymbolDescriptor</tt>s that match
+     * the given search criteria. Moreover, it can contain message
      * for the user, such as an incomplete search result.
      *
      */
     public static final class Result extends Object {
-        
+
         private final List<? super SymbolDescriptor> result;
         private final String[] message;
+        private final SymbolProvider provider;
         private String highlightText;
         private boolean dirty;
         private boolean highlightTextAlreadySet;
@@ -213,22 +220,25 @@ public interface SymbolProvider {
         Result(
                 @NonNull final List<? super SymbolDescriptor> result,
                 @NonNull final String[] message,
-                @NonNull final Context context) {
+                @NonNull final Context context,
+                @NonNull final SymbolProvider provider) {
             Parameters.notNull("result", result);    //NOI18N
             Parameters.notNull("message", message);  //NOI18N
             Parameters.notNull("context", context);  //NOI18N
+            Parameters.notNull("provider", provider);   //NOI18N
             if (message.length != 1) {
                 throw new IllegalArgumentException("message.length != 1");  //NOI18N
             }
             this.result = result;
             this.message = message;
             this.highlightText = context.getText();
+            this.provider = provider;
         }
-        
+
         /**
          * Optional message. It can inform the user about result, e.g.
          * that result can be incomplete etc.
-         * 
+         *
          * @param  msg  message
          */
         public void setMessage(String msg) {
@@ -243,6 +253,7 @@ public interface SymbolProvider {
         public void addResult(SymbolDescriptor symbolDescriptor) {
             dirty = true;
             symbolDescriptor.setHighlightText(highlightText);
+            symbolDescriptor.setSymbolProvider(provider);
             result.add(symbolDescriptor);
         }
 
@@ -298,5 +309,5 @@ public interface SymbolProvider {
             retry = 2000;
         }
     }
-    
+
 }

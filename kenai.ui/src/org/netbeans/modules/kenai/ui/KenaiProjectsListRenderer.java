@@ -51,6 +51,7 @@ package org.netbeans.modules.kenai.ui;
 import org.netbeans.modules.team.server.ui.common.URLDisplayerAction;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -74,6 +75,7 @@ import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Renderer for list item to show found Kenai project
@@ -88,7 +90,7 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
         
         initComponents();
 
-        KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
+        final KenaiSearchPanel.KenaiProjectSearchInfo searchInfo = (KenaiSearchPanel.KenaiProjectSearchInfo) value;
 
         projectNameLabel.setText("<html><b>" + searchInfo.kenaiProject.getDisplayName() + // NOI18N
                 " (" + searchInfo.kenaiProject.getName() + ")</b></html>"); // NOI18N
@@ -102,20 +104,33 @@ public class KenaiProjectsListRenderer extends javax.swing.JPanel {
             String description = searchInfo.kenaiProject.getDescription();
             description = description.replaceAll("\n+", " "); // NOI18N
             description = description.replaceAll("\t+", " "); // NOI18N
-            Icon icon = null;
-            try { // if server is not properly configured, following operation might fail with exception
-                icon = searchInfo.kenaiProject.getProjectIcon();
-            } catch (KenaiException ex) {
-                Logger.getLogger(KenaiProjectsListRenderer.class.getName()).log(Level.INFO, "There are problems with getting a project icon - maybe see http://www.netbeans.org/issues/show_bug.cgi?id=172649", ex); //NOI18N
-            }
-            Image im = null;
-            if (icon != null) {
-                im = ImageUtilities.icon2Image(icon);
-            } else {
-                im = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/default.jpg"); //NOI18N
-            }
-            im = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
-            iconLabel.setIcon(ImageUtilities.image2Icon(im));
+            
+            new RequestProcessor("KenaiProjectsListRenderer", 5).post(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        Icon icon = null;
+                        try { // if server is not properly configured, following operation might fail with exception
+                            icon = searchInfo.kenaiProject.getProjectIcon();
+                        } catch (KenaiException ex) {
+                            Logger.getLogger(KenaiProjectsListRenderer.class.getName()).log(Level.INFO, "There are problems with getting a project icon - maybe see http://www.netbeans.org/issues/show_bug.cgi?id=172649", ex); //NOI18N
+                        }
+                        Image im = null;
+                        if (icon != null) {
+                            im = ImageUtilities.icon2Image(icon);
+                        } else {
+                            im = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/default.jpg"); //NOI18N
+                        }
+                        final Image fim = im.getScaledInstance(100, 100, Image.SCALE_SMOOTH);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                iconLabel.setIcon(ImageUtilities.image2Icon(fim));                            
+                            }
+                        });
+                    }
+                });
+            
             projectDescLabel.setText(description);
             projectDescLabel.setRows(searchInfo.kenaiProject.getDescription().length() / 100 + 1);
             String tags = searchInfo.kenaiProject.getTags();

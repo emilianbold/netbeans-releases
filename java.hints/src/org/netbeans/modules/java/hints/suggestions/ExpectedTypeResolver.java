@@ -526,8 +526,8 @@ public class ExpectedTypeResolver implements TreeVisitor<List<? extends TypeMirr
                                     break;
                                 case UNION:
                                     for (TypeMirror t : ((UnionType) ex).getAlternatives()) {
-                                        if (!result.contains(ex)) {
-                                            result.add(ex);
+                                        if (!result.contains(t)) {
+                                            result.add(t);
                                         }
                                     }
                                     break;

@@ -160,6 +160,10 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
     private final String repositoryId;
 
     public IssueTable(String repositoryId, String queryName, QueryController controller, ColumnDescriptor[] descriptors, final boolean isSaved) {
+        this(repositoryId, queryName, controller, descriptors, isSaved, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+    }
+    
+    public IssueTable(String repositoryId, String queryName, QueryController controller, ColumnDescriptor[] descriptors, final boolean isSaved, int vsbPolicy, int hsbPolicy) {
         assert descriptors != null;
         assert descriptors.length > 0;
 
@@ -185,7 +189,7 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         sorter.setTableHeader(table.getTableHeader());
         table.setRowHeight(table.getRowHeight() * 6 / 5);
         
-        JScrollPane tableScrollPane = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        JScrollPane tableScrollPane = new JScrollPane(table, vsbPolicy, hsbPolicy);
         tableScrollPane.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
         if (borderColor == null) borderColor = UIManager.getColor("controlShadow"); // NOI18N
