@@ -152,7 +152,7 @@ public class TransformServlet extends HttpServlet {
                 // do not log again TransformerException, it is already done by ErrorListener
             } else if ( exc instanceof SAXParseException ) {
                 message = new CookieMessage
-                    (TransformUtil.unwrapException (exc).getLocalizedMessage(), 
+                    (TransformUtil.unwrapExceptionMessage(exc), 
                      CookieMessage.FATAL_ERROR_LEVEL,
                      new DefaultXMLProcessorDetail ((SAXParseException) exc)
                      );            
