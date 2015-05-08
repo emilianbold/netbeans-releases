@@ -212,7 +212,7 @@ import org.openide.util.RequestProcessor;
 
     private static FileSystemProvider.AccessCheckType restoreAccessCheckType() {
         FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FULL;
-        String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name());
+        String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name()); // NOI18N
         if (name != null) {
             try {
                 result = FileSystemProvider.AccessCheckType.valueOf(name);
@@ -224,7 +224,7 @@ import org.openide.util.RequestProcessor;
     }
 
     private static void storeAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
-        NbPreferences.forModule(FSSDispatcher.class).put("accessCheckType", accessCheckType.name());
+        NbPreferences.forModule(FSSDispatcher.class).put("accessCheckType", accessCheckType.name()); // NOI18N
     }
 
     public void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
