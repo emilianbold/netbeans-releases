@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -79,11 +80,12 @@ import org.openide.util.NbBundle;
  *
  * @author Jan lahoda
  */
-public abstract class CreateClassFix implements Fix {
+public abstract class CreateClassFix implements EnhancedFix {
     
     protected Set<Modifier> modifiers;
     protected List<TypeMirrorHandle> argumentTypes; //if a specific constructor should be created
     protected List<String> argumentNames; //dtto.
+    private Integer prio;
     private List<TypeMirrorHandle> superTypes;
     protected ElementKind kind;
     private int numTypeParameters;
@@ -243,30 +245,51 @@ public abstract class CreateClassFix implements Fix {
     
     public abstract String toDebugString(CompilationInfo info);
     
+    /**
+     * Will be used in {@link #getSortText()}
+     *
+     * @param prio
+     */
+    protected void setPriority(Integer prio) {
+        this.prio = prio;
+    }
+
+    @Override
+    public CharSequence getSortText() {
+        //see usage at org.netbeans.modules.editor.hints.FixData.getSortText
+        if (null == prio) {
+            return getText();
+        }
+
+        return String.format("%04d-%s", prio, getText());
+    }
+    
     static final class CreateOuterClassFix extends CreateClassFix {
         private FileObject targetSourceRoot;
         private String packageName;
+        private String rootName;
         private String simpleName;
         
-        public CreateOuterClassFix(CompilationInfo info, FileObject targetSourceRoot, String packageName, String simpleName, Set<Modifier> modifiers, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, TypeMirror superType, ElementKind kind, int numTypeParameters) {
+        public CreateOuterClassFix(CompilationInfo info, FileObject targetSourceRoot, String packageName, String simpleName, Set<Modifier> modifiers, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, TypeMirror superType, ElementKind kind, int numTypeParameters, String rootName) {
             super(info, modifiers, argumentTypes, argumentNames, superType, kind, numTypeParameters);
             
             this.targetSourceRoot = targetSourceRoot;
             this.packageName = packageName;
             this.simpleName = simpleName;
+            this.rootName = rootName;
         }
 
         public String getText() {
-            if (argumentNames == null || argumentNames.isEmpty())
-                return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassInPackage", simpleName, packageName, valueForBundle(kind));
-            else {
-                StringBuffer buf = new StringBuffer();
+            if (argumentNames == null || argumentNames.isEmpty()) {
+                return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassInPackage", simpleName, packageName, valueForBundle(kind), rootName);
+            } else {
+                StringBuilder buf = new StringBuilder();
                 for (TypeMirror tm : argumentTypeMirrors) {
                     buf.append(tm.toString());
                     buf.append(",");
                 }
                 String ctorParams = buf.toString();
-                Object[] params = new Object[] {simpleName, packageName, valueForBundle(kind), ctorParams.substring(0, ctorParams.length() - 1)};
+                Object[] params = new Object[] {simpleName, packageName, valueForBundle(kind), ctorParams.substring(0, ctorParams.length() - 1), rootName};
                 return NbBundle.getMessage(CreateClassFix.class, "FIX_CreateClassAndCtorInPackage", params);
             }
         }
