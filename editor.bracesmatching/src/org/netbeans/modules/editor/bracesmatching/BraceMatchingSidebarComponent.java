@@ -54,6 +54,8 @@ import java.awt.Rectangle;
 import java.awt.Stroke;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Iterator;
@@ -563,7 +565,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     }
     
     public JComponent createToolTipView(int start, int end, int[] suppressRanges) {
-        JEditorPane tooltipPane = new JEditorPane();
+        final JEditorPane tooltipPane = new JEditorPane();
         EditorKit kit = editorPane.getEditorKit();
         Document doc = editor.getDocument();
         if (kit == null || !(doc instanceof NbDocument.CustomEditor)) {
@@ -617,15 +619,26 @@ public class BraceMatchingSidebarComponent extends JComponent implements
 
             });
 
-        JComponent c = (JComponent)ed.createEditor(tooltipPane);
-            /*
-        c.putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
-        */
-        Color foreColor = tooltipPane.getForeground();
-        c.setBorder(new LineBorder(foreColor));
-        c.setOpaque(true);
+            JComponent c = (JComponent)ed.createEditor(tooltipPane);
+                /*
+            c.putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
+            */
+            Color foreColor = tooltipPane.getForeground();
+            c.setBorder(new LineBorder(foreColor));
+            c.setOpaque(true);
 
-        //JComponent c2 = new BraceToolTip(editorPane, tooltipPane);
+            //JComponent c2 = new BraceToolTip(editorPane, tooltipPane);
+            tooltipPane.addHierarchyListener(new HierarchyListener() {
+                @Override
+                public void hierarchyChanged(HierarchyEvent e) {
+                    // setting editorKit to null frees some resources allocated for sidebars etc.
+                    if ((e.getChangeFlags() & HierarchyEvent.DISPLAYABILITY_CHANGED) > 0 && !tooltipPane.isDisplayable()) {
+                        tooltipPane.setEditorKit(null);
+                        tooltipPane.removeHierarchyListener(this);
+                    }
+                }
+                
+            });
             return new BraceToolTip(c, tooltipPane);
         } catch (BadLocationException e) {
             // => return null
