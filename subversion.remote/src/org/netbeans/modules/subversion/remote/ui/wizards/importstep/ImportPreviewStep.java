@@ -210,11 +210,11 @@ public class ImportPreviewStep extends AbstractStep {
      * Starts commit task
      * @param repository repository url
      */
-    public void startCommitTask (SVNUrl repository) {
+    public void startCommitTask (final SVNUrl repository) {
         SvnProgressSupport commitTask = new SvnProgressSupport(context.getFileSystem()) {
             @Override
             public void perform() {
-                CommitAction.performCommit(importMessage, getCommitFiles(), context, this, true);
+                CommitAction.performCommit(importMessage, getCommitFiles(), context, repository, this, true);
             }
         };
         commitTask.start(Subversion.getInstance().getRequestProcessor(repository), repository, org.openide.util.NbBundle.getMessage(ImportPreviewStep.class, "LBL_Import_Progress")); //NOI18N

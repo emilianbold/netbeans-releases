@@ -61,6 +61,7 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.nodes.Node;
 
@@ -111,16 +112,19 @@ public class StatusAction extends ContextAction {
     /**
      * Connects to repository and gets recent status.
      */
-    public static void executeStatus(final Context context, SvnProgressSupport support, boolean contactServer) {
+    public static void executeStatus(final Context context, SVNUrl repository, SvnProgressSupport support, boolean contactServer) {
 
         if (context == null || context.getRoots().isEmpty()) {
             return;
         }
-            
         try {
             SvnClient client;            
             try {
-                client = Subversion.getInstance().getClient(context, support);
+                if (repository == null) {
+                    client = Subversion.getInstance().getClient(context, support);
+                } else {
+                    client = Subversion.getInstance().getClient(context, repository, support);
+                }
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(context, ex, true, true);
                 return;
