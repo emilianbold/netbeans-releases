@@ -148,7 +148,7 @@ public class BodyFinder {
                         break;
                     }
                     final CsmStatement st = statements.get(i);
-                    if (st.getStartOffset() <= selectionStart && selectionEnd <= st.getEndOffset()) {
+                    if (st.getStartOffset() < selectionStart && selectionEnd < st.getEndOffset()) {
                         // selection inside statement
                         return findBodyInStatement(st);
                     }

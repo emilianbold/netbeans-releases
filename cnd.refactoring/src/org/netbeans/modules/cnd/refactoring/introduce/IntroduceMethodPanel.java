@@ -166,8 +166,10 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
 
             @Override
             public void run() {
+                name.requestFocus();
                 returnTypeTextField.setText("void"); //NOI18N
                 name.setText("function"); //NOI18N
+                name.selectAll();
                 if (res.getFunctionKind() == FunctionKind.MethodDefinition) {
                     insertionPointLabel.setVisible(true);
                     insertPointCombo.setVisible(true);
@@ -205,6 +207,17 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
                 //btnOk.setEnabled(((ErrorLabel)errorLabel).isInputTextValid());
             }
         });
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        name.requestFocusInWindow();
+        return true;
+    }
+
+    @Override
+    public void requestFocus() {
+        name.requestFocus();
     }
 
     @Override
@@ -707,6 +720,10 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         } else {
             return 0;
         }
+    }
+
+    String getFunctionName() {
+        return name.getText();
     }
 
     String getMethodCall() {

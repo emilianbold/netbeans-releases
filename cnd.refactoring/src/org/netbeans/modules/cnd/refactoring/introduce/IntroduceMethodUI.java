@@ -76,7 +76,14 @@ public class IntroduceMethodUI implements RefactoringUI {
 
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(IntroduceMethodUI.class, "CAP_IntroduceMethod"); // NOI18N
+        switch(refactoring.getIntroduceMethodContext().getFunctionKind()) {
+            case MethodDefinition:
+            case MethodDeclarationDefinition:
+                return NbBundle.getMessage(IntroduceMethodUI.class, "CAP_IntroduceMethodMethod", refactoring.getFunctionName()); // NOI18N
+            case Function:
+            default:
+                return NbBundle.getMessage(IntroduceMethodUI.class, "CAP_IntroduceMethodFunction", refactoring.getFunctionName()); // NOI18N
+        }
     }
 
     @Override
@@ -111,6 +118,7 @@ public class IntroduceMethodUI implements RefactoringUI {
         }
         refactoring.setParameterInfo(paramList);
         refactoring.setMethodDefinition(panel.getMethodDefinition());
+        refactoring.setFunctionName(panel.getFunctionName());
         refactoring.setMethodCall(panel.getMethodCall());
         refactoring.setMethodDeclaration(panel.getMethodDeclarationString());
         refactoring.setDeclarationInsetOffset(panel.getInsertPoint());

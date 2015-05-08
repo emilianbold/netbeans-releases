@@ -67,11 +67,20 @@ public final class IntroduceMethodRefactoring extends AbstractRefactoring {
     public final static int PARAM_TYPE = 2;
     // changes in order
     private ParameterInfo[] paramTable;
+    private String functionName;
     private IntroduceMethodContext introduceMethodContext;
     private String methodDeclaration;
     private String methodDefinition;
     private String methodCall;
     private int declarationInsetOffset;
+
+    public String getFunctionName() {
+        return functionName;
+    }
+
+    public void setFunctionName(String functionName) {
+        this.functionName = functionName;
+    }
 
     public int getDeclarationInsetOffset() {
         return declarationInsetOffset;

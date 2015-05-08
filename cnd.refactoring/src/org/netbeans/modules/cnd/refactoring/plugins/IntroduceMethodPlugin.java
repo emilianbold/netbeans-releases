@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,14 +49,17 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Position;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring.IntroduceMethodContext.FunctionKind;
 import org.netbeans.modules.cnd.refactoring.introduce.BodyFinder;
+import static org.netbeans.modules.cnd.refactoring.plugins.CsmRefactoringPlugin.createProblem;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -99,12 +103,16 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
-        IntroduceMethodRefactoring.ParameterInfo paramTable[] = refactoring.getParameterInfo();
         Problem p = null;
+        String functionName = refactoring.getFunctionName();
+        if (!CndLexerUtilities.isCppIdentifier(functionName)) {
+            return CsmRefactoringPlugin.createProblem(p, true, NbBundle.getMessage(IntroduceMethodPlugin.class, "ERR_InvalidFunctionName", functionName));
+        }
+        IntroduceMethodRefactoring.ParameterInfo paramTable[] = refactoring.getParameterInfo();
         for (int i = 0; i < paramTable.length; i++) {
             IntroduceMethodRefactoring.ParameterInfo in = paramTable[i];
             if (in.getType().toString().endsWith("&") && in.isByRef()) { //NOI18N
-                p = CsmRefactoringPlugin.createProblem(p, true, NbBundle.getMessage(IntroduceMethodPlugin.class, "ERR_DoubleReference", new Object[]{}));
+                return CsmRefactoringPlugin.createProblem(p, true, NbBundle.getMessage(IntroduceMethodPlugin.class, "ERR_DoubleReference", new Object[]{}));
             }
         }
         return p;
@@ -155,15 +163,24 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
             String method = FormattingSupport.getIndentedText(bodyResult.getDocument(), bodyResult.getInsetionOffset(), refactoring.getMethodDefinition()).toString();
             PositionRef startPos = ces.createPositionRef(bodyResult.getInsetionOffset(), Position.Bias.Forward);
             PositionRef endPos = ces.createPositionRef(bodyResult.getInsetionOffset(), Position.Bias.Backward);
-            ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", method,
-                    NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionDefinition")); // NOI18N
+            String message;
+            if (bodyResult.getFunctionKind() == FunctionKind.Function) {
+                message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionDefinition"); // NOI18N
+            } else {
+                message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodDefinition"); // NOI18N
+            }
+            ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", method, message);
             mr.addDifference(fo, diff);
 
             String methodCall =refactoring.getMethodCall();
             startPos = ces.createPositionRef(bodyResult.getSelectionFrom(), Position.Bias.Forward);
             endPos = ces.createPositionRef(bodyResult.getSelectionTo(), Position.Bias.Backward);
-            diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, startPos, endPos, "", methodCall,
-                    NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionCall")); // NOI18N
+            if (bodyResult.getFunctionKind() == FunctionKind.Function) {
+                message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionCall"); // NOI18N
+            } else {
+                message = NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodCall"); // NOI18N
+            }
+            diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, startPos, endPos, "", methodCall, message);
             mr.addDifference(fo, diff);
 
             if (bodyResult.getFunctionKind() == FunctionKind.MethodDefinition){
@@ -174,7 +191,7 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
                     startPos = ces.createPositionRef(refactoring.getDeclarationInsetOffset(), Position.Bias.Forward);
                     endPos = ces.createPositionRef(refactoring.getDeclarationInsetOffset(), Position.Bias.Backward);
                     diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", decl,
-                            NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionDeclaration")); // NOI18N
+                            NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodDeclaration")); // NOI18N
                     mr.addDifference(fo, diff);
                 }
             }
@@ -187,7 +204,7 @@ public class IntroduceMethodPlugin extends CsmModificationRefactoringPlugin {
                 PositionRef startPos = ces.createPositionRef(refactoring.getDeclarationInsetOffset(), Position.Bias.Forward);
                 PositionRef endPos = ces.createPositionRef(refactoring.getDeclarationInsetOffset(), Position.Bias.Backward);
                 ModificationResult.Difference diff = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, startPos, endPos, "", decl,
-                        NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_FunctionDeclaration")); // NOI18N
+                        NbBundle.getMessage(IntroduceMethodPlugin.class, "LBL_Preview_MethodDeclaration")); // NOI18N
                 mr.addDifference(fo, diff);
             }
         }
