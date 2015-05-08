@@ -165,6 +165,10 @@ typedef enum file_type {
 char mode_to_file_type_char(int mode);
 file_type mode_to_file_type(int mode);
 
+bool can_read(const struct stat *stat);
+bool can_write(const struct stat *stat);
+bool can_exec(const struct stat *stat);
+
 #ifdef	__cplusplus
 }
 #endif

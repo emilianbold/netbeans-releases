@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
 
@@ -608,3 +609,56 @@ file_type mode_to_file_type(int mode) {
         return FILETYPE_UNKNOWN; // for other stat info to have a default
     }
 }
+
+static const short ACCESS_MASK = 0x1FF;
+static const short USR_R = 256;
+static const short USR_W = 128;
+static const short USR_X = 64;
+static const short GRP_R = 32;
+static const short GRP_W = 16;
+static const short GRP_X = 8;
+static const short ALL_R = 4;
+static const short ALL_W = 2;
+static const short ALL_X = 1;    
+
+static bool can(const struct stat *stat, short all_mask, short grp_mask, short usr_mask) {
+    static bool first = true;
+    static uid_t uid;
+    static gid_t groups[100];
+    static int group_count;
+    if (first) {
+        first = false;
+        uid = getuid();
+        group_count = getgroups(sizeof groups, groups);
+    }
+    unsigned int access = stat->st_mode & ACCESS_MASK;
+    if (stat->st_uid == uid) {
+        return (access & usr_mask) > 0;
+    } else if (group_count) {
+        bool group_found = false;
+        for (int i = 0; i < group_count; i++) {
+            int curr_grp = groups[i];
+            if (curr_grp == stat->st_gid) {
+                group_found = true;
+                break;  
+            }
+            if (group_found) {
+                return (access & grp_mask) > 0;
+            }
+        }
+    }
+    return (access & all_mask) > 0;
+}
+
+bool can_read(const struct stat *stat) {
+    return can(stat, ALL_R, GRP_R, USR_R);
+}
+
+bool can_write(const struct stat *stat) {
+    return can(stat, ALL_W, GRP_W, USR_W);
+}
+
+bool can_exec(const struct stat *stat) {
+    return can(stat, ALL_X, GRP_X, USR_X);
+}
+
