@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
     private String userName;
     private final boolean manageUser;
     private boolean searchTools;
+    private boolean checkACL;
 
     public CreateHostData(ToolsCacheManager toolsCacheManager, boolean manageUser) {
         this.cacheManager = toolsCacheManager;
@@ -106,6 +107,14 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
         this.searchTools = searchTools;
     }
 
+    public boolean isACLEnabled() {
+        return checkACL;
+    }
+
+    public void enableACL(boolean enable) {
+        this.checkACL = enable;
+    }
+    
     @Override
     public String toString() {
         return "CreateHostData " + hostName + ':' + port; // NOI18N

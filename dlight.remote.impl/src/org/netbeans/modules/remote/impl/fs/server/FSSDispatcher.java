@@ -83,8 +83,10 @@ import org.netbeans.modules.remote.impl.fs.RefreshManager;
 import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -127,11 +129,14 @@ import org.openide.util.RequestProcessor;
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.6.2"; // NOI18N
+    private volatile FileSystemProvider.AccessCheckType accessCheckType;
+    
+    private static final String MIN_SERVER_VERSION = "1.7.0"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
+        accessCheckType = restoreAccessCheckType();
     }
     
     public void setCleanupUponStart(boolean cleanup) {
@@ -183,6 +188,55 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             ex.printStackTrace(System.err);
         }
+    }
+
+    private void sendAccessTypeChangeRequest(FileSystemProvider.AccessCheckType accessCheckType) {
+        String option;
+        switch (accessCheckType) {
+            case FAST:
+                option = "access=fast"; //NOI18N
+                break;
+            case FULL:
+                option = "access=full"; //NOI18N
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected access check type" + accessCheckType.name()); //NOI18N
+        }
+        
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_OPTION, option, true);
+        FsServer server = getServer();
+        if (server != null) {
+            sendRequest(server.getWriter(), req);
+        }
+    }
+
+    private static FileSystemProvider.AccessCheckType restoreAccessCheckType() {
+        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FULL;
+        String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name());
+        if (name != null) {
+            try {
+                result = FileSystemProvider.AccessCheckType.valueOf(name);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
+    }
+
+    private static void storeAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+        NbPreferences.forModule(FSSDispatcher.class).put("accessCheckType", accessCheckType.name());
+    }
+
+    public void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+        storeAccessCheckType(accessCheckType);
+        this.accessCheckType = accessCheckType;
+        if (getServer() != null) {
+            sendAccessTypeChangeRequest(accessCheckType);
+        }
+    }
+
+    FileSystemProvider.AccessCheckType getAccessCheckType() {
+        return accessCheckType;
     }
 
     private class RefreshTask implements Runnable {
@@ -556,6 +610,9 @@ import org.openide.util.RequestProcessor;
             RemoteLogger.assertTrue(respId == infoReq.getId());
             String rest = buf.getRest().trim();
             checkVersions(MIN_SERVER_VERSION, rest);
+            if (accessCheckType != FileSystemProvider.AccessCheckType.FULL) {
+                sendAccessTypeChangeRequest(accessCheckType);
+            }
         }
     }
 

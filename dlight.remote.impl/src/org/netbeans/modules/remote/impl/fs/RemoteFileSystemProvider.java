@@ -494,4 +494,19 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         // instance check is in isMine
         return ((RemoteFileObject) fo).getInputStream(maxSize);
     }
+    
+    @Override
+    public boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
+        return RemoteFileSystemTransport.canSetAccessCheckType(execEnv);
+    }
+
+    @Override
+    public void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
+        RemoteFileSystemTransport.setAccessCheckType(execEnv, accessCheckType);
+    }
+    
+    @Override
+    public FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
+        return RemoteFileSystemTransport.getAccessCheckType(execEnv);
+    }
 }
