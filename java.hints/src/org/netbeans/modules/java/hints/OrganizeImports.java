@@ -190,16 +190,31 @@ public class OrganizeImports {
             toImport.addAll(addImports);
             imps.addAll(cu.getImports());
         } else if (!toImport.isEmpty() || isBulkMode) {
+            // track import star import scopes, so only one star import/scope appears in imps - #251977
+            Set<Element> starImportScopes = new HashSet<>();
             Trees trees = copy.getTrees();
             for (ImportTree importTree : cu.getImports()) {
                 Tree qualIdent = importTree.getQualifiedIdentifier();
                 if (qualIdent.getKind() == Tree.Kind.MEMBER_SELECT && "*".contentEquals(((MemberSelectTree)qualIdent).getIdentifier())) {
+                    ImportTree imp = null;
+                    Element importedScope = trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()));
+                    
                     if (importTree.isStatic()) {
-                        if (staticStarImports != null && staticStarImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                            imps.add(maker.Import(qualIdent, true));
+                        if (staticStarImports != null && 
+                            staticStarImports.contains(importedScope) &&
+                            !starImportScopes.contains(importedScope)) {
+                            imp = maker.Import(qualIdent, true);
+                        }
                     } else {
-                        if (starImports != null && starImports.contains(trees.getElement(TreePath.getPath(cu, ((MemberSelectTree)qualIdent).getExpression()))))
-                            imps.add(maker.Import(qualIdent, false));
+                        if (starImports != null && 
+                            starImports.contains(importedScope) &&
+                            !starImportScopes.contains(importedScope)) {
+                            imp = maker.Import(qualIdent, false);
+                        }
+                    }
+                    if (imp != null) {
+                        starImportScopes.add(importedScope);
+                        imps.add(imp);
                     }
                 }
             }

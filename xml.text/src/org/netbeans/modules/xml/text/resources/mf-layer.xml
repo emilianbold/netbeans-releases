@@ -203,6 +203,14 @@ made subject to such option by the copyright holder.
                         <file name="xml-uncomment"/>
                     </folder> <!__ Default __>
                 </folder> -->
+                <folder name="SideBar">
+                    <file name="breadcrumbs.instance">
+                        <attr name="location" stringvalue="South"/>
+                        <attr name="position" intvalue="5237"/>
+                        <attr name="scrollable" boolvalue="false"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController.createSideBarFactory" />
+                    </file>
+                </folder>
             </folder> <!-- xml -->
 
             <folder name="xml-external-parsed-entity">

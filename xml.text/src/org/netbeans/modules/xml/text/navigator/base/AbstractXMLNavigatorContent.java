@@ -135,7 +135,19 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         });
     }
     
-    public void showError(String message) {
+    protected boolean isLoading() {
+        return false;
+    }
+    
+    public void showError(final String message) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    showError(message);
+                }
+            });
+            return;
+        }
         removeAll();
         msgLabel.setIcon(null);
         msgLabel.setForeground(Color.GRAY);
@@ -147,6 +159,19 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
     }
     
     public void showWaitPanel() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    if (!isLoading()) {
+                        return;
+                    }
+                    showWaitPanel();
+                }
+                
+            });
+        }
         removeAll();
         if (waitIcon == null) {
             waitIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/xml/text/navigator/resources/wait.gif", false); //NOI18N
