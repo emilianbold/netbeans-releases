@@ -226,8 +226,11 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         Language language = Language.valueOf(langStr.toString());
         switch (language) {
             case C:
-            case C_HEADER:
                 out = InputKind.IK_C;
+                break;
+            case C_HEADER:
+                // for headers use C++
+                out = InputKind.IK_CXX;
                 break;
             case CPP:
                 out = InputKind.IK_CXX;
