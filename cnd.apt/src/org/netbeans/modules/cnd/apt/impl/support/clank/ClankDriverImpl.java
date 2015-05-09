@@ -70,6 +70,20 @@ public class ClankDriverImpl {
 
     static final boolean TRACE = false;
 
+    public static void invalidateImpl(CharSequence absPath) {
+        ClankPreprocessorServices.invalidate(absPath);
+    }
+
+    public static void invalidateImpl(APTFileBuffer buffer) {
+        // TODO: split by file system?
+        invalidateImpl(buffer.getAbsolutePath());
+    }
+
+    public static void invalidateAllImpl() {
+        // TODO: split by file system?
+        ClankPreprocessorServices.invalidateAll();
+    }
+    
     public static boolean preprocessImpl(APTFileBuffer buffer,
             PreprocHandler ppHandler,
             final ClankDriver.ClankPreprocessorCallback callback,

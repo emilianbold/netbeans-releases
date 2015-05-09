@@ -102,6 +102,7 @@ import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -2516,6 +2517,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     impl.dispose();
                     final FileBuffer buf = impl.getBuffer();
                     APTDriver.invalidateAPT(buf);
+                    ClankDriver.invalidate(buf);
                     APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                     ParserQueue.instance().remove(impl);
                     if (CndTraceFlags.TEXT_INDEX) {

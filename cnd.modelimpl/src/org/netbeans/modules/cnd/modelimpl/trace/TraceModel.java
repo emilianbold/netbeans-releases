@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludePathStorage;
 import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -165,6 +166,7 @@ public class TraceModel extends TraceModelBase {
     public static void main(String[] args) {
         new TraceModel(true).test(args);
         APTDriver.close();
+        ClankDriver.close();
         APTFileCacheManager.close();
     //System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
@@ -1105,10 +1107,12 @@ public class TraceModel extends TraceModelBase {
         if (firstFile == null || firstFile.equalsIgnoreCase(absPath)) {
             firstFile = absPath;
             APTDriver.invalidateAll();
+            ClankDriver.invalidateAll();
             APTFileCacheManager.invalidateAll();
             getProject().debugInvalidateFiles();
         } else {
             APTDriver.invalidateAPT(buffer);
+            ClankDriver.invalidate(buffer);
             APTFileCacheManager.getInstance(buffer.getFileSystem()).invalidate(buffer.getAbsolutePath());
         }
     }

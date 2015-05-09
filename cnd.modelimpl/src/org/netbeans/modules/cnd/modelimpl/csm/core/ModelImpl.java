@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -822,6 +823,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
         APTDriver.close();
+        ClankDriver.close();
         APTFileCacheManager.close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
@@ -834,6 +836,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     public void scheduleReparse(Collection<CsmProject> projects) {
         CndFileUtils.clearFileExistenceCache();
         ParserQueue.instance().clearParseWatch();
+        ClankDriver.invalidateAll();
         APTFileCacheManager.invalidateAll();
         Collection<LibProjectImpl> libs = new HashSet<>();
         Collection<ProjectBase> toReparse = new HashSet<>();

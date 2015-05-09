@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.support.Interrupter;
  * @author Vladimir Voskresensky
  */
 public final class ClankDriver {
+
     private ClankDriver() {
     }
 
@@ -163,5 +164,19 @@ public final class ClankDriver {
       int getFileIndex();
       ClankInclusionDirective getInclusionDirective();
       int[] getSkippedRanges();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // state/cache related methods
+    public static void invalidate(APTFileBuffer buffer) {
+        ClankDriverImpl.invalidateImpl(buffer);
+    }
+
+    public static void invalidateAll() {
+        ClankDriverImpl.invalidateAllImpl();
+    }
+
+    public static void close() {
+        invalidateAll();
     }
 }

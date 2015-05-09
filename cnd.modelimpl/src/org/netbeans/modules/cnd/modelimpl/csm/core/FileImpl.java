@@ -96,6 +96,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -904,6 +905,7 @@ public final class FileImpl implements CsmFile,
             if (invalidateCache) {
                 final FileBuffer buf = this.getBuffer();
                 APTDriver.invalidateAPT(buf);
+                ClankDriver.invalidate(buf);
                 APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             }
         }
@@ -2097,6 +2099,7 @@ public final class FileImpl implements CsmFile,
         tsRef.clear();
         stateCache.clearStateCache();
         final FileBuffer buf = this.getBuffer();
+        ClankDriver.invalidate(buf);
         APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
 
     }
