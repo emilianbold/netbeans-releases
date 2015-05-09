@@ -161,7 +161,15 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
                 CharSequence textID = ClankToAPTUtils.getTokenText(token, PP, spell);
                 int literalType = aptTokenType;
                 if (aptTokenType > APTTokenTypes.FIRST_LITERAL_TOKEN && aptTokenType < APTTokenTypes.LAST_LITERAL_TOKEN) {
+                    // convert all keywords into IDENT, then it should be converted
+                    // to keyword by language filter
                     aptTokenType = APTTokenTypes.IDENT;
+                } else if (aptTokenType == APTTokenTypes.DECIMALINT) {
+                  // TODO: adjust numeric token kind by text
+                  // parser wants '0' to be OCTALINT for i.e. pure virtual methods
+                  if (textID.length() > 0 && textID.charAt(0) == '0') {
+                    aptTokenType = APTTokenTypes.OCTALINT;
+                  }
                 }
                 if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, tokenColumn, tokenLine, literalType)) {
                   CharSequence LiteText = APTConstTextToken.getConstTextID(literalType);
@@ -223,7 +231,7 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 
     @Override
     public String toString() {
-        return "ClankToAPTToken{" + "aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + '}';
+        return "ClankToAPTToken{offset=" + offset + "; aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + '}';
     }
 
     @Override
