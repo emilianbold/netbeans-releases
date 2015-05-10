@@ -145,6 +145,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
     private static final int DARKER_COLOR_COMPONENT = 15;
     private static final int LIGHTER_COLOR_COMPONENT = 80;
     private static final String PROP_HIGHLIGHT="jumpto.highlight";  //NOI18N
+    private static final String PROP_ITEMS="jumpto.highlight.all";  //NOI18N
     private static final String STRATEGY_BOLD="bold";       //NOI18N
     private static final String STRATEGY_COLOR="color";     //NOI18N
     private final HighlightStrategy highlightStrategy;
@@ -508,7 +509,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
 
         @Override
         public boolean isHighlightAll() {
-            return false;
+            return Boolean.getBoolean(PROP_ITEMS);
         }
 
         @NonNull

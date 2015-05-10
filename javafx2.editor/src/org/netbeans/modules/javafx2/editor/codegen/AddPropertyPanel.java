@@ -87,6 +87,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -155,19 +156,25 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         initComponents();
         typeComboBox.setSelectedIndex(WRITABLE_PROPS.length-1);
 
-        DocumentListener documentListener = new DocumentListener() {
-
-            public void insertUpdate(DocumentEvent e) {
+        class DL implements DocumentListener, Runnable {
+            @Override
+            public void run() {
                 updateType();
             }
 
+            public void insertUpdate(DocumentEvent e) {
+                SwingUtilities.invokeLater(this);
+            }
+
             public void removeUpdate(DocumentEvent e) {
-                updateType();
+                SwingUtilities.invokeLater(this);
             }
 
             public void changedUpdate(DocumentEvent e) {
             }
         };
+        
+        DocumentListener documentListener = new DL();
         nameTextField.getDocument().addDocumentListener(documentListener);
         ((JTextField) typeComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(documentListener);
         initializerTextField.getDocument().addDocumentListener(documentListener);
@@ -207,9 +214,21 @@ public class AddPropertyPanel extends javax.swing.JPanel {
             task = RP.post(running, 220);
         }
         
-        if(typeComboBox.getSelectedIndex() == -1) {
-            DeclaredType parseType = (DeclaredType) javac.getTreeUtilities().parseType(typeComboBox.getSelectedItem().toString(), scope.getEnclosingClass());
-            if(parseType.getKind() == TypeKind.ERROR) {
+        int index = findMatchingComboItem();
+
+        
+        if(index == -1 && !text.isEmpty()) {
+            int last = text.indexOf("<");
+            // if the type does not contain package (= simple name), prepend javafx.beans automatically
+            String qType = (last == -1 ? text :
+                    text.substring(0, last)).indexOf('.') == -1 ?
+                    "javafx.beans.property." + text : text;
+            TypeMirror parseType = javac.getTreeUtilities().parseType(text, scope.getEnclosingClass());
+            if (parseType == null || parseType.getKind() == TypeKind.ERROR || parseType.getKind() == TypeKind.OTHER) {
+                // 2nd attempt, 
+                parseType = javac.getTreeUtilities().parseType(qType, scope.getEnclosingClass());
+            }
+            if (parseType == null || parseType.getKind() == TypeKind.ERROR || parseType.getKind() == TypeKind.OTHER) {
                 writableRadioButton.setEnabled(true);
                 readonlyRadioButton.setEnabled(true);
             } else {
@@ -267,7 +286,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
     
     public AddFxPropertyConfig getAddPropertyConfig() {
         final String propertyType = typeComboBox.getSelectedItem().toString().trim();
-        final String implementationType = implemenationCombobox.getSelectedItem().toString().trim();
+        String implementationType = implemenationCombobox.getSelectedItem().toString().trim();
         final String name = nameTextField.getText().trim();
         final String initializer = initializerTextField.getText().trim();
         AddFxPropertyConfig.ACCESS access = AddFxPropertyConfig.ACCESS.PACKAGE;
@@ -282,6 +301,18 @@ public class AddPropertyPanel extends javax.swing.JPanel {
         AddFxPropertyConfig.GENERATE generate = AddFxPropertyConfig.GENERATE.WRITABLE;
         if (!writableRadioButton.isSelected()) {
             generate = AddFxPropertyConfig.GENERATE.READ_ONLY;
+        }
+        
+        if (implementationType.indexOf('<') != -1) { // NOI18N
+            if (javac.getSourceVersion().compareTo(SourceVersion.RELEASE_7) >= 0) {
+                // TODO: apply coding style ?
+                implementationType = implementationType.substring(0, implementationType.indexOf('<')) + "<>"; // NOI18N
+            } else {
+                int propTemplate = propertyType.indexOf("<"); // NOI18N
+                if (propTemplate != -1) {
+                    implementationType = implementationType.substring(0, implementationType.indexOf('<')) + propertyType.substring(propTemplate);
+                }
+            }
         }
 
         AddFxPropertyConfig addPropertyConfig = new AddFxPropertyConfig(
@@ -585,16 +616,50 @@ public class AddPropertyPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton writableRadioButton;
     // End of variables declaration//GEN-END:variables
 
-    private void switchType(boolean writable) {
+    private int findMatchingComboItem() {
         int index = typeComboBox.getSelectedIndex();
-        if(index >= 0) {
-            if(writable) {
-                typeComboBox.setModel(new DefaultComboBoxModel(WRITABLE_PROPS));
-                typeComboBox.setSelectedIndex(index);
-            } else {
-                typeComboBox.setModel(new DefaultComboBoxModel(READONLY_PROPS));
-                typeComboBox.setSelectedIndex(index);
+        if (index >= 0) {
+            return index;
+        }
+        String orig = typeComboBox.getSelectedItem().toString();
+        String s = orig;
+        int last = s.indexOf("<");
+        if (last > -1) {
+            s = s.substring(0, last);
+        }
+        ComboBoxModel mdl = typeComboBox.getModel();
+        for (int i = 0; i < mdl.getSize(); i++) {
+            String t = mdl.getElementAt(i).toString();
+            if (t.equals(s) ||
+                (t.startsWith(s) && t.length() > last && t.charAt(last) == orig.charAt(last))) {
+                return i;
             }
+        }
+        return -1;
+    }
+    
+    private void switchType(boolean writable) {
+        int index = findMatchingComboItem();
+        if (index == -1) {
+            return;
+        }
+        String s = typeComboBox.getSelectedItem().toString();
+        int last = s.indexOf("<");
+        String suffix = last == -1 ? "" : s.substring(last);
+        if(writable) {
+            typeComboBox.setModel(new DefaultComboBoxModel(WRITABLE_PROPS));
+            typeComboBox.setSelectedIndex(index);
+        } else {
+            typeComboBox.setModel(new DefaultComboBoxModel(READONLY_PROPS));
+            typeComboBox.setSelectedIndex(index);
+        }
+        if (last != -1) {
+            String newType = typeComboBox.getSelectedItem().toString();
+            int idx = newType.indexOf("<?>");
+            if (idx != -1) {
+                newType = newType.substring(0, idx) + suffix;
+            }
+            typeComboBox.setSelectedItem(newType);
         }
     }
 
@@ -738,9 +803,10 @@ public class AddPropertyPanel extends javax.swing.JPanel {
                             int prevIndex = implemenationCombobox.getSelectedIndex();
                             Object prevItem = implemenationCombobox.getSelectedItem();
                             implemenationCombobox.setModel(fmodel);
-                            if(prevIndex == -1) {
+                            int typeIndex = findMatchingComboItem();
+                                if(prevIndex == -1) {
                                 implemenationCombobox.setSelectedItem(prevItem);
-                            } else if(typeComboBox.getSelectedIndex() >= 0) {
+                            } else if(typeIndex >= 0) {
                                 int index = -1;
                                 if(writableRadioButton.isSelected()) {
                                     for (int i = 0; i < types.size(); i++) {
