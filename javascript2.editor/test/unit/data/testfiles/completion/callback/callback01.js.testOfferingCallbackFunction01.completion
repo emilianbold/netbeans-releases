@@ -164,7 +164,6 @@ CLASS      UIEvent                         [PUBLIC]   JS Platform
 CLASS      UserDataHandler                 [PUBLIC]   JS Platform
 CLASS      ViewCSS                         [PUBLIC]   JS Platform
 CLASS      Window                          [PUBLIC]   JS Platform
-CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     Image                           [PUBLIC,   JS Platform
 METHOD     Option                          [PUBLIC,   JS Platform
 METHOD     SyntaxError                     [PUBLIC]   JS Platform

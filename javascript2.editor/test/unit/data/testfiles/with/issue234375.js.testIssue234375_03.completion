@@ -2,7 +2,6 @@ Code completion result for source line:
 p| // cc doesn't offer e.g. pull() or push()
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     parseFloat(string: String): Nu  [PUBLIC]   JS Platform
 METHOD     parseInt(string: String): Numb  [PUBLIC]   JS Platform
 METHOD     pop(): Object                   [PUBLIC]   JS Platform

@@ -55,10 +55,9 @@ import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -90,6 +89,8 @@ import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.web.common.api.ExternalExecutable;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.netbeans.modules.web.common.api.Version;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -265,14 +266,16 @@ public class NodeExecutable {
         "NodeExecutable.run=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> run(File script, String args) {
+    public AtomicReference<Future<Integer>> run(File script, String args) {
         assert project != null;
         String projectName = NodeJsUtils.getProjectDisplayName(project);
+        AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getRunParams(script, args))
-                .run(getDescriptor());
+                .run(getDescriptor(taskRef));
         assert task != null : nodePath;
-        return task;
+        taskRef.set(task);
+        return taskRef;
     }
 
     @NbBundle.Messages({
@@ -280,52 +283,16 @@ public class NodeExecutable {
         "NodeExecutable.debug=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> debug(int port, File script, String args) throws IOException {
+    public AtomicReference<Future<Integer>> debug(int port, File script, String args) {
         assert project != null;
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Runnable countDownTask = new Runnable() {
-            @Override
-            public void run() {
-                countDownLatch.countDown();
-            }
-        };
         String projectName = NodeJsUtils.getProjectDisplayName(project);
+        AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
         final Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getDebugParams(port, script, args))
-                .run(getDescriptor(countDownTask));
+                .run(getDescriptor(taskRef, new DebugInfo(project, taskRef, port)));
         assert task != null : nodePath;
-        try {
-            countDownLatch.await(5, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        Connector.Properties props = createConnectorProperties("localhost", port, project); // NOI18N
-        Connector.connect(props, new Runnable() {
-            @Override
-            public void run() {
-                task.cancel(true);
-            }
-        });
-        return task;
-    }
-
-    private static Connector.Properties createConnectorProperties(String host, int port, Project project) {
-        List<File> sourceRoots = NodeJsUtils.getSourceRoots(project);
-        List<File> siteRoots = NodeJsUtils.getSiteRoots(project);
-        List<String> localPaths = new ArrayList<>(sourceRoots.size());
-        List<String> localPathsExclusionFilter = Collections.EMPTY_LIST;
-        for (File src : sourceRoots) {
-            localPaths.add(src.getAbsolutePath());
-            for (File site : siteRoots) {
-                if (FileUtils.isSubdirectoryOf(src, site) && !src.equals(site)) {
-                    if (localPathsExclusionFilter.isEmpty()) {
-                        localPathsExclusionFilter = new ArrayList<>();
-                    }
-                    localPathsExclusionFilter.add(site.getAbsolutePath());
-                }
-            }
-        }
-        return new Connector.Properties(host, port, localPaths, Collections.EMPTY_LIST, localPathsExclusionFilter);
+        taskRef.set(task);
+        return taskRef;
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -337,13 +304,14 @@ public class NodeExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getDescriptor() {
-        return getDescriptor(null);
+    private ExecutionDescriptor getDescriptor(AtomicReference<Future<Integer>> taskRef) {
+        return getDescriptor(taskRef, null);
     }
 
-    private ExecutionDescriptor getDescriptor(@NullAllowed Runnable debuggerStartTask) {
+    private ExecutionDescriptor getDescriptor(final AtomicReference<Future<Integer>> taskRef, @NullAllowed final DebugInfo debugInfo) {
         assert project != null;
-        final boolean rerunPossible = debuggerStartTask == null;
+        assert taskRef != null;
+        final boolean rerunPossible = debugInfo == null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
@@ -351,7 +319,7 @@ public class NodeExecutable {
                 .optionsPath(NodeJsOptionsPanelController.OPTIONS_PATH)
                 .outLineBased(true)
                 .errLineBased(true)
-                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debuggerStartTask))
+                .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debugInfo))
                 .rerunCondition(new ExecutionDescriptor.RerunCondition() {
                     @Override
                     public void addChangeListener(ChangeListener listener) {
@@ -365,7 +333,13 @@ public class NodeExecutable {
                     public boolean isRerunPossible() {
                         return rerunPossible;
                     }
-                });
+                })
+                /*.rerunCallback(new ExecutionDescriptor.RerunCallback() {
+                    @Override
+                    public void performed(Future<Integer> task) {
+                        taskRef.set(task);
+                    }
+                })*/;
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -511,13 +485,13 @@ public class NodeExecutable {
     private static final class LineConvertorFactoryImpl implements ExecutionDescriptor.LineConvertorFactory {
 
         private final List<URL> sourceRoots;
-        private final Runnable debuggerStartTask;
+        private final DebugInfo debugInfo;
 
 
-        public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed Runnable debuggerStartTask) {
+        public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed DebugInfo debugInfo) {
             assert sourceRoots != null;
             this.sourceRoots = sourceRoots;
-            this.debuggerStartTask = debuggerStartTask;
+            this.debugInfo = debugInfo;
         }
 
         @Override
@@ -530,7 +504,7 @@ public class NodeExecutable {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
-            return new LineConvertorImpl(new FileLineParser(files), debuggerStartTask);
+            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
         }
 
     }
@@ -538,24 +512,44 @@ public class NodeExecutable {
     private static final class LineConvertorImpl implements LineConvertor {
 
         private final FileLineParser fileLineParser;
+        private final DebugInfo debugInfo;
 
+        volatile boolean debugging = false;
         // @GuardedBy("thread")
-        private Runnable debuggerStartTask;
+        int lineCount = 0;
 
 
-        public LineConvertorImpl(FileLineParser fileLineParser, @NullAllowed Runnable debuggerStartTask) {
+        public LineConvertorImpl(FileLineParser fileLineParser, @NullAllowed DebugInfo debugInfo) {
             assert fileLineParser != null;
             this.fileLineParser = fileLineParser;
-            this.debuggerStartTask = debuggerStartTask;
+            this.debugInfo = debugInfo;
         }
 
         @Override
         public List<ConvertedLine> convert(String line) {
             // debugger?
-            if (debuggerStartTask != null
-                    && line.toLowerCase(Locale.US).startsWith("debugger listening on port")) { // NOI18N
-                debuggerStartTask.run();
-                debuggerStartTask = null;
+            if (debugInfo != null
+                    && !debugging) {
+                lineCount++;
+                if (line.toLowerCase(Locale.US).startsWith("debugger listening on port") // NOI18N
+                        || lineCount == 3) {
+                    // wait for the proper debugger line or start on some specific line count (if the node.js output changes)
+                    lineCount = 0;
+                    Connector.Properties props = createConnectorProperties("localhost", debugInfo.port, debugInfo.project); // NOI18N
+                    try {
+                        Connector.connect(props, new Runnable() {
+                            @Override
+                            public void run() {
+                                debugging = false;
+                                debugInfo.taskRef.get().cancel(true);
+                            }
+                        });
+                        debugging = true;
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, "cannot run node.js debugger", ex);
+                        warnCannotDebug(ex);
+                    }
+                }
             }
             // process output
             OutputListener outputListener = null;
@@ -564,6 +558,34 @@ public class NodeExecutable {
                 outputListener = new FileOutputListener(fileLine.first(), fileLine.second());
             }
             return Collections.singletonList(ConvertedLine.forText(line, outputListener));
+        }
+
+        private static Connector.Properties createConnectorProperties(String host, int port, Project project) {
+            List<File> sourceRoots = NodeJsUtils.getSourceRoots(project);
+            List<File> siteRoots = NodeJsUtils.getSiteRoots(project);
+            List<String> localPaths = new ArrayList<>(sourceRoots.size());
+            List<String> localPathsExclusionFilter = Collections.EMPTY_LIST;
+            for (File src : sourceRoots) {
+                localPaths.add(src.getAbsolutePath());
+                for (File site : siteRoots) {
+                    if (FileUtils.isSubdirectoryOf(src, site) && !src.equals(site)) {
+                        if (localPathsExclusionFilter.isEmpty()) {
+                            localPathsExclusionFilter = new ArrayList<>();
+                        }
+                        localPathsExclusionFilter.add(site.getAbsolutePath());
+                    }
+                }
+            }
+            return new Connector.Properties(host, port, localPaths, Collections.EMPTY_LIST, localPathsExclusionFilter);
+        }
+
+        @NbBundle.Messages({
+            "# {0} - reason",
+            "LineConvertorImpl.warn.debug=Cannot run debugger. Reason:\n\n{0}",
+        })
+        protected void warnCannotDebug(IOException ex) {
+            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(Bundle.LineConvertorImpl_warn_debug(ex), NotifyDescriptor.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(descriptor);
         }
 
     }
@@ -637,6 +659,23 @@ public class NodeExecutable {
                 }
             }
             return null;
+        }
+
+    }
+
+    private static final class DebugInfo {
+
+        public final Project project;
+        public final AtomicReference<Future<Integer>> taskRef;
+        public final int port;
+
+
+        public DebugInfo(Project project, AtomicReference<Future<Integer>> taskRef, int port) {
+            assert project != null;
+            assert taskRef != null;
+            this.project = project;
+            this.taskRef = taskRef;
+            this.port = port;
         }
 
     }

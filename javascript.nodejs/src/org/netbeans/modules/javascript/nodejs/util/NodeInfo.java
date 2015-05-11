@@ -42,24 +42,26 @@
 package org.netbeans.modules.javascript.nodejs.util;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 
 public final class NodeInfo {
 
-    private final Future<Integer> currentNodeTask;
+    private final AtomicReference<Future<Integer>> currentNodeTask;
     private final boolean debug;
 
 
-    private NodeInfo(@NullAllowed Future<Integer> currentNodeTask, boolean debug) {
+    private NodeInfo(@NullAllowed AtomicReference<Future<Integer>> currentNodeTask, boolean debug) {
         this.currentNodeTask = currentNodeTask;
         this.debug = debug;
     }
 
-    public static NodeInfo run(@NullAllowed Future<Integer> currentNodeTask) {
+    public static NodeInfo run(@NullAllowed AtomicReference<Future<Integer>> currentNodeTask) {
         return new NodeInfo(currentNodeTask, false);
     }
 
-    public static NodeInfo debug(@NullAllowed Future<Integer> currentNodeTask) {
+    public static NodeInfo debug(@NullAllowed AtomicReference<Future<Integer>> currentNodeTask) {
         return new NodeInfo(currentNodeTask, true);
     }
 
@@ -72,18 +74,28 @@ public final class NodeInfo {
     }
 
     public boolean isRunning() {
-        return currentNodeTask != null
-                && !currentNodeTask.isDone();
+        Future<Integer> nodeTask = getCurrentNodeTask();
+        return nodeTask != null
+                && !nodeTask.isDone();
     }
 
     public void stop() {
-        assert currentNodeTask != null;
-        currentNodeTask.cancel(true);
+        Future<Integer> nodeTask = getCurrentNodeTask();
+        assert nodeTask != null;
+        nodeTask.cancel(true);
         try {
             Thread.sleep(250);
         } catch (InterruptedException ex) {
             // noop
         }
+    }
+
+    @CheckForNull
+    private Future<Integer> getCurrentNodeTask() {
+        if (currentNodeTask == null) {
+            return null;
+        }
+        return currentNodeTask.get();
     }
 
 }
