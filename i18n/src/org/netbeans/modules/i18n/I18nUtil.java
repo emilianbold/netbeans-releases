@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 public final class I18nUtil {
 
     /** Help ID for i18n module in general. */
-    public static final String HELP_ID_I18N = "internation.internation"; // NOI18N
+    public static final String HELP_ID_I18N = "internation.internation";
     /** Help ID for I18N dialog. */
     public static final String HELP_ID_AUTOINSERT = "internation.autoinsert"; // NOI18N
     /** Help ID for Insert I18N dialog. */
@@ -80,6 +80,15 @@ public final class I18nUtil {
     public static final String HELP_ID_REPLFORMAT = "internation.replformat"; // NOI18N
     /** Help ID for Locale execution. */
     public static final String HELP_ID_RUNLOCALE = "internation.runlocale"; // NOI18N
+    
+    public static final String HELP_ID_SELECTSOURCES         = "internation.SelectSources"; // NOI18N
+    public static final String HELP_ID_SELECTRESOURCE        = "internation.SelectResource"; // NOI18N
+    public static final String HELP_ID_ADDITIONAL            = "internation.Additional"; // NOI18N
+    public static final String HELP_ID_FOUNDSTRINGS          = "internation.FoundStrings"; // NOI18N
+    
+    public static final String HELP_ID_SELECTTESTSOURCES     = "internation.SelectTestSources"; // NOI18N
+    public static final String HELP_ID_SELECTTESTRESOURCE    = "internation.SelectTestResource"; // NOI18N
+    public static final String HELP_ID_FOUNDMISSINGRESOURCES = "internation.FoundMissingResources"; // NOI18N
     
     /** Help ID for property editor */
     public static final String PE_REPLACE_CODE_HELP_ID = "i18n.pe.replacestring"; // NOI18N

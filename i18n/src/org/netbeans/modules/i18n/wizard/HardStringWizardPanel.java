@@ -135,6 +135,8 @@ final class HardStringWizardPanel extends JPanel implements ListSelectionListene
         initTable();
 
         initAccessibility();
+        
+        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_FOUNDSTRINGS);
     }
 
     @Override
