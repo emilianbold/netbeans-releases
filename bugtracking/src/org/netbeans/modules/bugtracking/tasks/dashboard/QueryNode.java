@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
@@ -110,14 +111,24 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     @Override
     void updateCounts() {
         if (panel != null) {
-            int count = getChangedTaskCount();
+            final String totalString;
+            final String changedString;
+            final int count;
             synchronized (LOCK) {
-                btnTotal.setText(getTotalString());
-                btnChanged.setText(getChangedString(count));
-                boolean showChanged = count > 0;
-                lblSeparator.setVisible(showChanged);
-                btnChanged.setVisible(showChanged);
+                count = getChangedTaskCount();
+                totalString = getTotalString();
+                changedString = getChangedString(count);
             }
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    btnTotal.setText(totalString);
+                    btnChanged.setText(changedString);
+                    boolean showChanged = count > 0;
+                    lblSeparator.setVisible(showChanged);
+                    btnChanged.setVisible(showChanged);
+                }
+            });
         }
     }
 
@@ -136,14 +147,21 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
+            final boolean containsActiveTask;
             synchronized(LOCK) {
-                if (DashboardViewer.getInstance().containsActiveTask(this)) {
-                    lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
-                } else {
-                    lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
-                }
-                lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
+                containsActiveTask = DashboardViewer.getInstance().containsActiveTask(this);
             }
+            UIUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    if (containsActiveTask) {
+                        lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+                    } else {
+                        lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
+                    }
+                    lblStalled.setForeground(ColorManager.getTheInstance().getDisabledColor());
+                }
+            });
         }
     }
 
