@@ -515,6 +515,8 @@ public class NodeExecutable {
         private final DebugInfo debugInfo;
 
         volatile boolean debugging = false;
+        // @GuardedBy("thread")
+        int lineCount = 0;
 
 
         public LineConvertorImpl(FileLineParser fileLineParser, @NullAllowed DebugInfo debugInfo) {
@@ -527,21 +529,26 @@ public class NodeExecutable {
         public List<ConvertedLine> convert(String line) {
             // debugger?
             if (debugInfo != null
-                    && !debugging
-                    && line.toLowerCase(Locale.US).startsWith("debugger listening on port")) { // NOI18N
-                Connector.Properties props = createConnectorProperties("localhost", debugInfo.port, debugInfo.project); // NOI18N
-                try {
-                    Connector.connect(props, new Runnable() {
-                        @Override
-                        public void run() {
-                            debugging = false;
-                            debugInfo.taskRef.get().cancel(true);
-                        }
-                    });
-                    debugging = true;
-                } catch (IOException ex) {
-                    LOGGER.log(Level.INFO, "cannot run node.js debugger", ex);
-                    warnCannotDebug(ex);
+                    && !debugging) {
+                lineCount++;
+                if (line.toLowerCase(Locale.US).startsWith("debugger listening on port") // NOI18N
+                        || lineCount == 3) {
+                    // wait for the proper debugger line or start on some specific line count (if the node.js output changes)
+                    lineCount = 0;
+                    Connector.Properties props = createConnectorProperties("localhost", debugInfo.port, debugInfo.project); // NOI18N
+                    try {
+                        Connector.connect(props, new Runnable() {
+                            @Override
+                            public void run() {
+                                debugging = false;
+                                debugInfo.taskRef.get().cancel(true);
+                            }
+                        });
+                        debugging = true;
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.INFO, "cannot run node.js debugger", ex);
+                        warnCannotDebug(ex);
+                    }
                 }
             }
             // process output
