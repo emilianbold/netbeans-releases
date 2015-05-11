@@ -947,9 +947,14 @@ public class XmlLexerParser implements ContentLocator {
         }
         if (quote == '\'' || quote == '"') { // NOI18N
             if (s.charAt(s.length() - 1) == quote) {
-                s = s.subSequence(1, s.length() - 1);
                 valStart++;
-                valEnd--;
+                // also handle opening quote with no content (yet)
+                if (s.length() > 1) {
+                    valEnd--;
+                    s = s.subSequence(1, s.length() - 1);
+                } else {
+                    s = ""; // NOI18N
+                }
             } else if (t == null || t.id() == XMLTokenId.ERROR) {
                 // strip at least 1st quote in case of an error
                 s = s.subSequence(1, s.length());

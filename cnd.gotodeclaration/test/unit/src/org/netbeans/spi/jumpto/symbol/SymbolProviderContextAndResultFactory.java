@@ -57,7 +57,7 @@ public class SymbolProviderContextAndResultFactory {
         return new SymbolProvider.Context(project, text, searchType);
     }
 
-    public static SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, SymbolProvider.Context ctx) {
-        return new SymbolProvider.Result(result, new String[] {""}, ctx);
+    public static SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, SymbolProvider.Context ctx, SymbolProvider provider) {
+        return new SymbolProvider.Result(result, new String[] {""}, ctx, provider);
     }
 }

@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.BadLocationException;
@@ -478,11 +479,15 @@ public class JavaI18nFinder implements I18nFinder {
         try {
             Position hardStringStart = document.createPosition(currentStringStart);
             Position hardStringEnd = document.createPosition(currentStringEnd);
-            if (restOfLine.contains(";")) { // NOI18N
-                restOfLine = restOfLine.substring(0, restOfLine.indexOf(";")); // NOI18N
-            }
+            
+            // get rest of statement. Stmt ends on , or ; outside of string.
+            String regex = "[%s](?=([^\"]*\"[^\"]*\")*[^\"]*$)"; 
+            String[] tokens = restOfLine.split(String.format(regex, ",;"), -1);
+            restOfLine = tokens[0];
+            
+            // Remove last "
             hardString = hardString.substring(0, hardString.length() - 1);
-            String[] splits = restOfLine.substring(1).split("\\+"); // NOI18N
+            String[] splits = restOfLine.substring(1).split(String.format(regex, "\\+"), -1); // NOI18N
             String split = ""; // NOI18N
             for (int i = 0; i < splits.length; i++) {
                 split = splits[i];

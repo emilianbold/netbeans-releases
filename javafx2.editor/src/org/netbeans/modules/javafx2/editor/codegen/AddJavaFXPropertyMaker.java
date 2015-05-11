@@ -156,9 +156,24 @@ public class AddJavaFXPropertyMaker {
             selectedType = (DeclaredType) treeUtilities.parseType("javafx.beans.property." + type, scope.getEnclosingClass());
         }
         TypeMirror valueType = findValueType(selectedType);
-        DeclaredType implementationType = (DeclaredType) treeUtilities.parseType(config.getImplementationType(), scope.getEnclosingClass());
+        
+        // hack: javac.parseType cannot handle diamond operator. If diamond is present
+        // strip it, and then decorate the TypeTree
+        String implTypeDef = config.getImplementationType();
+        int diamond = implTypeDef.indexOf("<>"); // NOI18N
+        if (diamond > -1) {
+            implTypeDef = implTypeDef.substring(0, diamond);
+        }
+        DeclaredType implementationType = (DeclaredType) treeUtilities.parseType(implTypeDef, scope.getEnclosingClass());
         if (implementationType == null || implementationType.getKind() == TypeKind.ERROR) {
-            implementationType = (DeclaredType) treeUtilities.parseType("javafx.beans.property." + config.getImplementationType(), scope.getEnclosingClass());
+            implementationType = (DeclaredType) treeUtilities.parseType("javafx.beans.property." + implTypeDef, scope.getEnclosingClass());
+        }
+        ExpressionTree implTypeTree;
+        
+        if (diamond != -1) {
+            implTypeTree = (ExpressionTree)make.ParameterizedType(make.Type(implementationType), Collections.<Tree>emptyList());
+        } else {
+            implTypeTree = getTypeTree(implementationType);
         }
         boolean writable = config.getGenerate() == AddFxPropertyConfig.GENERATE.WRITABLE;
 
@@ -166,7 +181,7 @@ public class AddJavaFXPropertyMaker {
         VariableTree field;
         ExecutableElement wrapperMethod = null;
         if (writable || implementationType == null) {
-            field = createField(selectedType, implementationType);
+            field = createField(selectedType, implTypeTree);
         } else {
             List<? extends ExecutableElement> methods = ElementFilter.methodsIn(javac.getElements().getAllMembers((TypeElement) implementationType.asElement()));
             for (ExecutableElement method : methods) {
@@ -182,9 +197,9 @@ public class AddJavaFXPropertyMaker {
                 }
             }
             if (wrapperMethod != null) {
-                field = createField(implementationType, implementationType);
+                field = createField(implementationType, implTypeTree);
             } else {
-                field = createField(selectedType, implementationType);
+                field = createField(selectedType, implTypeTree);
             }
         }
         MethodTree getter = createGetter(mods, valueType);
@@ -196,11 +211,11 @@ public class AddJavaFXPropertyMaker {
         return writable ? Arrays.asList(field, getter, setter, method) : Arrays.asList(field, getter, method);
     }
 
-    private VariableTree createField(DeclaredType selectedType, DeclaredType implementationType) {
+    private VariableTree createField(DeclaredType selectedType, ExpressionTree implementationType) {
         String initializer = config.getInitializer();
         NewClassTree newClass = make.NewClass(null,
                 Collections.EMPTY_LIST,
-                getTypeTree(implementationType),
+                implementationType,
                 Collections.singletonList(make.Identifier(initializer)), null);
         VariableTree property = make.Variable(
                 make.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.FINAL)),
