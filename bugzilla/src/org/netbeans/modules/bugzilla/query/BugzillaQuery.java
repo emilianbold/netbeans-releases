@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.*;
 import org.netbeans.modules.bugzilla.*;
@@ -52,7 +50,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider.Status;
 import org.netbeans.modules.team.spi.OwnerInfo;
@@ -68,6 +65,8 @@ import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
  */
 public class BugzillaQuery {
 
+    public static final String BUGZILLA_ADHOC_QUERY_PREFIX = "bugzilla ad-hoc query nr. ";
+    
     private String name;
     private final BugzillaRepository repository;
     protected QueryController controller;
@@ -146,7 +145,6 @@ public class BugzillaQuery {
             @Override
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
-                IRepositoryQuery runningQuery = iquery;
                 try {
 
                     // keeps all issues we will retrieve from the server
@@ -167,31 +165,28 @@ public class BugzillaQuery {
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
                     try {
-                        if (runningQuery == null) {
+                        if (iquery == null) {
                             String qName = getStoredQueryName();
                             if (qName == null || name == null) {
-                                qName = "bugzilla ad-hoc query nr. " + System.currentTimeMillis(); //NOI18N
+                                qName = BUGZILLA_ADHOC_QUERY_PREFIX + System.currentTimeMillis(); //NOI18N
                             }
-                            runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
-                            if (runningQuery == null) {
-                                runningQuery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
-                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
-                            }
-                            if (isSaved()) {
-                                iquery = runningQuery;
+                            iquery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
+                            if (iquery == null) {
+                                iquery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
+                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), iquery);
                             }
                         }
                         String queryUrl = url.toString();
-                        runningQuery.setUrl(queryUrl);
+                        iquery.setUrl(queryUrl);
                         SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
-                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
+                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), iquery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);
                         repository.getExecutor().execute(queryCmd, !autoRefresh);
                         ret[0] = queryCmd.hasFailed();
                         if (ret[0]) {
                             if (isSaved()) {
-                                for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
+                                for (NbTask t : MylynSupport.getInstance().getTasks(iquery)) {
                                     // as a side effect creates a BugzillaIssue instance
                                     BugzillaIssue bzIssue = getRepository().getIssueForTask(t);
                                     if (bzIssue != null) {
@@ -210,11 +205,7 @@ public class BugzillaQuery {
                         Bugzilla.LOG.log(Level.INFO, null, ex);
                         ret[0] = true;
                     }
-                } finally {
-                    if (iquery == null && runningQuery != null) {
-                        // ad-hoc queries cannot be saved in tasklist
-                        MylynSupport.getInstance().deleteQuery(runningQuery);
-                    }
+                } finally {                    
                     BugzillaConfig.getInstance().putLastQueryRefresh(repository, getStoredQueryName(), System.currentTimeMillis());
                     logQueryEvent(issues.size(), autoRefresh);
                     Bugzilla.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
@@ -319,6 +310,12 @@ public class BugzillaQuery {
 
     public boolean canRemove() {
         return true;
+    }
+
+    void delete() {
+        if(iquery != null) {
+            MylynSupport.getInstance().deleteQuery(iquery);
+        }
     }
 
     private class QueryProgressListener implements SynchronizeQueryCommand.CommandProgressListener {
