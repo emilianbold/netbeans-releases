@@ -241,7 +241,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
     }
     
     private static class ProjectNode extends AbstractNode {
-        private Node rootNode;
+        private final Node rootNode;
         
         ProjectNode(Children children, Node rootNode) {
             super(children);

@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
 public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
     
     private DialogDescriptor descriptor;
-    private ExplorerManager manager;
+    private final ExplorerManager manager;
     private BeanTreeView treeView;
     private Node selectedResourceNode;
     
