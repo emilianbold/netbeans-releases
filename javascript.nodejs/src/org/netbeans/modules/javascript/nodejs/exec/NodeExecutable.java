@@ -266,14 +266,16 @@ public class NodeExecutable {
         "NodeExecutable.run=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> run(File script, String args) {
+    public AtomicReference<Future<Integer>> run(File script, String args) {
         assert project != null;
         String projectName = NodeJsUtils.getProjectDisplayName(project);
+        AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
         Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getRunParams(script, args))
-                .run(getDescriptor());
+                .run(getDescriptor(taskRef));
         assert task != null : nodePath;
-        return task;
+        taskRef.set(task);
+        return taskRef;
     }
 
     @NbBundle.Messages({
@@ -281,16 +283,16 @@ public class NodeExecutable {
         "NodeExecutable.debug=Node.js ({0})",
     })
     @CheckForNull
-    public Future<Integer> debug(int port, File script, String args) throws IOException {
+    public AtomicReference<Future<Integer>> debug(int port, File script, String args) {
         assert project != null;
         String projectName = NodeJsUtils.getProjectDisplayName(project);
         AtomicReference<Future<Integer>> taskRef = new AtomicReference<>();
         final Future<Integer> task = getExecutable(Bundle.NodeExecutable_run(projectName))
                 .additionalParameters(getDebugParams(port, script, args))
-                .run(getDescriptor(new DebugInfo(project, taskRef, port)));
+                .run(getDescriptor(taskRef, new DebugInfo(project, taskRef, port)));
         assert task != null : nodePath;
         taskRef.set(task);
-        return task;
+        return taskRef;
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -302,12 +304,13 @@ public class NodeExecutable {
                 .noOutput(false);
     }
 
-    private ExecutionDescriptor getDescriptor() {
-        return getDescriptor(null);
+    private ExecutionDescriptor getDescriptor(AtomicReference<Future<Integer>> taskRef) {
+        return getDescriptor(taskRef, null);
     }
 
-    private ExecutionDescriptor getDescriptor(@NullAllowed final DebugInfo debugInfo) {
+    private ExecutionDescriptor getDescriptor(final AtomicReference<Future<Integer>> taskRef, @NullAllowed final DebugInfo debugInfo) {
         assert project != null;
+        assert taskRef != null;
         final boolean rerunPossible = debugInfo == null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
@@ -334,9 +337,7 @@ public class NodeExecutable {
                 /*.rerunCallback(new ExecutionDescriptor.RerunCallback() {
                     @Override
                     public void performed(Future<Integer> task) {
-                        if (debugInfo != null) {
-                            debugInfo.taskRef.set(task);
-                        }
+                        taskRef.set(task);
                     }
                 })*/;
     }
