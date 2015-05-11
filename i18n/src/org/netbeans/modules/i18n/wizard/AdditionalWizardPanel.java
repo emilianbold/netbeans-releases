@@ -108,7 +108,7 @@ final class AdditionalWizardPanel extends JPanel {
     }
     
     private void initHelpCtx() {
-        HelpCtx.setHelpIDString(this, I18nUtil.HELP_ID_ADDITIONAL);
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDITIONAL);
     }
 
     /** Does additional init of components. */
