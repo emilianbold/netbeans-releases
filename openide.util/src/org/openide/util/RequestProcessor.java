@@ -612,14 +612,17 @@ public final class RequestProcessor implements ScheduledExecutorService {
                     processors.add(proc);
                     if (proc.getContextClassLoader() != item.ctxLoader) {
                         if (loggable) {
+                            // item classloader may be null, if the item was posted from the Finalizer thread
+                            ClassLoader itemLoader = item.ctxLoader;
+                            ClassLoader procLoader = proc.getContextClassLoader();
                             em.log(Level.FINE, "Setting ctxLoader for old:{0} loader:{1}#{2} new:{3} loader:{4}#{5}",
                                 new Object[] {
                                  proc.getName(),
-                                 proc.getContextClassLoader().getClass().getName(),
-                                 Integer.toHexString(System.identityHashCode(proc.getContextClassLoader())),
+                                 procLoader == null ? "<none>" : procLoader.getClass().getName(),
+                                 procLoader == null ? "-" : Integer.toHexString(System.identityHashCode(proc.getContextClassLoader())),
                                  name,
-                                 item.ctxLoader.getClass().getName(),
-                                 Integer.toHexString(System.identityHashCode(item.ctxLoader))
+                                 itemLoader == null ? "<none>" : item.ctxLoader.getClass().getName(),
+                                 itemLoader == null ? "-" : Integer.toHexString(System.identityHashCode(item.ctxLoader))
                                 }
                             );
                         }
