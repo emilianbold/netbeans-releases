@@ -110,6 +110,7 @@ public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provide
         treeView.setRootVisible(false);
         treeView.setPopupAllowed(false);
         treeView.setBorder(new EtchedBorder());
+        treeView.setDefaultActionAllowed(false);
         
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -139,6 +140,8 @@ public class SaasExplorerPanel extends JPanel implements ExplorerManager.Provide
         }
         // !PW If we preselect a node, this can go away.
         descriptor.setValid(false);
+
+        treeView.requestFocusInWindow();
     }
     
     @Override

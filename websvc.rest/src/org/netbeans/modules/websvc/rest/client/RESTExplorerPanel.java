@@ -125,6 +125,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         treeView.setRootVisible(false);
         treeView.setPopupAllowed(false);
         treeView.setBorder(new EtchedBorder());
+        treeView.setDefaultActionAllowed(false);
         
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
@@ -135,7 +136,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         add(treeView, gridBagConstraints);
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RESTExplorerPanel.class, "ACSD_RESTResourcesTreeView"));
-        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RESTExplorerPanel.class, "ACSD_RESTResourcesTreeView"));
+        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(RESTExplorerPanel.class, "ACSD_RESTResourcesTreeView"));        
     }
     
     @Override
@@ -164,6 +165,8 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
         
         // !PW If we preselect a node, this can go away.
         descriptor.setValid(false);
+
+        treeView.requestFocusInWindow();
     }
     
     @Override
@@ -200,7 +203,7 @@ public class RESTExplorerPanel extends JPanel implements ExplorerManager.Provide
             }
         }
     }
-    
+
     public static interface ProjectNodeFactory {
         Node createNode( Project project );
         boolean canSelect( Node node );
