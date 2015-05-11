@@ -208,6 +208,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     completeExpression(request, added);
                     completeObjectProperty(request, added);
                     completeInWith(request, added);
+                    added.remove(ModelUtils.PROTOTYPE);
                     break;
                 case OBJECT_PROPERTY:
                     completeObjectProperty(request, added);

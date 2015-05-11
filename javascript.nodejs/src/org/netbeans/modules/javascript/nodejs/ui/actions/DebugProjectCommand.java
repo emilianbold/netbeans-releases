@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript.nodejs.ui.actions;
 
 import java.io.File;
-import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NodeExecutable;
 import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferencesValidator;
@@ -78,12 +77,7 @@ final class DebugProjectCommand extends ProjectCommand {
 
     @Override
     protected NodeInfo runNodeInternal(NodeExecutable node, RunInfo runInfo) {
-        try {
-            return NodeInfo.debug(node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs()));
-        } catch (IOException ex) {
-            warnCannotDebug(ex);
-        }
-        return NodeInfo.none();
+        return NodeInfo.debug(node.debug(runInfo.getDebugPort(), new File(runInfo.getStartFile()), runInfo.getStartArgs()));
     }
 
 }
