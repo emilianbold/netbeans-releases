@@ -59,7 +59,7 @@ import org.openide.util.Pair;
  */
 public final class NBJRTUtil {
 
-    static final String PROTOCOL = "nbjrt"; //NOI18N
+    public static final String PROTOCOL = "nbjrt"; //NOI18N
     private static final String NIO_PROVIDER = "jrt-fs.jar";    //NOI18N
     private static final Logger LOG = Logger.getLogger(NBJRTUtil.class.getName());
 
@@ -68,17 +68,7 @@ public final class NBJRTUtil {
     }
 
     @CheckForNull
-    public static URI getImageURI(@NonNull final File file) {
-        if (!file.isFile() || !file.getName().endsWith(".jimage")) {    //NOI18N
-            return null;
-        }
-        File jdkHome = file;
-        for (int i=0; i<3; i++) {
-            jdkHome = jdkHome.getParentFile();
-            if (jdkHome == null) {
-                return null;
-            }
-        }
+    public static URI getImageURI(@NonNull final File jdkHome) {
         final File jrtFsJar = getNIOProvider(jdkHome);
         try {
             return jrtFsJar == null ?

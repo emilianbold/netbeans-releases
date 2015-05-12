@@ -55,9 +55,6 @@ import org.openide.util.Utilities;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.*;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
 
 /**
  * Implementation of the "Default" platform. The information here is extracted
@@ -71,11 +68,11 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
     public static final String DEFAULT_PLATFORM_ANT_NAME = "default_platform";           //NOI18N
 
     private ClassPath standardLibs;
-    
+
     @SuppressWarnings("unchecked")  //Properties cast to Map<String,String>
     static JavaPlatform create(Map<String,String> properties, List<URL> sources, List<URL> javadoc) {
         if (properties == null) {
-            properties = new HashMap<String,String> ();
+            properties = new HashMap<> ();
         }
         String  jdkHome = System.getProperty("jdk.home"); // NOI18N
         File javaHome;
@@ -89,7 +86,7 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
             installFolders.add (Utilities.toURI(javaHome).toURL());
         } catch (MalformedURLException mue) {
             Exceptions.printStackTrace(mue);
-        }        
+        }
         final Properties p = System.getProperties();
         final Map<String,String> systemProperties;
         synchronized (p) {
@@ -97,17 +94,19 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         }
         return new DefaultPlatformImpl(installFolders, properties, systemProperties, sources, javadoc);
     }
-    
+
     private DefaultPlatformImpl(List<URL> installFolders, Map<String,String> platformProperties,
         Map<String,String> systemProperties, List<URL> sources, List<URL> javadoc) {
         super(null,DEFAULT_PLATFORM_ANT_NAME,
               installFolders, platformProperties, systemProperties, sources, javadoc);
     }
 
+    @Override
     public void setAntName(String antName) {
         throw new UnsupportedOperationException (); //Default platform ant name can not be changed
     }
-    
+
+    @Override
     public String getDisplayName () {
         String displayName = super.getDisplayName();
         if (displayName == null) {
@@ -116,11 +115,13 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         }
         return displayName;
     }
-    
+
+    @Override
     public void setDisplayName(String name) {
         throw new UnsupportedOperationException (); //Default platform name can not be changed
     }
 
+    @Override
     public ClassPath getStandardLibraries() {
         if (standardLibs != null)
             return standardLibs;

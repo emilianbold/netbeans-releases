@@ -77,6 +77,7 @@ import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 /**
@@ -344,10 +345,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             File jdkHome = FileUtil.toFile ((FileObject)installFolders.iterator().next());
             props.setProperty(homePropName, jdkHome.getAbsolutePath());
             ClassPath bootCP = platform.getBootstrapLibraries();
-            StringBuffer sbootcp = new StringBuffer();
+            StringBuilder sbootcp = new StringBuilder();
             for (ClassPath.Entry entry : bootCP.entries()) {
                 URL url = entry.getURL();
-                if ("jar".equals(url.getProtocol())) {              //NOI18N
+                final String proto = url.getProtocol();
+                if (NBJRTUtil.PROTOCOL.equals(proto)) {
+                    //Modules image file, don't store boot cp property
+                    sbootcp = null;
+                    break;
+                }
+                if ("jar".equals(proto)) {              //NOI18N
                     url = FileUtil.getArchiveFile(url);
                 }
                 File root = Utilities.toFile(URI.create(url.toExternalForm()));
@@ -356,7 +363,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 }
                 sbootcp.append(normalizePath(root, jdkHome, homePropName));
             }
-            props.setProperty(bootClassPathPropName,sbootcp.toString());   //NOI18N
+            if (sbootcp != null) {
+                props.setProperty(bootClassPathPropName,sbootcp.toString());
+            }
             props.setProperty(compilerType,getCompilerType(platform));
             for (int i = 0; i < IMPORTANT_TOOLS.length; i++) {
                 String name = IMPORTANT_TOOLS[i];

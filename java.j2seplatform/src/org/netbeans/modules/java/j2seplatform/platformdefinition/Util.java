@@ -54,6 +54,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
@@ -85,40 +86,51 @@ public class Util {
         while (tokenizer.hasMoreTokens()) {
             String item = tokenizer.nextToken();
             File f = FileUtil.normalizeFile(new File(item));
-            final URI imageURI;
-            if ((imageURI = NBJRTUtil.getImageURI(f)) != null) {
-                try {
-                    FileObject root = URLMapper.findFileObject(imageURI.toURL());
-                    for (FileObject c : root.getChildren()) {
-                        list.add(ClassPathSupport.createResource(c.toURL()));
-                    }
-                } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            } else {
-                URL url = getRootURL (f);
-                if (url!=null) {
-                    list.add(ClassPathSupport.createResource(url));
-                }
+            URL url = getRootURL (f);
+            if (url!=null) {
+                list.add(ClassPathSupport.createResource(url));
             }
         }
         return ClassPathSupport.createClassPath(list);
     }
 
+    @CheckForNull
+    static ClassPath createModulePath(@NonNull final Collection<FileObject> installFolders) {
+        for (FileObject installFolder : installFolders) {
+            final File installDir = FileUtil.toFile(installFolder);
+            final URI imageURI = installDir == null ?
+                    null :
+                    NBJRTUtil.getImageURI(installDir);
+            if (imageURI != null) {
+                try {
+                    final FileObject root = URLMapper.findFileObject(imageURI.toURL());
+                    final List<PathResourceImplementation> modules = new ArrayList<>();
+                    for (FileObject module : root.getChildren()) {
+                        modules.add(ClassPathSupport.createResource(module.toURL()));
+                    }
+                    return ClassPathSupport.createClassPath(modules);
+                } catch (MalformedURLException e) {
+                    Exceptions.printStackTrace(e);
+                    break;
+                }
+            }
+        }
+        return null;
+    }
+
     // XXX this method could probably be removed... use standard FileUtil stuff
-    static URL getRootURL  (final File f) {        
+    @CheckForNull
+    static URL getRootURL  (@NonNull final File f) {
         try {
             URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
                 url = FileUtil.getArchiveRoot (url);
-            }
-            else if (!f.exists()) {
+            } else if (!f.exists()) {
                 String surl = url.toExternalForm();
                 if (!surl.endsWith("/")) {
                     url = new URL (surl+"/");
                 }
-            }
-            else if (f.isFile()) {
+            } else if (f.isFile()) {
                 //Slow but it will be called only in very rare cases:
                 //file on the classpath for which isArchiveFile returned false
                 try {
@@ -131,8 +143,8 @@ public class Util {
             }
             return url;
         } catch (MalformedURLException e) {
-            throw new AssertionError(e);            
-        }        
+            throw new AssertionError(e);
+        }
     }
 
 
@@ -169,7 +181,7 @@ public class Util {
          return makeSpec(version);
     }
 
-    
+
     public static FileObject findTool (String toolName, Collection<FileObject> installFolders) {
         return findTool (toolName, installFolders, null);
     }
@@ -211,7 +223,7 @@ public class Util {
             File[] files = extFolder.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
-                    File f = files[i];                   
+                    File f = files[i];
                     if (!f.exists()) {
                         //May happen, eg. broken link, it is safe to ignore it
                         //since it is an extension directory, but log it.
@@ -287,6 +299,6 @@ public class Util {
         }
         // Nothing decent in it at all; use zero.
         return new SpecificationVersion("0"); // NOI18N
-    }   
+    }
 
 }
