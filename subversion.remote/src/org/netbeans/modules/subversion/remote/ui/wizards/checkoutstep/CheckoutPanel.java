@@ -61,6 +61,9 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
+import org.netbeans.modules.subversion.remote.util.Context;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -68,13 +71,15 @@ import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
  * @author  Marian Petras
  */
 public class CheckoutPanel extends JPanel {
-
+    private final FileSystem fileSystem;
     /**
      * Creates new form CheckoutPanel
      */
-    public CheckoutPanel() {
+    public CheckoutPanel(FileSystem fileSystem) {
         initComponents();
-        boolean newFormat = !SvnClientFactory.isCLIOldFormat();
+        this.fileSystem = fileSystem;
+        SvnClientFactory instance = SvnClientFactory.getInstance(new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot())));
+        boolean newFormat = !instance.isCLIOldFormat();
         workingCopyFormat.setText(getString(newFormat ? "MSG_WorkingCopyFormat17" : "MSG_WorkingCopyFormat16")); //NOI18N
         preferOldFormatCheckBox.setSelected(false);
         preferOldFormatCheckBox.setVisible(false);
