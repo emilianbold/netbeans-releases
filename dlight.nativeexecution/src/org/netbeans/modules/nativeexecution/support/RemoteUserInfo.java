@@ -43,18 +43,38 @@ package org.netbeans.modules.nativeexecution.support;
 
 import com.jcraft.jsch.UIKeyboardInteractive;
 import com.jcraft.jsch.UserInfo;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.CharConversionException;
 import java.util.Arrays;
 import java.util.concurrent.CancellationException;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.support.ui.CertPassphraseDlg;
 import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
 import org.netbeans.modules.nativeexecution.support.ui.PromptPasswordDialog;
+import org.openide.awt.NotificationDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.windows.WindowManager;
+import org.openide.xml.XMLUtil;
 
 final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
@@ -180,11 +200,127 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return Boolean.getBoolean("cnd.mode.unittest"); // NOI18N
     }
 
-    @Override
-    public void showMessage(String message) {
-        synchronized (lock) {
-            JOptionPane.showMessageDialog(parent, message);
+    /** returns true if the line consists of equal characters, e.g. "########" */
+    private boolean isSeparatorLine(String line) {
+        //line = line.trim();
+        if (line.isEmpty()) {
+            return false;
+        } else {
+            char c = line.charAt(0);
+            for (int i = 0; i < line.length(); i++) {
+                if (line.charAt(i) != c) {
+                    return false;
+                }
+            }
+            return true;
         }
+    }
+    
+    /** 
+     * if the line is framed (e.g. "# the message #"), 
+     * returns the line w/o frame, trimmed ("the message")
+     */
+    private String tryRemovingFrame(String line) {
+        //line = line.trim();
+        if (!line.isEmpty()) {
+            char c = line.charAt(0);
+            if (!Character.isLetterOrDigit(c)) {
+                if (line.charAt(line.length()-1) == c) {
+                    line = line.substring(1, line.length() - 1).trim();
+                }
+            }
+        }
+        return line;
+    }
+
+    private String getBriefMessage(String message) {
+        final int maxLen = 80; // max length for a single-line message
+        //final int maxLines = 3; // max lines to display for a multy-line message
+        if (message.length() <= maxLen) {
+            return message;
+        } else {
+            // Judging by my own experience and issue #247298
+            // https://bugzilla-attachments-247298.netbeans.org/bugzilla/attachment.cgi?id=149364
+            // banner messages often contain
+            // a) frames made from  "################" or "----" or alike are quite usual for such messages.
+            // b) framed lines like "# message text #"
+            // Let's try to handle this
+            if (message.contains("\n")) { //NOI18N
+                String[] lines = message.split("\n"); //NOI18N
+                StringBuilder sb = new StringBuilder();
+//                int lineCount = 0;
+                for (String line : lines) {
+                    line = line.trim();
+                    if (line.isEmpty()) {
+                        // skip
+                        continue;
+                    } else if (isSeparatorLine(line)) {
+                        // skip
+                        continue;
+                    } else {
+                        line = tryRemovingFrame(line).trim();
+                        if (! line.isEmpty()) {
+                            return line + "..."; // NOI18N
+//                            if (++lineCount > maxLines) {
+//                                sb.append("\n..."); //NOI18N
+//                                break;
+//                            } else {
+//                                sb.append(line).append('\n');
+//                            }
+                        }
+                    }
+                }               
+                return ""; // sb.toString(); //NOI18N
+            } else {
+                return message.substring(0, maxLen) + "..."; //NOI18N
+            }
+        }
+    }
+
+    private JComponent createMessageComponent(String message) {
+        final JTextArea textArea = new JTextArea(message.trim());
+        int fontSize = textArea.getFont().getSize();
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, fontSize)); //NOI18N
+        textArea.setEditable(false);
+        textArea.setOpaque(false);
+        return textArea;
+    }
+        
+//    private JComponent createPopupDetails(final String title, final String message, final Icon icon) {
+//        ActionListener actionListener = new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                final JPanel wrapperPanel = new JPanel();
+//                wrapperPanel.setLayout(new BoxLayout(wrapperPanel, BoxLayout.X_AXIS));
+//                JComponent textArea = createMessageComponent(message);
+//                wrapperPanel.add(textArea);
+//                wrapperPanel.add(Box.createHorizontalStrut(32));
+//                JOptionPane.showMessageDialog(parent, wrapperPanel, title, JOptionPane.INFORMATION_MESSAGE, icon);
+//            }
+//        };
+//        JButton popupDetails = new JButton(title);
+//        popupDetails.addActionListener(actionListener);
+//        popupDetails.setFocusable(false);
+//        popupDetails.setBorder(BorderFactory.createEmptyBorder());
+//        popupDetails.setBorderPainted(false);
+//        popupDetails.setFocusPainted(false);
+//        popupDetails.setOpaque(false);
+//        popupDetails.setContentAreaFilled(false);
+//        popupDetails.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//        popupDetails.setForeground(Color.blue);
+//        return popupDetails;
+//    }
+    
+    @Override
+    public void showMessage(final String message) {
+        final Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/nativeexecution/support/exclamation.gif", false); // NOI18N
+        //final String title = NbBundle.getMessage(RemoteUserInfo.class, "TITLE_Message", env.getDisplayName());
+        final String titleAndBriefMessage = NbBundle.getMessage(RemoteUserInfo.class, "TITLE_Message_Ex", 
+                env.getDisplayName(), getBriefMessage(message));
+        final JComponent baloonComponent = createMessageComponent(message);
+        final JComponent popupDetails = createMessageComponent(message); // createPopupDetails(titleAndBriefMessage, message, icon);
+        NotificationDisplayer.getDefault().notify(titleAndBriefMessage, icon, baloonComponent, popupDetails,
+                NotificationDisplayer.Priority.NORMAL, NotificationDisplayer.Category.INFO);
     }
 
     @Override
