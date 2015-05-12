@@ -60,6 +60,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 /**
  * GlassFish Java EE server configuration API support tests.
@@ -182,21 +183,39 @@ public class GlassfishConfigurationTest extends NbTestCase {
     @Test 
     public void testGetNewResourceFile() {
         for (GlassFishVersion version : GlassFishVersion.values()) {
-            final File resourceFileCar = GlassfishConfiguration.getNewResourceFile(moduleCar, version);
-            final File resourceFileEar = GlassfishConfiguration.getNewResourceFile(moduleEar, version);
-            final File resourceFileEjb = GlassfishConfiguration.getNewResourceFile(moduleEjb, version);
-            final File resourceFileRar = GlassfishConfiguration.getNewResourceFile(moduleRar, version);
-            final File resourceFileWar = GlassfishConfiguration.getNewResourceFile(moduleWar, version);
-            final File verifyPrefixCar = moduleCar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleCar.getType()));
-            final File verifyPrefixEar = moduleEar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleEar.getType()));
-            final File verifyPrefixEjb = moduleEjb.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleEjb.getType()));
-            final File verifyPrefixRar = moduleRar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleRar.getType()));
-            final File verifyPrefixWar = moduleWar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleWar.getType()));
+            final Pair<File, Boolean> pairCar = GlassfishConfiguration.getNewResourceFile(moduleCar, version);
+            final Pair<File, Boolean> pairEar = GlassfishConfiguration.getNewResourceFile(moduleEar, version);
+            final Pair<File, Boolean> pairEjb = GlassfishConfiguration.getNewResourceFile(moduleEjb, version);
+            final Pair<File, Boolean> pairRar = GlassfishConfiguration.getNewResourceFile(moduleRar, version);
+            final Pair<File, Boolean> pairWar = GlassfishConfiguration.getNewResourceFile(moduleWar, version);
+            final File resourceFileCar = pairCar.first();
+            final File resourceFileEar = pairEar.first();
+            final File resourceFileEjb = pairEjb.first();
+            final File resourceFileRar = pairRar.first();
+            final File resourceFileWar = pairWar.first();
+File verifyPrefixCar;
+            File verifyPrefixEar;
+            File verifyPrefixEjb;
+            File verifyPrefixRar;
+            File verifyPrefixWar;
+            if (GlassFishVersion.lt(version, GlassFishVersion.GF_3_1)) {
+                verifyPrefixCar = moduleCar.getResourceDirectory();
+                verifyPrefixEar = moduleEar.getResourceDirectory();
+                verifyPrefixEjb = moduleEjb.getResourceDirectory();
+                verifyPrefixRar = moduleRar.getResourceDirectory();
+                verifyPrefixWar = moduleWar.getResourceDirectory();
+            } else {
+                verifyPrefixCar = moduleCar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleCar.getType()));
+                verifyPrefixEar = moduleEar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleEar.getType()));
+                verifyPrefixEjb = moduleEjb.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleEjb.getType()));
+                verifyPrefixRar = moduleRar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleRar.getType()));
+                verifyPrefixWar = moduleWar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleWar.getType()));
+            }
             final String fileName = GlassFishVersion.lt(version, GlassFishVersion.GF_3_1)
                     ? "sun-resources.xml"
                     : "glassfish-resources.xml";
@@ -205,15 +224,15 @@ public class GlassfishConfigurationTest extends NbTestCase {
             final File verifyFileEjb = new File(verifyPrefixEjb, fileName);
             final File verifyFileRar = new File(verifyPrefixRar, fileName);
             final File verifyFileWar = new File(verifyPrefixWar, fileName);
-            assertTrue("New resource file for " + version.toString() + " CAR: " + verifyFileCar.toString(),
+            assertTrue("New resource file for " + version.toString() + " CAR: " + verifyFileCar.toString() + " was " + resourceFileCar,
                     verifyFileCar.equals(resourceFileCar));
-            assertTrue("New resource file for " + version.toString() + " EAR: " + verifyFileEar.toString(),
+            assertTrue("New resource file for " + version.toString() + " EAR: " + verifyFileEar.toString() + " was " + resourceFileEar,
                     verifyFileEar.equals(resourceFileEar));
-            assertTrue("New resource file for " + version.toString() + " EJB: " + verifyFileEjb.toString(),
+            assertTrue("New resource file for " + version.toString() + " EJB: " + verifyFileEjb.toString() + " was " + resourceFileEjb,
                     verifyFileEjb.equals(resourceFileEjb));
-            assertTrue("New resource file for " + version.toString() + " RAR: " + verifyFileRar.toString(),
+            assertTrue("New resource file for " + version.toString() + " RAR: " + verifyFileRar.toString() + " was " + resourceFileRar,
                     verifyFileRar.equals(resourceFileRar));
-            assertTrue("New resource file for " + version.toString() + " WAR: " + verifyFileWar.toString(),
+            assertTrue("New resource file for " + version.toString() + " WAR: " + verifyFileWar.toString() + " was " + resourceFileWar,
                     verifyFileWar.equals(resourceFileWar));
         }
     }
@@ -258,21 +277,39 @@ public class GlassfishConfigurationTest extends NbTestCase {
             gfResource.createNewFile();
         }
         for (GlassFishVersion version : GlassFishVersion.values()) {
-            File resourcesCar = GlassfishConfiguration.getExistingResourceFile(moduleCar, version);
-            File resourcesEar = GlassfishConfiguration.getExistingResourceFile(moduleEar, version);
-            File resourcesEjb = GlassfishConfiguration.getExistingResourceFile(moduleEjb, version);
-            File resourcesRar = GlassfishConfiguration.getExistingResourceFile(moduleRar, version);
-            File resourcesWar = GlassfishConfiguration.getExistingResourceFile(moduleWar, version);
-            final File verifyPrefixCar = moduleCar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleCar.getType()));
-            final File verifyPrefixEar = moduleEar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleEar.getType()));
-            final File verifyPrefixEjb = moduleEjb.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleEjb.getType()));
-            final File verifyPrefixRar = moduleRar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleRar.getType()));
-            final File verifyPrefixWar = moduleWar.getDeploymentConfigurationFile(
-                    JavaEEModule.getConfigDir(moduleWar.getType()));
+            final Pair<File, Boolean> pairCar = GlassfishConfiguration.getNewResourceFile(moduleCar, version);
+            final Pair<File, Boolean> pairEar = GlassfishConfiguration.getNewResourceFile(moduleEar, version);
+            final Pair<File, Boolean> pairEjb = GlassfishConfiguration.getNewResourceFile(moduleEjb, version);
+            final Pair<File, Boolean> pairRar = GlassfishConfiguration.getNewResourceFile(moduleRar, version);
+            final Pair<File, Boolean> pairWar = GlassfishConfiguration.getNewResourceFile(moduleWar, version);
+            final File resourcesCar = pairCar.first();
+            final File resourcesEar = pairEar.first();
+            final File resourcesEjb = pairEjb.first();
+            final File resourcesRar = pairRar.first();
+            final File resourcesWar = pairWar.first();
+            File verifyPrefixCar;
+            File verifyPrefixEar;
+            File verifyPrefixEjb;
+            File verifyPrefixRar;
+            File verifyPrefixWar;
+            if (GlassFishVersion.lt(version, GlassFishVersion.GF_3_1)) {
+                verifyPrefixCar = moduleCar.getResourceDirectory();
+                verifyPrefixEar = moduleEar.getResourceDirectory();
+                verifyPrefixEjb = moduleEjb.getResourceDirectory();
+                verifyPrefixRar = moduleRar.getResourceDirectory();
+                verifyPrefixWar = moduleWar.getResourceDirectory();
+            } else {
+                verifyPrefixCar = moduleCar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleCar.getType()));
+                verifyPrefixEar = moduleEar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleEar.getType()));
+                verifyPrefixEjb = moduleEjb.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleEjb.getType()));
+                verifyPrefixRar = moduleRar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleRar.getType()));
+                verifyPrefixWar = moduleWar.getDeploymentConfigurationFile(
+                        JavaEEModule.getConfigDir(moduleWar.getType()));
+            }
             final String fileName = GlassFishVersion.lt(version, GlassFishVersion.GF_3_1)
                     ? "sun-resources.xml"
                     : "glassfish-resources.xml";
@@ -281,15 +318,20 @@ public class GlassfishConfigurationTest extends NbTestCase {
             final File verifyFileEjb = new File(verifyPrefixEjb, fileName);
             final File verifyFileRar = new File(verifyPrefixRar, fileName);
             final File verifyFileWar = new File(verifyPrefixWar, fileName);
-            assertTrue("Existing resource file for " + version.toString() + " CAR: " + verifyFileCar.toString(),
+            assertTrue("Existing resource file for " + version.toString() + " CAR: "
+                    + verifyFileCar.toString() + " was " + resourcesCar,
                     verifyFileCar.equals(resourcesCar));
-            assertTrue("Existing resource file for " + version.toString() + " EAR: " + verifyFileEar.toString(),
+            assertTrue("Existing resource file for " + version.toString() + " EAR: "
+                    + verifyFileEar.toString() + " was " + resourcesEar,
                     verifyFileEar.equals(resourcesEar));
-            assertTrue("Existing resource file for " + version.toString() + " EJB: " + verifyFileEjb.toString(),
+            assertTrue("Existing resource file for " + version.toString() + " EJB: "
+                    + verifyFileEjb.toString() + " was " + resourcesEjb,
                     verifyFileEjb.equals(resourcesEjb));
-            assertTrue("Existing resource file for " + version.toString() + " RAR: " + verifyFileRar.toString(),
+            assertTrue("Existing resource file for " + version.toString() + " RAR: "
+                    + verifyFileRar.toString() + " was " + resourcesRar,
                     verifyFileRar.equals(resourcesRar));
-            assertTrue("Existing resource file for " + version.toString() + " WAR: " + verifyFileWar.toString(),
+            assertTrue("Existing resource file for " + version.toString() + " WAR: "
+                    + verifyFileWar.toString() + " was " + resourcesWar,
                     verifyFileWar.equals(resourcesWar));
         }
         // Delete all resource files.

@@ -320,6 +320,11 @@ public class NodeJSCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("testfiles/model/issue252218.js", "no^;", false);
     }
     
+    public void testIssue252319_01() throws Exception {
+        checkCompletion("TestNavigation/public_html/js/issue252319/test252319.js", "ctrl.getD^", false);
+    }
+    
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>();

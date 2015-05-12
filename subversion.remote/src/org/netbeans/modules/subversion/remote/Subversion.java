@@ -637,7 +637,7 @@ public class Subversion {
 
         VCSFileProxy original = null;
         try {
-            final Context context = new Context(originalFile);
+            final Context context = new Context(workingCopy);
             SvnClientFactory.checkClientAvailable(context);
             original = VersionsCache.getInstance(context.getFileSystem()).getBaseRevisionFile(workingCopy);
             if (original == null) {
