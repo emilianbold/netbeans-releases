@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
+import java.beans.Introspector;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -409,8 +410,11 @@ class ModelGenerator {
             VariableElement param = parameters.get(0);
             TypeMirror type = param.asType();
             if ( isSimple(type, controller)){
-                return new Object[]{MethodType.SET, lowerFirstLetter(
-                        name.substring(3)), type};
+                return new Object[] {
+                    MethodType.SET,
+                    Introspector.decapitalize(name.substring(3)),
+                    type
+                };
             }
             else {
                 return null;
@@ -430,25 +434,17 @@ class ModelGenerator {
             }
             TypeMirror returnType = method.getReturnType();
             if ( isSimple(returnType, controller)){
-                return new Object[]{ MethodType.GET, lowerFirstLetter(
-                        name.substring(start)), returnType};
+                return new Object[] {
+                    MethodType.GET,
+                    Introspector.decapitalize(name.substring(start)),
+                    returnType
+                };
             }
             else {
                 return null;
             }
         }
         return null;
-    }
-    
-    private String lowerFirstLetter( String name ){
-        if ( name.length() <=1){
-            return name;
-        }
-        char firstLetter = name.charAt(0);
-        if ( Character.isUpperCase(firstLetter)){
-            return Character.toLowerCase(firstLetter) +name.substring(1);
-        }
-        return name;
     }
     
     /*
