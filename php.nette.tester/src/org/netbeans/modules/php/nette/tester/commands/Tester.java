@@ -96,7 +96,8 @@ public final class Tester {
 
     private static final File COVERAGE_LOG;
 
-    private static final String TAP_FORMAT_PARAM = "--tap"; // NOI18N
+    private static final String OUTPUT_PARAM = "-o"; // NOI18N
+    private static final String TAP_OUTPUT_PARAM = "tap"; // NOI18N
     private static final String SKIP_INFO_PARAM = "-s"; // NOI18N
     private static final String PHP_INI_PARAM = "-c"; // NOI18N
     private static final String BINARY_EXECUTABLE_PARAM = "-p"; // NOI18N
@@ -211,7 +212,8 @@ public final class Tester {
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
         PhpExecutable tester = getExecutable(phpModule, getOutputTitle(runInfo));
         List<String> params = new ArrayList<>();
-        params.add(TAP_FORMAT_PARAM);
+        params.add(OUTPUT_PARAM);
+        params.add(TAP_OUTPUT_PARAM);
         params.add(SKIP_INFO_PARAM);
         addBinaryExecutable(phpModule, params);
         addPhpIni(phpModule, params);
