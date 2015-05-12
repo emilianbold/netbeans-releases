@@ -232,7 +232,7 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        return getModifierdSync( builder.toString() ).toString();
+        return getModifierdSync(builder.toString());
     }
     
     private String getModifierdSync( String body ){
@@ -429,7 +429,7 @@ class ModelGenerator {
         }
         if ( start > 0){
             List<? extends VariableElement> parameters = method.getParameters();
-            if ( parameters.size() !=0 ){
+            if (!parameters.isEmpty()) {
                 return null;
             }
             TypeMirror returnType = method.getReturnType();
@@ -546,10 +546,10 @@ class ModelGenerator {
         return path;
     }
     
-    private StringBuilder myCommonModels;
-    private RestServiceDescription myDescription;
-    private Set<String> myEntities ;
-    private JsUi myUi;
+    private final StringBuilder myCommonModels;
+    private final RestServiceDescription myDescription;
+    private final Set<String> myEntities;
+    private final JsUi myUi;
     private Set<ModelAttribute> myAttributes;
     private String myDisplayNameAlias;
     private String myModelName;
