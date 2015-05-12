@@ -254,9 +254,9 @@ public abstract class AbstractNbTaskWrapper {
             // mark as seen so no fields are highlighted
             setUpToDate(true, false);
         }
-        synchronized (getNbTask()) {
-            // clear upon close
-            synchronized (MODEL_LOCK) {
+        synchronized (MODEL_LOCK) {
+            synchronized (getNbTask()) {
+                // clear upon close
                 if (readPending) {
                     // make sure remote changes are not lost and still highlighted in the editor
                     setUpToDate(false, false);
