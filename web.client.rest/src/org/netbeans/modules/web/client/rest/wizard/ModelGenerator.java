@@ -247,7 +247,7 @@ class ModelGenerator {
         result.append(" // headers has to be set on the REST server side.\n");   // NOI18N
         result.append(" // Otherwise the JS client has to be copied into the\n");// NOI18N
         result.append(" // some (f.e. the same) Web project on the same domain\n");// NOI18N
-        result.append("alert('Unable to fulfil the request');\n}}\n\n");        // NOI18N
+        result.append("alert('Unable to fulfil the request');\n}\n};\n\n");        // NOI18N
         result.append( body );
         result.append("var result = Backbone.sync(method, model, ");            // NOI18N
         result.append("_.extend(options,errorHandler));\n");                    // NOI18N
@@ -483,7 +483,7 @@ class ModelGenerator {
             HttpRequests request, StringBuilder builder ) throws IOException
     {
         if ( path == null ){
-            builder.append("if(method=='");                              // NOI18N
+            builder.append("if(method==='");                              // NOI18N
             builder.append(request.toString());
             builder.append("'){\n");                                     // NOI18N
             builder.append("return false;\n}\n");                        // NOI18N
@@ -518,7 +518,7 @@ class ModelGenerator {
             if ( newUrlSnippet.length() == 0 ){
                 return;
             }
-            builder.append("if(method=='");                         // NOI18N
+            builder.append("if(method==='");                         // NOI18N
             builder.append(request.toString());
             builder.append("'){\n");                                // NOI18N
             builder.append(newUrlSnippet);
