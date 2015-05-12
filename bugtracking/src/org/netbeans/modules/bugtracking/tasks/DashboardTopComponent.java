@@ -319,6 +319,7 @@ public final class DashboardTopComponent extends TopComponent {
         addTask(new TaskNode(issue, null));
     }
     
+    private boolean openedByUserAction = false;
     public void addTask(TaskNode... taskNodes) {
         final CategoryPicker picker = new CategoryPicker(taskNodes);
         final NotifyDescriptor nd = new NotifyDescriptor(
@@ -339,6 +340,11 @@ public final class DashboardTopComponent extends TopComponent {
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
             dashboard.addTaskToCategory(category, taskNodes);
+            
+            if(!openedByUserAction && !isOpened()) {
+                openedByUserAction = true;
+                activate();
+            }
         }
     }
 

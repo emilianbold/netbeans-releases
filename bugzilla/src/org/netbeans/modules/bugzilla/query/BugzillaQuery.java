@@ -146,7 +146,7 @@ public class BugzillaQuery {
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 try {
-
+                    
                     // keeps all issues we will retrieve from the server
                     // - those matching the query criteria
                     // - and the obsolete ones
@@ -163,7 +163,7 @@ public class BugzillaQuery {
                     StringBuilder url = new StringBuilder();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
-                    // IssuesIdCollector will populate the issues set
+                    // IssuesIdCollector will populate the issues set                    
                     try {
                         if (iquery == null) {
                             String qName = getStoredQueryName();
@@ -194,6 +194,7 @@ public class BugzillaQuery {
                                     }
                                 }
                             }
+                            list.notifyIssues(issues);
                             return;
                         }
 
