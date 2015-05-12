@@ -46,6 +46,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.io.IOException;
@@ -54,10 +55,16 @@ import java.io.StringReader;
 
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.html.HTMLEditorKit;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.editor.EditorUI;
 
 /**
  *  HTML documentation view.
@@ -77,6 +84,34 @@ class HTMLDocView extends JEditorPane {
         setBackground(bgColor);
         setMargin(new Insets(0,3,3,3));
         putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
+    }
+
+    /**
+     * Get font or null if attributes do not provide enough info for font composition.
+     * Shamelessly copied from Editor implementation -- make an API/utility in Editor settings ?
+     * 
+     * @param attrs non-null attrs.
+     * @return font or null.
+     */
+    public static Font getFont(AttributeSet attrs) {
+        Font font = null;
+        if (attrs != null) {
+            String fontName = (String) attrs.getAttribute(StyleConstants.FontFamily);
+            Integer fontSizeInteger = (Integer) attrs.getAttribute(StyleConstants.FontSize);
+            if (fontName != null && fontSizeInteger != null) {
+                Boolean bold = (Boolean) attrs.getAttribute(StyleConstants.Bold);
+                Boolean italic = (Boolean) attrs.getAttribute(StyleConstants.Italic);
+                int fontStyle = Font.PLAIN;
+                if (bold != null && bold) {
+                    fontStyle |= Font.BOLD;
+                }
+                if (italic != null && italic) {
+                    fontStyle |= Font.ITALIC;
+                }
+                font = new Font(fontName, fontStyle, fontSizeInteger);
+            }
+        }
+        return font;
     }
 
     /** Sets the javadoc content as HTML document */
@@ -114,6 +149,16 @@ class HTMLDocView extends JEditorPane {
             htmlKit= new HTMLEditorKit ();
             setEditorKit(htmlKit);
 
+            // #250761: set the same font as the base in the editor.
+            FontColorSettings font = MimeLookup.getLookup("text/x-java").lookup(FontColorSettings.class);
+            Font f = null;
+            if (font != null) {
+                AttributeSet set = font.getFontColors(FontColorNames.DEFAULT_COLORING);
+                f = getFont(set);
+                if (f != null) {
+                    setFont(f);
+                }
+            }
             // override the Swing default CSS to make the HTMLEditorKit use the
             // same font as the rest of the UI.
             
@@ -122,14 +167,13 @@ class HTMLDocView extends JEditorPane {
             // (template description for example) and avoid doing the same
             // thing again
             
-            if (htmlKit.getStyleSheet().getStyleSheets() != null)
+            if (htmlKit.getStyleSheet().getStyleSheets() != null || f == null)
                 return htmlKit;
             
             javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();
-            java.awt.Font f = getFont();
             setFont(f);
             css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
-                        .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                        /*.append("; font-family: ").append(f.getName())*/ .append("; }").toString()); // NOI18N
             css.addStyleSheet(htmlKit.getStyleSheet());
             htmlKit.setStyleSheet(css);
         }
