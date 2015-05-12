@@ -72,6 +72,8 @@ import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.nio.channels.CompletionHandler;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -534,6 +536,31 @@ public class FileObjects {
      */
     public static InferableJavaFileObject nullWriteFileObject(@NonNull final InferableJavaFileObject delegate) {
         return delegate instanceof NullWriteFileObject ? delegate : new NullWriteFileObject(delegate);
+    }
+
+    /**
+     * Creates an {@link InferableJavaFileObject} for NIO {@link Path}.
+     * @param file the {@link Path} to create file object for
+     * @param root the root
+     * @param uri the file {@link URI} or null if the {@link URI} should be taken from file
+     * @param encoding the optional encoding or null for system encoding
+     * @return the {@link InferableJavaFileObject}
+     */
+    @NonNull
+    public static InferableJavaFileObject pathFileObject(
+        @NonNull final Path file,
+        @NonNull final Path root,
+        @NullAllowed final URI uri,
+        @NullAllowed Charset encoding) {
+        final char separator = file.getFileSystem().getSeparator().charAt(0);
+        final String relPath = root.relativize(file).toString();
+        final String[] path = getFolderAndBaseName(relPath, separator);
+        return new PathFileObject(
+                file,
+                uri != null ? uri : file.toUri(),
+                convertFolder2Package(path[0], separator),
+                path[1],
+                encoding);
     }
 
     /**
@@ -1261,6 +1288,68 @@ public class FileObjects {
         @Override
         protected CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
             return FileObjects.getCharContent(openInputStream(), encoding, filter, f.getSize(), ignoreEncodingErrors);
+        }
+    }
+
+    @Trusted
+    private static class PathFileObject extends Base {
+        private final URI uri;
+        private final Path path;
+
+        PathFileObject(
+                @NonNull final Path file,
+                @NonNull final URI uri,
+                @NonNull final String pkgName,
+                @NonNull final String name,
+                @NullAllowed final Charset encoding) {
+            super(
+                pkgName,
+                name,
+                encoding,
+                !BaseUtilities.isWindows());
+            assert file != null;
+            this.path = file;
+            this.uri = uri;
+        }
+
+        @Override
+        public URI toUri() {
+            return uri;
+        }
+
+        @Override
+        public InputStream openInputStream() throws IOException {
+            return Files.newInputStream(path);
+        }
+
+        @Override
+        public CharSequence getCharContent(final boolean ignoreEncodingErrors) throws IOException {
+            final long len = Files.size(path);
+            return FileObjects.getCharContent(
+                    openInputStream(),
+                    encoding,
+                    null,
+                    len,
+                    ignoreEncodingErrors);
+        }
+
+        @Override
+        public long getLastModified() {
+            try {
+                return Files.getLastModifiedTime(path).toMillis();
+            } catch (IOException ioe) {
+                return 0L;
+            }
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            throw new UnsupportedOperationException("Write not supported");
+        }
+
+        @Override
+        public boolean delete() {
+            throw new UnsupportedOperationException("Delete not supported");
         }
     }
 
