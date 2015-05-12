@@ -78,6 +78,7 @@ import org.netbeans.modules.subversion.remote.api.SVNNotificationHandler;
 import org.netbeans.modules.subversion.remote.api.SVNStatusUnversioned;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
+import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.client.cli.commands.AddCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.BlameCommand;
 import org.netbeans.modules.subversion.remote.client.cli.commands.CatCommand;
@@ -134,7 +135,7 @@ public class CommandlineClient implements SvnClient {
     private final FileSystem fileSystem;
 
     public static final String ERR_CLI_NOT_AVALABLE = "commandline is not available"; //NOI18N
-    private static boolean supportedMetadataFormat;
+    //private static boolean supportedMetadataFormat;
 
     public CommandlineClient(FileSystem fileSystem) {
         this.notificationHandler = new NotificationHandler();
@@ -163,7 +164,7 @@ public class CommandlineClient implements SvnClient {
                 }
                 throw new SVNClientException(ERR_CLI_NOT_AVALABLE + "\n" + cmd.getOutput()); //NOI18N
             } else {
-                return supportedMetadataFormat = cmd.isMetadataFormatSupported();
+                return /*supportedMetadataFormat =*/ cmd.isMetadataFormatSupported();
             }
         } catch (IOException ex) {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
@@ -769,7 +770,7 @@ public class CommandlineClient implements SvnClient {
         FileObject fo = file.toFileObject();
         Charset encoding = null;
         if (fo != null) {
-            encoding = FileEncodingQuery.getEncoding(null);
+            encoding = FileEncodingQuery.getEncoding(fo);
         }
         if (encoding == null) {
             encoding = FileEncodingQuery.getDefaultEncoding();
@@ -892,7 +893,7 @@ public class CommandlineClient implements SvnClient {
     // parser start
     @Override
     public ISVNStatus getSingleStatus(VCSFileProxy file) throws SVNClientException {
-        if (supportedMetadataFormat) {
+        if (SvnClientFactory.getInstance(new Context(file)).isCLIOldFormat()) {
             try {
                 return wcParser.getSingleStatus(file);
             } catch (LocalSubversionException ex) {
@@ -936,7 +937,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNStatus[] getStatus(VCSFileProxy file, boolean descend, boolean getAll) throws SVNClientException {
-        if (supportedMetadataFormat) {
+        if (SvnClientFactory.getInstance(new Context(file)).isCLIOldFormat()) {
             try {
                 return wcParser.getStatus(file, descend, getAll);
             } catch (LocalSubversionException ex) {
@@ -952,7 +953,7 @@ public class CommandlineClient implements SvnClient {
 
     @Override
     public ISVNInfo getInfoFromWorkingCopy(VCSFileProxy file) throws SVNClientException {
-        if (supportedMetadataFormat) {
+        if (SvnClientFactory.getInstance(new Context(file)).isCLIOldFormat()) {
             try {
                 return wcParser.getInfoFromWorkingCopy(file);
             } catch (LocalSubversionException ex) {
@@ -1025,7 +1026,7 @@ public class CommandlineClient implements SvnClient {
 
     private boolean isManaged(VCSFileProxy file) {
         boolean managed = true;
-        if (supportedMetadataFormat) {
+        if (SvnClientFactory.getInstance(new Context(file)).isCLIOldFormat()) {
             managed = hasMetadata(file.getParentFile()) || hasMetadata(file);
         }
         return managed;

@@ -98,7 +98,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     @Override
     protected JComponent createComponent() {
         if (workdirPanel == null) {
-            workdirPanel = new CheckoutPanel();
+            workdirPanel = new CheckoutPanel(fileSystem);
             workdirPanel.browseWorkdirButton.addActionListener(this);
             workdirPanel.scanForProjectsCheckBox.addItemListener(this);
             workdirPanel.atWorkingDirLevelCheckBox.addItemListener(this);
