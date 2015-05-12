@@ -352,6 +352,11 @@ public abstract class AbstractNbTaskWrapper {
 
     private void save () throws CoreException {
         NbTaskDataModel m = this.model;
+        if(m == null) {
+            // haven't been opened yet so there is no model?
+            // might happen when e.g. closing a local task on commit (see issue #252222)
+            m = task.getTaskDataModel();
+        }
         markNewRead();
         boolean modified = persistPrivateTaskAttributes();
         if (m.isDirty()) {
