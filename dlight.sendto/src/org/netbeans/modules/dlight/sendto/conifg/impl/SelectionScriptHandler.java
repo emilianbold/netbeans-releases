@@ -55,6 +55,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.modules.dlight.sendto.util.Utils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -116,18 +118,15 @@ public class SelectionScriptHandler extends Handler<SelectionConfigurationPanel>
         if (script.trim().isEmpty()) {
             return;
         }
+        final ExecutionEnvironment env = ExecutionEnvironmentFactory.getLocal();
 
-        String scriptFile = ScriptsRegistry.getScriptFile(cfg, ExecutionEnvironmentFactory.getLocal(), script);
+        String scriptFile = ScriptsRegistry.getScriptFile(cfg, env, script);
 
         if (scriptFile == null) {
             return;
         }
 
-        String scriptExecutor = cfg.get(DefaultScriptHandler.SCRIPT_EXECUTOR).trim();
-
-        if (scriptExecutor.isEmpty()) {
-            scriptExecutor = "/bin/sh"; // NOI18N
-        }
+        String scriptExecutor = Utils.substituteShell(cfg.get(DefaultScriptHandler.SCRIPT_EXECUTOR).trim(), env);
 
         List<String> cmd = new ArrayList<String>(2);
         cmd.add(scriptExecutor);
