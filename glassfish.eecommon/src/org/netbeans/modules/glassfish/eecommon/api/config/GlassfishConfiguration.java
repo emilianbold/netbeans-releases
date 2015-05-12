@@ -89,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -212,10 +213,11 @@ public abstract class GlassfishConfiguration implements
      * 
      * @param module  Java EE module (project).
      * @param version Resources file names depend on GlassFish server version.
-     * @return Existing GlassFish resources file or {@code null} when no resources
-     *         file was found.
+     * @return Existing GlassFish resources file together with boolean flag
+     *         indicating whether this is application scoped resource or
+     *         {@code null} when no resources file was found.
      */
-    public static final File getExistingResourceFile(
+    public static final Pair<File, Boolean> getExistingResourceFile(
             final J2eeModule module, final GlassFishVersion version) {
         // RESOURCE_FILES indexes to search for.
         final int[] indexes = versionToResourceFilesIndexes(version);
@@ -224,12 +226,12 @@ public abstract class GlassfishConfiguration implements
             final String name = resourceFilePath(module, RESOURCE_FILES[index]);
             File file = module.getDeploymentConfigurationFile(name);
             if (file != null && file.isFile() && file.canRead()) {
-                return file;
+                return Pair.of(file, true);
             }
-            // Check resiources directory as a fallback.
+            // Check resources directory as a fallback.
             file = new File(module.getResourceDirectory(), RESOURCE_FILES[index]);
             if (file.isFile() && file.canRead()) {
-                return file;
+                return Pair.of(file, false);
             }
         }
         return null;
@@ -242,11 +244,14 @@ public abstract class GlassfishConfiguration implements
      * @param version Resources file names depend on GlassFish server version.
      * @return GlassFish resources file to be created.
      */
-    public static final File getNewResourceFile(
+    public static final Pair<File, Boolean> getNewResourceFile(
             final J2eeModule module, final GlassFishVersion version) {
         final int index = versionToNewResourceFilesIndex(version);
+        if (GlassFishVersion.lt(version, GlassFishVersion.GF_3_1)) {
+            return Pair.of(new File(module.getResourceDirectory(), RESOURCE_FILES[index]), false);
+        }
         final String name = resourceFilePath(module, RESOURCE_FILES[index]);
-        return module.getDeploymentConfigurationFile(name);
+        return Pair.of(module.getDeploymentConfigurationFile(name), true);
     }
 
     ////////////////////////////////////////////////////////////////////////////
