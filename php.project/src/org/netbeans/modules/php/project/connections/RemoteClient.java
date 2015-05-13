@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -432,9 +433,8 @@ public final class RemoteClient implements Cancellable {
                 }
             }
             // XXX lock the file?
-            InputStream is = new FileInputStream(new File(new File(file.getBaseLocalDirectoryPath()), file.getLocalPath()));
             boolean success = false;
-            try {
+            try (InputStream is = new BufferedInputStream(new FileInputStream(new File(new File(file.getBaseLocalDirectoryPath()), file.getLocalPath())))) {
                 for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
                     boolean fileStored;
                     synchronized (this) {
@@ -453,7 +453,6 @@ public final class RemoteClient implements Cancellable {
                     }
                 }
             } finally {
-                is.close();
                 if (success) {
                     if (!properties.isUploadDirectly()) {
                         success = moveRemoteFile(tmpFileName, fileName);
