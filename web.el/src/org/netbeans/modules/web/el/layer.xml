@@ -8,6 +8,7 @@
                     <file name="ELHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                 </folder>
                 <folder name="Popup">

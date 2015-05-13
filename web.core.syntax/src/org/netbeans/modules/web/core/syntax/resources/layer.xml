@@ -207,18 +207,22 @@ made subject to such option by the copyright holder.
                     <file name="JSPHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="JavaHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.hyperlink.JavaHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="ELHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-JspParserFactory.instance">
@@ -349,18 +353,22 @@ made subject to such option by the copyright holder.
                     <file name="JSPHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.syntax.JspHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="JavaHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.java.editor.hyperlink.JavaHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="ELHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder>
                 <file name="org-netbeans-modules-web-core-syntax-EmbeddingProviderImpl$Factory.instance">

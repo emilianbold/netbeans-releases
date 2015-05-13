@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author lukas
  */
-@MimeRegistration(mimeType = "text/x-testng+xml", service = HyperlinkProvider.class)
+@MimeRegistration(mimeType = "text/x-testng+xml", service = HyperlinkProvider.class, position = 1000)
 public class TestNGSuiteHyperlingProvider implements HyperlinkProvider {
 
     private int startOffset;
