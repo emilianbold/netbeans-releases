@@ -376,9 +376,11 @@ public class ProjectUtilities {
         }
         
         // target directory should be writable
-        File targetDir = folderName != null ? new File (FileUtil.toFile (targetFolder), folderName) : FileUtil.toFile (targetFolder);
+        // We should not check this via java.io.File - this breaks not only non-file-based file systems,
+        // but can break versioning as well. See issue #251857 (In Remote Favorites tab user can't create new file)
+        FileObject targetDir = (folderName != null) ? targetFolder.getFileObject(folderName) : targetFolder;        
         if (targetDir != null) {
-            if (targetDir.exists () && ! targetDir.canWrite ()) {
+            if (targetDir.isValid()&& ! targetDir.canWrite ()) {
                 return MSG_fs_is_readonly();
             }
         } else if (! targetFolder.canWrite ()) {
