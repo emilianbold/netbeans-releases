@@ -123,6 +123,11 @@ public class FileModelTest extends TraceModelTestBase {
     }
     
     public void testIncompleteString() throws Exception {
+        // Clank: to fix this case in Clank mode I had to modify:
+        // Lexer.LexCharConstant
+        // Lexer.LexStringLiteral
+        // and return token with real Kind even for incomplete tokens
+        // instead of tok.TokenKind.unknown
         performTest("incomplete_string.cc");        
     }
     

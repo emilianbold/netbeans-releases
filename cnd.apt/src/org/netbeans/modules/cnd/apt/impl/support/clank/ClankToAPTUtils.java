@@ -68,6 +68,8 @@ public final class ClankToAPTUtils {
             //<editor-fold defaultstate="collapsed" desc="long cases">
             // These define members of the tok::* namespace.
             case tok.TokenKind.unknown: // Not a token.
+              // FIXME: consider broken token as comment to have better parser recovery
+              return APTTokenTypes.COMMENT;
             case tok.TokenKind.eof: // End of file.
                 return APTTokenTypes.EOF;
             case tok.TokenKind.eod: // End of preprocessing directive (end of line inside a
