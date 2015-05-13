@@ -144,6 +144,7 @@ public class CommentHandlerService implements CommentHandler {
                 for (RelativePosition pos : RelativePosition.values()) {
                     int index = 0;
                     int last = -1;
+                    int first = 0;
                     List<Comment> l = from.getComments(pos);
                     if (nonEmpty) {
                         boolean nonWs = false;
@@ -151,7 +152,7 @@ public class CommentHandlerService implements CommentHandler {
                             if (c.style()  != Comment.Style.WHITESPACE) {
                                 last = index;
                                 if (!nonWs) {
-                                    l = new ArrayList<>(l.subList(index, l.size()));
+                                    first = index;
                                     nonWs = true;
                                 }
                             }
@@ -164,12 +165,12 @@ public class CommentHandlerService implements CommentHandler {
                     if (last == -1) {
                         last = l.size() - 1;
                     }
-                    for (index = 0; index <= last; index++) {
+                    for (index = first; index <= last; index++) {
                         Comment c = l.get(index);
                         if (copied != null && !copied.add(c)) {
                             continue;
                         }
-                        to.addComment(copyToPos == null ? pos : copyToPos, c, true);
+                        to.addComment(copyToPos == null ? pos : copyToPos, c);
                     }
                 }
             }

@@ -75,21 +75,25 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
 	return TAG_REMOTEHOSTS;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	;
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
 	;
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	String id = atts.getValue(ATTR_ID); 
 	if (Log.XML.debug) {
@@ -107,6 +111,7 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.XML.debug) {
 	    System.out.println(" HostListXMLCodec endElement: element " + element); // NOI18N
@@ -116,6 +121,7 @@ class HostListXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // pseudo-interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
         xes.elementOpen(TAG_REMOTEHOSTS, version());
             // deal with remote host list

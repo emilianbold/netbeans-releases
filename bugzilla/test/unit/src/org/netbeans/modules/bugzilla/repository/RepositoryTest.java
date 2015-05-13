@@ -57,8 +57,12 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_PASSWD;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_URL;
+import static org.netbeans.modules.bugzilla.TestConstants.REPO_USER;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -82,6 +86,16 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
+        // reset
+        Method m = MylynSupport.class.getDeclaredMethod("reset", new Class[0]);
+        m.setAccessible(true);
+        m.invoke(MylynSupport.class);
+                
+        Field f = Bugzilla.class.getDeclaredField("instance");
+        f.setAccessible(true);
+        f.set(Bugzilla.class, null);
+                
         REPO_NAME = "Beautiful-" + System.currentTimeMillis();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         MockLookup.setLayersAndInstances();
@@ -99,7 +113,8 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
         RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
         BugzillaRepository repo = new BugzillaRepository(info);
-
+        repo.ensureCredentials();
+        
         // test queries
         Collection<BugzillaQuery> queries = repo.getQueries();
         assertEquals(0, queries.size());
@@ -137,6 +152,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         String summary2 = "mary" + ts;
         RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
         BugzillaRepository repo = new BugzillaRepository(info);
+        repo.ensureCredentials();
 
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);

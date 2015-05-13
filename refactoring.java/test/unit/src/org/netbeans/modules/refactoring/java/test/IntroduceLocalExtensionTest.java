@@ -401,6 +401,17 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void testPrivateConstr() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { Thing thing; } }"),
+                new File("t/Thing.java","package t; public class Thing { public Thing() { this(\"\"); } private Thing(String s) { } }"));
+        performIntroduceLocalExtension("MyList", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList thing; } }"),
+                new File("t/Thing.java","package t; public class Thing { public Thing() { this(\"\"); } private Thing(String s) { } }"),
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList { private Thing delegate; public MyList(Thing delegate) { this.delegate = delegate; } public MyList() { this.delegate = new Thing(); } public static final MyList[] wrap(Thing... things) { return Arrays.stream(things).map((Thing t) -> new t.MyList(t)).toArray(t.MyList[]::new); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
+    }
+    
     public void testDefault() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A { public static void main(String[] args) { Thing thing; } }"),
@@ -411,7 +422,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList thing; } }"),
                 new File("t/Thing.java","package t; public class Thing implements Some { }"),
                 new File("t/Some.java", "package t; public interface Some { double E = 2.718282; void doIt(); default void doItNow() { }; }"),
-                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList implements Some { private Thing delegate; public MyList(Thing delegate) { this.delegate = delegate; } public MyList() { this.delegate = new Thing(); } @Override public void doIt() { delegate.doIt(); } @Override public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList implements Some { private Thing delegate; public MyList(Thing delegate) { this.delegate = delegate; } public MyList() { this.delegate = new Thing(); } public static final MyList[] wrap(Thing... things) { return Arrays.stream(things).map((Thing t) -> new t.MyList(t)).toArray(t.MyList[]::new); } @Override public void doIt() { delegate.doIt(); } @Override public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
     }
     
     public void testGenericSuperClass() throws Exception {
@@ -469,6 +480,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "\n"
                 + "    public LocalExt() {\n"
                 + "        this.delegate = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static final LocalExt[] wrap(ExtendsGeneric... extendsGenerics) {\n"
+                + "        return Arrays.stream(extendsGenerics).map((ExtendsGeneric t) -> new t.LocalExt(t)).toArray(t.LocalExt[]::new);\n"
                 + "    }\n"
                 + "\n"
                 + "    public String get(String in) {\n"
@@ -534,6 +549,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "\n"
                 + "    public LocalExt() {\n"
                 + "        this.delegate = new A.Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static final LocalExt[] wrap(A.Inner... inners) {\n"
+                + "        return Arrays.stream(inners).map((Inner t) -> new t.LocalExt(t)).toArray(t.LocalExt[]::new);\n"
                 + "    }\n"
                 + "\n"
                 + "    public boolean equals(Object o) {\n"
@@ -604,6 +623,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "\n"
                 + "    public Generics1() {\n"
                 + "        this.delegate = new Generics<T>();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static final Generics1[] wrap(Generics... genericss) {\n"
+                + "        return Arrays.stream(genericss).map((Generics t) -> new t.Generics1(t)).toArray(t.Generics1[]::new);\n"
                 + "    }\n"
                 + "\n"
                 + "    public T get(T in) {\n"
@@ -780,6 +803,10 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        this.delegate = new Date(arg0);\n"
                 + "    }\n"
                 + "\n"
+                + "    public static final DateExt[] wrap(Date... dates) {\n"
+                + "        return Arrays.stream(dates).map((Date t) -> new t.DateExt(t)).toArray(t.DateExt[]::new);\n"
+                + "    }\n"
+                + "\n"
                 + "    public Object clone() {\n"
                 + "        return delegate.clone();\n"
                 + "    }\n"
@@ -954,6 +981,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
                 .append("\n").append("        return delegate.containsAll(clctn);")
@@ -1282,7 +1311,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList some; } }"),
                 new File("t/AbstractClass.java", "package t; public abstract class AbstractClass {\n\n public void doIt() {\n }\n\n public abstract void doItNow();\n}"),
-                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList { private AbstractClass delegate; public MyList(AbstractClass delegate) { this.delegate = delegate; } public void doIt() { delegate.doIt(); } public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList { private AbstractClass delegate; public MyList(AbstractClass delegate) { this.delegate = delegate; } public static final MyList[] wrap(AbstractClass... abstractClasss) { return Arrays.stream(abstractClasss).map((AbstractClass t) -> new t.MyList(t)).toArray(t.MyList[]::new); } public void doIt() { delegate.doIt(); } public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
     }
     
     public void testInterface() throws Exception {
@@ -1293,7 +1322,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("t/A.java", "package t; public class A implements InterWrapper { public void method() { } }"),
                 new File("t/Inter.java", "package t; public interface Inter { void method(); }"),
-                new File("t/InterWrapper.java", "/* * Refactoring License */ package t; /** * * @author junit */ public interface InterWrapper extends Inter { } "));
+                new File("t/InterWrapper.java", "/* * Refactoring License */ package t; /** * * @author junit */ public interface InterWrapper extends Inter {} "));
     }
 
     public void testWrapper() throws Exception {
@@ -1352,6 +1381,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    public void setSomeMagicNumber(int someMagicNumber) {")
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
+                sb1.append("\n").append("public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
                 .append("\n").append("        return delegate.containsAll(clctn);")

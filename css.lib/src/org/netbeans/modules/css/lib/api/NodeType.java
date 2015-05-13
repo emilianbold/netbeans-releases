@@ -473,6 +473,8 @@ public enum NodeType {
     , key_only
     
     , sass_selector_interpolation_exp
+    , sass_error
+    , less_selector_interpolation_exp
     ;
     
     

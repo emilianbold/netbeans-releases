@@ -59,7 +59,6 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.SelectHostWizardProvider;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
@@ -71,21 +70,19 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
-import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.CndLanguageStandards;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Wizard to create a new Make project.
@@ -241,18 +238,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         } else {
             return o1.equals(o2);
         }
-    }
-
-    private SelectHostWizardProvider getSelectHostWizardProvider() {
-        if (selectHostWizardProvider == null) {
-            selectHostWizardProvider = SelectHostWizardProvider.createInstance(false, false, new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    fireStateChanged();
-                }
-            });
-        }
-        return selectHostWizardProvider;
     }
 
     private void setupPanelsAndStepsIfNeed() {        
@@ -441,17 +426,21 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 conftype = MakeConfiguration.TYPE_DB_APPLICATION;
             }
             String mainFile = null;
-            if (((Boolean) wiz.getProperty("createMainFile")).booleanValue()) { // NOI18N
-                String fname = (String) wiz.getProperty("mainFileName"); // NOI18N
-                String template = (String) wiz.getProperty("mainFileTemplate"); // NOI18N
+            if (WizardConstants.PROPERTY_CREATE_MAIN_FILE.get(wiz)) { // NOI18N
+                WizardConstants.PROPERTY_MAIN_FILE_NAME.get(wiz);
+                String fname = WizardConstants.PROPERTY_MAIN_FILE_NAME.get(wiz);
+                String template = WizardConstants.PROPERTY_MAIN_TEMPLATE_NAME.get(wiz);
                 mainFile = fname + "|" + template; // NOI18N
             }
+            String langStandard = WizardConstants.PROPERTY_LANGUAGE_STANDARD.get(wiz);
+
             MakeConfiguration debug = MakeConfiguration.createConfiguration(dirF, "Debug", conftype, customizerId,  hostUID, toolchain, defaultToolchain); // NOI18N
             debug.getCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getCCCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_DEBUG);
             debug.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.DEBUG_MODE);
+            setupLanguageStandard(debug, langStandard);
             //debug.setRemoteMode(Mode.REMOTE_SOURCES);
 
             int platform = CompilerSetManager.get((env)).getPlatform();
@@ -477,6 +466,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             release.getFortranCompilerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getAssemblerConfiguration().getDevelopmentMode().setValue(BasicCompilerConfiguration.DEVELOPMENT_MODE_RELEASE);
             release.getQmakeConfiguration().getBuildMode().setValue(QmakeConfiguration.RELEASE_MODE);
+            setupLanguageStandard(release, langStandard);
             //release.setRemoteMode(Mode.REMOTE_SOURCES);
             release.getDevelopmentHost().setBuildPlatform(platform);
             release.setCompilerSet(compilerSet2Configuration);
@@ -510,7 +500,61 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     private transient int index;
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
-
+    
+//<editor-fold defaultstate="collapsed" desc="Copy from PanelProjectLocationVisual">
+    private static final String[] CPP = new String[]{"C++", // NOI18N
+        CndLanguageStandards.CndLanguageStandard.CPP98.toString(),
+        CndLanguageStandards.CndLanguageStandard.CPP11.toString(),
+        CndLanguageStandards.CndLanguageStandard.CPP14.toString()
+    };
+    private static final String[] C = new String[]{"C", // NOI18N
+        CndLanguageStandards.CndLanguageStandard.C89.toString(),
+        CndLanguageStandards.CndLanguageStandard.C99.toString(),
+        CndLanguageStandards.CndLanguageStandard.C11.toString()
+    };
+    private static final String[] FORTRAN = new String[]{"Fortran90 Fixed", // NOI18N
+        "Fortran90 Free", // NOI18N
+        "Fortran95", // NOI18N
+        "Fortran2003", // NOI18N
+        "Fortran2008" // NOI18N
+    };
+    
+    private static Pair<String,Integer> getLanguageStandard(String value) {
+        if (value == null) {
+            return null;
+        }
+        for(int i = 0; i < C.length; i++) {
+            if (value.equals(C[i])) {
+                return Pair.of(C[0], i);
+            }
+        }
+        for(int i = 0; i < CPP.length; i++) {
+            if (value.equals(CPP[i])) {
+                return Pair.of(CPP[0], i);
+            }
+        }
+        for(int i = 0; i < FORTRAN.length; i++) {
+            if (value.equals(FORTRAN[i])) {
+                return Pair.of(FORTRAN[0], i);
+            }
+        }
+        return null;
+    }
+    
+    private void setupLanguageStandard(MakeConfiguration conf, String langStandard) {
+        Pair<String, Integer> languageStandard = getLanguageStandard(langStandard);
+        if (languageStandard != null) {
+            if (C[0].equals(languageStandard.first())) {
+                conf.getCCompilerConfiguration().getCStandard().setValue(languageStandard.second());
+            } else if (CPP[0].equals(languageStandard.first())) {
+                conf.getCCCompilerConfiguration().getCppStandard().setValue(languageStandard.second());
+            } else if (FORTRAN[0].equals(languageStandard.first())) {
+                //conf.getFortranCompilerConfiguration().getFortranStandard().setValue(languageStandard.second());
+            }
+        }
+    }
+//</editor-fold>
+    
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;

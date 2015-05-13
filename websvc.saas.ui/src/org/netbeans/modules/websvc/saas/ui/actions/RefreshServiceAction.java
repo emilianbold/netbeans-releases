@@ -32,7 +32,6 @@ package org.netbeans.modules.websvc.saas.ui.actions;
 
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -42,20 +41,27 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
- * Action that refreshes a web service from its original wsdl location.
+ * Action that refreshes a web service from its original location.
  * 
  * @author quynguyen
+ * @author Jan Stola
  */
 public class RefreshServiceAction extends NodeAction {
 
+    @Override
     protected boolean enable(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return false;
+        boolean enabled = true;
+        for (Node node : nodes) {
+            Saas saas = node.getLookup().lookup(Saas.class);
+            if (saas == null || saas.getState() == Saas.State.INITIALIZING) {
+                enabled = false;
+                break;
+            }
         }
-        Saas saas = nodes[0].getLookup().lookup(Saas.class);
-        return saas != null && saas.getState() != Saas.State.INITIALIZING;
+        return enabled;
     }
 
+    @Override
     public org.openide.util.HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
@@ -65,27 +71,28 @@ public class RefreshServiceAction extends NodeAction {
         return "org/netbeans/modules/websvc/saas/ui/resources/ActionIcon.gif"; // NOI18N
     }
 
+    @Override
     public String getName() {
-        return NbBundle.getMessage(RefreshServiceAction.class, "REFRESH");
+        return NbBundle.getMessage(RefreshServiceAction.class, "REFRESH"); // NOI18N
     }
 
-    protected void performAction(Node[] nodes) {
-        if (nodes == null || nodes.length != 1) {
-            return;
-        }
-        
-        final Saas saas = nodes[0].getLookup().lookup(Saas.class);
+    @Override
+    protected void performAction(final Node[] nodes) {
         String msg = NbBundle.getMessage(RefreshServiceAction.class, "WS_REFRESH");
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(msg, NotifyDescriptor.YES_NO_OPTION);
         Object response = DialogDisplayer.getDefault().notify(d);
-        if (null != response && response.equals(NotifyDescriptor.YES_OPTION)) {
+        if (NotifyDescriptor.YES_OPTION.equals(response)) {
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
-                    try {
-                        SaasServicesModel.getInstance().refreshService(saas);
-                    } catch (Exception ex) {
-                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
-                        DialogDisplayer.getDefault().notify(msg);
+                    for (Node node : nodes) {
+                        Saas saas = node.getLookup().lookup(Saas.class);
+                        try {
+                            SaasServicesModel.getInstance().refreshService(saas);
+                        } catch (Exception ex) {
+                            NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+                            DialogDisplayer.getDefault().notify(msg);
+                        }
                     }
                 }
             });

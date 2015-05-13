@@ -219,8 +219,9 @@ public final class RefactoringElementsBag {
                     Position elementStart = el.getPosition().getBegin().getPosition();
                     Position elementEnd = el.getPosition().getEnd().getPosition();
                     for(GuardedSection section:manager.getGuardedSections()) {
-                        if (section.contains(elementStart, true) ||
-                                section.contains(elementEnd, true)) {
+                        if (section.contains(elementStart, true)
+                                || (section.contains(elementEnd, true)
+                                && section.getStartPosition().getOffset() != elementEnd.getOffset())) {
                             return true;
                         }
                     }

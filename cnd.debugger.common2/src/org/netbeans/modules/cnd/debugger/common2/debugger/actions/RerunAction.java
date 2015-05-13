@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.State;
 import org.netbeans.modules.cnd.debugger.common2.debugger.StateListener;
-import org.netbeans.modules.cnd.debugger.common2.debugger.options.DebuggerOption;
 
 /**
  * Action which reruns the user's program
@@ -69,6 +68,7 @@ public class RerunAction extends CallableSystemAction implements StateListener {
     } 
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger =
 	    NativeDebuggerManager.get().currentNativeDebugger();
@@ -80,6 +80,7 @@ public class RerunAction extends CallableSystemAction implements StateListener {
     
 
     // interface SystemAction
+    @Override
     public String getName() {
         // removed call to DebuggerManager.isStandalone() to prevent loading of class
         // standalone tool rebrands LBL_RerunProcess and set text of LBL_RunProcess
@@ -89,6 +90,7 @@ public class RerunAction extends CallableSystemAction implements StateListener {
     
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
@@ -117,6 +119,7 @@ public class RerunAction extends CallableSystemAction implements StateListener {
     }    
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	boolean enable;
         if (!state.isLoaded) {

@@ -140,6 +140,6 @@ public class SaveStashAction extends SingleRepositoryAction {
                 }
             }
         };
-        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.MSG_ApplyStashAction_progressName());
+        supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.MSG_SaveStashAction_progressName());
     }
 }

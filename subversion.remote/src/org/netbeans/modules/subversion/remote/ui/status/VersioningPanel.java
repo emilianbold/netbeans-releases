@@ -60,9 +60,11 @@ import java.awt.event.*;
 import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.Subversion;
@@ -206,9 +208,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     void setContext(Context ctx) {
         context = ctx;
-        if (context != null) {
-            SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
-        }
+        addRemovePreferenceListener(0);
         if (EventQueue.isDispatchThread()) {
             syncTable.setTableModel(new SyncFileNode[0]);
         }
@@ -223,9 +223,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     @Override
     public void addNotify() {
         super.addNotify();
-        if (context != null) {
-            SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().addPreferenceChangeListener(this);
-        }
+        addRemovePreferenceListener(1);
         subversion.getStatusCache().addVersioningListener(this);
         subversion.getStatusCache().addPropertyChangeListener(this);
         explorerManager.addPropertyChangeListener(this);
@@ -235,12 +233,44 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
 
     @Override
     public void removeNotify() {
-        SvnModuleConfig.getDefault(context.getFileSystem()).getPreferences().removePreferenceChangeListener(this);
+        addRemovePreferenceListener(-1);
         subversion.getStatusCache().removeVersioningListener(this);
         subversion.getStatusCache().removePropertyChangeListener(this);
         subversion.removePropertyChangeListener(syncTable);
         explorerManager.removePropertyChangeListener(this);
         super.removeNotify();
+    }
+    
+    private AtomicBoolean added = new AtomicBoolean(false);
+    private AtomicBoolean listen = new AtomicBoolean(false);
+    private void addRemovePreferenceListener(int state) {
+        if (state == 1) {
+            added.set(true);
+            if (context != null) {
+                FileSystem fileSystem = context.getFileSystem();
+                if (fileSystem != null) {
+                    SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+                    listen.set(true);
+                }
+            }
+        } else if (state == 0){
+            if (context != null && added.get() && !listen.get()) {
+                FileSystem fileSystem = context.getFileSystem();
+                if (fileSystem != null) {
+                    SvnModuleConfig.getDefault(fileSystem).getPreferences().addPreferenceChangeListener(this);
+                    listen.set(true);
+                }
+            }
+        } else if (state == -1){
+            added.set(false);
+            if (context != null) {
+                FileSystem fileSystem = context.getFileSystem();
+                if (fileSystem != null) {
+                    SvnModuleConfig.getDefault(fileSystem).getPreferences().removePreferenceChangeListener(this);
+                    listen.set(false);
+                }
+            }
+        }
     }
     
     private void setVersioningComponent(JComponent component)  {
@@ -298,6 +328,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         SvnUtils.runWithInfoCache(new Runnable() {
             @Override
             public void run () {
+                if (context == null || context.getFileSystem() == null || !VCSFileProxySupport.isConnectedFileSystem(context.getFileSystem())) {
+                    return;
+                }
                 // XXX attach Cancelable hook
                 final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(VersioningPanel.class, "MSG_Refreshing_Versioning_View")); // NOI18N
                 try {
@@ -412,7 +445,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      */ 
     private void onRefreshAction() {
         LifecycleManager.getDefault().saveAll();
-        if(context == null || context.getRootFiles().length < 1) {
+        if(context == null || context.getRootFiles().length < 1 || context.getFileSystem() == null || !VCSFileProxySupport.isConnectedFileSystem(context.getFileSystem())) {
             return;
         }
         // XXX #168094 logging
@@ -440,7 +473,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             svnProgressSupport = null;
         }
 
-        SVNUrl repository;
+        final SVNUrl repository;
         try {
             repository = CommitAction.getSvnUrl(context);
         } catch (SVNClientException ex) {
@@ -473,7 +506,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             @Override
             public void perform() {
                 try {
-                    StatusAction.executeStatus(context, this, contactServer);
+                    StatusAction.executeStatus(context, repository, this, contactServer);
                 } finally {
                     setFinished(true); // stops skipping versioning events
                 }
@@ -507,6 +540,9 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     
     
     private void onDisplayedStatusChanged() {
+        if(!Subversion.getInstance().checkClientAvailable(context)) {            
+            return;
+        }          
         if (tgbLocal.isSelected()) {
             modeKeeper.setMode(Setup.DIFFTYPE_LOCAL);
             noContentComponent.setLabel(NbBundle.getMessage(VersioningPanel.class, "MSG_No_Changes_Local")); // NOI18N

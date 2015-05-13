@@ -61,10 +61,12 @@ public class GdbProfileProvider implements NativeDebuggerAuxObjectFactory {
     /**
      * Creates an instance of the auxiliary information object
      */
+    @Override
     public ConfigurationAuxObject factoryCreate(String baseDir, PropertyChangeSupport pcs, Configuration configuration) {
 	return new GdbProfile(pcs, configuration);
     }
 
+    @Override
     public String getAuxObjectID() {
         return GdbProfile.PROFILE_ID;
     }

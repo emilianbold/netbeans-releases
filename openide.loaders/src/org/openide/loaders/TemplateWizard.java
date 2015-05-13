@@ -703,9 +703,16 @@ public class TemplateWizard extends WizardDescriptor {
     */
     @SuppressWarnings("unchecked")
     public static Iterator getIterator (DataObject obj) {
-        Object unknownIterator = obj.getPrimaryFile ().getAttribute(CUSTOM_ITERATOR);
+        FileObject primary = obj.getPrimaryFile();
+        Object unknownIterator = primary.getAttribute(CUSTOM_ITERATOR);
         if (unknownIterator == null) {
-            unknownIterator = obj.getPrimaryFile ().getAttribute(EA_ITERATOR);
+            unknownIterator = primary.getAttribute(EA_ITERATOR);
+            if (unknownIterator == null) {
+                FileObject parent = primary.getParent();
+                if (parent != null) {
+                    unknownIterator = parent.getAttribute(EA_ITERATOR);
+                }
+            }
         }
         Iterator it = null;
         if (unknownIterator instanceof Iterator) {

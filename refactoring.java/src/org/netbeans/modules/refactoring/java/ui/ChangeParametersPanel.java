@@ -927,7 +927,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                 && tab.getEditorComponent() != null) {
             JTextComponent field;
             if (tab.getEditorComponent() instanceof ChangeParametersButtonPanel) {
-                field = (JTextComponent) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp();
+                field = (JTextComponent) ((JScrollPane) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp()).getViewport().getView();
             } else {
                 field = (JTextComponent) tab.getEditorComponent();
             }
@@ -1156,8 +1156,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
                     DialogBinding.bindComponentToFile(fileObject, parameterSpan[0] + 1, parameterSpan[1] - parameterSpan[0], editorPane);                 
                     
-                    returnValue = editorPane;
-                    
                     if(col == 1) {
                         editorPane.setText(model.getValueAt(row, col-1) + " " + value.toString()); //NOI18N
                         startOffset = ((String)model.getValueAt(row, col - 1)).length() + 1;
@@ -1177,6 +1175,13 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                         editorPane.setText(value.toString());
                         editorPane.selectAll();
                     }
+                    JScrollPane scrollPane = new JScrollPane();
+                    scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                    scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+                    scrollPane.setBackground(table.getBackground());
+                    scrollPane.setViewportView(editorPane);
+                    returnValue = scrollPane;
+                
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }

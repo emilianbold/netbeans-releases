@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.WizardDescriptor;
@@ -85,6 +86,7 @@ import org.openide.util.NbBundle;
             //sourceFilesPanel.setSeed(workingdir, workingdir);
             sourceFilesPanel.getSourceListData().add(new FolderEntry(wd, wd.getPath()));
             sourceFilesPanel.setFoldersFilter(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN_EXISTING_PROJECT);
+            sourceFilesPanel.setResolveSymLinks(MakeOptions.getInstance().getResolveSymbolicLinks());
             firstTime = false;
         }
     }
@@ -98,6 +100,7 @@ import org.openide.util.NbBundle;
         } else {
             WizardConstants.PROPERTY_SOURCE_FOLDERS_FILTER.put(wizardDescriptor, sourceFilesPanel.getFoldersFilter()); // NOI18N
         }
+        WizardConstants.PROPERTY_RESOLVE_SYM_LINKS.put(wizardDescriptor, sourceFilesPanel.getResolveSymLinks());
         WizardConstants.PROPERTY_TEST_FOLDERS.put(wizardDescriptor, sourceFilesPanel.getTestListData().iterator()); // NOI18N
         WizardConstants.PROPERTY_TEST_FOLDERS_LIST.put(wizardDescriptor, new ArrayList<>(sourceFilesPanel.getTestListData())); // NOI18N
     }

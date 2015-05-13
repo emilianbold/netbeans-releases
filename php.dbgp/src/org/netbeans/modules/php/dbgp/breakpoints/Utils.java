@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.php.dbgp.breakpoints;
 
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
@@ -195,6 +196,20 @@ public final class Utils {
         } catch (DataObjectNotFoundException e) {
             return null;
         }
+    }
+
+    /**
+     * Test whether the line is in PHP source.
+     * @param line The line to test
+     * @return <code>true</code> when the line is in PHP source, <code>false</code> otherwise.
+     */
+    public static boolean isInPhpScript(Line line) {
+        FileObject fo = line.getLookup().lookup(FileObject.class);
+        if (!isPhpFile(fo)) {
+            return false;
+        }
+        Set<String> mimeTypesOnLine = EditorContextDispatcher.getDefault().getMIMETypesOnLine(line);
+        return mimeTypesOnLine.contains(MIME_TYPE);
     }
 
 }

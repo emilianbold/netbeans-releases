@@ -109,6 +109,9 @@ public class ThisInAnonymous {
 
     private static final Set<ElementKind> LOCAL_CLASS_CONTAINERS = EnumSet.of(ElementKind.METHOD, ElementKind.CONSTRUCTOR);
     private static String getKey(Element e) {
+        if (e == null) {
+            return null;
+        }
         ElementKind enclosingKind = e.getKind();
         if (enclosingKind == ElementKind.CLASS) {
             if (e.getSimpleName().length() == 0) return "ERR_ThisInAnonymous";

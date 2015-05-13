@@ -72,6 +72,49 @@ public class ChangeParametersTest extends RefactoringTestBase {
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
+    public void test250047() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    /**\n"
+                        + "     * \n"
+                        + "     * @param x the value of x\n"
+                        + "     */\n"
+                        + "    public void testMethod(int a, int x) {\n"
+                        + "         System.out.println(x);\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(string[] args) {\n"
+                        + "        testMethod(2, 1);\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "    public void testMethod(int a, int b) {\n"
+                        + "         int x = a;\n"
+                        + "    }\n"
+                        + "}\n"));
+        ParameterInfo[] paramTable = new ParameterInfo[]{new ParameterInfo(0, "b", "int", null), new ParameterInfo(1, "x", "int", null)};
+        performChangeParameters(null, null, null, paramTable, Javadoc.NONE, 1, false);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A {\n"
+                        + "    /**\n"
+                        + "     * \n"
+                        + "     * @param x the value of x\n"
+                        + "     */\n"
+                        + "    public void testMethod(int b, int x) {\n"
+                        + "         System.out.println(x);\n"
+                        + "    }\n"
+                        + "\n"
+                        + "    public static void main(string[] args) {\n"
+                        + "        testMethod(2, 1);\n"
+                        + "    }\n"
+                        + "}\n"),
+                new File("t/B.java", "package t; public class B extends A {\n"
+                        + "    public void testMethod(int a, int b) {\n"
+                        + "         int x = a;\n"
+                        + "    }\n"
+                        + "}\n"));
+    }
+    
     public void test239300() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A {\n"

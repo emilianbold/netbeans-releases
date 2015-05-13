@@ -110,6 +110,7 @@ public abstract class CndBaseTestCase extends NbTestCase {
         File netbeans = findNetbeans();
         assert netbeans != null;
         File[] clusters = netbeans.listFiles(new FileFilter() {
+            @Override
             public boolean accept(File dir) {
                 if (dir.isDirectory()) {
                     File m = new File(new File(dir, "config"), "Modules");

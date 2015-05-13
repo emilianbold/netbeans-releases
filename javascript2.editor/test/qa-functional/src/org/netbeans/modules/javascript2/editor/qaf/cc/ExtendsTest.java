@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.qaf.cc;
 
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +50,6 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -60,6 +58,10 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class ExtendsTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExtendFunction"
+    };
     private String projectName = "completionTest";
 
     public ExtendsTest(String args) {
@@ -67,10 +69,7 @@ public class ExtendsTest extends GeneralJavaScript {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExtendsTest.class).addTest(
-                        "openProject",
-                        "testExtendFunction").enableModules(".*").clusters(".*"));
+        return createModuleTest(ExtendsTest.class, tests);
     }
 
     public void testExtendFunction(){

@@ -69,6 +69,7 @@ public class MemoryWindowAction extends CallableSystemAction implements StateLis
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return menu_name;
     }
@@ -81,6 +82,7 @@ public class MemoryWindowAction extends CallableSystemAction implements StateLis
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable;
         if (!state.isLoaded) {
@@ -93,6 +95,7 @@ public class MemoryWindowAction extends CallableSystemAction implements StateLis
     }
     
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 
@@ -103,6 +106,7 @@ public class MemoryWindowAction extends CallableSystemAction implements StateLis
 	    } else {
 		try {
 		    SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
 			public void run() {
 			    MemoryWindow.getDefault().open();
 			    MemoryWindow.getDefault().requestActive();
@@ -115,16 +119,19 @@ public class MemoryWindowAction extends CallableSystemAction implements StateLis
     }
 
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("CTL_Memory");			// NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/memory_browser.png"; // NOI18N
     }

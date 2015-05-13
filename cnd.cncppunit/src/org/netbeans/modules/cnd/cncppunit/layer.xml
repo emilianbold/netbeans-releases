@@ -11,6 +11,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cunittest-c.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder> <!-- End cFiles folder -->
 
@@ -22,12 +23,14 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cppunittest.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CndClassWizardIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="cppunittest.h" url="templates/cpp/cppunittest-h.template">
                 <attr name="position" intvalue="710"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
             <file name="CppUnitRunner.cc" url="templates/cpp/cppunitrunner-cc.template">
@@ -37,6 +40,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/cppunitrunner.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
         </folder> <!-- End cppFiles folder -->
 

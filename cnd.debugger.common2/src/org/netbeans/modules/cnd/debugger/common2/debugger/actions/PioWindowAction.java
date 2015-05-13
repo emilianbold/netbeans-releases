@@ -57,11 +57,13 @@ public final class PioWindowAction extends CallableSystemAction implements State
     static final long serialVersionUID = -6814567172958445516L;    
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebuggerManager.get().enablePioWindow();
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	    return Catalog.get("CTL_Pio"); // NOI18N
     }
@@ -74,6 +76,7 @@ public final class PioWindowAction extends CallableSystemAction implements State
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
         boolean enable;
         if (!state.isLoaded) {
@@ -90,17 +93,20 @@ public final class PioWindowAction extends CallableSystemAction implements State
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("CTL_Pio"); // NOI18N
     }
 
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/process_io.png"; // NOI18N
     }
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     }

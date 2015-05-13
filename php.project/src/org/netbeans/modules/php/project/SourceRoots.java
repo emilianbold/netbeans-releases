@@ -102,7 +102,7 @@ public final class SourceRoots {
     // @GuardedBy("this")
     private List<String> sourceRootProperties;
     // @GuardedBy("this")
-    private List<String> sourceRootNames;
+    private List<String> pureSourceRootNames;
 
 
     private SourceRoots(Builder builder) {
@@ -134,14 +134,44 @@ public final class SourceRoots {
      * It may contain empty {@link String}s but not <code>null</code>.
      * @return an array of source roots names.
      */
-    public synchronized String[] getRootNames() {
+    @NbBundle.Messages({
+        "# {0} - display name of the source root",
+        "# {1} - directory of the source root",
+        "SourceRoots.displayName={0} ({1})",
+    })
+    public String[] getRootNames() {
+        String[] pureRootNames = getPureRootNames();
+        if (pureRootNames.length == 0) {
+            return new String[0];
+        }
+        String[] names = new String[pureRootNames.length];
+        for (int i = 0; i < names.length; i++) {
+            String pureName = pureRootNames[i];
+            String name;
+            if (StringUtils.hasText(pureName)) {
+                name = Bundle.SourceRoots_displayName(displayName, pureName);
+            } else {
+                name = displayName;
+            }
+            names[i] = name;
+        }
+        return names;
+    }
+
+    /**
+     * Returns the pure display names of source roots.
+     * The returned array has the same length as an array returned by the {@link #getRootProperties()}.
+     * It may contain empty {@link String}s but not <code>null</code>.
+     * @return an array of pure source roots names.
+     */
+    public synchronized String[] getPureRootNames() {
         return ProjectManager.mutex().readAccess(new Mutex.Action<String[]>() {
 
             @Override
             public String[] run() {
                 synchronized (SourceRoots.this) {
                     assert Thread.holdsLock(SourceRoots.this);
-                    if (sourceRootNames == null) {
+                    if (pureSourceRootNames == null) {
                         List<String> dirPaths = new ArrayList<>();
                         for (String property : getRootProperties()) {
                             String path = evaluator.getProperty(property);
@@ -151,9 +181,9 @@ public final class SourceRoots {
                                 dirPaths.add(helper.getAntProjectHelper().resolvePath(path));
                             }
                         }
-                        sourceRootNames = getSourceRootsNames(dirPaths, displayName);
+                        pureSourceRootNames = getPureSourceRootsNames(dirPaths);
                     }
-                    return sourceRootNames.toArray(new String[sourceRootNames.size()]);
+                    return pureSourceRootNames.toArray(new String[pureSourceRootNames.size()]);
                 }
             }
 
@@ -248,7 +278,7 @@ public final class SourceRoots {
                         for (String srcProp : getRootProperties()) {
                             String prop = evaluator.getProperty(srcProp);
                             if (prop != null) {
-                                File f = helper.getAntProjectHelper().resolveFile(prop);
+                                File f = FileUtil.normalizeFile(helper.getAntProjectHelper().resolveFile(prop));
                                 try {
                                     URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
@@ -325,7 +355,7 @@ public final class SourceRoots {
                 if (propertyNumericPrefix != null) {
                     sourceRootProperties = null;
                 }
-                sourceRootNames = null;
+                pureSourceRootNames = null;
                 fire = true;
             }
         }
@@ -343,26 +373,21 @@ public final class SourceRoots {
         return firedChanges.get();
     }
 
-    @NbBundle.Messages({
-        "# {0} - display name of the source root",
-        "# {1} - directory of the source root",
-        "SourceRoots.displayName={0} ({1})",
-    })
-    static List<String> getSourceRootsNames(List<String> dirPaths, String displayName) {
+    static List<String> getPureSourceRootsNames(List<String> dirPaths) {
         if (dirPaths.isEmpty()) {
             return Collections.emptyList();
         }
         if (dirPaths.size() == 1) {
-            return Collections.singletonList(displayName);
+            return Collections.singletonList(""); // NOI18N
         }
         if (checkIncorrectValues(dirPaths)) {
             // incorrect, duplicated values (should not happen)
             List<String> names = new ArrayList<>(dirPaths.size());
             for (String path : dirPaths) {
                 if (path == null) {
-                    names.add(displayName);
+                    names.add(""); // NOI18N
                 } else {
-                    names.add(Bundle.SourceRoots_displayName(displayName, path));
+                    names.add(path);
                 }
             }
             return names;
@@ -379,14 +404,14 @@ public final class SourceRoots {
                 }
                 String path = dirPaths.get(i);
                 if (path == null) {
-                    names[i] = displayName;
+                    names[i] = ""; // NOI18N
                 } else {
                     List<String> segments = StringUtils.explode(path, File.separator);
                     int index = segments.size() - 1 - lastIndex;
                     if (index < 0) {
                         index = 0;
                     }
-                    String name = Bundle.SourceRoots_displayName(displayName, segments.get(index));
+                    String name = segments.get(index);
                     int indexOf = Arrays.asList(names).indexOf(name);
                     if (indexOf != -1
                             && indexOf != i) {

@@ -53,7 +53,6 @@ import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import org.netbeans.core.startup.layers.SessionManager;
-import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -88,7 +87,7 @@ final class FileStateManager {
     private static FileStateManager manager = null;
     /** Cache of collected information */
     private WeakHashMap<FileObject, FileInfo> info = new WeakHashMap<FileObject, FileInfo> ();
-    /** Number of layers on {@link SystemFileSystem} */
+    /** Number of layers on SystemFileSystem */
     private static final int LAYERS_COUNT = 3;
     /** Layers of {@link SystemFileSystem}, LAYER_* constants can be used as indexes. */
     private FileSystem layers [] = new FileSystem [LAYERS_COUNT];

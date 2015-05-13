@@ -15,12 +15,39 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.49</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.json_simple</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>0.10</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.32</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -38,7 +65,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>0</release-version>
-                        <specification-version>0.1</specification-version>
+                        <specification-version>0.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -46,13 +73,65 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.32</specification-version>
+                        <specification-version>2.50</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.php.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.42</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.php.project</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>2.123</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.63</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.80</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.79</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.41</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.clientproject.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.91</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -88,11 +167,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>9.3</specification-version>
+                        <specification-version>7.62</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -109,6 +196,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -135,6 +230,7 @@
                 <friend>org.nbphpcouncil.modules.php.laravel4</friend>
                 <friend>org.nbphpcouncil.modules.php.yii</friend>
                 <friend>org.nbphpcouncil.modules.php.yii2</friend>
+                <friend>org.netbeans.modules.php.cake3</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.wordpress</friend>
                 <friend>org.netbeans.modules.php.zend2</friend>

@@ -75,6 +75,27 @@ public class TinyTest extends NbTestCase {
                               "}\n");
     }
 
+    public void testNotifyOnConditionSelf() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test implements java.util.concurrent.locks.Condition {\n" +
+                       "     private void n() throws InterruptedException {\n" +
+                       "         notify();\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:9-3:15:verifier:ERR_NotifyOnCondition(notify)")
+                .applyFix("FIX_NotifyOnConditionFix(signal)")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public abstract class Test implements java.util.concurrent.locks.Condition {\n" +
+                              "     private void n() throws InterruptedException {\n" +
+                              "         signal();\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+    
     public void testNotifyOnCondition2() throws Exception {
         HintTest
                 .create()
@@ -152,6 +173,27 @@ public class TinyTest extends NbTestCase {
                               "public class Test {\n" +
                               "     private void n(Thread t) {\n" +
                               "         t.start();\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+
+    public void testThreadRunSelf() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test extends Thread {\n" +
+                       "     private void n() {\n" +
+                       "         run();\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:9-3:12:verifier:ERR_ThreadRun")
+                .applyFix("FIX_ThreadRun")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public abstract class Test extends Thread {\n" +
+                              "     private void n() {\n" +
+                              "         start();\n" +
                               "     }\n" +
                               "}\n");
     }
@@ -412,6 +454,36 @@ public class TinyTest extends NbTestCase {
                               "             System.err.println(1);\n" +
                               "         } finally {\n" +
                               "              l.unlock();\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
+    }
+
+    public void testUnlockNotInFinallySelf() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public abstract class Test implements java.util.concurrent.locks.Lock {\n" +
+                       "     private void n() {\n" +
+                       "         lock();\n" +
+                       "         System.err.println(1);\n" +
+                       "         System.err.println(1);\n" +
+                       "         unlock();\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(Tiny.class)
+                .findWarning("3:9-3:16:verifier:ERR_UnlockOutsideTryFinally")
+                .applyFix("FIX_UnlockOutsideTryFinally")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public abstract class Test implements java.util.concurrent.locks.Lock {\n" +
+                              "     private void n() {\n" +
+                              "         lock();\n" +
+                              "         try {\n" +
+                              "             System.err.println(1);\n" +
+                              "             System.err.println(1);\n" +
+                              "         } finally {\n" +
+                              "              unlock();\n" +
                               "         }\n" +
                               "     }\n" +
                               "}\n");

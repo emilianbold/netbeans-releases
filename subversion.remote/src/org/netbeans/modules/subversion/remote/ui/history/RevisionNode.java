@@ -131,7 +131,7 @@ class RevisionNode extends AbstractNode {
     }
     
     private void initProperties() {
-        AttributeSet searchHiliteAttrs = ((FontColorSettings) MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class)).getFontColors("highlight-search"); //NOI18N
+        AttributeSet searchHiliteAttrs = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getFontColors("highlight-search"); //NOI18N
         Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
         if (c != null) {
             bgColor = getColorString(c);
@@ -193,7 +193,7 @@ class RevisionNode extends AbstractNode {
     
     private static String highlight (String author, String needle, String bgColor, String fgColor) {
         if (fgColor != null && bgColor != null) {
-            int idx = author.toLowerCase().indexOf(needle);
+            int idx = author.toLowerCase(Locale.getDefault()).indexOf(needle);
             if (idx != -1) {
                 return new StringBuilder("<html><body>").append(author.substring(0, idx)) //NOI18N
                         .append("<span style=\"background-color: ").append(bgColor).append("; color: ").append(fgColor).append(";\">") //NOI18N

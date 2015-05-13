@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.modelimpl.repository;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
@@ -214,12 +213,12 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
     private static CharSequence getName(OffsetableDeclarationBase<?> obj) {
         if (CsmKindUtilities.isFunction(obj) && obj instanceof FunctionImpl) {
             FunctionImpl fun = (FunctionImpl) obj;
-            StringBuilder sb = new StringBuilder(fun.getName()); 
-            CharSequence signature = fun.getSignatureForUID();
-            if (signature != null) {
-                sb.append(signature);
+            CharSequence funExtraSuffix = fun.getUIDExtraSuffix();
+            if (funExtraSuffix != null) {
+                StringBuilder sb = new StringBuilder(fun.getName()); 
+                sb.append(funExtraSuffix);
+                return sb.toString();
             }
-            return sb.toString();
         } 
         return obj.getName();
     }       

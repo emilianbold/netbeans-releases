@@ -63,11 +63,13 @@ public class PopLastDebuggerCallAction
     
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     } 
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
@@ -76,27 +78,32 @@ public class PopLastDebuggerCallAction
     }
     
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_PopCall"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/pop_last_debugger_call.gif"; // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	setEnabled(false);
     }
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	boolean enable = false;
 	if (state != null) {

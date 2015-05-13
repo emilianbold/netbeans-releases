@@ -98,6 +98,10 @@ public final class SubmittedBreakpoint {
         }
     }
     
+    void updatePosition(long line, long column) {
+        breakpoint.setLine((int) line);
+    }
+
     void notifyDestroyed() {
         breakpoint.removePropertyChangeListener(addedChangeListener);
         JSBreakpointStatus.resetValidity(breakpoint);

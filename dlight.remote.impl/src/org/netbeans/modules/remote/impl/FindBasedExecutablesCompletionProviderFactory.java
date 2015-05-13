@@ -93,7 +93,7 @@ public class FindBasedExecutablesCompletionProviderFactory implements Autocomple
         private final FutureTask<String[]> fetchTask;
 
         private Provider(ExecutionEnvironment env) throws IOException {
-            fetchTask = new FutureTask<String[]>(new Find(env));
+            fetchTask = new FutureTask<>(new Find(env));
             RequestProcessor.getDefault().post(fetchTask);
         }
 
@@ -110,7 +110,7 @@ public class FindBasedExecutablesCompletionProviderFactory implements Autocomple
                 }
             }
 
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
 
             boolean found = false;
 
@@ -135,7 +135,7 @@ public class FindBasedExecutablesCompletionProviderFactory implements Autocomple
             }
 
             public String[] call() throws Exception {
-                TreeSet<String> result = new TreeSet<String>();
+                TreeSet<String> result = new TreeSet<>();
 
                 try {
                     NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(env);

@@ -65,7 +65,7 @@ import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.openide.filesystems.FileObject;
@@ -85,7 +85,9 @@ import org.openide.util.NetworkSettings;
  * @author Tomas Stupka
  */
 public class SvnConfigFiles {
-
+    public static final boolean USE_LOCAL_PROXY_SETTINGS = "true".equals(System.getProperty("remote.subversion.manage.proxy", "false"));
+    public static final boolean COPY_CONFIG_FILES = "true".equals(System.getProperty("remote.subversion.manage.config", "false"));
+    
     /** the only SvnConfigFiles instance */
     private static final Map<FileSystem,SvnConfigFiles> instances = new HashMap<>();
 
@@ -119,17 +121,19 @@ public class SvnConfigFiles {
      *
      * Also sets password-stores to empty value. We currently handle password stores poorly and occasionally non-empty values cause a deadlock (see #178122).
      */
-    private class ConfigIniFilePatcher implements IniFilePatcher {
+    private static class ConfigIniFilePatcher implements IniFilePatcher {
         @Override
         public void patch(Ini file) {
             // patch store-auth-creds to "no"
-            Ini.Section auth = file.get("auth");                  // NOI18N
-            if(auth == null) {
-                auth = file.add("auth");                                        // NOI18N
+            if (COPY_CONFIG_FILES) {
+                Ini.Section auth = file.get("auth");                  // NOI18N
+                if(auth == null) {
+                    auth = file.add("auth");                                        // NOI18N
+                }
+                auth.put("store-auth-creds", "yes");                                // NOI18N
+                auth.put("store-passwords", "no");                                  // NOI18N
+                auth.put("password-stores", "");                                    // NOI18N
             }
-            auth.put("store-auth-creds", "yes");                                // NOI18N
-            auth.put("store-passwords", "no");                                  // NOI18N
-            auth.put("password-stores", "");                                    // NOI18N
         }
     }
 
@@ -198,7 +202,9 @@ public class SvnConfigFiles {
             // we need the settings only for remote http and https repositories
             return sensitiveConfigFile;
         }
-
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         boolean changes = false;
         Ini nbServers = new Ini();   
         Ini.Section nbGlobalSection = nbServers.add(GLOBAL_SECTION);
@@ -232,7 +238,7 @@ public class SvnConfigFiles {
             return false;
         }
         String certFile = rc.getCertFile();
-        if(certFile == null || certFile.equals("")) {
+        if(certFile.isEmpty()) {
             return false;
         }
         char[] certPasswordChars = rc.getCertPassword();
@@ -259,27 +265,35 @@ public class SvnConfigFiles {
             Subversion.LOG.log(Level.INFO, null, ex);
             return passwordAdded;
         }
-        String proxyHost = NetworkSettings.getProxyHost(uri);
-        // check DIRECT connection
-        if(proxyHost != null && proxyHost.length() > 0) {
-            String proxyPort = NetworkSettings.getProxyPort(uri);
-            assert proxyPort != null;
-            nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
-            nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
+        if (USE_LOCAL_PROXY_SETTINGS) {
+            String proxyHost = NetworkSettings.getProxyHost(uri);
+            // check DIRECT connection
+            if(proxyHost != null && proxyHost.length() > 0) {
+                String proxyPort = NetworkSettings.getProxyPort(uri);
+                assert proxyPort != null;
+                nbGlobalSection.put("http-proxy-host", proxyHost);                     // NOI18N
+                nbGlobalSection.put("http-proxy-port", proxyPort);                     // NOI18N
 
-            // and the authentication
-            String username = NetworkSettings.getAuthenticationUsername(uri);
-            if(username != null) {
-                String password = getProxyPassword(NetworkSettings.getKeyForAuthenticationPassword(uri));
+                // and the authentication
+                String username = NetworkSettings.getAuthenticationUsername(uri);
+                if(username != null) {
+                    String password = getProxyPassword(NetworkSettings.getKeyForAuthenticationPassword(uri));
 
-                nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
-                nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
-                passwordAdded = true;
+                    nbGlobalSection.put("http-proxy-username", username);                               // NOI18N
+                    nbGlobalSection.put("http-proxy-password", password);                               // NOI18N
+                    passwordAdded = true;
+                }
             }
+            // check if there are also some no proxy settings
+            // we should get from the original svn servers file
+            mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
+        } else {
+            // TODO: implementation uses setting in remote home folder ".subversion"
+            // Alternatives:
+            // 1. get env variable http-proxy to setup proxy settings
+            // 2. support proxy settings per host
+            mergeAllKeys(host, svnGlobalSection, nbGlobalSection);
         }
-        // check if there are also some no proxy settings
-        // we should get from the original svn servers file
-        mergeNonProxyKeys(host, svnGlobalSection, nbGlobalSection);
         return passwordAdded;
     }
 
@@ -303,13 +317,33 @@ public class SvnConfigFiles {
         }
     }
     
+    private void mergeAllKeys(String host, Ini.Section svnGlobalSection, Ini.Section nbGlobalSection) {                             
+        if(svnGlobalSection != null) {
+            // if there is a global section, than get the no proxy settings                                                                 
+            mergeAllKeys(svnGlobalSection, nbGlobalSection);
+        }
+        Ini.Section svnHostGroup = getServerGroup(host);
+        if(svnHostGroup != null) {
+            // if there is a section for the given host, than get the no proxy settings                                                                 
+            mergeAllKeys(svnHostGroup, nbGlobalSection);                
+        }                                
+    }
+
+    private void mergeAllKeys(Ini.Section source, Ini.Section target) {
+        for (String key : source.keySet()) {
+            target.put(key, source.get(key));                                                
+        }
+    }
+
     public void setExternalCommand(String tunnelName, String command) {
         if (command == null) {
             return;
         }
-        Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
-        tunnels.put(tunnelName, command);
-        storeIni(config, "config");                                                     // NOI18N
+        if (COPY_CONFIG_FILES) {
+            Ini.Section tunnels = getSection(config, "tunnels", true); //NOI18N
+            tunnels.put(tunnelName, command);
+            storeIni(config, "config");                                                     // NOI18N
+        }
     }
 
     public String getExternalCommand(String tunnelName) {
@@ -327,6 +361,9 @@ public class SvnConfigFiles {
     }
     
     private VCSFileProxy storeIni (Ini ini, String iniFile) {
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         BufferedOutputStream bos = null;
         VCSFileProxy file = null;
         try {
@@ -427,7 +464,9 @@ public class SvnConfigFiles {
      *
      */ 
     public static VCSFileProxy getNBConfigPath(FileSystem fileSystem) throws IOException {
-        
+        if (!COPY_CONFIG_FILES) {
+            return null;
+        }
         //T9Y - nb svn confing should be changable
         String t9yNbConfigPath = System.getProperty("netbeans.t9y.svn.nb.config.path");
         if (t9yNbConfigPath != null && t9yNbConfigPath.length() > 0) {
@@ -456,7 +495,7 @@ public class SvnConfigFiles {
                 String value = groups.get(key);
                 if(value != null) {     
                     value = value.trim();                    
-                    if(value != null && match(value, host)) {
+                    if(match(value, host)) {
                         return svnServers.get(key);
                     }      
                 }
@@ -482,7 +521,7 @@ public class SvnConfigFiles {
                 return true;
             }
 
-            int idx = value.indexOf("*");                                       // NOI18N
+            int idx = value.indexOf('*');                                       // NOI18N
             if(idx > -1 && matchSegments(value, host) ) {
                 return true;
             }
@@ -511,26 +550,28 @@ public class SvnConfigFiles {
      */
     private Ini copyConfigFileToIDEConfigDir(String fileName, IniFilePatcher patcher) {
         Ini systemIniFile = loadSystemIniFile(fileName);
+        if (COPY_CONFIG_FILES) {
 
-        patcher.patch(systemIniFile);
-        BufferedOutputStream bos = null;
-        try {
-            VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
-            VCSFileProxySupport.mkdirs(file.getParentFile());
-            FileObject fo = file.toFileObject();
-            if (fo == null || !fo.isValid()) {
-                fo = file.getParentFile().toFileObject().createData(file.getName());
-            }
-            bos = new BufferedOutputStream(fo.getOutputStream());
-            systemIniFile.store(bos);
-        } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
-        } finally {
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch (IOException ex) {
-                    Subversion.LOG.log(Level.INFO, null, ex);
+            patcher.patch(systemIniFile);
+            BufferedOutputStream bos = null;
+            try {
+                VCSFileProxy file = VCSFileProxy.createFileProxy(getNBConfigPath(fileSystem), fileName);
+                VCSFileProxySupport.mkdirs(file.getParentFile());
+                FileObject fo = file.toFileObject();
+                if (fo == null || !fo.isValid()) {
+                    fo = file.getParentFile().toFileObject().createData(file.getName());
+                }
+                bos = new BufferedOutputStream(fo.getOutputStream());
+                systemIniFile.store(bos);
+            } catch (IOException ex) {
+                Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
+            } finally {
+                if (bos != null) {
+                    try {
+                        bos.close();
+                    } catch (IOException ex) {
+                        Subversion.LOG.log(Level.INFO, null, ex);
+                    }
                 }
             }
         }
@@ -555,7 +596,7 @@ public class SvnConfigFiles {
         file = file.normalizeFile();
         Ini system = null;
         try {            
-            system = new Ini(new InputStreamReader(file.getInputStream(false)));
+            system = new Ini(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
@@ -572,7 +613,7 @@ public class SvnConfigFiles {
         file = VCSFileProxy.createFileProxy(getGlobalConfigPath(fileSystem), fileName);
         Ini global = null;      
         try {
-            global = new Ini(new InputStreamReader(file.getInputStream(false)));
+            global = new Ini(new InputStreamReader(file.getInputStream(false), "UTF-8")); //NOI18N
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {

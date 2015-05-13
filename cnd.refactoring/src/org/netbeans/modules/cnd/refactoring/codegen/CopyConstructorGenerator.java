@@ -45,10 +45,8 @@ package org.netbeans.modules.cnd.refactoring.codegen;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -69,6 +67,7 @@ import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -95,14 +94,12 @@ public class CopyConstructorGenerator implements CodeGenerator {
             if (!(CsmKindUtilities.isClass(last) || CsmKindUtilities.isField(last))) {
                 return ret;
             }
-            final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
+            final List<Pair<CsmField,ConstructorGenerator.Inited>> fields = new ArrayList<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,CsmConstructor> inheritedConstructors = new HashMap<>();
             CsmCacheManager.enter();
             try {
-                GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+                GeneratorUtils.scanForFieldsAndConstructors(typeElement, fields, constructors);
                 for(CsmConstructor c : constructors) {
                     if (isCopyConstructor(typeElement, c)) {
                         return ret;
@@ -126,8 +123,18 @@ public class CopyConstructorGenerator implements CodeGenerator {
             } finally {
                 CsmCacheManager.leave();
             }
-            if (shouldBeInitializedFields.size() + mayBeIninitializedFields.size() + inheritedConstructors.size() > 0) {
-                ret.add(new CopyConstructorGenerator(component, path, typeElement, shouldBeInitializedFields, mayBeIninitializedFields, inheritedConstructors));
+            int mayAndMust = inheritedConstructors.size();
+            for (Pair<CsmField,ConstructorGenerator.Inited> variableElement : fields) {
+                switch(variableElement.second()) {
+                    case may:
+                    case must:
+                        mayAndMust++;
+                        break;
+                }
+            }
+            
+            if (mayAndMust > 0) {
+                ret.add(new CopyConstructorGenerator(component, path, typeElement, fields, inheritedConstructors));
             }
             return ret;
         }
@@ -150,16 +157,14 @@ public class CopyConstructorGenerator implements CodeGenerator {
     private final JTextComponent component;
     private final CsmContext contextPath;
     private final CsmClass type;
-    private final Set<CsmField> shouldBeInitializedFields;
-    private final Set<CsmField> mayBeIninitializedFields;
+    private final List<Pair<CsmField,ConstructorGenerator.Inited>> fields;
     private final Map<CsmClass,CsmConstructor> inheritedConstructors;
 
-    public CopyConstructorGenerator(JTextComponent component, CsmContext contextPath, CsmClass type, Set<CsmField> shouldBeInitializedFields, Set<CsmField> mayBeIninitializedFields, Map<CsmClass,CsmConstructor> inheritedConstructors) {
+    public CopyConstructorGenerator(JTextComponent component, CsmContext contextPath, CsmClass type, List<Pair<CsmField,ConstructorGenerator.Inited>> fields, Map<CsmClass,CsmConstructor> inheritedConstructors) {
         this.component = component;
         this.contextPath = contextPath;
         this.type = type;
-        this.shouldBeInitializedFields = shouldBeInitializedFields;
-        this.mayBeIninitializedFields = mayBeIninitializedFields;
+        this.fields = fields;
         this.inheritedConstructors = inheritedConstructors;
     }
 
@@ -171,12 +176,15 @@ public class CopyConstructorGenerator implements CodeGenerator {
     @Override
     public void invoke() {
         UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, CsmRefactoringUtils.GENERATE_TRACKING, "CONSTRUCTOR"); // NOI18N
-        if (shouldBeInitializedFields.size() + mayBeIninitializedFields.size() + inheritedConstructors.size() > 0) {
-            ArrayList<CsmField> fields = new ArrayList<>();
-            fields.addAll(shouldBeInitializedFields);
-            fields.addAll(mayBeIninitializedFields);
-            ArrayList<CsmConstructor> constructors = new ArrayList<>(inheritedConstructors.values());
-            GeneratorUtils.generateCopyConstructor(contextPath,  type, constructors, fields);
+        ArrayList<CsmField> fld = new ArrayList<>();
+        for (Pair<CsmField,ConstructorGenerator.Inited> variableElement : fields) {
+            switch(variableElement.second()) {
+                case may:
+                case must:
+                    fld.add(variableElement.first());
+            }
         }
+        ArrayList<CsmConstructor> constructors = new ArrayList<>(inheritedConstructors.values());
+        GeneratorUtils.generateCopyConstructor(contextPath,  type, constructors, fld);
     }
 }

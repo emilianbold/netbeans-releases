@@ -617,7 +617,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         possibleName     : OBJECT possibleName [ANONYMOUS: false, DECLARED: true - possibleName, MODIFIERS: PRIVATE, VARIABLE]
                                                                         regex            : OBJECT regex [ANONYMOUS: false, DECLARED: true - regex, MODIFIERS: PRIVATE, VARIABLE]
-                                        instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PRIVATE, METHOD]
+                                        instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PROTECTED, METHOD]
                                                                         # RETURN TYPES
                                                                         ClassManager_L214.Manager@call;@call;getInstantiator, RESOLVED: false
                                                                         # PROPERTIES
@@ -704,7 +704,7 @@ ClassManager_L214 : FUNCTION ClassManager_L214 [ANONYMOUS: true, DECLARED: true 
                                                                                                   # PROPERTIES
                                                                                                   arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                                         nameListeners        : OBJECT nameListeners [ANONYMOUS: false, DECLARED: true - nameListeners, MODIFIERS: PRIVATE, VARIABLE]
-                                        parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PRIVATE, METHOD]
+                                        parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PROTECTED, METHOD]
                                                                         # RETURN TYPES
                                                                         @arr;cache, RESOLVED: false
                                                                         @exp;ClassManager_L214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false

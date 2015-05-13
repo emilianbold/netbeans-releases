@@ -58,10 +58,8 @@ import javax.swing.plaf.TextUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -71,7 +69,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public class VCSHyperlinkSupport {
-    private static Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());
+    private static final Logger LOG = Logger.getLogger(VCSHyperlinkSupport.class.getName());
     private Map<String, List<Hyperlink>> linkers = new HashMap<>();
 
     public <T extends Hyperlink> T getLinker(Class<T> t, int idx) {
@@ -311,20 +309,16 @@ public class VCSHyperlinkSupport {
         private Rectangle bounds;
         private final int docstart;
         private final int docend;
-        private final KenaiUser kenaiUser;
         private final String author;
         private final Style authorStyle;
-        private final String insertToChat;
 
-        public AuthorLinker(KenaiUser kenaiUser, Style authorStyle, StyledDocument sd, String author) throws BadLocationException {
-            this(kenaiUser, authorStyle, sd, author, null);
+        public AuthorLinker(Style authorStyle, StyledDocument sd, String author) throws BadLocationException {
+            this(authorStyle, sd, author, null);
         }
 
-        public AuthorLinker(KenaiUser kenaiUser, Style authorStyle, StyledDocument sd, String author, String insertToChat) throws BadLocationException {
-            this.kenaiUser = kenaiUser;
+        public AuthorLinker(Style authorStyle, StyledDocument sd, String author, String insertToChat) throws BadLocationException {
             this.author = author;
             this.authorStyle = authorStyle;
-            this.insertToChat = insertToChat;
 
             int doclen = sd.getLength();
             int textlen = author.length();
@@ -345,9 +339,6 @@ public class VCSHyperlinkSupport {
             try {
                 Rectangle startr = tui.modelToView(textPane, docstart, Position.Bias.Forward).getBounds();
                 Rectangle endr = tui.modelToView(textPane, docend, Position.Bias.Backward).getBounds();
-                if(kenaiUser.getIcon() != null) {
-                    endr.x += kenaiUser.getIcon().getIconWidth();
-                }
                 this.bounds = new Rectangle(tpBounds.x + startr.x, startr.y, endr.x - startr.x, startr.height);
                 
                 if (null != translator) {
@@ -361,11 +352,6 @@ public class VCSHyperlinkSupport {
         @Override
         public boolean mouseClicked(Point p) {
             if (bounds != null && bounds.contains(p)) {
-                if(insertToChat != null) {
-                    kenaiUser.startChat(insertToChat);
-                } else {
-                    kenaiUser.startChat();
-                }
                 return true;
             }
             return false;
@@ -392,7 +378,6 @@ public class VCSHyperlinkSupport {
             Style iconStyle = sd.getStyle(iconStyleName);
             if(iconStyle == null) {
                 iconStyle = sd.addStyle(iconStyleName, null);
-                StyleConstants.setIcon(iconStyle, kenaiUser.getIcon());
             }
             sd.insertString(sd.getLength(), " ", style); //NOI18N
             sd.insertString(sd.getLength(), " ", iconStyle); //NOI18N

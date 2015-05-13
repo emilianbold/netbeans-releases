@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;

@@ -537,6 +537,7 @@ public abstract class BaseDwarfProvider extends BaseProvider {
         ArrayList<String> includes = new ArrayList<String>();
         String firstMacro = null;
         int firstMacroLine = -1;
+        boolean exists;
     }
 
     private static final class MyPosition implements Position {

@@ -78,11 +78,11 @@ public interface SvnClient extends Cancellable, SvnClientDescriptor {
 
     void addToIgnoredPatterns(VCSFileProxy file, String value) throws SVNClientException;
 
-    ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException;
+    //ISVNAnnotations annotate(SVNUrl url, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException;
 
     ISVNAnnotations annotate(VCSFileProxy file, SVNRevision revStart, SVNRevision revEnd) throws SVNClientException;
 
-    ISVNAnnotations annotate(BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException;
+    ISVNAnnotations annotate(VCSFileProxy file, BlameCommand blameCmd, CatCommand catCmd) throws SVNClientException;
 
     void cancelOperation() throws SVNClientException;
 
@@ -247,8 +247,8 @@ public interface SvnClient extends Cancellable, SvnClientDescriptor {
 
     void upgrade(VCSFileProxy wcRoot) throws SVNClientException;
 
-    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b);
+    public void unlock(VCSFileProxy[] vcsFileProxy, boolean b) throws SVNClientException;
 
-    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b);
+    public void lock(VCSFileProxy[] vcsFileProxy, String string, boolean b) throws SVNClientException;
     
 }

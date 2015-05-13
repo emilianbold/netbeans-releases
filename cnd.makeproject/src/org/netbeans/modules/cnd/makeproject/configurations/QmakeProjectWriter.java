@@ -46,8 +46,10 @@ import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -72,13 +74,13 @@ import org.openide.filesystems.FileUtil;
  * @author Alexey Vladykin
  */
 public class QmakeProjectWriter {
-    
+
     private static final String PKGCONFIG_BINARY = "pkg-config";   // NOI18N
 
     /*
      * Project file name is constructed as prefix + confName + suffix.
      */
-    
+
     // Need to use unix-style separator, FileUtil.createData is unable to create folders otherwise
     private static final String PROJECT_PREFIX = MakeConfiguration.NBPROJECT_FOLDER + "/qt-"; // NOI18N
     private static final String PROJECT_SUFFIX = ".pro"; // NOI18N
@@ -158,7 +160,7 @@ public class QmakeProjectWriter {
      */
     public void write() throws IOException {
         if (configuration.isQmakeConfiguration()) {
-            final FSPath baseFSPath = configuration.getBaseFSPath();            
+            final FSPath baseFSPath = configuration.getBaseFSPath();
             FileObject confBaseFO = baseFSPath.getFileObject();
             if (confBaseFO == null) {
                 throw new FileNotFoundException("FileObject not found: " + baseFSPath); //NOI18N
@@ -166,7 +168,8 @@ public class QmakeProjectWriter {
             FileObject qmakeProjectFO = FileUtil.createData(confBaseFO, PROJECT_PREFIX + configuration.getName() + PROJECT_SUFFIX);
             BufferedWriter bw = null;
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(qmakeProjectFO)));
+                Charset encoding = FileEncodingQuery.getEncoding(qmakeProjectFO);
+                bw = new BufferedWriter(new OutputStreamWriter(SmartOutputStream.getSmartOutputStream(qmakeProjectFO), encoding));
                 write(bw);
             } finally {
                 if (bw != null) {
@@ -210,7 +213,7 @@ public class QmakeProjectWriter {
                 ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCompiler));
         write(bw, Variable.QMAKE_CXX, Operation.SET,
                 ConfigurationMakefileWriter.getCompilerName(configuration, PredefinedToolKind.CCCompiler));
-       
+
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
         OptionToString defineVisitor = new OptionToString(compilerSet, null);
         write(bw, Variable.DEFINES, Operation.ADD,
@@ -309,7 +312,7 @@ public class QmakeProjectWriter {
         }
         if (isPkgConfigUsed()) {
             list.add("link_pkgconfig"); // NOI18N
-        }        
+        }
         list.add(configuration.getQmakeConfiguration().getBuildMode().getOption());
         return list;
     }
@@ -322,10 +325,10 @@ public class QmakeProjectWriter {
                     return true;
                 }
             }
-        }    
+        }
         return false;
     }
-    
+
     private List<String> getPkgConfig() {
         List<LibraryItem> libraries = configuration.getLinkerConfiguration().getLibrariesConfiguration().getValue();
         List<String> list = new ArrayList<>(libraries.size());
@@ -336,10 +339,10 @@ public class QmakeProjectWriter {
                     list.add(option.getLibraryOption().replaceAll("`", "").replace(PKGCONFIG_BINARY, "").replace("--libs", "").trim()); // NOI18N
                 }
             }
-        }            
+        }
         return list;
-    }    
-    
+    }
+
     private String getLibs() {
         StringBuilder buf = new StringBuilder();
         CompilerSet compilerSet = configuration.getCompilerSet().getCompilerSet();
@@ -349,7 +352,7 @@ public class QmakeProjectWriter {
             if (0 < buf.length()) {
                 buf.append(' '); // NOI18N
             }
-            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet, 
+            OptionToString dynamicSearchVisitor = new OptionToString(compilerSet,
                     compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag());
             buf.append(configuration.getLinkerConfiguration().getDynamicSearch().toString(dynamicSearchVisitor));
         }
@@ -383,7 +386,7 @@ public class QmakeProjectWriter {
                         return item.getOption(configuration);
                     } else {
                         return ""; // NOI18N
-                    }                    
+                    }
                 default:
                     return ""; // NOI18N
             }

@@ -119,7 +119,7 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
                 Node item = type.item(0);
                 if (item != null) {
                     try {
-                        switch (Integer.valueOf(item.getTextContent())) {
+                        switch (Integer.parseInt(item.getTextContent())) {
                             case MakeConfiguration.TYPE_MAKEFILE:
                                 return ImageUtilities.loadImageIcon(MakeProjectTypeImpl.TYPE_MAKEFILE_ICON, false);
                             case MakeConfiguration.TYPE_APPLICATION:

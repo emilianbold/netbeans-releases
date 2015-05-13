@@ -60,26 +60,31 @@ public final class SysCallEEProperty extends EnumProperty {
     }
 
     // interface Property
+    @Override
     protected final void setFromStringImpl(String s) {
 	value = SysCallEE.byTag(s);
     }
     
     // interface EnumProperty
+    @Override
     protected final void setFromNameImpl(String s) {
 	value = SysCallEE.valueOf(s);
     }
 
     // interface Property
+    @Override
     public final String toString() {
 	return value.toString();
     } 
     
     // interface Property
+    @Override
     protected final void setFromObjectImpl(Object o) {
 	value = (SysCallEE) o;
     }
 
     // interface Property
+    @Override
     public final Object getAsObject() {
 	return value;
     }

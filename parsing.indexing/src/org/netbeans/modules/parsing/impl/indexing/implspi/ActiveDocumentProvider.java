@@ -71,17 +71,28 @@ public interface ActiveDocumentProvider {
         private final Document deactivated;
         private final Document activated;
         private final Collection<? extends Document> refresh;
+        private final boolean steady;
 
         public ActiveDocumentEvent(
                 @NonNull final ActiveDocumentProvider source,
                 @NullAllowed final Document deactivated,
                 @NullAllowed final Document activated,
                 @NonNull final Collection<? extends Document> toRefresh) {
+            this(source, deactivated, activated, toRefresh, false);
+        }
+
+        public ActiveDocumentEvent(
+                @NonNull final ActiveDocumentProvider source,
+                @NullAllowed final Document deactivated,
+                @NullAllowed final Document activated,
+                @NonNull final Collection<? extends Document> toRefresh,
+                final boolean steady) {
             super(source);
             Parameters.notNull("toRefresh", toRefresh); //NOI18N
             this.deactivated = deactivated;
             this.activated = activated;
             this.refresh = toRefresh;
+            this.steady = steady;
         }
 
         @CheckForNull

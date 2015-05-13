@@ -399,12 +399,10 @@ public class SourceUtils {
         //not imported/visible so far by any means:
         String topLevelLanguageMIMEType = info.getFileObject().getMIMEType();
         if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
-            final boolean[] ok = new boolean[1];
             final Set<Element> elementsToImport = Collections.singleton(toImport);
             if (info instanceof WorkingCopy) {
                 CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).resolveRewriteTarget(cut);
                 ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
-                ok[0] = true;
             } else {
                 final ElementHandle handle = ElementHandle.create(toImport);
                 SwingUtilities.invokeLater(new Runnable() {
@@ -422,7 +420,6 @@ public class SourceUtils {
                                         return;
                                     }
                                     copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(copy.getCompilationUnit(), Collections.singleton(elementToImport)));
-                                    ok[0] = true;
                                 }
                             }).commit();
                         } catch (Exception e) {
@@ -432,23 +429,19 @@ public class SourceUtils {
                 });
             }
             // only import symbols if import generation succeeded
-            if (ok[0]) {
-                JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
-                if (toImport.getKind() == ElementKind.PACKAGE) {
-                    StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
-                    importScope.importAll(unit.starImportScope);
-                    importScope.importAll(((PackageSymbol)toImport).members());
-                    unit.starImportScope = importScope;
-                } else {
-                    ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
-                    for (Symbol symbol : unit.namedImportScope.getElements()) {
-                        importScope.enter(symbol);
-                    }
-                    importScope.enterIfAbsent((Symbol) toImport);
-                    unit.namedImportScope = importScope;
-                }
+            JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
+            if (toImport.getKind() == ElementKind.PACKAGE) {
+                StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
+                importScope.importAll(unit.starImportScope);
+                importScope.importAll(((PackageSymbol)toImport).members());
+                unit.starImportScope = importScope;
             } else {
-                return fqn;
+                ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
+                for (Symbol symbol : unit.namedImportScope.getElements()) {
+                    importScope.enter(symbol);
+                }
+                importScope.enterIfAbsent((Symbol) toImport);
+                unit.namedImportScope = importScope;
             }
         } else { // embedded java, look up the handler for the top level language
             Lookup lookup = MimeLookup.getLookup(MimePath.get(topLevelLanguageMIMEType));
@@ -1079,8 +1072,9 @@ public class SourceUtils {
             tmirr = tmirr != null ? tmirr : ((WildcardType) type).getSuperBound();
             if (tmirr != null) {
                 return tmirr;
-            } else { //no extends, just '?'
-                return info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+            } else { //no extends, just '?
+                TypeElement tel = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
+                return tel == null ? null : tel.asType();
             }
                 
         }
@@ -1125,8 +1119,16 @@ public class SourceUtils {
 
         if (tm.getKind() == TypeKind.ARRAY) {
             ArrayType at = (ArrayType) tm;
-
-            return info.getTypes().getArrayType(resolveCapturedTypeInt(info, at.getComponentType()));
+            TypeMirror componentType = resolveCapturedTypeInt(info, at.getComponentType());
+            switch (componentType.getKind()) {
+                case VOID:
+                case EXECUTABLE:
+                case WILDCARD:  // heh!
+                case PACKAGE:
+                    break;
+                default:
+                    return info.getTypes().getArrayType(componentType);
+            }
         }
         
         return tm;
@@ -1154,6 +1156,8 @@ public class SourceUtils {
      */
     public static Collection<? extends Element> getForwardReferences(TreePath path, int pos, SourcePositions sourcePositions, Trees trees) {
         HashSet<Element> refs = new HashSet<>();
+        Element el;
+        
         while(path != null) {
             switch(path.getLeaf().getKind()) {
                 case BLOCK:
@@ -1165,14 +1169,20 @@ public class SourceUtils {
                 case INTERFACE:
                     return refs;
                 case VARIABLE:
-                    refs.add(trees.getElement(path));
+                    el = trees.getElement(path);
+                    if (el != null) {
+                        refs.add(el);
+                    }
                     TreePath parent = path.getParentPath();
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(parent.getLeaf().getKind())) {
                         boolean isStatic = ((VariableTree)path.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC);
                         for(Tree member : ((ClassTree)parent.getLeaf()).getMembers()) {
                             if (member.getKind() == Tree.Kind.VARIABLE && sourcePositions.getStartPosition(path.getCompilationUnit(), member) >= pos &&
                                     (isStatic || !((VariableTree)member).getModifiers().getFlags().contains(Modifier.STATIC))) {
-                                refs.add(trees.getElement(new TreePath(parent, member)));
+                                el = trees.getElement(new TreePath(parent, member));
+                                if (el != null) {
+                                    refs.add(el);
+                                }
                             }
                         }
                     }
@@ -1180,7 +1190,10 @@ public class SourceUtils {
                 case ENHANCED_FOR_LOOP:
                     EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
                     if (sourcePositions.getEndPosition(path.getCompilationUnit(), efl.getExpression()) >= pos) {
-                        refs.add(trees.getElement(new TreePath(path, efl.getVariable())));
+                        el = trees.getElement(new TreePath(path, efl.getVariable()));
+                        if (el != null) {
+                            refs.add(el);
+                        }
                     }                        
             }
             path = path.getParentPath();

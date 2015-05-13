@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.remote.mapper;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -149,7 +148,7 @@ public class MappingsTestCase extends RemoteTestBase {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String mspec = NativeExecutionTestSupport.getMspec(getTestExecutionEnvironment());
             String section = "remote." + mspec + ".pathMappings";
-        SortedSet<String> sortedKeySet = new TreeSet<String>(rcFile.getKeys(section));
+        SortedSet<String> sortedKeySet = new TreeSet<>(rcFile.getKeys(section));
         if (sortedKeySet.isEmpty()) {
             return null;
         }
@@ -169,7 +168,7 @@ public class MappingsTestCase extends RemoteTestBase {
     }
 
     private String toSortedString(Map<String, String> mappings) {
-        TreeMap<String, String> sortedMap = new TreeMap<String, String>();
+        TreeMap<String, String> sortedMap = new TreeMap<>();
         sortedMap.putAll(mappings);
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
@@ -180,7 +179,7 @@ public class MappingsTestCase extends RemoteTestBase {
     
     
     private static List<String> getList(String string) {
-        final List<String> result = new LinkedList<String>();
+        final List<String> result = new LinkedList<>();
         final BufferedReader br = new BufferedReader(new StringReader(string));
 
         try {

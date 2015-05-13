@@ -62,7 +62,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.network.ui.NetworkErrorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -179,7 +178,7 @@ public final class NetworkSupport {
             throws NetworkException, IOException, InterruptedException {
         Parameters.notNull("displayName", displayName);
         final Thread downloadThread = Thread.currentThread();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+        ProgressHandle progressHandle = ProgressHandle.createHandle(displayName, new Cancellable() {
             @Override
             public boolean cancel() {
                 downloadThread.interrupt();

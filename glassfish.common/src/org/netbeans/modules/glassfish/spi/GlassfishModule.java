@@ -46,10 +46,10 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.modules.glassfish.common.GlassFishJvmMode;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
@@ -83,6 +83,7 @@ public interface GlassfishModule {
     public static final String DRIVER_DEPLOY_FLAG = "driverDeployOn";
     public static final String START_DERBY_FLAG = "derbyStartOn";
     public static final String USE_IDE_PROXY_FLAG = "useIDEProxyOn";
+    public static final String LOOPBACK_FLAG = "loopbackOn";
     public static final String HTTPHOST_ATTR = "httphostname";  // NOI18N -- necessary for cluster and instance support
     
     public static final String USE_SHARED_MEM_ATTR = "use.shared.mem"; // NOI18N

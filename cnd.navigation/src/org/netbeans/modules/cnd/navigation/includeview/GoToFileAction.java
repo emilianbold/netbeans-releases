@@ -57,8 +57,8 @@ import org.openide.util.NbBundle;
  */
 public class GoToFileAction extends AbstractAction {
     
-    private CsmObject csmObject;
-    private Action delegate;
+    private final CsmObject csmObject;
+    private final Action delegate;
     
     public GoToFileAction(CsmObject csmObject, Action delegate) {
         this.csmObject = csmObject;

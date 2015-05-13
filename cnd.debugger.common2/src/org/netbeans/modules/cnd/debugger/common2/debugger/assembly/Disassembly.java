@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
+import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.impl.DisassemblyFileEncodingQueryImplementation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
@@ -96,9 +97,11 @@ public abstract class Disassembly implements StateModel.Listener {
     
     private final BreakpointModel.Listener breakpointListener =
 	new BreakpointModel.Listener() {
+            @Override
 	    public void bptUpdated() {
                 if (opened) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateAnnotations(false);
                         }
@@ -194,6 +197,7 @@ public abstract class Disassembly implements StateModel.Listener {
             final EditorCookie editorCookie = getDataObject().getCookie(EditorCookie.class);
             if (editorCookie instanceof EditorCookie.Observable) {
                 ((EditorCookie.Observable)editorCookie).addPropertyChangeListener(new PropertyChangeListener() {
+                    @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (EditorCookie.Observable.PROP_OPENED_PANES.equals(evt.getPropertyName())) {
                             if (editorCookie.getOpenedPanes() == null) {
@@ -262,7 +266,7 @@ public abstract class Disassembly implements StateModel.Listener {
             return null;
         }
     }
-    
+        
     protected static DataObject getDataObject() {
         return DataObjectHolder.DOBJ;
     }
@@ -350,14 +354,17 @@ public abstract class Disassembly implements StateModel.Listener {
             this.text = text;
         }
 
+        @Override
         public String getAddress() {
             return ""; //NOI18N
         }
 
+        @Override
         public int getIdx() {
             return -1;
         }
 
+        @Override
         public void setIdx(int idx) {}
 
         @Override
@@ -380,9 +387,11 @@ public abstract class Disassembly implements StateModel.Listener {
     }
     
     private final DocumentListener updateListener = new DocumentListener() {
+        @Override
         public void changedUpdate(DocumentEvent e) {
         }
 
+        @Override
         public void insertUpdate(DocumentEvent e) {
             // update anything on full load only
             if (e.getOffset() + e.getLength() >= disLength) {
@@ -390,6 +399,7 @@ public abstract class Disassembly implements StateModel.Listener {
                 opening = false;
                 if (opened) {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             updateAnnotations(dis);
                         }
@@ -398,6 +408,7 @@ public abstract class Disassembly implements StateModel.Listener {
             }
         }
 
+        @Override
         public void removeUpdate(DocumentEvent e) {
         }
     };
@@ -436,7 +447,10 @@ public abstract class Disassembly implements StateModel.Listener {
         public void save() {
             disLength = getLength();
             try {
-                Writer writer = new OutputStreamWriter(getFileObject().getOutputStream());
+                Writer writer = new OutputStreamWriter(
+                                        getFileObject().getOutputStream(),
+                                        DisassemblyFileEncodingQueryImplementation.CHARSET
+                                    );
                 try {
                     writer.write(data.toString());
                 } catch (IOException ex) {

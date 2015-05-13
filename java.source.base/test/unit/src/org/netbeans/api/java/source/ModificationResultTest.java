@@ -102,7 +102,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef start2 = ces.createPositionRef(10, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", Source.create(testFile));
         
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
         
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));
@@ -116,7 +116,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef start2 = ces.createPositionRef(8, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.INSERT, start2, start2, "", "new-test2\n", Source.create(testFile));
 
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
 
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));
@@ -215,7 +215,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef end2 = ces.createPositionRef(12, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.REMOVE, start2, end2, "e", "", Source.create(testFile));
         
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
         
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));
@@ -231,7 +231,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", Source.create(testFile));
         
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
         
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));
@@ -247,7 +247,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "es", "a", Source.create(testFile));
         
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
         
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));
@@ -306,7 +306,7 @@ public class ModificationResultTest extends NbTestCase {
     public void test152941() throws Exception {
         prepareTest("test\ntest\ntest\n");
 
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
 
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
 
@@ -328,7 +328,7 @@ public class ModificationResultTest extends NbTestCase {
         PositionRef end2 = ces.createPositionRef(13, Bias.Forward);
         ModificationResult.Difference diff2 = new ModificationResult.Difference(ModificationResult.Difference.Kind.CHANGE, start2, end2, "tes", "a", Source.create(testFile));
 
-        ModificationResult result = new ModificationResult(null);
+        ModificationResult result = new ModificationResult();
 
         result.diffs = new HashMap<FileObject, List<ModificationResult.Difference>>();
         result.diffs.put(testFile, Arrays.asList(diff1, diff2));

@@ -136,32 +136,33 @@ class JBStopRunnable implements Runnable {
         
         JBProperties properties = dm.getProperties();
         StringBuilder additionalParams = new StringBuilder(32);
-        int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));  
         NbProcessDescriptor pd;
-        if(isJBoss7()) {
-            pd = new NbProcessDescriptor(serverStopFileName, "--connect --command=:shutdown"); // NOI18N
+        if (isJBoss7()) {
+            pd = new NbProcessDescriptor(serverStopFileName,
+                    "--connect --controller=localhost:" + JBPluginUtils.getJmxPortNumber(properties, ip) + " --command=:shutdown"); // NOI18N
         } else {
-        if (dm.getProperties().getServerVersion().compareTo(JBPluginUtils.JBOSS_6_0_0) < 0) {
-            additionalParams.append(" -s jnp://localhost:").append(jnpPort); // NOI18N
-        } else {
-            // FIXME changed for JBoss 6
-            // see http://community.jboss.org/message/546904
-            // and http://community.jboss.org/wiki/StartStopJBoss
-        }
-        
-        additionalParams.append(" -u ").append(properties.getUsername()); // NOI18N
-        additionalParams.append(" -p ").append(properties.getPassword()); // NOI18N
-        
-        // Currently there is a problem stopping JBoss when Profiler agent is loaded.
-        // As a workaround for now, --halt parameter has to be used for stopping the server.
-//        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ?
-//                                  new NbProcessDescriptor(serverStopFileName, "--halt=0 " + credentialsParams) :   // NOI18N
-//                                  new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams)); // NOI18N
+            if (dm.getProperties().getServerVersion().compareTo(JBPluginUtils.JBOSS_6_0_0) < 0) {
+                int jnpPort = JBPluginUtils.getJnpPortNumber(ip.getProperty(JBPluginProperties.PROPERTY_SERVER_DIR));
+                additionalParams.append(" -s jnp://localhost:").append(jnpPort); // NOI18N
+            } else {
+                // FIXME changed for JBoss 6
+                // see http://community.jboss.org/message/546904
+                // and http://community.jboss.org/wiki/StartStopJBoss
+            }
 
-        /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
-                        of NB Profiler not being notified about the fact that the server was stopped */
-            pd = new NbProcessDescriptor(
-                serverStopFileName, "--shutdown " + additionalParams); // NOI18N
+            additionalParams.append(" -u ").append(properties.getUsername()); // NOI18N
+            additionalParams.append(" -p ").append(properties.getPassword()); // NOI18N
+
+            // Currently there is a problem stopping JBoss when Profiler agent is loaded.
+            // As a workaround for now, --halt parameter has to be used for stopping the server.
+    //        NbProcessDescriptor pd = (startServer.getMode() == JBStartServer.MODE.PROFILE ?
+    //                                  new NbProcessDescriptor(serverStopFileName, "--halt=0 " + credentialsParams) :   // NOI18N
+    //                                  new NbProcessDescriptor(serverStopFileName, "--shutdown " + credentialsParams)); // NOI18N
+
+            /* 2008-09-10 The usage of --halt doesn't solve the problem on Windows; it even creates another problem
+                            of NB Profiler not being notified about the fact that the server was stopped */
+                pd = new NbProcessDescriptor(
+                    serverStopFileName, "--shutdown " + additionalParams); // NOI18N
         }
         Process stoppingProcess = null;
         try {

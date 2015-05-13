@@ -89,7 +89,7 @@ public class MacroSupport {
 
     private static int getOffset(Frame frame, StyledDocument doc) {
         try {
-            int lineNumber = Integer.valueOf(frame.getLineNo());
+            int lineNumber = Integer.parseInt(frame.getLineNo());
             if (lineNumber >= 0 && doc != null) {
                 return NbDocument.findLineOffset(doc, lineNumber-1);
             }

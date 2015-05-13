@@ -307,8 +307,8 @@ implements ListModel, Runnable, javax.swing.event.ListDataListener {
                 external[i] = NOT_TESTED;
             }
             checked = new BitSet (size);
+            assert externalContraints () : "Constraints failed"; // NOI18N
         }
-        assert externalContraints () : "Constraints failed"; // NOI18N
     }
     
     /** this variable is used from tests to prevent creation of elements in
@@ -489,7 +489,8 @@ implements ListModel, Runnable, javax.swing.event.ListDataListener {
     /** Finds the appropriate index of given internal index. The state is 
      * supposed to be after updateYourAssumeptions => no EMPTY_VALUE
      */
-    private int findExternalIndex (int myIndex) {
+    public int findExternalIndex (int myIndex) {
+        initialize();
         int outIndex = 0;
         for (int i = -1; i < size; i++) {
             if (getExternal (i) == NOT_TESTED) {

@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
@@ -137,7 +136,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
     private static Set<TransferFile> prepareDownload(Set<TransferFile> transferFilesToDownload, FileObject sources, FileObject[] filesToDownload,
             PhpProject project, String projectName, boolean showDownloadDialog, RemoteClient remoteClient) {
         Set<TransferFile> forDownload = Collections.emptySet();
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+        ProgressHandle progressHandle = ProgressHandle.createHandle(
                 NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
         try {
             progressHandle.start();
@@ -171,7 +170,8 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             if (forDownload.size() > 0) {
-                ProgressHandle progressHandle = ProgressHandleFactory.createHandle(
+                final boolean askSync = hasAnyChildren(sources);
+                ProgressHandle progressHandle = ProgressHandle.createHandle(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
                 DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor(progressHandle, forDownload);
                 remoteClient.setOperationMonitor(downloadOperationMonitor);
@@ -180,9 +180,11 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
                 if (project != null
+                        && isSourcesSelected(sources, filesToDownload)
                         && !remoteClient.isCancelled()
                         && transferInfo.hasAnyTransfered()) { // #153406
-                    rememberLastDownload(project, sources, filesToDownload);
+                    storeLastDownload(project);
+                    storeLastSync(project, remoteClient, sources, askSync);
                 }
             }
         } catch (RemoteException ex) {
@@ -199,15 +201,18 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
         }
     }
 
-    // #142955 - but remember only if one of the selected files is source directory
-    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
-    //  -> upload another file or the whole project [timestamp is irrelevant])
-    private static void rememberLastDownload(PhpProject project, FileObject sources, FileObject[] selectedFiles) {
-        for (FileObject fo : selectedFiles) {
-            if (sources.equals(fo)) {
-                ProjectSettings.setLastDownload(project, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
-                return;
-            }
-        }
+    private static void storeLastDownload(PhpProject project) {
+        ProjectSettings.setLastDownload(project, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
     }
+
+    private static boolean hasAnyChildren(FileObject file) {
+        for (FileObject child : file.getChildren()) {
+            if ("nbproject".equals(child.getNameExt())) { // NOI18N
+                continue;
+            }
+            return true;
+        }
+        return false;
+    }
+
 }

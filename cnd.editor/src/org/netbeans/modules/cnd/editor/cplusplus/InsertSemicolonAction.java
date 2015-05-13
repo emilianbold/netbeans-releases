@@ -75,6 +75,7 @@ public final class InsertSemicolonAction extends BaseAction {
         final BaseDocument doc = (BaseDocument) target.getDocument();
         final Indent indenter = Indent.get(doc);
         final class R implements Runnable {
+            @Override
             public void run() {
                 try {
                     Caret caret = target.getCaret();

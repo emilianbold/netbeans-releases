@@ -96,7 +96,9 @@ import org.openide.util.Lookup.Template;
  */
 public final class MimeLookup extends Lookup {
     
-    private MimePathLookup mimePathLookup;
+    private Lookup mimePathLookup;
+    
+    private final MimePath mimePath;
     
     /**
      * Gets a <code>Lookup</code> implementation that exposes objects specific
@@ -145,8 +147,8 @@ public final class MimeLookup extends Lookup {
         if (mimeType == null) {
             throw new NullPointerException("The mimeType parameter must not be null."); //NOI18N
         }
-        
-        return new MimeLookup(MimePath.get(mimeType).getLookup());
+        MimePath path = MimePath.get(mimeType);
+        return new MimeLookup(path, MimePath.get(mimeType).getLookup());
     }
 
     /**
@@ -156,8 +158,9 @@ public final class MimeLookup extends Lookup {
      *                 the root MimeLookup
      * @param mimeType non-null mime-type string representation, e.g. "text/x-java"
      */
-    private MimeLookup(MimePathLookup lookup) {
+    private MimeLookup(MimePath path, Lookup lookup) {
         this.mimePathLookup = lookup;
+        this.mimePath = path;
     }
     
     /** 
@@ -177,8 +180,8 @@ public final class MimeLookup extends Lookup {
             throw new NullPointerException("The mimeType parameter must not be null."); //NOI18N
         }
         
-        MimePath mimePath = MimePath.get(mimePathLookup.getMimePath(), mimeType);
-        return new MimeLookup(mimePath.getLookup());
+        MimePath newPath = MimePath.get(mimePath, mimeType);
+        return new MimeLookup(newPath, newPath.getLookup());
     }
 
     /**

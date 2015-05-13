@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
@@ -62,6 +63,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -76,6 +78,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.remotefs.versioning.api.FileObjectIndexingBridgeProvider;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.FileStatusCache;
 import org.netbeans.modules.subversion.remote.OutputLogger;
@@ -103,8 +106,7 @@ import org.netbeans.modules.subversion.remote.ui.blame.BlameAction;
 import org.netbeans.modules.subversion.remote.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.remote.util.projects.ProjectOpener;
-import org.netbeans.modules.subversion.remote.versioning.util.FileSelector;
+import org.netbeans.modules.remotefs.versioning.api.FileSelector;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
@@ -202,7 +204,7 @@ public class SvnUtils {
                 char[] chars = Character.toChars(c);
                 for (int j = 0; j < chars.length; ++j) {
                     sb.append('%');
-                    sb.append(Integer.toHexString(chars[j]).toUpperCase());
+                    sb.append(Integer.toHexString(chars[j]).toUpperCase(Locale.ENGLISH));
                 }
             } else {
                 sb.append(c);
@@ -326,7 +328,7 @@ public class SvnUtils {
      */
     public static boolean isVersionedProject(Node node, boolean checkStatus) {
         Lookup lookup = node.getLookup();
-        Project project = (Project) lookup.lookup(Project.class);
+        Project project = lookup.lookup(Project.class);
         return isVersionedProject(project, checkStatus);
     }
 
@@ -545,10 +547,10 @@ public class SvnUtils {
                         throw ex;
                     }
 
-                    Iterator it = path.iterator();
+                    Iterator<String> it = path.iterator();
                     StringBuilder sb = new StringBuilder();
                     while (it.hasNext()) {
-                        String segment = (String) it.next();
+                        String segment = it.next();
                         sb.append("/"); // NOI18N
                         sb.append(segment);
                     }
@@ -596,6 +598,10 @@ public class SvnUtils {
      * @return the repository url or null for unknown
      */
     public static SVNUrl getRepositoryRootUrl(VCSFileProxy file) throws SVNClientException {
+        return getRepositoryRootUrl(file, false);
+    }
+    
+    public static SVNUrl getRepositoryRootUrl(VCSFileProxy file, boolean knownToBeManaged) throws SVNClientException {
         final Context context = new Context(file);
         SvnClient client = Subversion.getInstance().getClient(false, context);
 
@@ -603,7 +609,7 @@ public class SvnUtils {
         boolean fileIsManaged = false;
         VCSFileProxy lastManaged = file;
         SVNClientException e = null;
-        while (isManaged(file)) {
+        while (knownToBeManaged || isManaged(file)) {
             fileIsManaged = true;
             ISVNInfo info = null;
             try {
@@ -630,7 +636,7 @@ public class SvnUtils {
 
             VCSFileProxy parent = file.getParentFile();
             lastManaged = file;
-            if (parent == null) {
+            if (parent == null || knownToBeManaged) {
                 // .svn in root folder
                 break;
             } else {
@@ -964,7 +970,16 @@ public class SvnUtils {
         if (file.isFile()) {
             return false;
         }
-        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR)) || VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB));
+        //return VCSFileProxySupport.canRead(entries) || VCSFileProxySupport.canRead(db);
+        final VCSFileProxy entries = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR);
+        if (entries.exists() && VCSFileProxySupport.canRead(entries)) {
+            return true;
+        }
+        final VCSFileProxy db = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB);
+        if (db.exists() && VCSFileProxySupport.canRead(db)) {
+            return true;
+        }
+        return false;
     }
 
     private static final ThreadLocal<Map<VCSFileProxy, ISVNInfo>> infoCache = new ThreadLocal<>();
@@ -1308,7 +1323,10 @@ public class SvnUtils {
         if (folder == null) {
             return;
         }
-        refreshParents(folder.getParentFile());
+        // Performance problem on remote FS when refresh all parents to root.
+        // Do not see needs to refresh all parents.
+        // So do not refresh all parents.
+        //refreshParents(folder.getParentFile());
         Subversion.getInstance().getStatusCache().refresh(folder, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
     }
 
@@ -1456,13 +1474,13 @@ public class SvnUtils {
             if(foMime.startsWith("text/")) { //NOI18N
                 return foMime;
             }
-            return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
+            return VCSFileProxySupport.isFileContentText(file) ? "text/plain" : "application/octet-stream"; //NOI18N
         } else {
             PropertiesClient client = new PropertiesClient(file);
             try {
                 byte [] mimeProperty = client.getProperties().get("svn:mime-type"); //NOI18N
                 if (mimeProperty != null) {
-                    String mimePath = new String(mimeProperty);
+                    String mimePath = new String(mimeProperty, "UTF-8"); //NOI18N
                     int pos = mimePath.indexOf('/');
                     if (pos > 0) {
                         while (pos < mimePath.length()) {
@@ -1475,7 +1493,7 @@ public class SvnUtils {
                         }
                     }
                 }
-                return org.netbeans.modules.subversion.remote.versioning.util.Utils.isFileContentText(file) ? foMime : "application/octet-stream"; //NOI18N
+                return VCSFileProxySupport.isFileContentText(file) ? foMime : "application/octet-stream"; //NOI18N
             } catch (IOException e) {
                 return foMime;
             }
@@ -1488,10 +1506,12 @@ public class SvnUtils {
             return true;
         }
 
-        if( (l1 == null && l2 != null && l2.size() > 0) ||
-            (l2 == null && l1 != null && l1.size() > 0) )
-        {
-            return false;
+        if(l1 != null && l2 == null) {
+            return l1.isEmpty();
+        }
+
+        if(l1 == null && l2 != null) {
+            return l2.isEmpty();
         }
 
         if(l1.size() != l2.size()) {
@@ -1611,9 +1631,9 @@ public class SvnUtils {
     }
 
     private static Logger TY9_LOG = null;
-    public static void logT9Y(String msg) {
+    public static synchronized void logT9Y(String msg) {
         if(TY9_LOG == null) {
-            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.t9y"); //NOI18N
+            TY9_LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.t9y"); //NOI18N
         }
         TY9_LOG.log(Level.FINEST, msg);
     }
@@ -1647,7 +1667,7 @@ public class SvnUtils {
         }
 
         roots = l.toArray(new VCSFileProxy[l.size()]);
-        if(org.netbeans.modules.subversion.remote.versioning.util.Utils.shareCommonDataObject(roots)) {
+        if(VCSFileProxySupport.shareCommonDataObject(roots)) {
             return roots;
         }
 
@@ -1702,7 +1722,7 @@ public class SvnUtils {
             return false;
         }
 
-        return javaVMName.toLowerCase().contains("64-bit"); //NOI18N
+        return javaVMName.toLowerCase(Locale.getDefault()).contains("64-bit"); //NOI18N
     }
 
     public static CommitOptions[] createDefaultCommitOptions(SvnFileNode[] nodes, boolean excludeNew) {
@@ -1727,7 +1747,7 @@ public class SvnUtils {
      */
     public static String getTunnelName(String urlString) {
         assert urlString.startsWith("svn+");                            //NOI18N
-        int idx = urlString.indexOf(":", 4);                            //NOI18N
+        int idx = urlString.indexOf(':', 4);                            //NOI18N
         if (idx < 0) {
             idx = urlString.length();
         }
@@ -1840,8 +1860,7 @@ public class SvnUtils {
             }
         }
         // open project selection
-        ProjectOpener opener = new ProjectOpener(ProjectOpener.ProjectOpenerType.CHECKOUT, checkedOutProjects, workingFolder);
-        opener.openProjects();
+        org.netbeans.modules.remotefs.versioning.api.ProjectUtilities.openCheckedOutProjects(checkedOutProjects, workingFolder);
     }
 
     /*
@@ -1889,7 +1908,7 @@ public class SvnUtils {
                         Subversion.LOG.log(Level.FINER, "Running block with disabled indexing: on {0}", Arrays.asList(files)); //NOI18N
                     }
                     indexingFiles.set(new HashSet<>(Arrays.asList(files)));
-                    return runWithoutIndexingImpl(callable, files);
+                    return FileObjectIndexingBridgeProvider.getInstance().runWithoutIndexing(callable, files);
                 } finally {
                     indexingFiles.remove();
                 }
@@ -1903,47 +1922,12 @@ public class SvnUtils {
         }
     }
 
-    private static <T> T runWithoutIndexingImpl(Callable<T> operation, VCSFileProxy ... files) throws Exception  {
-        boolean refreshFS = true;
-        try {
-            return operation.call();
-        } finally {
-            final Set<VCSFileProxy> parents = new HashSet<VCSFileProxy>();
-            for (VCSFileProxy f : files) {
-                VCSFileProxy parent = f.getParentFile();
-                if (parent != null) {
-                    parents.add(parent);
-                    if ( Subversion.LOG.isLoggable(Level.FINE)) {
-                        Subversion.LOG.fine("scheduling for fs refresh: [" + parent + "]"); // NOI18N
-                    }
-                }
-            }
-
-            if (refreshFS && parents.size() > 0) {
-                // let's give the filesystem some time to wake up and to realize that the file has really changed
-                org.netbeans.modules.versioning.util.Utils.postParallel(new Runnable() {
-                    @Override
-                    public void run() {
-                        long t = System.currentTimeMillis();
-                        try {
-                            VersioningSupport.refreshFor(parents.toArray(new VCSFileProxy[parents.size()]));
-                        } finally {                                
-                            if ( Subversion.LOG.isLoggable(Level.FINE)) {
-                                Subversion.LOG.fine(" refreshing " + parents.size() + " parents took " + (System.currentTimeMillis() - t) + " millis.");
-                            }
-                        }
-                    }
-                }, 100); 
-            }
-        }
-    }
-
     private static boolean indexingFilesSubtree (Set<VCSFileProxy> recursiveRoots, VCSFileProxy[] files) {
         for (VCSFileProxy f : files) {
             if (!recursiveRoots.contains(f)) {
                 boolean contained = false;
                 for (VCSFileProxy root : recursiveRoots) {
-                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, f)) {
+                    if (VCSFileProxySupport.isAncestorOrEqual(root, f)) {
                         contained = true;
                         break;
                     }
@@ -1999,31 +1983,6 @@ public class SvnUtils {
         return ret;
     }
 
-    /**
-     * Checks if the context was originally created from files, not from nodes
-     * and if so then it tries to determine if those original files are part of
-     * a single DataObject. Call only if the context was created from files (not
-     * from nodes), otherwise always returns false.
-     *
-     * @param ctx context to be checked
-     * @return true if the context was created from files of the same DataObject
-     */
-    public static boolean isFromMultiFileDataObject(VCSContext ctx) {
-        if (ctx != null) {
-            Collection<? extends Set> allSets = ctx.getElements().lookupAll(Set.class);
-            if (allSets != null) {
-                for (Set contextElements : allSets) {
-                    // private contract with org.openide.loaders - original files from multifile dataobjects are passed as
-                    // org.openide.loaders.DataNode$LazyFilesSet
-                    if ("org.openide.loaders.DataNode$LazyFilesSet".equals(contextElements.getClass().getName())) { //NOI18N
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-    
     /**
      * Recursively deletes the file or directory.
      *

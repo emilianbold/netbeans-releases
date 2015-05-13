@@ -253,18 +253,6 @@ public class SpecificationFactory implements DatabaseSpecificationFactory, Drive
         return spec;
     }
 
-    /** Returns debug-mode flag
-    */
-    public boolean isDebugMode() {
-        return debug;
-    }
-
-    /** Sets debug-mode flag
-    */
-    public void setDebugMode(boolean mode) {
-        debug = mode;
-    }
-
     /** Returns array of driver products supported by system.
     * It returns string array only, if you need a Specification instance, use 
     * appropriate createDriverSpecification method.

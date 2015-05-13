@@ -136,7 +136,7 @@ public class AsmModelUtilities {
      }                        
     
     private static class DummyCompound implements AsmElement {
-        private int pos;
+        private final int pos;
         
         public DummyCompound(int pos) {
             this.pos = pos;

@@ -64,7 +64,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -446,10 +446,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
         public void onSelectedRepositoryChange(String urlString) {
             if(urlString.startsWith("svn+")) { //NOI18N
                 String tunnelName = SvnUtils.getTunnelName(urlString).trim();
-                if( panel.tunnelCommandTextField.getText().trim().equals("") && //NOI18N
-                    tunnelName != null &&
-                    !tunnelName.equals("") ) //NOI18N
-                {
+                if( panel.tunnelCommandTextField.getText().trim().equals("") && !tunnelName.isEmpty()) {
                     panel.tunnelCommandTextField.setText(SvnConfigFiles.getInstance(fileSystem).getExternalCommand(tunnelName));
                 }
             }

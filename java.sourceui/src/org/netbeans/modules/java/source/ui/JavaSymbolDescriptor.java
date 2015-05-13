@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -75,8 +75,9 @@ import org.openide.util.Exceptions;
  * @author Tomas Zezula
  */
 public class JavaSymbolDescriptor extends SymbolDescriptor {
-    
-    private final String displayName;
+
+    private final String simpleName;
+    private final String simpleNameSuffix;
     private final ElementHandle<TypeElement> owner;
     private final ElementHandle<?> me;
     private final ElementKind kind;
@@ -88,7 +89,8 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     private volatile String cachedPath;
 
     public JavaSymbolDescriptor (
-            @NonNull final String displayName,
+            @NonNull final String simpleName,
+            @NullAllowed final String simpleNameSuffix,
             @NonNull final ElementKind kind,
             @NonNull final Set<Modifier> modifiers,
             @NonNull final ElementHandle<TypeElement> owner,
@@ -96,14 +98,15 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
             @NullAllowed final Project project,
             @NonNull final FileObject root,
             @NonNull final ClassIndexImpl ci) {
-        assert displayName != null;
+        assert simpleName != null;
         assert kind != null;
         assert modifiers != null;
         assert owner != null;
         assert me != null;
         assert root != null;
         assert ci != null;
-        this.displayName = displayName;        
+        this.simpleName = simpleName;
+        this.simpleNameSuffix = simpleNameSuffix;
         this.kind = kind;
         this.modifiers = modifiers;
         this.owner = owner;
@@ -112,22 +115,29 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         this.project = project;
         this.ci = ci;
     }
-    
+
     @Override
     public Icon getIcon() {
         return Icons.getElementIcon(kind, modifiers);
     }
-        
+
     @Override
     public String getSymbolName() {
-        return displayName;
+        return simpleNameSuffix == null ?
+                simpleName :
+                simpleName + simpleNameSuffix;
     }
-    
+
+    @Override
+    public String getSimpleName() {
+        return simpleName;
+    }
+
     @Override
     public String getOwnerName() {
         return owner.getQualifiedName();
     }
-    
+
 
     @Override
     public FileObject getFileObject() {
@@ -184,11 +194,11 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         FileObject file = getFileObject();
         if (file != null) {
 	    ClasspathInfo cpInfo = ClasspathInfo.create(file);
-	    
+
 	    ElementOpen.open(cpInfo, me);
         }
     }
-   
+
     @Override
     public String getProjectName() {
         final ProjectInformation info = getProjectInfo();
@@ -220,12 +230,12 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     public Set<? extends Modifier> getModifiers() {
         return modifiers;
     }
-    
+
     @CheckForNull
     private ProjectInformation getProjectInfo() {
         return project == null ?
             null :
             project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
     }
-    
+
 }

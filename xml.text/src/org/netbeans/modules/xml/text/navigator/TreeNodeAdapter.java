@@ -88,11 +88,24 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     private static final String EMPTY_STRING = new String("");
     
+    /**
+     * True, if the Node is currently firing a 'nodechanged' event.
+     */
+    private boolean firingChange;
+    
     public TreeNodeAdapter(DocumentElement de, DefaultTreeModel tm, JTree tree, TreeNode parent) {
         this.de = de;
         this.tm = tm;
         this.tree = tree;
         this.parent = parent;
+    }
+    
+    public int getStart() {
+        return de.getStartOffset();
+    }
+    
+    public int getEnd() {
+        return de.getEndOffset();
     }
     
     /**Returns a text content of this node. The content is fetched from all text  document elements which
@@ -373,14 +386,25 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, sb.toString());
     }
     
+    private void fireNodeChange() {
+        if (!firingChange) {
+            try {
+                firingChange = true;
+                tm.nodeChanged(this);
+            } finally {
+                firingChange = false;
+            }
+        }
+    }
+    
     private void markNodeAsError(final TreeNodeAdapter tna) {
         tna.containsError = true;
         //mark all its ancestors as "childrenContainsError"
         TreeNodeAdapter parent = tna;
-        tm.nodeChanged(tna);
+        tna.fireNodeChange();
         while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
             if(parent.getParent() != null) parent.childrenErrorCount++; //do not fire for root element
-            tm.nodeChanged(parent);
+            parent.fireNodeChange();
         }
     }
     
@@ -440,21 +464,21 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
         tna.containsError = false;
         //unmark all its ancestors as "childrenContainsError"
         TreeNodeAdapter parent = tna;
-        tm.nodeChanged(tna);
+        tna.fireNodeChange();
         while((parent = (TreeNodeAdapter)parent.getParent()) != null) {
             if(parent.getParent() != null) parent.childrenErrorCount--; //do not fire for root element
-            tm.nodeChanged(parent);
+            parent.fireNodeChange();
         }
     }
     
     public void attributesChanged(DocumentElementEvent e) {
         if(debug)System.out.println("Attributes of treenode " + this + " has changed.");
-        tm.nodeChanged(TreeNodeAdapter.this);
+        fireNodeChange();
     }
     
     public void contentChanged(DocumentElementEvent e) {
         if(debug) System.out.println("treenode " + this + " changed.");
-        tm.nodeChanged(TreeNodeAdapter.this);
+        fireNodeChange();
     }
     
     //---- private -----
@@ -493,7 +517,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
     
     private void childTextElementChanged() {
         textContent = null;
-        tm.nodeChanged(this);
+        fireNodeChange();
     }
     
     //generate this node text if one of its nodes has changed
@@ -524,7 +548,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                 textContent = buf.toString();
             }
             //fire a change event for this node
-            tm.nodeChanged(TreeNodeAdapter.this);
+            fireNodeChange();
         }
     }
     

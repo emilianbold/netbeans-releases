@@ -47,10 +47,12 @@ import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 public class ConfSelectorPanel extends javax.swing.JPanel {
 
@@ -118,6 +120,30 @@ public class ConfSelectorPanel extends javax.swing.JPanel {
 
         // Verify any checked
         checkCheckBoxes();
+    }
+
+    public void restoreSelection(String recentSelectionKey) {
+        storeOrRestoreSelection(recentSelectionKey, false);
+    }
+    public void storeSelection(String recentSelectionKey) {
+        storeOrRestoreSelection(recentSelectionKey, true);
+    }
+    
+    private void storeOrRestoreSelection(String recentSelectionKey, boolean store) {
+        if (checkBoxes == null || configurationItems == null || checkBoxes.length != configurationItems.length) {
+            return;
+        }
+        Preferences prefs = NbPreferences.forModule(ConfSelectorPanel.class);
+        for (int i = 0; i < configurationItems.length; i++) {            
+            String key = recentSelectionKey + configurationItems[i].getName();
+            if (store) {
+                String value = Boolean.toString(checkBoxes[i].isSelected());                    
+                prefs.put(key, value);
+            } else {
+                String value = prefs.get(key, Boolean.TRUE.toString());
+                checkBoxes[i].setSelected(Boolean.parseBoolean(value));
+            }
+        }
     }
 
     private class CheckBoxActionListener implements java.awt.event.ActionListener {

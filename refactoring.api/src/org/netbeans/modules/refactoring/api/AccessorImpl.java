@@ -104,6 +104,11 @@ final class AccessorImpl extends APIAccessor {
     }
 
     @Override
+    public void resetFiltersDescription(AbstractRefactoring refactoring) {
+        refactoring.resetFiltersDescription();
+    }
+
+    @Override
     public boolean isFinished(RefactoringSession session) {
         return session.isFinished();
     }

@@ -113,6 +113,20 @@ public class ConvertToARM {
     private static final String PTR_ENC_NONE_TRY_NULL = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL2 = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL2_SHADOW = "$CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}"; //NOI18N
+    
+    // buggy code that actually does not close the AutoCloseable in case of an error
+    private static final String PTR_ENC_ENCLOSED = "try { $CV $var = $init; $stms$; $var.close(); $suff$; } catch $catches$ finally { $finstms$; }"; // NOI18N
+    private static final String PTR_ENC_ENCLOSED2 = "try { $CV $var = $init; $stms$; $var.close(); $suff$; } catch $catches$"; // NOI18N
+    private static final String PTR_ENC_ENCLOSED3 = "try { $CV $var = $init; $stms$; $var.close(); $suff$; } finally { $finstms$; }"; // NOI18N
+    private static final String PTR_ENC_ENCLOSED_FIN = "try { final $CV $var = $init; $stms$; $var.close(); $suff$; } catch $catches$ finally { $finstms$; }";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_FIN2 = "try { final $CV $var = $init; $stms$; $var.close(); $suff$; } catch $catches$";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_FIN3 = "try { final $CV $var = $init; $stms$; $var.close(); $suff$; } finally { $finstms$; }";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT = "$CV $var = $init; try { $stms$; $var.close(); $suff$; } catch $catches$ finally { $finstms$;}";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT2 = "$CV $var = $init; try { $stms$; $var.close(); $suff$; } catch $catches$ finally { $finstms$;}";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT3 = "$CV $var = $init; try { $stms$; $var.close(); $suff$; } finally { $finstms$;}";  //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT_FIN = "final $CV $var = $init; try { $stms$; $var.close(); $suff$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT_FIN2 = "final $CV $var = $init; try { $stms$; $var.close(); $suff$; } catch $catches$;"; //NOI18N
+    private static final String PTR_ENC_ENCLOSED_INIT_FIN3 = "final $CV $var = $init; try { $stms$; $var.close(); $suff$; } finally {$var.close(); $finstms$;}"; //NOI18N
 
     private static final String PTR_ENC_OUT_NO_TRY = "$CV $var = $init; try($armres$) {$stms$;} $var.close();";    //NOI18N
     private static final String PTR_ENC_OUT_NO_TRY_SHADOW = "$CV_x $var_x = $init_x; try($armres_x$) {$stms_x$;} $var_s.close();";    //NOI18N
@@ -148,6 +162,28 @@ public class ConvertToARM {
     
     static boolean checkAutoCloseable = true;
 
+    @NbBundle.Messages("FIX_ChangeTryToARM=Add resources to enclosing try")
+    @TriggerPatterns({
+            @TriggerPattern(value = PTR_ENC_ENCLOSED),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED2),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED3),
+            
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_FIN),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_FIN2),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_FIN3),
+            
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT2),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT3),
+            
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT_FIN),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT_FIN2),
+            @TriggerPattern(value = PTR_ENC_ENCLOSED_INIT_FIN3),
+    })
+    public static List<ErrorDescription> hintCorrectCode(final HintContext ctx) {
+        return hintImpl(ctx, NestingKind.IN, "FIX_ChangeTryToARM");
+    }
+
     @TriggerPatterns(
         {
             @TriggerPattern(value=PTR_ENC_NONE_NO_TRY),
@@ -158,7 +194,7 @@ public class ConvertToARM {
         }
     )
     public static List<ErrorDescription> hint11(final HintContext ctx) {
-        return hint1Impl(ctx, false);
+        return hint1Impl(ctx, false, "TXT_ConvertToARM");
     }
 
     @TriggerPatterns(
@@ -171,6 +207,10 @@ public class ConvertToARM {
     }
 
     public static List<ErrorDescription> hint1Impl(HintContext ctx, boolean secondRule) {
+        return hint1Impl(ctx, secondRule, "TXT_ConvertToARM");
+    }
+    
+    public static List<ErrorDescription> hint1Impl(HintContext ctx, boolean secondRule, String fixKey) {
         if (!MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_SHADOW)     &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_FIN_SHADOW) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_SHADOW) &&
@@ -189,7 +229,7 @@ public class ConvertToARM {
             if (!secondRule && MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_NONE_TRY_NULL2_SHADOW)) {
                 return Collections.<ErrorDescription>emptyList();
             } else {
-                return hintImpl(ctx, NestingKind.NONE);
+                return hintImpl(ctx, NestingKind.NONE, fixKey);
             }
         } else {
             return Collections.<ErrorDescription>emptyList();
@@ -197,6 +237,7 @@ public class ConvertToARM {
     }
 
         
+    @NbBundle.Messages("FIX_MergeTryResources=Add to enclosing try-with-resources")
     @TriggerPatterns(
         {
             @TriggerPattern(value=PTR_ENC_OUT_NO_TRY),
@@ -207,7 +248,7 @@ public class ConvertToARM {
         }
     )
     public static List<ErrorDescription> hint2(HintContext ctx) {
-        return hintImpl(ctx, NestingKind.OUT);
+        return hintImpl(ctx, NestingKind.OUT, "FIX_MergeTryResources");
     }
     
     @TriggerPatterns(
@@ -226,13 +267,13 @@ public class ConvertToARM {
     )
     public static List<ErrorDescription> hint3(HintContext ctx) {
         if (insideARM(ctx)) {
-            return hintImpl(ctx, NestingKind.IN);
+            return hintImpl(ctx, NestingKind.IN,  "FIX_MergeTryResources");
         } else {
             return Collections.<ErrorDescription>emptyList();
         }
     }       
     
-    private static List<ErrorDescription> hintImpl(final HintContext ctx, final NestingKind nestingKind) {
+    private static List<ErrorDescription> hintImpl(final HintContext ctx, final NestingKind nestingKind, String key) {
         Parameters.notNull("ctx", ctx); //NOI18N        
         final Map<String,TreePath> vars = ctx.getVariables();
         final TreePath varVar = vars.get("$var");    //NOI18N
@@ -249,8 +290,14 @@ public class ConvertToARM {
                 final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
                 final Trees trees = ctx.getInfo().getTrees();
                 final VariableElement resElement = (VariableElement) trees.getElement(varVar);
-                if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
-                    final Collection<? extends TreePath> tail = multiVars.get("$$2$");  //NOI18N
+                if (resElement != null && !stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
+                    final Collection<? extends TreePath> tail;
+                    
+                    if (multiVars.containsKey("$suff$")) {
+                        tail = multiVars.get("$suff$"); // NOI18N
+                    } else {
+                        tail = multiVars.get("$$2$");  //NOI18N
+                    }
                     final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
                     final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
                     if (!hasNonCleanUpUsages(usages, cleanUpStatements) && !splitVariablesClash(stms, tail, trees)) {
@@ -260,6 +307,7 @@ public class ConvertToARM {
                             NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
                         new ConvertToARMFix(
 info,
+key,
 ctx.getPath(),
 nestingKind,
 varVar,
@@ -311,7 +359,7 @@ cleanUpStatements).toEditorFix()
         return result;
     }
     private static final class ConvertToARMFix extends JavaFix {
-        
+        private final String bundleKey;
         private final NestingKind nestingKind;
         private final TreePathHandle initHandle;
         private final TreePathHandle varHandle;
@@ -324,6 +372,7 @@ cleanUpStatements).toEditorFix()
         
         private ConvertToARMFix(
                 final CompilationInfo info,
+                final String bundleKey,
                 final TreePath owner,
                 final NestingKind nestignKind,
                 final TreePath var,
@@ -335,6 +384,7 @@ cleanUpStatements).toEditorFix()
                 final Collection<? extends TreePath> tail,
                 final Collection<? extends TreePath> cleanUpStms) {
             super(info, owner);
+            this.bundleKey = bundleKey;
             this.nestingKind = nestignKind;
             this.varHandle = var != null ? TreePathHandle.create(var, info) : null;
             this.initHandle = init != null ? TreePathHandle.create(init, info) : null;
@@ -348,7 +398,7 @@ cleanUpStatements).toEditorFix()
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM");
+            return NbBundle.getMessage(ConvertToARM.class, bundleKey);
         }
         
         @Override
@@ -457,10 +507,12 @@ cleanUpStatements).toEditorFix()
                         ConvertToARMFix.<StatementTree>asList(statementsPaths),
                         nonNeededStms));
             } else if (nestingKind == NestingKind.IN) {
-                final TryTree oldTry = findEnclosingARM(var);
-                if (oldTry == null) {
+                final TreePath oldTryPath = findEnclosingARMPath(var);
+                if (oldTryPath == null) {
                     return;
                 }
+                final TryTree oldTry = (TryTree)oldTryPath.getLeaf();
+                Tree rewriteTree = oldTry;
                 final List<Tree> arm = new ArrayList<Tree>(removeFinal(wc, oldTry.getResources()));
                 arm.add(addInit(wc,
                         removeFinal(wc, (VariableTree)var.getLeaf()),
@@ -470,7 +522,31 @@ cleanUpStatements).toEditorFix()
                         tm.Block(ConvertToARMFix.<StatementTree>asList(statementsPaths), false),
                         oldTry.getCatches(),
                         oldTry.getFinallyBlock());
-                rewriteCopyComments(wc, oldTry, newTry);
+                Tree newTree = newTry;
+                
+                
+                // some code needs to be moved AFTER the finally:
+                if (tail != null && !tail.isEmpty()) {
+                    TreePath parent = oldTryPath.getParentPath();
+                    if (parent != null && parent.getLeaf().getKind() == Tree.Kind.BLOCK) {
+                        // simpler: insert a statement after the (rewritten) tree:
+                        BlockTree bt = (BlockTree)parent.getLeaf();
+                        int index = bt.getStatements().indexOf(oldTry);
+                        List<? extends StatementTree> stats = ConvertToARMFix.<StatementTree>asList(tail);
+                        for (int i = 0; i < stats.size(); i++) {
+                            bt = tm.insertBlockStatement(bt, index + 1 + i, stats.get(i));
+                        }
+                        rewriteCopyComments(wc, parent.getLeaf(), bt);
+                    } else {
+                        // worse: need to replace the old try with a block
+                        List<StatementTree> stats = new ArrayList<>();
+                        stats.add(newTry);
+                        stats.addAll(ConvertToARMFix.<StatementTree>asList(statementsPaths));
+                        
+                        newTree = tm.Block(stats, false);
+                    }
+                }
+                rewriteCopyComments(wc, rewriteTree, newTree);
             }            
         }
         
@@ -628,7 +704,12 @@ cleanUpStatements).toEditorFix()
         return null;
     }
     
-    private static TryTree findEnclosingARM(
+    private static TryTree findEnclosingARM(final TreePath varPath) {
+        TreePath path = findEnclosingARMPath(varPath);
+        return path == null ? null : (TryTree)path.getLeaf();
+    }
+            
+    private static TreePath findEnclosingARMPath(
             final TreePath varPath) {
         TreePath parent = varPath.getParentPath();
         if (parent == null || parent.getLeaf().getKind() != Kind.BLOCK) {
@@ -638,7 +719,7 @@ cleanUpStatements).toEditorFix()
         if (parent == null || parent.getLeaf().getKind() != Kind.TRY) {
             return null;
         }        
-        return (TryTree) parent.getLeaf();
+        return parent;
     }
     
     private static boolean insideARM(final HintContext ctx) {

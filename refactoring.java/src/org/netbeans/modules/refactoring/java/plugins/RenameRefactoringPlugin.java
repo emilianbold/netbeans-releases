@@ -161,6 +161,14 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
             Element element = docTreePathHandle != null? ((DocTrees)info.getTrees()).getElement(docTreePathHandle.resolve(info))
                                                        : treePathHandle.resolveElement(info);
             fireProgressListenerStep();
+            checkProblem = isElementAvail(element, info);
+            if (checkProblem != null) {
+                return checkProblem;
+            }
+            checkProblem = JavaPluginUtils.isSourceElement(element, info);
+            if (checkProblem != null) {
+                return checkProblem;
+            }
             fireProgressListenerStep();
             String msg;
             if (element.getKind() == ElementKind.METHOD) {
@@ -268,6 +276,10 @@ public class RenameRefactoringPlugin extends JavaRefactoringPlugin {
         } else {
             element = docTreePathHandle != null? ((DocTrees)info.getTrees()).getElement(docTreePathHandle.resolve(info))
                                                : treePathHandle.resolveElement(info);
+            fastCheckProblem = isElementAvail(element, info);
+            if (fastCheckProblem != null) {
+                return fastCheckProblem;
+            }
             treePath = info.getTrees().getPath(element);
             kind = element.getKind();
             oldName = element.getSimpleName().toString();

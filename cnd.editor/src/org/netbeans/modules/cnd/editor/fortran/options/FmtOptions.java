@@ -513,7 +513,7 @@ public class FmtOptions {
         private static class ComboItem {
             
             private String value;
-            private String displayName;
+            private final String displayName;
 
             public ComboItem(String value, String key) {
                 this.value = value;
@@ -530,7 +530,7 @@ public class FmtOptions {
    
     public static class PreviewPreferences extends AbstractPreferences {
         
-        private Map<String,Object> map = new HashMap<String, Object>();
+        private final Map<String,Object> map = new HashMap<String, Object>();
 
         public PreviewPreferences() {
             super(null, ""); // NOI18N

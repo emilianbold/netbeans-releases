@@ -59,12 +59,12 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.grunt.GruntBuildTool;
-import org.netbeans.modules.javascript.grunt.file.GruntTasks;
 import org.netbeans.modules.javascript.grunt.file.Gruntfile;
 import org.netbeans.modules.javascript.grunt.options.GruntOptions;
 import org.netbeans.modules.javascript.grunt.options.GruntOptionsValidator;
@@ -148,21 +148,19 @@ public class GruntExecutable {
     }
 
     public Future<List<String>> listTasks() {
-        final GruntTasksLineConvertor gruntTasksLineConvertor = new GruntTasksLineConvertor();
-        ExecutionDescriptor descriptor = getSilentDescriptor()
-                .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
-                    @Override
-                    public LineConvertor newLineConvertor() {
-                        return gruntTasksLineConvertor;
-                    }
-                });
+        final GruntTasksLineProcessor gruntTasksLineProcessor = new GruntTasksLineProcessor();
         Future<Integer> task = getExecutable("list grunt tasks") // NOI18N
                 .noInfo(true)
                 .additionalParameters(Arrays.asList(NO_COLOR_PARAM, HELP_PARAM))
                 .redirectErrorStream(false)
-                .run(descriptor);
+                .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.bridge(gruntTasksLineProcessor);
+                    }
+                });
         assert task != null : gruntPath;
-        return new TaskList(task, gruntTasksLineConvertor);
+        return new TaskList(task, gruntTasksLineProcessor);
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -262,7 +260,7 @@ public class GruntExecutable {
 
     }
 
-    private static final class GruntTasksLineConvertor implements LineConvertor {
+    static final class GruntTasksLineProcessor implements LineProcessor {
 
         private static final String AVAILABLE_TASKS = "Available tasks"; // NOI18N
         private static final String NO_TASKS = "(no tasks found)"; // NOI18N
@@ -270,10 +268,12 @@ public class GruntExecutable {
         final List<String> tasks = new ArrayList<>();
 
         private int state = 0;
+        private int spaceIndex = -1;
 
 
         @Override
-        public List<ConvertedLine> convert(String line) {
+        public void processLine(String line) {
+            LOGGER.log(Level.FINE, line);
             switch (state) {
                 case 0:
                     if (AVAILABLE_TASKS.equals(line)) {
@@ -284,17 +284,32 @@ public class GruntExecutable {
                     if (!StringUtilities.hasText(line)) {
                         state = 2;
                     } else if (NO_TASKS.equals(line.trim())) {
-                        tasks.add(GruntTasks.DEFAULT_TASK);
                         state = 2;
                     } else {
-                        List<String> parts = StringUtilities.explode(line.trim(), " "); // NOI18N
-                        tasks.add(parts.get(0));
+                        if (spaceIndex == -1) {
+                            String task = StringUtilities.explode(line.trim(), "  ").get(0); // NOI18N
+                            assert StringUtilities.hasText(task) : line;
+                            spaceIndex = line.indexOf(task) + task.length();
+                        }
+                        String task = line.substring(0, spaceIndex).trim();
+                        if (StringUtilities.hasText(task)) {
+                            tasks.add(task);
+                        }
                     }
                     break;
                 default:
                     // noop
             }
-            return Collections.emptyList();
+        }
+
+        @Override
+        public void reset() {
+            // noop
+        }
+
+        @Override
+        public void close() {
+            // noop
         }
 
         public List<String> getTasks() {
@@ -306,13 +321,13 @@ public class GruntExecutable {
     private static final class TaskList implements Future<List<String>> {
 
         private final Future<Integer> task;
-        private final GruntTasksLineConvertor convertor;
+        private final GruntTasksLineProcessor convertor;
 
         // @GuardedBy("this")
         private List<String> gruntTasks = null;
 
 
-        TaskList(Future<Integer> task, GruntTasksLineConvertor convertor) {
+        TaskList(Future<Integer> task, GruntTasksLineProcessor convertor) {
             assert task != null;
             assert convertor != null;
             this.task = task;

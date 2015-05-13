@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -80,31 +79,30 @@ import org.openide.util.CharSequences;
 public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implements CsmConstructor {
 
     private List<CsmExpression> initializers;
-    
+
     protected ConstructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+        super(name, rawName, cls, visibility, defKind, _virtual, false, false, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
-    
+
     public static ConstructorDDImpl createConstructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
+
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean afterAssignEqual = false;
-        DefinitionKind defKind = DefinitionKind.REGULAR;        
+        DefinitionKind defKind = DefinitionKind.REGULAR;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -133,28 +131,26 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
                     if (afterAssignEqual) {
                         defKind = DefinitionKind.DEFAULT;
                     }
-                    break;                    
+                    break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        ConstructorDDImpl constructorDDImpl = new ConstructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, constructorDDImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, constructorDDImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         constructorDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         constructorDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, constructorDDImpl, file));
-        constructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorDDImpl, file, fileContent), 
+        constructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorDDImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, constructorDDImpl);
         if (body == null) {
             throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
-        }        
+        }
         constructorDDImpl.setCompoundStatement(body);
         constructorDDImpl.initializers = AstRenderer.renderConstructorInitializersList(ast, constructorDDImpl, constructorDDImpl.getContainingFile());
         postObjectCreateRegistration(global, constructorDDImpl);
@@ -166,7 +162,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     public CsmType getReturnType() {
         return NoType.instance();
     }
-    
+
     @Override
     public List<CsmExpression> getInitializerList() {
         if(initializers != null) {
@@ -174,8 +170,8 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         } else {
             return Collections.<CsmExpression>emptyList();
         }
-    }    
-    
+    }
+
     public static class ConstructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
 
         @Override
@@ -188,7 +184,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
             if (bodyBuilder == null) {
                 return null;
             }
-            
+
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
@@ -196,7 +192,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
             ConstructorDDImpl method = new ConstructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
@@ -217,28 +213,28 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
-            
-//            addMember(method);
-            
-            return method;
-        }        
 
-    }    
-    
+//            addMember(method);
+
+            return method;
+        }
+
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     public ConstructorDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         initializers = PersistentUtils.readExpressions(new ArrayList<CsmExpression>(), input);
     }
-        
+
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeExpressions(initializers, output);
     }
-        
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         Collection<CsmScopeElement> c = super.getScopeElements();

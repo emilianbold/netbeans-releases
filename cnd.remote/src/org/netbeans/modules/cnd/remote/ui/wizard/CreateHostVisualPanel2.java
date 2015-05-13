@@ -55,12 +55,17 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
+import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
+import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
+import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.spi.remote.setup.support.TextComponentWriter;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -76,7 +81,10 @@ import org.openide.util.RequestProcessor;
         this.data = data;
         wizardListener = listener;
         initComponents();
-
+        
+        cbACL.setEnabled(true);
+        cbACL.setSelected(true);
+        
         textLoginName.setText(System.getProperty("user.name"));
 
         configurationPanel = ConnectionManager.getInstance().getConfigurationPanel(null);
@@ -131,6 +139,7 @@ import org.openide.util.RequestProcessor;
                 data.getUserName().concat("@"). // NOI18N
                 concat(data.getHostName()).concat(":") // NOI18N
                 .concat(Integer.toString(data.getPort())));
+        this.cbFindCompilers.setSelected(data.getSearchTools());
     }
 
     private String getLoginName() {
@@ -149,17 +158,26 @@ import org.openide.util.RequestProcessor;
     private void initComponents() {
 
         authPanel = new javax.swing.JPanel();
+        cbFindCompilers = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tpOutput = new javax.swing.JTextPane();
         pbarStatusPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textLoginName = new javax.swing.JTextField();
+        cbACL = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
 
         authPanel.setLayout(new java.awt.BorderLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbFindCompilers, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbFindCompilers.text")); // NOI18N
+        cbFindCompilers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbFindCompilersActionPerformed(evt);
+            }
+        });
 
         tpOutput.setEditable(false);
         tpOutput.setText(org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.tpOutput.text")); // NOI18N
@@ -185,7 +203,7 @@ import org.openide.util.RequestProcessor;
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(textLoginName, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+                .addComponent(textLoginName)
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -197,28 +215,68 @@ import org.openide.util.RequestProcessor;
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbACL, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbACL.text")); // NOI18N
+        cbACL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbACLActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(pbarStatusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 534, Short.MAX_VALUE)
+            .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jScrollPane1)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbACL, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbFindCompilers, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 2, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addComponent(cbFindCompilers)
+                .addGap(2, 2, 2)
+                .addComponent(cbACL)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cbFindCompilersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbFindCompilersActionPerformed
+        data.setSearchTools(cbFindCompilers.isSelected());
+        HostValidator v = this.hostValidator;
+        if (v != null) { // validation already started
+            cbFindCompilers.setEnabled(false);
+            if (!cbFindCompilers.isSelected()) {
+                v.cancelToolSearch();
+            }
+        }
+    }//GEN-LAST:event_cbFindCompilersActionPerformed
+
+    private void cbACLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbACLActionPerformed
+        data.enableACL(cbACL.isSelected());
+        ExecutionEnvironment env = data.getExecutionEnvironment();
+        if (env != null) {
+            FileSystemProvider.setAccessCheckType(env, cbACL.isSelected()
+                    ? FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST);
+        }
+    }//GEN-LAST:event_cbACLActionPerformed
     private ProgressHandle phandle;
+    private volatile HostValidator hostValidator;
 
     /* package-local */ ExecutionEnvironment getHost() {
         return hostFound;
@@ -236,12 +294,12 @@ import org.openide.util.RequestProcessor;
     }
 
     public boolean canValidateHost() {
-        List<ServerRecord> records = new ArrayList<ServerRecord>();
+        List<ServerRecord> records = new ArrayList<>();
 
         if (data.getCacheManager().getServerUpdateCache() != null && data.getCacheManager().getServerUpdateCache().getHosts() != null) {
             records.addAll(data.getCacheManager().getServerUpdateCache().getHosts());
         } else {
-            records = new ArrayList<ServerRecord>(ServerList.getRecords());
+            records = new ArrayList<>(ServerList.getRecords());
         }
 
         for (ServerRecord record : records) {
@@ -258,7 +316,7 @@ import org.openide.util.RequestProcessor;
     }
 
     public Future<Boolean> validateHost() {
-        FutureTask<Boolean> validationTask = new FutureTask<Boolean>(new Callable<Boolean>() {
+        FutureTask<Boolean> validationTask = new FutureTask<>(new Callable<Boolean>() {
 
             @Override
             public Boolean call() throws Exception {
@@ -283,17 +341,17 @@ import org.openide.util.RequestProcessor;
                 phandle.start();
 
                 try {
-                    HostValidatorImpl hostValidator = new HostValidatorImpl(data.getCacheManager());
-                    if (hostValidator.validate(env, /*password, rememberPassword, */ new TextComponentWriter(tpOutput))) {
+                    StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "hostValidator.validate"); //NOI18N
+                    hostValidator = new HostValidatorImpl(data.getCacheManager());
+                    FileSystemProvider.setAccessCheckType(env, cbACL.isSelected()
+                            ? FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST);                    
+                    if (hostValidator.validate(env, data.getSearchTools(), new TextComponentWriter(tpOutput))) {
+                        sw.stop();
                         hostFound = env;
                         runOnFinish = hostValidator.getRunOnFinish();
-                        try { // let user see the log ;-)
-                            Thread.sleep(1500);
-                        } catch (InterruptedException ex) {
-                            // nothing
-                        }
                     }
                 } finally {
+                    hostValidator = null;
                     phandle.finish();
                     wizardListener.stateChanged(null);
                     pbarStatusPanel.setVisible(false);
@@ -309,6 +367,8 @@ import org.openide.util.RequestProcessor;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel authPanel;
+    private javax.swing.JCheckBox cbACL;
+    private javax.swing.JCheckBox cbFindCompilers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;

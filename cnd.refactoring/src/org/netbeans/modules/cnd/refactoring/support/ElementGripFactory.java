@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
 public class ElementGripFactory {
 
     private static final ElementGripFactory instance = new ElementGripFactory();
-    private final WeakHashMap<FileObject, Interval> map = new WeakHashMap<FileObject, Interval>();
+    private final WeakHashMap<FileObject, Interval> map = new WeakHashMap<>();
 
     /**
      * Creates a new instance of ElementGripFactory
@@ -134,7 +134,7 @@ public class ElementGripFactory {
     private static class Interval {
 
         long from = -1, to = -1;
-        Set<Interval> subintervals = new HashSet<Interval>();
+        Set<Interval> subintervals = new HashSet<>();
         ElementGrip item = null;
 
         Interval get(long position) {

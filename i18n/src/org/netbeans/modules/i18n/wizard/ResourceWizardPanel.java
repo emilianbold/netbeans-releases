@@ -122,6 +122,12 @@ final class ResourceWizardPanel extends JPanel {
         initTable();
         
         initAccesibility();
+
+        if(testMode) {
+            HelpCtx.setHelpIDString(this, Util.HELP_ID_SELECTTESTRESOURCE);
+        } else {
+            HelpCtx.setHelpIDString(this, Util.HELP_ID_SELECTRESOURCE);
+        }
     }
 
     

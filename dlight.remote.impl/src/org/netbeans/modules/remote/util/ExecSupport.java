@@ -97,8 +97,8 @@ public final class ExecSupport {
             };
 
 
-            FutureTask<List<String>> etask = new FutureTask<List<String>>(ereader);
-            FutureTask<List<String>> otask = new FutureTask<List<String>>(oreader);
+            FutureTask<List<String>> etask = new FutureTask<>(ereader);
+            FutureTask<List<String>> otask = new FutureTask<>(oreader);
 
             rp.post(otask);
             rp.post(etask);

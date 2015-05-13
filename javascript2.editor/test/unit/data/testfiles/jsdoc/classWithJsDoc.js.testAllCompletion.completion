@@ -6,6 +6,7 @@ OTHER      @argument {type} name descript             JsDoc
 OTHER      @augments type                             JsDoc
 OTHER      @author text                               JsDoc
 OTHER      @borrows otherName as thisName             JsDoc
+OTHER      @callback type                             JsDoc
 OTHER      @class text                                JsDoc
 OTHER      @constant                                  JsDoc
 OTHER      @constructor                               JsDoc

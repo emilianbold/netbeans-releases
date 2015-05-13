@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.bugtracking.tasks;
 
-import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.MissingResourceException;
@@ -49,6 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.openide.util.NbBundle;
@@ -95,11 +95,11 @@ public class CategoryPicker extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         cbCategory = new javax.swing.JComboBox();
-        btnNewCat = new LinkButton("", newCatAction);
+        btnNewCat = new LinkButton(newCatAction);
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(CategoryPicker.class, "CategoryPicker.jLabel1.text")); // NOI18N
 
-        btnNewCat.setText(org.openide.util.NbBundle.getMessage(CategoryPicker.class, "LBL_New"));
+        btnNewCat.setText(org.openide.util.NbBundle.getMessage(CategoryPicker.class, "LBL_New")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -108,11 +108,11 @@ public class CategoryPicker extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1)
-                .addGap(18, 18, 18)
-                .addComponent(cbCategory, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbCategory, 0, 200, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnNewCat)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)

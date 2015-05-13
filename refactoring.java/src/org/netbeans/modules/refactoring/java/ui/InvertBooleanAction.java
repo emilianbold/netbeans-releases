@@ -43,6 +43,7 @@ import org.netbeans.modules.refactoring.java.ui.ContextAnalyzer;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -51,7 +52,10 @@ import org.openide.util.NbBundle;
 
 @ActionID( id = "org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanAction", category = "Refactoring")
 @ActionRegistration(displayName = "#LBL_InvertBooleanAction")
-@ActionReference(path = "Editors/text/x-java/RefactoringActions" , name = "InvertBooleanAction", position = 1830)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/x-java/RefactoringActions", name = "InvertBooleanAction", position = 1830),
+    @ActionReference(path = "Shortcuts", name = "OCS-I")
+})
 public final class InvertBooleanAction extends JavaRefactoringGlobalAction {
 
     public InvertBooleanAction() {

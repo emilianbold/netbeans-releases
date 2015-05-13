@@ -53,6 +53,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
+import org.netbeans.api.debugger.jpda.ClassVariable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
@@ -86,13 +87,17 @@ public final class Source {
 
     private final String name;
     private final JPDAClassType classType;
+    private final ObservableSet<JPDAClassType> functionClassTypes = new ObservableSet();
     private final URL url;          // The original file source
     private final URL runtimeURL;   // The current content in runtime, or null when equal to 'url'
     private final int contentLineShift; // Line shift of 'url' content in 'runtimeURL'. Can not be negative.
     private final int hash;
     private final String content;
+    private final long sourceVarId;
     
-    private Source(String name, JPDAClassType classType, URL url, boolean compareContent, int hash, String content) {
+    private Source(String name, JPDAClassType classType, URL url,
+                   boolean compareContent, int hash, String content,
+                   long sourceVarId) {
         this.name = name;
         this.classType = classType;
         if (LOG.isLoggable(Level.FINE)) {
@@ -116,6 +121,11 @@ public final class Source {
         this.contentLineShift = lineShift;
         this.hash = hash;
         this.content = content;
+        this.sourceVarId = sourceVarId;
+    }
+    
+    public long getSourceVarId() {
+        return sourceVarId;
     }
     
     public static Source getSource(CallStackFrame frame) {
@@ -222,7 +232,8 @@ public final class Source {
                 url = nameFile.toURI().toURL();
             } catch (MalformedURLException ex) {}
         }
-        Source src = new Source(name, classType, url, compareContent, hash, content);
+        Source src = new Source(name, classType, url, compareContent, hash, content,
+                                sourceVar.getUniqueID());
         synchronized (knownSources) {
             Map<Long, Source> dbgSources = knownSources.get(debugger);
             if (dbgSources == null) {
@@ -253,6 +264,10 @@ public final class Source {
     
     public JPDAClassType getClassType() {
         return classType;
+    }
+    
+    public ObservableSet<JPDAClassType> getFunctionClassTypes() {
+        return functionClassTypes;
     }
 
     public URL getUrl() {
@@ -352,6 +367,12 @@ public final class Source {
             index++;
         }
         return c;
+    }
+
+    public void addFunctionClass(ClassVariable rootClass) {
+        try {
+            functionClassTypes.add((JPDAClassType) rootClass.getClass().getMethod("getReflectedType").invoke(rootClass));
+        } catch (Exception ex) {}
     }
     
 }

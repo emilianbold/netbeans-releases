@@ -99,7 +99,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private static final String CYG_DRIVE_WIN = "\\cygdrive\\"; // NOI18N
     private static final String CYGWIN_PATH = ":/cygwin"; // NOI18N
     private String cygwinPath;
-    
+
     private String sourceName;
     private final ItemProperties.LanguageKind language;
     private final ItemProperties.LanguageStandard standard;
@@ -115,7 +115,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     private int handler = -1;
     private final CompilerSettings compilerSettings;
     private String importantFlags;
-    
+
     DwarfSource(CompilationUnitInterface cu, ItemProperties.LanguageKind lang, ItemProperties.LanguageStandard standard, CompilerSettings compilerSettings, Map<String,GrepEntry> grepBase, CompileLineStorage storage) throws IOException{
         this(lang, standard, grepBase, storage, compilerSettings);
         initCompilerSettings(compilerSettings, lang);
@@ -149,7 +149,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         original.importantFlags = derived.importantFlags;
         return original;
     }
-    
+
     private void countFileName(CompilationUnitInterface cu) throws IOException {
         fullName = cu.getSourceFileAbsolutePath();
         fullName = fixFileName(fullName);
@@ -185,20 +185,18 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                        for(String path:list){
                            int i = path.toLowerCase().indexOf(CYGWIN_PATH);
                            if (i > 0) {
-                               if (cygwinPath == null) {
-                                   cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
-                                   for(i = i + CYGWIN_PATH.length();i < path.length();i++){
-                                       char c = path.charAt(i);
-                                       if (c == '\\'){
-                                           break;
-                                       }
-                                       cygwinPath+=""+c;
-                                   }
-                                   if (DwarfSource.LOG.isLoggable(Level.FINE)) {
-                                       DwarfSource.LOG.log(Level.FINE, "Detect cygwinPath:{0}", cygwinPath); // NOI18N
-                                   }
-                                   break;
-                               }
+                                cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
+                                for(i = i + CYGWIN_PATH.length();i < path.length();i++){
+                                    char c = path.charAt(i);
+                                    if (c == '\\'){
+                                        break;
+                                    }
+                                    cygwinPath+=""+c;
+                                }
+                                if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                                    DwarfSource.LOG.log(Level.FINE, "Detect cygwinPath:{0}", cygwinPath); // NOI18N
+                                }
+                                break;
                            }
                        }
                    }
@@ -216,7 +214,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         haveSystemMacros = systemMacros.size() > 0;
     }
-    
+
     @Override
     public String getCompilePath() {
         return compilePath;
@@ -229,7 +227,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return null;
     }
-    
+
     @Override
     public String getItemPath() {
         return fullName;
@@ -239,7 +237,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public String getItemName() {
         return sourceName;
     }
-    
+
     @Override
     public List<String> getUserInludePaths() {
         return userIncludes;
@@ -249,19 +247,19 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public List<String> getUserInludeFiles() {
         return userFiles;
     }
-    
+
     @Override
     public List<String> getSystemInludePaths() {
         return systemIncludes;
     }
-    
+
     public Set<String> getIncludedFiles() {
         if (false && ConfigurationDescriptorProvider.VCS_WRITE) {
             return Collections.emptySet();
         }
         return includedFiles;
     }
-    
+
     @Override
     public Map<String, String> getUserMacros() {
         return userMacros;
@@ -271,12 +269,12 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public List<String> getUndefinedMacros() {
         return undefinedMacros;
     }
-    
+
     @Override
     public Map<String, String> getSystemMacros() {
         return systemMacros;
     }
-    
+
     @Override
     public ItemProperties.LanguageKind getLanguageKind() {
         return language;
@@ -291,7 +289,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     public String getCompilerName() {
         return compilerName;
     }
-    
+
     @Override
     public String getImportantFlags() {
         return importantFlags;
@@ -351,7 +349,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return fileName;
     }
-    
+
     private String linkSupport(String name){
         if (compilerSettings.isWindows() &&  compilerSettings.isLocalFileSystem()) {
             if (!new File(name).exists()){
@@ -393,7 +391,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return name;
     }
-    
+
 
     static String extractCompilerName(CompilationUnitInterface cui, ItemProperties.LanguageKind lang) throws IOException {
         String compilerName = null;
@@ -445,7 +443,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         compilerName = PathCache.getString(extractCompilerName(cu, lang));
         compilePath = PathCache.getString(fixFileName(cu.getCompilationDir()));
         sourceName = PathCache.getString(cu.getSourceFileName());
-        
+
         if (compilePath == null && sourceName.lastIndexOf('/')>0) {
             int i = sourceName.lastIndexOf('/');
             compilePath = sourceName.substring(0,i);
@@ -464,7 +462,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             }
         }
     }
-    
+
     public void process(CompilationUnitInterface cu) throws IOException{
         String line = cu.getCommandLine();
         if (line != null && line.length()>0){
@@ -507,7 +505,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                     }
                     buf.append(s);
                 }
-                
+
                 handler = storage.putCompileLine(buf.toString());
             }
             gatherLine(line);
@@ -551,7 +549,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             }
         }
     }
-    
+
     private void processPseudoDwarf(SourceFile sf) {
         final String line = sf.getDwarfDump();
         if (line == null || line.isEmpty()) {
@@ -613,15 +611,14 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         for(String path : list){
             cutFolderPrefix(path, emulateDwarf);
         }
-        List<String> dwarfIncludedFiles = emulateDwarf.getFilePaths();
-        for(String path : dwarfIncludedFiles){
-            processPath(path, list, emulateDwarf, true);
+        for(String path : emulateDwarf.getFilePaths()){
+            processPath(path, emulateDwarf, true);
         }
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Include paths:{0}", userIncludes); // NOI18N
         }
     }
-    
+
     private void addUserIncludePath(String path){
         if (!userIncludes.contains(path)) {
             userIncludes.add(path);
@@ -647,7 +644,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         importantFlags = DriverFactory.importantFlagsToString(artifacts);;
     }
-    
+
     private String fixCygwinPath(String path){
         if (cygwinPath != null) {
             if (path.startsWith("/usr/lib/")){// NOI18N
@@ -664,7 +661,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return path;
     }
-    
+
     private boolean isSystemPath(String path){
         path = fixCygwinPath(path);
         path = normalizePath(path);
@@ -694,7 +691,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return false;
     }
-    
+
     private void addpath(String path){
         if (haveSystemIncludes) {
             if (!isSystemPath(path)){
@@ -726,7 +723,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             }
         }
     }
-    
+
     private String normalizePath(String path){
         if (path.startsWith("/") || // NOI18N
                 path.length()>2 && path.charAt(1)==':') {
@@ -734,7 +731,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return path;
     }
-    
+
     private void gatherIncludes(final CompilationUnit cu) throws IOException {
         if (!ourGatherIncludes) {
             return;
@@ -760,27 +757,26 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             for(int i : commandLineIncludedFiles) {
                 String includedSource = processPath(dwarfTable.getFilePath(i));
                 if (!fullName.replace('\\', '/').equals(includedSource)) {
-                    processPath(dwarfTable.getFilePath(i), list, dwarfTable, false);
+                    processPath(dwarfTable.getFilePath(i), dwarfTable, false);
                 }
             }
         }
         for(String path : dwarfIncludedFiles){
-            processPath(path, list, dwarfTable, true);
+            processPath(path, dwarfTable, true);
         }
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Include paths:{0}", userIncludes); // NOI18N
         }
     }
 
-    private void processPath(String path, List<String> list, DwarfStatementList dwarfTable, boolean isPath) {
+    private void processPath(String path, DwarfStatementList dwarfTable, boolean isPath) {
         String includeFullName = processPath(path);
         if (isPath) {
             int i = includeFullName.lastIndexOf('/'); // NOI18N
             if (i > 0) {
                 String userPath = includeFullName.substring(0, i);
                 if (!isSystemPath(userPath)) {
-                    list = grepSourceFile(includeFullName).includes;
-                    for (String included : list) {
+                    for (String included : grepSourceFile(includeFullName).includes) {
                         cutFolderPrefix(included, dwarfTable);
                     }
                     addpath(userPath);
@@ -874,7 +870,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             }
         }
     }
-    
+
     private void gatherIncludedFiles(final CompilationUnit cu) throws IOException {
         if (!ourGatherIncludes) {
             return;
@@ -894,7 +890,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             includedFiles.add(PathCache.getString(includeFullName));
         }
     }
-    
+
     private void gatherMacros(final CompilationUnit cu) throws IOException {
         if (!ourGatherMacros){
             return;
@@ -956,7 +952,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         }
         return value.equals(sysValue); // NOI18N
     }
-  
+
     private GrepEntry grepSystemFolder(String path) {
         GrepEntry res = grepBase.get(path);
         if (res != null) {
@@ -972,7 +968,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                     if (f != null && f.isValid() && f.canRead() && f.isData()){
                         List<String> l = grepSourceFile(f.getPath()).includes;
                         for (String i : l){
-                            if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(":")>0) { // NOI18N
+                            if (i.indexOf("..")>0 || i.startsWith("/") || i.indexOf(':')>0) { // NOI18N
                                 continue;
                             }
                             if (i.indexOf('/')>0){ // NOI18N
@@ -1012,7 +1008,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         grepBase.put(PathCache.getString(path), res);
         return res;
     }
-    
+
     private GrepEntry grepSourceFile(String fileName){
         FileSystem fs = compilerSettings.getFileSystem();
         GrepEntry res = grepBase.get(fileName);
@@ -1020,8 +1016,31 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
             return res;
         }
         res = new GrepEntry();
+        String dirName = CndPathUtilities.getDirName(fileName);
+        if (dirName != null) {
+            GrepEntry dirInfo = grepBase.get(dirName);
+            if (dirInfo != null && !dirInfo.exists) {
+                grepBase.put(fileName,res);
+                return res;
+            }
+        }
         FileObject file = fs.findResource(fileName);
+        if (file == null || !file.isValid()) {
+            if (dirName != null) {
+                FileObject dir = fs.findResource(dirName);
+                if (dir != null && dir.isValid()) {
+                    GrepEntry dirInfo = new GrepEntry();
+                    dirInfo.exists = true;
+                    grepBase.put(dirName, dirInfo);
+                } else {
+                    GrepEntry dirInfo = new GrepEntry();
+                    dirInfo.exists = false;
+                    grepBase.put(dirName, dirInfo);
+                }
+            }
+        }
         if (file != null && file.isValid() && file.canRead() && file.isData()){
+            res.exists = true;
             try {
                 BufferedReader in = new BufferedReader(new InputStreamReader(file.getInputStream()));
                 int lineNo = 0;

@@ -56,6 +56,7 @@ import org.netbeans.lib.v8debug.commands.Continue;
 import org.netbeans.modules.javascript.v8debug.V8Debugger;
 import org.netbeans.modules.javascript.v8debug.V8DebuggerSessionProvider;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
+import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript2.debug.JSUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -87,17 +88,21 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
                         ACTION_STEP_OUT,
                         ACTION_RUN_TO_CURSOR,
                         ACTION_EVALUATE,
+                        ACTION_FIX
                     })));
     
     private final V8Debugger dbg;
     private final RequestProcessor killActionRP = new RequestProcessor(V8DebugActionsProvider.class.getName()+".kill");
     private final PropertyChangeListener jsFileContextListener = new JSFileContextListener();
+    private final PropertyChangeListener changeLiveListener = new ChangeLiveListener();
     
     public V8DebugActionsProvider(ContextProvider contextProvider) {
         dbg = contextProvider.lookupFirst(null, V8Debugger.class);
         dbg.addListener(this);
+        dbg.getChangeLiveSupport().addPropertyChangeListener(changeLiveListener);
         setEnabled(ACTION_START, true);
         setEnabled(ACTION_KILL, true);
+        setEnabled(ACTION_FIX, false);
         notifySuspended(false);
     }
 
@@ -146,6 +151,8 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
             if (currentLine != null) {
                 dbg.runTo(currentLine);
             }
+        } else if (action == ACTION_FIX) {
+            dbg.getChangeLiveSupport().applyChanges();
         }
     }
 
@@ -178,6 +185,7 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
     @Override
     public void notifyFinished() {
         EditorContextDispatcher.getDefault().removePropertyChangeListener(jsFileContextListener);
+        dbg.getChangeLiveSupport().removePropertyChangeListener(changeLiveListener);
     }
     
     private class JSFileContextListener implements PropertyChangeListener {
@@ -185,6 +193,15 @@ public class V8DebugActionsProvider extends ActionsProviderSupport implements V8
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             setEnabled(ACTION_RUN_TO_CURSOR, JSUtils.getCurrentLine() != null);
+        }
+        
+    }
+    
+    private class ChangeLiveListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            setEnabled(ACTION_FIX, (Boolean) evt.getNewValue());
         }
         
     }

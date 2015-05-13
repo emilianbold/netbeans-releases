@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.util.ArrayList;
@@ -73,6 +72,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.IOHandler;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -84,7 +84,7 @@ public abstract class RemoteFileObjectBase {
     private final RemoteFileObjectBase parent;
     private volatile String remotePath;
     private final File cache;
-    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<FileChangeListener>();
+    private final CopyOnWriteArrayList<FileChangeListener> listeners = new CopyOnWriteArrayList<>();
     private FileLock lock;
     private final Object instanceLock = new Object();
     public static final boolean USE_VCS;
@@ -127,7 +127,7 @@ public abstract class RemoteFileObjectBase {
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
 
-    protected RemoteFileObject getOwnerFileObject() {
+    public RemoteFileObject getOwnerFileObject() {
         return fileObject;
     }
 
@@ -193,7 +193,7 @@ public abstract class RemoteFileObjectBase {
         return cache;
     }
 
-    protected boolean hasCache() {
+    public boolean hasCache() {
         return cache != null && cache.exists();
     }
 
@@ -221,9 +221,9 @@ public abstract class RemoteFileObjectBase {
         if (fo1 == null || fo1.listeners.isEmpty()) {
             return (fo2 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo2.getListeners();
         } else if (fo2 == null || fo2.listeners.isEmpty()) {
-            return (fo1 == null) ? Collections.<FileChangeListener>emptyEnumeration() : fo1.getListeners();
+            return fo1.getListeners();
         } else {
-            List<FileChangeListener> result = new ArrayList<FileChangeListener>(fo1.listeners.size() + fo2.listeners.size());
+            List<FileChangeListener> result = new ArrayList<>(fo1.listeners.size() + fo2.listeners.size());
             result.addAll(fo1.listeners);
             result.addAll(fo2.listeners);
             return Collections.enumeration(result);
@@ -292,7 +292,8 @@ public abstract class RemoteFileObjectBase {
     
     private void deleteImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         FilesystemInterceptor interceptor = null;
         if (USE_VCS) {
@@ -300,17 +301,22 @@ public abstract class RemoteFileObjectBase {
         }
         DirEntryList entryList = null;
         if (interceptor != null) {
-            FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-            IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
-            if (deleteHandler != null) {
-                deleteHandler.handle();
-            } else {
-                entryList = deleteImpl(lock);
+            try {
+                getFileSystem().setInsideVCS(true);
+                FileProxyI fileProxy = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxy);
+                if (deleteHandler != null) {
+                    deleteHandler.handle();
+                } else {
+                    entryList = deleteImpl(lock);
+                }
+                // TODO remove attributes
+                // TODO clear cache?
+                // TODO fireFileDeletedEvent()?
+                interceptor.deleteSuccess(fileProxy);
+            } finally {
+                getFileSystem().setInsideVCS(false);
             }
-            // TODO remove attributes
-            // TODO clear cache?
-            // TODO fireFileDeletedEvent()?
-            interceptor.deleteSuccess(fileProxy);
         } else {
             entryList = deleteImpl(lock);
         }
@@ -380,7 +386,7 @@ public abstract class RemoteFileObjectBase {
         if (!recursive) {
             return getExistentChildren();
         }
-        List<RemoteFileObjectBase> children = new LinkedList<RemoteFileObjectBase>();
+        List<RemoteFileObjectBase> children = new LinkedList<>();
         populateWithChildren(this, children);
         children.remove(this);
         return children.toArray(new RemoteFileObjectBase[0]);
@@ -416,7 +422,12 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                return !canWriteImpl(orig) && isValid();
+                try {
+                    getFileSystem().setInsideVCS(true);
+                    return !canWriteImpl(orig) && isValid();
+                } finally {
+                    getFileSystem().setInsideVCS(false);
+                }
             }
         }
         return !canRead();
@@ -491,7 +502,12 @@ public abstract class RemoteFileObjectBase {
                 if (!result && USE_VCS) {
                     FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
                     if (interceptor != null) {
-                        result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                        try {
+                            getFileSystem().setInsideVCS(true);
+                            result = interceptor.canWriteReadonlyFile(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+                        } finally {
+                            getFileSystem().setInsideVCS(false);
+                        }
                     }
                 }
                 if (!result) {
@@ -520,20 +536,16 @@ public abstract class RemoteFileObjectBase {
         DEFAULT
     }
 
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {
         try {
             refreshImpl(false, null, true, RefreshMode.DEFAULT);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.info(ex, this);
         }
@@ -542,14 +554,10 @@ public abstract class RemoteFileObjectBase {
     public final void refresh(boolean expected) {
         try {
             refreshImpl(true, null, expected, RefreshMode.DEFAULT);
-        } catch (ConnectException ex) {
+        } catch (ConnectException | InterruptedException | CancellationException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
             RemoteLogger.info(ex, this);
-        } catch (InterruptedException ex) {
-            RemoteLogger.finest(ex, this);
-        } catch (CancellationException ex) {
-            RemoteLogger.finest(ex, this);
         } catch (ExecutionException ex) {
             RemoteLogger.info(ex, this);
         }
@@ -640,7 +648,8 @@ public abstract class RemoteFileObjectBase {
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         RemoteFileObjectBase p = getParent();
         if (p != null) {
@@ -650,35 +659,41 @@ public abstract class RemoteFileObjectBase {
                 return;
             }
             if (!p.isValid()) {
-                throw new IOException("Can not rename in " + p.getPath());//NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName())); //NOI18N
             }
             // Can not rename in read only folder
             if (!p.canWrite()) {
-                throw new IOException("Can not rename in read only " + p.getPath());//NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameRO", p.getDisplayName()));//NOI18N
             }
             // check there are no other child with such name
             if (p.getOwnerFileObject().getFileObject(newNameExt) != null) {
-                RemoteIOException.createAndThrow("EXC_CannotRename_AlreadyExists", getNameExt(), newNameExt, // NOI18N
-                        getParent().getPath(), getExecutionEnvironment().getDisplayName());
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CannotRename_AlreadyExists", getNameExt(), newNameExt, // NOI18N
+                        getParent().getPath(), getExecutionEnvironment().getDisplayName()));
             }
             
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
-                throw new IOException("No connection: Can not rename in " + p.getPath()); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CannotRenameNoConnect", p.getDisplayName())); //NOI18N
             }
             try {
                 Map<String, Object> map = getAttributesMap();
                 p.renameChild(lock, this, newNameExt, orig);
                 setAttributeMap(map, this.getOwnerFileObject());
             } catch (ConnectException ex) {
-                throw new IOException("No connection: Can not rename in " + p.getPath(), ex); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName()), ex); //NOI18N
             } catch (InterruptedException ex) {
-                InterruptedIOException outEx = new InterruptedIOException("interrupted: Can not rename in " + p.getPath()); //NOI18N
-                outEx.initCause(ex);
-                throw outEx;
+                throw RemoteExceptions.createInterruptedIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameIn", p.getDisplayName()), ex); // NOI18N
             } catch (CancellationException ex) {
-                throw new IOException("cancelled: Can not rename in " + p.getPath(), ex); //NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameInCancelled", p.getDisplayName()), ex); // NOI18N
             } catch (ExecutionException ex) {
-                throw new IOException("Can not rename to " + newNameExt + ": exception occurred", ex); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                        "EXC_CanNotRenameExecutionException", newNameExt, ex.getLocalizedMessage()), ex); // NOI18N
             }
         }
     }
@@ -691,29 +706,34 @@ public abstract class RemoteFileObjectBase {
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-                interceptor.beforeCopy(from, to);
-                FileObject result = null;
                 try {
-                    final IOHandler copyHandler = interceptor.getCopyHandler(from, to);
-                    if (copyHandler != null) {
-                        copyHandler.handle();
-                        refresh(true);
-                        //perfromance bottleneck to call refresh on folder
-                        //(especially for many files to be copied)
-                        target.refresh(true); // XXX ?
-                        result = target.getFileObject(name, ext); // XXX ?
-                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        FileUtil.copyAttributes(getOwnerFileObject(), result);
-                    } else {
-                        result = RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
+                    getFileSystem().setInsideVCS(true);
+                    FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                    FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                    interceptor.beforeCopy(from, to);
+                    FileObject result = null;
+                    try {
+                        final IOHandler copyHandler = interceptor.getCopyHandler(from, to);
+                        if (copyHandler != null) {
+                            copyHandler.handle();
+                            refresh(true);
+                            //perfromance bottleneck to call refresh on folder
+                            //(especially for many files to be copied)
+                            target.refresh(true); // XXX ?
+                            result = target.getFileObject(name, ext); // XXX ?
+                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                            FileUtil.copyAttributes(getOwnerFileObject(), result);
+                        } else {
+                            result = RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
+                        }
+                    } catch (IOException ioe) {
+                        throw ioe;
                     }
-                } catch (IOException ioe) {
-                    throw ioe;
+                    interceptor.copySuccess(from, to);
+                    return result;
+                } finally {
+                    getFileSystem().setInsideVCS(false);
                 }
-                interceptor.copySuccess(from, to);
-                return result;
             }
         }
         return RemoteFileSystemUtils.copy(getOwnerFileObject(), target, name, ext);
@@ -725,37 +745,47 @@ public abstract class RemoteFileObjectBase {
     
     protected FileObject moveImpl(FileLock lock, FileObject target, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         if (!checkLock(lock)) {
-            throw new IOException("Wrong lock"); //NOI18N
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileObjectBase.class, "EXC_WrongLock")); //NOI18N
         }
         if (USE_VCS) {
             FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
             if (interceptor != null) {
-                FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
-                FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
-                FileObject result = null;
                 try {
-                    final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
-                    if (moveHandler != null) {
-                        Map<String,Object> attr = getAttributesMap();
-                        moveHandler.handle();
-                        refresh(true);
-                        //perfromance bottleneck to call refresh on folder
-                        //(especially for many files to be moved)
-                        target.refresh(true);
-                        result = target.getFileObject(name, ext); // XXX ?
-                        assert result != null : "Cannot find " + target + " with " + name + "." + ext;
-                        //FileUtil.copyAttributes(this, result);
-                        if (result instanceof RemoteFileObject) {
-                            setAttributeMap(attr, (RemoteFileObject)result);
+                    getFileSystem().setInsideVCS(true);
+                    FileProxyI to = FilesystemInterceptorProvider.toFileProxy(target, name, ext);
+                    FileProxyI from = FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject());
+                    FileObject result = null;
+                    try {
+                        final IOHandler moveHandler = interceptor.getMoveHandler(from, to);
+                        if (moveHandler != null) {
+                            Map<String,Object> attr = getAttributesMap();
+                            moveHandler.handle();
+                            getParent().nonRecursiveRefresh();
+                            //perfromance bottleneck to call refresh on folder
+                            //(especially for many files to be moved)
+                            if (target instanceof RemoteFileObject) {
+                                ((RemoteFileObject) target).getImplementor().nonRecursiveRefresh();
+                            } else {
+                                target.refresh(true);
+                            }
+                            result = target.getFileObject(name, ext); // XXX ?
+                            assert result != null : "Cannot find " + target + " with " + name + "." + ext;
+                            //FileUtil.copyAttributes(this, result);
+                            if (result instanceof RemoteFileObject) {
+                                setAttributeMap(attr, (RemoteFileObject)result);
+                            }
+                        } else {
+                            result = superMove(lock, target, name, ext);
                         }
-                    } else {
-                        result = superMove(lock, target, name, ext);
+                    } catch (IOException ioe) {
+                        throw ioe;
                     }
-                } catch (IOException ioe) {
-                    throw ioe;
+                    interceptor.afterMove(from, to);
+                    return result;
+                } finally {
+                    getFileSystem().setInsideVCS(false);
                 }
-                interceptor.afterMove(from, to);
-                return result;
             }
         }
         return superMove(lock, target, name, ext);
@@ -783,18 +813,34 @@ public abstract class RemoteFileObjectBase {
                     FileObject movedFO = target.getFileObject(newNameExt);
                     RemoteLogger.assertTrueInConsole(movedFO != null, "null file object after move of \n{0}\n into\n{1}\nwith name {2}", this, target, newNameExt);
                     if (movedFO == null) {
-                        throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N
+                        throw new IOException("Null file object after move " + getExecutionEnvironment() + ':' + newPath); //NOI18N // nerw IOException sic!
+                    }
+                    if (USE_VCS) {
+                        FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
+                        if (interceptor != null) {
+                            try {
+                                getFileSystem().setInsideVCS(true);
+                                FileProxyI fileProxyFrom = FilesystemInterceptorProvider.toFileProxy(fileSystem, from);
+                                IOHandler deleteHandler = interceptor.getDeleteHandler(fileProxyFrom);
+                                if (deleteHandler != null) {
+                                    deleteHandler.handle();
+                                }
+                                interceptor.deleteSuccess(fileProxyFrom);
+                            } finally {
+                                getFileSystem().setInsideVCS(false);
+                            }
+                        }
                     }
                     return movedFO;
-                } catch (InterruptedException ex) {
-                    throw new IOException(ex);
-                } catch (CancellationException ex) {
-                    throw new IOException(ex);
+                } catch (InterruptedException | CancellationException ex) {
+                    throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); //NOI18N
                 } catch (ExecutionException ex) {
                     if (RemoteFileSystemUtils.isFileNotFoundException(ex)) {
-                        throw new FileNotFoundException(from + " or " + newPath); //NOI18N
+                        throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteFileObjectBase.class,
+                                "EXC_CantRenameFromTo", getDisplayName(getExecutionEnvironment(), from),  //NOI18N
+                                newPath, ex.getLocalizedMessage()), ex);
                     } else {
-                        throw new IOException(ex);
+                        throw RemoteExceptions.createIOException(ex.getLocalizedMessage(), ex); // NOI18N
                     }
                 }
             } else {
@@ -807,7 +853,7 @@ public abstract class RemoteFileObjectBase {
 
 
     private Map<String,Object> getAttributesMap() throws IOException {
-        Map<String,Object> map = new HashMap<String,Object>();
+        Map<String,Object> map = new HashMap<>();
         Enumeration<String> attributes = getAttributes();
         while(attributes.hasMoreElements()) {
             String attr = attributes.nextElement();
@@ -864,7 +910,19 @@ public abstract class RemoteFileObjectBase {
         }
         return getExecutionEnvironment().toString() + ":" + getPath() + validity; // NOI18N
     }
-    
+
+    public static String getDisplayName(ExecutionEnvironment env, String path) {
+        return env.getDisplayName() + ':' + (path.isEmpty() ? "/" : path); //NOI18N
+    }
+
+    public String getDisplayName(String path) {
+        return getDisplayName(getExecutionEnvironment(), path);
+    }
+
+    public String getDisplayName() {
+        return getDisplayName(getPath());
+    }
+
     public void warmup(FileSystemProvider.WarmupMode mode, Collection<String> extensions) {        
     }
     

@@ -196,6 +196,16 @@ made subject to such option by the copyright holder.
       </subant-junit>
   </target>
 
+  <target name="build-nonsigned-nbms" depends="init,download-selected-extbins" description="Build all NBMs, all modules have to be built before proceed">
+      <mkdir dir="nbms" />
+      <property name="base.nbm.target.dir" location="nbms" />
+      <property name="nbms.fail.on.error" value="true"/>
+      <subant-junit target="nbm-nosignature" failonerror="${nbms.fail.on.error}" report="${nb.build.dir}/build-nbms.xml" inheritall="false">
+          <buildpath path="${modules.sorted}"/>
+          <property name="base.nbm.target.dir" value="${base.nbm.target.dir}"/>
+      </subant-junit>
+  </target>
+
   <target name="fix-dependencies" depends="init">
       <pathconvert property="modules.fullpath" >
           <path>
@@ -1872,6 +1882,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
 
         <condition property="module" value="tmp/netbeans/core/core.jar">
             <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-core-startup" />
+        </condition>
+
+        <condition property="module" value="tmp/netbeans/core/core.jar">
+            <equals arg1="${code.name.base.dashes}" arg2="org-netbeans-core-startup-base" />
         </condition>
 
         <condition property="module" value="tmp/netbeans/lib/org-openide-util-lookup.jar">

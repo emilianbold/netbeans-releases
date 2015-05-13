@@ -253,7 +253,9 @@ public class SDocComment extends JsComment {
     public List<DocParameter> getProperties() {
         List<DocParameter> properties = new LinkedList<DocParameter>();
         for (SDocElement jsDocElement : getTagsForType(SDocElementType.PROPERTY)) {
-            properties.add((SDocTypeNamedElement) jsDocElement);
+            if (jsDocElement instanceof SDocTypeNamedElement) {
+                properties.add((SDocTypeNamedElement) jsDocElement);
+            }
         }
         return properties;
     }
@@ -266,6 +268,11 @@ public class SDocComment extends JsComment {
     @Override
     public List<Type> getTypes() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Type getCallBack() {
+        return null;
     }
     
 }

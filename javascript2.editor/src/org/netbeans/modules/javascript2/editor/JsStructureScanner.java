@@ -95,32 +95,8 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems, List<String> processedObjects) {
-        if (processedObjects.contains(jsObject.getFullyQualifiedName())) {
+        if (ModelUtils.wasProcessed(jsObject, processedObjects)) {
             return collectedItems;
-        } else if (jsObject instanceof JsReference) {
-            JsObject original = ((JsReference) jsObject).getOriginal();
-            boolean isOrginalReachable = !original.isAnonymous();
-            JsObject parent = original.getParent();
-            while (parent != null && isOrginalReachable) {
-                if (parent.isAnonymous() && !(parent.getParent() != null && parent.getParent().getParent() == null)) {
-                    isOrginalReachable = false;
-                }
-                parent = parent.getParent();
-            }
-            if (isOrginalReachable) {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-                return collectedItems;
-            }
-            if (processedObjects.contains(original.getFullyQualifiedName())) {
-                return collectedItems;
-            } else {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-                processedObjects.add(original.getFullyQualifiedName());
-            }
-        } else {
-            if (jsObject.getJSKind() != JsElement.Kind.FILE) {
-                processedObjects.add(jsObject.getFullyQualifiedName());
-            }
         }
         if (jsObject.isVirtual()) {
             return collectedItems;
@@ -140,7 +116,10 @@ public class JsStructureScanner implements StructureScanner {
             if (child.isVirtual()) {
                 continue;
             }
-            
+            if (child.getName().equals(ModelUtils.PROTOTYPE) && child.getProperties().isEmpty()) {
+                // don't display prototype, if thre are no properties
+                continue;
+            }
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) &&  child.getJSKind() != JsElement.Kind.OBJECT_LITERAL)
@@ -527,7 +506,8 @@ public class JsStructureScanner implements StructureScanner {
         
     }
     
-    private static  ImageIcon priviligedIcon = null;
+    private static ImageIcon priviligedIcon = null;
+    private static ImageIcon callbackIcon = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
 
@@ -606,6 +586,12 @@ public class JsStructureScanner implements StructureScanner {
                     priviligedIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodPriviliged.png")); //NOI18N
                 }
                 return priviligedIcon;
+            }
+            if (getFunctionScope().getJSKind() == JsElement.Kind.CALLBACK) {
+                if (callbackIcon == null) {
+                    callbackIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/javascript2/editor/resources/methodCallback.png")); //NOI18N
+                }
+                return callbackIcon;
             }
             return super.getCustomIcon();
         }

@@ -92,7 +92,7 @@ public class RemoteFileURLConnection extends URLConnection {
     }
 
     private FileNotFoundException newFileNotFoundException() {
-        return new FileNotFoundException(execEnv.getDisplayName() + ':' + path); //NOI18N
+        return RemoteExceptions.createFileNotFoundException(RemoteFileObjectBase.getDisplayName(execEnv, path));
     }
 
     @Override
@@ -190,7 +190,7 @@ public class RemoteFileURLConnection extends URLConnection {
         /**
          * delegated reader that reads the document
          */
-        private StringReader reader;
+        private final StringReader reader;
 
         /**
          * @param folder is a folder

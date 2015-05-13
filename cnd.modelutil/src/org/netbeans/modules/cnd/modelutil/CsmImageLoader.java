@@ -133,6 +133,10 @@ public class CsmImageLoader implements CsmImageName {
     public static ImageIcon getTempleteParameterIcon() {
         return getCachedImageIcon(TEMPLATE_PARAMETER);        
     }
+
+    public static ImageIcon getCppKeywordIcon() {
+        return getCachedImageIcon(C_CPP_KEYWORD);
+    }
     
     public static ImageIcon getIncludeImageIcon(boolean sysIncludeKind, boolean folder) {
         String iconPath;

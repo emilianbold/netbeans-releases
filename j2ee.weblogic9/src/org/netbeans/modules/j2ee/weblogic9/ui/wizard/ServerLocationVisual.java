@@ -132,7 +132,7 @@ public class ServerLocationVisual extends javax.swing.JPanel {
         // if it's invalid, return false
         String location = getInstallLocation();
 
-        if (location.trim().length() < 1) {
+        if (location.trim().isEmpty()) {
             String msg = NbBundle.getMessage(ServerLocationVisual.class, "ERR_EMPTY_SERVER_ROOT");  // NOI18N
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, WLInstantiatingIterator.decorateMessage(msg));
             return false;

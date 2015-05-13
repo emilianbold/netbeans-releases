@@ -195,6 +195,23 @@ public final class LineDocumentUtils {
     }
 
     /**
+     * Get start of a previous word in backward direction.
+     * 
+     * @param doc non-null document.
+     * @param offset >= 0 offset in document.
+     * @return previous word boundary offset.
+     * @since 1.4
+     */
+    public static int getPreviousWordStart(@NonNull LineDocument doc, int offset)
+    throws BadLocationException
+    {
+        checkOffsetValid(doc, offset);
+        CharClassifier classifier = getValidClassifier(doc);
+        CharSequence docText = DocumentUtilities.getText(doc);
+        return TextSearchUtils.getPreviousWordStart(docText, classifier, offset);
+    }
+
+    /**
      * Get first whitespace character in document in forward direction.
      *
      * @param doc document to operate on
@@ -362,8 +379,7 @@ public final class LineDocumentUtils {
     throws BadLocationException
     {
         checkOffsetValid(doc, offset);
-        CharSequence docText = DocumentUtilities.getText(doc);
-        return TextSearchUtils.isLineEmpty(docText, offset);
+        return getLineFirstNonWhitespace(doc, offset) == -1;
     }
 
     public static int getNextNonNewline(@NonNull LineDocument doc, int offset)

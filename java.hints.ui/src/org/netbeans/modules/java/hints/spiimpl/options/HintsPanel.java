@@ -1356,9 +1356,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet, boolean filterSuggestions) {
         ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
         for (HintMetadata hint:keySet) {
-            if (Utilities.CUSTOM_CATEGORY.equals(hint.category)) {
-                continue;
-            }
             if (hint.kind == Kind.ACTION && filterSuggestions) continue;
             list.add(hint);
         }

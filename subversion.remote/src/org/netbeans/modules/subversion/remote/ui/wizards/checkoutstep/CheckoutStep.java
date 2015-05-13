@@ -68,7 +68,7 @@ import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.remote.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.remote.ui.wizards.AbstractStep;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.HelpCtx;
@@ -98,7 +98,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     @Override
     protected JComponent createComponent() {
         if (workdirPanel == null) {
-            workdirPanel = new CheckoutPanel();
+            workdirPanel = new CheckoutPanel(fileSystem);
             workdirPanel.browseWorkdirButton.addActionListener(this);
             workdirPanel.scanForProjectsCheckBox.addItemListener(this);
             workdirPanel.atWorkingDirLevelCheckBox.addItemListener(this);
@@ -189,7 +189,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
         }
         
         String text = getWorkdirText();
-        if (text == null || text.length() == 0) {
+        if (text.isEmpty()) {
             invalid(new AbstractStep.WizardMessage(org.openide.util.NbBundle.getMessage(CheckoutStep.class, "BK2014"), true));// NOI18N
             return false;
         }                
@@ -266,7 +266,7 @@ public class CheckoutStep extends AbstractStep implements ActionListener, Docume
     private VCSFileProxy defaultWorkingDirectory() {
         VCSFileProxy defaultDir = null;
         String current = getWorkdirText();
-        if (current != null && !(current.trim().equals(""))) {  // NOI18N
+        if (!current.trim().isEmpty()) {
             VCSFileProxy currentFile = VCSFileProxySupport.getResource(fileSystem, current);
             while (currentFile != null && !currentFile.exists()) {
                 currentFile = currentFile.getParentFile();

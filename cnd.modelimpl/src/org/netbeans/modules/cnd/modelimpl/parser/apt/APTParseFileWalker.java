@@ -93,7 +93,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  */
 public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
-    /** 
+    /**
      * A callback that should be invoked
      * when each conditional is evaluated
      */
@@ -102,7 +102,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         void onEval(APT apt, boolean result);
 
         void onErrorDirective(APT apt);
-        
+
         void onPragmaOnceDirective(APT apt);
     }
     private FileContent fileContent;
@@ -123,7 +123,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
         csmCorePackageAccessor = CsmCorePackageAccessor.get();
-        
+
     }
 
     public void setFileContent(FileContent content) {
@@ -176,9 +176,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
             MacroImpl macro = createMacro((APTDefine) apt);
-            if (macro != null) {
-                this.fileContent.addMacro(macro);
-            }
+            this.fileContent.addMacro(macro);
         }
     }
 
@@ -206,7 +204,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
                 } else if (ENABLE_LDSCOPE.contentEquals(textID)) {
                     ldScopeEnabled = true;
                 }
-            }            
+            }
         }
     }
 
@@ -233,7 +231,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
                 ProjectBase startProject = getStartProject();
                 if (inclFileOwner.isDisposing() || startProject.isDisposing()) {
                     if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                        System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", inclPath, inclFileOwner.getName());
+                        System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                 } else {
                     FileIncludeInParams params = new FileIncludeInParams(inclFileOwner, startProject, includedFile, inclPath, preprocHandler, postIncludeState, mode, isTriggerParsingActivity());
@@ -270,10 +268,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // implementation details
-    
+
     private static final class FileIncludeInParams {
         private final ProjectBase inclFileOwner;
         private final ProjectBase startProject;
@@ -295,13 +293,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             this.triggerParsingActivity = triggerParsingActivity;
         }
     }
-    
+
     private static final class FileIncludeOutParams {
         private final FileIncludeInParams inParams;
         private final APTPreprocHandler.State ppState;
         private final FilePreprocessorConditionState pcState;
         private final FilePreprocessorConditionState.Builder pcBuilder;
-        private final APTFileCacheEntry aptCacheEntry;        
+        private final APTFileCacheEntry aptCacheEntry;
 
         public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTFileCacheEntry aptCacheEntry) {
             this(inParams, ppState, pcState, null, aptCacheEntry);
@@ -311,7 +309,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this(inParams, ppState, null, pcBuilder, aptCacheEntry);
             assert pcBuilder != null;
-        }        
+        }
 
         private FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this.inParams = inParams;
@@ -320,7 +318,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             this.pcBuilder = pcBuilder;
             this.aptCacheEntry = aptCacheEntry;
         }
-        
+
         private PreprocessorStatePair getStatePair() {
             if (pcState != null) {
                 return new PreprocessorStatePair(ppState, pcState);
@@ -330,13 +328,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
         }
     }
-    
+
     private FileIncludeOutParams includeFileWithTokens(FileIncludeInParams params) throws IOException {
         APTFile aptFile = getCsmCorePackageAccessor().getFileAPT(params.includedFile, true);
         if (aptFile != null) {
             APTPreprocHandler.State ppIncludeState = params.preprocHandler.getState();
             // ask for exclusive entry if absent
-            APTFileCacheEntry aptCacheEntry = params.includedFile.getAPTCacheEntry(ppIncludeState, Boolean.TRUE);   
+            APTFileCacheEntry aptCacheEntry = params.includedFile.getAPTCacheEntry(ppIncludeState, Boolean.TRUE);
             // gather macro map from all includes and fill preprocessor conditions state
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
             APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptFile, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
@@ -373,9 +371,10 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTFileCacheEntry aptCacheEntry = null;
         FilePreprocessorConditionState pcState = null;
         boolean foundInCache = false;
-        // check post include cache
-        if (params.postIncludeState != null && params.postIncludeState.hasDeadBlocks()) {
-            assert params.postIncludeState.hasPostIncludeMacroState() : "how could it be? " + params.includedPath;
+        // check cache if it has complete post include state
+        if (params.postIncludeState != null
+                && params.postIncludeState.hasPostIncludeMacroState()
+                && params.postIncludeState.hasDeadBlocks()) {
             pcState = getCsmCorePackageAccessor().createPCState(params.includedPath, params.postIncludeState.getDeadBlocks());
             params.preprocHandler.getMacroMap().setState(params.postIncludeState.getPostIncludeMacroState());
             foundInCache = true;
@@ -383,7 +382,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // check visited file cache
         boolean isFileCacheApplicable = (params.mode == ProjectBase.GATHERING_TOKENS) && (APTHandlersSupport.getIncludeStackDepth(newState) == 1);
         if (!foundInCache && isFileCacheApplicable) {
-            
+
             cachedOut = getCsmCorePackageAccessor().getCachedVisitedState(params.includedFile, newState);
             if (cachedOut != null) {
                 params.preprocHandler.getMacroMap().setState(APTHandlersSupport.extractMacroMapState(cachedOut.state));
@@ -416,7 +415,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             params.postIncludeState.setDeadBlocks(deadBlocks);
         }
         // updated visited file cache
-        if (cachedOut == null && isFileCacheApplicable) {            
+        if (cachedOut == null && isFileCacheApplicable) {
             getCsmCorePackageAccessor().cacheVisitedState(params.includedFile, newState, params.preprocHandler, pcState);
         }
         return new FileIncludeOutParams(params, newState, pcState, aptCacheEntry);
@@ -460,7 +459,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             // so we temporarily switch this off
             body = ""; //file.getText( start.getOffset(), last.getEndOffset());
         }
-        int endOffset = (last != null && !APTUtils.isEOF(last) && last.getEndOffset() > 0) ? last.getEndOffset() : startOffset;       
+        int endOffset = (last != null && !APTUtils.isEOF(last) && last.getEndOffset() > 0) ? last.getEndOffset() : startOffset;
         CsmMacro.Kind kind = define.isValid() ? CsmMacro.Kind.DEFINED : CsmMacro.Kind.INVALID;
         return MacroImpl.create(define.getName().getTextID(), params, body/*sb.toString()*/, getFile(), startOffset, endOffset, kind);
     }
@@ -506,12 +505,12 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onEval(APT apt, boolean result) {
         evalCallback.onEval(apt, result);
     }
-    
+
     // #pragme disable_ldscope
     // force the __global keyword to be just an identifier
     private static final String DISABLE_LDSCOPE = "disable_ldscope"; // NOI18N
     private static final String ENABLE_LDSCOPE = "enable_ldscope"; // NOI18N
-    private boolean ldScopeEnabled = true;    
+    private boolean ldScopeEnabled = true;
     private final class LdScopeFilter implements TokenStream {
 
         private final TokenStream orig;

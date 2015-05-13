@@ -159,6 +159,12 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    
+    <folder name="Shortcuts">
+        <file name="OCS-A.shadow">
+            <attr name="originalFile" stringvalue="Editors/text/x-java/RefactoringActions/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
+        </file>
+    </folder>
 
     <folder name="org-netbeans-modules-java-hints">
         <folder name="rules">

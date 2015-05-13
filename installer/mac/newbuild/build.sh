@@ -71,5 +71,5 @@ if [ 0 = "${signing_identity}" ] ; then
 fi
 
 rm -rf "$basename"/dist_en
-ant -f $basename/build.xml $target -Dlocales=$nb_locales -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber  -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dbuild.jdk8=$build_jdk8 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Djdk7_builds_path=$JDK7_BUILDS_PATH -Djdk8_builds_path=$JDK8_BUILDS_PATH -Dbinary_cache_host=$BINARY_CACHE_HOST
+ant -f $basename/build.xml $target -Dlocales=$nb_locales -Dcommon.name=$commonname -Dprefix=$prefix -Dbuildnumber=$buildnumber  -Dsigning_identity="${signing_identity}" -Dbuild.jdk7=$build_jdk7 -Dbuild.jdk8=$build_jdk8 -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Djdk_builds_host=$JDK_BUILDS_HOST -Djre_builds_path=$JRE_BUILDS_PATH -Djdk7_builds_path=$JDK7_BUILDS_PATH -Djdk8_builds_path=$JDK8_BUILDS_PATH -Dbinary_cache_host=$BINARY_CACHE_HOST
 mv -f "$basename"/dist "$basename"/dist_en

@@ -113,6 +113,9 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private int platform = -1;
     private Task initializationTask;
     private CompilerSetProvider provider;
+    private boolean canceled;
+    
+    private final RequestProcessor requestProcessor;
 
     public CompilerSetManagerImpl(ExecutionEnvironment env) {
         this(env, true);
@@ -123,6 +126,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //    log.log(Level.FINEST, "CompilerSetManager CTOR A @" + System.identityHashCode(this) + ' ' + env + ' ' + initialize, new Exception()); //NOI18N
         //}
         executionEnvironment = env;
+        requestProcessor = new RequestProcessor("Compiler set manager " + env, 40); //NOI18N
         if (initialize && !DISABLED) {
             state = State.STATE_PENDING;
         } else {
@@ -168,6 +172,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
         //    log.log(Level.FINEST, "CompilerSetManager CTOR B @" + System.identityHashCode(this) + ' '  + sets + ' ' + platform, new Exception()); //NOI18N
         //}
         this.executionEnvironment = env;
+        requestProcessor = new RequestProcessor("Compiler set manager " + env, 4); //NOI18N
         this.sets = sets;
         this.platform = platform;
         completeCompilerSets();
@@ -203,6 +208,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     /** CAUTION: this is a slow method. It should NOT be called from the EDT thread */
     @Override
     public synchronized void initialize(boolean save, boolean runCompilerSetDataLoader, Writer reporter) {
+        canceled = false;
         CompilerSetReporter.setWriter(reporter);
         ProgressHandle pHandle = null;
         try {
@@ -226,11 +232,13 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             if (pHandle != null) {
                 pHandle.finish();
             }
+            canceled = false;
         }
     }
 
     @Override
     public boolean cancel() {
+        this.canceled = true;
         CompilerSetProvider aProvider = provider;
         if (aProvider != null) {
             return aProvider.cancel();
@@ -671,19 +679,25 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                             if (cs != null) {
                                 CompilerSetReporter.report("CSM_Found", true, cs.getDisplayName(), cs.getDirectory()); //NOI18N
                                 addUnsafe(cs);
-                                for (Tool tool : cs.getTools()) {
-                                    if (! tool.isReady()) {
-                                        CompilerSetReporter.report("CSM_Initializing_Tool", false, tool.getDisplayName()); //NOI18N
-                                        tool.waitReady(true);
-                                        CompilerSetReporter.report("CSM_Done"); //NOI18N
+                                final List<Tool> toolsCopy = cs.getTools();
+                                requestProcessor.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        for (Tool tool : toolsCopy) {
+                                            if (!tool.isReady()) {
+                                                //CompilerSetReporter.report("CSM_Initializing_Tool", false, tool.getDisplayName()); //NOI18N
+                                                tool.waitReady(true);
+                                                //CompilerSetReporter.report("CSM_Done"); //NOI18N
+                                            }
+                                        }
                                     }
-                                }
+                                });
                             } else if(CompilerSetReporter.canReport()) {
                                 CompilerSetReporter.report("CSM_Err", true, data);//NOI18N
                             }
                         }
                         removeSubstitutions();
-                        completeCompilerSets();
+                        completeCompilerSets(false);
 
                         log.log(Level.FINE, "CSM.initRemoteCompilerSets: Found {0} compiler sets", sets.size()); // NOI18N
                         if (sets.isEmpty()) {
@@ -693,7 +707,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                         }
                         // NB: function itself is synchronized!
                         state = State.STATE_COMPLETE;
-                        CompilerSetReporter.report("CSM_Conigured");//NOI18N
+                        CompilerSetReporter.report(canceled ? "CSM_Canceled" : "CSM_Conigured");//NOI18N
                         if (runCompilerSetDataLoader) {
                             finishInitialization();
                         }
@@ -715,7 +729,7 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
             CompilerSetReporter.report("CSM_Fail");//NOI18N
             // create empty CSM
             log.log(Level.FINE, "CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host {0}", executionEnvironment);
-            completeCompilerSets();
+            completeCompilerSets(false);
             // NB: function itself is synchronized!
             state = State.STATE_UNINITIALIZED; //STATE_ERROR;
         }
@@ -857,6 +871,10 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
      * tool. If selected, this will tell the build validation things are OK.
      */
     public void completeCompilerSets() {
+        completeCompilerSets(true);
+    }
+
+    public void completeCompilerSets(boolean waitReady) {
         if (sets.isEmpty()) { // No compilers found
             addUnsafe(CompilerSetImpl.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
         }
@@ -871,7 +889,9 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                 return o1.getName().compareTo(o2.getName());
             }
         });
-        completeCompilerSetsSettings(false);
+        if (waitReady) {
+            completeCompilerSetsSettings(false);
+        }
     }
 
     private void completeCompilerSetsSettings(boolean reset) {

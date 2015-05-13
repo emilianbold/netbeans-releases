@@ -51,7 +51,7 @@ import javax.swing.JPanel;
  */
 public abstract class ValidateablePanel extends JPanel {
 
-    private final List<ValidatablePanelListener> listeners = new CopyOnWriteArrayList<ValidatablePanelListener>();
+    private final List<ValidatablePanelListener> listeners = new CopyOnWriteArrayList<>();
 
     public final void addValidationListener(ValidatablePanelListener listener) {
         if (listener == null) {

@@ -83,6 +83,7 @@ public class IOManager {
     private OutputWriter                    debuggerOut;
     private OutputWriter                    debuggerErr;
     private boolean                         closed = false;
+    private boolean                         streamsClosed = false;
     
     
     // init ....................................................................
@@ -157,6 +158,9 @@ public class IOManager {
                             output = new ArrayList<Text>(buffer);
                             buffer.clear();
                         }
+                        if (streamsClosed) {
+                            return ;
+                        }
                         JPDADebuggerImpl debugger = debuggerRef.get();
                         int i, k = output.size ();
                         for (i = 0; i < k; i++) {
@@ -185,6 +189,7 @@ public class IOManager {
                             if (closed) {
                                 debuggerOut.close ();
                                 debuggerErr.close();
+                                streamsClosed = true;
                             }
                         }
                     }

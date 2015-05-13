@@ -170,7 +170,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             } else {
                 Collection<CsmObject> referencedObjects = getObjectsForFindUsages(referencedObject);
                 CsmFile startFile = CsmRefactoringUtils.getCsmFile(startReferenceObject);
-                Set<CsmFile> files = new HashSet<CsmFile>();
+                Set<CsmFile> files = new HashSet<>();
                 for (CsmObject csmObject : referencedObjects) {
                     files.addAll(getRelevantFiles(startFile, csmObject, refactoring));
                 }
@@ -267,7 +267,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     }
 
     private Collection<CsmObject> getObjectsForFindUsages(CsmObject startObject) {
-        Collection<CsmObject> out = new LinkedHashSet<CsmObject>();
+        Collection<CsmObject> out = new LinkedHashSet<>();
         if (isFindUsages()) {
             Collection<CsmObject> allObjects = collectAllObjects(startObject);
             for (CsmObject referencedObject : allObjects) {
@@ -314,7 +314,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         assert isFindUsages() : "must be find usages mode";
         final boolean onlyUsages = !isFindOverridingMethods();
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
-        final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
+        final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<>();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         final Interrupter interrupter = new Interrupter() {
@@ -388,7 +388,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
         RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
         
         final long time = System.currentTimeMillis();
-        List<CsmFile> sortedFiles = new ArrayList<CsmFile>(files);
+        List<CsmFile> sortedFiles = new ArrayList<>(files);
         Collections.sort(sortedFiles, new Comparator<CsmFile>() {
             @Override
             public int compare(CsmFile o1, CsmFile o2) {
@@ -402,14 +402,14 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             }
         });
         LOG.log(Level.FINE, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
-        final List<OneFileWorker> work = new ArrayList<OneFileWorker>(sortedFiles.size());
+        final List<OneFileWorker> work = new ArrayList<>(sortedFiles.size());
         for (final CsmFile file : sortedFiles) {
             OneFileWorker task = new OneFileWorker(interrupter, file, onlyUsages, xRef, kinds, objs);
             work.add(task);
             rp.post(task);
         }
 
-        final Collection<RefactoringElementImplementation> elements = new ArrayList<RefactoringElementImplementation>(work.size()*2);
+        final Collection<RefactoringElementImplementation> elements = new ArrayList<>(work.size()*2);
         int indexNonEmpty = 0;
         int total = 0;
         boolean firstResults = true;
@@ -553,9 +553,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     
     private Collection<RefactoringElementImplementation> processOverridenMethodsQuery(final CsmMethod startMethod) {
         assert isFindOverridingMethods() : "must be search for overriden methods";
-        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
+        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<>(1024);
         Collection<CsmObject> allObjects = collectAllObjects(startMethod);
-        Collection<CsmMethod> allMethods = new HashSet<CsmMethod>();
+        Collection<CsmMethod> allMethods = new HashSet<>();
         for (CsmObject obj : allObjects) {
             if (CsmKindUtilities.isMethod(obj)) {
                 CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) obj);
@@ -591,9 +591,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     private Collection<RefactoringElementImplementation> processIncludeQuery(final CsmFile startFile) {
         assert isFindUsages() : "must be find usages";
-        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
+        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<>(1024);
         Collection<CsmObject> allObjects = collectAllObjects(startFile);
-        Collection<CsmFile> allFiles = new HashSet<CsmFile>();
+        Collection<CsmFile> allFiles = new HashSet<>();
         for (CsmObject obj : allObjects) {
             if (CsmKindUtilities.isFile(obj)) {
                 allFiles.add((CsmFile)obj);
@@ -622,7 +622,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     
     private Collection<RefactoringElementImplementation> processSubclassesQuery(final CsmClass startClass) {
         assert isFindDirectSubclassesOnly() || isFindSubclasses() : "must be search of subclasses";
-        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<RefactoringElementImplementation>(1024);
+        Collection<RefactoringElementImplementation> elements = new LinkedHashSet<>(1024);
         boolean directSubtypesOnly = isFindDirectSubclassesOnly();
         Collection<CsmObject> allObjects = collectAllObjects(startClass);
         for (CsmObject obj : allObjects) {
@@ -638,7 +638,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
     }     
     
     private Collection<CsmObject> collectAllObjects(CsmObject primaryObject) {
-        Collection<CsmObject> allObjects = new HashSet<CsmObject>();
+        Collection<CsmObject> allObjects = new HashSet<>();
         if (primaryObject != null) {
             allObjects.add(primaryObject);
             for (CsmWhereUsedExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmWhereUsedExtraObjectsProvider.class)) {

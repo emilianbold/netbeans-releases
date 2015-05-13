@@ -56,25 +56,27 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.ExtSyntaxSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.cnd.utils.MutableObject;
 
 /**
  *
@@ -117,7 +119,7 @@ public class CompletionUtilities {
         CsmClass clazz = CsmContextUtilities.getClass(context, true, false);
         return clazz;
     }
-    
+
     public static CsmOffsetableDeclaration findFunDefinitionOrClassOnPosition(CsmFile file, Document doc, int offset, FileReferencesContext fileReferncesContext) {
         CsmOffsetableDeclaration out = null;
         if (file == null) {
@@ -149,7 +151,7 @@ public class CompletionUtilities {
             if (idBlk == null || idBlk.length == 2) {
                 idBlk = getIdentifierAndInstantiationBlock(baseDoc, dotPos);
                 searchSpecializationsOnly = (idBlk != null) ? (idBlk.length == 3) : false;
-            }            
+            }
             if (idBlk == null) {
                 idBlk = new int[]{dotPos, dotPos};
             }
@@ -171,7 +173,7 @@ public class CompletionUtilities {
                                 out = getAssociatedObjects(resultx.getItems(), false, currentFile, dotPos);
                             }
                         }
-                    }                    
+                    }
                     if (filtered.size() > 1 && searchSpecializationsOnly) {
                         int endOfMethod = findEndOfInstantiation(baseDoc, idBlk[ind] - 1);
                         if (endOfMethod > -1) {
@@ -200,17 +202,17 @@ public class CompletionUtilities {
         }
         return idBlk;
     }
-    
+
     private static int[] getFunctionBlock(BaseDocument doc, int[] identifierBlock) throws BadLocationException {
         if (identifierBlock != null) {
-            int nwPos = Utilities.getFirstNonWhiteFwd(doc, identifierBlock[1]);
+            int nwPos = LineDocumentUtils.getNextNonWhitespace(doc, identifierBlock[1]);
             if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
                 return new int[] { identifierBlock[0], nwPos + 1 };
             }
             if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '<')) {
                 int eoi = findEndOfInstantiation(doc, nwPos);
                 if (eoi >= 0) {
-                nwPos = Utilities.getFirstNonWhiteFwd(doc, eoi);
+                nwPos = LineDocumentUtils.getNextNonWhitespace(doc, eoi);
                     if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '(')) {
                         return new int[] { identifierBlock[0], nwPos + 1 };
                     }
@@ -219,7 +221,7 @@ public class CompletionUtilities {
         }
         return null;
     }
-    
+
     private static int[] getIdentifierAndInstantiationBlock(BaseDocument doc, int offset) throws BadLocationException {
         int[] idBlk = Utilities.getIdentifierBlock(doc, offset);
         if (idBlk != null) {
@@ -233,7 +235,7 @@ public class CompletionUtilities {
 
     private static int[] getInstantiationBlock(BaseDocument doc, int[] identifierBlock) throws BadLocationException {
         if (identifierBlock != null) {
-            int nwPos = Utilities.getFirstNonWhiteFwd(doc, identifierBlock[1]);
+            int nwPos = LineDocumentUtils.getNextNonWhitespace(doc, identifierBlock[1]);
             if ((nwPos >= 0) && (doc.getChars(nwPos, 1)[0] == '<')) {
                 return new int[] { identifierBlock[0], nwPos + 1 };
             }
@@ -275,10 +277,10 @@ public class CompletionUtilities {
         }
         return out;
     }
-    
+
     /**
      * Computes candidates list using visible and invisible items.
-     * 
+     *
      * @param visible
      * @param all
      * @param contextFile
@@ -286,10 +288,10 @@ public class CompletionUtilities {
      */
     private static List<CsmObject> computeCandidatesList(List<CsmObject> visible, List<CsmObject> invisible, CsmFile contextFile) {
         List<CsmObject> result;
-        
+
         if (!visible.isEmpty()) {
             result = visible;
-            
+
             Map<CharSequence, List<CsmClassifier>> clsMap = null;
 
             for (int i = 0; i < result.size(); i++) {
@@ -303,16 +305,16 @@ public class CompletionUtilities {
                         for (CsmObject obj : invisible) {
                             if (CsmKindUtilities.isClass(obj) || CsmKindUtilities.isEnum(obj)) {
                                 CsmClassifier cls = (CsmClassifier) obj;
-                                
+
                                 List<CsmClassifier> classifiers;
-                                
+
                                 if (clsMap.containsKey(cls.getQualifiedName())) {
                                     classifiers = clsMap.get(cls.getQualifiedName());
                                 } else {
                                     classifiers = new ArrayList<CsmClassifier>();
                                     clsMap.put(cls.getQualifiedName(), classifiers);
                                 }
-                                
+
                                 classifiers.add(cls);
                             }
                         }
@@ -323,12 +325,12 @@ public class CompletionUtilities {
 
                     if (clsMap.containsKey(td.getQualifiedName())) {
                         List<CsmClassifier> classifiers = clsMap.get(td.getQualifiedName());
-                        
+
                         for (CsmClassifier cls : classifiers) {
                             CsmFile clsFile = ((CsmOffsetable) cls).getContainingFile();
-                            if (clsFile != null && 
+                            if (clsFile != null &&
                                 (CsmIncludeResolver.getDefault().isObjectVisible(clsFile, contextFile) ||
-                                 CsmIncludeResolver.getDefault().isObjectVisible(contextFile, clsFile))) 
+                                 CsmIncludeResolver.getDefault().isObjectVisible(contextFile, clsFile)))
                             {
                                 visible.add(i++, cls);
                             }
@@ -339,14 +341,14 @@ public class CompletionUtilities {
         } else {
             result = invisible;
         }
-        
+
         return result;
     }
-    
+
 //    /**
 //     * Checks and filters typedefs which are in candidates list.
 //     * (For hyperlink mode)
-//     * 
+//     *
 //     * @param candidates - list of candidates
 //     */
 //    private static void filterCandidateTypedefs(List<CsmObject> candidates, CsmFile file, int offset) {
@@ -355,8 +357,8 @@ public class CompletionUtilities {
 //            if (CsmKindUtilities.isTypedef(candidate)) {
 //                CsmTypedef td = (CsmTypedef) candidate;
 //                CsmType tdType = td.getType();
-//                CsmClassifier tdTypeClass = tdType != null ? tdType.getClassifier() : null;                
-//                
+//                CsmClassifier tdTypeClass = tdType != null ? tdType.getClassifier() : null;
+//
 //                // 1. Special case: typedef is a synonim of the class with the same name and the click was inside typedef
 //                if (CsmKindUtilities.isClassForwardDeclaration(tdTypeClass) || CsmKindUtilities.isEnumForwardDeclaration(tdTypeClass)) {
 //                    if (td.getQualifiedName().equals(tdTypeClass.getQualifiedName())) {
@@ -367,16 +369,16 @@ public class CompletionUtilities {
 //                                if (originalCls == null) {
 //                                    originalCls = tdTypeClass;
 //                                }
-//                                
+//
 //                                boolean found = false;
-//                                
+//
 //                                for (CsmObject obj : candidates) {
 //                                    if (obj.equals(originalCls)) {
 //                                        found = true;
 //                                        break;
 //                                    }
 //                                }
-//                                
+//
 //                                if (found) {
 //                                    candidates.remove(i--);
 //                                } else {
@@ -400,25 +402,46 @@ public class CompletionUtilities {
         return null;
     }
 
-    public static int findEndOfMethod(Document doc, int startPos) {
-        int level = 0;
-        CharSequence text = DocumentUtilities.getText(doc);
-        for (int i = startPos; i < doc.getLength(); i++) {
-            char ch = text.charAt(i);
-            if (ch == ';') {
-                return -1;
-            }
-            if (ch == '(') {
-                level++;
-            }
-            if (ch == ')') {
-                level--;
-                if (level == 0) {
-                    return i + 1;
+    public static int findEndOfMethod(final Document doc, final int startPos) {
+        final MutableObject<Integer> result = new MutableObject<Integer>(-1);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, startPos, false, startPos > 0);
+                if (ts != null) {
+                    int parenLevel = 0;
+                    int braceLevel = 0;
+                    while (ts.token() != null && ts.token().id() instanceof CppTokenId && braceLevel >= 0 && parenLevel >= 0) {
+                        Token<TokenId> token = ts.token();
+                        CppTokenId cppTokenId = (CppTokenId) token.id();
+                        if (braceLevel == 0 && cppTokenId == CppTokenId.SEMICOLON) {
+                            break;
+                        }
+                        if (cppTokenId == CppTokenId.LBRACE) {
+                            braceLevel++;
+                        }
+                        if (cppTokenId == CppTokenId.RBRACE) {
+                            braceLevel--;
+                        }
+                        if (cppTokenId == CppTokenId.LPAREN) {
+                            parenLevel++;
+                        }
+                        if (cppTokenId == CppTokenId.RPAREN) {
+                            parenLevel--;
+                            if (parenLevel == 0) {
+                                result.value = ts.offset() + token.length();
+                                break;
+                            }
+                        }
+                        if (!ts.moveNext()) {
+                            break;
+                        }
+                    }
                 }
             }
-        }
-        return -1;
+        });
+        return result.value;
     }
 
     public static int findEndOfInstantiation(Document doc, int startPos) {

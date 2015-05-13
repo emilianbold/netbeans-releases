@@ -71,10 +71,12 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
     final static String[] sa = {CountLimit.Action_INFINITY,
 				CountLimit.Action_CURRENT,
 				CountLimit.Action_DISABLE};
+    @Override
     public String[] getTags() {
 	return sa;
     }
 
+    @Override
     public void setAsText(String newText) {
 	// Called when an edit is commited through user action
 
@@ -90,6 +92,7 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
     }
 
     // interface ExPropertyEditor
+    @Override
     public void attachEnv(PropertyEnv env) {
 	/* LATER
 
@@ -106,7 +109,7 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
     }
 
 
-    private class CountLimitEditorComponent
+    private static class CountLimitEditorComponent
 	extends JPanel implements ActionListener,
 				  PopupMenuListener,
 				  InplaceEditor {
@@ -132,6 +135,7 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
 	}
 
 	// interface ActionListener
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    System.out.printf("CountLimitEditorComponent.actionPerformed(): %s\n", comboBox.getSelectedItem()); // NOI18N
 	    if (comboBox.getSelectedItem() instanceof String) {
@@ -140,68 +144,81 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
 	}
 
 	// interface PopupMenuListener
+        @Override
 	public void popupMenuCanceled(PopupMenuEvent e) {
 	    popupMenu = null;
 	}
 
 	// interface PopupMenuListener
+        @Override
 	public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
 	    popupMenu = null;
 	}
 
 	// interface PopupMenuListener
+        @Override
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 	    // OLD System.out.printf("popupMenuWillBecomeVisible(): %s\n", e);
 	    // OLD popupMenu = (JPopupMenu) e.getSource();
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void addActionListener(ActionListener al) {
 	    comboBox.addActionListener(al);
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void removeActionListener(ActionListener al) {
 	    comboBox.removeActionListener(al);
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void clear() {
 	    propertyEditor = null;
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void connect(PropertyEditor pe, PropertyEnv env) {
 	    this.propertyEditor = pe;
 	    comboBox.setSelectedItem(pe.getValue());
 	}
 
 	// interface InplaceEditor
+        @Override
 	public JComponent getComponent() {
 	    return this;
 	}
 
 	// interface InplaceEditor
+        @Override
 	public KeyStroke[] getKeyStrokes() {
 	    return new KeyStroke[0];
 	}
 
 	// interface InplaceEditor
+        @Override
 	public PropertyEditor getPropertyEditor() {
 	    return propertyEditor;
 	}
 
 	// interface InplaceEditor
+        @Override
 	public PropertyModel getPropertyModel() {
 	    return propertyModel;
 	}
 
 	// interface InplaceEditor
+        @Override
 	public Object getValue() {
 	    return comboBox.getSelectedItem();
 	}
 
 	// interface InplaceEditor
+        @Override
 	public boolean isKnownComponent(Component c) {
 	    System.out.printf("isKnownComponent(): %s\n", c); // NOI18N
 	    if (c == this ||
@@ -216,21 +233,25 @@ public class CountLimitEditor extends /* OLD Enhanced */ AsyncEditor
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void reset() {
 	    comboBox.setSelectedItem(propertyEditor.getValue());
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void setPropertyModel(PropertyModel pm) {
 	    this.propertyModel = pm;
 	}
 
 	// interface InplaceEditor
+        @Override
 	public void setValue(Object o) {
 	    comboBox.setSelectedItem(o);
 	}
 
 	// interface InplaceEditor
+        @Override
 	public boolean supportsTextEntry() {
 	    return true;
 	}

@@ -59,7 +59,7 @@ import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
  */
 public final class FortranCodeStyle {
     
-    private Preferences preferences;
+    private final Preferences preferences;
     private final FortranFormat autoDetectedFormat;
     
     private FortranCodeStyle(Preferences preferences, FortranFormat autoDetectedFormat) {

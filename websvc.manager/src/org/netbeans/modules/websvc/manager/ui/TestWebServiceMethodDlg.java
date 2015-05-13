@@ -100,7 +100,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
     private Dialog dialog;
     private DialogDescriptor dlg = null;
-    private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
+    private final String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
     /**
      * The runtimeClassLoader should be used when running the web service client.  This classloader
      * only includes the necessary runtime jars for JAX-RPC to run.  The classloader does NOT have a
@@ -109,7 +109,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
      * -David Botterill 4/21/2004
      */
     private URLClassLoader runtimeClassLoader;
-    private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
+    private final DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private final WsdlSaas wsData;
     private final WSPort port;
@@ -131,13 +131,11 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
     private boolean isRPCEncoded(WsdlData wsdlData) {
         File wsdlFile = new File(wsdlData.getWsdlFile());
-        if (wsdlFile != null) {
-            try {
-                wsdlFile = wsdlFile.getCanonicalFile();
-                return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        try {
+            wsdlFile = wsdlFile.getCanonicalFile();
+            return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         return false;
     }
@@ -156,16 +154,13 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
              * First add the URL to the jar wsdlFile for this web service.
              */
             try {
-                List<URL> urlList = null;
                 WsdlData wsdlData = wsData.getWsdlData();
 
                 boolean isRPCEncoded = isRPCEncoded(wsdlData);
 
-                urlList = TypeUtil.buildClasspath(null, isRPCEncoded ? false : true); // NOI18N
+                List<URL> urlList = TypeUtil.buildClasspath(null, !isRPCEncoded);
 
-                WsdlServiceProxyDescriptor descriptor = null;
-
-
+                WsdlServiceProxyDescriptor descriptor;
                 if (isRPCEncoded) {
                     descriptor = wsdlData.getJaxRpcDescriptor();
                 } else {
@@ -219,7 +214,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
                 false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
+                DialogDescriptor.DEFAULT_ALIGN, HelpCtx.DEFAULT_HELP, this);
         dlg.setOptions(new Object[]{okButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         /**
@@ -228,10 +223,12 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         final JPanel thisPanel = this;
         dialog.addWindowListener(new WindowAdapter() {
 
+            @Override
             public void windowOpened(WindowEvent e) {
                 SwingUtilities.invokeLater(
                         new Runnable() {
 
+                            @Override
                             public void run() {
                                 btnSubmit.requestFocus();
                                 thisPanel.getRootPane().setDefaultButton(btnSubmit);
@@ -259,10 +256,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
 
         dialog.show();
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_test_websvcdb");
     }
 
     /** This method is called from within the constructor to
@@ -394,7 +387,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * specify the wrapper client class name for this method.
          */
-        String clientClassName = null;
+        String clientClassName;
         if(isRPCEncoded(wsData.getWsdlData())){
             clientClassName = wsData.getWsdlModel().getJavaName() + "_Impl";
         }else{
@@ -418,6 +411,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         methodThread.start();
     }
     
+    @Override
     public void methodFinished(final Object inReturnedObject,final LinkedList inParamList) {
         if ( SwingUtilities.isEventDispatchThread()){
             doMethodFinished(inReturnedObject, inParamList);
@@ -532,6 +526,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private void addFocusListener(final JTable table) {
         // fixes tab cycle when the table is empty
         table.addFocusListener(new FocusListener() {
+            @Override
             public void focusGained(FocusEvent evt) {
                 Container cycleRoot = table.getFocusCycleRootAncestor();
                 FocusTraversalPolicy policy = table.getFocusTraversalPolicy();
@@ -551,6 +546,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 }
             }
 
+            @Override
             public void focusLost(FocusEvent evt) {
             }
         });
@@ -560,9 +556,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         return parameterRootNode;
     }
 
-    private void setParameterRootNode(DefaultMutableTreeNode inNode) {
-        parameterRootNode = inNode;
-    }
     private DefaultMutableTreeNode getResultRootNode() {
         return resultRootNode;
     }
@@ -597,7 +590,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 rowModel, false,NbBundle.getMessage(this.getClass(), 
                 "TYPE_COLUMN_NAME"));
         Outline returnOutline = new Outline(outlineModel);
-        ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
+        ResultCellEditor cellEditor = new ResultCellEditor();
         returnOutline.setDefaultEditor(Object.class,cellEditor);
         returnOutline.setRootVisible(false);
 
@@ -662,6 +655,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     }
 
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         String actionCommand = evt.getActionCommand();
         if(actionCommand.equalsIgnoreCase(okString)) {
@@ -697,18 +691,18 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private javax.swing.JScrollPane scrollPaneResults;
     // End of variables declaration//GEN-END:variables
 
-    private JButton okButton = new JButton();
+    private final JButton okButton = new JButton();
     private Outline parameterOutline;
     private Outline resultOutline;
     private Cursor normalCursor;
 
     class MethodTask implements Runnable {
 
-        private String clientClassName;
-        private LinkedList paramList;
-        private JavaMethod javaMethod;
-        private URLClassLoader urlClassLoader;
-        private ArrayList listeners = new ArrayList();
+        private final String clientClassName;
+        private final LinkedList paramList;
+        private final JavaMethod javaMethod;
+        private final URLClassLoader urlClassLoader;
+        private final List listeners = new ArrayList();
         private boolean cancelled=false;
 
 
@@ -728,18 +722,18 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         private void notifyListeners(Object returnedObject) {
             Iterator listenerIterator = listeners.iterator();
-            MethodTaskListener currentListener = null;
             while(listenerIterator.hasNext()) {
-                currentListener = (MethodTaskListener)listenerIterator.next();
+                MethodTaskListener currentListener = (MethodTaskListener)listenerIterator.next();
                 currentListener.methodFinished(returnedObject, paramList);
             }
         }
 
+        @Override
         public void run() {
             /**
              * Now invoke the method using the ReflectionHelper.
              */
-            Object returnObject=null;
+            Object returnObject;
             try {
                 returnObject = ReflectionHelper.callMethodWithParams(clientClassName, paramList, javaMethod,urlClassLoader, wsData.getWsdlData(), port);
             } catch (Exception wsre) {
@@ -753,7 +747,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                      * Notify the listeners so the cursor will be reset;
                      */
                     notifyListeners(null);
-                    errorDialog.show();
+                    errorDialog.showDialog(btnSubmit);
                 }
                 return;
             }
@@ -767,16 +761,18 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     }
 
     private static class BusyMouseAdapter extends MouseAdapter {
-        private Cursor normalCursor;
+        private final Cursor normalCursor;
 
         public BusyMouseAdapter(Cursor inNormalCursor) {
             normalCursor = inNormalCursor;
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
             e.getComponent().setCursor(normalCursor);
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
     }

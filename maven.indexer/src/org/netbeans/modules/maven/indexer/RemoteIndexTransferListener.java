@@ -65,8 +65,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
 
     private final @NonNull ProgressHandle handle;
     private final RepositoryInfo info;
-    private int lastunit;/*last work unit*/
-    private int units;
+    private long lastunit;/*last work unit*/
+    private long units;
     private ResourceFetcher fetcher;
 
     private final AtomicBoolean canceled = new AtomicBoolean();
@@ -100,12 +100,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         long contentLength = e.getResource().getContentLength();
         LOG.log(Level.FINE, "contentLength: {0}", contentLength);
         // #189806: could be resumed due to FNFE in DefaultIndexUpdater (*.gz -> *.zip)
-        this.units = (int) contentLength / 1024;
-        if(units < 0) {
-            units = 0;
-        } else {
-            handle.switchToDeterminate(units);
-        }
+        this.units = contentLength / 1024;        
+        handle.switchToDeterminate(100);
     }
 
     public @Override boolean cancel() {
@@ -131,7 +127,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         LOG.log(Level.FINER, "progress: {0}", length);
         int work = length / 1024;
         if(units > 0) {
-            handle.progress(Math.min(units, lastunit += work));
+            lastunit += work;
+            handle.progress(Math.min(100, (int)(((double) lastunit / units) * 100)));
         }
     }
 

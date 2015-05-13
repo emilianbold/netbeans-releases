@@ -190,7 +190,7 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("decltypes1.cpp", 19, 57, "decltypes1.cpp", 11, 5);      
         performTest("decltypes1.cpp", 21, 46, "decltypes1.cpp", 11, 5);
         performTest("decltypes1.cpp", 23, 52, "decltypes1.cpp", 11, 5);
-//        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5); // TODO: it fails now!
+        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5);
     }
     
     public void testDecltypes2() throws Exception {
@@ -369,4 +369,38 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug248624.cpp", 47, 77, "bug248624.cpp", 42, 9);
         performTest("bug248624.cpp", 48, 78, "bug248624.cpp", 42, 9);
     }        
+    
+    public void testBug250270() throws Exception {
+        performTest("bug250270.cpp", 7, 11, "bug250270.cpp", 6, 7);
+        performTest("bug250270.cpp", 8, 13, "bug250270.cpp", 3, 5);
+    }  
+    
+    public void testBug251181() throws Exception {
+        performTest("bug251181.cpp", 10, 31, "bug251181.cpp", 3, 9);
+        performTest("bug251181.cpp", 12, 29, "bug251181.cpp", 4, 13);
+        performTest("bug251181.cpp", 15, 31, "bug251181.cpp", 3, 9);
+        performTest("bug251181.cpp", 16, 22, "bug251181.cpp", 4, 13);
+        
+        performTest("bug251181.cpp", 57, 26, "bug251181.cpp", 48, 15);
+        performTest("bug251181.cpp", 58, 26, "bug251181.cpp", 49, 15);
+        performTest("bug251181.cpp", 59, 26, "bug251181.cpp", 50, 15);
+        performTest("bug251181.cpp", 60, 26, "bug251181.cpp", 51, 15);
+        
+        performTest("bug251181.cpp", 79, 26, "bug251181.cpp", 70, 15);
+        performTest("bug251181.cpp", 80, 26, "bug251181.cpp", 71, 15);
+        performTest("bug251181.cpp", 81, 26, "bug251181.cpp", 72, 15);
+        performTest("bug251181.cpp", 82, 26, "bug251181.cpp", 73, 15);
+    }  
+    
+    public void testBug251305() throws Exception {
+        // Bug 251305 - StackOverflowError at org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter.UIDtoCsmObject
+        performTest("bug251305.cpp", 4, 55, "bug251305.cpp", 4, 24);
+        performTest("bug251305.cpp", 4, 61, "bug251305.cpp", 4, 9);
+    }
+    
+    public void testBug249463() throws Exception {
+        // Bug 249463 - Code Assistance fails on auto type when used outside of namespace in C++11
+        performTest("bug249463.cpp", 17, 25, "bug249463.cpp", 3, 9);
+        performTest("bug249463.cpp", 18, 27, "bug249463.cpp", 3, 9);
+    }
 }

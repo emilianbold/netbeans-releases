@@ -136,7 +136,7 @@ class PreferredCCParser {
                 }
             }
             preferredCI = (CompilationController) handle.getCompilationController();
-            preferredCI.toPhase(JavaSource.Phase.PARSED);
+            toPhase(preferredCI, JavaSource.Phase.PARSED, LOG);
         } else {
             preferredCI = null;
         }
@@ -169,6 +169,9 @@ class PreferredCCParser {
                         if (ci == null) {
                             return;
                         }
+                        if (!toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
+                            return ;
+                        }
                         LineMap lineMap = ci.getCompilationUnit().getLineMap();
                         final int offset = findLineOffset(lineMap, ci.getSnapshot().getText(), (int) lineNumber);
                         result[0] = EditorContextSupport.computeOperations(
@@ -183,7 +186,7 @@ class PreferredCCParser {
         } else {
             try {
                 CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null) {
+                if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
                     return new EditorContext.Operation[] {};
                 }
                 LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -273,7 +276,7 @@ class PreferredCCParser {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         CompilationController ci = EditorContextSupport.retrieveController(resultIterator, file);
-                        if (ci == null) {
+                        if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
                             return;
                         }
                         LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -290,7 +293,7 @@ class PreferredCCParser {
         } else {
             try {
                 CompilationController ci = getPreferredCompilationController(file, js);
-                if (ci == null) {
+                if (ci == null || !toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
                     return null;
                 }
                 LineMap lineMap = ci.getCompilationUnit().getLineMap();
@@ -361,11 +364,7 @@ class PreferredCCParser {
     }
     
     private static void computeImports(CompilationController ci, List<String> imports) throws IOException {
-        if (ci.toPhase(JavaSource.Phase.PARSED).compareTo(JavaSource.Phase.PARSED) < 0) {
-            LOG.warning(
-                    "Unable to resolve "+ci.getFileObject()+" to phase "+JavaSource.Phase.RESOLVED+", current phase = "+ci.getPhase()+
-                    "\nDiagnostics = "+ci.getDiagnostics()+
-                    "\nFree memory = "+Runtime.getRuntime().freeMemory());
+        if (!toPhase(ci, JavaSource.Phase.RESOLVED, LOG)) {
             return;
         }
         List importDecl = ci.getCompilationUnit().getImports();
@@ -488,12 +487,17 @@ class PreferredCCParser {
 
         @Override
         public void run(CompilationController ci) throws Exception {
-            if (ci.toPhase(JavaSource.Phase.PARSED).compareTo(JavaSource.Phase.PARSED) < 0) {
+            if (!toPhase(ci, JavaSource.Phase.PARSED, LOG)) {
                 return ;
             }
             Scope scope = null;
             int offset = 0;
-            LineMap lineMap = ci.getCompilationUnit().getLineMap();
+            LineMap lineMap;
+            if (ci.getFileObject() != null) {
+                lineMap = ci.getCompilationUnit().getLineMap();
+            } else {
+                lineMap = null;
+            }
             if (lineMap != null) {
                 offset = findLineOffset(lineMap, ci.getSnapshot().getText(), line);
                 scope = ci.getTreeUtilities().scopeFor(offset);
@@ -597,6 +601,23 @@ class PreferredCCParser {
             return -1;
         }
         return offset;
+    }
+    
+    static boolean toPhase(CompilationController ci, JavaSource.Phase phase, Logger log) throws IOException {
+        if (ci.toPhase(phase).compareTo(phase) < 0) {
+            log.log(Level.WARNING,
+                    "Unable to resolve {0} to phase {1}, current phase = {2}\n"+
+                    "Diagnostics = {3}\n"+
+                    "Free memory = {4}",
+                    new Object[]{ ci.getFileObject(),
+                                  phase,
+                                  ci.getPhase(),
+                                  ci.getDiagnostics(),
+                                  Runtime.getRuntime().freeMemory()});
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private class SessionsListener extends DebuggerManagerAdapter {

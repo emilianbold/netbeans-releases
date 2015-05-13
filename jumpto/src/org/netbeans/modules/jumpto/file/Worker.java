@@ -68,6 +68,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -175,9 +176,7 @@ final class Worker implements Runnable {
     }
 
     private void emit(@NonNull final List<? extends FileDescriptor> files) {
-        if (!this.cancelled) {
-            this.collector.emit(this, files);
-        }
+        this.collector.emit(this, files);
     }
 
     @NonNull
@@ -344,6 +343,7 @@ final class Worker implements Runnable {
         private final long startTime;
         private final Set<Worker> active = Collections.newSetFromMap(new ConcurrentHashMap<Worker, Boolean>());
         private volatile boolean frozen;
+        private boolean someCancelled;  //Threading: Accessed from a single (worker) thread
 
         private Collector(
             @NonNull final Models.MutableListModel<FileDescriptor> model,
@@ -370,7 +370,7 @@ final class Worker implements Runnable {
         }
 
         boolean isDone() {
-            return frozen && active.isEmpty();
+            return frozen && active.isEmpty() && !someCancelled;
         }
 
         private void configure(@NonNull final Worker worker) {
@@ -400,19 +400,23 @@ final class Worker implements Runnable {
             @NonNull final List<? extends FileDescriptor> files) {
             Parameters.notNull("worker", worker);   //NOI18N
             Parameters.notNull("files", files); //NOI18N
-            model.add(files);
-            updateCallBack.run();
+            final boolean cancelled = worker.cancelled;
+            if (!cancelled) {
+                model.add(files);
+                updateCallBack.run();
+            }
         }
 
         private void done(@NonNull final Worker worker) {
             Parameters.notNull("worker", worker);   //NOI18N
+            someCancelled |= worker.cancelled;
             if (!active.remove(worker)) {
                 throw new IllegalStateException(String.format(
                     "Trying to removed unknown worker: %s from collector: %s",  //NOI18N
                     worker,
                     this));
             }
-            if (active.isEmpty()) {
+            if (isDone()) {
                 doneCallBack.run();
             }
         }
@@ -431,26 +435,6 @@ final class Worker implements Runnable {
         final boolean isCancelled() {
             return cancelled;
         }
-
-        static SearchType toJumpToSearchType(final QuerySupport.Kind searchType) {
-            switch (searchType) {
-                case CAMEL_CASE:
-                case CASE_INSENSITIVE_CAMEL_CASE:
-                    return org.netbeans.spi.jumpto.type.SearchType.CAMEL_CASE;
-                case CASE_INSENSITIVE_PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_PREFIX;
-                case CASE_INSENSITIVE_REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.CASE_INSENSITIVE_REGEXP;
-                case EXACT:
-                    return org.netbeans.spi.jumpto.type.SearchType.EXACT_NAME;
-                case PREFIX:
-                    return org.netbeans.spi.jumpto.type.SearchType.PREFIX;
-                case REGEXP:
-                    return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
-                default:
-                    throw new IllegalArgumentException();
-            }
-        }
     }
 
     private static final class ProviderStrategy extends Strategy {
@@ -465,7 +449,7 @@ final class Worker implements Runnable {
                 return;
             }
             final List<FileDescriptor> files = new ArrayList<>();
-            final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
+            final SearchType jumpToSearchType = Utils.toSearchType(request.getSearchKind());
             final FileProvider.Context ctx = FileProviderAccessor.getInstance().createContext(
                 request.getText(),
                 jumpToSearchType,
@@ -580,14 +564,17 @@ final class Worker implements Runnable {
                 FileIndexer.ID,
                 FileIndexer.VERSION,
                 roots.toArray(new FileObject[roots.size()]));
+            final QuerySupport.Query.Factory f = q.getQueryFactory().
+                    setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR).
+                    setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
             if (isCancelled()) {
                 return false;
             }
             final List<FileDescriptor> files = new ArrayList<>();
-            final Collection<? extends IndexResult> results = q.query(
+            final Collection<? extends IndexResult> results = f.field(
                 query.first(),
                 query.second(),
-                request.getSearchKind());
+                request.getSearchKind()).execute();
             for (IndexResult r : results) {
                 FileObject file = r.getFile();
                 if (file == null || !file.isValid()) {
@@ -597,13 +584,13 @@ final class Worker implements Runnable {
                 final Project project = FileOwnerQuery.getOwner(file);
                 FileDescriptor fd = new FileDescription(
                         file,
-                        r.getRelativePath().substring(0, Math.max(r.getRelativePath().length() - file.getNameExt().length() - 1, 0)),
-                        project,
-                        request.getLine());
+                        r.getRelativePath(),
+                        project);
                 boolean preferred = project != null && request.getCurrentProject() != null ?
                         project.getProjectDirectory() == request.getCurrentProject().getProjectDirectory() :
                         false;
                 FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                 files.add(fd);
                 LOG.log(
                     Level.FINER,
@@ -635,6 +622,10 @@ final class Worker implements Runnable {
                     searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
                     indexQueryText = NameMatcherFactory.wildcardsToRegexp(request.getText(),true);
                     Pattern.compile(indexQueryText);    //Verify the pattern
+                    break;
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    searchField = FileIndexer.FIELD_CASE_INSENSITIVE_NAME;
+                    indexQueryText = request.getText();
                     break;
                 case REGEXP:
                     searchField = FileIndexer.FIELD_NAME;
@@ -671,11 +662,12 @@ final class Worker implements Runnable {
             if (isCancelled()) {
                 return;
             }
-            final SearchType jumpToSearchType = toJumpToSearchType(request.getSearchKind());
+            final SearchType jumpToSearchType = Utils.toSearchType(request.getSearchKind());
             //Looking for matching files in all found folders
             final NameMatcher matcher = NameMatcherFactory.createNameMatcher(
                     request.getText(),
-                    jumpToSearchType);
+                    jumpToSearchType,
+                    FileSearchAction.SEARCH_OPTIONS);
             final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
             final Collection <FileObject> allFolders = new HashSet<FileObject>();
             List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
@@ -711,9 +703,9 @@ final class Worker implements Runnable {
                             FileDescriptor fd = new FileDescription(
                                 file,
                                 relativePath,
-                                project,
-                                request.getLine());
+                                project);
                             FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                            FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                             files.add(fd);
                         }
                     }

@@ -86,8 +86,6 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
-
         DestructorDefinitionImpl res = new DestructorDefinitionImpl(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);        
         
         temporaryRepositoryRegistration(ast, global, res);

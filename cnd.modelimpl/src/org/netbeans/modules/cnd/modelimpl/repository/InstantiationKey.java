@@ -73,8 +73,8 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
         sb.append("<"); // NOI18N
         Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();
         boolean first = true;
-        for (CsmTemplateParameter param : mapping.keySet()) {
-            CsmSpecializationParameter specParam = mapping.get(param);
+        for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> param : mapping.entrySet()) {
+            CsmSpecializationParameter specParam = param.getValue();
             if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
                 if(!first) {
                     sb.append(","); // NOI18N

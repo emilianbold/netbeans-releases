@@ -206,6 +206,16 @@ public interface CommentSet {
     void addComment(RelativePosition positioning, Comment c);
 
     /**
+     * Inserts comment with specified positioning to the given index.
+     * @param positioning relative position of comment against corresponding tree.
+     * @param c comment to add.
+     * @param index -1 to add comment to the end or index at which the comment should be added
+     * 
+     * @see org.netbeans.modules.java.source.query.CommentSet.RelativePosition
+     */
+    void insertComment(RelativePosition positioning, Comment c, int index);
+
+    /**
      * Gets non-null list of comments on specified relative position. This list is read-only. If you need to check if 
      * there is any comment in this set use {@link #hasComments()}.  
      * @param positioning relative position against associated tree. 

@@ -49,6 +49,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import static org.netbeans.lib.v8debug.JSONConstants.*;
 import org.netbeans.lib.v8debug.commands.Backtrace;
+import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ChangeLive;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpointGroup;
@@ -69,11 +70,14 @@ import org.netbeans.lib.v8debug.commands.SetExceptionBreak;
 import org.netbeans.lib.v8debug.commands.SetVariableValue;
 import org.netbeans.lib.v8debug.commands.Source;
 import org.netbeans.lib.v8debug.commands.Threads;
+import org.netbeans.lib.v8debug.commands.V8Flags;
 import org.netbeans.lib.v8debug.commands.Version;
 import org.netbeans.lib.v8debug.events.AfterCompileEventBody;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
+import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.events.ScriptCollectedEventBody;
+import org.netbeans.lib.v8debug.vars.NewValue;
 import org.netbeans.lib.v8debug.vars.ReferencedValue;
 import org.netbeans.lib.v8debug.vars.V8Boolean;
 import org.netbeans.lib.v8debug.vars.V8Function;
@@ -84,7 +88,8 @@ import org.netbeans.lib.v8debug.vars.V8String;
 import org.netbeans.lib.v8debug.vars.V8Value;
 
 /**
- *
+ * Translator of JSON objects into the corresponding Java API classes.
+ * 
  * @author Martin Entlicher
  */
 public class JSONReader {
@@ -138,6 +143,10 @@ public class JSONReader {
                     V8Script script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
                     body = new AfterCompileEventBody(script);
                     break;
+                case CompileError:
+                    script = getScript((JSONObject) bodyObj.get(EVT_SCRIPT));
+                    body = new CompileErrorEventBody(script);
+                    break;
                 case ScriptCollected:
                     long scriptId = getLong((JSONObject) bodyObj.get(EVT_SCRIPT), ID);
                     body = new ScriptCollectedEventBody(scriptId);
@@ -174,6 +183,24 @@ public class JSONReader {
         return new V8Event(sequence, eventKind, body, refs, running, success, errorMessage);
     }
 
+    public static V8Request getRequest(JSONObject obj) {
+        long sequence = (Long) obj.get(SEQ);
+        V8Type type = getType(obj);
+        if (V8Type.request != type) {
+            throw new IllegalArgumentException("Expecting request type. Actual type = "+type);
+        }
+        String commandName = (String) obj.get(COMMAND);
+        V8Command command = V8Command.fromString(commandName);
+        JSONObject argsObj = (JSONObject) obj.get(ARGUMENTS);
+        V8Arguments args;
+        if (argsObj != null) {
+            args = getArguments(command, argsObj);
+        } else {
+            args = null;
+        }
+        return new V8Request(sequence, command, args);
+    }
+
     private static V8Body getBody(V8Command command, JSONObject obj) {
         switch (command) {
             case Listbreakpoints:
@@ -188,8 +215,8 @@ public class JSONReader {
                 if ("scriptName".equals(type)) {
                     scriptName = getString(obj, SCRIPT_NAME);
                 }
-                long line = getLong(obj, LINE, -1);
-                long column = getLong(obj, COLUMN, -1);
+                Long line = getLongOrNull(obj, LINE);
+                Long column = getLongOrNull(obj, COLUMN);
                 V8Breakpoint.ActualLocation[] actualLocations = getActualLocations((JSONArray) obj.get(BREAK_ACTUAL_LOCATIONS));
                 return new SetBreakpoint.ResponseBody(V8Breakpoint.Type.valueOf(type), bpId,
                                                       scriptName, line, column, actualLocations);
@@ -306,11 +333,200 @@ public class JSONReader {
         }
     }
     
+    private static V8Arguments getArguments(V8Command command, JSONObject obj) {
+        switch (command) {
+            case Backtrace:
+                return new Backtrace.Arguments(
+                        getLongOrNull(obj, FROM_FRAME), getLongOrNull(obj, TO_FRAME),
+                        getBooleanOrNull(obj, BOTTOM), getBooleanOrNull(obj, INLINE_REFS));
+            case Changebreakpoint:
+                return new ChangeBreakpoint.Arguments(
+                        getLong(obj, BREAK_POINT), getBooleanOrNull(obj, BREAK_ENABLED),
+                        getString(obj, BREAK_CONDITION), getLongOrNull(obj, BREAK_IGNORE_COUNT));
+            case Changelive:
+                return new ChangeLive.Arguments(
+                        getLong(obj, SCRIPT_ID), getString(obj, NEW_SOURCE),
+                        getBooleanOrNull(obj, PREVIEW_ONLY));
+            case Clearbreakpoint:
+                return new ClearBreakpoint.Arguments(getLong(obj, BREAK_POINT));
+            case Clearbreakpointgroup:
+                return new ClearBreakpointGroup.Arguments(getLong(obj, BREAK_GROUP_ID));
+            case Continue:
+                String step = getString(obj, ARGS_STEP_ACTION);
+                if (step == null) {
+                    return null;
+                }
+                return new Continue.Arguments(
+                        V8StepAction.valueOf(step),
+                        getLongOrNull(obj, ARGS_STEP_COUNT));
+            case Evaluate:
+                return new Evaluate.Arguments(
+                        getString(obj, EVAL_EXPRESSION),
+                        getLongOrNull(obj, FRAME),
+                        getBooleanOrNull(obj, EVAL_GLOBAL),
+                        getBooleanOrNull(obj, EVAL_DISABLE_BREAK),
+                        getAdditionalContext(obj.get(EVAL_ADDITIONAL_CONTEXT)));
+            case Flags:
+                Object fobj = obj.get(FLAGS);
+                if (!(fobj instanceof JSONArray)) {
+                    return null;
+                }
+                JSONArray farray = (JSONArray) fobj;
+                Map<String, Boolean> flags = new LinkedHashMap<>();
+                for (int i = 0; i < farray.size(); i++) {
+                    Object felm = farray.get(i);
+                    if (felm instanceof JSONObject) {
+                        JSONObject fo = (JSONObject) felm;
+                        flags.put(getString(fo, NAME), getBooleanOrNull(fo, VALUE));
+                    }
+                }
+                return new Flags.Arguments(flags);
+            case Frame:
+                return new Frame.Arguments(getLongOrNull(obj, NUMBER));
+            case Gc:
+                return new GC.Arguments(getString(obj, TYPE));
+            case Lookup:
+                long[] handles = null;
+                Object hObj = obj.get(HANDLES);
+                if (hObj instanceof JSONArray) {
+                    handles = getLongArray((JSONArray) hObj);
+                }
+                return new Lookup.Arguments(handles, getBooleanOrNull(obj, INCLUDE_SOURCE));
+            case References:
+                References.Type rType;
+                String rTypeStr = getString(obj, TYPE);
+                if (rTypeStr != null) {
+                    rType = References.Type.valueOf(rTypeStr);
+                } else {
+                    rType = null;
+                }
+                return new References.Arguments(rType, getLong(obj, HANDLE));
+            case Restartframe:
+                return new RestartFrame.Arguments(getLongOrNull(obj, FRAME));
+            case Scope:
+                return new Scope.Arguments(getLong(obj, NUMBER), getLongOrNull(obj, FRAME_NUMBER));
+            case Scopes:
+                return new Scopes.Arguments(getLongOrNull(obj, FRAME_NUMBER));
+            case Scripts:
+                V8Script.Types scrTypes = null;
+                long types = getLong(obj, TYPES);
+                if (types >= 0) {
+                    scrTypes = new V8Script.Types((int) types);
+                }
+                long[] ids = null;
+                Object idsObj = obj.get(IDs);
+                if (idsObj instanceof JSONArray) {
+                    ids = getLongArray((JSONArray) idsObj);
+                }
+                Boolean includeSource = getBooleanOrNull(obj, INCLUDE_SOURCE);
+                Object filter = obj.get(FILTER);
+                if (filter instanceof String) {
+                    return new Scripts.Arguments(scrTypes, ids, includeSource, (String) filter);
+                } else {
+                    if (!(filter instanceof Long)) {
+                        return null;
+                    }
+                    return new Scripts.Arguments(scrTypes, ids, includeSource, (Long) filter);
+                }
+            case SetVariableValue:
+                Object nvObj = obj.get(NEW_VALUE);
+                if (!(nvObj instanceof JSONObject)) {
+                    return null;
+                }
+                NewValue nv;
+                Long handle = getLongOrNull((JSONObject) nvObj, HANDLE);
+                if (handle != null) {
+                    nv = new NewValue(handle);
+                } else {
+                    Object typeObj = ((JSONObject) nvObj).get(TYPE);
+                    if (!(typeObj instanceof String)) {
+                        return null;
+                    }
+                    V8Value.Type type = V8Value.Type.fromString((String) typeObj);
+                    nv = new NewValue(type, STRING_DESCRIPTION);
+                }
+                Object scopeObj = obj.get(SCOPE);
+                if (!(scopeObj instanceof JSONObject)) {
+                    return null;
+                }
+                return new SetVariableValue.Arguments(
+                        getString(obj, NAME), nv,
+                        getLong((JSONObject) scopeObj, NUMBER),
+                        getLongOrNull((JSONObject) scopeObj, FRAME_NUMBER));
+            case Setbreakpoint:
+                Object bpTypeObj = obj.get(TYPE);
+                if (!(bpTypeObj instanceof String)) {
+                    return null;
+                }
+                String bpType = (String) bpTypeObj;
+                if ("script".equals(bpType)) {
+                    bpType = V8Breakpoint.Type.scriptName.toString();
+                }
+                return new SetBreakpoint.Arguments(
+                        V8Breakpoint.Type.valueOf(bpType),
+                        getString(obj, TARGET),
+                        getLongOrNull(obj, LINE), getLongOrNull(obj, COLUMN),
+                        getBooleanOrNull(obj, BREAK_ENABLED),
+                        getString(obj, BREAK_CONDITION),
+                        getLongOrNull(obj, BREAK_IGNORE_COUNT),
+                        getLongOrNull(obj, BREAK_GROUP_ID));
+            case Setexceptionbreak:
+                bpTypeObj = obj.get(TYPE);
+                if (!(bpTypeObj instanceof String)) {
+                    return null;
+                }
+                bpType = (String) bpTypeObj;
+                return new SetExceptionBreak.Arguments(
+                        V8ExceptionBreakType.valueOf(bpType),
+                        getBoolean(obj, BREAK_ENABLED));
+            case Source:
+                return new Source.Arguments(
+                        getLongOrNull(obj, FRAME),
+                        getLongOrNull(obj, FROM_LINE),
+                        getLongOrNull(obj, TO_LINE));
+            case V8flags:
+                return new V8Flags.Arguments(getString(obj, FLAGS));
+            default:
+                return null;
+        }
+    }
+    
+    private static Evaluate.Arguments.Context[] getAdditionalContext(Object obj) {
+        if (!(obj instanceof JSONArray)) {
+            return null;
+        }
+        JSONArray array = (JSONArray) obj;
+        int n = array.size();
+        Evaluate.Arguments.Context[] context = new Evaluate.Arguments.Context[n];
+        for (int i = 0; i < n; i++) {
+            context[i] = getContext(array.get(i));
+        }
+        return context;
+    }
+    
+    private static Evaluate.Arguments.Context getContext(Object obj) {
+        if (!(obj instanceof JSONObject)) {
+            return null;
+        }
+        JSONObject jobj = (JSONObject) obj;
+        return new Evaluate.Arguments.Context(getString(jobj, NAME),
+                                              getLong(jobj, HANDLE));
+    }
+    
     /**
      * @return the String property value, or <code>null</code> when not defined.
      */
     private static String getString(JSONObject obj, String propertyName) {
         return (String) obj.get(propertyName);
+    }
+    
+    private static String[] getStringValuesFromArray(JSONArray array, String propertyName) {
+        int l = array.size();
+        String[] strings = new String[l];
+        for (int i = 0; i < l; i++) {
+            strings[i] = getString((JSONObject) array.get(i), propertyName);
+        }
+        return strings;
     }
     
     /**
@@ -334,6 +550,14 @@ public class JSONReader {
             String str = (String) prop;
             return Long.parseLong(str);
         }
+    }
+    
+    private static Long getLongOrNull(JSONObject obj, String propertyName) {
+        Object prop = obj.get(propertyName);
+        if (prop == null) {
+            return null;
+        }
+        return (Long) prop;
     }
     
     private static PropertyLong getLongProperty(JSONObject obj, String propertyName) {
@@ -378,6 +602,7 @@ public class JSONReader {
     }
     
     private static V8Script getScript(JSONObject obj) {
+        long handle = getLong(obj, HANDLE);
         String name = getString(obj, NAME);
         long id = getLong(obj, ID);
         long lineOffset = getLong(obj, SCRIPT_LINE_OFFSET);
@@ -386,7 +611,7 @@ public class JSONReader {
         Object data = obj.get(DATA);
         String source = getString(obj, SOURCE);
         String sourceStart = getString(obj, SOURCE_START);
-        long sourceLength = getLong(obj, SOURCE_LENGTH);
+        Long sourceLength = getLongOrNull(obj, SOURCE_LENGTH);
         ReferencedValue context = getReferencedValue(obj, CONTEXT);
         String text = getString(obj, TEXT);
         long scriptTypeNum = getLong(obj, SCRIPT_TYPE);
@@ -400,7 +625,7 @@ public class JSONReader {
         } else {
             evalFromLocation = null;
         }
-        return new V8Script(name, id, lineOffset, columnOffset, lineCount, data, source, sourceStart, sourceLength, context, text, scriptType, compilationType, evalFromScript, evalFromLocation);
+        return new V8Script(handle, name, id, lineOffset, columnOffset, lineCount, data, source, sourceStart, sourceLength, context, text, scriptType, compilationType, evalFromScript, evalFromLocation);
     }
 
     private static V8Value getValue(JSONObject obj) {
@@ -442,21 +667,26 @@ public class JSONReader {
             case Function:
                 String name = getString(obj, NAME);
                 String inferredName = getString(obj, FUNCTION_INFERRED_NAME);
+                Boolean resolved = getBooleanOrNull(obj, FUNCTION_RESOLVED);
                 String source = getString(obj, SOURCE);
                 PropertyLong scriptRef = getReferenceProperty(obj, SCRIPT);
-                long scriptId = getLong(obj, SCRIPTID);
+                Long scriptId = getLongOrNull(obj, SCRIPTID);
                 PropertyLong position = getLongProperty(obj, POSITION);
                 PropertyLong line = getLongProperty(obj, LINE);
                 PropertyLong column = getLongProperty(obj, COLUMN);
                 PropertyLong constructorFunctionHandle = getReferenceProperty(obj, VALUE_CONSTRUCTOR_FUNCTION);
                 PropertyLong protoObject = getReferenceProperty(obj, VALUE_PROTO_OBJECT);
                 PropertyLong prototypeObject = getReferenceProperty(obj, VALUE_PROTOTYPE_OBJECT);
+                V8Scope[] scopes = null;
+                if (obj.get(SCOPES) instanceof JSONArray) {
+                    scopes = getScopes((JSONArray) obj.get(SCOPES), null);
+                }
                 Map<String, V8Object.Property> properties = getProperties((JSONArray) obj.get(VALUE_PROPERTIES), null);
                 return new V8Function(handle, constructorFunctionHandle,
                                       protoObject, prototypeObject,
-                                      name, inferredName,
+                                      name, inferredName, resolved,
                                       source, scriptRef, scriptId,
-                                      position, line, column, properties, text);
+                                      position, line, column, scopes, properties, text);
             case Object:
             case Error:
             case Regexp:
@@ -576,7 +806,7 @@ public class JSONReader {
     }
     
     private static V8Frame getFrame(JSONObject obj) {
-        long index = getLong(obj, INDEX);
+        Long index = getLongOrNull(obj, INDEX);
         ReferencedValue receiver = getReferencedValue(obj, FRAME_RECEIVER);
         ReferencedValue func = getReferencedValue(obj, FRAME_FUNC);
         long scriptRef = getReference(obj, SCRIPT);
@@ -589,7 +819,7 @@ public class JSONReader {
         long line = getLong(obj, LINE);
         long column = getLong(obj, COLUMN);
         String sourceLineText = getString(obj, EVT_SOURCE_LINE_TEXT);
-        V8Scope[] scopes = getScopes((JSONArray) obj.get(SCOPES), index);
+        V8Scope[] scopes = getScopes((JSONArray) obj.get(SCOPES), null);
         String text = getString(obj, TEXT);
         return new V8Frame(index, receiver, func, scriptRef, constructCall, atReturn,
                            debuggerFrame, arguments, locals, position, line, column,
@@ -805,8 +1035,11 @@ public class JSONReader {
         if (n == 0) {
             return null;
         }
-        long[] breakpointsUpdate = null;
+        ChangeLive.ChangeLog.BreakpointUpdate[] breakpointsUpdate = null;
         String[] namesLinkedToOldScript = null;
+        String[] droppedFrames = null;
+        ChangeLive.ChangeLog.FunctionPatched functionPatched = null;
+        ChangeLive.ChangeLog.PositionPatched[] patchedPositions = null;
         for (Object aelem : array) {
             if (!(aelem instanceof JSONObject)) {
                 continue;
@@ -814,18 +1047,76 @@ public class JSONReader {
             JSONObject obj = (JSONObject) aelem;
             JSONArray breakpointsUpdateArr = (JSONArray) obj.get(BREAK_POINTS_UPDATE);
             if (breakpointsUpdateArr != null) {
-                breakpointsUpdate = getLongArray(breakpointsUpdateArr);
+                breakpointsUpdate = getChangeLogBreakpointsUpdate(breakpointsUpdateArr);
             }
             JSONArray linkedToOldScriptArr = (JSONArray) obj.get(LINKED_TO_OLD_SCRIPT);
             if (linkedToOldScriptArr != null) {
-                int l = linkedToOldScriptArr.size();
-                namesLinkedToOldScript = new String[l];
-                for (int i = 0; i < l; i++) {
-                    namesLinkedToOldScript[i] = getString((JSONObject) linkedToOldScriptArr.get(i), NAME);
-                }
+                namesLinkedToOldScript = getStringValuesFromArray(linkedToOldScriptArr, NAME);
+            }
+            JSONArray droppedFromStack = (JSONArray) obj.get(DROPPED_FROM_STACK);
+            if (droppedFromStack != null) {
+                droppedFrames = getStringValuesFromArray(droppedFromStack, NAME);
+            }
+            String fp = (String) obj.get(FUNCTION_PATCHED);
+            if (fp != null) {
+                Boolean finf = getBooleanOrNull(obj, FUNCTION_INFO_NOT_FOUND);
+                functionPatched = new ChangeLive.ChangeLog.FunctionPatched(fp, new PropertyBoolean(finf));
+            }
+            JSONArray positionPatchedArr = (JSONArray) obj.get(POSITION_PATCHED);
+            if (positionPatchedArr != null) {
+                patchedPositions = getPatchedPositions(positionPatchedArr);
             }
         }
-        return new ChangeLive.ChangeLog(breakpointsUpdate, namesLinkedToOldScript);
+        return new ChangeLive.ChangeLog(breakpointsUpdate, namesLinkedToOldScript,
+                                        droppedFrames, functionPatched, patchedPositions);
+    }
+    
+    private static ChangeLive.ChangeLog.BreakpointUpdate[] getChangeLogBreakpointsUpdate(JSONArray array) {
+        int l = array.size();
+        ChangeLive.ChangeLog.BreakpointUpdate[] bpus = new ChangeLive.ChangeLog.BreakpointUpdate[l];
+        for (int i = 0; i < l; i++) {
+            JSONObject bpu = (JSONObject) array.get(i);
+            String typeRaw = getString(bpu, TYPE);
+            ChangeLive.ChangeLog.BreakpointUpdate.Type type =
+                    ChangeLive.ChangeLog.BreakpointUpdate.Type.fromString(typeRaw);
+            long id = getLong(bpu, ID);
+            PropertyLong newId = getLongProperty(bpu, NEW_ID);
+            ChangeLive.ChangeLog.BreakpointUpdate.Position oldPositions = null;
+            ChangeLive.ChangeLog.BreakpointUpdate.Position newPositions = null;
+            JSONObject positionsObj = (JSONObject) bpu.get(OLD_POSITIONS);
+            if (positionsObj != null) {
+                oldPositions = getPositions(positionsObj);
+            }
+            positionsObj = (JSONObject) bpu.get(POSITIONS);
+            if (positionsObj == null) {
+                positionsObj = (JSONObject) bpu.get(NEW_POSITIONS);
+            }
+            if (positionsObj != null) {
+                newPositions = getPositions(positionsObj);
+            }
+            bpus[i] = new ChangeLive.ChangeLog.BreakpointUpdate(type, id, newId,
+                                                                oldPositions, newPositions);
+        }
+        return bpus;
+    }
+    
+    private static ChangeLive.ChangeLog.BreakpointUpdate.Position getPositions(JSONObject positionObj) {
+        long position = getLong(positionObj, POSITION);
+        long line = getLong(positionObj, LINE);
+        long column = getLong(positionObj, COLUMN);
+        return new ChangeLive.ChangeLog.BreakpointUpdate.Position(position, line, column);
+    }
+    
+    private static ChangeLive.ChangeLog.PositionPatched[] getPatchedPositions(JSONArray array) {
+        int l = array.size();
+        ChangeLive.ChangeLog.PositionPatched[] pps = new ChangeLive.ChangeLog.PositionPatched[l];
+        for (int i = 0; i < l; i++) {
+            JSONObject pp = (JSONObject) array.get(i);
+            String name = getString(pp, NAME);
+            Boolean infoNF = getBooleanOrNull(pp, INFO_NOT_FOUND);
+            pps[i] = new ChangeLive.ChangeLog.PositionPatched(name, new PropertyBoolean(infoNF));
+        }
+        return pps;
     }
 
 }

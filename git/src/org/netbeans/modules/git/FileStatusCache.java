@@ -107,6 +107,7 @@ public class FileStatusCache {
     private final IgnoredFilesHandler ignoredFilesHandler;
     private final RequestProcessor.Task ignoredFilesHandlerTask;
     private static final boolean USE_IGNORE_INDEX = !Boolean.getBoolean("versioning.git.noignoreindex"); //NOI18N
+    private final Git git = Git.getInstance();
 
     public FileStatusCache() {
         cachedFiles = new HashMap<>();
@@ -172,14 +173,14 @@ public class FileStatusCache {
             }
             // go through all files and sort them under repository roots
             file = FileUtil.normalizeFile(file);
-            File repository = Git.getInstance().getRepositoryRoot(file);
+            File repository = git.getRepositoryRoot(file);
             File parentFile;
             File parentRepository;
             if (repository == null) {
                 // we have an unversioned root, maybe the whole subtree should be removed from cache (VCS owners might have changed)
                 continue;
             } else if (repository.equals(file) && (parentFile = file.getParentFile()) != null
-                    && (parentRepository = Git.getInstance().getRepositoryRoot(parentFile)) != null) {
+                    && (parentRepository = git.getRepositoryRoot(parentFile)) != null) {
                 addUnderRoot(rootFiles, parentRepository, file);
             }
             addUnderRoot(rootFiles, repository, file);
@@ -228,7 +229,7 @@ public class FileStatusCache {
                 GitClient client = null;
                 try {
                     // find all files with not up-to-date or ignored status
-                    client = Git.getInstance().getClient(repository);
+                    client = git.getClient(repository);
                     interestingFiles = client.getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
                     if (pm.isCanceled()) {
                         return;
@@ -259,7 +260,7 @@ public class FileStatusCache {
                                     && (fi.containsStatus(Status.NOTVERSIONED_EXCLUDED) && (!exists || // file was ignored and is now deleted
                                     fi.isDirectory() && !GitUtils.isIgnored(file, true)) ||  // folder is now up-to-date (and NOT ignored by Sharability)
                                     !fi.isDirectory() && !fi.containsStatus(Status.NOTVERSIONED_EXCLUDED)) // file is now up-to-date or also ignored by .gitignore
-                                    && (correctRepository = !repository.equals(file) && repository.equals(filesOwner = Git.getInstance().getRepositoryRoot(file)))) { // do not remove info for gitlinks or nested repositories
+                                    && (correctRepository = !repository.equals(file) && repository.equals(filesOwner = git.getRepositoryRoot(file)))) { // do not remove info for gitlinks or nested repositories
                                 LOG.log(Level.FINE, "refreshAllRoots() uninteresting file: {0} {1}", new Object[]{file, fi}); // NOI18N
                                 refreshFileStatus(file, FILE_INFORMATION_UNKNOWN); // remove the file from cache
                             }
@@ -306,17 +307,18 @@ public class FileStatusCache {
      * @return true if there are any files with the given status otherwise false
      */
     public boolean containsFiles (Set<File> roots, Set<Status> includeStatus, boolean addExcluded) {
+        Set<File> repositories = GitUtils.getRepositoryRoots(roots);
         // get as deep as possible, so Turbo.readEntry() - which accesses io - gets called the least times
         // in such case we may end up with just access to io - getting the status of indeed modified file
         // the other way around it would check status for all directories along the path
         for (File root : roots) {
-            if(containsFilesIntern(getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root), addExcluded, 1)) {
+            if(containsFilesIntern(getIndexValues(root, includeStatus, repositories), includeStatus, !VersioningSupport.isFlat(root), addExcluded, 1, repositories)) {
                 return true;
             }
         }
 
         // check to roots if they apply to the given status
-        if (containsFilesIntern(roots, includeStatus, false, addExcluded, 0)) {
+        if (containsFilesIntern(roots, includeStatus, false, addExcluded, 0, repositories)) {
             return true;
         }
         return false;
@@ -355,14 +357,15 @@ public class FileStatusCache {
      */
     public File [] listFiles (Collection<File> roots, EnumSet<Status> includeStatus) {
         Set<File> set = new HashSet<>();
+        Set<File> repositories = GitUtils.getRepositoryRoots(roots);
 
         // get all files with given status underneath the roots files;
         // do it recusively if root isn't a flat folder
         for (File root : roots) {
-            set.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, !VersioningSupport.isFlat(root)));
+            set.addAll(listFilesIntern(getIndexValues(root, includeStatus, repositories), includeStatus, !VersioningSupport.isFlat(root), repositories));
         }
         // check also the root files for status and add them eventually
-        set.addAll(listFilesIntern(roots, includeStatus, false));
+        set.addAll(listFilesIntern(roots, includeStatus, false, repositories));
         return set.toArray(new File[set.size()]);
     }
     
@@ -460,7 +463,7 @@ public class FileStatusCache {
         boolean triggerGitScan = false;
         boolean addAsExcluded = false;
         if (info == null) {
-            if (Git.getInstance().isManaged(file)) {
+            if (git.isManaged(file)) {
                 // ping repository scan, this means it has not yet been scanned
                 // but scan only files/folders visible in IDE
                 triggerGitScan = seenInUI;
@@ -523,7 +526,7 @@ public class FileStatusCache {
         }
         if (triggerGitScan) {
             info.setSeenInUI(true); // next time this file/folder will not trigger the git scan
-            Git.getInstance().getVCSInterceptor().pingRepositoryRootFor(file);
+            git.getVCSInterceptor().pingRepositoryRootFor(file);
         }
         return info;
     }
@@ -652,7 +655,7 @@ public class FileStatusCache {
         return retval;
     }
 
-    private boolean containsFilesIntern (Set<File> indexRoots, Set<Status> includeStatus, boolean recursively, boolean addExcluded, int depth) {
+    private boolean containsFilesIntern (Set<File> indexRoots, Set<Status> includeStatus, boolean recursively, boolean addExcluded, int depth, Set<File> repositories) {
         if(indexRoots == null || indexRoots.isEmpty()) {
             return false;
         }
@@ -660,8 +663,8 @@ public class FileStatusCache {
         // in such case we may end up with just access to io - getting the status of indeed modified file
         // the other way around it would check status for all directories along the path
         for (File root : indexRoots) {
-            Set<File> indexValues = getIndexValues(root, includeStatus);
-            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded, depth + 1)) {
+            Set<File> indexValues = getIndexValues(root, includeStatus, repositories);
+            if(recursively && containsFilesIntern(indexValues, includeStatus, recursively, addExcluded, depth + 1, repositories)) {
                 return true;
             }
         }
@@ -675,14 +678,14 @@ public class FileStatusCache {
         return false;
     }
 
-    private Set<File> listFilesIntern (Collection<File> roots, EnumSet<Status> includeStatus, boolean recursively) {
+    private Set<File> listFilesIntern (Collection<File> roots, EnumSet<Status> includeStatus, boolean recursively, Set<File> queriedRepositories) {
         if(roots == null || roots.isEmpty()) {
             return Collections.<File>emptySet();
         }
         Set<File> ret = new HashSet<>();
         for (File root : roots) {
             if(recursively) {
-                ret.addAll(listFilesIntern(getIndexValues(root, includeStatus), includeStatus, recursively));
+                ret.addAll(listFilesIntern(getIndexValues(root, includeStatus, queriedRepositories), includeStatus, recursively, queriedRepositories));
             }
             FileInformation fi = getInfo(root);
             if (fi == null || !fi.containsStatus(includeStatus)) {
@@ -702,7 +705,7 @@ public class FileStatusCache {
         };
     }
 
-    private Set<File> getIndexValues (File root, Set<Status> includeStatus) {
+    private Set<File> getIndexValues (File root, Set<Status> includeStatus, Set<File> queriedRepositories) {
         File[] modified = new File[0];
         File[] ignored = new File[0];
         if (includeStatus.contains(Status.NOTVERSIONED_EXCLUDED)) {
@@ -717,7 +720,22 @@ public class FileStatusCache {
         }
         Set<File> values = new HashSet<>(Arrays.asList(ignored));
         values.addAll(Arrays.asList(modified));
+        if (queriedRepositories != null) {
+            values = checkBelongToRepository(values, queriedRepositories);
+        }
         return values;
+    }
+    
+    private Set<File> checkBelongToRepository (Set<File> files, Set<File> repositories) {
+        for (Iterator<File> it = files.iterator(); it.hasNext(); ) {
+            File f = it.next();
+            File repo = git.getRepositoryRoot(f);
+            if (!f.equals(repo) // git link
+                    && !repositories.contains(repo)) { // from a subrepo
+                it.remove();
+            }
+        }
+        return files;
     }
 
     private void updateIndex(File file, FileInformation fi, boolean addToIndex) {
@@ -839,7 +857,7 @@ public class FileStatusCache {
         File parentFile = file.getParentFile();
         boolean parentIgnored = getStatus(parentFile, false).containsStatus(Status.NOTVERSIONED_EXCLUDED);
         // but the parent may be another repository root ignored by the parent repository
-        if (parentFile.equals(Git.getInstance().getRepositoryRoot(parentFile))) {
+        if (parentFile.equals(git.getRepositoryRoot(parentFile))) {
             parentIgnored = false;
         }
         return parentIgnored;
@@ -882,8 +900,8 @@ public class FileStatusCache {
         
     }
 
-    private static File getSyncRepository (File repository) {
-        File cachedRepository = Git.getInstance().getRepositoryRoot(repository);
+    private File getSyncRepository (File repository) {
+        File cachedRepository = git.getRepositoryRoot(repository);
         if (repository.equals(cachedRepository)) {
             repository = cachedRepository;
         }

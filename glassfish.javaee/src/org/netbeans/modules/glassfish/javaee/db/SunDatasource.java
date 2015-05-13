@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
-import java.io.File;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
@@ -52,31 +51,38 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
  */
 public class SunDatasource implements Datasource {
 
+    private final String displayName;
     private final String jndiName;
     private final String url;
     private final String username;
     private final String password;
     private final String driverClassName;
-    private File resourceDir;
-    
-    public SunDatasource(String jndiName, String url, String username, 
-            String password, String driverClassName) {
-        this(jndiName, url, username, password, driverClassName, null);
+
+    public SunDatasource(String jndiName, String url, String username,
+            String password, String driverClassName/*, File resourceDir*/) {
+        this(jndiName, url, username, password, driverClassName, false);
     }
-    
-    public SunDatasource(String jndiName, String url, String username, 
-            String password, String driverClassName, File resourceDir) {
+
+    public SunDatasource(String jndiName, String url, String username,
+            String password, String driverClassName/*, File resourceDir*/, boolean scoped) {
         this.jndiName = jndiName;
         this.url = url;
         this.username = username;
         this.password = password;
         this.driverClassName = driverClassName;
-        this.resourceDir = resourceDir;
+//        if (scoped && jndiName.startsWith("java:app/")) {
+//            this.displayName = jndiName + " [application scoped]";
+//        } else if (scoped && jndiName.startsWith("java:module/")) {
+//            this.displayName = jndiName + " [module scoped]";
+//        } else {
+//            this.displayName = jndiName;
+//        }
+        this.displayName = jndiName;
     }
-    
+
     @Override
     public String getDisplayName() {
-        return jndiName;
+        return displayName;
     }
 
     @Override
@@ -104,14 +110,6 @@ public class SunDatasource implements Datasource {
         return driverClassName;
     }
     
-    File getResourceDir() {
-        return resourceDir;
-    }
-    
-    void setResourceDir(File resourceDir) {
-        this.resourceDir = resourceDir;
-    }
-    
     @Override
     public String toString() {
         return "[ " + jndiName + " : " + url 
@@ -120,6 +118,7 @@ public class SunDatasource implements Datasource {
     }
     
     @Override
+    @SuppressWarnings("AccessingNonPublicFieldOfAnotherObject")
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -140,7 +139,8 @@ public class SunDatasource implements Datasource {
         if (this.password == null || !this.password.equals(other.password)) {
             return false;
         }
-        if (this.driverClassName == null || !this.driverClassName.equals(other.driverClassName)) {
+        if (this.driverClassName == null
+                || !this.driverClassName.equals(other.driverClassName)) {
             return false;
         }
         return true;
@@ -159,7 +159,7 @@ public class SunDatasource implements Datasource {
 
     public SunDatasource copy(String jndiName) {
         return new SunDatasource(jndiName, this.url, this.username, 
-            this.password, this.driverClassName, this.resourceDir);
+            this.password, this.driverClassName/*, this.resourceDir*/);
     }
 
 }

@@ -618,7 +618,7 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }        
-        final ModificationResult result = new ModificationResult(this);
+        final ModificationResult result = new ModificationResult();
         final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         long start = System.currentTimeMillis();
 
@@ -775,7 +775,7 @@ public final class JavaSource {
 
         @Override
         public ModificationResult createModificationResult(Map<FileObject, List<ModificationResult.Difference>> diffs, Map<?, int[]> tag2Span) {
-            ModificationResult result = new ModificationResult(null);
+            ModificationResult result = new ModificationResult();
 
             result.diffs = diffs;
             result.tag2Span = tag2Span;

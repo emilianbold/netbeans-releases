@@ -202,6 +202,7 @@ public class ErrorAnnotations extends JavaTestCase {
         String path = org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + "|" + TEST_PACKAGE_NAME;
         openFile(path, TEST_CLASS_NAME+".java");                
         editor = new EditorOperator(TEST_CLASS_NAME);
+	new EventTool().waitNoEvent(1000);
         annots = editor.getAnnotations();
         assertEquals(0, annots.length); //there should be no annotations        
     }

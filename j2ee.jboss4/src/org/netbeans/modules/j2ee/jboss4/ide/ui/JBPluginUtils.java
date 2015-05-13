@@ -62,8 +62,11 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
+import org.netbeans.modules.j2ee.jboss4.util.JBProperties;
 import org.openide.filesystems.JarFileSystem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -95,6 +98,8 @@ public class JBPluginUtils {
     public static final Version JBOSS_6_0_0 = new Version("6.0.0"); // NOI18N
 
     public static final Version JBOSS_7_0_0 = new Version("7.0.0"); // NOI18N
+
+    public static final Version JBOSS_7_1_0 = new Version("7.1.0"); // NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(JBPluginUtils.class.getName());
 
@@ -110,7 +115,6 @@ public class JBPluginUtils {
     public static final String CLIENT = "client" + File.separator;
 
     public static final String COMMON = "common" + File.separator;
-
 
     // For JBoss 5.0 under JBOSS_ROOT_DIR/lib
     public static final String[] JBOSS5_CLIENT_LIST = {
@@ -306,7 +310,7 @@ public class JBPluginUtils {
 
         File serverDirectory = new File(serverLocation);
 
-        if (isGoodJBServerLocation(serverDirectory)) {
+        if (isGoodJBServerLocation(serverDirectory, (Version) null)) {
             Version version = getServerVersion(serverDirectory);            
             File file;
             String[] files;
@@ -438,22 +442,25 @@ public class JBPluginUtils {
         return isGoodJBServerLocation(candidate, getServerRequirements7x());
     }
 
-    public static boolean isGoodJBServerLocation(File candidate) {
-        Version version = getServerVersion(candidate);
-        if (version == null || (!"4".equals(version.getMajorNumber())
-                && !"5".equals(version.getMajorNumber())
-                && !"6".equals(version.getMajorNumber())
-                && !"7".equals(version.getMajorNumber()))) { // NOI18N
+    public static boolean isGoodJBServerLocation(@NonNull File candidate, @NullAllowed Version version) {
+        Version realVersion = version;
+        if (realVersion == null) {
+            realVersion = getServerVersion(candidate);
+        }
+        if (realVersion == null || (!"4".equals(realVersion.getMajorNumber())
+                && !"5".equals(realVersion.getMajorNumber())
+                && !"6".equals(realVersion.getMajorNumber())
+                && !"7".equals(realVersion.getMajorNumber()))) { // NOI18N
             return JBPluginUtils.isGoodJBServerLocation4x(candidate)
                     || JBPluginUtils.isGoodJBServerLocation5x(candidate)
                     || JBPluginUtils.isGoodJBServerLocation5x(candidate)
                     || JBPluginUtils.isGoodJBServerLocation7x(candidate);
         }
 
-        return ("4".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation4x(candidate)) // NOI18n
-                || ("5".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)) // NOI18N
-                || ("6".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation6x(candidate)) // NOI18N
-                || ("7".equals(version.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation7x(candidate)); // NOI18N
+        return ("4".equals(realVersion.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation4x(candidate)) // NOI18n
+                || ("5".equals(realVersion.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation5x(candidate)) // NOI18N
+                || ("6".equals(realVersion.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation6x(candidate)) // NOI18N
+                || ("7".equals(realVersion.getMajorNumber()) && JBPluginUtils.isGoodJBServerLocation7x(candidate)); // NOI18N
     }
 
     public static boolean isJB4(JBDeploymentManager dm) {
@@ -588,6 +595,19 @@ public class JBPluginUtils {
             }
         }  
         return 1099;
+    }
+
+    public static int getJmxPortNumber(JBProperties jb, InstanceProperties ip) {
+        String strPort = ip.getProperty(JBPluginProperties.PROPERTY_JMX_PORT);
+        if (strPort == null || strPort.trim().isEmpty()) {
+            return getDefaultJmxPortNumber(jb.getServerVersion());
+        }
+        try {
+            return Integer.parseInt(strPort.trim());
+        } catch(NumberFormatException e) {
+            // pass through to default
+        }
+        return getDefaultJmxPortNumber(jb.getServerVersion());
     }
 
     public static String getJnpPort(String domainDir) {
@@ -771,6 +791,14 @@ public class JBPluginUtils {
         @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(".jar");
+        }
+    }
+
+    public static int getDefaultJmxPortNumber(Version version) {
+        if (version != null && version.compareToIgnoreUpdate(JBPluginUtils.JBOSS_7_0_0) >= 0) {
+            return 9999;
+        } else {
+            return 1090;
         }
     }
 

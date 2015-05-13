@@ -560,14 +560,14 @@ public class DefaultCssEditorModule extends CssEditorModule {
                     case selectorsGroup: //rules
                         //get parent - ruleSet to obtain the { ... } range 
                         Node ruleNode = node.parent();
-                        assert ruleNode.type() == NodeType.rule;
-
-                        int so = snapshot.getOriginalOffset(ruleNode.from());
-                        int eo = snapshot.getOriginalOffset(ruleNode.to());
-                        if (eo > so) {
-                            //todo: filter out virtual selectors
-                            StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, ruleNode), snapshot);
-                            addRule(item);
+                        if (ruleNode.type() == NodeType.rule) {
+                            int so = snapshot.getOriginalOffset(ruleNode.from());
+                            int eo = snapshot.getOriginalOffset(ruleNode.to());
+                            if (eo > so) {
+                                //todo: filter out virtual selectors
+                                StructureItem item = new CssRuleStructureItem(node.image(), CssNodeElement.createElement(file, ruleNode), snapshot);
+                                addRule(item);
+                            }
                         }
                         break;
                     case elementName: //element

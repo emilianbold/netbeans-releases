@@ -153,7 +153,7 @@ public class CompletionJList extends JList {
         }
     }
     
-    void setData(List data) {
+    void setData(List data, int selectedIndex) {
         smartIndex = -1;
         if (data != null) {
             int itemCount = data.size();
@@ -181,11 +181,11 @@ public class CompletionJList extends JList {
                     break;
             }
             setFixedCellWidth(width);
-            ListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 1.0d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
+            LazyListModel lm = LazyListModel.create( new Model(data), CompletionImpl.filter, 1.0d, LocaleSupport.getString("completion-please-wait") ); //NOI18N
             setModel(lm);
             
             if (itemCount > 0) {
-                setSelectedIndex(0);
+                setSelectedIndex(selectedIndex < 0 ? 0 : lm.findExternalIndex(selectedIndex));
             }
             int visibleRowCount = Math.min(itemCount, maxVisibleRowCount);
             setVisibleRowCount(visibleRowCount);

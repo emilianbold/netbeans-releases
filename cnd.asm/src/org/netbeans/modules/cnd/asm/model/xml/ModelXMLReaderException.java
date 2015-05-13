@@ -45,8 +45,6 @@
 
 package org.netbeans.modules.cnd.asm.model.xml;
 
-import java.io.IOException;
-
 public class ModelXMLReaderException extends RuntimeException {
         
     public ModelXMLReaderException() {

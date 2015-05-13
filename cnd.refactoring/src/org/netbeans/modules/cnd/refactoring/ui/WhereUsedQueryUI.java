@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -226,7 +227,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
     }
     
     private String getSearchElementName(CsmObject csmObj) {
-        assert csmObj != null;
         String objName;
         if (csmObj instanceof CsmReference) {
             objName = ((CsmReference)csmObj).getText().toString();
@@ -237,6 +237,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else if (csmObj != null) {
             objName = "<UNNAMED ELEMENT>"; // NOI18N
         } else {
+            CndUtils.assertUnconditional("Null parameter");
             objName = "<UNRESOLVED ELEMENT>"; // NOI18N
         }
         return objName;

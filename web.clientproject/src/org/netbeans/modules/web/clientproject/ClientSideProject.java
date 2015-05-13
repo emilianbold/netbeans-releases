@@ -66,7 +66,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
@@ -153,18 +153,20 @@ public class ClientSideProject implements Project {
 
     final UsageLogger projectBrowserUsageLogger = UsageLogger.projectBrowserUsageLogger(ClientSideProjectUtilities.USAGE_LOGGER_NAME);
 
+    public final Env is;
     final CommonProjectHelper projectHelper;
     private final References referenceHelper;
     private final Values eval;
     private final Lookup lookup;
     private final CallbackImpl callbackImpl = new CallbackImpl();
+    private final ClientSideProjectBrowserProvider projectBrowserProvider;
     volatile String name;
-    private ClassPath sourcePath;
+    private volatile ClassPath sourcePath;
     volatile ClassPathProviderImpl.PathImpl pathImpl;
-    private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
-    private WebBrowser projectWebBrowser;
-    private ClientSideProjectBrowserProvider projectBrowserProvider;
-    public final Env is;
+    // @GuardedBy("mutex & this")
+    ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
+    // @GuardedBy("mutex & this")
+    WebBrowser projectWebBrowser;
 
     final PlatformProvidersListener platformProvidersListener = new PlatformProvidersListenerImpl();
 
@@ -229,14 +231,17 @@ public class ClientSideProject implements Project {
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
+                assert ProjectManager.mutex().isWriteAccess() || ProjectManager.mutex().isReadAccess();
                 if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     projectBrowserUsageLogger.reset();
-                    ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
-                    if (ebi != null) {
-                        ebi.deactivate();
+                    synchronized (ClientSideProject.this) {
+                        ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
+                        if (ebi != null) {
+                            ebi.deactivate();
+                        }
+                        projectEnhancedBrowserImpl = null;
+                        projectWebBrowser = null;
                     }
-                    projectEnhancedBrowserImpl = null;
-                    projectWebBrowser = null;
                     projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
@@ -246,16 +251,28 @@ public class ClientSideProject implements Project {
         windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
+    @Override
+    public String toString() {
+        return "ClientSideProject{" + "projectDirectory=" + projectHelper.getProjectDirectory() + '}'; // NOI18N
+    }
+
     public void logBrowserUsage() {
         WebBrowser webBrowser = getProjectWebBrowser();
         projectBrowserUsageLogger.log(ClientSideProjectType.TYPE, webBrowser.getId(), webBrowser.getBrowserFamily().name());
     }
 
-    public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
-        if (projectEnhancedBrowserImpl == null) {
-            projectEnhancedBrowserImpl = createEnhancedBrowserImpl(this, getProjectWebBrowser());
-        }
-        return projectEnhancedBrowserImpl;
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<ClientProjectEnhancedBrowserImplementation>() {
+            @Override
+            public ClientProjectEnhancedBrowserImplementation run() {
+                synchronized (ClientSideProject.this) {
+                    if (projectEnhancedBrowserImpl == null) {
+                        projectEnhancedBrowserImpl = createEnhancedBrowserImpl(ClientSideProject.this, getProjectWebBrowser());
+                    }
+                    return projectEnhancedBrowserImpl;
+                }
+            }
+        });
     }
 
     public static ClientProjectEnhancedBrowserImplementation createEnhancedBrowserImpl(Project p, WebBrowser wb) {
@@ -268,17 +285,24 @@ public class ClientSideProject implements Project {
         return null;
     }
 
-    public synchronized WebBrowser getProjectWebBrowser() {
-        if (projectWebBrowser == null) {
-            String id = getSelectedBrowser();
-            if (id != null) {
-                projectWebBrowser = BrowserUISupport.getBrowser(id);
+    public WebBrowser getProjectWebBrowser() {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<WebBrowser>() {
+            @Override
+            public WebBrowser run() {
+                synchronized (ClientSideProject.this) {
+                    if (projectWebBrowser == null) {
+                        String id = getSelectedBrowser();
+                        if (id != null) {
+                            projectWebBrowser = BrowserUISupport.getBrowser(id);
+                        }
+                        if (projectWebBrowser == null) {
+                            projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+                        }
+                    }
+                    return projectWebBrowser;
+                }
             }
-            if (projectWebBrowser == null) {
-                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
-            }
-        }
-        return projectWebBrowser;
+        });
     }
 
     private RefreshOnSaveListener getRefreshOnSaveListener() {
@@ -361,7 +385,7 @@ public class ClientSideProject implements Project {
                         .forceUseOfDefaultWorkingDirectory(true)
                         .showOpenDialog();
                 if (folder != null) {
-                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
                         @Override
                         public void run() {
                             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
@@ -395,7 +419,7 @@ public class ClientSideProject implements Project {
                         .forceUseOfDefaultWorkingDirectory(true)
                         .showOpenDialog();
                 if (folder != null) {
-                    ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
                         @Override
                         public void run() {
                             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(ClientSideProject.this);
@@ -414,11 +438,11 @@ public class ClientSideProject implements Project {
     }
 
     public String getStartFile() {
-        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
-        if (s == null) {
-            s = "index.html"; //NOI18N
+        String startFile = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_START_FILE);
+        if (startFile == null) {
+            startFile = "index.html"; // NOI18N
         }
-        return s;
+        return startFile;
     }
 
     public String getSelectedBrowser() {
@@ -549,7 +573,7 @@ public class ClientSideProject implements Project {
                ProjectPropertiesProblemProvider.createForProject(this),
                CssPreprocessors.getDefault().createProjectProblemsProvider(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
-               new TemplateAttributesProviderImpl(projectHelper, fileEncodingQuery),
+               new CreateFromTemplateAttributesImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER),
                projectBrowserProvider,
@@ -684,9 +708,10 @@ public class ClientSideProject implements Project {
             FileObject testsFolder = project.getTestsFolder(false);
             FileObject testsSeleniumFolder = project.getTestsSeleniumFolder(false);
 
-            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null;
-            boolean hasBower = projectDirectory.getFileObject("bower.json") !=null;
-            boolean hasPackage = projectDirectory.getFileObject("package.json") !=null;
+            boolean hasGrunt = projectDirectory.getFileObject("Gruntfile.js") != null; // NOI18N
+            boolean hasBower = projectDirectory.getFileObject("bower.json") != null; // NOI18N
+            boolean hasPackage = projectDirectory.getFileObject("package.json") != null; // NOI18N
+            boolean hasGulp = projectDirectory.getFileObject("gulpfile.js") != null; // NOI18N
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] {
                         browserId,
@@ -695,7 +720,22 @@ public class ClientSideProject implements Project {
                         hasGrunt ? "YES" : "NO", // NOI18N
                         hasBower ? "YES" : "NO", // NOI18N
                         hasPackage ? "YES" : "NO", // NOI18N
+                        hasGulp ? "YES" : "NO", // NOI18N
+                        testsSeleniumFolder != null && testsSeleniumFolder.getChildren().length > 0 ? "YES" : "NO", // NOI18N
+                        StringUtilities.implode(getPlatformProviderNames(), "|"), // NOI18N
                     });
+        }
+
+        private List<String> getPlatformProviderNames() {
+            List<PlatformProvider> platformProviders = project.getPlatformProviders();
+            if (platformProviders.isEmpty()) {
+                return Collections.emptyList();
+            }
+            List<String> names = new ArrayList<>(platformProviders.size());
+            for (PlatformProvider platformProvider : platformProviders) {
+                names.add(platformProvider.getIdentifier());
+            }
+            return names;
         }
 
         @Override

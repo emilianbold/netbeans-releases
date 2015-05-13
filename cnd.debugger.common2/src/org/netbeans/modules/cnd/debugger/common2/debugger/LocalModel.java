@@ -86,6 +86,7 @@ public final class LocalModel extends VariableModel
         preferences.addPreferenceChangeListener(prefListener);
 
 	VariablesViewButtons.createShowAutosButton().addActionListener(new ActionListener() {
+            @Override
 	    public void actionPerformed(ActionEvent e) {
 		if (e.getSource() instanceof JToggleButton) {
 		    JToggleButton b = (JToggleButton) e.getSource();
@@ -96,11 +97,13 @@ public final class LocalModel extends VariableModel
     }
 
     // interface VariableModel
+    @Override
     protected boolean isLocal() {
 	return true;
     }
 
     // interface TreeModel
+    @Override
     public Object[] getChildren(Object parent, int from, int to) 
 			throws UnknownTypeException {
 	Object[] children;
@@ -133,6 +136,7 @@ public final class LocalModel extends VariableModel
     }
 
     // interface TreeModel
+    @Override
     public int getChildrenCount(Object parent) 
 			throws UnknownTypeException {
 	int count;
@@ -181,6 +185,7 @@ public final class LocalModel extends VariableModel
     
 
     // interface TreeModel etc
+    @Override
     public void addModelListener(ModelListener l) {
 	if (super.addModelListenerHelp(l)) {
 	    debugger.setShowAutos(VariablesViewButtons.isShowAutos());
@@ -189,6 +194,7 @@ public final class LocalModel extends VariableModel
     }
 
     // interface TreeModel etc
+    @Override
     public void removeModelListener(ModelListener l) {
 	if (super.removeModelListenerHelp(l)) {
 	    debugger.setShowAutos(false);
@@ -198,6 +204,7 @@ public final class LocalModel extends VariableModel
 
 
     // interface NodeActionsProvider
+    @Override
     public Action[] getActions (Object node) throws UnknownTypeException {
 	EngineDescriptor desp = debugger.getNDI().getEngineDescriptor();
 	boolean canDoMaxObject = desp.hasCapability(EngineCapability.MAX_OBJECT);
@@ -230,6 +237,7 @@ public final class LocalModel extends VariableModel
     }
 
     // interface NodeActionsProvider
+    @Override
     public void performDefaultAction (Object node) throws UnknownTypeException {
 	// This gets called redundantly, see issue 48891.
 	if (node == ROOT) {
@@ -244,6 +252,7 @@ public final class LocalModel extends VariableModel
     }
 
     private class VariablesPreferenceChangeListener implements PreferenceChangeListener {
+        @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
             if (VariablesViewButtons.SHOW_AUTOS.equals(key)) {

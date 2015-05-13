@@ -60,7 +60,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
     private final String user;
     private final String host;
     private final int sshPort;
-    private final AtomicReference<String> displayNameRef = new AtomicReference<String>();
+    private final AtomicReference<String> displayNameRef = new AtomicReference<>();
     static final long serialVersionUID = 2098997126628923682L;
 
     /**

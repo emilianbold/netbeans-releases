@@ -45,15 +45,13 @@ package org.netbeans.api.db.explorer.node;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.db.explorer.action.ActionRegistry;
 import org.netbeans.modules.db.explorer.node.NodeDataLookup;
 import org.netbeans.modules.db.explorer.node.NodePropertySupport;
 import org.netbeans.modules.db.explorer.node.NodeRegistry;
@@ -64,6 +62,7 @@ import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -127,13 +126,12 @@ public abstract class BaseNode extends AbstractNode {
     protected static final String INDEXPARTDESC = "IndexPartDescription"; // NOI18N
 
     private final NodeDataLookup dataLookup;
-    private final ActionRegistry actionRegistry;
+    private final String layerEntry;
     private final NodeRegistry nodeRegistry;
     private final ChildNodeFactory childNodeFactory;
     private final NodeProvider nodeProvider;
 
-    private final List<Property> props = new CopyOnWriteArrayList<Property>();
-    private final HashMap<String, Object> propMap = new HashMap<String, Object>();
+    private final HashMap<String, Object> propMap = new HashMap<>();
 
     public boolean isRemoved = false;
     private volatile boolean refreshing = false;
@@ -171,7 +169,7 @@ public abstract class BaseNode extends AbstractNode {
         super(children, lookup);
         dataLookup = lookup;
         childNodeFactory = factory;
-        actionRegistry = new ActionRegistry(layerEntry);
+        this.layerEntry = layerEntry;
         nodeRegistry = NodeRegistry.create(layerEntry, dataLookup);
         nodeProvider = provider;
     }
@@ -298,16 +296,18 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     protected void clearProperties() {
-        for (Property prop : props) {
-            getSheet().get(Sheet.PROPERTIES).remove(prop.getName());
+        Sheet.Set propertySet = getSheet().get(Sheet.PROPERTIES);
+        
+        // This should be save - getProperties return an array, not a list
+        // => assumption: This is a copy of the property set
+        for (Property prop : propertySet.getProperties()) {
+            propertySet.remove(prop.getName());
         }
         
-        props.clear();
         propMap.clear();
     }
 
     protected void addProperty(Property nps) {
-        props.add(nps);
         getSheet().get(Sheet.PROPERTIES).put(nps);
     }
 
@@ -321,7 +321,6 @@ public abstract class BaseNode extends AbstractNode {
             propDesc = NbBundle.getMessage (BaseNode.class, desc);
         }
         PropertySupport ps = new NodePropertySupport(this, name, clazz, propName, propDesc, writeable);
-        props.add(ps);
         propMap.put(ps.getName(), value);
 
         getSheet().get(Sheet.PROPERTIES).put(ps);
@@ -336,7 +335,8 @@ public abstract class BaseNode extends AbstractNode {
     }
 
     public synchronized Collection<Property> getProperties() {
-        return Collections.unmodifiableCollection(props);
+        Property[] properties = getSheet().get(Sheet.PROPERTIES).getProperties();
+        return Collections.unmodifiableCollection(Arrays.asList(properties));
     }
 
     @Override
@@ -358,9 +358,9 @@ public abstract class BaseNode extends AbstractNode {
             return super.getActions(true);
         }
         
-        // get the actions from the registry
-        Collection<Action> actions = actionRegistry.getActions();
-        return actions.toArray (new Action[actions.size ()]);
+        return Utilities
+                .actionsForPath("Databases/Explorer/" + layerEntry + "/Actions")
+                .toArray(new Action[0]);
     }
     
     /**

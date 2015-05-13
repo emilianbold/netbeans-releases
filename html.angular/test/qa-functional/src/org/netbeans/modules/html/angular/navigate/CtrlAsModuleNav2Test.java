@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.html.angular.navigate;
 
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.html.angular.GeneralAngular;
 
 /**
@@ -57,27 +55,28 @@ import org.netbeans.modules.html.angular.GeneralAngular;
  */
 public class CtrlAsModuleNav2Test extends GeneralAngular {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testGoTo28",
+        "testGoTo29",
+        "testGoTo30",
+        "testGoTo31",
+        //                        "testGoTo32",
+        "testGoTo33",
+        //                        "testGoTo34",
+        //                        "testGoTo35",
+        //                        "testGoTo36",
+        "testGoTo37",
+        "testGoToPartial",
+        "testGoToController"
+    };
+
     public CtrlAsModuleNav2Test(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(CtrlAsModuleNav2Test.class).addTest(
-                        "openProject",
-                        "testGoTo28",
-                        "testGoTo29",
-                        "testGoTo30",
-                        "testGoTo31",
-//                        "testGoTo32",
-                        "testGoTo33",
-//                        "testGoTo34",
-//                        "testGoTo35",
-//                        "testGoTo36",
-                        "testGoTo37",
-                        "testGoToPartial",
-                        "testGoToController"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(CtrlAsModuleNav2Test.class, tests);
     }
 
     public void openProject() throws Exception {

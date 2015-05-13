@@ -254,9 +254,9 @@ public abstract class AbstractNbTaskWrapper {
             // mark as seen so no fields are highlighted
             setUpToDate(true, false);
         }
-        synchronized (getNbTask()) {
-            // clear upon close
-            synchronized (MODEL_LOCK) {
+        synchronized (MODEL_LOCK) {
+            synchronized (getNbTask()) {
+                // clear upon close
                 if (readPending) {
                     // make sure remote changes are not lost and still highlighted in the editor
                     setUpToDate(false, false);
@@ -270,6 +270,13 @@ public abstract class AbstractNbTaskWrapper {
                         return false;
                     }
                     model = task.getTaskDataModel();
+                }
+                if(model == null) {
+                    // issue #247877 
+                    // something went wrong, not much we can do about it at this place. 
+                    // lets avoid at least the NPE
+                    LOG.log(Level.WARNING, "no model even after synchronizing {0}", task.getTaskId());
+                    return false;
                 }
                 model.addNbTaskDataModelListener(list);
             }
@@ -345,6 +352,11 @@ public abstract class AbstractNbTaskWrapper {
 
     private void save () throws CoreException {
         NbTaskDataModel m = this.model;
+        if(m == null) {
+            // haven't been opened yet so there is no model?
+            // might happen when e.g. closing a local task on commit (see issue #252222)
+            m = task.getTaskDataModel();
+        }
         markNewRead();
         boolean modified = persistPrivateTaskAttributes();
         if (m.isDirty()) {

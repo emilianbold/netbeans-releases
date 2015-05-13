@@ -48,7 +48,6 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;

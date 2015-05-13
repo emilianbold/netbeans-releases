@@ -70,7 +70,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
@@ -94,7 +93,7 @@ class SftpSupport {
     private static final boolean isUnitTest = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private static final java.util.logging.Logger LOG = Logger.getInstance();
     private static final Object instancesLock = new Object();
-    private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<ExecutionEnvironment, SftpSupport>();
+    private static Map<ExecutionEnvironment, SftpSupport> instances = new HashMap<>();
     private static AtomicInteger uploadCount = new AtomicInteger(0);
     private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1); // NOI18N
     private static final int LS_RETRY_COUNT = Integer.getInteger("sftp.ls.retries", 2); // NOI18N
@@ -127,7 +126,7 @@ class SftpSupport {
     //
     private final ExecutionEnvironment execEnv;
 
-    private final LinkedList<ChannelSftp> spareChannels = new LinkedList<ChannelSftp>();
+    private final LinkedList<ChannelSftp> spareChannels = new LinkedList<>();
     
     // just a primitive statistics
     private int currBusyChannels = 0;
@@ -192,7 +191,14 @@ class SftpSupport {
         if (channel == null) {
             throw new ExecutionException("ConnectionManagerAccessor returned null channel while waitIfNoAvailable was set to true", new NullPointerException()); //NOI18N
         }
-        channel.connect();
+        try {
+            channel.connect();
+        } catch (JSchException ex) {
+            if (MiscUtils.isJSCHTooLongException(ex)) {
+                MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
+            }
+            throw ex;
+        }
         incrementStatistics();
         return channel;
     }
@@ -242,8 +248,6 @@ class SftpSupport {
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, null);
-                    } else {
-                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {
@@ -364,20 +368,24 @@ class SftpSupport {
                     cftp.chmod(parameters.mask, dstFileName);
                     if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Chmod {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
                 }
-                time = System.currentTimeMillis();
-                SftpATTRS attrs = cftp.lstat(dstFileName);
-                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting stat for {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
-                // can't use PathUtilities since we are in ide cluster
-                int slashPos = dstFileName.lastIndexOf('/');
-                String dirName, baseName;
-                if (slashPos < 0) {
-                    dirName = dstFileName;
-                    baseName = "";
+                if (parameters.returnStat) {
+                    time = System.currentTimeMillis();
+                    SftpATTRS attrs = cftp.lstat(dstFileName);
+                    if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting stat for {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
+                    // can't use PathUtilities since we are in ide cluster
+                    int slashPos = dstFileName.lastIndexOf('/');
+                    String dirName, baseName;
+                    if (slashPos < 0) {
+                        dirName = dstFileName;
+                        baseName = "";
+                    } else {
+                        dirName = dstFileName.substring(0, slashPos);
+                        baseName = dstFileName.substring(slashPos + 1);
+                    }
+                    statInfo = createStatInfo(dirName, baseName, attrs, cftp);
                 } else {
-                    dirName = dstFileName.substring(0, slashPos);
-                    baseName = dstFileName.substring(slashPos + 1);
+                    statInfo = null;
                 }
-                statInfo = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
                 if (MiscUtils.mightBrokeSftpChannel(e)) {
                     cftp.quit();
@@ -456,8 +464,6 @@ class SftpSupport {
                     // do anything with this ;(
                     if (isUnitTest) {
                         logException(ex, error);
-                    } else {
-                        MiscUtils.showJSCHTooLongNotification(execEnv.getDisplayName());
                     }
                     rc = 7;
                 } else {
@@ -519,7 +525,7 @@ class SftpSupport {
     /*package*/ Future<UploadStatus> uploadFile(CommonTasksSupport.UploadParameters parameters) {
         Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
         Uploader uploader = new Uploader(parameters);
-        final FutureTask<UploadStatus> ftask = new FutureTask<UploadStatus>(uploader);
+        final FutureTask<UploadStatus> ftask = new FutureTask<>(uploader);
         RequestProcessor.Task requestProcessorTask = requestProcessor.create(ftask);
         if (parameters.callback != null) {
             final ChangeListener callback = parameters.callback;
@@ -543,7 +549,7 @@ class SftpSupport {
             final Writer error) {
 
         Downloader downloader = new Downloader(srcFileName, dstFileName, error);
-        FutureTask<Integer> ftask = new FutureTask<Integer>(downloader);
+        FutureTask<Integer> ftask = new FutureTask<>(downloader);
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", downloader.getTraceName());
@@ -634,7 +640,7 @@ class SftpSupport {
 
         @Override
         public String getTraceName() {
-            return "Getting stat for " + path; //NOI18N
+            return "Getting stat for " + execEnv + ':' + path; //NOI18N
         }
     }
     
@@ -652,7 +658,7 @@ class SftpSupport {
 
         @Override
         protected String getTraceName() {
-            return "moving " + from + " to " + to; //NOI18N
+            return "moving " + execEnv + ':' + from + " to " + execEnv + ':' + to; //NOI18N
         }
 
         @Override
@@ -727,7 +733,7 @@ class SftpSupport {
                     RemoteStatistics.ActivityID lsLoadID = RemoteStatistics.startChannelActivity("lsload", path); // NOI18N
                     try {
                         List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
-                        result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
+                        result = new ArrayList<>(Math.max(1, entries.size() - 2));
                         for (LsEntry entry : entries) {
                             String name = entry.getFilename();
                             if (!".".equals(name) && !"..".equals(name)) { //NOI18N
@@ -782,7 +788,7 @@ class SftpSupport {
 
         @Override
         public String getTraceName() {
-            return "listing directory " + path; //NOI18N
+            return "listing directory " + execEnv + ':' + path; //NOI18N
         }
     }
 
@@ -806,9 +812,9 @@ class SftpSupport {
         return result;
     }
 
-    /*package*/ Future<StatInfo> lstat(String absPath, Writer error) {
+    /*package*/ Future<StatInfo> lstat(String absPath) {
         StatLoader loader = new StatLoader(absPath, true);
-        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
+        FutureTask<StatInfo> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
@@ -816,9 +822,9 @@ class SftpSupport {
         return ftask;
     }
 
-    /*package*/ Future<StatInfo> stat(String absPath, Writer error) {
+    /*package*/ Future<StatInfo> stat(String absPath) {
         StatLoader loader = new StatLoader(absPath, false);
-        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(loader);
+        FutureTask<StatInfo> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
@@ -826,9 +832,9 @@ class SftpSupport {
         return ftask;
     }
     
-    /*package*/ Future<StatInfo[]> ls(String absPath, Writer error) {
+    /*package*/ Future<StatInfo[]> ls(String absPath) {
         LsLoader loader = new LsLoader(absPath);
-        FutureTask<StatInfo[]> ftask = new FutureTask<StatInfo[]>(loader);
+        FutureTask<StatInfo[]> ftask = new FutureTask<>(loader);
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", loader.getTraceName());
@@ -838,7 +844,7 @@ class SftpSupport {
     
     /*package*/ Future<StatInfo> move(String from, String to) {
         MoveWorker worker = new MoveWorker(from, to);
-        FutureTask<StatInfo> ftask = new FutureTask<StatInfo>(worker);
+        FutureTask<StatInfo> ftask = new FutureTask<>(worker);
         requestProcessor.post(ftask);
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "{0} schedulled", worker.getTraceName());

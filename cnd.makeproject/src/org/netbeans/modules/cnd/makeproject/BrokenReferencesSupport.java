@@ -164,7 +164,6 @@ public final class BrokenReferencesSupport {
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getPlatformProblems(@NonNull final MakeProject project) {
-        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<>();
         if (BrokenReferencesSupport.isIncorrectPlatform(project.getLookup().lookup(ConfigurationDescriptorProvider.class))) {
             String name = BrokenReferencesSupport.getActiveConfigurationName(project.getLookup().lookup(ConfigurationDescriptorProvider.class));
             final ProjectProblemsProvider.ProjectProblem error =

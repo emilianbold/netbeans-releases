@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.util.HashMap;
-import java.util.Iterator;
 
 import org.openide.ErrorManager;
 
@@ -85,11 +83,13 @@ class WatchXMLCodec extends XMLDecoder implements XMLEncoder {
     } 
 
     // interface XMLDecoder
+    @Override
     protected String tag() {
 	return TAG_WATCH;
     } 
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) {
 	if (Log.Watch.xml)
 	    System.out.printf("WatchXMLCodec().start(%s)\n", tag()); // NOI18N
@@ -107,6 +107,7 @@ class WatchXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
 	if (Log.Watch.xml)
 	    System.out.printf("WatchXMLCodec().end(%s)\n", tag()); // NOI18N
@@ -128,12 +129,14 @@ class WatchXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // interface XMLDecoder
+    @Override
     public void startElement(String element, Attributes atts) {
 	if (Log.Watch.xml)
 	    System.out.printf("Watch().startElement(%s)\n", element); // NOI18N
     }
 
     // interface XMLDecoder
+    @Override
     public void endElement(String element, String currentText) {
 	if (Log.Watch.xml)
 	    System.out.printf("WatchXMLCodec().endElement(%s)\n", element); // NOI18N
@@ -146,6 +149,7 @@ class WatchXMLCodec extends XMLDecoder implements XMLEncoder {
     }
 
     // pseudo-interface XMLEncoder
+    @Override
     public void encode(XMLEncoderStream xes) {
 	watch.prepareForSaving();
 

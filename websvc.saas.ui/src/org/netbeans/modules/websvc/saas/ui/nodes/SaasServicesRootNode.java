@@ -84,17 +84,17 @@ public class SaasServicesRootNode extends AbstractNode {
     
     @Override
     public String getName() {
-        return "rootSaasGroup";
+        return "rootSaasGroup"; // NOI18N
     }
     
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services");
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services"); // NOI18N
     }
     
     @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc");
+        return NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc"); // NOI18N
     }
 
     @Override
@@ -138,6 +138,7 @@ public class SaasServicesRootNode extends AbstractNode {
             if (needsWait()) {
                 setKeys(SaasNodeChildren.WAIT_HOLDER);
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         SaasServicesModel.getInstance().initRootGroup();
                     }

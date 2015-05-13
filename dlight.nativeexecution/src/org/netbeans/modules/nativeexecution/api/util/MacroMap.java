@@ -72,7 +72,7 @@ public final class MacroMap implements Cloneable {
     private final MacroExpander macroExpander;
     private final TreeMap<String, String> hostEnv;
     private final TreeMap<String, String> map;
-    private final Set<String> varsForExport = new HashSet<String>();
+    private final Set<String> varsForExport = new HashSet<>();
     private final boolean isWindows;
     private final Object lock = new Object();
 
@@ -82,11 +82,11 @@ public final class MacroMap implements Cloneable {
         this.isWindows = execEnv.isLocal() && Utilities.isWindows();
 
         if (isWindows) {
-            map = new TreeMap<String, String>(new CaseInsensitiveComparator());
-            hostEnv = new TreeMap<String, String>(new CaseInsensitiveComparator());
+            map = new TreeMap<>(new CaseInsensitiveComparator());
+            hostEnv = new TreeMap<>(new CaseInsensitiveComparator());
         } else {
-            map = new TreeMap<String, String>();
-            hostEnv = new TreeMap<String, String>();
+            map = new TreeMap<>();
+            hostEnv = new TreeMap<>();
         }
 
         if (init && HostInfoUtils.isHostInfoAvailable(execEnv)) {
@@ -98,7 +98,7 @@ public final class MacroMap implements Cloneable {
             }
         }
 
-        varsForExport.addAll(Arrays.asList(EnvWriter.wellKnownVars));
+        varsForExport.addAll(EnvWriter.wellKnownVars);
     }
 
     /**
@@ -192,7 +192,7 @@ public final class MacroMap implements Cloneable {
     public Map<String, String> getUserDefinedMap() {
         TreeMap<String, String> result;
         synchronized (lock) {
-            result = new TreeMap<String, String>(map.comparator());
+            result = new TreeMap<>(map.comparator());
             result.putAll(map);
         }
         return result;
@@ -233,7 +233,7 @@ public final class MacroMap implements Cloneable {
     }
 
     public final Set<Entry<String, String>> entrySet() {
-        Set<Entry<String, String>> joint = new HashSet<Entry<String, String>>();
+        Set<Entry<String, String>> joint = new HashSet<>();
         synchronized (lock) {
             joint.addAll(map.entrySet());
             joint.addAll(hostEnv.entrySet());
@@ -294,7 +294,7 @@ public final class MacroMap implements Cloneable {
     public Map<String, String> toMap() {
         TreeMap<String, String> result;
         synchronized (lock) {
-            result = new TreeMap<String, String>(map.comparator());
+            result = new TreeMap<>(map.comparator());
             result.putAll(hostEnv);
             result.putAll(map);
         }

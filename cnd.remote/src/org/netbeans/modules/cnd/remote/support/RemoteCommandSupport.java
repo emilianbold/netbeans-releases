@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -106,7 +107,7 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         //should check if the host is connected before running the command
         //in the parent constructor there is a check if host is actually connected
         //but if it is not it is not reflected... at all..
-        //TODO: log somehow the reason the command was not executed at all and 
+        //TODO: log somehow the reason the command was not executed at all and
         //the exist status returned is just default one (-1)
         if (isConnected() && !isFailedOrCancelled()) {
             RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport<Init>: Running [{0}] on {1}", new Object[]{cmd, executionEnvironment});
@@ -118,78 +119,30 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                     RemoteUtil.LOGGER.warning(text);
                 }
             }
-            BufferedReader remoteProcessOut = null;
-            BufferedReader remoteProcessErr = null;
-            try {
-//                final String substitutedCommand = substituteCommand();
-                NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
-                if (args == null) {
-                    pb.setCommandLine(cmd);
-                } else {
-                    pb.setExecutable(cmd).setArguments(args);
-                }
+//          final String substitutedCommand = substituteCommand();
+            NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(executionEnvironment);
+            if (args == null) {
+                pb.setCommandLine(cmd);
+            } else {
+                pb.setExecutable(cmd).setArguments(args);
+            }
 
-                pb.getEnvironment().putAll(env);
-
-                Process process = pb.call();
-                InputStream is = process.getInputStream();
-                InputStream er = process.getErrorStream();
-                if (is == null) { // otherwise we can get an NPE in reader
-                    throw new IOException("process (" + process.getClass().getName() + ") returned null input stream"); //NOI18N
-                }
-                if (er == null) { // otherwise we can get an NPE in reader
-                    throw new IOException("process (" + process.getClass().getName() + ") returned null error stream"); //NOI18N
-                }
-                remoteProcessOut = new BufferedReader(new InputStreamReader(is));
-                remoteProcessErr = new BufferedReader(new InputStreamReader(er));
-                String line;
-                while ((line = remoteProcessOut.readLine()) != null) {
-                    if (line != null) {
-                        out.append(line).append('\n');
+            pb.getEnvironment().putAll(env);
+            ProcessUtils.ExitStatus status = ProcessUtils.execute(pb);
+            out.append(status.output);
+            setExitStatus(status.exitCode);
+            RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport: {0} on {1} finished; rc={2}", new Object[]{cmd, executionEnvironment, status.exitCode});
+            err.append(status.error);
+            if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
+                if (!status.error.isEmpty()) {
+                    for(String s: status.error.split("\n")) { // NOI18N
+                        RemoteUtil.LOGGER.log(Level.FINEST, "RemoteCommandSupport ERROR: {0}", s);
                     }
                 }
-// TODO (execution) should we revive this?
-//                try {
-//                    Thread.sleep(100); // according to jsch samples
-//                } catch (InterruptedException e) {
-//                }
-                int rc = process.waitFor();
-                RemoteUtil.LOGGER.log(Level.FINE, "RemoteCommandSupport: {0} on {1} finished; rc={2}", new Object[]{cmd, executionEnvironment, rc});
-                String errMsg;
-                while ((errMsg = remoteProcessErr.readLine()) != null) {
-                    if (errMsg != null) {
-                        err.append(errMsg).append('\n');
-                        if (RemoteUtil.LOGGER.isLoggable(Level.FINEST)) {
-                            RemoteUtil.LOGGER.log(Level.FINEST, "RemoteCommandSupport ERROR: {0}", errMsg);
-                        }
-                    }
-                }
-                setExitStatus(rc);
-            } catch (InterruptedException ie) {
+            }
+            if (status.exitCode == -100) {
+                RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", status.error);
                 interrupted = true;
-                // log just for information, it's quite normal
-                RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
-            } catch (InterruptedIOException ie) {
-                interrupted = true;
-                // log just for information, it's quite normal
-                RemoteUtil.LOGGER.log(Level.FINEST, "Interrupted", ie);
-            } catch (IOException ex) {
-                RemoteUtil.LOGGER.log(Level.WARNING, "IO failure during running {0} at {1}", new Object[]{cmd, env});
-            } finally {
-                if (remoteProcessOut != null) {
-                    try {
-                        remoteProcessOut.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-                if (remoteProcessErr != null) {
-                    try {
-                        remoteProcessErr.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
             }
         }
         return getExitStatus();

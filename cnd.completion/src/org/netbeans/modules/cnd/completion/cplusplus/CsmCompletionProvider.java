@@ -55,6 +55,7 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CompletionSupport;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -134,11 +135,11 @@ public class CsmCompletionProvider implements CompletionProvider {
     public static CsmCompletionQuery getTestCompletionQuery(CsmFile csmFile, CompletionResolver.QueryScope scope) {
         return new NbCsmCompletionQuery(csmFile, scope, null, false);
     }
-    
+
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
         return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
-    
+
     static final class Query extends AsyncCompletionQuery {
 
         private JTextComponent component;
@@ -168,7 +169,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private String getTestState() {
             StringBuilder builder = new StringBuilder();
             builder.append(" creationCaretOffset = ").append(creationCaretOffset); // NOI18N
-            StringBuilder append = builder.append(" queryAnchorOffset = ").append(queryAnchorOffset); // NOI18N
+            builder.append(" queryAnchorOffset = ").append(queryAnchorOffset); // NOI18N
             builder.append(" queryScope = ").append(queryScope); // NOI18N
             builder.append(" filterPrefix = ").append(filterPrefix); // NOI18N
             if (queryResult == null) {
@@ -242,7 +243,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 } else {
                     if (TRACE) {
                         System.err.println("add not CsmResultItem item " + item); // NOI18N
-                    } 
+                    }
                     items.add(item);
                 }
             }
@@ -563,22 +564,25 @@ public class CsmCompletionProvider implements CompletionProvider {
 
         @Override
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-
-            CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
-            if (csmFile != null) {
-                CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
-                if (csmObject != null) {
-                    CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
-                    if (docProvider != null) {
-                        CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
-                        if (documentation != null) {
-                            resultSet.setDocumentation(documentation);
+            CsmCacheManager.enter();
+            try {
+                CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
+                if (csmFile != null) {
+                    CsmObject csmObject = ReferencesSupport.findDeclaration(csmFile, doc, null, caretOffset);
+                    if (csmObject != null) {
+                        CsmDocProvider docProvider = Lookup.getDefault().lookup(CsmDocProvider.class);
+                        if (docProvider != null) {
+                            CompletionDocumentation documentation = docProvider.createDocumentation(csmObject, csmFile);
+                            if (documentation != null) {
+                                resultSet.setDocumentation(documentation);
+                            }
                         }
                     }
                 }
+                resultSet.finish();
+            } finally {
+                CsmCacheManager.leave();
             }
-
-            resultSet.finish();
         }
     }
 

@@ -47,6 +47,7 @@ import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.modules.java.ui.FmtOptions;
+import org.netbeans.modules.java.ui.FmtWrapping;
 import org.openide.util.NbBundle;
 
 /**
@@ -55,9 +56,9 @@ import org.openide.util.NbBundle;
  */
 public class WrappingOperator extends FormattingPanelOperator {
 
-    public static final String NEVER = NbBundle.getMessage(FmtOptions.class, "LBL_wrp_WRAP_NEVER");
-    public static final String ALWAYS = NbBundle.getMessage(FmtOptions.class, "LBL_wrp_WRAP_ALWAYS");
-    public static final String IF_LONG = NbBundle.getMessage(FmtOptions.class, "LBL_wrp_WRAP_IF_LONG");
+    public static final String NEVER = NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_WRAP_NEVER");
+    public static final String ALWAYS = NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_WRAP_ALWAYS");
+    public static final String IF_LONG = NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_WRAP_IF_LONG");
 
     private JComboBoxOperator extendImplementsKeyWord;
     

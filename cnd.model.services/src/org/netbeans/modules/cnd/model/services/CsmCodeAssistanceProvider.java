@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.CodeAssistance;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
@@ -192,6 +193,46 @@ public class CsmCodeAssistanceProvider implements CodeAssistance, CsmProgressLis
             } 
         }
         return Pair.of(NativeFileItem.Language.OTHER, NativeFileItem.LanguageFlavor.UNKNOWN);
+    }
+
+    @Override
+    public List<NativeFileItem> findHeaderCompilationUnit(NativeFileItem item) {
+        List<NativeFileItem> res = new ArrayList<NativeFileItem>();
+        CsmFile csmFile = CsmUtilities.getCsmFile(item, false, false);
+        if (csmFile != null) {
+            CsmFile topParentFile = CsmIncludeResolver.getDefault().getCloseTopParentFile(csmFile);
+            if (topParentFile != null) {
+                Object platformProject = topParentFile.getProject().getPlatformProject();
+                if (platformProject instanceof NativeProject) {
+                    NativeProject np = (NativeProject) platformProject;
+                    NativeFileItem ni = np.findFileItem(topParentFile.getFileObject());
+                    if (ni != null && ni != item && topParentFile.isSourceFile()) {
+                        res.add(ni);
+                    }
+                }
+            }
+            Collection<CsmCompilationUnit> compilationUnits = CsmFileInfoQuery.getDefault().getCompilationUnits(csmFile, 0);
+            if (!compilationUnits.isEmpty()) {
+                final Iterator<CsmCompilationUnit> iterator = compilationUnits.iterator();
+                while(iterator.hasNext()) {
+                    CsmCompilationUnit cu = iterator.next();
+                    CsmFile startFile = cu.getStartFile();
+                    if (startFile != null) {
+                        Object platformProject = startFile.getProject().getPlatformProject();
+                        if (platformProject instanceof NativeProject) {
+                            NativeProject np = (NativeProject) platformProject;
+                            NativeFileItem ni = np.findFileItem(startFile.getFileObject());
+                            if (ni != null && ni != item && startFile.isSourceFile()) {
+                                if (!res.contains(ni)) {
+                                    res.add(ni);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return res;
     }
 
     private NativeFileItem.LanguageFlavor maxFlavor(Set<NativeFileItem.LanguageFlavor> flavors) {

@@ -79,6 +79,7 @@ public abstract class APIAccessor {
     public abstract boolean hasChangesInGuardedBlocks(RefactoringSession session);
     public abstract boolean hasChangesInReadOnlyFiles(RefactoringSession session);
     public abstract FiltersDescription getFiltersDescription(AbstractRefactoring refactoring);
+    public abstract void resetFiltersDescription(AbstractRefactoring refactoring);
     public abstract boolean isFinished(RefactoringSession session);
 
 }

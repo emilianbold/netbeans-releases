@@ -50,7 +50,6 @@ import java.beans.VetoableChangeListener;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.ui.ServerListUIEx;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;

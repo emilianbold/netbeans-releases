@@ -58,12 +58,12 @@ class IndexCacheFactory {
     private static final Logger LOG = Logger.getLogger(IndexCacheFactory.class.getName());
     private static final String PROP_CACHE_SIZE = "java.index.size";    //NOI18N
     private static final IndexCacheFactory instance = new IndexCacheFactory();
-    private final RAMContoller ramController;
+    private final RAMController ramController;
     private final LRUCache<URI, Evictable> nioCache;
     private final LRUCache<URI, Evictable> ramCache;
 
     private IndexCacheFactory() {
-        this.ramController = new RAMContoller();
+        this.ramController = new RAMController();
         this.nioCache = new LRUCache<>(new NIOPolicy());
         this.ramCache = new LRUCache<>(new RAMPolicy(ramController));
     }
@@ -79,7 +79,7 @@ class IndexCacheFactory {
     }
 
     @NonNull
-    RAMContoller getRAMController() {
+    RAMController getRAMController() {
         return ramController;
     }
 
@@ -87,7 +87,7 @@ class IndexCacheFactory {
         return instance;
     }
 
-    static final class RAMContoller {
+    static final class RAMController {
         private static final float DEFAULT_CACHE_SIZE = 0.05f;
         private static final long maxCacheSize = getCacheSize();
         private final AtomicLong currentCacheSize = new AtomicLong();
@@ -153,9 +153,9 @@ class IndexCacheFactory {
 
     private static final class RAMPolicy implements EvictionPolicy<URI, Evictable> {
 
-        private final RAMContoller controller;
+        private final RAMController controller;
 
-        RAMPolicy(@NonNull final RAMContoller controller) {
+        RAMPolicy(@NonNull final RAMController controller) {
             Parameters.notNull("controller", controller);   //NOI18N
             this.controller = controller;
         }

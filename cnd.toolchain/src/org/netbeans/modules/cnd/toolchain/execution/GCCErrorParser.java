@@ -105,7 +105,7 @@ public final class GCCErrorParser extends ErrorParser {
 	    GCC_DIRECTORY_MAKE_ALL = Pattern.compile(scanner.getMakeAllInDirectoryPattern());
 	    patterns.add(GCC_DIRECTORY_MAKE_ALL);
 	}
-	if (scanner.getStackHeaderPattern().size() > 0 && scanner.getStackHeaderPattern().size() > 0) {
+	if (scanner.getStackHeaderPattern().size() > 0 && scanner.getStackNextPattern().size() > 0) {
             for(String pattern : scanner.getStackHeaderPattern()) {
                 GCC_STACK_HEADER.add(Pattern.compile(pattern));
             }
@@ -202,7 +202,7 @@ public final class GCCErrorParser extends ErrorParser {
     private Result handleLine(String line, Matcher m) {
         if (m.pattern() == GCC_DIRECTORY_ENTER || m.pattern() == GCC_DIRECTORY_LEAVE) {
             String levelString = m.group(1);
-            int level = levelString == null ? 0 : Integer.valueOf(levelString);
+            int level = levelString == null ? 0 : Integer.parseInt(levelString);
             int baseLavel = relativesLevel.peek();
             String directory = m.group(2);
             if (level > baseLavel) {
@@ -381,7 +381,7 @@ public final class GCCErrorParser extends ErrorParser {
         }
         
         private String getMessage() {
-            if (line.indexOf("instantiation of") >= 0 || line.indexOf("instantiated from") >=0 || line.indexOf("instantiated from") >= 0) { //NOI18N
+            if (line.indexOf("instantiation of") >= 0 || line.indexOf("instantiated from") >=0 ) { //NOI18N
                 //TODO move to scanner
                 return NbBundle.getMessage(GCCErrorParser.class, "HINT_InstantiatedFrom"); //NOI18N
             }

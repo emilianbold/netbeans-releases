@@ -80,9 +80,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
         try {
             RcFile rcFile = NativeExecutionTestSupport.getRcFile();
             mspec = rcFile.get("remote", "fstck.mspec");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (FormatException ex) {
+        } catch (IOException | FormatException ex) {
             Exceptions.printStackTrace(ex);
         }
 
@@ -149,7 +147,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
 
     @Override
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, true);
         RemoteFileSystem rfs = RemoteFileSystemManager.getInstance().getFileSystem(execEnv);
         createRemoteFSResources(rfs, testName, resources);
         return new FileSystem[] {rfs};
@@ -157,7 +155,7 @@ public class RemoteFSTCKTestCase extends FileSystemFactoryHid {
 
     @Override
     protected void destroyFileSystem(String testName) throws IOException {
-        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+        RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, true);
     }
 
     @Override

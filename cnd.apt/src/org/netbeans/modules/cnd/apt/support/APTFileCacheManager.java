@@ -74,7 +74,7 @@ public final class APTFileCacheManager {
         rLock = rwLock.readLock();
         wLock = rwLock.writeLock();
     }
-    
+
     public static APTFileCacheManager getInstance(FileSystem fs) {
         Parameters.notNull("null file system", fs); //NOI18N
         APTFileCacheManager manager;
@@ -83,10 +83,10 @@ public final class APTFileCacheManager {
             manager = managers.get(fs);
         } finally {
             rLock.unlock();
-        }        
+        }
         if (manager == null) {
             wLock.lock();
-            try {        
+            try {
                 manager = managers.get(fs);
                 if (manager == null) {
                     manager = new APTFileCacheManager();
@@ -98,7 +98,7 @@ public final class APTFileCacheManager {
         }
         return manager;
     }
-    
+
     private ConcurrentMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>> file2AptCacheRef = new ConcurrentHashMap<CharSequence, Reference<ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry>>>();
     private static final class Lock {}
     private final Object aptCachesLock = new Lock();
@@ -149,7 +149,7 @@ public final class APTFileCacheManager {
         }
         return out;
     }
-    
+
     /**
      *
      * @param file
@@ -180,7 +180,7 @@ public final class APTFileCacheManager {
                     out = APTFileCacheEntry.toReadOnly(out);
                 }
                 if (APTTraceFlags.TRACE_APT_CACHE) {
-                    System.err.printf("APT CACHE for %s\nsize %d, key: %s\ncache state:%s\n", file, cache.size(), "", "");
+                    System.err.printf("APT CACHE for %s%nsize %d, key: %s%ncache state:%s%n", file, cache.size(), "", "");
                 }
             }
         } else if (out != null) {
@@ -189,7 +189,7 @@ public final class APTFileCacheManager {
         assert createExclusiveIfAbsent == null || out != null;
         return out;
     }
-    
+
     public void setAPTCacheEntry(CharSequence absPath, APTPreprocHandler.State ppState, APTFileCacheEntry entry, boolean cleanOthers) {
         if (entry != null) {
             ConcurrentMap<APTIncludeHandler.State, APTFileCacheEntry> cache = getAPTCache(absPath, cleanOthers ? Boolean.TRUE : Boolean.FALSE);

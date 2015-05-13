@@ -59,6 +59,7 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 /**
  *
@@ -191,6 +192,10 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     @Override
+    @NbBundle.Messages({
+        "ERR_InlineMethodMultipleReturn=Cannot inline method with multiple return statements at {0}.",
+        "WRN_InlineMethodMultipleLines=The method body has multiple statements, will not update reference at {0}. The sources will not compile after refactoring!",
+        "ERR_InlineMethodNoLastReturn=The last statement is not a return statement, cannot inline at {0}."})
     public Tree visitMethodInvocation(MethodInvocationTree node, Element methodElement) {
         Tree value = super.visitMethodInvocation(node, methodElement);
         final TreePath methodInvocationPath = getCurrentPath();
@@ -219,7 +224,30 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
             TreeUtilities treeUtilities = workingCopy.getTreeUtilities();
             body = (BlockTree) treeUtilities.translate(body, original2TranslatedBody);
+            
+            final Boolean[] multiplereturn = {null};
+            new TreeScanner<Void, Void>() {
 
+                @Override
+                public Void scan(Tree node, Void p) {
+                    if(Boolean.TRUE == multiplereturn[0]) {
+                        return null;
+                    }
+                    return super.scan(node, p);
+                }
+                
+                @Override
+                public Void visitNewClass(NewClassTree node, Void p) {
+                    return null; //not interested in return from innerclass
+                }
+                
+                @Override
+                public Void visitReturn(ReturnTree node, Void p) {
+                    multiplereturn[0] = multiplereturn[0] == null ? Boolean.FALSE : Boolean.TRUE;
+                    return super.visitReturn(node, p);
+                }
+            }.scan(body, null);
+            
             if (hasParameters) {
                 final HashMap<Tree, Tree> original2TranslatedBody2 = new HashMap<>();
                 replaceParametersWithArguments(original2TranslatedBody2, method, node, methodInvocationPath, body, newStatementList);
@@ -282,6 +310,34 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     lastStatement = genUtils.importFQNs(lastStatement);
                 }
             }
+            
+            if(Boolean.TRUE == multiplereturn[0]) {
+                if(parent.getKind() == RETURN) {
+                    Map<Tree, List<StatementTree>> addedStatementsForBlock = newStatsQueue.getLast();
+                    Map<Tree, Tree> translateMap = translateQueue.getLast();
+                    List<StatementTree> stats = addedStatementsForBlock.get(statementTree);
+                    if(stats == null) {
+                        addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
+                    }
+                    stats.addAll(newStatementList);
+                    genUtils.copyComments(methodInvocation, lastStatement, true);
+                    List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodInvocation, false);
+                    for (Comment comment : comments) {
+                        make.addComment(lastStatement, Comment.create(comment.style(), comment.getText()), false);
+                    }
+                    translateMap.put(parent, lastStatement);
+                    return value;
+                } else {
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem,
+                            new Problem(true, ERR_InlineMethodMultipleReturn(source)));
+                    return value;
+                }
+            }
+
             lastStatement = translateLastStatement(genUtils, parent, grandparent, newStatementList, lastStatement, node, methodInvocationPath, method);
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
@@ -291,7 +347,15 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
                     String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
                     problem = JavaPluginUtils.chainProblems(problem,
-                            new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineMethodMultipleLines", source)));
+                            new Problem(false, WRN_InlineMethodMultipleLines(source)));
+                } else if (lastStatement instanceof StatementTree) {
+                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                    problem = JavaPluginUtils.chainProblems(problem,
+                            new Problem(true, ERR_InlineMethodNoLastReturn(source)));
+                    return value;
                 } else {
                     genUtils.copyComments(methodInvocation, lastStatement, true);
                     List<Comment> comments = workingCopy.getTreeUtilities().getComments(methodInvocation, false);
@@ -301,6 +365,18 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     rewrite(methodInvocation, lastStatement);
                 }
             } else {
+                if (lastStatement instanceof StatementTree) {
+                    if(parent.getKind() == EXPRESSION_STATEMENT) {
+                    } else {
+                        SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                        long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                        long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                        String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                        problem = JavaPluginUtils.chainProblems(problem,
+                                new Problem(true, ERR_InlineMethodNoLastReturn(source)));
+                        return value;
+                    }
+                }
                 Map<Tree, List<StatementTree>> addedStatementsForBlock = newStatsQueue.getLast();
                 Map<Tree, Tree> translateMap = translateQueue.getLast();
                 List<StatementTree> stats = addedStatementsForBlock.get(statementTree);
@@ -330,6 +406,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         return parent != null && ((MethodTree) parent.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC);
     }
 
+    @NbBundle.Messages({
+        "WRN_InlineNotAccessible={0} is not accessible from {1}."})
     private Tree fixReferences(Tree tree, TreePath treePath, final ExecutableElement method, final Scope scope, final ExpressionTree methodSelect) {
         final HashMap<Tree, Tree> orig2trans = new HashMap<>();
 
@@ -349,14 +427,14 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     if (methodSelect != null
                             && el.getEnclosingElement() != method
                             && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
-                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, WRN_InlineNotAccessible(el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
                     if (el.getKind() != ElementKind.LOCAL_VARIABLE && bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
                         if (el.getModifiers().contains(Modifier.STATIC)) {
                             Tree newTree = make.QualIdent(el);
                             orig2trans.put(node, newTree);
-                        } else {
+                        } else if(methodSelect != null) {
                             Tree newTree = make.MemberSelect(methodSelect, el);
                             orig2trans.put(node, newTree);
                         }
@@ -378,7 +456,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     if (methodSelect != null
                             && el.getEnclosingElement() != method
                             && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
-                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, WRN_InlineNotAccessible(el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
                     if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
@@ -391,12 +469,17 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                                 ExpressionTree expression = ((MemberSelectTree) methodInvocationSelect).getExpression();
                                 String isThis = expression.toString();
                                 if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
-                                    orig2trans.put(expression, methodSelect);
-                                } else {
+                                    if (methodSelect == null) { // We must be in Inner class.
+                                        MemberSelectTree memberSelect = make.MemberSelect(workingCopy.getTreeUtilities().parseExpression(bodyEnclosingTypeElement.getSimpleName() + ".this", new SourcePositions[1]), el);
+                                        orig2trans.put(node, memberSelect);
+                                    } else {
+                                        orig2trans.put(expression, methodSelect);
+                                    }
+                                } else if(methodSelect != null) {
                                     Tree newTree = make.MemberSelect(methodSelect, el);
                                     orig2trans.put(node, newTree);
                                 }
-                            } else {
+                            } else if(methodSelect != null) {
                                 Tree newTree = make.MemberSelect(methodSelect, el);
                                 orig2trans.put(methodInvocationSelect, newTree);
                             }
@@ -419,7 +502,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     if (methodSelect != null
                             && el.getEnclosingElement() != method
                             && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
-                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, WRN_InlineNotAccessible(el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
                     if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
@@ -629,6 +712,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         }
     }
 
+    @NbBundle.Messages(
+            "WRN_InlineChangeReturn=Unsafe -- the return expression is not used in {0}.")
     private Tree translateLastStatement(GeneratorUtilities genUtils, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node, TreePath location, Element method) {
         Tree result = lastStatement;
         TreeDuplicator duplicator = new TreeDuplicator(make, genUtils);
@@ -683,7 +768,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                             long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
                             String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
                             problem = JavaPluginUtils.chainProblems(problem,
-                                                                    new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineChangeReturn", source)));
+                                                                    new Problem(false, WRN_InlineChangeReturn(source)));
                             break;
                     }
                 }

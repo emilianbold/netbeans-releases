@@ -43,10 +43,8 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.net.InetAddress;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -65,7 +63,7 @@ import org.openide.util.NetworkSettings;
  */
 public class MylynUtils {
     
-    private static Logger LOG = Logger.getLogger("org.netbeans.libs.bugtracking.mylyn");
+    private static final Logger LOG = Logger.getLogger("org.netbeans.libs.bugtracking.mylyn");
     
     public static TaskRepository createTaskRepository(String connectorKind, String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         TaskRepository repository = new TaskRepository(connectorKind, url);
@@ -124,7 +122,8 @@ public class MylynUtils {
             repository.setProperty(TaskRepository.PROXY_HOSTNAME, null);
             repository.setProperty(TaskRepository.PROXY_PORT, null);
             repository.setCredentials(AuthenticationType.PROXY, null, false);
-        }
+        }  
+        MylynSupport.getInstance().notifyCredentialsChanged(repository);
     }
     
     public static void logCredentials(TaskRepository repository, String user, char[] psswd, String msg) {
@@ -140,7 +139,7 @@ public class MylynUtils {
                     user,
                     getPasswordLog(psswd)
                 }
-                );
+        );
     }
 
     private static boolean isNonProxyHost (String nonProxyHosts, String host) {

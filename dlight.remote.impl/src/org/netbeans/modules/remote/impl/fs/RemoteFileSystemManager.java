@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.impl.fs;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,26 +62,29 @@ import org.openide.util.Exceptions;
  */
 public class RemoteFileSystemManager {
     
-    private static RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
+    private static final RemoteFileSystemManager INSTANCE = new RemoteFileSystemManager();
 
     private final Object lock = new Object();
     
-    private Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
-            new HashMap<ExecutionEnvironment, SoftReference<RemoteFileSystem>>();
+    private final Map<ExecutionEnvironment, SoftReference<RemoteFileSystem>> fileSystems =
+            new HashMap<>();
 
-    private final List<FileChangeListener> globalListsners = new ArrayList<FileChangeListener>();
+    private final List<FileChangeListener> globalListsners = new ArrayList<>();
 
     public static RemoteFileSystemManager getInstance() {
         return INSTANCE;
     }
 
-    public void resetFileSystem(ExecutionEnvironment execEnv) {
+    public void resetFileSystem(ExecutionEnvironment execEnv, boolean clearCache) {
         synchronized(lock) {
             SoftReference<RemoteFileSystem> ref = fileSystems.remove(execEnv);
             if (ref != null) {
                 RemoteFileSystem fs = ref.get();
                 if (fs != null) {
                     fs.dispose();
+                }
+                if (clearCache) {
+                    RemoteFileSystemUtils.deleteRecursively(fs.getCache());
                 }
             }
         }
@@ -93,7 +97,7 @@ public class RemoteFileSystemManager {
             if (result == null) {
                 try {
                     result = new RemoteFileSystem(execEnv);
-                    fileSystems.put(execEnv, new SoftReference<RemoteFileSystem>(result));
+                    fileSystems.put(execEnv, new SoftReference<>(result));
                     for (FileChangeListener listener : globalListsners) {
                         result.addFileChangeListener(listener);
                     }
@@ -127,5 +131,18 @@ public class RemoteFileSystemManager {
                 }
             }
         }
+    }
+
+    public Collection<RemoteFileSystem> getAllFileSystems(){
+        Collection<RemoteFileSystem> res = new ArrayList<>();
+        synchronized(lock) {
+            for (SoftReference<RemoteFileSystem> ref : fileSystems.values()) {
+                RemoteFileSystem fs = ref.get();
+                if (fs != null) {
+                    res.add(fs);
+                }
+            }
+        }
+        return res;
     }
 }

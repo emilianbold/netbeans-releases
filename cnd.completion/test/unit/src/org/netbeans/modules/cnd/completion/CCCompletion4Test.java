@@ -63,6 +63,7 @@ public class CCCompletion4Test extends CndBaseTestSuite {
         this.addTestSuite(AutosTestCase.class);
         this.addTestSuite(FunctionCallsTestCase.class);
         this.addTestSuite(NonGlobalCompletionTestCase.class);
+        this.addTestSuite(GlobalCompletionTestCase.class);
         
         this.addTestSuite(TooltipTestCase.class);    
         this.addTestSuite(DotArrowSubstitutionTestCase.class);

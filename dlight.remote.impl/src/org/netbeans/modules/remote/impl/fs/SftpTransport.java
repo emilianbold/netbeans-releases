@@ -42,9 +42,10 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.io.File;
 import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.io.StringWriter;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -52,12 +53,16 @@ import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
+import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.util.NbBundle;
 
 /**
  * Note: public access is needed for tests
@@ -77,25 +82,28 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected FileInfoProvider.StatInfo stat(String path) 
-            throws InterruptedException, ExecutionException {
+    protected DirEntry stat(String path) 
+            throws ConnectException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, false);
     }
 
     @Override
-    protected FileInfoProvider.StatInfo lstat(String path) 
-            throws InterruptedException, ExecutionException {
+    protected DirEntry lstat(String path) 
+            throws ConnectException, InterruptedException, ExecutionException {
         return stat_or_lstat(path, true);
     }
 
-    private FileInfoProvider.StatInfo stat_or_lstat(String path, boolean lstat) 
-            throws InterruptedException, ExecutionException {
+    private DirEntry stat_or_lstat(String path, boolean lstat) 
+            throws ConnectException, InterruptedException, ExecutionException {
         
         Future<FileInfoProvider.StatInfo> stat = lstat ?
                 FileInfoProvider.lstat(execEnv, path) :
                 FileInfoProvider.stat(execEnv, path);
-        
-        return stat.get();
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }        
+        return DirEntryImpl.create(stat.get(), execEnv);
     }
 
     @Override
@@ -106,7 +114,7 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected DirEntryList copy(String from, String to, 
             Collection<IOException> subdirectoryExceptions) 
-            throws InterruptedException, CancellationException, ExecutionException {
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         throw new UnsupportedOperationException();
     }
 
@@ -116,7 +124,8 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected MoveInfo move(String from, String to) throws InterruptedException, CancellationException, ExecutionException {
+    protected MoveInfo move(String from, String to) 
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         Future<FileInfoProvider.StatInfo> f = FileInfoProvider.move(execEnv, from, to);
         f.get();
         String fromParent = PathUtilities.getDirName(from);
@@ -127,13 +136,17 @@ public class SftpTransport extends RemoteFileSystemTransport {
     }
 
     @Override
-    protected DirEntryList readDirectory(String remotePath) throws InterruptedException, CancellationException, ExecutionException {
+    protected DirEntryList readDirectory(String remotePath)
+            throws ConnectException, InterruptedException, CancellationException, ExecutionException {
         if (remotePath.length() == 0) {
             remotePath = "/"; //NOI18N
         } else  {
             if (!remotePath.startsWith("/")) { //NOI18N
                 throw new IllegalArgumentException("path should be absolute: " + remotePath); // NOI18N
             }
+        }
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
         }
         Future<StatInfo[]> res = FileInfoProvider.ls(execEnv, remotePath);
         StatInfo[] infos;
@@ -143,10 +156,10 @@ public class SftpTransport extends RemoteFileSystemTransport {
             res.cancel(true);
             throw ex;
         }
-        List<DirEntry> newEntries = new ArrayList<DirEntry>(infos.length);
+        List<DirEntry> newEntries = new ArrayList<>(infos.length);
         for (StatInfo statInfo : infos) {
             // filtering of "." and ".." is up to provider now
-            newEntries.add(new DirEntrySftp(statInfo, statInfo.getName()));
+            newEntries.add(DirEntryImpl.create(statInfo, execEnv));
         }
         return new DirEntryList(newEntries, System.currentTimeMillis());
     }
@@ -159,6 +172,16 @@ public class SftpTransport extends RemoteFileSystemTransport {
     @Override
     protected boolean needsClientSidePollingRefresh() {
         return true;        
+    }
+
+    @Override
+    protected boolean canRefreshFast() {
+        return false;
+    }
+
+    @Override
+    protected void refreshFast(String path, boolean expected) {
+        throw new UnsupportedOperationException("fast refresh not supported for sftp transport"); //NOI18N
     }
     
     @Override
@@ -181,6 +204,9 @@ public class SftpTransport extends RemoteFileSystemTransport {
 
     @Override
     protected DirEntryList delete(String path, boolean directory) throws IOException {
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }        
         StringWriter writer = new StringWriter();
         Future<Integer> task;
         if (directory) {
@@ -190,14 +216,51 @@ public class SftpTransport extends RemoteFileSystemTransport {
         }
         try {
             if (task.get().intValue() != 0) {
-                throw new IOException("Cannot delete " + path); // NOI18N
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(SftpTransport.class,
+                        "EXC_CantDelete", RemoteFileObjectBase.getDisplayName(execEnv, path))); // NOI18N
             }
         } catch (InterruptedException ex) {
-            throw new InterruptedIOException();
+            throw RemoteExceptions.createInterruptedIOException(ex.getLocalizedMessage(), ex); //NOI18N
         } catch (ExecutionException ex) {
             final String errorText = writer.getBuffer().toString();
-            throw new IOException("Error removing " + path + ": " + errorText, ex); //NOI18N
+            throw RemoteExceptions.createIOException(NbBundle.getMessage(SftpTransport.class, 
+                    "EXC_CantDeleteWReason", RemoteFileObjectBase.getDisplayName(execEnv, path), errorText), ex); //NOI18N
         }
+        return null;
+    }
+
+    @Override
+    protected DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename) 
+            throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException {
+
+        if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(execEnv));
+        }
+        
+        CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
+                srcFile, execEnv, pathToUpload, pathToRename, -1, false, null);
+        Future<CommonTasksSupport.UploadStatus> task = CommonTasksSupport.uploadFile(params);
+        CommonTasksSupport.UploadStatus uploadStatus = task.get();
+        if (uploadStatus.isOK()) {
+            RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} succeeded", this);
+            return DirEntryImpl.create(uploadStatus.getStatInfo(), execEnv);
+        } else {
+            RemoteLogger.getInstance().log(Level.FINEST, "WritingQueue: uploading {0} failed", this);
+            throw RemoteExceptions.createIOException("" + uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
+        }
+    }    
+
+    @Override
+    protected boolean canSetAccessCheckType() {
+        return false;
+    }
+
+    @Override
+    protected void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+    }
+
+    @Override
+    protected FileSystemProvider.AccessCheckType getAccessCheckType() {
         return null;
     }
 }

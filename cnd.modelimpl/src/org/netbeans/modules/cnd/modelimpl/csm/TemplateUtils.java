@@ -49,7 +49,6 @@ import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
@@ -60,14 +59,11 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
-import static org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer.getClosestNamespaceInfo;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.util.MapHierarchy;
-import org.netbeans.modules.cnd.utils.MutableObject;
 import org.openide.util.CharSequences;
 
 /**

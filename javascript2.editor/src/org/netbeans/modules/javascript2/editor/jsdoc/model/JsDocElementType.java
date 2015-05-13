@@ -58,6 +58,7 @@ public enum JsDocElementType {
     AUGMENTS("@augments", JsDocElement.Category.DECLARATION), //NOI18N
     AUTHOR("@author", JsDocElement.Category.DESCRIPTION), //NOI18N
     BORROWS("@borrows", JsDocElement.Category.ASSIGN), //NOI18N
+    CALLBACK("@callback", JsDocElement.Category.DECLARATION),
     CLASS("@class", JsDocElement.Category.DESCRIPTION), //NOI18N
     CONSTANT("@constant", JsDocElement.Category.SIMPLE), //NOI18N
     CONSTRUCTOR("@constructor", JsDocElement.Category.SIMPLE), //NOI18N

@@ -73,16 +73,22 @@ public class TestUtil {
     public static void setPlainSource() {
         ExtCss3Parser.isScssSource_unit_tests = false;
         ExtCss3Parser.isLessSource_unit_tests = false;
+        ExtCss3Lexer.isScssSource_unit_tests = false;
+        ExtCss3Lexer.isLessSource_unit_tests = false;
     }
     
     public static void setScssSource() {
         ExtCss3Parser.isScssSource_unit_tests = true;
         ExtCss3Parser.isLessSource_unit_tests = false;
+        ExtCss3Lexer.isScssSource_unit_tests = true;
+        ExtCss3Lexer.isLessSource_unit_tests = false;
     }
     
     public static void setLessSource() {
         ExtCss3Parser.isScssSource_unit_tests = false;
         ExtCss3Parser.isLessSource_unit_tests = true;
+        ExtCss3Lexer.isScssSource_unit_tests = false;
+        ExtCss3Lexer.isLessSource_unit_tests = true;
     }
     
     public static CssParserResult parse(String code) {

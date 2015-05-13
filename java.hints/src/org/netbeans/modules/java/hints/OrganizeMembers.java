@@ -148,6 +148,8 @@ public class OrganizeMembers {
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         List<Tree> members = new ArrayList<>(clazz.getMembers().size());
         Map<Tree, Tree> memberMap = new HashMap<>(clazz.getMembers().size());
+        
+        List<Tree> enumValues = new ArrayList<>();
         for (Tree tree : clazz.getMembers()) {
             if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) {
                 continue;
@@ -162,6 +164,9 @@ public class OrganizeMembers {
                     break;
                 case VARIABLE:
                     member = maker.setLabel(tree, ((VariableTree)tree).getName());
+                    if (copy.getTreeUtilities().isEnumConstant((VariableTree)tree)) {
+                        enumValues.add(member);
+                    }
                     break;
                 case METHOD:
                     member = maker.setLabel(tree, ((MethodTree)tree).getName());
@@ -176,7 +181,17 @@ public class OrganizeMembers {
             memberMap.put(member, tree);
         }
         // fool the generator utilities with cloned members, so it does not take positions into account
-        nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
+        if (enumValues.isEmpty()) {
+            nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
+        } else {
+            members.removeAll(enumValues);
+            int max = nue.getMembers().size();
+            // insert the enum values in the original order
+            for (Tree t : enumValues) {
+                nue = maker.insertClassMember(nue, max++, t);
+            }
+            nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
+        }
         // now create a new class, based on the original one - retain the order decided by GeneratorUtilities.
         ClassTree changed = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
         int index = 0;

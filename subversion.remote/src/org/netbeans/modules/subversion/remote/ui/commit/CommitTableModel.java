@@ -51,7 +51,7 @@ import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.SvnFileNode;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -71,7 +71,7 @@ public class CommitTableModel extends AbstractTableModel {
     private final int STATUS_DELETED = FileInformation.STATUS_VERSIONED_DELETEDLOCALLY | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY;
     private final int STATUS_NEW = FileInformation.STATUS_VERSIONED_ADDEDLOCALLY | FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
 
-    private class RootFile {
+    private static class RootFile {
         String repositoryPath;
         String rootLocalPath;
     }
@@ -202,7 +202,6 @@ public class CommitTableModel extends AbstractTableModel {
             // XXX this is a mess
             if(rootFile != null) {
                 // must convert from native separators to slashes
-                String relativePath = nodes[rowIndex].getFile().getPath().substring(rootFile.rootLocalPath.length());
                 shortPath = rootFile.repositoryPath + '/';
             } else {
                 shortPath = nodes[rowIndex].getLocation();

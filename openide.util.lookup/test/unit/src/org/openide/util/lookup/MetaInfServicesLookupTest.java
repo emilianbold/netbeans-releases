@@ -111,6 +111,10 @@ public class MetaInfServicesLookupTest extends NbTestCase {
     }
 
     private URL findJar(String n) throws IOException {
+        return findJar(n, "^(org\\.(foo|bar)\\..*)$");
+    }
+
+    private URL findJar(String n, String classPattern) throws IOException {
         LOG.log(Level.INFO, "Looking for {0}", n);
         File jarDir = new File(getWorkDir(), "jars");
         jarDir.mkdirs();
@@ -137,7 +141,7 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         
         Pattern p = Pattern.compile(":([^:]+):([^:]*)", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher m = p.matcher(sb);
-        Pattern foobar = Pattern.compile("^(org\\.(foo|bar)\\..*)$", Pattern.MULTILINE);
+        Pattern foobar = Pattern.compile(classPattern, Pattern.MULTILINE);
         Set<String> names = new TreeSet<String>();
         while (m.find()) {
             assert m.groupCount() == 2;
@@ -562,6 +566,75 @@ public class MetaInfServicesLookupTest extends NbTestCase {
         }).lookup(Object.class));
     }
     
+    /**
+     * Test for bug 249414 - java.lang.IllegalStateException: You cannot use
+     * MetaInfServicesLookup.Item[otool.maven.queries.MavenFileOwnerQueryImpl]
+     * in more than one AbstractLookup. Prev: 44 new: 44
+     *
+     * The exception occurs if one class provides two services (its own class
+     * and its superclass) with different positions, and if the actual class
+     * with higher position (lesser priority) is looked up first, then some
+     * other implemetation is looked up, and then, finally, the superclass with
+     * lowest position is looked up.
+     *
+     * Note: Some other conditions must be met, see comments in source code.
+     *
+     * @throws java.io.IOException
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.lang.InterruptedException
+     */
+    public void testMultiRegWithDifferentPositions() throws IOException,
+            ClassNotFoundException, InterruptedException {
+
+        List<Object> preventGc = new ArrayList<Object>();
+
+        ClassLoader loader = new URLClassLoader(new URL[]{
+            findJar("problem249414.jar", "^(org\\.(baz)\\..*)$"),},
+                Object.class.getClassLoader());
+
+        Class<?> cPadding = loader.loadClass("org.baz.Padding");
+        Class<?> cFilling = loader.loadClass("org.baz.Filling");
+
+        Class<?> cIntr = loader.loadClass("org.baz.MyService");
+        Class<?> cImpl = loader.loadClass("org.baz.impl.MyServiceImpl");
+        Class<?> cOthr = loader.loadClass("org.baz.impl.OtherServiceImpl");
+
+        Lookup lkp = getTestedLookup(loader);
+
+        Collections.addAll(preventGc, cIntr, cImpl, cOthr, cPadding);
+
+        // Lookup all instances of the Padding service (so that the lookup is
+        // big enough to use InheritanceTree as storage).
+        Collection<?> paddings = lkp.lookupResult(cPadding).allItems();
+        int count = 0;
+        for (Object p: paddings) {
+            assertNotNull(p);
+            preventGc.add(p);
+            count++;
+        }
+
+        assertEquals(13, count);
+
+        // Look up the implementing class first. Its position is 200.
+        Object impl = lkp.lookupResult(cImpl).allItems().iterator().next();
+        assertNotNull(impl);
+
+        // Look up the other implementation. Its position is 100.
+        Object othr = lkp.lookupResult(cOthr).allItems().iterator().next();
+        assertNotNull(othr);
+
+        // Finally, look up the interface. Its position is 90.
+        Object intr = lkp.lookupResult(cIntr).allItems().iterator().next();
+        assertNotNull(intr);
+
+        Collections.addAll(preventGc, impl, othr, intr);
+        assertNotNull(preventGc);
+
+        // Check that instances implementing multiple unrelated services are
+        // in the lookup only once.
+        assertEquals(1, lkp.lookupAll(cFilling).size());
+    }
+
     public static final class Err extends Object {
         public Err() {
             throw new UnsatisfiedLinkError();

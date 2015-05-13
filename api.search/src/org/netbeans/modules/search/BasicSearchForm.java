@@ -60,11 +60,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.DocumentFilter.FilterBypass;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.search.ReplacePattern;
 import org.netbeans.api.search.SearchHistory;
@@ -84,9 +91,12 @@ import org.netbeans.modules.search.ui.ShorteningCellRenderer;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchScopeDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
 
@@ -234,6 +244,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         btnTestTextToFind = new JButton();
         lblTextToFindHint = new JLabel();
         lblTextToFindHint.setForeground(SystemColor.controlDkShadow);
+        setLengthFilter(cboxTextToFind.getComponent());
 
         if (searchAndReplace) {
             lblReplacement = new JLabel();
@@ -242,6 +253,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             cboxReplacement.setRenderer(new ShorteningCellRenderer());
             lblReplacement.setLabelFor(cboxReplacement);
             chkPreserveCase = new JCheckBox();
+            setLengthFilter(cboxReplacement);
         }
 
         lblScope = new JLabel();
@@ -255,6 +267,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         cboxFileNamePattern = ComponentUtils.adjustComboForFileName(
                 new JComboBox<String>());
         lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());
+        setLengthFilter(cboxFileNamePattern.getComponent());
         
         chkWholeWords = new JCheckBox();
         chkCaseSensitive = new JCheckBox();
@@ -797,6 +810,18 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private static final Logger watcherLogger = Logger.getLogger(
             "org.netbeans.modules.search.BasicSearchForm.FileNamePatternWatcher");//NOI18N
 
+    private void setLengthFilter(JComboBox<?> cb) {
+        Component editorComponent = cb.getEditor().getEditorComponent();
+        if (editorComponent instanceof JTextComponent) {
+            JTextComponent tc = (JTextComponent) editorComponent;
+            Document document = tc.getDocument();
+            if (document instanceof AbstractDocument) {
+                AbstractDocument ad = (AbstractDocument) document;
+                ad.setDocumentFilter(lengthFilter);
+            }
+        }
+    }
+
     private SearchPatternController cboxTextToFind;
     private JComboBox<ReplaceModelItem> cboxReplacement;
     private FileNameController cboxFileNamePattern;
@@ -819,6 +844,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private boolean invalidTextPattern = false;
     private boolean invalidReplacePattern = false;
     private ScopeOptionsController scopeSettingsPanel;
+    private final DocumentFilter lengthFilter = new LengthFilter();
 
     private JPanel initHintAndButtonPanel() {
         btnTestTextToFindPanel = new LinkButtonPanel(btnTestTextToFind);
@@ -1053,6 +1079,50 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             } else {
                 throw new IllegalStateException("MatchType expected");  //NOI18N
             }
+        }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - Maximal number of characters in search field",
+        "MSG_TextTooLong=The text cannot be pasted into search field."
+                + " Limit is {0} characters."
+    })
+    private static final class LengthFilter extends DocumentFilter {
+
+        private static final int LIMIT = Integer.getInteger(
+                "nb.search.field.limit", 10000);
+
+        @Override
+        public void replace(FilterBypass fb, int offset, int length,
+                String text, AttributeSet attrs) throws BadLocationException {
+            int currentLength = fb.getDocument().getLength();
+            int newLength = currentLength + text.length() - length;
+            if (newLength <= LIMIT) {
+                super.replace(fb, offset, length, text, attrs);
+            } else {
+                limitReached();
+            }
+        }
+
+        @Override
+        public void insertString(FilterBypass fb, int offset, String string,
+                AttributeSet attr) throws BadLocationException {
+            int currentLength = fb.getDocument().getLength();
+            int newLength = currentLength + string.length();
+            if (newLength <= LIMIT) {
+                super.insertString(fb, offset, string, attr);
+            } else {
+                limitReached();
+            }
+        }
+
+        private void limitReached() {
+            String msg = Bundle.MSG_TextTooLong(LIMIT);
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                            msg, NotifyDescriptor.WARNING_MESSAGE));
+            Logger.getLogger(BasicSearchForm.class.getName())
+                    .log(Level.INFO, msg);
         }
     }
 }

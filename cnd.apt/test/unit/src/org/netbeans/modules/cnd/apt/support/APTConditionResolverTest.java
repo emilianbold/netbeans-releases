@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,20 +54,9 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.repository.api.Repository;
-import org.netbeans.modules.cnd.repository.api.UnitDescriptor;
-import org.netbeans.modules.cnd.repository.spi.Key;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
-import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
-import org.openide.util.Exceptions;
 
 /**
  *

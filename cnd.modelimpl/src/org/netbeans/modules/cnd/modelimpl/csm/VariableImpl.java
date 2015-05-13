@@ -483,7 +483,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         public VariableImpl create() {
             VariableImpl var = null;
             CsmScope s = getScope();
-            if (var == null && s != null && getName() != null && getScope() != null) {
+            if (s != null && getName() != null && getScope() != null) {
                 var = new VariableImpl(getType(), getName(), getScope(), isStatic(), isExtern(), null, getFile(), getStartOffset(), getEndOffset());
                 
                 postObjectCreateRegistration(isGlobal(), var);

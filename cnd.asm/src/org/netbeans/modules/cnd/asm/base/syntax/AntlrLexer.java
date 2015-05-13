@@ -57,8 +57,8 @@ import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmToken;
 
 public class AntlrLexer implements AsmHighlightLexer {
     
-    private AntlrScanner scanner;
-    private IdentResolver resolver;
+    private final AntlrScanner scanner;
+    private final IdentResolver resolver;
     
     private int length;
     

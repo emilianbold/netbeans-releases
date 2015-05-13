@@ -78,15 +78,23 @@ import org.openide.util.CharSequences;
     }
 
     static int getFileUnitId(FileImpl file) {
-        CndUtils.assertNotNull(file, "Null file"); //NOI18N
         // judging by #208877 null might occur here, although it's definitely wrong
-        return file == null ? -1 : file.getUnitId();
+        if (file == null) {
+            CndUtils.assertUnconditional("Null file"); //NOI18N
+            return -1;
+        } else {
+            return file.getUnitId();
+        }
     }
 
     private static int getFileNameId(FileImpl file) {
         // extra check for #208877
-        assert file != null;
-        return file == null ? -1 : file.getFileId();
+        if (file == null) {
+            CndUtils.assertUnconditional("Null file"); //NOI18N
+            return -1;
+        } else {
+            return file.getFileId();
+        }
     }
 
     @Override

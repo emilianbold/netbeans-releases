@@ -65,10 +65,12 @@ public final class FallbackBreakpoint extends NativeBreakpoint {
 	this.eventspec.set(eventspec);
     }
 
+    @Override
     public String getSummary() {
 	return eventspec.toString();
     }
 
+    @Override
     protected String getDisplayNameHelp() {
 	String summary = null;
 	FallbackBreakpoint bre = this;
@@ -76,6 +78,7 @@ public final class FallbackBreakpoint extends NativeBreakpoint {
 	return summary;
     }
 
+    @Override
     protected void processOriginalEventspec(String oeventspec) {
 	assert IpeUtils.isEmpty(oeventspec);
     }

@@ -82,6 +82,13 @@ import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
  * @author  Marian Petras
  */
 final class Util extends org.netbeans.modules.i18n.Util {
+    public static final String HELP_ID_ADDITIONAL = "internation.Additional"; // NOI18N
+    public static final String HELP_ID_SELECTSOURCES = "internation.SelectSources"; // NOI18N
+    public static final String HELP_ID_FOUNDSTRINGS = "internation.FoundStrings"; // NOI18N
+    public static final String HELP_ID_FOUNDMISSINGRESOURCES = "internation.FoundMissingResources"; // NOI18N
+    public static final String HELP_ID_SELECTRESOURCE = "internation.SelectResource"; // NOI18N
+    public static final String HELP_ID_SELECTTESTSOURCES = "internation.SelectTestSources"; // NOI18N
+    public static final String HELP_ID_SELECTTESTRESOURCE = "internation.SelectTestResource"; // NOI18N
     
     public static String getString(String key) {
         return NbBundle.getMessage(org.netbeans.modules.i18n.wizard.Util.class, key);

@@ -165,6 +165,12 @@ public class SrcNode extends FilterNode {
             actions.add(FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
             actions.add(FileSensitiveActions.fileCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null));
             actions.add(null);
+        } else {
+            // #252010
+            if (project.getTestRoots().getRoots().length > 1) {
+                actions.add(ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null));
+                actions.add(null);
+            }
         }
         actions.add(SystemAction.get(FileSystemAction.class));
         actions.add(null);

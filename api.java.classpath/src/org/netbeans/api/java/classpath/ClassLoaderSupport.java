@@ -45,19 +45,19 @@
 package org.netbeans.api.java.classpath;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collections;
-import java.util.Enumeration;
+import java.security.AllPermission;
+import java.security.CodeSource;
+import java.security.PermissionCollection;
+import java.security.Permissions;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.spi.java.classpath.ClassLoaderFactory;
-
 import org.openide.filesystems.*;
-import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /** Classloader for the filesystem pool. Attaches itself as a listener to
@@ -68,51 +68,41 @@ import org.openide.util.WeakListeners;
  * @author Jaroslav Tulach
  * @author Tomas Zezula
  */
-class ClassLoaderSupport extends ClassLoader implements FileChangeListener, PropertyChangeListener {
-    
+final class ClassLoaderSupport extends URLClassLoader implements FileChangeListener, PropertyChangeListener {
+
     static ClassLoader create(ClassPath cp) {
-        return new ClassLoaderSupport(cp, ClassLoader.getSystemClassLoader());
+        return create (cp, ClassLoader.getSystemClassLoader());
     }
 
-    private static final ClassLoader NULL = new NullClassLoader();
-    private static final ClassLoaderFactory DEFAULT = new DefaultClassLoaderFactory();
+    static ClassLoader create (final ClassPath cp, final ClassLoader parentClassLoader) {
+        return new ClassLoaderSupport(cp, parentClassLoader);
+    }
 
-    /** change listener */
-    private org.openide.filesystems.FileChangeListener listener;
-
-    /** PropertyChangeListener */
-    private java.beans.PropertyChangeListener propListener;
-
-    private final Object lock = new Object();
-    private final Map<FileObject,Boolean> emittedFileObjects = new HashMap<FileObject,Boolean>();
-    private boolean detachedFromCp;
-
-    /** contains AllPermission */
-    private static java.security.PermissionCollection allPermission;
+    private static final PermissionCollection allPermission;
+    static {
+        allPermission = new Permissions();
+        allPermission.add(new AllPermission());
+        allPermission.setReadOnly();
+    }
 
     /**
      * The ClassPath to load classes from.
      */
-    private final ClassPath  classPath;
-    private final ClassLoader delegate;
+    private final ClassPath   classPath;
+    private final FileChangeListener listener;
+    private final PropertyChangeListener propListener;
+    private final Object lock = new Object();
+    private final Map<FileObject,Boolean> emittedFileObjects = new HashMap<>();
+    private boolean detachedFromCp;
+
+    /** contains AllPermission */
 
     /** Constructor that attaches itself to the filesystem pool.
     */
     @SuppressWarnings("LeakingThisInConstructor")
     private ClassLoaderSupport (final ClassPath cp, final ClassLoader parentClassLoader) {
-        super(parentClassLoader);
+        super(getRootURLs(cp), parentClassLoader);
         this.classPath = cp;
-        ClassLoaderFactory factory = Lookup.getDefault().lookup(ClassLoaderFactory.class);
-        if (factory == null) {
-            factory = DEFAULT;
-        }
-        this.delegate = factory.createClassLoader(NULL, this.classPath.getRoots());
-        if (delegate == null) {
-            throw new IllegalStateException(String.format(
-                "ClassLoaderFactory %s : %s returned a null ClassLoader.",  //NOI18N
-                factory,
-                factory.getClass()));
-        }
         listener = FileUtil.weakFileChangeListener(this, null);
         propListener = WeakListeners.propertyChange (this, null);
         cp.addPropertyChangeListener(propListener);
@@ -126,7 +116,7 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
      */
     @Override
     protected Class findClass (String name) throws ClassNotFoundException {
-        Class c = delegate.loadClass (name);
+        Class c = super.findClass (name);
         if (c != null) {
             org.openide.filesystems.FileObject fo;
             String resName = name.replace('.', '/') + ".class"; // NOI18N
@@ -139,7 +129,7 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
         }
         return c;
     }
-    
+
     /**
      * Tries to locate the resource on the ClassPath
      * @param name
@@ -147,7 +137,7 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
      */
     @Override
     public URL findResource (String name) {
-        URL url = delegate.getResource (name);
+        URL url = super.findResource (name);
         if (url != null) {
             FileObject fo = classPath.findResource(name);
             if (fo != null) {
@@ -157,6 +147,12 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
             }
         }
         return url;
+    }
+
+    @Override
+    @NonNull
+    protected PermissionCollection getPermissions(final CodeSource codesource) {
+        return allPermission;
     }
 
     /** Tests whether this object is current loader and if so,
@@ -237,19 +233,10 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
     public void fileAttributeChanged (org.openide.filesystems.FileAttributeEvent fe) {
         testRemove (fe.getFile ());
     }
-    
-    /** Getter for allPermissions */
-    static synchronized java.security.PermissionCollection getAllPermissions() {
-        if (allPermission == null) {
-            allPermission = new java.security.Permissions();
-            allPermission.add(new java.security.AllPermission());
-        }
-        return allPermission;
-    }
 
     /**
      * This method gets called when a bound property is changed.
-     * @param evt A PropertyChangeEvent object describing the event source 
+     * @param evt A PropertyChangeEvent object describing the event source
      *  	and the property that has changed.
      */
     @Override
@@ -310,48 +297,13 @@ class ClassLoaderSupport extends ClassLoader implements FileChangeListener, Prop
         }
     }
 
-    private static final class NullClassLoader extends ClassLoader {
-        NullClassLoader() {
-            super(null);
+    @NonNull
+    private static URL[] getRootURLs(@NonNull final ClassPath cp) {
+        final List<ClassPath.Entry> entries = cp.entries();
+        final Deque<URL> res = new ArrayDeque<>(entries.size());
+        for (ClassPath.Entry e : entries) {
+            res.offer(e.getURL());
         }
-
-        @Override
-        protected Package getPackage(String name) {
-            return null;
-        }
-
-        @Override
-        protected Package[] getPackages() {
-            return new Package[0];
-        }
-
-        @Override
-        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            return null;
-        }
-
-        @Override
-        public URL getResource(String name) {
-            return null;
-        }
-
-        @Override
-        public Enumeration<URL> getResources(String name) throws IOException {
-            return Collections.enumeration(Collections.<URL>emptySet());
-        }
-    }
-
-    private static final class DefaultClassLoaderFactory implements ClassLoaderFactory {
-        @Override
-        @NonNull
-        public ClassLoader createClassLoader(
-            @NullAllowed final ClassLoader parentLoader,
-            @NonNull FileObject... roots) {
-            final URL[] urls = new URL[roots.length];
-            for (int i=0; i< roots.length; i++) {
-                urls[i] = roots[i].toURL();
-            }
-            return new URLClassLoader(urls, parentLoader);
-        }
+        return res.toArray(new URL[res.size()]);
     }
 }

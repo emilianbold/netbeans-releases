@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.32.4</specification-version>
+                        <specification-version>1.33.9</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,7 +29,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.23</specification-version>
+                        <specification-version>1.29.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -56,7 +56,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31.11</specification-version>
+                        <specification-version>1.33.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -72,7 +72,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.34</specification-version>
+                        <specification-version>1.45.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -91,6 +91,14 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.40</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.document</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -118,14 +126,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>2.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.editor.document</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -265,14 +265,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -286,6 +278,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -379,6 +379,7 @@
                 <friend>com.sun.tools.discovery</friend>
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
+                <friend>org.netbeans.modules.cnd.highlight</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
                 <package>org.netbeans.modules.cnd.refactoring.api</package>
                 <package>org.netbeans.modules.cnd.refactoring.api.ui</package>

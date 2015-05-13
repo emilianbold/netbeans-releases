@@ -74,7 +74,7 @@ public class NativeProjectRelocationMapperProviderImpl implements NativeProjectR
     private static final String DESTINATION_NAME = "dest_name";//NOI18N
     private static final String SOURCE_ROOT = "source_root";//NOI18N
     private static final String DESTINATION_ROOT = "dest_root";//NOI18N
-    private static final HashMap<FileObject, ProjectMapper> projectMappers = new HashMap<FileObject, ProjectMapper>();    
+    private static final HashMap<FileObject, ProjectMapper> projectMappers = new HashMap<>();    
 
     @Override
     public CharSequence getDestinationPath(NativeProject project, CharSequence sourceFilePath) {

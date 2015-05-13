@@ -69,8 +69,8 @@ import org.openide.util.NbBundle;
  */
 public class ManageStylesPanel extends javax.swing.JPanel
              implements ListSelectionListener, KeyListener, MouseListener {
-    private CodeStyle.Language language;
-    private Map<String, PreviewPreferences> preferences;
+    private final CodeStyle.Language language;
+    private final Map<String, PreviewPreferences> preferences;
 
     /** Creates new form ManageStylesPanel */
     public ManageStylesPanel(CodeStyle.Language language,
@@ -367,7 +367,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     private static class MyListModel extends AbstractListModel {
-        private List<MyListItem> objects;
+        private final List<MyListItem> objects;
         private MyListModel(List<MyListItem> objects){
             this.objects = objects;
         }

@@ -90,6 +90,7 @@ public class APITestConnector implements BugtrackingConnector {
             if(ID_CONNECTOR.equals(dc.getID())) {
                 // init repos
                 RepositoryRegistry.getInstance().addRepository(dc.createRepository(getInfo()).getImpl());
+                return;
             }
         }
     }

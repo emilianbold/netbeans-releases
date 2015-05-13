@@ -297,12 +297,19 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         line = readLine();
                         continue;
                     }
-                    if (line.startsWith(INFO_NETBEANS_EXEC_EVENT)) {
+                    int execEventIdx = line.indexOf(INFO_NETBEANS_EXEC_EVENT);
+                    if (execEventIdx == 0) {
                         processExecEvent(parseExecEvent(line));
 //                        stdOut.println(line); //XXX temporary
                         line = readLine();
                         continue;
-                    }                    
+                    }
+                    
+                    String nextLine = null;
+                    if(execEventIdx > 0) {
+                        nextLine = line.substring(execEventIdx);
+                        line = line.substring(0, execEventIdx);
+                    }                   
                     if (line.startsWith("[INFO] Final Memory:")) { //NOI18N
                         // previous value [INFO] --------------- is too early, the compilation errors don't get processed in this case.
                         //heuristics..
@@ -363,7 +370,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         currentTreeNode.startFold(inputOutput);
                         addProjectFold = false;
                     }
-                    line = readLine();
+                    line = nextLine != null ? nextLine : readLine();
                 }
             } catch (IOException ex) {
                 java.util.logging.Logger.getLogger(CommandLineOutputHandler.class.getName()).log(java.util.logging.Level.FINE, null, ex);

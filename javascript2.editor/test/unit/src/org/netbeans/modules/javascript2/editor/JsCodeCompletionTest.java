@@ -315,4 +315,33 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue237878() throws Exception {
         checkCompletion("testfiles/completion/issue237878.js", "a.^", false);
     }
+    
+    public void testIssue242454A_01() throws Exception {
+        checkCompletion("testfiles/completion/issue242454A.js", "myLib.f^;", false);
+    }
+    
+    public void testIssue242454A_02() throws Exception {
+        checkCompletion("testfiles/completion/issue242454A.js", "f^2(\"arg\");", false);
+    }
+    
+    public void testIssue242472_01() throws Exception {
+        checkCompletion("testfiles/completion/issue242472.js", "f^;", false);
+    }
+    
+    public void testIssue242472_02() throws Exception {
+        checkCompletion("testfiles/completion/issue242472.js", "myLib.^;", false);
+    }
+    
+    public void testIssue242472B_01() throws Exception {
+        checkCompletion("testfiles/completion/issue242472B.js", "f^;", false);
+    }
+    
+    public void testIssue242472B_02() throws Exception {
+        checkCompletion("testfiles/completion/issue242472B.js", "this.f^;", false);
+    }
+    
+    public void testIssue242472B_03() throws Exception {
+        checkCompletion("testfiles/completion/issue242472B.js", "myLib.^;", false);
+    }
+    
 }

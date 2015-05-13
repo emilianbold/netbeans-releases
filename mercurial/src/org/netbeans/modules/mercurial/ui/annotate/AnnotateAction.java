@@ -238,7 +238,7 @@ public class AnnotateAction extends ContextAction {
         HgLogMessage [] logs = new HgLogMessage[0];
         if (!revisions.isEmpty()) {
             logs = HgCommand.getLogMessages(repository, Collections.singleton(file), 
-                    revisions.get(0), "0", false, false, false, 1, Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
+                    revisions.get(0), "0", true, false, false, 1, Collections.<String>emptyList(), OutputLogger.getLogger(null), true);
             if (logs.length == 1) {
                 initialRevision = logs[0];
             }

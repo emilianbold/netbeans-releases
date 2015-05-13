@@ -108,11 +108,14 @@ public class Tiny {
     })
     public static ErrorDescription notifyOnCondition(HintContext ctx) {
         String method = methodName((MethodInvocationTree) ctx.getPath().getLeaf());
-        String toName = method.endsWith("All") ? "signalAll" : "signal";
+        String toName = method.endsWith("All") ? "signalAll" : "signal"; // NOI18N
 
-        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_NotifyOnConditionFix", toName);
-        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$cond." + toName + "()");
-        String displayName = NbBundle.getMessage(Tiny.class, "ERR_NotifyOnCondition", method);
+        String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_NotifyOnConditionFix", toName); // NOI18N
+        
+        String condString = ctx.getVariables().containsKey("$cond") ? "$cond." : ""; // NOI18N
+        
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(),  condString + toName + "()");  // NOI18N
+        String displayName = NbBundle.getMessage(Tiny.class, "ERR_NotifyOnCondition", method); // NOI18N
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
     }
@@ -144,7 +147,8 @@ public class Tiny {
                     constraints=@ConstraintVariableType(variable="$thread", type="java.lang.Thread"))
     public static ErrorDescription threadRun(HintContext ctx) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_ThreadRun");
-        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$thread.start()");
+        String threadString = ctx.getVariables().containsKey("$thread") ? "$thread." : "";
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), threadString + "start()");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ThreadRun");
 
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, f);
@@ -277,7 +281,8 @@ public class Tiny {
     public static ErrorDescription unlockOutsideTryFinally(HintContext ctx) {
         if (ctx.getMultiVariables().get("$statements$").isEmpty()) return null; //#186434
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_UnlockOutsideTryFinally");
-        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$lock.lock(); try {$statements$;} finally {$lock.unlock();}");
+        String lockString = ctx.getVariables().containsKey("$lock") ? "$lock." : ""; // NOI18N
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), lockString + "lock(); try {$statements$;} finally {" + lockString + "unlock();}");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_UnlockOutsideTryFinally");
 
         //XXX:

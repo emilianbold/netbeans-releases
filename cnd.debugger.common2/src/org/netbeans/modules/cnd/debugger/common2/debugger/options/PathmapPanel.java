@@ -152,6 +152,7 @@ class PathmapPanel extends JPanel implements PropertyChangeListener, HelpCtx.Pro
 	return pathmap;
     }
         
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) &&
 	    evt.getNewValue() == PropertyEnv.STATE_VALID) {
@@ -161,6 +162,7 @@ class PathmapPanel extends JPanel implements PropertyChangeListener, HelpCtx.Pro
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("DebuggerOptions" );
     }
@@ -185,12 +187,14 @@ class PathmapPanel extends JPanel implements PropertyChangeListener, HelpCtx.Pro
 	    Catalog.get("ACSD_PathmapTable");			// NOI18N
 	pathmapList.addText = Catalog.get("AddMap");		// NOI18N
 	pathmapList.addActionListener = new ActionListener() {
+            @Override
 	    public void actionPerformed(ActionEvent evt) {
 		addPathmapRow(evt);
 	    }
 	};
 	pathmapList.remText = Catalog.get("RemoveMap");		// NOI18N
 	pathmapList.remActionListener = new ActionListener() {
+            @Override
 	    public void actionPerformed(ActionEvent evt) {
 		deletePathmapRow(evt);
 	    }

@@ -81,10 +81,11 @@ import org.apache.maven.index.creator.AbstractIndexCreator;
 import org.apache.maven.index.creator.MinimalArtifactInfoIndexCreator;
 import org.apache.maven.index.expr.StringSearchExpression;
 import org.codehaus.plexus.util.Base64;
+import org.netbeans.modules.classfile.ClassFile;
+import org.netbeans.modules.classfile.ClassName;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.ClassUsage;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.BaseUtilities;
 
 /**
  * Scans classes in (local) JARs for their Java dependencies.
@@ -291,88 +292,12 @@ class ClassDependencyIndexCreator extends AbstractIndexCreator {
     // adapted from org.netbeans.nbbuild.VerifyClassLinkage
     private static Set<String> dependencies(byte[] data, String clazz, File jar) throws IOException {
         Set<String> result = new TreeSet<String>();
-        DataInput input = new DataInputStream(new ByteArrayInputStream(data));
-        skip(input, 8); // magic, minor_version, major_version
-        int size = input.readUnsignedShort() - 1; // constantPoolCount
-        String[] utf8Strings = new String[size];
-        boolean[] isClassName = new boolean[size];
-        boolean[] isDescriptor = new boolean[size];
-        for (int i = 0; i < size; i++) {
-            byte tag = input.readByte();
-            switch (tag) {
-            case 1: // CONSTANT_Utf8
-                utf8Strings[i] = input.readUTF();
-                break;
-            case 7: // CONSTANT_Class
-                int index = input.readUnsignedShort() - 1;
-                if (index >= size) {
-                    throw new IOException("@" + i + ": CONSTANT_Class_info.name_index " + index + " too big for size of pool " + size);
-                }
-                //LOG.finest("Class reference at " + index);
-                isClassName[index] = true;
-                break;
-            case 3: // CONSTANT_Integer
-            case 4: // CONSTANT_Float
-            case 9: // CONSTANT_Fieldref
-            case 10: // CONSTANT_Methodref
-            case 11: // CONSTANT_InterfaceMethodref
-                skip(input, 4);
-                break;
-            case 12: // CONSTANT_NameAndType
-                skip(input, 2);
-                index = input.readUnsignedShort() - 1;
-                if (index >= size || index < 0) {
-                    throw new IOException("@" + i + ": CONSTANT_NameAndType_info.descriptor_index " + index + " too big for size of pool " + size);
-                }
-                isDescriptor[index] = true;
-                break;
-            case 8: // CONSTANT_String
-                skip(input, 2);
-                break;
-            case 5: // CONSTANT_Long
-            case 6: // CONSTANT_Double
-                skip(input, 8);
-                i++; // weirdness in spec
-                break;
-            default:
-                // E.g. com/ibm/icu/icu4j/2.6.1/icu4j-2.6.1.jar!/com/ibm/icu/impl/data/LocaleElements_zh__PINYIN.class is corrupt even acc. to javap.
-                LOG.log(Level.FINE, "jar:{4}!/{3}.class: Unrecognized constant pool tag {0} at index {1}; running UTF-8 strings: {2}", new Object[] {tag, i, Arrays.asList(utf8Strings), clazz, BaseUtilities.toURI(jar)});
-                continue;
-            }
-        }
-        //LOG.finest("UTF-8 strings: " + Arrays.asList(utf8Strings));
-        for (int i = 0; i < size; i++) {
-            String s = utf8Strings[i];
-            if (s != null) {
-                if (isClassName[i]) {
-                    while (s.charAt(0) == '[') {
-                        // array type
-                        s = s.substring(1);
-                    }
-                    if (s.length() == 1) {
-                        // primitive
-                        continue;
-                    }
-                    String c;
-                    if (s.charAt(s.length() - 1) == ';' && s.charAt(0) == 'L') {
-                        // Uncommon but seems sometimes this happens.
-                        c = s.substring(1, s.length() - 1);
-                    } else {
-                        c = s;
-                    }
-                    result.add(c);
-                } else if (isDescriptor[i]) {
-                    int idx = 0;
-                    while ((idx = s.indexOf('L', idx)) != -1) {
-                        int semi = s.indexOf(';', idx);
-                        if (semi == -1) {
-                            throw new IOException("Invalid type or descriptor: " + s);
-                        }
-                        result.add(s.substring(idx + 1, semi));
-                        idx = semi;
-                    }
-                }
-            }
+        DataInputStream input = new DataInputStream(new ByteArrayInputStream(data));
+        ClassFile cf = new ClassFile(input);
+        
+        Set<ClassName> cl = cf.getAllClassNames();
+        for (ClassName className : cl) {
+            result.add(className.getInternalName());
         }
         return result;
     }

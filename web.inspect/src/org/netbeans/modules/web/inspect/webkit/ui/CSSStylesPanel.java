@@ -320,19 +320,19 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                     fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
                                 }
                             }
-                            if (fob == null) {
-                                controller.setNoRuleState();
-                            } else {
+                            if (fob != null) {
                                 try {
                                     Source source = Source.create(fob);
-                                    ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, ruleInfo, controller));
+                                    if (source != null) {
+                                        ParserManager.parse(Collections.singleton(source), new RuleEditorTask(rule, ruleInfo, controller));
+                                        return;
+                                    }
                                 } catch (ParseException ex) {
                                     Logger.getLogger(CSSStylesPanel.class.getName()).log(Level.INFO, null, ex);
                                 }
                             }
-                        } else {
-                            controller.setNoRuleState();
                         }
+                        controller.setNoRuleState();
                     }
                 });
             }

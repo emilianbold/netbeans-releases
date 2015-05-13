@@ -51,6 +51,7 @@ import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -82,7 +83,7 @@ import org.openide.util.CharSequences;
  *
  * @author Alecander Simon
  */
-public class FileComponentDeclarations extends FileComponent implements Persistent, SelfPersistent {
+public class FileComponentDeclarations extends FileComponent {
 
     private final TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations;
     private WeakReference<Map<CsmDeclaration.Kind,SortedMap<NameKey, CsmUID<CsmOffsetableDeclaration>>>> sortedDeclarations;
@@ -103,7 +104,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
             return null;
         }
- 
+
         @Override
         void put() {
         }
@@ -113,6 +114,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UL")
     FileComponentDeclarations(FileComponentDeclarations other, boolean empty) {
         super(other);
         try {
@@ -140,7 +142,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             }
         }
     }
-    
+
     public FileComponentDeclarations(FileImpl file) {
         super(new FileDeclarationsKey(file));
         declarations = new TreeMap<>();
@@ -276,7 +278,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, CharSequences.create(name).hashCode());
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
             declarationsLock.readLock().lock();
@@ -293,7 +295,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
-        OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
+        OffsetSortedKey key = new OffsetSortedKey(startOffset, CharSequences.create(name).hashCode());
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
             declarationsLock.readLock().lock();
@@ -308,15 +310,15 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
         return UIDCsmConverter.UIDtoDeclaration(anUid);
     }
-    
+
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
             declarationsLock.readLock().lock();
             res = getDeclarationsByOffset(startOffset-1);
             if (startOffset < endOffset) {
-                OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,0);
-                OffsetSortedKey toKey = new OffsetSortedKey(endOffset,0);
+                OffsetSortedKey fromKey = new OffsetSortedKey(startOffset, Integer.MIN_VALUE);
+                OffsetSortedKey toKey = new OffsetSortedKey(endOffset, Integer.MIN_VALUE);
                 SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
                 for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
                     CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
@@ -350,7 +352,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     // call under read lock
     private List<CsmUID<CsmOffsetableDeclaration>> getDeclarationsByOffset(int offset){
         List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<>();
-        OffsetSortedKey key = new OffsetSortedKey(offset+1,0); // NOI18N
+        OffsetSortedKey key = new OffsetSortedKey(offset+1, Integer.MIN_VALUE);
         outer : while(true) {
             SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
             if (head.isEmpty()) {
@@ -534,7 +536,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
         public OffsetSortedKey(CsmOffsetableDeclaration declaration) {
             start = ((CsmOffsetable) declaration).getStartOffset();
-            name = Math.abs(declaration.getName().hashCode());
+            name = declaration.getName().hashCode();
         }
 
         public OffsetSortedKey(int offset, int name) {
@@ -546,7 +548,11 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         public int compareTo(OffsetSortedKey o) {
             int res = start - o.start;
             if (res == 0) {
-                res = name - o.name;
+                if (name < o.name) {
+                    return -1;
+                } else if (name > o.name) {
+                    return 1;
+                }
             }
             return res;
         }
@@ -606,5 +612,35 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
             }
             return res;
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 89 * hash + this.start;
+            hash = 89 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NameKey other = (NameKey) obj;
+            if (this.start != other.start) {
+                return false;
+            }
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

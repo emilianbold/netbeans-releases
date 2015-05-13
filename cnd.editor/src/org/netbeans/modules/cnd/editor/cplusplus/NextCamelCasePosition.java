@@ -67,10 +67,12 @@ import javax.swing.text.JTextComponent;
         return true;
     }
     
+    @Override
     protected int newOffset(JTextComponent textComponent) throws BadLocationException {
         return CamelCaseOperations.nextCamelCasePosition(textComponent, isSkipNextEOL());
     }
 
+    @Override
     protected void moveToNewOffset(JTextComponent textComponent, int offset) throws BadLocationException {
         textComponent.setCaretPosition(offset);
     }

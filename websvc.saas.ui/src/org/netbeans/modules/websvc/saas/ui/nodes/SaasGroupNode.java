@@ -46,17 +46,14 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.datatransfer.Transferable;
 import java.util.List;
-import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteGroupAction;
@@ -66,7 +63,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
-import org.openide.util.Utilities; 
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -135,7 +131,7 @@ public class SaasGroupNode extends AbstractNode {
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
-        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-closed.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-closed.png"); // NOI18N
     }
     
     @Override
@@ -148,7 +144,7 @@ public class SaasGroupNode extends AbstractNode {
         if (standardFolderImage != null) {
             return standardFolderImage;
         }
-        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/saas/resources/folder-open.png"); // NOI18N
     }
 
     @Override
@@ -170,11 +166,6 @@ public class SaasGroupNode extends AbstractNode {
     public void destroy() throws IOException{
         SaasServicesModel.getInstance().removeGroup(group);
         super.destroy();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("websvcGroupNode");
     }
 
     @Override

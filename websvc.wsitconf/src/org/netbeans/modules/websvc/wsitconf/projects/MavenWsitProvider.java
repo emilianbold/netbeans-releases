@@ -109,9 +109,14 @@ public class MavenWsitProvider extends WsitProvider {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if ((sgs != null) && (sgs.length > 0)) {
             ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
-            FileObject txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
-            if ((txFO != null)) {
+            FileObject txFO = classPath.findResource("com/sun/xml/ws/api/pipe/helper/AbstractPipeImpl.class"); // NOI18N
+            if (txFO != null) {
                 return true;
+            } else {
+                txFO = classPath.findResource("com/sun/xml/ws/tx/service/TxServerPipe.class"); // NOI18N
+                if (txFO != null) {
+                    return true;
+                }
             }
         }
         return false;

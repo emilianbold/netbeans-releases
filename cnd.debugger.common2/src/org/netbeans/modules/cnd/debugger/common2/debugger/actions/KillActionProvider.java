@@ -69,6 +69,7 @@ public class KillActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_KILL);
     }
@@ -102,9 +103,11 @@ public class KillActionProvider extends NativeActionsProvider {
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
 	// IZ 160052 describes how postAction isn't even called.
 	javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
 	    public void run() {
 		getDebugger().postKill();
 	    }
@@ -112,6 +115,7 @@ public class KillActionProvider extends NativeActionsProvider {
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable = state.isLoaded;
 	setEnabled(ActionsManager.ACTION_KILL, true);

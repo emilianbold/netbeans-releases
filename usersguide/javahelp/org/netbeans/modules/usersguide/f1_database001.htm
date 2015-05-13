@@ -1,19 +1,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>Adding a JDBC Driver: New Connection Wizard and Add Driver</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-05-08</p>
 <p><a id="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" name="org.netbeans.modules.db.explorer.dlg.AddDriverDialog"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref736" name="sthref736"></a>
+<div id="NBCSH5340"><!-- infolevel="all" infotype="General" --><a id="sthref731" name="sthref731"></a>
 <h1>Adding a JDBC Driver: New Connection Wizard and Add Driver</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to specify an appropriate JDBC driver for this database when you connect to a database from within the IDE. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1823">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1823">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -34,24 +35,19 @@
 <td align="left" id="r2c1-t2" headers="r1c1-t2">
 <p>Driver</p>
 </td>
-<td align="left" headers="r2c1-t2 r1c2-t2">
-<p>Enter the user name for the database.</p>
-</td>
+<td align="left" headers="r2c1-t2 r1c2-t2">Enter the user name for the database.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t2" headers="r1c1-t2">
 <p>Driver File(s)</p>
 </td>
-<td align="left" headers="r3c1-t2 r1c2-t2">
-<p>Enter the password for the database.</p>
-</td>
+<td align="left" headers="r3c1-t2 r1c2-t2">Enter the password for the database.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t2" headers="r1c1-t2">
 <p>Driver Class</p>
 </td>
-<td align="left" headers="r4c1-t2 r1c2-t2">
-<p>(in the New JDBC Driver dialog box). After you choose a valid archive file, <b>Driver Class</b> and <b>Name</b> should be filled in by the IDE.</p>
+<td align="left" headers="r4c1-t2 r1c2-t2">(in the New JDBC Driver dialog box). After you choose a valid archive file, <b>Driver Class</b> and <b>Name</b> should be filled in by the IDE.
 <p>Click <b>Find</b> if <b>Driver Class</b> is empty or incorrect.</p>
 </td>
 </tr>
@@ -59,14 +55,14 @@
 </table>
 <br />
 <!-- -->
-<p>The IDE will search the archive files that you selected in the previous step and find all classes that implement the JDBC API Driver interface (<code>java.sql.Driver</code>). <b>Driver Class</b> lists the classes that the IDE finds. Use the list to select the driver class that you need.</p>
+<p>The IDE will search the archive files that you selected in the previous step and find all classes that implement the JDBC API Driver interface (<code dir="ltr">java.sql.Driver</code>). <b>Driver Class</b> lists the classes that the IDE finds. Use the list to select the driver class that you need.</p>
 <p><b>Notes:</b></p>
 <ul>
 <li>Adding a new driver only creates a template for new connections. The IDE does not actually try to use that driver or check it to ensure it is correct until a connection is made.</li>
 <li>
 <p>You can add the driver directly at the first step when setting up a connection and skip the New Driver dialog box. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1821">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -74,10 +70,11 @@
 </p>
 </li>
 </ul>
+<a id="NBCSH5344" name="NBCSH5344"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1821">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1821">
 <param name="text" value="<html><u>&quot;Setting up a Database Connection&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -85,7 +82,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG1790">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG1790">
 <param name="text" value="<html><u>&quot;Working and Connecting with Databases&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -99,7 +96,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

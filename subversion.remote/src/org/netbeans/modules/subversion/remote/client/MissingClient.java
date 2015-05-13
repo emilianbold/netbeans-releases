@@ -59,7 +59,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.options.SvnOptionsController;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -154,6 +154,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "displayer != null"
     public void hyperlinkUpdate(HyperlinkEvent e) {
         if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) return;
         URL url = e.getURL();

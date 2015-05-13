@@ -157,6 +157,10 @@ public class AddConstructor implements ErrorRule<Void> {
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
             TypeElement clazz = (TypeElement) ctx.getWorkingCopy().getTrees().getElement(ctx.getPath());
+            if (clazz == null) {
+                // TODO: report to the user
+                return;
+            }
             GeneratorUtilities gu = GeneratorUtilities.get(ctx.getWorkingCopy());
             MethodTree newConstr = gu.createConstructor(clazz, Collections.<VariableElement>emptyList(), constr.resolve(ctx.getWorkingCopy()));
             ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), gu.insertClassMember((ClassTree) ctx.getPath().getLeaf(), newConstr));

@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public final class TryCatchStatementImpl extends StatementBase implements CsmTryCatchStatement, CsmScope {
-    
+
     private StatementBase tryStatement;
     private List<CsmExceptionHandler> handlers;
 
@@ -68,15 +68,15 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         super(ast, file, scope);
         render(ast, global);
     }
-    
+
     private TryCatchStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
-        super(file, start, end, scope);        
-    }    
+        super(file, start, end, scope);
+    }
 
     public static TryCatchStatementImpl create(AST ast, CsmFile file, CsmScope scope, boolean global) {
         return new TryCatchStatementImpl(ast, file, scope, global);
     }
-    
+
     @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.TRY_CATCH;
@@ -86,7 +86,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
     public CsmStatement getTryStatement() {
         return tryStatement;
     }
-    
+
     @Override
     public List<CsmExceptionHandler> getHandlers() {
         return handlers;
@@ -95,8 +95,8 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
     @Override
     public void dispose() {
         super.dispose();
-        if (tryStatement instanceof Disposable) {
-            ((Disposable) tryStatement).dispose();
+        if (tryStatement != null) {
+            tryStatement.dispose();
         }
         if (handlers != null) {
             Utils.disposeAll(handlers);
@@ -128,12 +128,12 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         }
 	return elements;
     }
- 
+
     public static class TryCatchStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
 
         private final List<ExceptionHandlerBuilder> handlers = new ArrayList<>();
         private StatementBuilder tryStatement;
-        
+
         public void addHandlerBuilder(ExceptionHandlerBuilder statement) {
             handlers.add(statement);
         }
@@ -141,7 +141,7 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         public void setTryStatementBuilder(StatementBuilder tryStatement) {
             this.tryStatement = tryStatement;
         }
-        
+
         @Override
         public TryCatchStatementImpl create() {
             TryCatchStatementImpl stmt = new TryCatchStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
@@ -155,12 +155,12 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
             } else {
                 stmt.handlers = stmts;
             }
-            
+
             if(tryStatement != null) {
                 tryStatement.setScope(stmt);
                 stmt.tryStatement = tryStatement.create();
             }
-                    
+
             return stmt;
         }
 
@@ -168,6 +168,6 @@ public final class TryCatchStatementImpl extends StatementBase implements CsmTry
         public void addStatementBuilder(StatementBuilder builder) {
             tryStatement = builder;
         }
-    }       
-    
+    }
+
 }

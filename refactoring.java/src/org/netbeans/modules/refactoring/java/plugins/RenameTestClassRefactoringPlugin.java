@@ -45,6 +45,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.Condition;
@@ -78,6 +79,7 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
 
+    public static final EnumSet<ElementKind> SUPPORTED = EnumSet.of(ElementKind.CLASS, ElementKind.ENUM, ElementKind.INTERFACE, ElementKind.ANNOTATION_TYPE, ElementKind.METHOD);
     private RenameRefactoring refactoring;
     private TreePathHandle treePathHandle;
     private RenameRefactoring[] renameDelegates;
@@ -191,8 +193,9 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
         }
         
         final LinkedList<RenameRefactoring> renameRefactoringsList = new LinkedList<RenameRefactoring>();
+        final ElementKind elementKind = treePathHandle.getElementHandle().getKind();
 
-        if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS || treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
+        if(SUPPORTED.contains(elementKind)) {
             final FileObject fileObject = treePathHandle.getFileObject();
             Collection<? extends TestLocator> testLocators = Lookup.getDefault().lookupAll(TestLocator.class);
             for (final TestLocator testLocator : testLocators) {
@@ -208,9 +211,9 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
                                 public void foundLocation(FileObject fo, LocationResult location) {
                                     lock.lock();
                                     try {
-					if(treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
+					if(elementKind == ElementKind.CLASS) {
 					    addIfMatch(location, testLocator, fo, renameRefactoringsList);
-					} else if(treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
+					} else if(elementKind == ElementKind.METHOD) {
 					    addIfMatchMethod(location, testLocator, renameRefactoringsList);
 					}
                                         condition.signalAll();
@@ -230,11 +233,11 @@ public class RenameTestClassRefactoringPlugin extends JavaRefactoringPlugin {
                         }
                     } else {
                         LocationResult location = testLocator.findOpposite(fileObject, -1);
-                        if (treePathHandle.getElementHandle().getKind() == ElementKind.CLASS) {
-			    addIfMatch(location, testLocator, fileObject, renameRefactoringsList);
-			} else if (treePathHandle.getElementHandle().getKind() == ElementKind.METHOD) {
-			    addIfMatchMethod(location, testLocator, renameRefactoringsList);
-			}
+                        if (elementKind == ElementKind.METHOD) {
+                            addIfMatchMethod(location, testLocator, renameRefactoringsList);
+                        } else {
+                            addIfMatch(location, testLocator, fileObject, renameRefactoringsList);
+                        }
                     }
                 }
             }

@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.services.CsmReferenceContext;
@@ -87,46 +88,51 @@ public class CsmAutosProviderImpl implements AutosProvider {
 
     @Override
     public Set<String> getAutos(final StyledDocument document, final int line) {
-        if (line < 0 || document == null) {
-            return Collections.emptySet();
-        }
-
-        CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
-        if (csmFile == null || !csmFile.isParsed()) {
-            return null;
-        }
-
-        final Element lineRootElement = NbDocument.findLineRootElement(document);
-
-        final Set<String> autos = new HashSet<String>();
-
-        // add current line autos
-        int startOffset = addAutos(csmFile, lineRootElement, line, document, autos);
-
-        // add previous line autos
-        if (line > 0) {
-            final Element lineElem = lineRootElement.getElement(line-1);
-            if (lineElem != null) {
-                final AtomicInteger prevOffset = new AtomicInteger(lineElem.getEndOffset());
-
-                document.render(new Runnable() {
-                    @Override
-                    public void run() {
-                        TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
-                        if (ts == null) {
-                            return;
-                        }
-                        if (CndTokenUtilities.shiftToNonWhite(ts, true)) {
-                            prevOffset.set(ts.offset());
-                        }
-                    }
-                });
-                int prevLine = NbDocument.findLineNumber(document, prevOffset.get());
-                addAutos(csmFile, lineRootElement, prevLine, document, autos);
+        CsmCacheManager.enter();
+        try {
+            if (line < 0 || document == null) {
+                return Collections.emptySet();
             }
-        }
 
-        return autos;
+            CsmFile csmFile = CsmUtilities.getCsmFile(document, false, false);
+            if (csmFile == null || !csmFile.isParsed()) {
+                return null;
+            }
+
+            final Element lineRootElement = NbDocument.findLineRootElement(document);
+
+            final Set<String> autos = new HashSet<String>();
+
+            // add current line autos
+            int startOffset = addAutos(csmFile, lineRootElement, line, document, autos);
+
+            // add previous line autos
+            if (line > 0) {
+                final Element lineElem = lineRootElement.getElement(line-1);
+                if (lineElem != null) {
+                    final AtomicInteger prevOffset = new AtomicInteger(lineElem.getEndOffset());
+
+                    document.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(document, prevOffset.get(), false, true);
+                            if (ts == null) {
+                                return;
+                            }
+                            if (CndTokenUtilities.shiftToNonWhite(ts, true)) {
+                                prevOffset.set(ts.offset());
+                            }
+                        }
+                    });
+                    int prevLine = NbDocument.findLineNumber(document, prevOffset.get());
+                    addAutos(csmFile, lineRootElement, prevLine, document, autos);
+                }
+            }
+
+            return autos;
+        } finally {
+            CsmCacheManager.leave();
+        }
     }
 
     private static int addAutos(final CsmFile csmFile,

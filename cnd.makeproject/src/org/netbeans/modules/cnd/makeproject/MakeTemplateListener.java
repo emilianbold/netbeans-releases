@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationListener;
@@ -70,12 +71,23 @@ public class MakeTemplateListener implements OperationListener {
 
     private static final String ADD_TO_LOGICAL_FOLDER_ATTRIBUTE = "addToLogicalFolder"; // NOI18N
     
-    public static MakeTemplateListener INSTANCE;
+    private static MakeTemplateListener INSTANCE;
     private Project contextProject;
     private MakeConfigurationDescriptor contextCD;
 
-    public MakeTemplateListener() {
-        INSTANCE = this;
+    static MakeTemplateListener getInstance() {
+        return INSTANCE;
+    }
+
+    static synchronized MakeTemplateListener createInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new MakeTemplateListener();
+            DataLoaderPool.getDefault().addOperationListener(INSTANCE);
+        }
+        return INSTANCE;
+    }
+
+    private MakeTemplateListener() {
     }
 
     @Override

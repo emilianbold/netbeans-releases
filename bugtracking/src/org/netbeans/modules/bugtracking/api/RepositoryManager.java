@@ -50,7 +50,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.team.TeamRepositories;
 
 /**
  * Manages registered {@link Repository}-s and related functionality.

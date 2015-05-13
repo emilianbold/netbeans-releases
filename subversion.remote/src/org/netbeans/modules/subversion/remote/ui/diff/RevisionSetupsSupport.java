@@ -79,7 +79,6 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -248,7 +247,7 @@ class RevisionSetupsSupport {
     private List<Setup> addPropertySetups (SvnClient client, SVNUrl leftFileUrl, SVNRevision leftRevision,
             SVNUrl rightFileUrl, SVNRevision rightRevision) throws SVNClientException {
         List<Setup> propSetups = new ArrayList<>();
-        DiffProvider diffAlgorithm = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        DiffProvider diffAlgorithm = Lookup.getDefault().lookup(DiffProvider.class);
         try {
             Map<String, byte[]> leftProps = leftFileUrl == null
                     ? Collections.<String, byte[]>emptyMap()
@@ -465,7 +464,7 @@ class RevisionSetupsSupport {
                     suffix = suffix.substring(1);
                 }
                 list.add(new SVNDiffSummary(suffix, s.getDiffKind(), s.propsChanged(), s.getNodeKind()));
-                int index = path.lastIndexOf("/"); //NOI18N
+                int index = path.lastIndexOf('/'); //NOI18N
                 if (index > -1) {
                     path = path.substring(0, index);
                 } else if (!path.isEmpty()) {
@@ -521,7 +520,7 @@ class RevisionSetupsSupport {
             if (!deletedPaths.contains(filePath)) {
                 return false;
             }
-            int pos = filePath.lastIndexOf("/"); //NOI18N
+            int pos = filePath.lastIndexOf('/'); //NOI18N
             if (pos > -1) {
                 filePath = filePath.substring(0, pos);
             } else {

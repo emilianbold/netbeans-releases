@@ -75,10 +75,10 @@ public class MessageArea extends JTextArea {
         }
         if (messageWidth > 0) {
             int x = messageWidth * charWidth;
-            Rectangle intersect = visibleRect.intersection(new Rectangle(x, bodyLineStarts, 1, visibleRect.height));
+            Rectangle intersect = visibleRect.intersection(new Rectangle(x, bodyLineStarts, 1, visibleRect.y + visibleRect.height));
             if (!intersect.isEmpty()) {
                 g.setColor(Color.red);
-                g.drawLine(x, bodyLineStarts, x, bodyLineStarts + intersect.height);
+                g.drawLine(x, intersect.y, x, intersect.y + intersect.height);
             }
         }
     }

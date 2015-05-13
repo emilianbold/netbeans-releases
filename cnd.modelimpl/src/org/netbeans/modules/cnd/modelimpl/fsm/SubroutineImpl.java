@@ -94,11 +94,11 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
         postObjectCreateRegistration(true, subroutineImpl);
         return subroutineImpl;
     }
-    
+
     @Override
     public DefinitionKind getDefinitionKind() {
         return DefinitionKind.REGULAR;
-    }    
+    }
 
     @Override
     public Kind getKind() {
@@ -187,9 +187,9 @@ public final class SubroutineImpl <T> extends OffsetableDeclarationBase<T>
 
     private void _setScope(CsmScope scope) throws AstRendererException {
         // for functions declared in bodies scope is CsmCompoundStatement - it is not Identifiable
-        if ((scope instanceof CsmIdentifiable)) {
+        if (scope instanceof CsmIdentifiable) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
-            assert (scopeUID != null || scope == null);
+            assert scopeUID != null;
         }
     }
 

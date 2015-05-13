@@ -375,6 +375,7 @@ public class PhasedProgress implements ActionListener {
 	}
 
 	dialog.addWindowListener(new WindowAdapter() {
+            @Override
 	    public void windowClosing(WindowEvent e) {
 		// Attempt was made to close top-level dialog window
 		cancel();
@@ -383,6 +384,7 @@ public class PhasedProgress implements ActionListener {
     }
 
     // interface ActionListener
+    @Override
     public void actionPerformed(ActionEvent e) {
 	if (e.getSource() == DialogDescriptor.CANCEL_OPTION) {
 	    // Cancel button was pressed

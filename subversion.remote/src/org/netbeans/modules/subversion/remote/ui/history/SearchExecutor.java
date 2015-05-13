@@ -65,7 +65,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -77,7 +77,7 @@ import org.openide.filesystems.FileSystem;
  */
 class SearchExecutor extends SvnProgressSupport {
 
-    public static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
+    static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");  // NOI18N
 
     static final SimpleDateFormat fullDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss Z");  // NOI18N
     static final DateFormat [] dateFormats = new DateFormat[] {
@@ -201,8 +201,8 @@ class SearchExecutor extends SvnProgressSupport {
             };
             currentSearch.start(rp, master.getRepositoryUrl(), NbBundle.getMessage(SearchExecutor.class, "MSG_Search_Progress")).waitFinished(); // NOI18N
         } else {
-            for (Iterator i = workFiles.keySet().iterator(); i.hasNext();) {
-                final SVNUrl rootUrl = (SVNUrl) i.next();
+            for (Iterator<SVNUrl> i = workFiles.keySet().iterator(); i.hasNext();) {
+                final SVNUrl rootUrl = i.next();
                 final Set<VCSFileProxy> files = workFiles.get(rootUrl);
                 RequestProcessor rp = Subversion.getInstance().getRequestProcessor(rootUrl);
                 currentSearch = new SvnProgressSupport(fileSystem) {
@@ -223,7 +223,12 @@ class SearchExecutor extends SvnProgressSupport {
 
     private void search(SVNUrl rootUrl, Set<VCSFileProxy> files, SVNRevision fromRevision, SVNRevision toRevision, SvnProgressSupport progressSupport, boolean fetchDetailsPaths, int limit) {
         SvnClient client;
-        Context context = new Context(files.toArray(new VCSFileProxy[files.size()]));
+        Context context;
+        if (files != null) {
+            context = new Context(files.toArray(new VCSFileProxy[files.size()]));
+        } else {
+            context = new Context(VCSFileProxy.createFileProxy(fileSystem.getRoot()));
+        }
         try {
             client = Subversion.getInstance().getClient(context, rootUrl, progressSupport);
         } catch (SVNClientException ex) {
@@ -316,7 +321,7 @@ class SearchExecutor extends SvnProgressSupport {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    master.setResults(results, SearchHistoryPanel.createKenaiUsersMap(results), limit);
+                    master.setResults(results,  limit);
                 }
             });
         }

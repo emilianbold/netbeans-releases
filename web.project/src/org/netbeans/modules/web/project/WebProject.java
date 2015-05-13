@@ -191,7 +191,6 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -651,7 +650,7 @@ public final class WebProject implements Project {
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
             encodingQuery,
-            QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
+            new CreateFromTemplateAttributesImpl(helper, encodingQuery),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
@@ -1524,7 +1523,7 @@ public final class WebProject implements Project {
         privilegedTemplates.addAll(Arrays.asList(PRIVILEGED_NAMES));
     }
 
-    private final class RecommendedTemplatesImpl implements RecommendedTemplates, 
+    private final class RecommendedTemplatesImpl implements RecommendedTemplates,
             PrivilegedTemplates, PropertyChangeListener {
         private WebProject project;
         private J2eeProjectCapabilities projectCap;
@@ -2535,7 +2534,7 @@ public final class WebProject implements Project {
 
         public JavaEEProjectSettingsImpl(WebProject project) {
             this.project = project;
-            
+
             evaluator().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {

@@ -235,7 +235,7 @@ public class FsServerRefreshLoadMeasurementTestCase extends FsServerLocalTestBas
     private List<File> gatherDirectories(String startPath, int count) {
         File startDir = new File(startPath);
         assertTrue(startDir.isDirectory());
-        List<File> dirs = new ArrayList<File>(count);
+        List<File> dirs = new ArrayList<>(count);
         AtomicInteger rest = new AtomicInteger(count);
         gatherDirectories(startDir, dirs, rest, new HashSet<File>());
         return dirs;

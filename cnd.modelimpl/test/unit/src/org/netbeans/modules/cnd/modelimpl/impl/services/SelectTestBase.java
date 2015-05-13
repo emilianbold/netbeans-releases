@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.junit.Manager;
@@ -56,7 +55,6 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;

@@ -44,16 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.options;
 
-import java.util.ArrayList;
-import java.io.PrintWriter;
 import java.beans.PropertyChangeSupport;
 
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
-
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointBag;
 
 public abstract class ProfileCategory {
     protected DbgProfile owner;
@@ -82,7 +74,16 @@ public abstract class ProfileCategory {
 	owner.needSave = true;
     }
 
+    @Override
     public abstract boolean equals(Object o);
+
+    @Override
+    public int hashCode() {
+        assert false : "hashCode not designed"; // NOI18N
+        return 5;
+    }
+
+    @Override
     public abstract Object clone();
     public abstract void assign(Object that);
 }

@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -88,7 +89,14 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                     }
                 }
                 if (isThis) {
-                    exports = variable;
+                    variable.clearAssignments();
+                    for (TypeUsage type : assignments) {
+                        if (!NodeJsUtils.EXPORTS.equals(type.getType())) {
+                            variable.addAssignment(type, type.getOffset());
+                        }
+                    }
+                    exports = factory.newReference(exports.getName(), variable, true, true);
+                    exports.getParent().addProperty(exports.getName(), exports);
                     break;
                 }
             }
@@ -109,6 +117,14 @@ public class NodeJsObjectInterceptor implements ObjectInterceptor {
                         modifiers.remove(Modifier.PUBLIC);
                         modifiers.add(Modifier.PRIVATE);
                     }
+                } 
+            }
+            DeclarationScope globalScope = (DeclarationScope)global;
+            List<? extends DeclarationScope> childrenScopesCopy = new ArrayList(globalScope.getChildrenScopes());
+            
+            for(DeclarationScope movedScope: childrenScopesCopy) {
+                if (!movedScope.equals(module)) {
+                    FrameworksUtils.changeDeclarationScope((JsObject)movedScope, module);
                 }
             }
         }

@@ -63,12 +63,12 @@ import org.openide.util.NbBundle;
 /**
  * Hierarchy Tree node.
  */
-public class HierarchyNode extends AbstractCsmNode{
+public final class HierarchyNode extends AbstractCsmNode{
     private CsmClass object;
     private CsmProject project;
     private HierarchyModel model;
     private CharSequence uin;
-    
+
     public HierarchyNode(CsmClass element, HierarchyModel model, HierarchyChildren parent) {
         this(element, new HierarchyChildren(element, model, parent), model, false);
     }
@@ -85,7 +85,7 @@ public class HierarchyNode extends AbstractCsmNode{
         uin = object.getUniqueName();
         project = object.getContainingFile().getProject();
     }
-    
+
     @Override
     public CsmObject getCsmObject() {
         if (!object.isValid()) {
@@ -96,7 +96,7 @@ public class HierarchyNode extends AbstractCsmNode{
         }
         return object;
     }
-    
+
     @Override
     public Action getPreferredAction() {
         CsmClass obj = (CsmClass)getCsmObject();
@@ -111,7 +111,7 @@ public class HierarchyNode extends AbstractCsmNode{
     @Override
     public Action[] getActions(boolean context) {
         Action action = getPreferredAction();
-        if (action != null && !(action instanceof EmptyAction)){
+        if (!(action instanceof EmptyAction)){
             List<Action> list = new ArrayList<Action>();
             list.add(action);
             list.add(null);

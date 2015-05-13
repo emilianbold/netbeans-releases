@@ -53,11 +53,12 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.SvnFileNode;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.openide.cookies.EditorCookie;
@@ -195,6 +196,7 @@ public class DiffNode extends AbstractNode {
             super(COLUMN_NAME_NAME, COLUMN_NAME_NAME, COLUMN_NAME_NAME);
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return DiffNode.this.getName();
         }
@@ -227,6 +229,7 @@ public class DiffNode extends AbstractNode {
             setValue("sortkey", location + "\t" + DiffNode.this.getName()); // NOI18N
         }
 
+        @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
             return location;
         }
@@ -245,7 +248,7 @@ public class DiffNode extends AbstractNode {
                 shortPath = "";
             }
             String sortable = Integer.toString(SvnUtils.getComparableStatus(setup.getInfo().getStatus()));
-            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase()); // NOI18N
+            setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + DiffNode.this.getName().toUpperCase(Locale.getDefault())); // NOI18N
         }
 
         @Override

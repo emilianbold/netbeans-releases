@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.Resolver;
 import org.netbeans.modules.cnd.modelimpl.csm.resolver.ResolverFactory;
@@ -96,8 +95,8 @@ import org.openide.util.Pair;
 public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     private CharSequence qualifiedName;
-    private static final byte FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
-    private static final byte FUNC_LIKE_VARIABLE  = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
+    private static final short FAKE_QUALIFIED_NAME = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+1);
+    private static final short FUNC_LIKE_VARIABLE  = 1 << (FunctionImpl.LAST_USED_FLAG_INDEX+2);
     protected static final int LAST_USED_FLAG_INDEX_EX = FunctionImpl.LAST_USED_FLAG_INDEX+2;
     
     private CharSequence[] classOrNspNames;   

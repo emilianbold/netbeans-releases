@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.glassfish.javaee.db;
 
-import org.glassfish.tools.ide.utils.StringPrefixTree;
+import org.netbeans.modules.glassfish.tooling.utils.StringPrefixTree;
 
 /**
  * GlassFish JDBC connection pool server property content.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -60,17 +61,19 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.OsUtils;
-import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.modules.glassfish.common.GlassFishState;
-import org.netbeans.modules.glassfish.eecommon.api.UrlData;
-import org.netbeans.modules.glassfish.javaee.*;
 import org.netbeans.modules.glassfish.common.parser.TreeParser;
+import org.netbeans.modules.glassfish.eecommon.api.UrlData;
+import org.netbeans.modules.glassfish.eecommon.api.config.GlassfishConfiguration;
+import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.OsUtils;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.openide.filesystems.FileLock;
@@ -78,6 +81,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -105,12 +109,6 @@ public class Hk2DatasourceManager implements DatasourceManager {
             ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME,
             ServerUtils.GF_DOMAIN_CONFIG_FILE_NAME);
     
-    /** List of base file names containing server resources. */
-    public static final String[] RESOURCE_FILES = {
-        "glassfish-resources",
-        "sun-resources"
-    };
-
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -160,9 +158,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         // Fallback option to retrieve data sources from domain.xml
         // for local server
         if (!server.isRemote() && null != domainsDir) {
+            // XXX This won't read app scoped DS. This does not seem to be a problem.
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
             return readDatasources(
-                    domainXml, "/domain/", null, server.getVersion());
+                    domainXml, "/domain/", server.getVersion(), false);
         } else {
             return Collections.EMPTY_SET;
         }
@@ -170,7 +169,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
     /**
      * Deploys the given set of data sources.
-     *
+     * <p/>
      * @param Set of datasources to deploy.
      * @throws ConfigurationException if there is some problem with data source
      *         configuration.
@@ -180,96 +179,158 @@ public class Hk2DatasourceManager implements DatasourceManager {
     @Override
     public void deployDatasources(Set<Datasource> datasources) 
             throws ConfigurationException, DatasourceAlreadyExistsException {
-        // since a connection pool is not a Datasource, the deploy has to
+        // Since a connection pool is not a Datasource, the deploy has to
         // happen in a different part of the deploy processing...
     }
-    
-
-    
-    // ------------------------------------------------------------------------
-    //  Used by ModuleConfigurationImpl since 
-    // ------------------------------------------------------------------------
-
-    // Making this method private because there is no reason to provide resources
-    // file base names manually.
+ 
     /**
-     * Get <code>Datasource</code> objects from first available resources file.
-     *
-     * @param resourceDir Directory containing resource files.
-     * @param baseNames List of resource file base names to search for.
-     * @return <code>Datasource</code> objects found in first available file.
+     * Get {@link Datasource} objects from first available resources file.
+     * <p/>
+     * @param version Resources file names depend on GlassFish server version.
+     * @param module  Java EE module (project).
+     * @return {@link Datasource} objects found in first available file.
      */
-    private static Set<Datasource> getDatasources(
-            final File resourceDir, final String[] baseNames,
-            final GlassFishVersion version) {
-        for (String baseName : baseNames) {
-            File file = new File(resourceDir, baseName+".xml");
-            // Return Datasource objects from first available file.
-            if (file.isFile())
-                return readDatasources(file, "/", resourceDir, version);
+    public static Set<Datasource> getDatasources(
+            final J2eeModule module, final GlassFishVersion version) {
+        Pair<File, Boolean> result = GlassfishConfiguration.getExistingResourceFile(module, version);
+        if (result != null) {
+            return readDatasources(result.first(), "/", version, result.second());
+        } else {
+            return new HashSet<>();
         }
-        // Return empty set when no resource file was found.
-        return new HashSet<>();
     }
 
-    /**
-     * Get <code>Datasource</code> objects from first available resources file.
-     * Default resource base names list is used.
-     *
-     * @param resourceDir Directory containing resource files.
-     * @return <code>Datasource</code> objects found in first available file.
-     */
-    public static Set<Datasource> getDatasources(File resourceDir) {
-        return getDatasources(resourceDir, RESOURCE_FILES, null);
-    }
-
-//    public Datasource createDataSource(String jndiName, String url, String username,
-//            String password, String driver, File resourceDir) throws DatasourceAlreadyExistsException {
-//        SunDatasource result = null;
-//        try {
-//            // Throw an exception if the data source already exists.
-//            for(Datasource ds: getDatasources(resourceDir)) {
-//                if(jndiName.equals(ds.getJndiName())) {
-//                    throw new DatasourceAlreadyExistsException(new SunDatasource(
-//                            jndiName, url, username, password, driver));
-//                }
-//            }
-//            
-//            if(url != null) {
-////                String vendorName = convertToValidName(url);
-////                if(vendorName == null) {
-////                    vendorName = jndiName;
-////                }else{
-////                    if(vendorName.equals("derby_embedded")){ //NOI18N
-////                        NotifyDescriptor d = new NotifyDescriptor.Message(bundle.getString("Err_UnSupportedDerby"), NotifyDescriptor.WARNING_MESSAGE); // NOI18N
-////                        DialogDisplayer.getDefault().notify(d);
-////                        return null;
-////                    }
-////                }
-//                if(resourceDir.exists()) {
-//                    FileUtil.createFolder(resourceDir);
-//                }
-//                
-//                // Create connection pool if needed.
-//                String poolName = createCheckForConnectionPool(vendorName, url, username, password, driver, resourceDir);
-//                boolean jdbcExists = requiredResourceExists(jndiName, resourceDir, JDBC_RESOURCE);
-//                if (jdbcExists) {
-//                    result = null;
-//                } else {
-//                    createJDBCResource(jndiName, poolName, resourceDir);
-//                    result = new SunDatasource(jndiName, url, username, password, driver);
-//                }
-//            }
-//        } catch(IOException ex) {
-//            Logger.getLogger("glassfish-javaee").log(Level.WARNING, ex.getLocalizedMessage(), ex);
-//        }
-//        return result;
-//    }    
-    
-    
     // ------------------------------------------------------------------------
     //  Internal logic
     // ------------------------------------------------------------------------
+
+    /** 
+     * Get resource file for new data source creation and verify it.
+     * Verifies existing resource file syntax and data sources or provides
+     * a new file when no resource file exists.
+     * <br/>
+     * <i>Internal {@link #createDataSource(String, String, String,
+     * String, String, J2eeModule, GlassFishVersion)} helper method.</i>
+     * <p/>
+     * @param jndiName Data source JNDI name.
+     * @param url      Database URL.
+     * @param username Database user name.
+     * @param password Database user password.
+     * @param driver   Database JDBC driver.
+     * @param module   Java EE module (project).
+     * @param version  GlassFish server version.
+     * @param cpFinder Connection pool finder.
+     * @return Resource file for new data source creation.
+     * @throws ConfigurationException if there is a problem with resource
+     *         file parsing.
+     * @throws DatasourceAlreadyExistsException if the required data source
+     *         already exists in resource file.
+     */
+    private static Pair<File, Boolean> resourceFileForDSCreation(
+            final String jndiName, final String url, final String username,
+            final String password, final String driver, final J2eeModule module,
+            final GlassFishVersion version,final ConnectionPoolFinder cpFinder
+    ) throws ConfigurationException, DatasourceAlreadyExistsException {
+        Pair<File, Boolean> pair = GlassfishConfiguration.getExistingResourceFile(module, version);
+        File file = pair == null ? null : pair.first();
+        if (file != null && file.exists()) {
+            final DuplicateJdbcResourceFinder jdbcFinder
+                    = new DuplicateJdbcResourceFinder(jndiName);
+            List<TreeParser.Path> pathList = new ArrayList<>();
+            pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
+            pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
+            try {
+                TreeParser.readXml(file, pathList);
+                if(jdbcFinder.isDuplicate()) {
+                    throw new DatasourceAlreadyExistsException(new SunDatasource(
+                            jndiName, url, username, password, driver));
+                }
+            } catch(IllegalStateException ex) {
+                Logger.getLogger("glassfish-javaee").log(
+                        Level.INFO, ex.getLocalizedMessage(), ex);
+                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+            }
+        }
+        return pair != null
+                ? pair : GlassfishConfiguration.getNewResourceFile(module, version);
+    }
+    
+    /**
+     * Create a data source (jdbc-resource and jdbc-connection-pool) and add it
+     * to sun-resources.xml in the specified resource folder.
+     * 
+     * @param jndiName Data source JNDI name.
+     * @param url      Database URL.
+     * @param username Database user name.
+     * @param password Database user password.
+     * @param driver   Database JDBC driver.
+     * @param module   Java EE module (project).
+     * @param version  GlassFish server version.
+     * @return New {@link Datasource} object.
+     * @throws ConfigurationException if there is a problem with resource
+     *         file parsing.
+     * @throws DatasourceAlreadyExistsException if the required data source
+     *         already exists in resource file.
+     */
+    public static Datasource createDataSource(
+            final String jndiName, final String url, final String username,
+            final String password, final String driver,
+            final J2eeModule module, final GlassFishVersion version
+    ) throws ConfigurationException, DatasourceAlreadyExistsException {
+        SunDatasource ds;
+        ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
+        
+        Pair<File, Boolean> pair = resourceFileForDSCreation(
+                jndiName, url, username, password, driver, module, version, cpFinder);
+
+        File xmlFile = pair == null ? null : pair.first();
+        try {
+            String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
+            if(vendorName == null) {
+                vendorName = jndiName;
+            } else {
+                if("derby_embedded".equals(vendorName)) {
+                    // !PW FIXME display as dialog warning?
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
+                            "Embedded derby not supported as a datasource");
+                    return null;
+                }
+            }
+
+            // Is there a connection pool we can reuse, or do we need to create one?
+            String defaultPoolName = computePoolName(url, vendorName, username);
+            Map<String, CPool> pools = cpFinder.getPoolData();
+            CPool defaultPool = pools.get(defaultPoolName);
+            
+            String poolName = null;
+            if(defaultPool != null && isSameDatabaseConnection(defaultPool, url, username, password)) {
+                poolName = defaultPoolName;
+            } else {
+                for(CPool pool: pools.values()) {
+                    if(isSameDatabaseConnection(pool, url, username, password)) {
+                        poolName = pool.getPoolName();
+                        break;
+                    }
+                }
+            }
+            
+            if(poolName == null) {
+                poolName = defaultPool == null ? defaultPoolName : generateUniqueName(defaultPoolName, pools.keySet());
+                createConnectionPool(xmlFile, poolName, url, username, password, driver);
+            }
+            
+            // create jdbc resource
+            createJdbcResource(xmlFile, jndiName, poolName);
+
+            String realJndi = getJndiName(jndiName, pair.second());
+            ds = new SunDatasource(realJndi, url, username, password, driver, pair.second());
+        } catch(IOException ex) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
+            throw new ConfigurationException(ex.getLocalizedMessage(), ex);
+        }
+        
+        return ds;
+    }
 
     /**
      * Parse resource file and build <code>Datasource</code> objects from it.
@@ -289,15 +350,15 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     private static Set<Datasource> readDatasources(
             final File xmlFile, final String xPathPrefix,
-            final File resourcesDir, final GlassFishVersion version) {
-        Set<Datasource> dataSources = new HashSet<>();
+            final GlassFishVersion version, boolean applicationScoped) {
+        final Set<Datasource> dataSources = new HashSet<>();
 
         if (xmlFile.canRead()) {
-            Map<String, JdbcResource> jdbcResourceMap = new HashMap<>();
-            Map<String, ConnectionPool> connectionPoolMap = new HashMap<>();
+            final List<JdbcResource> jdbcResources = new LinkedList<>();
+            final Map<String, ConnectionPool> connectionPoolMap = new HashMap<>();
 
-            List<TreeParser.Path> pathList = new ArrayList<>();
-            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResourceMap)));
+            final List<TreeParser.Path> pathList = new ArrayList<>();
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResources)));
             pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool", new ConnectionPoolReader(connectionPoolMap)));
 
             try {
@@ -306,20 +367,20 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
 
-            for (JdbcResource jdbc : jdbcResourceMap.values()) {
-                ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
+            for (JdbcResource jdbc : jdbcResources) {
+                final ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
                 if (pool != null) {
                     try {
                         pool.normalize();
 
                         // add to sun datasource list
-                        String url = pool.getProperty("URL"); //NOI18N
-                        String username = pool.getProperty("User"); //NOI18N
-                        String password = pool.getProperty("Password"); //NOI18N
-                        String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                        SunDatasource dataSource = new SunDatasource(
-                                jdbc.getJndiName(), url, username,
-                                password, driverClassName, resourcesDir);
+                        final String url = pool.getProperty("URL"); //NOI18N
+                        final String username = pool.getProperty("User"); //NOI18N
+                        final String password = pool.getProperty("Password"); //NOI18N
+                        final String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                        String jndi = getJndiName(jdbc.getJndiName(), applicationScoped);
+                        final SunDatasource dataSource = new SunDatasource(
+                                jndi, url, username, password, driverClassName, applicationScoped);
                         dataSources.add(dataSource);
                         // Add Java EE 7 comp/DefaultDataSource data source
                         // as jdbc/__default clone (since GF 4).
@@ -338,7 +399,17 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }        
         return dataSources;
     }
-    
+
+    private static String getJndiName(String jndiName, boolean applicationScoped) {
+        if (!applicationScoped) {
+            return jndiName;
+        }
+        if (jndiName.startsWith("java:app/") || jndiName.startsWith("java:module")) { // NOI18N
+            return jndiName;
+        }
+        return "java:app/" + jndiName; // NOI18N
+    }
+
     private static class JdbcResource {
 
         private final String jndiName;
@@ -364,10 +435,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
     private static class JdbcReader extends TreeParser.NodeReader {
 
-        private final Map<String, JdbcResource> resourceMap;
+        private final List<JdbcResource> resources;
         
-        public JdbcReader(Map<String, JdbcResource> resourceMap) {
-            this.resourceMap = resourceMap;
+        public JdbcReader(List<JdbcResource> resources) {
+            this.resources = resources;
         }
         
         // <jdbc-resource 
@@ -385,7 +456,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             if(jndiName != null && jndiName.length() > 0 && 
                     poolName != null && poolName.length() > 0) {
                 // add to jdbc resource list
-                resourceMap.put(poolName, 
+                resources.add(
                         new JdbcResource(jndiName, poolName));
             }
         }
@@ -470,93 +541,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             }
         }
     }    
-
-    /**
-     * Create a data source (jdbc-resource and jdbc-connection-pool) and add it
-     * to sun-resources.xml in the specified resource folder.
-     * 
-     * @param jndiName
-     * @param url
-     * @param username
-     * @param password
-     * @param driver
-     * @param resourceDir
-     * @return
-     * @throws DatasourceAlreadyExistsException if the required resources already
-     *         exist.
-     */
-    public static Datasource createDataSource(String jndiName, String url, 
-            String username, String password, String driver, File resourceDir, String baseName)
-            throws ConfigurationException, DatasourceAlreadyExistsException {
-        SunDatasource ds;
-        DuplicateJdbcResourceFinder jdbcFinder = new DuplicateJdbcResourceFinder(jndiName);
-        ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
-        
-        File xmlFile = new File(resourceDir, baseName+".xml");
-        if(xmlFile.exists()) {
-            List<TreeParser.Path> pathList = new ArrayList<>();
-            pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
-            pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
-            
-            try {
-                TreeParser.readXml(xmlFile, pathList);
-                if(jdbcFinder.isDuplicate()) {
-                    throw new DatasourceAlreadyExistsException(new SunDatasource(
-                            jndiName, url, username, password, driver));
-                }
-            } catch(IllegalStateException ex) {
-                Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-                throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-            }
-        }
-
-        try {
-            String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
-            if(vendorName == null) {
-                vendorName = jndiName;
-            } else {
-                if("derby_embedded".equals(vendorName)) {
-                    // !PW FIXME display as dialog warning?
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING, 
-                            "Embedded derby not supported as a datasource");
-                    return null;
-                }
-            }
-
-            // Is there a connection pool we can reuse, or do we need to create one?
-            String defaultPoolName = computePoolName(url, vendorName, username);
-            Map<String, CPool> pools = cpFinder.getPoolData();
-            CPool defaultPool = pools.get(defaultPoolName);
-            
-            String poolName = null;
-            if(defaultPool != null && isSameDatabaseConnection(defaultPool, url, username, password)) {
-                poolName = defaultPoolName;
-            } else {
-                for(CPool pool: pools.values()) {
-                    if(isSameDatabaseConnection(pool, url, username, password)) {
-                        poolName = pool.getPoolName();
-                        break;
-                    }
-                }
-            }
-            
-            if(poolName == null) {
-                poolName = defaultPool == null ? defaultPoolName : generateUniqueName(defaultPoolName, pools.keySet());
-                createConnectionPool(xmlFile, poolName, url, username, password, driver);
-            }
-            
-            // create jdbc resource
-            createJdbcResource(xmlFile, jndiName, poolName);
-
-            ds = new SunDatasource(jndiName, url, username, password, driver, resourceDir);
-        } catch(IOException ex) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
-            throw new ConfigurationException(ex.getLocalizedMessage(), ex);
-        }
-        
-        return ds;
-    }
-    
+   
     private static String generateUniqueName(String prefix, Set<String> keys) {
         for(int i = 1; ; i++) {
             String candidate = prefix + "_" + i; // NOI18N

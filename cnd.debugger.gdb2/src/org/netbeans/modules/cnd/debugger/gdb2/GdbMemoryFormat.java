@@ -73,6 +73,7 @@ public enum GdbMemoryFormat implements FormatOption {
         return dispName;
     }
 
+    @Override
     public String getOption() {
         return option;
     }

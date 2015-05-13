@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="generator.sort.dependencies">
+        <api name="javasource_base"/>
+        <summary>Code Generator uses dependencies between fields</summary>
+        <version major="1" minor="2.2"/>
+        <date day="9" month="2" year="2015"/>
+        <author login="sdedic"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            Proper textual order of members should be used
+            when inserting a field or class/interface initializer. The analysis
+            could be optionally turned off.
+        </description>
+        <class name="CodeStyle" package="org.netbeans.api.java.source"/>
+        <issue number="249199"/>
+    </change>
     <change id="remove.openide.text">
         <api name="javasource_base"/>
         <summary>Remove dependency on Openide Text API</summary>

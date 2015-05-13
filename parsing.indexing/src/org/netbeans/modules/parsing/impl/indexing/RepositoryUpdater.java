@@ -225,24 +225,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
     }
 
     public void stop(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
-        boolean cancel = false;
-
         synchronized (this) {
-            if (state != State.STOPPED) {
-                state = State.STOPPED;
-                LOGGER.fine("Closing..."); //NOI18N
-
-                PathRegistry.getDefault().removePathRegistryListener(this);
-                rootsListeners.setListener(null, null);
-                activeDocProvider.removeActiveDocumentListener(this);
-                visibilitySupport.stop();
-                cancel = true;
+            if (state == State.STOPPED) {
+                throw new IllegalStateException();
             }
-        }
+            state = State.STOPPED;
+            LOGGER.fine("Closing..."); //NOI18N
 
-        if (cancel) {
-            worker.cancelAll(postCleanTask);
+            PathRegistry.getDefault().removePathRegistryListener(this);
+            rootsListeners.setListener(null, null);
+            activeDocProvider.removeActiveDocumentListener(this);
+            visibilitySupport.stop();
         }
+        worker.cancelAll(postCleanTask);
     }
 
     @SuppressWarnings("UseSpecificCatch")
@@ -1169,7 +1164,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     openedInEditor,
                                     true,
                                     sourcesForBinaryRoots.contains(root.first()),
-                                    true,
+                                    false,
                                     suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null).
                                         withRoot(root.first()).
@@ -1477,7 +1472,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     true,
                     false,
                     true,
-                    true,
+                    false,
                     LogContext.create(LogContext.EventType.FILE, null).
                         withRoot(root.first()).
                         addFiles(c));
@@ -2247,6 +2242,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             return checkEditor;
         }
 
+        /**
+         * Is steady change.
+         * The steady change is source change written to disk like file save in
+         * opposite to transient changes like QS enforced work or tab switch.
+         * The work in non steady for TransientUpdateSupport.setTransientUpdate(true) and
+         * for work started by active editor switch.
+         * @return true if the change is steady
+         */
         protected final boolean isSteady() {
             return this.steady;
         }
@@ -3246,7 +3249,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         public Boolean call() throws Exception {
                             final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                             final Set<Crawler.TimeStampAction> checkTimeStamps = EnumSet.noneOf(Crawler.TimeStampAction.class);
-                            final boolean permanentUpdate = !TransientUpdateSupport.isTransientUpdate();
+                            final boolean permanentUpdate = isSteady();
+                            assert !TransientUpdateSupport.isTransientUpdate() || !permanentUpdate;
                             assert permanentUpdate || (forceRefresh && !files.isEmpty());
                             if (!forceRefresh) {
                                 checkTimeStamps.add(Crawler.TimeStampAction.CHECK);
@@ -3769,7 +3773,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             if (d != null) {
                                 long version = DocumentUtilities.getDocumentVersion(d);
                                 d.putProperty(PROP_LAST_INDEXED_VERSION, version);
-                                d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                                if (isSteady()) {
+                                    d.putProperty(PROP_LAST_DIRTY_VERSION, null);
+                                }
                             }
                         }
                     }
@@ -5919,7 +5925,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        public void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
+        void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
             synchronized (todo) {
                 if (!allCancelled) {
                     // stop accepting new work and clean the queue

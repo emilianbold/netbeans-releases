@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.uihandler;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -56,6 +57,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.*;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
@@ -127,6 +129,9 @@ public class Installer extends ModuleInstall implements Runnable {
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
     private static MetricsHandler metrics = new MetricsHandler();
+    private static Logger uiLogger;
+    private static Logger allLogger;
+    private static Logger metricsLogger;
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
@@ -254,8 +259,10 @@ public class Installer extends ModuleInstall implements Runnable {
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
         log.addHandler(ui);
+        uiLogger = log; // To prevent from GC
         Logger all = Logger.getLogger("");
         all.addHandler(handler);
+        allLogger = all;    // To prevent from GC
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
         logsFirstDateMetric = prefs.getLong(FIRST_DATE_METRICS_PROP, -1);
@@ -274,6 +281,7 @@ public class Installer extends ModuleInstall implements Runnable {
             log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
+            metricsLogger = log;    // To prevent from GC
             try {
                 LogRecord userData = getUserData(log);
                 LogRecords.write(logStreamMetrics(), userData);
@@ -456,10 +464,13 @@ public class Installer extends ModuleInstall implements Runnable {
     public final void doClose() {
         Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.removeHandler(ui);
+        uiLogger = null;
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
+        allLogger = null;
         log = Logger.getLogger(METRICS_LOGGER_NAME);
         log.removeHandler(metrics);
+        metricsLogger = null;
 
         closeLogStream();
         closeLogStreamMetrics();
@@ -1526,6 +1537,13 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.INFO, "heap dump was not created at {0}", heapDumpPath);
         LOG.log(Level.INFO, "heapdump file: exists():{0}, canRead():{1}, length:{2}",new Object[] 
                 {heapDumpFile.exists(), heapDumpFile.canRead(), heapDumpFile.length()});
+        // no heap dump file found - this can happen in case of OOME: unable to create new native thread
+        // try to create heap dump 
+        dumpHeap(heapDumpFile.getAbsolutePath());
+        if (heapDumpFile.exists() && heapDumpFile.canRead() && heapDumpFile.length() > 0) {
+            return heapDumpFile;
+        }        
+        LOG.log(Level.INFO, "heap dump failed for {0}", heapDumpPath);
         return null;
     }
     
@@ -1557,6 +1575,45 @@ public class Installer extends ModuleInstall implements Runnable {
         System.err.flush();
     }
     
+    private static void dumpHeap(String path) {
+        LOG.log(Level.INFO, "DUMPING HEAP"); // NOI18N
+        Method m = null;
+        Class c = null;
+        HotSpotDiagnosticMXBean hdmxb = null;
+        try {
+            c = Class.forName("sun.management.ManagementFactoryHelper");    //NOI18N
+        } catch (ClassNotFoundException exc) {
+            Exceptions.printStackTrace(exc);
+        }
+        if (c != null) {
+            try {
+                m = c.getMethod("getDiagnosticMXBean");  //NOI18N
+            } catch (NoSuchMethodException exc) {
+                Exceptions.printStackTrace(exc);
+            } catch (SecurityException exc) {
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        if (m != null) {
+            try {
+                hdmxb = (HotSpotDiagnosticMXBean)m.invoke(null);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            LOG.log(Level.INFO, "Creating heap dump to "+path); // NOI18N
+            try {
+                hdmxb.dumpHeap(path, true);
+                LOG.log(Level.INFO, "Heap dump successfully created in: "+path);    // NOI18N
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+        
     public static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
         String id = p.get("qualifiedId", null);

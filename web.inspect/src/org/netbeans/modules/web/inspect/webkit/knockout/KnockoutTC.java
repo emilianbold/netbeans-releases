@@ -45,14 +45,16 @@ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.explorer.ExplorerUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
@@ -111,6 +113,12 @@ public final class KnockoutTC extends TopComponent {
                 currentPanel.dispose();
             }
             currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
+            if (lastKnockoutPageModel != null) {
+                PageModel knockoutPageModel = lastKnockoutPageModel.get();
+                if (knockoutPageModel != null && knockoutPageModel == pageModel) {
+                    currentPanel.knockoutUsed(lastKnockoutVersion);
+                }
+            }
             add(currentPanel);
             ((KnockoutTCLookup)getLookup()).setPanel(currentPanel);
             revalidate();
@@ -135,6 +143,27 @@ public final class KnockoutTC extends TopComponent {
     protected void componentClosed() {
         super.componentClosed();
         update();
+    }
+
+    private Reference<PageModel> lastKnockoutPageModel;
+    private String lastKnockoutVersion;
+
+    /**
+     * Invoked when page knockout is found in the specified page model.
+     * 
+     * @param pageModel page model where knockout was found.
+     * @param koVersion version of Knockout used by the inspected page.
+     */
+    void knockoutUsed(PageModel pageModel, String koVersion) {
+        assert EventQueue.isDispatchThread();
+        if (currentPanel != null) {
+            if (currentPanel.getPageModel() == pageModel) {
+                currentPanel.knockoutUsed(koVersion);
+            } else {
+                lastKnockoutPageModel = new WeakReference<PageModel>(pageModel);
+                lastKnockoutVersion = koVersion;
+            }
+        }
     }
 
     /**
@@ -165,7 +194,7 @@ public final class KnockoutTC extends TopComponent {
          * @param panel new panel to display in {@code KnockoutTC}.
          */
         void setPanel(KnockoutPanel panel) {
-            Lookup lookup = ExplorerUtils.createLookup(panel.getExplorerManager(), getActionMap());
+            Lookup lookup = Lookups.proxy(panel.createLookupProvider(getActionMap()));
             setLookups(lookup);
         }
 

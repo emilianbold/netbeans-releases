@@ -462,15 +462,18 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
     // ModifiedDocumentListener
     public class ExecutableValidateListener implements DocumentListener {
 
+        @Override
         public void changedUpdate(javax.swing.event.DocumentEvent documentEvent) {
         }
 
+        @Override
         public void insertUpdate(javax.swing.event.DocumentEvent documentEvent) {
             if (validateExecutablePath()) {
                 // ;
             }
         }
 
+        @Override
         public void removeUpdate(javax.swing.event.DocumentEvent documentEvent) {
             if (validateExecutablePath()) {
                 // ;

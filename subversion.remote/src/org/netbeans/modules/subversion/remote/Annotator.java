@@ -46,14 +46,14 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import javax.swing.Action;
@@ -74,7 +74,7 @@ import org.netbeans.modules.subversion.remote.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
@@ -123,8 +123,8 @@ public class Annotator extends VCSAnnotator {
     public static final String ANNOTATION_COMMIT_DATE = "date"; //NOI18N
     public static final String ANNOTATION_COMMIT_AUTHOR = "author"; //NOI18N
 
-    public static final String[] LABELS = new String[] {ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
-                                                        ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR};
+    public static final List<String> LABELS = Collections.unmodifiableList(Arrays.asList(ANNOTATION_REVISION, ANNOTATION_STATUS, ANNOTATION_LOCK, ANNOTATION_FOLDER, ANNOTATION_MIME_TYPE, ANNOTATION_COMMIT_REVISION,
+                                                        ANNOTATION_COMMIT_DATE, ANNOTATION_COMMIT_AUTHOR));
     public static final String ACTIONS_PATH_PREFIX = "Actions/Subversion/";          // NOI18N
 
     private final FileStatusCache cache;
@@ -146,7 +146,7 @@ public class Annotator extends VCSAnnotator {
     }
 
     public void refresh() {
-        for(FileSystem fileSystem : VCSFileProxySupport.getFileSystems()) {
+        for(FileSystem fileSystem : VCSFileProxySupport.getConnectedFileSystems()) {
             initFormat(fileSystem);
         }
     }
@@ -204,7 +204,7 @@ public class Annotator extends VCSAnnotator {
         if (annotationsVisible && file != null && (status & STATUS_TEXT_ANNOTABLE) != 0) {
             fileSystem = VCSFileProxySupport.getFileSystem(file);
             AnnotationFormat af = getAnnotationFormat(fileSystem);
-            if (af != null && af.format != null) {
+            if (af.format != null) {
                 textAnnotation = formatAnnotation(info, file);
             } else {
                 String lockString = getLockString(info.getStatus());
@@ -434,7 +434,7 @@ public class Annotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !SvnUtils.isFromMultiFileDataObject(context);
+            folderAnnotation = !VCSFileProxySupport.isFromMultiFileDataObject(context);
         }
 
         if (mostImportantInfo == null) {
@@ -453,10 +453,6 @@ public class Annotator extends VCSAnnotator {
             return false;
         }
         return SvnUtils.getComparableStatus(a.getStatus()) < SvnUtils.getComparableStatus(b.getStatus());
-    }
-
-    String annotateName(String name, Set files) {
-        return null;
     }
 
     /**
@@ -486,11 +482,11 @@ public class Annotator extends VCSAnnotator {
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             if (noneVersioned) {
                 // XXX use Actions.forID
-                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
+                Action a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
                 if(a != null) {
                     actions.add(a);
                 }
-                a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance"); //NOI18N
+                a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-project-ImportAction.instance"); //NOI18N
                 if(a instanceof ContextAwareAction) {
                     a = ((ContextAwareAction)a).createContextAwareInstance(Lookups.fixed((Object[]) files));
                 }            
@@ -513,7 +509,7 @@ public class Annotator extends VCSAnnotator {
                 actions.add(null);
                 
                 actions.add(new CopyMenu(destination, null));
-                Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
+                Action a = Utils.getAcceleratedAction("Actions/SubversionRemote/org-netbeans-modules-subversion-remote-ui-checkout-CheckoutAction.instance"); //NOI18N
                 if(a != null) actions.add(a);
                 actions.add(null);
                 
@@ -593,7 +589,7 @@ public class Annotator extends VCSAnnotator {
         }
 
         if (folderAnnotation == false && context.getRootFiles().size() > 1) {
-            folderAnnotation = !SvnUtils.isFromMultiFileDataObject(context);
+            folderAnnotation = !VCSFileProxySupport.isFromMultiFileDataObject(context);
         }
 
         if (folderAnnotation == false) {
@@ -673,14 +669,11 @@ public class Annotator extends VCSAnnotator {
 
     private Image annotateFolderIcon(VCSContext context, Image icon) {
         List<VCSFileProxy> filesToRefresh = new LinkedList<>();
-        for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
-            VCSFileProxy file = (VCSFileProxy) i.next();
+        for (Iterator<VCSFileProxy> i = context.getRootFiles().iterator(); i.hasNext();) {
+            VCSFileProxy file = i.next();
             FileInformation info = cache.getCachedStatus(file);
             if (info == null) {
                 filesToRefresh.add(file);
-            }
-            if (file.isDirectory()) {
-                org.netbeans.modules.subversion.remote.versioning.util.Utils.addFolderToLog(file);
             }
         }
         cache.refreshAsync(filesToRefresh);

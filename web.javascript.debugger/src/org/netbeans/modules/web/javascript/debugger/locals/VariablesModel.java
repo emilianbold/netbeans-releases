@@ -178,6 +178,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                 if (i != 0) {
                     return i;
                 } else {
+                    if (o1.isArrayElement() && o2.isArrayElement()) {
+                        return Long.signum(o1.getArrayIndex() - o2.getArrayIndex());
+                    }
                     return o1.getObjectName().compareToIgnoreCase(o2.getObjectName());
                 }
             }
@@ -203,8 +206,17 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         res = new ArrayList<ScopedRemoteObject>();
         variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
+            RemoteObject.SubType subType = prop.getSubType();
+            boolean isArray = RemoteObject.SubType.ARRAY.equals(subType);
             for (PropertyDescriptor desc : prop.getProperties()) {
-                res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope, parentNameID));
+                long arrayIndex = -1;
+                if (isArray) {
+                    try {
+                        arrayIndex = Long.parseLong(desc.getName());
+                    } catch (NumberFormatException nfex) {}
+                }
+                ScopedRemoteObject sro = new ScopedRemoteObject(desc.getValue(), desc.getName(), scope, parentNameID, arrayIndex);
+                res.add(sro);
             }
         }
         return sortVariables(res);
@@ -456,12 +468,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         private ViewScope scope;
         private String objectName;
         private String parentNameID;
+        private long arrayElementIndex; // an array index, or -1 when not an array element.
 
-        public ScopedRemoteObject(RemoteObject var, String name) {
-            this(var, name, ViewScope.DEFAULT);
-        }
-
-        public ScopedRemoteObject(RemoteObject var, Scope sc) {
+        ScopedRemoteObject(RemoteObject var, Scope sc) {
             this.var = var;
             if (sc.isLocalScope()) {
                 this.scope = ViewScope.LOCAL;
@@ -489,14 +498,15 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         }
 
         public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope) {
-            this(var, name, scope, null);
+            this(var, name, scope, null, -1);
         }
         
-        public ScopedRemoteObject(RemoteObject var, String name, ViewScope scope, String parentNameID) {
+        ScopedRemoteObject(RemoteObject var, String name, ViewScope scope, String parentNameID, long arrayElementIndex) {
             this.var = var;
             this.scope = scope;
             this.objectName = name;
             this.parentNameID = parentNameID;
+            this.arrayElementIndex = arrayElementIndex;
         }
 
         public ViewScope getScope() {
@@ -512,6 +522,14 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
 
         public String getObjectName() {
             return objectName;
+        }
+
+        boolean isArrayElement() {
+            return arrayElementIndex >= 0;
+        }
+        
+        long getArrayIndex() {
+            return arrayElementIndex;
         }
 
         @Override
@@ -574,7 +592,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             String parent = (parentNameID != null) ? ", parent = '"+parentNameID+"'" : "";  // NOI18N
             return "ScopedRemoteObject["+scope+", "+objectName+", "+var+parent+"]";         // NOI18N
         }
-        
+
     }
 
     public static enum ViewScope {

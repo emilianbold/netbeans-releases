@@ -49,7 +49,6 @@ import org.netbeans.editor.*;
 import org.netbeans.editor.Utilities;
 import org.netbeans.api.editor.fold.*;
 import org.netbeans.api.diff.*;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.netbeans.spi.diff.*;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.loaders.*;
@@ -87,7 +86,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.ui.diff.DiffAction;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
@@ -179,7 +178,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Request processor to create threads that may be cancelled.
      */
-    static RequestProcessor requestProcessor = null;
+    private static RequestProcessor requestProcessor;
     
     /**
      * Latest annotation comment fetching task launched.
@@ -190,11 +189,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * Rendering hints for annotations sidebar inherited from editor settings.
      */
     private final Map renderingHints;
-
-    /**
-     * Holdes kenai users
-     */
-    private Map<String, KenaiUser> kenaiUsersMap = null;
 
     private VCSFileProxy file;
     /**
@@ -364,30 +358,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         });
 
-        boolean isKenaiRepository = false;
-        SVNUrl url = null;
-        try {
-            url = SvnUtils.getRepositoryUrl(file);
-            isKenaiRepository = url != null && SvnKenaiAccessor.getInstance().isKenai(url.toString());
-            if(isKenaiRepository) {
-                kenaiUsersMap = new HashMap<>();
-                Iterator<AnnotateLine> it = lines.iterator();
-                while (it.hasNext()) {
-                    AnnotateLine line = it.next();
-                    String author = line.getAuthor();
-                    if(author != null && !author.equals("") && !kenaiUsersMap.keySet().contains(author)) {
-                        KenaiUser ku = SvnKenaiAccessor.getInstance().forName(author, url.toString());
-                        if(ku != null) {
-                            kenaiUsersMap.put(author, ku);
-                        }
-                    }
-                }
-            }
-        } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.WARNING, null, ex);
-        }
-        
-                
         // lazy listener registration
         caret.addChangeListener(this);
         this.caretTimer = new Timer(500, this);
@@ -403,7 +373,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     void setSVNClienListener(ISVNNotifyListener svnClientListener) {
         this.svnClientListener = svnClientListener;
         
-        VCSFileProxy file = getCurrentFile();        
         Subversion.getInstance().addSVNNotifyListener(svnClientListener);        
     }
 
@@ -536,9 +505,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (revisionPerLine != null) {
-                    if (getPreviousRevision(revisionPerLine) != null) {
-                        DiffAction.diff(file, getPreviousRevision(revisionPerLine), revisionPerLine);
-                    }
+                    DiffAction.diff(file, getPreviousRevision(revisionPerLine), revisionPerLine);
                 }
             }
         });
@@ -604,23 +571,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         popupMenu.add(previousAnnotationsMenu);
         previousAnnotationsMenu.setVisible(false);
 
-        if(isKenai() && al != null) {
-            String author = al.getAuthor();
-            final int lineNr = al.getLineNum();
-            final KenaiUser ku = kenaiUsersMap.get(author);
-            if(ku != null) {
-                popupMenu.addSeparator();
-                JMenuItem chatMenu = new JMenuItem(NbBundle.getMessage(AnnotationBar.class, "CTL_MenuItem_Chat", author));
-                chatMenu.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ku.startChat(KenaiUser.getChatLink(getCurrentFileObject(), lineNr));
-                    }
-                });
-                popupMenu.add(chatMenu);
-            }
-        }
-
         JMenuItem menu;
         menu = new JMenuItem(loc.getString("CTL_MenuItem_CloseAnnotations"));
         menu.addActionListener(new ActionListener() {
@@ -635,14 +585,12 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         diffMenu.setVisible(false);
         revertMenu.setVisible(false);
         if (revisionPerLine != null) {
-            String previousRevision;
-            if ((previousRevision = getPreviousRevision(revisionPerLine)) != null) {
-                String format = loc.getString("CTL_MenuItem_DiffToRevision");
-                diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, getPreviousRevision(revisionPerLine) }));
-                diffMenu.setVisible(true);
-                previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
-                previousAnnotationsMenu.setVisible(file != null);
-            }
+            String previousRevision = getPreviousRevision(revisionPerLine);
+            String format = loc.getString("CTL_MenuItem_DiffToRevision");
+            diffMenu.setText(MessageFormat.format(format, new Object [] { revisionPerLine, previousRevision }));
+            diffMenu.setVisible(true);
+            previousAnnotationsMenu.setText(loc.getString("CTL_MenuItem_ShowAnnotationsPrevious")); //NOI18N
+            previousAnnotationsMenu.setVisible(file != null);
             revertMenu.setVisible(true);
             rollbackMenu.setText(Bundle.MSG_RollbackTo_menuItem(revisionPerLine));
             rollbackMenu.setVisible(true);
@@ -657,7 +605,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         final SVNUrl url;
         try {
-            url = SvnUtils.getRepositoryRootUrl(file);
+            url = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
@@ -686,7 +634,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNRevision svnRev;
         final Context context = new Context(file);
         try {
-            repoUrl = SvnUtils.getRepositoryRootUrl(file);
+            repoUrl = ContextAction.getSvnUrl(context);
             fileUrl = SvnUtils.getRepositoryUrl(file);
             svnRev = SVNRevision.getRevision(revision);
         } catch (SVNClientException ex) {
@@ -712,7 +660,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         final SVNUrl repositoryUrl;
         final Context context = new Context(file);
         try {
-            repositoryRoot = SvnUtils.getRepositoryRootUrl(file);
+            repositoryRoot = ContextAction.getSvnUrl(context);
             repositoryUrl = SvnUtils.getRepositoryUrl(file);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(context, ex, true, true);
@@ -760,7 +708,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /**
      * Gets a request processor which is able to cancel tasks.
      */
-    private RequestProcessor getRequestProcessor() {
+    private synchronized RequestProcessor getRequestProcessor() {
         if (requestProcessor == null) {
             requestProcessor = new RequestProcessor("AnnotationBarRP", 1, true);  // NOI18N
         }
@@ -918,7 +866,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         Graphics g = getGraphics();
         if( g != null) {
             int w = g.getFontMetrics().charsWidth(data, 0,  data.length);
-            return w + 4 + (isKenai() ? 18 : 0);
+            return w + 4 ;
         } else {
             return 0;
         }
@@ -994,17 +942,6 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         int texty = yBase + editorUI.getLineAscent();
         int textx = 2;
         g.drawString(annotation, textx, texty);        
-    }
-
-    boolean isKenai() {
-        return kenaiUsersMap != null && kenaiUsersMap.size() > 0;
-    }
-
-    KenaiUser getKenaiUser(String author) {
-        if(kenaiUsersMap == null) {
-            return null;
-        }
-        return kenaiUsersMap.get(author);
     }
 
     /**

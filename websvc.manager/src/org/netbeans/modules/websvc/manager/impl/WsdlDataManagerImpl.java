@@ -60,6 +60,8 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager.class)
 public class WsdlDataManagerImpl implements WsdlDataManager {
+    /** Request processor for this class. */
+    private static final RequestProcessor RP = new RequestProcessor(WsdlDataManagerImpl.class);
 
     private int precedence;
 
@@ -67,10 +69,12 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         precedence = 0;
     }
 
+    @Override
     public WsdlData getWsdlData(String wsdlUrl, String serviceName, boolean synchronuous) {
         return WebServiceListModel.getInstance().getWebServiceData(wsdlUrl, serviceName, synchronuous);
     }
 
+    @Override
     public WsdlData addWsdlData(String wsdlUrl, String packageName) {
         final WebServiceData wsData = new WebServiceData(wsdlUrl, WebServiceListModel.DEFAULT_GROUP);
         wsData.setPackageName(packageName);
@@ -78,7 +82,7 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
 
         // Run the add W/S asynchronously
         Runnable addWsRunnable = new Runnable() {
-
+            @Override
             public void run() {
                 try {
                     WebServiceManager.getInstance().addWebService(wsData, true);
@@ -87,10 +91,11 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                 }
             }
         };
-        RequestProcessor.getDefault().post(addWsRunnable);
+        RP.post(addWsRunnable);
         return wsData;
     }
 
+    @Override
     public void removeWsdlData(String wsdlUrl, String serviceName) {
         WebServiceData wsData = WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
         if (wsData != null) {
@@ -98,15 +103,17 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         }
     }
 
+    @Override
     public WsdlData findWsdlData(String wsdlUrl, String serviceName) {
         return WebServiceListModel.getInstance().findWebServiceData(wsdlUrl, serviceName, true);
     }
 
+    @Override
     public void refresh(WsdlData wsdlData) {
         if (wsdlData instanceof WebServiceData) {
             final WebServiceData data = (WebServiceData) wsdlData;
             Runnable addWsRunnable = new Runnable() {
-
+                @Override
                 public void run() {
                     try {
                         WebServiceManager.getInstance().refreshWebService(data);
@@ -115,13 +122,13 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
                     }
                 }
             };
-            RequestProcessor.getDefault().post(addWsRunnable);
+            RP.post(addWsRunnable);
         }
     }
 
     private void handleException(final Exception exception) {
         SwingUtilities.invokeLater(new Runnable() {
-
+            @Override
             public void run() {
                 if (exception instanceof FileNotFoundException) {
                     String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "INVALID_URL");
@@ -140,10 +147,12 @@ public class WsdlDataManagerImpl implements WsdlDataManager {
         });
     }
 
+    @Override
     public void setPrecedence(int precedence) {
         this.precedence = precedence;
     }
 
+    @Override
     public int getPrecedence() {
         return precedence;
     }

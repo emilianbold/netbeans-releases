@@ -138,16 +138,16 @@ public class RemoveInvalidModifierTest extends ErrorHintsTestBase {
     public void testRemoveStatic() throws Exception {
 	performFixTest("test/AnotherClass.java",
 		"public class AnotherClass {\n"
-		+ "    public class Foo() {\n"
-		+ "         public static class Bar() {\n"
+		+ "    public class Foo {\n"
+		+ "         public static class Bar {\n"
 		+ "         }\n"
 		+ "    }\n"
 		+ "}",
 		-1,
 		Bundle.FIX_RemoveInvalidModifier("static", 1),
 		("public class AnotherClass {\n"
-		+ "    public class Foo() {\n"
-		+ "         public class Bar() {\n"
+		+ "    public class Foo {\n"
+		+ "         public class Bar {\n"
 		+ "         }\n"
 		+ "    }\n"
 		+ "}").replaceAll("[ \t\n]+", " "));

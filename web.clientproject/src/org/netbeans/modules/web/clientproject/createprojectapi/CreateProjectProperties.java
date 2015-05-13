@@ -48,19 +48,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- * Project properties. It contains usually relative paths of:
+ * Project properties for creating new project in the given project directory with the given project name.
+ * <p>
+ * It contains usually relative paths of:
  * <ul>
  * <li>Source folder</li>
  * <li>Site Root folder</li>
  * <li>Unit Tests folder</li>
  * <li>Config folder</li>
  * </ul>
- * And additionally basic project information:
- * <ul>
- * <li>Project name</li>
- * <li>Project directory</li>
- * </ul>
- *
  * <p>
  * This class is not thread-safe.
  *
@@ -69,21 +65,35 @@ import org.openide.util.Parameters;
  */
 public final class CreateProjectProperties {
 
-    private FileObject projectDir;
-    private String projectName;
+    private final FileObject projectDir;
+    private final String projectName;
+
     private String sourceFolder;
     private String siteRootFolder;
     private String testFolder;
     private String jsTestingProvider;
     private String platformProvider;
     private boolean autoconfigured = false;
+    private String startFile;
+    private String projectUrl;
 
 
     /**
-     * Get project directory, usually relative path.
-     *
-     * @return project directory, usually relative path; never returns {@code null} or empty string
-     * @since 1.37
+     * Creates new project properties.
+     * @param projectDir project directory
+     * @param projectName project name
+     * @since 1.78
+     */
+    public CreateProjectProperties(FileObject projectDir, String projectName) {
+        Parameters.notNull("projectDir", projectDir); // NOI18N
+        Parameters.notEmpty("projectName", projectName); // NOI18N
+        this.projectDir = projectDir;
+        this.projectName = projectName;
+    }
+
+    /**
+     * Get project directory.
+     * @return project directory
      */
     @NonNull
     public FileObject getProjectDir() {
@@ -91,42 +101,12 @@ public final class CreateProjectProperties {
     }
 
     /**
-     * Set project directory, never {@code null}.
-     *
-     * @param projectDir project directory, never {@code null}
-     * @return itself
-     * @since 1.37
-     */
-    @NonNull
-    public CreateProjectProperties setProjectDir(@NonNull FileObject projectDir) {
-        Parameters.notNull("projectDir", projectDir); // NOI18N
-        this.projectDir = projectDir;
-        return this;
-    }
-
-    /**
      * Get project name.
-     *
-     * @return project name; never returns {@code null} or empty string
-     * @since 1.37
+     * @return project name
      */
     @NonNull
     public String getProjectName() {
         return projectName;
-    }
-
-    /**
-     * Set project name, never {@code null} or empty string.
-     *
-     * @param projectName project name, never {@code null} or empty string
-     * @return itself
-     * @since 1.37
-     */
-    @NonNull
-    public CreateProjectProperties setProjectName(@NonNull String projectName) {
-        Parameters.notEmpty("projectName", projectName); // NOI18N
-        this.projectName = projectName;
-        return this;
     }
 
     /**
@@ -157,7 +137,6 @@ public final class CreateProjectProperties {
      * Get Site Root folder, usually relative path.
      *
      * @return Site Root folder, usually relative path; can be {@code null} if no Site Root is present
-     * @since 1.37
      */
     @CheckForNull
     public String getSiteRootFolder() {
@@ -169,7 +148,6 @@ public final class CreateProjectProperties {
      *
      * @param siteRootFolder Site Root folder, can be {@code null} if no Site Root is present
      * @return itself
-     * @since 1.37
      */
     @NonNull
     public CreateProjectProperties setSiteRootFolder(@NullAllowed String siteRootFolder) {
@@ -181,7 +159,6 @@ public final class CreateProjectProperties {
      * Get Test folder, usually relative path.
      *
      * @return Test folder, usually relative path; can be {@code null} if no Test folder is present
-     * @since 1.37
      */
     @CheckForNull
     public String getTestFolder() {
@@ -193,7 +170,6 @@ public final class CreateProjectProperties {
      *
      * @param testFolder Test folder, can be {@code null} if there is no test folder available
      * @return itself
-     * @since 1.37
      */
     @NonNull
     public CreateProjectProperties setTestFolder(@NullAllowed String testFolder) {
@@ -264,6 +240,50 @@ public final class CreateProjectProperties {
      */
     public CreateProjectProperties setAutoconfigured(boolean autoconfigured) {
         this.autoconfigured = autoconfigured;
+        return this;
+    }
+
+    /**
+     * Get start file, usually relative path to {@link #getSiteRootFolder() site root}.
+     * @return start file, usually relative path to {@link #getSiteRootFolder() site root};
+     *         can be {@code null} if there is no start file
+     * @since 1.78
+     */
+    @CheckForNull
+    public String getStartFile() {
+        return startFile;
+    }
+
+    /**
+     * Set start file (usually relative path to {@link #getSiteRootFolder() site root}),
+     * can be {@code null} if there is no start file.
+     * @param startFile start file (usually relative path to {@link #getSiteRootFolder() site root}), can be {@code null}
+     * @return itself
+     * @since 1.78
+     */
+    public CreateProjectProperties setStartFile(@NullAllowed String startFile) {
+        this.startFile = startFile;
+        return this;
+    }
+
+    /**
+     * Get project URL.
+     * @return project URL; can be {@code null} if there is no project URL
+     * @since 1.78
+     */
+    @CheckForNull
+    public String getProjectUrl() {
+        return projectUrl;
+    }
+
+    /**
+     * Set project URL, can be {@code null} if there is no project URL.
+     * @param projectUrl project URL, can be {@code null} if there is no project URL
+     * @return itself
+     * @since 1.78
+     */
+    public CreateProjectProperties setProjectUrl(@NullAllowed String projectUrl) {
+        this.projectUrl = projectUrl;
         return this;
     }
 

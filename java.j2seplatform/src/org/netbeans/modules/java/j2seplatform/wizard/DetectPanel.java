@@ -71,6 +71,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformImpl;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.PlatformConvertor;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -524,30 +525,30 @@ public class DetectPanel extends javax.swing.JPanel {
         public void storeSettings(WizardDescriptor settings) {
             final List<? extends PathResourceImplementation> src = sources;
             final List<URL> jdoc = javadoc;
-            if (isValid() && src != null && jdoc != null) {                                
-                String name = component.getPlatformName();                
+            if (isValid() && src != null && jdoc != null) {
+                String name = component.getPlatformName();
                 NewJ2SEPlatform platform = this.iterator.getPlatform();
                 platform.setDisplayName (name);
-                platform.setAntName (createAntName (name));
+                platform.setAntName (PlatformConvertor.getFreeAntName (name));
                 platform.setSourceFolders (ClassPathSupport.createClassPath(src));
                 if (!jdoc.isEmpty()) {
                     platform.setJavadocFolders(jdoc);
                 }
-                
+
                 platform = this.iterator.getSecondaryPlatform();
                 if (platform != null) {
                     name = NbBundle.getMessage(DetectPanel.class,"FMT_64BIT", name);
                     platform.setDisplayName (name);
-                    platform.setAntName (createAntName(name));
+                    platform.setAntName (PlatformConvertor.getFreeAntName(name));
                     platform.setSourceFolders (ClassPathSupport.createClassPath(src));
                     if (!jdoc.isEmpty()) {
                         platform.setJavadocFolders(jdoc);
                     }
-                }                                
+                }
             }
         }
-        
-        
+
+
         @Override
         public void prepareValidation() {
             sourcesString = component.getSources();
@@ -650,37 +651,6 @@ public class DetectPanel extends javax.swing.JPanel {
             setValid(vld);
         }
 
-        private static String createAntName (String name) {
-            if (name == null || name.length() == 0) {
-                throw new IllegalArgumentException ();
-            }                        
-            String antName = PropertyUtils.getUsablePropertyName(name);            
-            if (platformExists (antName)) {
-                String baseName = antName;
-                int index = 1;
-                antName = baseName + Integer.toString (index);
-                while (platformExists (antName)) {
-                    index ++;
-                    antName = baseName + Integer.toString (index);
-                }
-            }
-            return antName;
-        }
-        
-        private static boolean platformExists (String antName) {
-            JavaPlatformManager mgr = JavaPlatformManager.getDefault();
-            JavaPlatform[] platforms = mgr.getInstalledPlatforms();
-            for (int i=0; i < platforms.length; i++) {
-                if (platforms[i] instanceof J2SEPlatformImpl) {
-                    String val = ((J2SEPlatformImpl)platforms[i]).getAntName();
-                    if (antName.equals(val)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-                
         @NonNull
         private static List<PathResourceImplementation> stringToSourcePath(@NonNull final String path) {
             assert path != null;

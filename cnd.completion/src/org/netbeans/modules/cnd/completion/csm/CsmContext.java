@@ -63,11 +63,11 @@ public class CsmContext {
     private final CsmFile file;
     // offset for which the context is looking for or last off
     private final int offset;
-    
+
     // path of context as ordered list of context entries
     private ArrayList<CsmContextEntry> context;
-    
-    // possible not null 
+
+    // possible not null
     // when context was found for exact inner object under offset
     // csmLastObject is subelement the last context entry's scope
     private CsmObject   csmLastObject;
@@ -79,6 +79,14 @@ public class CsmContext {
         context = new ArrayList<CsmContextEntry>();
     }
 
+    /** Copy constructor */
+    public CsmContext(CsmContext other) {
+        this.file = other.file;
+        this.offset = other.offset;
+        this.context = new ArrayList<CsmContextEntry>(other.context);
+        this.csmLastObject = other.csmLastObject;
+    }
+
     public CsmContextEntry get(int index) {
         return context.get(index);
     }
@@ -86,11 +94,11 @@ public class CsmContext {
     public CsmContextEntry create(CsmScope scope) {
         return new CsmContextEntry(scope);
     }
-    
+
     public CsmContextEntry create(CsmScope scope, int offset) {
         return new CsmContextEntry(scope, offset);
     }
-    
+
     protected void add(CsmContextEntry entry) {
         context.add(entry);
     }
@@ -98,11 +106,11 @@ public class CsmContext {
     public void add(CsmScope scope) {
         add(create(scope));
     }
-    
+
     public void add(CsmScope scope, int offset) {
         add(create(scope, offset));
     }
-    
+
     public void remove(CsmContextEntry entry) {
         context.remove(entry);
     }
@@ -114,7 +122,7 @@ public class CsmContext {
             return get(size() - 1);
         }
     }
-    
+
     public CsmScope getLastScope() {
         if (getLastEntry() != null) {
             return getLastEntry().getScope();
@@ -122,7 +130,7 @@ public class CsmContext {
             return null;
         }
     }
-    
+
     public CsmObject getLastObject() {
         return csmLastObject;
     }
@@ -130,11 +138,11 @@ public class CsmContext {
     public void setLastObject(CsmObject obj) {
         this.csmLastObject = obj;
     }
-    
+
     public boolean isEmpty() {
         return size() == 0;
     }
-    
+
     public int size() {
         return context.size();
     }
@@ -150,7 +158,7 @@ public class CsmContext {
     public int getOffset() {
         return this.offset;
     }
-    
+
     public boolean isCpp() {
         switch (file.getFileType()) {
             case SOURCE_C_FILE:
@@ -159,13 +167,13 @@ public class CsmContext {
         }
         return true;
     }
-    
+
     CsmFile getFile() {
         return this.file;
     }
 
     /**
-     * Returns a string representation of the object. 
+     * Returns a string representation of the object.
      * @return  a string representation of the object.
      */
     @Override
@@ -177,8 +185,8 @@ public class CsmContext {
             buf.append(" empty"); //NOI18N
         } else {
             buf.append(" with ").append(size()).append(" elements:\n"); //NOI18N
-            for (Iterator it = context.iterator(); it.hasNext();) {
-                CsmContextEntry elem = (CsmContextEntry) it.next();
+            for (Iterator<CsmContextEntry> it = context.iterator(); it.hasNext();) {
+                CsmContextEntry elem = it.next();
                 buf.append(elem);
                 buf.append("\n"); //NOI18N
             }
@@ -191,19 +199,19 @@ public class CsmContext {
     public static class CsmContextEntry {
         // scope element
         private CsmScope    scope;
-        
+
         // offset in scope to stop processing scopeElements
         private final int         offset;
-        
+
         public static final int WHOLE_SCOPE = -1;
-        
+
         public CsmContextEntry(CsmScope scope) {
             this(scope, WHOLE_SCOPE);
         }
-        
+
         public CsmContextEntry(CsmScope scope, int offset) {
             this.scope = scope;
-            this.offset = offset;            
+            this.offset = offset;
         }
 
         public CsmScope getScope() {
@@ -213,13 +221,13 @@ public class CsmContext {
         public int getOffset() {
             return offset;
         }
-        
+
         public boolean isWholeScope() {
             return getOffset() == WHOLE_SCOPE;
         }
 
         /**
-         * Returns a string representation of the object. 
+         * Returns a string representation of the object.
          * @return  a string representation of the object.
          */
         @Override
@@ -244,19 +252,19 @@ public class CsmContext {
                 buf.append(pos.getLine()).append(":").append(pos.getColumn()).append(",").append(pos.getOffset()); //NOI18N
                 buf.append(")"); //NOI18N
             }
-            // add name 
+            // add name
             buf.append(CsmUtilities.getCsmName(scope));
             // add scope info
             buf.append(" scope - "); //NOI18N
             if (CsmKindUtilities.isScope(scope)) {
                 buf.append(" [scope object] "); //NOI18N
-            }  
+            }
             if (CsmKindUtilities.isScopeElement(scope)) {
                 buf.append(" [scope element] "); //NOI18N
-            }  
+            }
             buf.append("]"); //NOI18N
             return buf.toString();
         }
-        
-    }    
+
+    }
 }

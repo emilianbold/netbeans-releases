@@ -307,7 +307,17 @@ public final class MavenModelUtils {
         POMExtensibilityElement wsdlFile = model.getFactory().createPOMExtensibilityElement(qname);
         wsdlFile.setElementText(wsdlPath);
         wsdlFiles.addExtensibilityElement(wsdlFile);
-        
+
+        //adding <vmArgs><vmArg>-Djavax.xml.accessExternalSchema=all</vmArg></vmArgs>; see issue #244891
+        qname = POMQName.createQName("vmArgs", model.getPOMQNames().isNSAware()); //NOI18N
+        POMExtensibilityElement vmArgs = model.getFactory().createPOMExtensibilityElement(qname);
+        config.addExtensibilityElement(vmArgs);
+
+        qname = POMQName.createQName("vmArg", model.getPOMQNames().isNSAware()); //NOI18N
+        POMExtensibilityElement vmArg = model.getFactory().createPOMExtensibilityElement(qname);
+        vmArg.setElementText("-Djavax.xml.accessExternalSchema=all"); //NOI18N
+        vmArgs.addExtensibilityElement(vmArg);
+
         if ( originalUrl != null ){
             qname = POMQName.createQName("wsdlLocation", model.getPOMQNames().
                     isNSAware()); //NOI18N

@@ -84,6 +84,7 @@ class DirectoryOptionUI extends OptionUI {
 
     /**returns the value displayed on the UI
      */
+    @Override
     protected String getValueFromUI() {
 	return textField.getText();
     }
@@ -91,10 +92,12 @@ class DirectoryOptionUI extends OptionUI {
 
     /* update UI with currValue
      */
+    @Override
     protected void updateUI(){
 	textField.setText(currValue);
     }
 
+    @Override
     public void addTo(JPanel parent) {
 	addTo(parent, 5);
     }

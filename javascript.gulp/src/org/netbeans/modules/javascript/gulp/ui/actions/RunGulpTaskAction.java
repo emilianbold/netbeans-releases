@@ -43,16 +43,17 @@ package org.netbeans.modules.javascript.gulp.ui.actions;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -61,6 +62,7 @@ import org.netbeans.modules.javascript.gulp.exec.GulpExecutable;
 import org.netbeans.modules.javascript.gulp.file.GulpTasks;
 import org.netbeans.modules.javascript.gulp.ui.options.GulpOptionsPanelController;
 import org.netbeans.modules.javascript.gulp.util.GulpUtils;
+import org.netbeans.modules.web.clientproject.api.build.BuildTools;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -72,23 +74,22 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.javascript.gulp.ui.actions.RunGulpTaskAction", category = "Build")
 @ActionRegistration(displayName = "#RunGulpTaskAction.name", lazy = false)
 @ActionReferences({
-    @ActionReference(path = "Editors/text/gulp+javascript/Popup", position = 900),
+    @ActionReference(path = "Editors/text/gulp+javascript/Popup", position = 795),
     @ActionReference(path = "Loaders/text/gulp+javascript/Actions", position = 150),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 181),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 671),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 131),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 671),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 771),
 })
 @NbBundle.Messages("RunGulpTaskAction.name=Gulp Tasks")
 public final class RunGulpTaskAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
-    static final RequestProcessor RP = new RequestProcessor(RunGulpTaskAction.class.getName(), 2);
+    static final Logger LOGGER = Logger.getLogger(RunGulpTaskAction.class.getName());
 
     private final Project project;
 
@@ -156,168 +157,139 @@ public final class RunGulpTaskAction extends AbstractAction implements ContextAw
         if (project == null) {
             return new Actions.MenuItem(this, false);
         }
-        return new LazyMenu(project);
+        return BuildTools.getDefault().createTasksMenu(new TasksMenuSupportImpl(project));
     }
 
     //~ Inner classes
 
-    private static final class LazyMenu extends JMenu {
+    private static final class TasksMenuSupportImpl implements BuildTools.TasksMenuSupport {
 
         private final Project project;
-
-        // @GuardedBy("EDT")
-        boolean menuBuilt = false;
+        private final GulpTasks gulpTasks;
 
 
-        public LazyMenu(Project project) {
-            super(Bundle.RunGulpTaskAction_name());
+        public TasksMenuSupportImpl(Project project) {
             assert project != null;
             this.project = project;
+            gulpTasks = GulpBuildTool.forProject(project).getGulpTasks();
         }
 
         @Override
-        public JPopupMenu getPopupMenu() {
-            assert EventQueue.isDispatchThread();
-            if (!menuBuilt) {
-                menuBuilt = true;
-                buildMenu();
+        public Project getProject() {
+            return project;
+        }
+
+        @Override
+        public String getIdentifier() {
+            return GulpBuildTool.IDENTIFIER;
+        }
+
+        @NbBundle.Messages({
+            "TasksMenuSupportImpl.tasks.label=&Task(s)",
+            "TasksMenuSupportImpl.tasks.loading=Loading Tasks...",
+            "TasksMenuSupportImpl.tasks.reload=Reload Tasks",
+            "TasksMenuSupportImpl.tasks.run.advanced=Run Task(s)",
+            "TasksMenuSupportImpl.gulp.configure=Configure Gulp...",
+        })
+        @Override
+        public String getTitle(BuildTools.TasksMenuSupport.Title title) {
+            switch (title) {
+                case MENU:
+                    return Bundle.RunGulpTaskAction_name();
+                case LOADING_TASKS:
+                    return Bundle.TasksMenuSupportImpl_tasks_loading();
+                case RELOAD_TASKS:
+                    return Bundle.TasksMenuSupportImpl_tasks_reload();
+                case CONFIGURE_TOOL:
+                    return Bundle.TasksMenuSupportImpl_gulp_configure();
+                case RUN_ADVANCED:
+                    return Bundle.TasksMenuSupportImpl_tasks_run_advanced();
+                case TASKS_LABEL:
+                    return Bundle.TasksMenuSupportImpl_tasks_label();
+                case BUILD_TOOL_EXEC:
+                    return GulpExecutable.GULP_NAME;
+                default:
+                    assert false : "Unknown title: " + title;
             }
-            return super.getPopupMenu();
+            return null;
         }
 
-        private void buildMenu() {
-            assert EventQueue.isDispatchThread();
-            GulpTasks gulpTasks = GulpBuildTool.forProject(project).getGulpTasks();
-            List<String> tasks = gulpTasks.getTasks();
-            if (tasks != null) {
-                addTasksMenuItems(tasks);
+        @Override
+        public String getDefaultTaskName() {
+            return GulpTasks.DEFAULT_TASK;
+        }
+
+        @Override
+        public Future<List<String>> getTasks() {
+            return new TasksFuture(gulpTasks);
+        }
+
+        @Override
+        public void runTask(String... args) {
+            assert !EventQueue.isDispatchThread();
+            GulpExecutable gulp = GulpExecutable.getDefault(project, true);
+            if (gulp != null) {
+                GulpUtils.logUsageGulpBuild();
+                gulp.run(args);
             }
-            // load tasks
-            addLoadingMenuItem();
-            gulpTasks.processTasks(new GulpTasks.TasksProcessor() {
-                @Override
-                public void process(final List<String> tasks) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            removeAll();
-                            addTasksMenuItems(tasks);
-                            refreshMenu();
-                        }
-                    });
-                }
-            });
         }
 
-        void refreshMenu() {
-            JPopupMenu popupMenu = getPopupMenu();
-            popupMenu.pack();
-            popupMenu.invalidate();
-            popupMenu.revalidate();
-            popupMenu.repaint();
-        }
-
-        void addTasksMenuItems(@NullAllowed List<String> tasks) {
-            assert EventQueue.isDispatchThread();
-            if (tasks == null) {
-                // gulp cli error?
-                addConfigureGulpMenuItem();
-                return;
+        @Override
+        public void reloadTasks() {
+            assert !EventQueue.isDispatchThread();
+            gulpTasks.reset();
+            try {
+                gulpTasks.loadTasks(null, null);
+            } catch (ExecutionException | TimeoutException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
-            // default task
-            addDefaultMenuItem();
-            addSeparator();
-            Set<String> allTasks = new LinkedHashSet<>(tasks);
-            allTasks.remove(GulpTasks.DEFAULT_TASK);
-            for (String task : allTasks) {
-                addTaskMenuItem(task);
+        }
+
+        @Override
+        public void configure() {
+            OptionsDisplayer.getDefault().open(GulpOptionsPanelController.OPTIONS_PATH);
+        }
+
+    }
+
+    private static final class TasksFuture implements Future<List<String>> {
+
+        private final GulpTasks gulpTasks;
+
+
+        public TasksFuture(GulpTasks gulpTasks) {
+            assert gulpTasks != null;
+            this.gulpTasks = gulpTasks;
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return gulpTasks.getTasks() != null;
+        }
+
+        @Override
+        public List<String> get() throws InterruptedException, ExecutionException {
+            try {
+                return gulpTasks.loadTasks(null, null);
+            } catch (TimeoutException ex) {
+                assert false;
             }
-            if (!allTasks.isEmpty()) {
-                addSeparator();
-            }
-            addReloadTasksMenuItem();
+            return null;
         }
 
-        @NbBundle.Messages("LazyMenu.tasks.default=default")
-        private void addDefaultMenuItem() {
-            JMenuItem menuitem = new JMenuItem(Bundle.LazyMenu_tasks_default());
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GulpExecutable gulp = GulpExecutable.getDefault(project, true);
-                            if (gulp != null) {
-                                GulpUtils.logUsageGulpBuild();
-                                gulp.run();
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-
-        private void addTaskMenuItem(final String task) {
-            JMenuItem menuitem = new JMenuItem(task);
-            menuitem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GulpExecutable gulp = GulpExecutable.getDefault(project, true);
-                            if (gulp != null) {
-                                GulpUtils.logUsageGulpBuild();
-                                gulp.run(task);
-                            }
-                        }
-                    });
-                }
-            });
-            add(menuitem);
-        }
-
-        @NbBundle.Messages("LazyMenu.tasks.loading=Loading Tasks...")
-        private void addLoadingMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_loading());
-            menuItem.setEnabled(false);
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.gulp.configure=Configure Gulp...")
-        private void addConfigureGulpMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_gulp_configure());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    OptionsDisplayer.getDefault().open(GulpOptionsPanelController.OPTIONS_PATH);
-                }
-            });
-            add(menuItem);
-        }
-
-        @NbBundle.Messages("LazyMenu.tasks.reload=Reload Tasks")
-        private void addReloadTasksMenuItem() {
-            JMenuItem menuItem = new JMenuItem(Bundle.LazyMenu_tasks_reload());
-            menuItem.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    assert EventQueue.isDispatchThread();
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            GulpTasks gulpTasks = GulpBuildTool.forProject(project).getGulpTasks();
-                            gulpTasks.reset();
-                            gulpTasks.processTasks(GulpTasks.TasksProcessor.DEV_NULL);
-                        }
-                    });
-                    menuBuilt = false;
-                }
-            });
-            add(menuItem);
+        @Override
+        public List<String> get(final long timeout, final TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            return gulpTasks.loadTasks(timeout, unit);
         }
 
     }

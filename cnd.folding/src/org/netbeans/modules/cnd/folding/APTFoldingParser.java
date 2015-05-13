@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -76,7 +77,7 @@ import org.openide.filesystems.FileSystem;
     private static final int FIRST_TOKEN = APTTokenTypes.NULL_TREE_LOOKAHEAD+1;
     private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     //private int curCurlyLevel = 0;
-    private List<CppFoldRecord> parserFolders = new ArrayList<CppFoldRecord>();
+    private List<CppFoldRecord> parserFolders = new ArrayList<>();
     private APTFoldingWalker walker = null;
 
     public APTFoldingParser(TokenStream lexer, APTFoldingWalker walker) {
@@ -98,7 +99,7 @@ import org.openide.filesystems.FileSystem;
 
     protected List<CppFoldRecord> getFolders() {
         List<CppFoldRecord> walkerFolds = walker.getFolders();
-        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(walkerFolds.size() + parserFolders.size());
+        List<CppFoldRecord> out = new ArrayList<>(walkerFolds.size() + parserFolders.size());
         out.addAll(walkerFolds);
         out.addAll(parserFolders);
         return out;
@@ -120,7 +121,7 @@ import org.openide.filesystems.FileSystem;
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source, APTLanguageSupport.GNU_CPP);
             APTFoldingParser parser = getParser(fileSystem, name, lexer);
             parser.translation_unit();
-            return new ArrayList<CppFoldRecord>(parser.getFolders());
+            return new ArrayList<>(parser.getFolders());
         } catch (Exception e) {
             if (reportErrors) {
                 System.err.println("exception: " + e); // NOI18N
@@ -136,8 +137,8 @@ import org.openide.filesystems.FileSystem;
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, buf, APTLanguageSupport.GNU_CPP, APTLanguageSupport.FLAVOR_UNKNOWN);
             APTFoldingParser parser = getParser(fo.getFileSystem(), name, lexer);
             parser.translation_unit();
-            return new ArrayList<CppFoldRecord>(parser.getFolders());
-        } catch (Exception e) {
+            return new ArrayList<>(parser.getFolders());
+        } catch (FileStateInvalidException | TokenStreamException e) {
             if (reportErrors) {
                 System.err.println("exception: " + e); // NOI18N
                 e.printStackTrace(System.err);
@@ -257,6 +258,8 @@ import org.openide.filesystems.FileSystem;
             case GREATERTHAN:
                 out = "GREATERTHAN"; // NOI18N
                 break;
+            default:
+                break;
         }
         return out;
     }
@@ -335,7 +338,7 @@ import org.openide.filesystems.FileSystem;
                         if (matchError) {
                             break main_loop;
                         }
-                        break; // break LA1 switch                        
+                        break; // break LA1 switch
                     }
                 // nobreak
                 default:
@@ -417,7 +420,7 @@ import org.openide.filesystems.FileSystem;
 //                        } else if (curCurlyLevel < 0) {
 //                            curCurlyLevel = 0;
 //                            matchError = true;
-//                            matchException=new RecognitionException("unbalanced RCURLY " + end);   // NOI18N 
+//                            matchException=new RecognitionException("unbalanced RCURLY " + end);   // NOI18N
 //                            break main_loop;
                 }
                 // create folder
@@ -496,6 +499,7 @@ import org.openide.filesystems.FileSystem;
     }
 
     @SuppressWarnings("fallthrough")
+    @org.netbeans.api.annotations.common.SuppressWarnings("SF")
     protected final void declaration() throws TokenStreamException {
 
 
@@ -689,10 +693,10 @@ import org.openide.filesystems.FileSystem;
     }
 
 //    protected final void namespaceFold() throws TokenStreamException {
-//        
+//
 //        Token  bb = null;
 //        Token  be = null;
-//        
+//
 //        loop8:  while (true) {
 //            bb = LT(1);
 //            match(LCURLY);
@@ -705,24 +709,24 @@ import org.openide.filesystems.FileSystem;
 //                        // Local LA Cache for 2 element(s):
 //                        int LA1_31 = LA(1);
 //                        int LA2_31 = LA(2);
-//                        
+//
 //                        if (((LA1_31 >= FIRST_TOKEN && LA1_31 <= LAST_TOKEN)) && (_tokenSet_1.member(LA2_31))) {
 //                            declaration();
 //                            if (matchError) {break loop8;};
 //                        } else {
 //                            break _loop42;
 //                        }
-//                        
+//
 //                    } while (true);
 //            }
 //            be = LT(1);
 //            match(RCURLY);
 //            if (matchError) {break loop8;};
-//            
+//
 //            parserFolders.add(new int[]{CLASS_FOLD,
 //            bb.getLine(), bb.getColumn(),
 //            be.getLine(), be.getColumn()});
-//            
+//
 //            break;} // End of loop loop8
 //        if (matchError) {
 //            reportError(matchException);

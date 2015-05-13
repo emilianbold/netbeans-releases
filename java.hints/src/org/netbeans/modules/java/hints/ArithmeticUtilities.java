@@ -432,7 +432,9 @@ public class ArithmeticUtilities {
          */
         private static Object resolveElementValue(CompilationInfo info, TreePath path, boolean enhanceProcessing) {
             Element el = info.getTrees().getElement(path);
-
+            if (el == null) {
+                return null;
+            }
             Map<Object, ElementValue> cache = getValueCache(info);
             ElementValue entry = cache.get(el);
             if (entry != null) {
@@ -937,6 +939,118 @@ public class ArithmeticUtilities {
 
         private static boolean integerLike(Number n) {
             return n instanceof Integer || n instanceof Short || n instanceof Byte;
+        }
+    }
+    
+    /**
+     * Performs implicit conversion of a literal value to the target type.
+     * Returns {@code null} if the conversion is not possible (incovertible, lossy
+     * conversion etc).
+     * 
+     * @param val the value
+     * @param convertTo the target type
+     * @return new literal value
+     */
+    public static Object implicitConversion(CompilationInfo info, Object val, TypeMirror convertTo) {
+        if (!convertTo.getKind().isPrimitive()) {
+            if (Utilities.isPrimitiveWrapperType(convertTo)) {
+                convertTo = info.getTypes().unboxedType(convertTo);
+            } else {
+// possibly a String ?
+                if (val instanceof String && convertTo.getKind() == TypeKind.DECLARED) {
+                    Element el = info.getTypes().asElement(convertTo);
+                    if (el.getKind() == ElementKind.CLASS && ((TypeElement)el).getQualifiedName().contentEquals("java.lang.String")) {
+                        return val;
+                    }
+                }
+            return null;
+        }
+        }
+        switch (convertTo.getKind()) {
+            case BOOLEAN:
+                if (val instanceof Boolean) {
+                    return val;
+                } else {
+                    return null;
+                }
+            case BYTE: {
+                if (val instanceof Short || val instanceof Long || val instanceof Integer) {
+                    long l = ((Number)val).longValue();
+                    if (l >= 0 && l <= 0xff) {
+                        return (byte)l;
+                    }
+                } else if (val instanceof Character) {
+                    return (byte)((Character)val).charValue();
+                }
+                
+                return null;
+            }
+            case CHAR:
+                if (val instanceof Character) {
+                    return val;
+                } else if (val instanceof Short) {
+                    short n = (Short)val;
+                    if (n < (1 << 15)) {
+                        return Character.valueOf((char)n);
+                    }
+                } else if (val instanceof Integer) {
+                    int n = (Integer)val;
+                    if ( n < (1 << 16)) {
+                        return Character.valueOf((char)n);
+                    }
+                }
+                return null;
+                
+            case DOUBLE:
+                if (val instanceof Number) {
+                    return ((Number)val).doubleValue();
+                } else if (val instanceof Character) {
+                    return Double.valueOf((Character)val);
+                }
+                return null;
+            case FLOAT:
+                if (val instanceof Double) {
+                    return null;
+                }
+                if (val instanceof Number) {
+                    return ((Number)val).floatValue();
+                } else if (val instanceof Character) {
+                    return Double.valueOf((Character)val);
+                }
+                return null;
+                
+            case INT:
+                if (val instanceof Short || val instanceof Long || val instanceof Integer) {
+                    long l = ((Number)val).longValue();
+                    if (l >= Integer.MIN_VALUE && l <= Integer.MAX_VALUE) {
+                        return (int)l;
+                    }
+                } else if (val instanceof Character) {
+                    return (int)((Character)val);
+                }
+                return null;
+            case LONG:
+                if (val instanceof Character) {
+                    return (long)((Character)val).charValue();
+                } else if (val instanceof Double || val instanceof Float) {
+                    return null;
+                } else if (val instanceof Number) {
+                    return ((Number)val).longValue();
+                }
+                return null;
+                
+            case SHORT:
+                if (val instanceof Short || val instanceof Long || val instanceof Integer) {
+                    long l = ((Number)val).longValue();
+                    if (l >= Short.MIN_VALUE && l <= Short.MAX_VALUE) {
+                        return (short)l;
+        }
+                } else if (val instanceof Character) {
+                    return (short)((Character)val).charValue();
+    }
+                return null;
+            default:
+                return null;
         }
     }
     

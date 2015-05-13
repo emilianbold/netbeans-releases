@@ -42,8 +42,10 @@
 
 package org.netbeans.modules.db.mysql.installations;
 
+import java.io.File;
 import org.netbeans.modules.db.mysql.impl.Installation;
 import org.netbeans.modules.db.mysql.util.Utils;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -52,21 +54,21 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class WindowsStandaloneInstallation implements Installation {
-    static final String DEFAULT_BASE_PATH = "C:/Program Files/MySQL/";  //NOI18N
+    static final File DEFAULT_BASE_PATH = FileUtil.normalizeFile(new File("C:/Program Files/MySQL/"));  //NOI18N
     static final String FOLDER_NAME_PREFIX = "MySQL Server ";           //NOI18N
     
-    private final String basePath;
+    private final File basePath;
 
     protected WindowsStandaloneInstallation(String folderName) {
-        this.basePath = DEFAULT_BASE_PATH + folderName;
+        this.basePath = new File(DEFAULT_BASE_PATH, folderName);
     }
     
     public String[] getStartCommand() {
-        return new String[] { basePath + "/bin/mysqld.exe", "--console"}; // NOI18N
+        return new String[] { new File(basePath, "/bin/mysqld.exe").getAbsolutePath(), "--console"}; // NOI18N
     }
 
     public String[] getStopCommand() {
-        return new String[] { basePath + "/bin/mysqladmin.exe", "-u root shutdown"}; // NOI18N
+        return new String[] { new File(basePath, "/bin/mysqladmin.exe").getAbsolutePath(), "-u root shutdown"}; // NOI18N
     }
     
     public boolean isInstalled() {

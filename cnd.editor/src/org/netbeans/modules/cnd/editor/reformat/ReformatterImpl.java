@@ -67,10 +67,10 @@ public class ReformatterImpl {
     /*package local*/ final BracesStack braces;
     private final int startOffset;
     private final int endOffset;
-    private PreprocessorFormatter preprocessorFormatter;
+    private final PreprocessorFormatter preprocessorFormatter;
     final int tabSize;
     final boolean expandTabToSpaces;
-    private QtExtension qtExtension = new QtExtension();
+    private final QtExtension qtExtension = new QtExtension();
     
     ReformatterImpl(TokenSequence<CppTokenId> ts, int startOffset, int endOffset, CodeStyle codeStyle){
         braces = new BracesStack(codeStyle);

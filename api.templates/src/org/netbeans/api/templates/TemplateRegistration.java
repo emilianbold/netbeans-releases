@@ -125,15 +125,12 @@ public @interface TemplateRegistration {
 
     /**
      * Set to false if the template can be instantiated without a project.
-     * @since 7.46
      */
     boolean requireProject() default true;
 
     /**
      * Default (pre-filled) target name for the template, without extension. May
      * use the usual {@code #key} syntax for localization or branding.
-     *
-     * @since 7.56
      */
     String targetName() default "";
     
@@ -151,5 +148,15 @@ public @interface TemplateRegistration {
      * @since 1.2
      */
     String page() default "";
- 
+
+    /** Selects some of provided technologies. The 
+     * <a href="http://bits.netbeans.org/html+java/">HTML/Java API</a>
+     * provides support for technology ids since version 1.1. 
+     * With this attribute one can specify the preferred technologies
+     * to use in this wizard as well.
+     * 
+     * @return list of preferred technology ids
+     * @since 1.4
+     */
+    String[] techIds() default {};
 }

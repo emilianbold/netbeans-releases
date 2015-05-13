@@ -62,7 +62,7 @@ public class WatchBag {
 	return watches.toArray(wa);
     }
 
-    public WatchVariable[] watchesFor(NativeDebugger debugger) {
+    public synchronized WatchVariable[] watchesFor(NativeDebugger debugger) {
 	ArrayList<WatchVariable> ws = new ArrayList<WatchVariable>();
 	for (NativeWatch w : watches) {
 	    WatchVariable dw = w.findByDebugger(debugger);
@@ -96,7 +96,7 @@ public class WatchBag {
      * All such restored watches get re-add'ed later on so only need to put
      * them on the list.
      */
-    public final void restore(NativeWatch newWatch) {
+    public final synchronized void restore(NativeWatch newWatch) {
 	assert !watches.contains(newWatch) :
 	       "WB.restore(): watch added redundantly"; // NOI18N
 	// LATER newWatch.restored();
@@ -105,7 +105,7 @@ public class WatchBag {
 	newWatch.setUpdater(watchUpdater());
     }
 
-    public void add(NativeWatch newWatch) {
+    public synchronized void add(NativeWatch newWatch) {
 	assert !watches.contains(newWatch) :
 	       "WB.add(): watch added redundantly"; // NOI18N
 	watches.add(newWatch);
@@ -114,7 +114,7 @@ public class WatchBag {
 	watchUpdater().treeChanged();      // causes a pull
     }
 
-    public void remove(NativeWatch oldWatch) {
+    public synchronized void remove(NativeWatch oldWatch) {
 	if (oldWatch == null)
 	    return;
 

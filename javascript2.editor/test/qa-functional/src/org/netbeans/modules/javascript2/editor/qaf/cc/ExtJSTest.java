@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.editor.qaf.cc;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 
 /**
@@ -53,22 +52,24 @@ import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
  */
 public class ExtJSTest extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testExt17",
+        "testExt19",
+        "testExt21",
+        "testExt23",
+        "testExt39",
+        "testExt41",
+        "testExt43",
+        "testExt45"
+    };
+
     public ExtJSTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ExtJSTest.class).addTest(
-                        "openProject",
-                        "testExt17",
-                        "testExt19",
-                        "testExt21",
-                        "testExt23",
-                        "testExt39",
-                        "testExt41",
-                        "testExt43",
-                        "testExt45").enableModules(".*").clusters(".*"));
+        return createModuleTest(ExtJSTest.class, tests);
     }
 
     public void testExt17() {

@@ -169,11 +169,15 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         if (! SQLOptions.getDefault().isKeepOldResultTabs()) {
             resultComponent.removeAll();
         }
-        
-        int i = 0;
-        for (Component comp : components ) {
-            resultComponent.add(comp);            
-            resultComponent.setToolTipTextAt(i++, getToolTipForComponent(comp));
+
+        for (int i = 0; i < components.size(); i++) {
+            Component comp = components.get(i);
+            resultComponent.add(comp);
+            String tooltip = null;
+            if (comp instanceof JComponent) {
+                tooltip = ((JComponent)comp).getToolTipText();
+            }
+            resultComponent.setToolTipTextAt(resultComponent.getTabCount() - 1, tooltip);
         }
 
         // Put focus on the first result from the set
@@ -182,22 +186,6 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
         }
 
         showResultComponent();
-    }
-    
-    private String getToolTipForComponent(Component comp) {
-        if (comp instanceof JComponent) {
-            String rawToolTip = ((JComponent) comp).getToolTipText();
-            if (rawToolTip == null) {
-                return null;
-            } else {
-                String shortened = rawToolTip.length() > 128
-                        ? rawToolTip.substring(0, 128) + "\u2026" //NOI18N
-                        : rawToolTip;
-                return shortened.replace("\n", " ");                    //NOI18N
-            }
-        } else {
-            return null;
-        }
     }
 
     @SuppressWarnings("deprecation")

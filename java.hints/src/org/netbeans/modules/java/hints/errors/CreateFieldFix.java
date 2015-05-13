@@ -80,10 +80,11 @@ public final class CreateFieldFix implements EnhancedFix {
         this.modifiers = modifiers;
         this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
-        if (proposedType.getKind() == TypeKind.NULL) {
-            proposedType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N
+        if (proposedType.getKind() == TypeKind.NULL || proposedType.getKind() == TypeKind.NONE) {
+            TypeElement te = info.getElements().getTypeElement("java.lang.Object"); // NOI18N
+            proposedType = te == null ? null : te.asType();
         }
-        this.proposedType = TypeMirrorHandle.create(proposedType);
+        this.proposedType = proposedType == null ? null : TypeMirrorHandle.create(proposedType);
         this.remote = !org.openide.util.Utilities.compareObjects(info.getFileObject(), targetFile);
     }
     

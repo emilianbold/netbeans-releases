@@ -102,7 +102,7 @@ public class WSDLModelTest extends NbTestCase {
     public void testSynchronousModelCreation() throws java.net.MalformedURLException {
         System.out.println("Test 2 : Synchronous Model Creation");
         initResults();
-        final WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getUrl("AddNumbers.wsdl"));
+        final WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(getUrl("AddNumbers_synch.wsdl"));
         assertNotNull("WsdlModelerFactory failed to create object", wsdlModeler);
         WsdlModel wsdlModel = wsdlModeler.getAndWaitForWsdlModel();
         assertNotNull("WsdlModeler failed to create WSDL Model", wsdlModel);

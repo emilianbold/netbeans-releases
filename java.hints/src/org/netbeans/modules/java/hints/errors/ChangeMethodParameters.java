@@ -68,8 +68,10 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
 
     @Override
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.apply.symbol.1",
-                                                 "compiler.err.cant.apply.symbols")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.apply.symbol",
+                                                 "compiler.err.cant.apply.symbol.1",
+                                                 "compiler.err.cant.apply.symbols",
+                                                 "compiler.err.prob.found.req")); // NOI18N
     }
 
     @Override
@@ -287,6 +289,9 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
     }
 
     private boolean createFixes(CompilationInfo info, List<? extends ExpressionTree> arguments, TreePath path, TreePath enclosingTypePath, ExecutableElement method, LinkedList<Fix> fixes) throws IllegalArgumentException {
+        if (method == null) {
+            return false;
+        }
         List<? extends VariableElement> parameters = method.getParameters();
         ChangeParametersRefactoring.ParameterInfo[] parameterInfo = new ChangeParametersRefactoring.ParameterInfo[parameters.size()];
         for (int i = 0; i < parameters.size(); i++) {
@@ -325,6 +330,9 @@ public class ChangeMethodParameters implements ErrorRule<Void> {
         for (i = 0; i < newParameterInfo.length; i++) {
             if (cancel) {
                 return false;
+            }
+            if (typeElement == null) {
+                continue;
             }
             ParameterInfo param = newParameterInfo[i];
             ParameterInfo next = findNextByType(info, parameterInfo, param.getType(), typeElement);

@@ -95,8 +95,10 @@
 			<tocitem text="Sharing Files With Remote Build Hosts" target="RemoteDevelopmentFileSharing" />
 			<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
 			<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />
+                        <tocitem text="Pinning a Terminal Window" target="SavingTerminalSettings" />
 			<tocitem text="Managing Build Hosts" target="RemoteDevelopmentBrowsing" />
 			<tocitem text="Working with Remote Build Hosts Using the Toolbar" target="RemoteDevelopmentToolbar" />
+			<tocitem text="Using Full Remote Mode with Version Control" target="RemoteVCS" />
 		</tocitem>
 		<tocitem text="Testing C/C++ Projects">
 			<tocitem text="About C and C++ Unit Tests" target="c_unit_about" />
@@ -134,6 +136,13 @@
 				<tocitem text="Evaluating an Expression" target="EvaluatingExpression" />
 				<tocitem text="Creating a C or C++ Watch" target="debug.add.watch" />
 			</tocitem>
+		</tocitem>
+		<tocitem text="Using the SendTo Script Utility">
+			<tocitem text="About the SendTo Utility" target="sendto-about" />
+			<tocitem text="SendTo Scripts" target="sendto-script" />
+			<tocitem text="SendTo Validation Scripts" />
+			<tocitem text="Creating and Modifying Scripts" target="sendto-createmodify" />
+			<tocitem text="Executing Scripts" target="sendto-execute" />
 		</tocitem>
 	</tocitem>
 </toc>

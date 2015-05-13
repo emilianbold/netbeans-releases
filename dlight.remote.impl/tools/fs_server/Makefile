@@ -13,10 +13,16 @@ endif
 
 ifeq (armv, $(shell expr substr `arch` 1 4))
     OS_ARCH = $(OS)-arm
-else ifeq (sun4, $(ARCH))
-  OS_ARCH = $(OS)-sparc
-else
-  OS_ARCH = $(OS)-x86
+else 
+  ifeq (sun4, $(ARCH))
+    OS_ARCH = $(OS)-sparc
+  else 
+    ifeq (sparc64, $(ARCH))
+      OS_ARCH = $(OS)-sparc
+    else
+      OS_ARCH = $(OS)-x86
+    endif
+  endif
 endif
 
 ifdef 64BITS
@@ -32,6 +38,7 @@ CC_COMMON=gcc
 CC_Linux-x86      = $(CC_COMMON)
 CC_Linux-x86_64   = $(CC_COMMON)
 CC_Linux-arm      = $(CC_COMMON)
+CC_Linux-sparc    = $(CC_COMMON)
 CC_MacOSX-x86     = clang 
 CC_MacOSX-x86_64  = clang 
 CC_SunOS-sparc    = $(CC_COMMON)
@@ -73,24 +80,24 @@ CF_COMMON         = --std=c99 -g -Wall -Werror -D_REENTRANT
 CF_Linux-arm      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700
 CF_Linux-x86      = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m32
 CF_Linux-x86_64   = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -m64
+CF_Linux-sparc    = $(CF_COMMON) -DLINUX   -D_GNU_SOURCE -D_XOPEN_SOURCE=700 -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_MacOSX-x86     = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m32
 CF_MacOSX-x86_64  = $(CF_COMMON) -DMAXOSX  -D_DARWIN_C_SOURCE -m64
-CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m32
+CF_SunOS-sparc    = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_SunOS-sparc_64 = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
-CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m32
+CF_SunOS-x86      = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_SunOS-x86_64   = $(CF_COMMON) -DSOLARIS -D__EXTENSIONS__ -D_POSIX_PTHREAD_SEMANTICS -m64
 CF_Windows-x86    = $(CF_COMMON) -DWINDOWS -m32
 CF_Windows-x86_64 = $(CF_COMMON) -DWINDOWS -m32
 CF_FreeBSD-x86    = $(CF_COMMON) -D_GNU_SOURCE -m32
 CF_FreeBSD-x86_64 = $(CF_COMMON) -D_GNU_SOURCE -m64
 
-LF_Windows-x86    = --static-libgcc
-LF_Windows-x86_64 = --static-libgcc
 LF_Linux-x86      = $(LF_COMMON)
 LF_Linux-x86_64   = $(LF_COMMON)
+LF_Linux-arm      = $(LF_COMMON) -static
 
 CFLAGS=$(CF_$(CONF))
-LDFLAGS=$(LF_$(CONF)) -lpthread
+LDFLAGS=$(LF_$(CONF))
 
 all: $(EXEC)
 	@$(LINE) =
@@ -109,7 +116,7 @@ include $(ROOT_DIR)/make/Makefile.$(MAKEFILE)
 
 $(EXEC): $(DIST_DIR) $(OBJS)
 	@$(LINE) -
-	$(LINK.c) -o $@ $(OBJS) -lpthread
+	$(LINK.c) $(LDFLAGS) -o $@ $(OBJS) -lpthread
 
 $(OBJ_DIRS) $(DIST_DIR):
 	$(MKDIR) $@

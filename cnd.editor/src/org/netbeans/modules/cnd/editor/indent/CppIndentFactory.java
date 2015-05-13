@@ -50,6 +50,7 @@ import org.netbeans.modules.editor.indent.spi.IndentTask;
  */
 public class CppIndentFactory implements IndentTask.Factory {
 
+    @Override
     public IndentTask createTask(Context context) {
         return new CppIndentTask(context);
     }

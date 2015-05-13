@@ -37,15 +37,17 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Collection;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsParserError implements Error.Badging {
+public class JsParserError implements FilterableError, Error.Badging {
 
     private final JsErrorManager.SimpleError error;
     private final FileObject file;
@@ -54,10 +56,14 @@ public class JsParserError implements Error.Badging {
     private final Object[] parameters;
     private final boolean showExplorerBadge;
     private final boolean showInEditor;
+    
+    private final Collection<SetFilterAction> enableFilter;
+    private final SetFilterAction disableFilter;
 
     public JsParserError(JsErrorManager.SimpleError error, FileObject file,
             Severity severity, Object[] parameters, boolean wholeLine,
-            boolean showExplorerBadge, boolean showInEditor) {
+            boolean showExplorerBadge, boolean showInEditor,
+            Collection<FilterableError.SetFilterAction> enableFilter, FilterableError.SetFilterAction disableFilter) {
 
         this.error = error;
         this.file = file;
@@ -66,6 +72,8 @@ public class JsParserError implements Error.Badging {
         this.wholeLine = wholeLine;
         this.showExplorerBadge = showExplorerBadge;
         this.showInEditor = showInEditor;
+        this.disableFilter = disableFilter;
+        this.enableFilter = enableFilter;
     }
 
     @Override
@@ -75,7 +83,7 @@ public class JsParserError implements Error.Badging {
 
     @Override
     public String getDescription() {
-        return null;
+        return error.getMessage();
     }
 
     @Override
@@ -96,7 +104,7 @@ public class JsParserError implements Error.Badging {
 
     @Override
     public int getEndPosition() {
-        return error.getPosition();
+        return error.getPosition() + 1;
     }
 
     @Override
@@ -121,5 +129,20 @@ public class JsParserError implements Error.Badging {
 
     public boolean showInEditor() {
         return showInEditor;
+    }
+
+    @Override
+    public boolean isFiltered() {
+        return disableFilter != null;
+    }
+
+    @Override
+    public Collection<SetFilterAction> getEnableFilterActions() {
+        return enableFilter;
+    }
+
+    @Override
+    public SetFilterAction getDisableFilterAction() {
+        return disableFilter;
     }
 }

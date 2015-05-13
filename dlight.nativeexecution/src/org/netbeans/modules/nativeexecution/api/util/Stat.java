@@ -77,8 +77,8 @@ public final class Stat {
             if (res.isOK()) {
                 String[] data = res.output.split("\n"); // NOI18N
                 if (data.length > 1) {
-                    return new Stat(Long.valueOf(data[0].split(": ")[1].trim()), //NOI18N
-                            Long.valueOf(data[1].split(": ")[1].trim())); //NOI18N
+                    return new Stat(Long.parseLong(data[0].split(": ")[1].trim()), //NOI18N
+                            Long.parseLong(data[1].split(": ")[1].trim())); //NOI18N
                 }
             }
 

@@ -101,14 +101,19 @@ import org.openide.windows.TopComponent;
  * open connection.
  */
 public final class DatabaseConnection implements DBConnection {
+    public enum State {
+        disconnected,
+        connecting,
+        connected,
+        failed
+    }
 
     private static final Logger LOGGER = Logger.getLogger(DatabaseConnection.class.getName());
-    private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
     static final long serialVersionUID =4554639187416958735L;
 
     private final Set<ExceptionListener> exceptionListeners = Collections.synchronizedSet (new HashSet<ExceptionListener> ());
-    private Connection con;
+    private Connection jdbcConnection;
 
     /** Driver URL and name */
     private String drv, drvname;
@@ -153,7 +158,7 @@ public final class DatabaseConnection implements DBConnection {
     private int errorCode = -1;
 
     /** this is the connector used for performing connect and disconnect processing */
-    private DatabaseConnector connector = new DatabaseConnector(this);
+    private final DatabaseConnector connector = new DatabaseConnector(this);
 
     /** the DatabaseConnection is essentially used as a container for a metadata model
      * created elsewhere.
@@ -168,6 +173,8 @@ public final class DatabaseConnection implements DBConnection {
 
     private Boolean useScrollableCursors = null; // null = driver default
 
+    private State state;
+    
     /**
      * The API DatabaseConnection (delegates to this instance)
      */
@@ -195,7 +202,7 @@ public final class DatabaseConnection implements DBConnection {
     static private final Lookup.Result<OpenConnectionInterface> openConnectionLookupResult;
     static private Collection<? extends OpenConnectionInterface> openConnectionServices = null;
     static {
-        openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<OpenConnectionInterface>(OpenConnectionInterface.class));
+        openConnectionLookupResult = Lookup.getDefault().lookup(new Lookup.Template<>(OpenConnectionInterface.class));
         openConnectionLookupResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
@@ -257,7 +264,7 @@ public final class DatabaseConnection implements DBConnection {
         db = database;
         usr = user;
         pwd = password;
-        rpwd = rememberPassword == null ? null : Boolean.valueOf(rememberPassword);
+        rpwd = rememberPassword;
         schema = theschema;
         name = getName();
         setConnectionProperties(connectionProperties);
@@ -297,7 +304,7 @@ public final class DatabaseConnection implements DBConnection {
     public Connection getJDBCConnection(boolean test) {
         Connection conn = getJDBCConnection();
         if (test) {
-            if (! test(conn, getName())) {
+            if (! test()) {
                 try {
                     disconnect();
                 } catch (DatabaseException e) {
@@ -319,20 +326,16 @@ public final class DatabaseConnection implements DBConnection {
         return metadataModel;
     }
 
-    public static boolean isVitalConnection(Connection conn, DatabaseConnection dbconn) {
-        if (conn == null) {
+    public boolean isVitalConnection() {
+        if (this.getJDBCConnection() == null) {
             return false;
         }
         try {
-            SQLWarning warnings = conn.getWarnings();
-            if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
-                LOGGER.log(Level.FINE, "Warnings while trying vitality of connection: " + warnings);
-            }
-            return !checkClosedWithTimeout(conn);
+            return !checkClosedWithTimeout(this.getJDBCConnection());
         } catch (Exception ex) {
             if (dbconn != null) {
                 try {
-                    dbconn.disconnect();
+                    this.disconnect();
                 } catch (DatabaseException ex1) {
                     LOGGER.log(Level.FINE, "While trying vitality of connection: " + ex1.getLocalizedMessage(), ex1);
                 }
@@ -351,6 +354,13 @@ public final class DatabaseConnection implements DBConnection {
             @Override
             public Boolean call() {
                 try {
+                    SQLWarning warnings = connection.getWarnings();
+                    if (LOGGER.isLoggable(Level.FINE) && warnings != null) {
+                        LOGGER.log(
+                                Level.FINE, 
+                                "Warnings while trying vitality of connection: {0}",
+                                warnings);
+                    }
                     return connection.isClosed();
                 } catch (SQLException ex) {
                     LOGGER.log(Level.FINE,
@@ -363,26 +373,24 @@ public final class DatabaseConnection implements DBConnection {
         Future<Boolean> future = RP.submit(task);
         try {
             return future.get(1, TimeUnit.SECONDS);
-        } catch (TimeoutException e) {
-            return false;
-        } catch (InterruptedException e) {
+        } catch (TimeoutException | InterruptedException e) {
             return false;
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static boolean test(Connection conn, String connectionName) {
+    private boolean test() {
         try {
-            if (! isVitalConnection(conn, null)) {
+            if (! this.isVitalConnection()) {
                 return false;
             }
 
             // Send a command to the server, if it fails we know the connection is invalid.
-            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-        } catch (SQLException e) {
+            getJDBCConnection().getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+        } catch (SQLException | NullPointerException e) {
             LOGGER.log(Level.INFO, NbBundle.getMessage(DatabaseConnection.class,
-                    "MSG_TestFailed", connectionName, e.getMessage()));
+                    "MSG_TestFailed", getName(), e.getMessage()));
             LOGGER.log(Level.FINE, null, e);
             return false;
         }
@@ -680,7 +688,7 @@ public final class DatabaseConnection implements DBConnection {
     
     private void restorePassword() {
         if (this.connectionFileName == null) {
-            LOGGER.log(Level.FINE, "No connectionFileName for " + this);
+            LOGGER.log(Level.FINE, "No connectionFileName for {0}", this);
             pwd = "";
             rpwd = false;
             return ;
@@ -690,11 +698,11 @@ public final class DatabaseConnection implements DBConnection {
         // the box to say the password should be remembered.
         char[] chars = Keyring.read(key);
         if (chars != null) {
-            LOGGER.log(Level.FINE, "A password read for " + key);
+            LOGGER.log(Level.FINE, "A password read for {0}", key);
             pwd = String.valueOf(chars);
             rpwd = true;
         } else {
-            LOGGER.log(Level.FINE, "No password read for " + key);
+            LOGGER.log(Level.FINE, "No password read for {0}", key);
             pwd = "";
             rpwd = false;
         }
@@ -704,7 +712,7 @@ public final class DatabaseConnection implements DBConnection {
         Parameters.notNull("key", key);
         Parameters.notNull("pwd", pwd);
 
-        LOGGER.log(Level.FINE, "Storing password for " + key);
+        LOGGER.log(Level.FINE, "Storing password for {0}", key);
         Keyring.save(key,
                 pwd,
                 NbBundle.getMessage(DatabaseConnectionConvertor.class,
@@ -714,7 +722,7 @@ public final class DatabaseConnection implements DBConnection {
     public static void deletePassword(final String key) {
         Parameters.notNull("key", key);
 
-        LOGGER.log(Level.FINE, "Deleting password for " + key);
+        LOGGER.log(Level.FINE, "Deleting password for {0}", key);
         Keyring.delete(key);
     }
     
@@ -725,7 +733,7 @@ public final class DatabaseConnection implements DBConnection {
             restorePassword();
         }
         assert rpwd != null : "rpwd must be set to true or false";
-        return rpwd == null ? false : rpwd.booleanValue();
+        return rpwd == null ? false : rpwd;
     }
 
     /** Sets password should be remembered
@@ -734,7 +742,7 @@ public final class DatabaseConnection implements DBConnection {
     @Override
     public void setRememberPassword(boolean flag) {
         Boolean oldrpwd = rpwd;
-        rpwd = Boolean.valueOf(flag);
+        rpwd = flag;
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_REMEMBER_PASSWORD, oldrpwd, rpwd);
         }
@@ -760,9 +768,10 @@ public final class DatabaseConnection implements DBConnection {
         }
         String oldpwd = pwd;
         if ( password.length() == 0 ) {
-            password = null;
+            pwd = null;
+        } else {
+            pwd = password;
         }
-        pwd = password;
         if (propertySupport != null) {
             propertySupport.firePropertyChange(PROP_PASSWORD, oldpwd, pwd);
         }
@@ -775,9 +784,7 @@ public final class DatabaseConnection implements DBConnection {
      */
     @Override
     public Connection createJDBCConnection() throws DDLException {
-        if (LOG) {
-            LOGGER.log(Level.FINE, "createJDBCConnection()");
-        }
+        LOGGER.log(Level.FINE, "createJDBCConnection()");
 
         if (drv == null || db == null || usr == null ) {
             throw new DDLException(NbBundle.getMessage(DatabaseConnection.class, "EXC_InsufficientConnInfo")); // NOI18N
@@ -797,7 +804,7 @@ public final class DatabaseConnection implements DBConnection {
         }
 
         try {
-            propertySupport.firePropertyChange("connecting", null, null);
+            setState(State.connecting);
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
@@ -813,11 +820,11 @@ public final class DatabaseConnection implements DBConnection {
             }
 
             Connection connection = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
-            setConnection(connection);
+            setJDBCConnection(connection);
 
             DatabaseUILogger.logConnection(drv);
 
-            propertySupport.firePropertyChange("connected", null, null);
+            setState(State.connected);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
@@ -826,17 +833,17 @@ public final class DatabaseConnection implements DBConnection {
         } catch (SQLException e) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, e.getMessage()); // NOI18N
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
 
             initSQLException(e);
             throw new DDLException(message, e);
-        } catch (Exception exc) {
+        } catch (ClassNotFoundException | RuntimeException exc) {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", db, drv, exc.getMessage()); // NOI18N
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             // For Java Studio Enterprise.
             getOpenConnection().disable();
@@ -849,8 +856,8 @@ public final class DatabaseConnection implements DBConnection {
             doConnect();
         } catch (Exception exc) {
             try {
-                if (getConnection() != null) {
-                    getConnection().close();
+                if (getJDBCConnection() != null) {
+                    getJDBCConnection().close();
                 }
             } catch (SQLException e) {
                 LOGGER.log(Level.FINE, null, e);
@@ -885,7 +892,7 @@ public final class DatabaseConnection implements DBConnection {
 
         Connection conn = null;
         try {
-            propertySupport.firePropertyChange("connecting", null, null);
+            setState(State.connecting);
 
             // For Java Studio Enterprise.
             getOpenConnection().enable();
@@ -902,17 +909,18 @@ public final class DatabaseConnection implements DBConnection {
             }
 
             conn = DbDriverManager.getDefault().getConnection(db, dbprops, useDriver);
-            setConnection(conn);
+            setJDBCConnection(conn);
 
             DatabaseUILogger.logConnection(drv);
 
-            propertySupport.firePropertyChange("connected", null, null);
+            connector.finishConnect(null);
+            
+            setState(State.connected);
+            
             if (getConnector().getDatabaseSpecification() != null && getConnector().supportsCommand(Specification.DEFAULT_SCHEMA)) {
                 try {
                     setDefaultSchema(getSchema());
-                } catch (DDLException x) {
-                    LOGGER.log(Level.INFO, x.getLocalizedMessage(), x);
-                } catch (CommandNotSupportedException x) {
+                } catch (DDLException | CommandNotSupportedException x) {
                     LOGGER.log(Level.INFO, x.getLocalizedMessage(), x);
                 }
             }
@@ -929,7 +937,7 @@ public final class DatabaseConnection implements DBConnection {
                 }
             }
 
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
 
             if (e instanceof SQLException) {
                 initSQLException((SQLException)e);
@@ -939,7 +947,7 @@ public final class DatabaseConnection implements DBConnection {
             ddle.initCause(e);
 
             if (conn != null) {
-                setConnection(null);
+                setJDBCConnection(null);
                 try {
                     conn.close();
                 } catch (SQLException sqle) {
@@ -952,16 +960,14 @@ public final class DatabaseConnection implements DBConnection {
             String message = NbBundle.getMessage (DatabaseConnection.class, "EXC_CannotEstablishConnection", // NOI18N
                         db, drv, t.getMessage());
             DialogDisplayer.getDefault ().notifyLater (new NotifyDescriptor.Exception (t, message));
-            propertySupport.firePropertyChange("failed", null, null);
+            setState(State.failed);
         } finally {
             getOpenConnection().disable();
         }
     }
 
     public Task connectAsync() {
-        if (LOG) {
-            LOGGER.log(Level.FINE, "connect()");
-        }
+        LOGGER.log(Level.FINE, "connect()");
 
         Runnable runnable = new Runnable() {
             @Override
@@ -979,21 +985,25 @@ public final class DatabaseConnection implements DBConnection {
         return task;
     }
 
+    public boolean isConnected() {
+        return jdbcConnection != null;
+    }
+
     /** Calls the initCause() for SQLException with the value
       * of getNextException() so this exception's stack trace contains
       * the complete data.
       */
     private void initSQLException(SQLException e) {
-        SQLException next = e.getNextException();
+        SQLException current = e;
+        SQLException next = current.getNextException();
         while (next != null) {
             try {
-                e.initCause(next);
-            }
-            catch (IllegalStateException e2) {
+                current.initCause(next);
+            } catch (IllegalStateException e2) {
                 // do nothing, already initialized
             }
-            e = next;
-            next = e.getNextException();
+            current = next;
+            next = current.getNextException();
         }
     }
 
@@ -1022,7 +1032,7 @@ public final class DatabaseConnection implements DBConnection {
     }
 
     private void sendException(Exception exc) {
-        List<ExceptionListener> listeners = new ArrayList<ExceptionListener>();
+        List<ExceptionListener> listeners = new ArrayList<>();
         synchronized (exceptionListeners) {
             for (ExceptionListener l : exceptionListeners) {
                 listeners.add(l);
@@ -1034,12 +1044,12 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    public void setConnection(Connection c) {
-        con = c;
+    private void setJDBCConnection(Connection c) {
+        jdbcConnection = c;
     }
 
-    public Connection getConnection() {
-        return con;
+    public Connection getJDBCConnection() {
+        return jdbcConnection;
     }
 
     /** Add property change listener
@@ -1060,7 +1070,7 @@ public final class DatabaseConnection implements DBConnection {
 
     @Override
     public int hashCode() {
-        return drv.hashCode() + db.hashCode() + usr.hashCode();
+        return Objects.hashCode(drv) + Objects.hashCode(db) + Objects.hashCode(usr);
     }
 
     /** Compares two connections.
@@ -1184,7 +1194,7 @@ public final class DatabaseConnection implements DBConnection {
         try {
             if (connectionNode != null) {
                 explorer.setSelectedNodes(new Node[] { connectionNode });
-                if (activateTopComponent) {
+                if (activateTopComponent && servicesTab != null) {
                     servicesTab.requestActive();
                 }
             }
@@ -1226,7 +1236,7 @@ public final class DatabaseConnection implements DBConnection {
         try {
             final ConnectionNode cni = findConnectionNode(getDisplayName());
             assert cni != null : "DatabaseConnection node not found for " + this;
-            if (cni != null && cni.getDatabaseConnection().getConnector().isDisconnected()) {
+            if (cni != null && (! isConnected())) {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
                     public void run() {
@@ -1239,10 +1249,6 @@ public final class DatabaseConnection implements DBConnection {
         }
     }
 
-    public Connection getJDBCConnection() {
-        return connector.getConnection();
-    }
-
     public DatabaseConnector getConnector() {
         return connector;
     }
@@ -1251,14 +1257,17 @@ public final class DatabaseConnection implements DBConnection {
         propertySupport.firePropertyChange("changed", null, null);
     }
 
-    public void fireConnectionComplete() {
-        propertySupport.firePropertyChange("connectionComplete", null, null);
+    public void disconnect() throws DatabaseException {
+        if (jdbcConnection != null) {
+            try {
+                jdbcConnection.close();
+            } catch (Exception ex) {
     }
 
-    public void disconnect() throws DatabaseException {
-        if (!connector.isDisconnected()) {
+            DerbyConectionEventListener.getDefault().afterDisconnect(this, jdbcConnection);
             connector.performDisconnect();
-            propertySupport.firePropertyChange("disconnected", null, null);
+            jdbcConnection = null;
+            setState(State.disconnected);
         }
     }
 
@@ -1312,16 +1321,16 @@ public final class DatabaseConnection implements DBConnection {
 
     public void addImportantSchema(String schema) {
         if (importantSchemas == null) {
-            importantSchemas = new HashSet<String>();
+            importantSchemas = new HashSet<>();
         }
-        List<String> oldList = new ArrayList<String>(importantSchemas);
+        List<String> oldList = new ArrayList<>(importantSchemas);
         importantSchemas.add(schema);
         propertySupport.firePropertyChange("importantSchemas", oldList, importantSchemas); //NOI18N
     }
 
     public void removeImportantSchema(String schema) {
         if (importantSchemas != null) {
-            List<String> oldList = new ArrayList<String>(importantSchemas);
+            List<String> oldList = new ArrayList<>(importantSchemas);
             importantSchemas.remove(schema);
             propertySupport.firePropertyChange("importantSchemas", oldList, importantSchemas); //NOI18N
         }
@@ -1341,16 +1350,16 @@ public final class DatabaseConnection implements DBConnection {
 
     public void addImportantCatalog(String database) {
         if (importantCatalogs == null) {
-            importantCatalogs = new HashSet<String>();
+            importantCatalogs = new HashSet<>();
         }
-        List<String> oldList = new ArrayList<String>(importantCatalogs);
+        List<String> oldList = new ArrayList<>(importantCatalogs);
         importantCatalogs.add(database);
         propertySupport.firePropertyChange("importantCatalogs", oldList, importantCatalogs); //NOI18N
     }
 
     public void removeImportantCatalog(String database) {
         if (importantCatalogs != null) {
-            List<String> oldList = new ArrayList<String>(importantCatalogs);
+            List<String> oldList = new ArrayList<>(importantCatalogs);
             importantCatalogs.remove(database);
             propertySupport.firePropertyChange("importantCatalogs", oldList, importantCatalogs); //NOI18N
         }
@@ -1374,11 +1383,7 @@ public final class DatabaseConnection implements DBConnection {
      * Decide whether scrollable cursors should be used by the connection.
      */
     private boolean isUseScrollableCursorsByDefault() {
-        return drv != null
-                && (drv.startsWith("org.apache.derby") //NOI18N
-                || drv.startsWith("com.mysql") //NOI18N
-                || drv.startsWith("oracle") //NOI18N
-                || drv.startsWith("org.postgresql")); //NOI18N
+        return false;
     }
 
     public boolean isUseScrollableCursors() {
@@ -1391,5 +1396,15 @@ public final class DatabaseConnection implements DBConnection {
         boolean oldVal = isUseScrollableCursors();
         this.useScrollableCursors = useScrollableCursors;
         propertySupport.firePropertyChange("useScrollableCursors", oldVal, useScrollableCursors); //NOI18N
+    }
+
+    public State getState() {
+        return state;
+}
+
+    private void setState(State state) {
+        State oldState = this.state;
+        this.state = state;
+        propertySupport.firePropertyChange("state", oldState, state);
     }
 }

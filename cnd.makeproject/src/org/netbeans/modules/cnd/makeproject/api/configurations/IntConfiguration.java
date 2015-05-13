@@ -154,6 +154,7 @@ public class IntConfiguration implements Cloneable {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
     public IntConfiguration clone() {
         IntConfiguration clone = new IntConfiguration(master, def, names, options);
         clone.setValue(getValue());

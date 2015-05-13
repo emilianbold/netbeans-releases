@@ -51,10 +51,12 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.openide.filesystems.FileLock;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -82,16 +84,16 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     @Override
     public boolean isData() {
-        return true;
+        return false;
     }
 
     @Override
-    public final RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+    public final RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop) {
         return null;
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         return null;
     }
 
@@ -107,12 +109,14 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     @Override
     protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Unsupported file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(SpecialRemoteFileObject.class,
+                "EXC_UnsupportedSpecial", getDisplayName())); // NOI18N
     }
 
     @Override
     protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
-        throw new IOException("Unsupported file can not have children"); // NOI18N
+        throw RemoteExceptions.createIOException(NbBundle.getMessage(SpecialRemoteFileObject.class, 
+                "EXC_UnsupportedSpecial", getDisplayName())); // NOI18N
     }
 
     @Override
@@ -135,7 +139,8 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     @Override
     protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
-            throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            throw RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(SpecialRemoteFileObject.class, 
+                    "EXC_InvalidFO", getDisplayName())); //NOI18N
         }
         return new DelegateOutputStream();
     }

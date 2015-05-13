@@ -42,6 +42,7 @@
 package org.netbeans.modules.remotefs.versioning.spi;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -51,7 +52,9 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.RemoteVcsSupportUtil;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.netbeans.modules.remotefs.versioning.api.RemoteVcsSupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileObject;
@@ -191,7 +194,14 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
 
         @Override
         public URI toURI(VCSFileProxy file) throws URISyntaxException {
-            return super.toURI(file.getPath(), file.isDirectory());
+            Boolean isDirFast = null;
+            try {
+                isDirFast = RemoteVcsSupportUtil.isDirectoryFast(RemoteVcsSupport.getFileSystem(file), file.getPath());
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, ex.getLocalizedMessage(), ex);
+            }
+            boolean isDir = (isDirFast == null) ? file.isDirectory() : isDirFast;
+            return super.toURI(file.getPath(), isDir);
         }
 
         @Override
@@ -236,23 +246,12 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
             if (fo == null) {
                 if (file.exists()) {
                     VCSFileProxy parent = file.getParentFile();
-                    LinkedList<VCSFileProxy> stack = new LinkedList<VCSFileProxy>();
                     while(parent != null) {
                         FileObject parentFO = parent.toFileObject();
                         if (parentFO != null) {
                             parentFO.refresh();
-                            while(!stack.isEmpty()) {
-                                parent = stack.removeLast();
-                                parentFO = parent.toFileObject();
-                                if (parentFO != null) {
-                                    parentFO.refresh();
-                                } else {
-                                    throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
-                                }
-                            }
                             break;
                         }
-                        stack.addLast(parent);
                         parent = parent.getParentFile();
                     }
                 }

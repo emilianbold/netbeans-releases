@@ -764,4 +764,128 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testDetachedRuleset() {
+        String source = "// declare detached ruleset\n"
+                + "@detached-ruleset: { background: red; };\n"
+                + "\n"
+                + "// use detached ruleset\n"
+                + ".top {\n"
+                + "    @detached-ruleset(); \n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testDetachedRulesetestWithMixin() {
+        String source = ".mymixin(@ruleset) {\n"
+                + "    @ruleset(); // Hint: Unexpected LPAREN found\n"
+                + "}\n"
+                + ".xx {\n"
+                + "    .mymixin({.red()}); // Hint: Unexpected IDENT found\n"
+                + "} ";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testAndWithWhen() {
+        String source = ".mixin-filled(@delta:0%) {\n"
+                + "	& when (@delta > 0%) {\n"
+                + "		background:lighten(@mixin-boxcolor, @delta);\n"
+                + "	}\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMultipleAnds() {
+        String source = ".heading {\n"
+                + "    &&--type-small {\n"
+                + "        font-size: 15px;\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testTwoClassesWithoutSpace() {
+        String source = "body {\n"
+                + "    .foo.bar {\n"
+                + "        // any css statement\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMixinCallsWithHash() {
+        String source = ".a, #b {\n"
+                + "  color: red;\n"
+                + "}\n"
+                + ".mixin-class {\n"
+                + "  .a();\n"
+                + "}\n"
+                + ".mixin-id {\n"
+                + "  #b();\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testMixinDefWithHash() {
+        String source = "#mymixin(@ruleset) { \n"
+                + "    @ruleset(); \n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testExtendKeyword() {
+        
+        assertParses(".sidenav:extend(.nav, #foo, .bar) {}");
+        assertParses(".big-division,\n"
+                + ".big-bag:extend(.bag),\n"
+                + ".big-bucket:extend(.bucket) {\n"
+                + "  // body\n"
+                + "}");
+        assertParses(".b {\n"
+                + "	&:extend(.a);\n"
+                + "}");
+        assertParses(".aa{\n"
+                + "font-size: 12px;\n"
+                + "&:extend(.clearfix);\n"
+                + "}");
+        
+        String source = ".sidenav:extend(.nav) {}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testInterpolationInPseudo() {
+        assertParses(".@{var}bar{}");
+        assertParses("li:nth-child(@{somevar}+1) {}");
+        assertParses("li:nth-child(@{somevar}) {}");
+        assertParses("li:nth-child(~\"@{somevar}\") {}");
+        assertParses(".foo {\n"
+                + "\n"
+                + "	&:not(.@{var}bar):active {\n"
+                + "		color: red;\n"
+                + "	}\n"
+                + "\n"
+                + "}");
+    }
+    
+    public void testPatternMatchingInMixin() {
+        assertParses(".mixin(@s; @color) { }\n"
+                + "\n"
+                + ".class {\n"
+                + "  .mixin(@switch; #888);\n"
+                + "}");
+        assertParses(".mixin(dark; @color) {\n"
+                + "  color: darken(@color, 10%);\n"
+                + "}");
+        
+        assertParses(".mixin(@a; @b) {\n"
+                + "  color: fade(@a; @b);\n"
+                + "}");
+    }
 }

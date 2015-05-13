@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
@@ -72,29 +71,27 @@ import org.openide.util.CharSequences;
 public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
 
     protected DestructorDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
+        super(name, rawName, cls, visibility, defKind, _virtual, false, false, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
-    
+
     public static DestructorDDImpl createDestructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createDestructorName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean afterAssignEqual = false;
-        DefinitionKind defKind = DefinitionKind.REGULAR;           
+        DefinitionKind defKind = DefinitionKind.REGULAR;
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
@@ -123,28 +120,26 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
                     if (afterAssignEqual) {
                         defKind = DefinitionKind.DEFAULT;
                     }
-                    break;                      
+                    break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        DestructorDDImpl destructorDDImpl = new DestructorDDImpl(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, destructorDDImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, destructorDDImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         destructorDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         destructorDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorDDImpl, file));
-        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, fileContent), 
+        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, destructorDDImpl);
         if (body == null) {
             throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
-        }        
+        }
         destructorDDImpl.setCompoundStatement(body);
         postObjectCreateRegistration(global, destructorDDImpl);
         nameHolder.addReference(fileContent, destructorDDImpl);
@@ -156,7 +151,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         return NoType.instance();
     }
 
-    
+
     public static class DestructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
         @Override
         public DestructorDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
@@ -176,7 +171,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             DestructorDDImpl method = new DestructorDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
@@ -193,20 +188,20 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
             getNameHolder().addReference(getFileContent(), method);
 
             addDeclaration(method);
-            
+
             bodyBuilder.setScope(method);
             method.setCompoundStatement(bodyBuilder.create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
-            
+
 //            addMember(method);
-            
+
             return method;
-        }        
+        }
 
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

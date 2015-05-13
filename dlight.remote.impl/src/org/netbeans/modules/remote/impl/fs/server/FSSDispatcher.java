@@ -56,6 +56,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -79,10 +80,13 @@ import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.RefreshManager;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -93,11 +97,11 @@ import org.openide.util.RequestProcessor;
 
     private static final boolean SUPPRESS_STDERR = Boolean.parseBoolean(System.getProperty("remote.fs_server.suppress.stderr", "true"));
     private static final Map<ExecutionEnvironment, FSSDispatcher> instances = 
-            new HashMap<ExecutionEnvironment, FSSDispatcher>();
+            new HashMap<>();
     private static final Object instanceLock = new Object();
     
     private final ExecutionEnvironment env;
-    private final Map<Integer, FSSResponse> responses = new LinkedHashMap<Integer, FSSResponse>();
+    private final Map<Integer, FSSResponse> responses = new LinkedHashMap<>();
     private final Object responseLock = new Object();
 
     private static final String USER_DEFINED_SERVER_PATH = System.getProperty("remote.fs_server.path");
@@ -121,15 +125,18 @@ import org.openide.util.RequestProcessor;
     private final AtomicInteger attempts = new AtomicInteger();
     private static final int MAX_ATTEMPTS = Integer.getInteger("remote.fs_server.attempts", 3); // NOI18N
     
-    private final AtomicReference<String> lastErrorMessage = new AtomicReference<String>();
+    private final AtomicReference<String> lastErrorMessage = new AtomicReference<>();
     
     private volatile boolean cleanupUponStart = false;
     
-    private static final String MIN_SERVER_VERSION = "1.4.0"; // NOI18N
+    private volatile FileSystemProvider.AccessCheckType accessCheckType;
+    
+    private static final String MIN_SERVER_VERSION = "1.7.0"; // NOI18N
     
     private FSSDispatcher(ExecutionEnvironment env) {
         this.env = env;
         traceName = "fs_server[" + env + ']'; // NOI18N
+        accessCheckType = restoreAccessCheckType();
     }
     
     public void setCleanupUponStart(boolean cleanup) {
@@ -157,7 +164,9 @@ import org.openide.util.RequestProcessor;
     }
 
     public void connected() {
-        RP.post(new ConnectTask());
+        if (RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+            RP.post(new ConnectTask());
+        }
     }
 
     /*package*/ void requestRefreshCycle(String path) {
@@ -179,6 +188,55 @@ import org.openide.util.RequestProcessor;
         } catch (ExecutionException ex) {
             ex.printStackTrace(System.err);
         }
+    }
+
+    private void sendAccessTypeChangeRequest(FileSystemProvider.AccessCheckType accessCheckType) {
+        String option;
+        switch (accessCheckType) {
+            case FAST:
+                option = "access=fast"; //NOI18N
+                break;
+            case FULL:
+                option = "access=full"; //NOI18N
+                break;
+            default:
+                throw new IllegalArgumentException("Unexpected access check type" + accessCheckType.name()); //NOI18N
+        }
+        
+        FSSRequest req = new FSSRequest(FSSRequestKind.FS_REQ_OPTION, option, true);
+        FsServer server = getServer();
+        if (server != null) {
+            sendRequest(server.getWriter(), req);
+        }
+    }
+
+    private static FileSystemProvider.AccessCheckType restoreAccessCheckType() {
+        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FULL;
+        String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name()); // NOI18N
+        if (name != null) {
+            try {
+                result = FileSystemProvider.AccessCheckType.valueOf(name);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
+    }
+
+    private static void storeAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+        NbPreferences.forModule(FSSDispatcher.class).put("accessCheckType", accessCheckType.name()); // NOI18N
+    }
+
+    public void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+        storeAccessCheckType(accessCheckType);
+        this.accessCheckType = accessCheckType;
+        if (getServer() != null) {
+            sendAccessTypeChangeRequest(accessCheckType);
+        }
+    }
+
+    FileSystemProvider.AccessCheckType getAccessCheckType() {
+        return accessCheckType;
     }
 
     private class RefreshTask implements Runnable {
@@ -245,13 +303,24 @@ import org.openide.util.RequestProcessor;
                         synchronized (responseLock) {
                             FSSResponse response = responses.get(respId);
                             if (response == null) {
-                                RemoteLogger.info("skipping {0} response #{1}: {2}",
+                                RemoteLogger.fine("skipping {0} response #{1}: {2}",
                                         traceName, respId, line);
                             } else {
                                 response.addPackage(FSSResponseKind.fromChar(respKind), line);
                             }
                         }
                     }
+                }
+                Collection<FSSResponse> respCopy;
+                synchronized (responseLock) {
+                    respCopy = new ArrayList<>(responses.values());
+                    responses.clear();
+                }                
+                ExecutionException ex = new ExecutionException(
+                        RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env)));
+
+                for (FSSResponse resp : respCopy) {
+                    resp.failed(ex);
                 }
                 NativeProcess process = server.getProcess();
                 if (!ProcessUtils.isAlive(process)) {
@@ -348,6 +417,8 @@ import org.openide.util.RequestProcessor;
             srv = getOrCreateServer();
         } catch (ConnectionManager.CancellationException ex) {
             throw new java.util.concurrent.CancellationException(ex.getMessage());
+        } catch (ConnectException ex) {
+            throw ex; // that's normal, transport still valid, just disconnect occurred
         } catch (IOException ex) {
             setInvalid(false);
             throw ex;
@@ -434,7 +505,8 @@ import org.openide.util.RequestProcessor;
                 }
             } else {
                 String toExpand = "$osname-$platform" + // NOI18N
-                        ((osFamily == HostInfo.OSFamily.LINUX) ? "${_isa}" : ""); // NOI18N
+                        ((osFamily == HostInfo.OSFamily.LINUX && 
+                        hostInfo.getCpuFamily() != HostInfo.CpuFamily.SPARC) ? "${_isa}" : ""); // NOI18N
                 platformPath = macroExpander.expandPredefinedMacros(toExpand);
             }
             toolPath += "bin/" + platformPath + "/fs_server"; //NOI18N
@@ -448,7 +520,7 @@ import org.openide.util.RequestProcessor;
             ConnectionManager.CancellationException, InterruptedException, ExecutionException {
 
         if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-            throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+            throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
         }
 
         String toolPath;
@@ -499,7 +571,7 @@ import org.openide.util.RequestProcessor;
             }
             if (server == null) {
                 if (!ConnectionManager.getInstance().isConnectedTo(env)) {
-                    throw new ConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
+                    throw RemoteExceptions.createConnectException(RemoteFileSystemUtils.getConnectExceptionMessage(env));
                 }
                 String path = checkServerSetup();
                 server = new FsServer(path);
@@ -526,7 +598,7 @@ import org.openide.util.RequestProcessor;
             if (state == NativeProcess.State.FINISHED) {
                 //int rc = server.getProcess().waitFor();
                 //if (rc == FSSExitCodes.FAILURE_LOCKING_LOCK_FILE) {
-                throw new InitializationException(lastErrorMessage.get());
+                throw new InitializationException(createInitializerExceptionMessage());
                 //}
             }
         } else {
@@ -538,9 +610,32 @@ import org.openide.util.RequestProcessor;
             RemoteLogger.assertTrue(respId == infoReq.getId());
             String rest = buf.getRest().trim();
             checkVersions(MIN_SERVER_VERSION, rest);
+            if (accessCheckType != FileSystemProvider.AccessCheckType.FULL) {
+                sendAccessTypeChangeRequest(accessCheckType);
+            }
         }
     }
-    
+
+    private String createInitializerExceptionMessage() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("fs_server failed at ").append(env.toString()).append(' '); //NOI18N
+        if (HostInfoUtils.isHostInfoAvailable(env)) {
+            try {
+                HostInfo hi = HostInfoUtils.getHostInfo(env);
+                sb.append('(').append(hi.getOS().getName()).append(' ').append(hi.getCpuFamily()).append(' ');
+                sb.append(" - ").append(hi.getOS().getVersion()).append(')'); // NOI18N
+            } catch (ConnectionManager.CancellationException | IOException ex) {
+                Exceptions.printStackTrace(ex); // never occurs
+            }
+        }
+        NativeProcess process = server.getProcess();
+        if (process != null) {
+            sb.append(" rc=").append(process.exitValue()).append(' '); // NOI18N
+        }
+        sb.append(' ').append(lastErrorMessage.get());
+        return sb.toString();
+    }
+
     /** 
      * Checks versions in format N.N.N where N a number that has 1 or more digits 
      */
@@ -623,7 +718,7 @@ import org.openide.util.RequestProcessor;
             this.path = path;
             NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(env);
             processBuilder.setExecutable(this.path);            
-            List<String> argsList = new ArrayList<String>();
+            List<String> argsList = new ArrayList<>();
             argsList.add("-t"); // NOI18N
             argsList.add("4"); // NOI18N
             argsList.add("-p"); // NOI18N
@@ -642,6 +737,11 @@ import org.openide.util.RequestProcessor;
             }
             if (cleanupUponStart) {
                 argsList.add("-c"); // NOI18N
+            } else {
+                if (!RemoteFileSystemManager.getInstance().getFileSystem(env).getRoot().getImplementor().hasCache()) {
+                    // there is no cache locally => clean remote cache as well
+                    argsList.add("-c"); // NOI18N
+                }
             }
             if (SERVER_THREADS > 0 ) {
                 argsList.add("-t"); // NOI18N
@@ -710,7 +810,7 @@ import org.openide.util.RequestProcessor;
             ps.printf("\t[pid=%d] state=%s ", pid,  process.getState()); //NOI18N
             try {
                 ProcessStatusEx exitStatusEx = process.getExitStatusEx();
-                ps.printf("\trc=%d signalled=%b termSignal=%d ", //NOI18N
+                ps.printf("\trc=%d signalled=%b termSignal=%s ", //NOI18N
                         exitStatusEx.getExitCode(),
                         exitStatusEx.ifSignalled(),
                         exitStatusEx.termSignal());

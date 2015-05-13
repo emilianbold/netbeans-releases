@@ -44,23 +44,21 @@
 package org.netbeans.modules.websvc.saas.ui.wizards;
 
 import java.awt.Color;
-import java.net.URL;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import org.netbeans.api.options.OptionsDisplayer;
-
-
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import java.io.*;
+import java.io.File;
 import java.net.MalformedURLException;
-
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.swing.JFileChooser;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.*;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
@@ -84,15 +82,13 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     public static final String DEFAULT_PACKAGE_HOLDER = NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"); // NOI18N
 
     private DialogDescriptor dlg = null;
-    private String addString = NbBundle.getMessage(AddWebServiceDlg.class, "Add");
-    private String cancelString = NbBundle.getMessage(AddWebServiceDlg.class, "CANCEL");
     private Dialog dialog;
     private static String previousDirectory = null;
     private static JFileChooser wsdlFileChooser;
     private final FileFilter WSDL_FILE_FILTER = new ServiceFileFilter();
-    private SaasGroup group;
+    private final SaasGroup group;
     private final boolean jaxRPCAvailable;
-    private String defaultMsg;
+    private final String defaultMsg;
     private boolean allControlsDisabled;
     
     private static final String[] KEYWORDS = {
@@ -114,9 +110,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     
 
     static {
-        for (int i = 0; i < KEYWORDS.length; i++) {
-            KEYWORD_SET.add(KEYWORDS[i]);
-        }
+        KEYWORD_SET.addAll(Arrays.asList(KEYWORDS));
     }
 
     public AddWebServiceDlg(SaasGroup group) {
@@ -165,12 +159,7 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                 lastDot = isDot;
             }
 
-            if (packageName.endsWith(".")) { // NOI18N
-
-                return false;
-            }
-
-            return true;
+            return !packageName.endsWith("."); // NOI18N
         }
     }
 
@@ -211,13 +200,10 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
             File f = new File(localText);
             if (!f.exists()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FOUND"));
-                return;
             } else if (!f.isFile()) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INVALID_FILE_NOT_FILE"));
-                return;
             } else if (group.serviceExists(localText)) {
                 setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "SERVICE_ALREADY_EXISTS_FOR_FILE"));
-                return;
             } else {
                 setErrorMessage(defaultMsg);
             }
@@ -251,14 +237,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
 
         jTxtLocalFilename.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValues();
             }
@@ -267,14 +256,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
 
         jTxServiceURL.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValues();
             }
@@ -282,14 +274,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         
          jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkValues();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkValues();
             }
@@ -309,7 +304,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                 true, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
  
-        //dlg.setOptions(new Object[]{addButton, cancelButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         dlg.setValid(false);
         dialog.setVisible(true);
@@ -327,13 +321,14 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private void setDefaults() {
         jRbnUrl.setSelected(true);
         jRbnFilesystem.setSelected(false);
-//        displayInfo("<BR><BR><BR><BR><B>" +NbBundle.getMessage(AddWebServiceDlg.class, "INSTRUCTIONS") + "</B>");
         enableControls();
     }
 
     private void enableControls() {
-        if (allControlsDisabled) return;
-        
+        if (allControlsDisabled) {
+            return;
+        }
+
         if (jRbnUrl.isSelected()) {
             jTxServiceURL.setEnabled(true);
             jTxServiceURL.requestFocusInWindow();
@@ -421,9 +416,11 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INIT_WEB_SERVICES_MANAGER"));
             disableAllControls();
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     SaasServicesModel.getInstance().initRootGroup();
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             enableAllControls();
                             enableControls();
@@ -435,8 +432,8 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
-  
     }
 
     /** This method is called from within the constructor to
@@ -637,6 +634,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
 
     private static class ServiceFileFilter extends javax.swing.filechooser.FileFilter {
 
+        @Override
         public boolean accept(File f) {
             if (f.isDirectory()) {
                 return true;
@@ -652,6 +650,7 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
             return false;
         }
 
+        @Override
         public String getDescription() {
             return NbBundle.getMessage(AddWebServiceDlg.class, "LBL_WsdlFilterDescription"); // NOI18N
 

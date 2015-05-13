@@ -101,6 +101,7 @@ public final class GdbThread extends Thread {
 //        stack = new Frame[0]; // TODO if necessary use setStack(new Frame[0])
     }
 
+    @Override
     public String getName() {
 	return name;
     }
@@ -109,14 +110,17 @@ public final class GdbThread extends Thread {
 	return tid;
     }
 
+    @Override
     public String getFile() {
 	return file;
     }
 
+    @Override
     public String getLine() {
 	return line;
     }
 
+    @Override
     public boolean hasEvent() {
 	return false;
     }

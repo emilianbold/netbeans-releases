@@ -114,7 +114,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     private static final int SIZE_PREFERRED_HEIGHT=250;
 
     /** enumeration of NbExceptionManager.Exc to notify */
-    private static ArrayListPos exceptions;
+    static ArrayListPos exceptions;
     /** current exception */
     private NbErrorManager.Exc current;
 
@@ -634,7 +634,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 flash = new ExceptionFlasher();
             } else {
                 flash.timer.restart();
-                flash.note.clear();
+                if (flash.note != null) {
+                    flash.note.clear();
+                }
             }
             JComponent detailsPanel = getDetailsPanel(summary);
             JComponent bubblePanel = getDetailsPanel(summary);
@@ -717,6 +719,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     static class ArrayListPos extends ArrayList<NbErrorManager.Exc> {
         static final long serialVersionUID = 2L;
         
+        static final int SOFT_MAX_SIZE = 20;
+        static final int HARD_MAX_SIZE = 100;   // To prevent from OOME when too many exceptions are thrown
+
         protected int position;
 
         protected ArrayListPos () {
@@ -726,10 +731,13 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
 
         @Override
         public boolean add(NbErrorManager.Exc e) {
-            if (size() >= 20 && position < size() - 5) {
+            if (size() >= SOFT_MAX_SIZE && position < size() - 5) {
                 set(size() - 1, e);
                 return true;
             } else {
+                if (size() >= HARD_MAX_SIZE) {
+                    remove(5);  // it's beneficient to see the initial exceptions
+                }
                 return super.add(e);
             }
         }

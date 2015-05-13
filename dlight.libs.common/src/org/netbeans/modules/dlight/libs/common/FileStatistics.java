@@ -278,7 +278,7 @@ public class FileStatistics {
         return sorted;
     }
 
-    private class StatEntry {
+    private static class StatEntry {
         
         private int count;
         

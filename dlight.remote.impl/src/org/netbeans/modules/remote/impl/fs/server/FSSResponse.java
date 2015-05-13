@@ -95,7 +95,7 @@ import org.openide.util.NotImplementedException;
     private final ExecutionEnvironment env;
     
     private final Object lock = new Object();
-    private final LinkedList<Package> packages = new LinkedList<Package>();
+    private final LinkedList<Package> packages = new LinkedList<>();
     private ExecutionException exception = null;
     
     public FSSResponse(FSSRequest request, Disposer<FSSResponse> disposer, Listener listener, ExecutionEnvironment env) {
@@ -119,14 +119,17 @@ import org.openide.util.NotImplementedException;
 
     public Package getNextPackage() throws InterruptedException, ExecutionException {
         if (RemoteFileSystemUtils.isUnitTestMode()) {
-            long timeout = Integer.getInteger("remote.fs_server.timeout", 60000); //NOI18N
+            long timeout = Integer.getInteger("remote.fs_server.timeout", 30000); //NOI18N
             if (HangupEnvList.isHung(env)) {
                 throw new IllegalStateException("Rejected: timeout on previous attempt get package from " + env); //NOI18N
             }            
             Package pkg = getNextPackage(timeout);
             if (pkg == null) {
                 HangupEnvList.setHung(env);
-                throw new IllegalStateException("Timeout: can't get package for " + env + ":" + requestPath + " in " + timeout + " ms"); //NOI18N
+                final String errText = "Timeout: can't get package at " + env + " for request #" + requestId + // NOI18N
+                        ' ' + requestKind.getChar() + ' ' + requestPath + " in " + timeout + " ms"; // NOI18N
+                FSSDispatcher.getInstance(env).testDump(System.err); //NOI18N
+                throw new IllegalStateException(errText); //NOI18N
             }
             return pkg;
         }

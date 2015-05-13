@@ -43,8 +43,6 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.awt.Dialog;
-import java.io.IOException;
-import java.io.InterruptedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -62,7 +60,6 @@ import org.netbeans.modules.cnd.remote.ui.HostPropertiesDialog;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;

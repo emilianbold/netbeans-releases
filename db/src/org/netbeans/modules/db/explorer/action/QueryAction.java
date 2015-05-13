@@ -154,7 +154,7 @@ public abstract class QueryAction extends BaseAction {
         StringBuilder fullTableName = new StringBuilder();
         boolean tableIsQualified = false;
 
-        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getConnection().getCatalog(), tableIsQualified, dmd.getCatalogSeparator());
+        tableIsQualified = appendQualifiedName(fullTableName, quoter, catName, connection.getJDBCConnection().getCatalog(), tableIsQualified, dmd.getCatalogSeparator());
         // add schema always if possible
         appendQualifiedName(fullTableName, quoter, schemaName, null, tableIsQualified, null);
         fullTableName.append(quoter.quoteIfNeeded(simpleTableName));
@@ -169,7 +169,7 @@ public abstract class QueryAction extends BaseAction {
         SQLIdentifiers.Quoter quoter;
 
         try {
-            DatabaseMetaData dmd = connection.getConnection().getMetaData();
+            DatabaseMetaData dmd = connection.getJDBCConnection().getMetaData();
             quoter = SQLIdentifiers.createQuoter(dmd);
 
             SchemaNameProvider provider = activatedNodes[0].getLookup().lookup(SchemaNameProvider.class);
@@ -180,7 +180,7 @@ public abstract class QueryAction extends BaseAction {
             if (!isColumn) {
                 onome = getQualifiedTableName(activatedNodes[0].getName(), connection, provider, quoter, dmd);
 
-                return "select * from " + onome; // NOI18N
+                return "SELECT * FROM " + onome; // NOI18N
             } else {
                 String parentName = activatedNodes[0].getLookup().lookup(ColumnNameProvider.class).getParentName();
                 onome = getQualifiedTableName(parentName, connection, provider, quoter, dmd);
@@ -194,7 +194,7 @@ public abstract class QueryAction extends BaseAction {
                     cols.append(quoter.quoteIfNeeded(node.getName()));
                 }
 
-                return "select " + cols.toString() + " from " + onome; // NOI18N
+                return "SELECT " + cols.toString() + " FROM " + onome; // NOI18N
             }
         } catch (SQLException ex) {
             String message = NbBundle.getMessage(QueryAction.class, "ShowDataError", ex.getMessage()); // NOI18N

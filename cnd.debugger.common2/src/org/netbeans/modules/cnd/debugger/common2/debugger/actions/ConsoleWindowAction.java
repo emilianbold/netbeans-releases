@@ -55,26 +55,31 @@ public final class ConsoleWindowAction extends CallableSystemAction {
     static final long serialVersionUID = -6814567172958445516L;    
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebuggerManager.get().enableConsoleWindow();
     }
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("CTL_Cmdio"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("CTL_Cmdio"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/debugger_console.png"; // NOI18N
     }
 
     // interface CallableSystemAction
+    @Override
     public boolean asynchronous() {
 	return false;
     }

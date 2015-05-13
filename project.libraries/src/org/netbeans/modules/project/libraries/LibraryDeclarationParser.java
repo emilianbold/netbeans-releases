@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NonNull;
@@ -60,6 +61,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -356,11 +358,25 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
                     createLibraryDefinition3(library, libraryTypeProvider) :
                     createLibraryDefinition2(library, libraryTypeProvider)) :
                 createLibraryDefinition1(library, libraryTypeProvider);
-        final OutputStream os = definitionFile.getOutputStream();
         try {
-            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
-        } finally {
-            os.close();
+            FileLockManager.getDefault().writeAction(
+                definitionFile,
+                new Callable<Void>() {
+                    @Override
+                    public Void call() throws IOException {
+                        final FileLock lck = definitionFile.lock();
+                        try (OutputStream os = definitionFile.getOutputStream(lck)) {
+                            XMLUtil.write(doc, os, "UTF-8"); // NOI18N
+                        } finally {
+                            lck.releaseLock();
+                        }
+                        return null;
+                    }
+                });
+        } catch (IOException ioe) {
+            throw ioe;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

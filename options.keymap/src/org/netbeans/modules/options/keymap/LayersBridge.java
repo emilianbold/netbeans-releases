@@ -47,7 +47,6 @@ package org.netbeans.modules.options.keymap;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -67,16 +66,19 @@ import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.openide.ErrorManager;
 
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * Bridge to old layers based system.
@@ -106,10 +108,47 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
     /** Set (GlobalAction). */
     private Map<GlobalAction, GlobalAction> actions = new HashMap<GlobalAction, GlobalAction> ();
     
+    /**
+     * Listener attached to action foldes, which will schedule rebuild. The rebuild
+     * is delayed to avoid excessive rebuilding after module with more actions is enabled/disabled.
+     */
+    private final FileChangeListener fileListener = new FileChangeAdapter() {
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            scheduleRebuild();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            scheduleRebuild();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            scheduleRebuild();
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            scheduleRebuild();
+        }
+    };
+    
+    /**
+     * Listens on action folders, provokes rebuild
+     */
+    private final FileChangeListener  weakFolderL = WeakListeners.create(FileChangeListener.class, fileListener, null);
+    
     public LayersBridge() {
         super(LAYERS_BRIDGE);
     }
     
+    private void scheduleRebuild() {
+        synchronized (this) {
+            categoryToActions = null;
+        }
+    }
+
     /**
      * Returns Map (String (folderName) > Set (GlobalAction)).
      */
@@ -122,23 +161,43 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
         }
         return categoryToActions;
     }
+    
+    /**
+     * FileObjects the bridge used to load actions the last time. Null for the first
+     * initialization. Used to detach listeners.
+     */
+    // @GuardedBy(this)
+    private Collection<FileObject>  loadedFromFolders;
 
     private void initActions (String folder, String category) {
+        if (loadedFromFolders != null) {
+            for (FileObject f : loadedFromFolders) {
+                f.removeFileChangeListener(weakFolderL);
+            }
+        }
         FileObject fo = FileUtil.getConfigFile(folder);
         if (fo == null) return;
         DataFolder root = DataFolder.findFolder (fo);
+        if (loadedFromFolders == null) {
+            // the root must exist all the time, attach just once:
+            root.getPrimaryFile().addFileChangeListener(weakFolderL);
+        }
         Enumeration<DataObject> en = root.children ();
+        Collection<FileObject> newFolders = new ArrayList<>(7);
         while (en.hasMoreElements ()) {
             DataObject dataObject = en.nextElement ();
-            if (dataObject instanceof DataFolder)
-                initActions ((DataFolder) dataObject, null, category);
+            if (dataObject instanceof DataFolder) {
+                initActions ((DataFolder) dataObject, null, category, newFolders);
+            }
         }
+        this.loadedFromFolders = newFolders;
     }
     
     private void initActions (
         DataFolder folder, 
         String folderName, 
-        String category
+        String category, 
+        Collection<FileObject> folders
     ) {
         
         // 1) reslove name
@@ -159,12 +218,14 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
             if (folderName != null) 
                 name = folderName + '/' + name;
         }
-        
+        folders.add(folder.getPrimaryFile());
+        // watch out for changes
+        folder.getPrimaryFile().addFileChangeListener(weakFolderL);
         Enumeration en = folder.children ();
         while (en.hasMoreElements ()) {
             DataObject dataObject = (DataObject) en.nextElement ();
             if (dataObject instanceof DataFolder) {
-                initActions ((DataFolder) dataObject, name, category);
+                initActions ((DataFolder) dataObject, name, category, folders);
                 continue;
             }
             GlobalAction action = createAction (dataObject, name, dataObject.getPrimaryFile().getName(), false);

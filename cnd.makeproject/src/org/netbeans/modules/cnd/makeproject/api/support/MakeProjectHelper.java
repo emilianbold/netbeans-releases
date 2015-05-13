@@ -42,11 +42,9 @@
 package org.netbeans.modules.cnd.makeproject.api.support;
 
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.makeproject.MakeBasedProjectFactorySingleton;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
-import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.w3c.dom.Element;

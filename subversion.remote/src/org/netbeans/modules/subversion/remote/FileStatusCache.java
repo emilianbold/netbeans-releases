@@ -75,7 +75,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClient;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
@@ -386,8 +386,8 @@ public class FileStatusCache {
             // filter exclusions
             if (context.getExclusions().size() > 0) {
                 for (VCSFileProxy excluded : context.getExclusions()) {
-                    for (Iterator i = set.iterator(); i.hasNext();) {
-                        VCSFileProxy file = (VCSFileProxy) i.next();
+                    for (Iterator<VCSFileProxy> i = set.iterator(); i.hasNext();) {
+                        VCSFileProxy file = i.next();
                         if (SvnUtils.isParentOrEqual(excluded, file)) {
                             i.remove();
                         }
@@ -435,11 +435,11 @@ public class FileStatusCache {
         if (dir == null) {
             return FILE_INFORMATION_NOTMANAGED; //default for filesystem roots 
         }
-        Map files = getScannedFiles(dir);
+        Map<VCSFileProxy, FileInformation> files = getScannedFiles(dir);
         if (files == NOT_MANAGED_MAP) {
             return FILE_INFORMATION_NOTMANAGED;
         }
-        FileInformation fi = (FileInformation) files.get(file);
+        FileInformation fi = files.get(file);
         if (fi != null) {
             return fi;            
         }
@@ -588,13 +588,18 @@ public class FileStatusCache {
             boolean symlink = false;
             try {
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
-                symlink = topmost != null && isSymlink(file, topmost);
+                symlink = topmost != null && isSymlink(file);
                 if (!(symlink || SvnUtils.isPartOfSubversionMetadata(file))) {
-                    SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
-                    status = SvnUtils.getSingleStatus(client, file);
-                    if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                    if (isParentIgnored(file)) {
+                        // increase performace and do not query files under ignored parent
                         status = null;
-                    }
+                    } else {
+                        SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
+                        status = SvnUtils.getSingleStatus(client, file);
+                        if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {
+                            status = null;
+                        }
+                    }                    
                 }
             } catch (SVNClientException e) {
                 // svnClientAdapter does not return SVNStatusKind.UNVERSIONED!!!
@@ -685,6 +690,16 @@ public class FileStatusCache {
         }                       
         return fi;
     }    
+
+    private boolean isParentIgnored (VCSFileProxy file) {
+        VCSFileProxy parent = file.getParentFile();
+        if (parent != null) {
+            FileInformation parentInfo = getCachedStatus(parent);
+            return parentInfo != null && parentInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED;
+        } else {
+            return false;
+        }
+    }
 
     public void patchRevision(VCSFileProxy[] fileArray, SVNRevision.Number revision) {        
         for (VCSFileProxy file : fileArray) {            
@@ -816,6 +831,9 @@ public class FileStatusCache {
             LOG.log(Level.WARNING, "Cache contains too many entries: {0}", (Integer) modifiedFiles.length); //NOI18N
         }
         for (VCSFileProxy file : modifiedFiles) {
+            if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+                continue;
+            }
             FileInformation info = getCachedStatus(file);
             if (info != null && (info.getStatus() & FileInformation.STATUS_LOCAL_CHANGE) != 0) {
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
@@ -835,10 +853,10 @@ public class FileStatusCache {
      * @param dir directory to refresh
      */
     void directoryContentChanged(VCSFileProxy dir) {
-        Map originalFiles = (Map) turbo.readEntry(dir, FILE_STATUS_MAP);
+        Map<VCSFileProxy, FileInformation> originalFiles = (Map<VCSFileProxy, FileInformation>) turbo.readEntry(dir, FILE_STATUS_MAP);
         if (originalFiles != null) {
-            for (Iterator i = originalFiles.keySet().iterator(); i.hasNext();) {
-                VCSFileProxy file = (VCSFileProxy) i.next();
+            for (Iterator<VCSFileProxy> i = originalFiles.keySet().iterator(); i.hasNext();) {
+                VCSFileProxy file = i.next();
                 refresh(file, REPOSITORY_STATUS_UNKNOWN);
             }
         }
@@ -876,8 +894,8 @@ public class FileStatusCache {
         files = scanFolder(dir);    // must not execute while holding the lock, it may take long to execute
         assert files.containsKey(dir) == false : "Dir " + dir + "contains " + files.toString(); //NOI18N
         turbo.writeEntry(dir, FILE_STATUS_MAP, files);
-        for (Iterator i = files.keySet().iterator(); i.hasNext();) {
-            VCSFileProxy file = (VCSFileProxy) i.next();
+        for (Iterator<VCSFileProxy> i = files.keySet().iterator(); i.hasNext();) {
+            VCSFileProxy file = i.next();
             FileInformation info = files.get(file);
             if ((info.getStatus() & (FileInformation.STATUS_LOCAL_CHANGE | FileInformation.STATUS_NOTVERSIONED_EXCLUDED)) != 0) {
                 fireFileStatusChanged(file, null, info);
@@ -906,7 +924,7 @@ public class FileStatusCache {
         ISVNStatus [] entries = null;
         final Context context = new Context(dir);
         try {
-            if (SvnUtils.isManaged(dir)) {                
+            if (SvnUtils.isManaged(dir) && !isParentIgnored(dir)) {                
                 SvnClient client = Subversion.getInstance().getClient(true, context);
                 entries = client.getStatus(dir, false, true); 
             }
@@ -950,13 +968,13 @@ public class FileStatusCache {
                 }
             }
 
-            Iterator it = localFiles.iterator();
+            Iterator<VCSFileProxy> it = localFiles.iterator();
             while (it.hasNext()) {
-                VCSFileProxy localFile = (VCSFileProxy) it.next();
+                VCSFileProxy localFile = it.next();
                 FileInformation fi = createFileInformation(localFile, null, REPOSITORY_STATUS_UNKNOWN);
                 VCSFileProxy topmost = Subversion.getInstance().getTopmostManagedAncestor(localFile);
                 if (fi.isDirectory() || topmost == null || fi.getStatus() != FileInformation.STATUS_VERSIONED_UPTODATE
-                        && !isSymlink(localFile, topmost)) {
+                        && !isSymlink(localFile)) {
                     folderFiles.put(localFile, fi);
                 }
             }
@@ -1104,10 +1122,13 @@ public class FileStatusCache {
         if(exists && VCSFileProxySupport.isMac(file) && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
             exists = false;
-            for(VCSFileProxy child : parent.listFiles()) {
-                if (child.getName().equals(file.getName())) {
-                    exists = true;
-                    break;
+            final VCSFileProxy[] listFiles = parent.listFiles();
+            if (listFiles != null) {
+                for(VCSFileProxy child : listFiles) {
+                    if (child.getName().equals(file.getName())) {
+                        exists = true;
+                        break;
+                    }
                 }
             }
         } 
@@ -1198,10 +1219,10 @@ public class FileStatusCache {
         listenerSupport.fireVersioningEvent(EVENT_FILE_STATUS_CHANGED, new Object [] { file, oldInfo, newInfo });
     }
 
-    private boolean isSymlink (VCSFileProxy file, VCSFileProxy root) {
+    private boolean isSymlink (VCSFileProxy file) {
         boolean symlink = false;
         if (EXCLUDE_SYMLINKS) {
-            symlink = VCSFileProxySupport.isSymlink(file, root);
+            symlink = VCSFileProxySupport.isSymlink(file);
         }
         return symlink;
     }
@@ -1213,7 +1234,7 @@ public class FileStatusCache {
         }
     }
 
-    private class FakeRevisionStatus implements ISVNStatus {
+    private static class FakeRevisionStatus implements ISVNStatus {
         private final ISVNStatus value;
         private final SVNRevision.Number revision;
         public FakeRevisionStatus(ISVNStatus value, SVNRevision.Number revision) {
@@ -1372,6 +1393,7 @@ public class FileStatusCache {
          * @param mimeTypeFlag mime label is needed?
          * @return a cache item or a fake one if the original is null or invalid
          */
+        @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "labelInfo != null"
         public FileLabelInfo getLabelInfo(VCSFileProxy file, boolean mimeTypeFlag) {
             FileLabelInfo labelInfo;
             boolean refreshInfo = false;
@@ -1442,6 +1464,13 @@ public class FileStatusCache {
                     HashMap<VCSFileProxy, FileLabelInfo> labels = new HashMap<>(filesToRefresh.size());
                     for (VCSFileProxy file : filesToRefresh) {
                         try {
+                            FileInformation fi = master.getCachedStatus(file);
+                            if (fi != null && (fi.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0
+                                    || master.isParentIgnored(file)) {
+                                // increase performace and do not query ignored files
+                                labels.put(file, FAKE_LABEL_INFO);
+                                continue;
+                            }
                             final Context context = new Context(file);
                             SvnClient client = Subversion.getInstance().getClient(false, context);
                             // get status for all files
@@ -1455,7 +1484,6 @@ public class FileStatusCache {
                             if (info.getLastChangedDate() != null) {
                                 lastDateString = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(info.getLastChangedDate());
                             }
-                            FileInformation fi = master.getCachedStatus(file);
                             Annotator.AnnotationFormat af = annotator.getAnnotationFormat(context.getFileSystem());
                             if (af.mimeTypeFlag) {
                                 // call svn prop command only when really needed

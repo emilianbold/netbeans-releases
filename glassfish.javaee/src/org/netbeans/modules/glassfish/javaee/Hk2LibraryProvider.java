@@ -53,10 +53,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.glassfish.tools.ide.data.GlassFishLibrary;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.server.config.ConfigBuilder;
-import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishLibrary;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilder;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import static org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties.fileToUrl;
@@ -381,8 +381,8 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
                 Map<String,List<URL>> contents
                         = new HashMap<String, List<URL>>(1);
                 Map<String, String> properties = new HashMap<String, String>(2);
-                contents.put("classpath", gfLib.getClasspath());
-                contents.put("javadoc", gfLib.getJavadocs());
+                contents.put("classpath", translateArchiveUrls(gfLib.getClasspath()));
+                contents.put("javadoc", translateArchiveUrls(gfLib.getJavadocs()));
                 properties.put("maven-dependencies", gfLib.getMavenDeps());
                 properties.put("maven-repositories", "default");
                 try {
@@ -469,5 +469,17 @@ public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
             }
         }
         return Collections.<URL>emptyList();
+    }
+
+    private List<URL> translateArchiveUrls(List<URL> urls) {
+        List<URL> result = new ArrayList<>(urls.size());
+        for (URL u : urls) {
+            if (FileUtil.isArchiveFile(u)) {
+                result.add(FileUtil.getArchiveRoot(u));
+            } else {
+                result.add(u);
+            }
+        }
+        return result;
     }
 }

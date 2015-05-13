@@ -45,7 +45,6 @@ import java.awt.event.KeyEvent;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
 
 /**
@@ -54,37 +53,39 @@ import org.netbeans.modules.javascript2.nodejs.GeneralNodeJs;
  */
 public class ModuleInstanceTest extends GeneralNodeJs {
 
+    static final String[] tests = new String[]{
+        "openProject",
+        "testInstance1",
+        "testInstance2",
+        "testInstance3",
+        "testInstance4",
+        "testInstance5",
+        "testInstance6",
+        "testInstance7",
+        "testInstance8",
+        "testInstance9",
+        "testReference1",
+        "testReference2",
+        "testReference3",
+        "testReference4",
+        "testReference5",
+        "testReference6",
+        "testReference7",
+        "testReference8",
+        "testReference9"
+    };
+
     public ModuleInstanceTest(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ModuleInstanceTest.class).addTest(
-                        "openProject",
-                        "testInstance1",
-                        "testInstance2",
-                        "testInstance3",
-                        "testInstance4",
-                        "testInstance5",
-                        "testInstance6",
-                        "testInstance7",
-                        "testInstance8",
-                        "testInstance9",
-                        "testReference1",
-                        "testReference2",
-                        "testReference3",
-                        "testReference4",
-                        "testReference5",
-                        "testReference6",
-                        "testReference7",
-                        "testReference8",
-                        "testReference9"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(ModuleInstanceTest.class, tests);
     }
 
     public void openProject() throws Exception {
         startTest();
+        GeneralNodeJs.currentLine = 0;
         JemmyProperties.setCurrentTimeout("ActionProducer.MaxActionTime", 180000);
         openDataProjects("SimpleNode");
         evt.waitNoEvent(2000);

@@ -70,6 +70,7 @@ import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import static org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.getDefaultConfigurationFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbCollections;
 
@@ -218,22 +219,21 @@ public class WildFlyProperties {
     }
 
     private List<URL> selectJars(FileObject file) {
-        if(file == null) {
+        if (file == null) {
             return Collections.EMPTY_LIST;
         }
         if (file.isData()) {
             if (file.isValid() && FileUtil.isArchiveFile(file)) {
-                return Collections.singletonList(file.toURL());
+                URL url = URLMapper.findURL(file, URLMapper.EXTERNAL);
+                if (url != null) {
+                    return Collections.singletonList(FileUtil.getArchiveRoot(url));
+                }
             }
             return Collections.EMPTY_LIST;
         }
         List<URL> result = new ArrayList<URL>();
         for (FileObject child : file.getChildren()) {
-            if (file.isData() && FileUtil.isArchiveFile(file)) {
-                result.add(child.toURL());
-            } else if (file.isFolder()) {
-                result.addAll(selectJars(child));
-            }
+            result.addAll(selectJars(child));
         }
         return result;
     }
@@ -242,7 +242,7 @@ public class WildFlyProperties {
         List<URL> list = selectJars(FileUtil.toFileObject(new File(getModulePath("javax"))));
         File glassfish = new File(getModulePath("org/glassfish/javax"));
         if(glassfish.exists()) {
-        list.addAll(selectJars(FileUtil.toFileObject(glassfish)));
+            list.addAll(selectJars(FileUtil.toFileObject(glassfish)));
         }
         return list;
     }

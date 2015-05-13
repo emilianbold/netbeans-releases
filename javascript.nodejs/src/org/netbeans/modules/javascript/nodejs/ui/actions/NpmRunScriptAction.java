@@ -58,7 +58,6 @@ import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.nodejs.exec.NpmExecutable;
 import org.netbeans.modules.javascript.nodejs.file.PackageJson;
-import org.netbeans.modules.javascript.nodejs.platform.NodeJsSupport;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.openide.awt.ActionID;
@@ -70,16 +69,18 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
 @ActionID(id = "org.netbeans.modules.javascript.nodejs.ui.actions.NpmRunScriptAction", category = "Build")
 @ActionRegistration(displayName = "#NpmRunScriptAction.name", lazy = false)
 @ActionReferences({
-    @ActionReference(path = "Editors/text/package+x-json/Popup", position = 907),
+    // #250300
+    //@ActionReference(path = "Editors/text/package+x-json/Popup", position = 907),
     @ActionReference(path = "Loaders/text/package+x-json/Actions", position = 157),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 171),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 651),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 111),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 651),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 751),
 })
@@ -107,7 +108,8 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
         }
         setEnabled(project != null);
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
-        putValue(Action.NAME, Bundle.NpmRunScriptAction_name());
+        // hide this action from Tools > Keymap
+        putValue(Action.NAME, ""); // NOI18N
     }
 
     @Override
@@ -117,13 +119,16 @@ public class NpmRunScriptAction extends AbstractAction implements ContextAwareAc
 
     @Override
     public Action createContextAwareInstance(Lookup context) {
-        Project contextProject = NodeJsUtils.getPackageJsonProject(context);
+        Pair<Project, PackageJson> data = NodeJsUtils.getProjectAndPackageJson(context);
+        Project contextProject = data.first();
         if (contextProject == null) {
             return this;
         }
-        Map<String, Object> allScripts = NodeJsSupport.forProject(contextProject)
-                .getPackageJson()
-                .getContentValue(Map.class, PackageJson.FIELD_SCRIPTS);
+        PackageJson packageJson = data.second();
+        if (packageJson == null) {
+            return this;
+        }
+        Map<String, Object> allScripts = packageJson.getContentValue(Map.class, PackageJson.FIELD_SCRIPTS);
         if (allScripts == null
                 || allScripts.isEmpty()) {
             return this;

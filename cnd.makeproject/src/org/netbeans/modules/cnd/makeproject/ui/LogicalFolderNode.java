@@ -129,7 +129,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         List<Object> elems = new ArrayList<>(3);
         elems.add(folder);
         elems.add(new FolderSearchInfo(folder));
-        
+
         //No need to have project in lookup for physical folders, see bug 229005
         if (!folder.isDiskFolder()) {
             elems.add(provider.getProject());
@@ -276,7 +276,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         }
         if (folder.isProjectFiles() && folder.isRemoved()) {
             image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenFolderBadge, 11, 0);
-        }        
+        }
         image = annotateIcon(image, type);
         return image;
     }
@@ -318,9 +318,9 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 return;
             }
             FileLock lock = null;
-            try {                
+            try {
                 lock = fo.lock();
-                fo.rename(lock, newName, null);                
+                fo.rename(lock, newName, null);
             } catch (IOException ioe) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ioe.getMessage()));
             } finally {
@@ -357,7 +357,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     public boolean canCut() {
         return true;//getFolder().isDiskFolder();
     }
-    
+
     @Override
     public boolean canCopy() {
         return true;//getFolder().isDiskFolder();
@@ -391,7 +391,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             }
         });
     }
-    
+
     public void destroyImpl() throws IOException {
         final Folder aFolder = getFolder();
         if (!aFolder.isDiskFolder()) {
@@ -409,7 +409,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         }
         super.destroy();
     }
-    
+
     @Override
     public PasteType getDropType(Transferable transferable, int action, int index) {
         DataFlavor[] flavors = transferable.getTransferDataFlavors();
@@ -434,7 +434,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
-                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
+                    int type = Integer.parseInt(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                     list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }
@@ -442,7 +442,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                 try {
                     LogicalFolderNode viewFolderNode = (LogicalFolderNode) transferable.getTransferData(flavors[i]);
                     if (viewFolderNode != this) {
-                        int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
+                        int type = Integer.parseInt(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                         list.add(new ViewFolderPasteType(folder, viewFolderNode, type, provider));
                     }
                 } catch (Exception e) {
@@ -451,7 +451,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         }
         super.createPasteTypes(transferable, list);
     }
-    
+
     private ExTransferable addViewFolderTransferable(Transferable t, int operation) {
         try {
             ExTransferable extT = ExTransferable.create(t);
@@ -562,7 +562,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         result = NodeActionFactory.insertSyncActions(result, RenameNodeAction.class);
         return result;
     }
-    
+
     private static final class ViewFolderTransferable extends ExTransferable.Single {
 
         private final LogicalFolderNode node;

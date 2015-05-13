@@ -102,7 +102,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         private int files = 0;
         private int directories = 0;
         private long time = System.currentTimeMillis();
-        private static int divider = 5000;
+        private static final int divider = 5000;
 
         public int getFiles() {
             return files;
@@ -242,7 +242,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         }
 
         System.err.printf("### Recursing locally %s\n", toString(paths));
-        List<IOException> localExceptions = new ArrayList<IOException>();
+        List<IOException> localExceptions = new ArrayList<>();
         Counter localCounter = new Counter();
         long localTime = System.currentTimeMillis();
         for (FileObject localBaseDirFO : localFileObjects) {
@@ -251,7 +251,7 @@ public class PerformanceTestCase extends RemoteFileTestBase {
         localTime = System.currentTimeMillis() - localTime;
 
         System.err.printf("### Recursing remotely %s\n", toString(paths));
-        List<IOException> remoteExceptions = new ArrayList<IOException>();
+        List<IOException> remoteExceptions = new ArrayList<>();
         Counter remoteCounter = new Counter();
         long remoteTime = System.currentTimeMillis();
         for (FileObject remoteBaseDirFO : remoteFileObjects) {

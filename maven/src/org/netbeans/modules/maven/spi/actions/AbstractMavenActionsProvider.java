@@ -116,10 +116,23 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
-        ActionToGoalMapping rawMappings = getRawMappings();
-        Iterator<NetbeansActionMapping> it = rawMappings.getActions().iterator();
         NbMavenProject mp = project.getLookup().lookup(NbMavenProject.class);
         String prjPack = mp.getPackagingType();
+        return isActionEnable(action, prjPack);
+    }
+    
+    /**
+     * Performance convenience to 
+     * {@link  #isActionEnable(java.lang.String, org.netbeans.api.project.Project, org.openide.util.Lookup)}. 
+     * Avoids redundant and potentially costly packaging retrieval. 
+     * 
+     * @param action
+     * @param prjPack
+     * @return 
+     */
+    public final boolean isActionEnable(String action, String prjPack) {
+        ActionToGoalMapping rawMappings = getRawMappings();
+        Iterator<NetbeansActionMapping> it = rawMappings.getActions().iterator();
         while (it.hasNext()) {
             NetbeansActionMapping elem = it.next();
             if (action.equals(elem.getActionName()) &&

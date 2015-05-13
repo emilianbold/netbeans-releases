@@ -60,7 +60,7 @@ public final class EnvReader implements Callable<Map<String, String>> {
 
     @Override
     public Map<String, String> call() throws Exception {
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         BufferedReader br = ProcessUtils.getReader(is, remote);
         String s = null;
         StringBuilder buffer = new StringBuilder();

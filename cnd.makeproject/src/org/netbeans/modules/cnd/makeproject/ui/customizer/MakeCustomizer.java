@@ -51,9 +51,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +87,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
@@ -549,14 +546,15 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                                 PropertyNode propNode = (PropertyNode) selNode;
                                 for (int i = 0; i < selectedConfigurations.length; i++) {
                                     Sheet[] sheets = propNode.getSheets(selectedConfigurations[i]);
+                                    if (sheets != null) {
+                                        for (Sheet sheet : sheets) {
+                                            if (((MakeConfigurationDescriptor) projectDescriptor).hasProjectCustomizer()) {
+                                                MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor) projectDescriptor).getProjectCustomizer();
+                                                sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                            }
 
-                                    for (Sheet sheet : sheets) {
-                                        if (((MakeConfigurationDescriptor) projectDescriptor).hasProjectCustomizer()) {
-                                            MakeProjectCustomizer makeProjectCustomizer = ((MakeConfigurationDescriptor) projectDescriptor).getProjectCustomizer();
-                                            sheet = makeProjectCustomizer.getPropertySheet(sheet);
+                                            dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                         }
-
-                                        dummyNodes.add(new DummyNode(sheet, selectedConfigurations[i].getName()));
                                     }
                                 }
                             }

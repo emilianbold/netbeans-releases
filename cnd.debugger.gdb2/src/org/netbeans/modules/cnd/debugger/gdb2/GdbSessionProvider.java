@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeSessionProvider;
 
 public class GdbSessionProvider extends NativeSessionProvider {
 
-    private GdbDebuggerInfo ddi;
+    private final GdbDebuggerInfo ddi;
 
     public GdbSessionProvider(ContextProvider ctx) {
 	super(ctx);
@@ -58,6 +58,7 @@ public class GdbSessionProvider extends NativeSessionProvider {
     } 
 
     // interface SessionProvider
+    @Override
     public String getTypeID() {
 	// "folder" in which lookup will look for 
 	// org.netbeans.spi.debugger.DebuggerEngineProvider

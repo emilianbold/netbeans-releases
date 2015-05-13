@@ -56,7 +56,6 @@ import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
@@ -494,5 +493,20 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
         // instance check is in isMine
         return ((RemoteFileObject) fo).getInputStream(maxSize);
+    }
+    
+    @Override
+    public boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
+        return RemoteFileSystemTransport.canSetAccessCheckType(execEnv);
+    }
+
+    @Override
+    public void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
+        RemoteFileSystemTransport.setAccessCheckType(execEnv, accessCheckType);
+    }
+    
+    @Override
+    public FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
+        return RemoteFileSystemTransport.getAccessCheckType(execEnv);
     }
 }

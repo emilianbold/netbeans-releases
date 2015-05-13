@@ -88,7 +88,7 @@ public class KnockoutChildFactory extends ChildFactory<PropertyDescriptor> {
     protected boolean createKeys(List<PropertyDescriptor> toPopulate) {
         if (webKitNode != null) {
             RemoteObject jsNode = webKit.getDOM().resolveNode(webKitNode, null);
-            String function = "function() { return window.NetBeans && NetBeans.usesKnockout() ? NetBeans.getKnockout().contextFor(this) : null; }"; // NOI18N
+            String function = "function() { return window.NetBeans && NetBeans.getKnockoutVersion() ? NetBeans.getKnockout().contextFor(this) : null; }"; // NOI18N
             remoteObject = webKit.getRuntime().callFunctionOn(jsNode, function);
         }
         if (remoteObject.getType() == RemoteObject.Type.OBJECT) {

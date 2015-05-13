@@ -47,10 +47,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -89,6 +87,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -116,9 +115,7 @@ public class OperatorGenerator implements CodeGenerator {
                 return ret;
             }
             CsmObject objectUnderOffset = path.getObjectUnderOffset();
-            final Set<CsmField> shouldBeInitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> mayBeIninitializedFields = new LinkedHashSet<>();
-            final Set<CsmField> cannotBeInitializedFields = new LinkedHashSet<>();
+            final List<Pair<CsmField,ConstructorGenerator.Inited>> fields = new ArrayList<>();
             final List<CsmConstructor> constructors = new ArrayList<>();
             final Map<CsmClass,List<CsmConstructor>> inheritedConstructors = new HashMap<>();
             CsmCacheManager.enter();
@@ -140,7 +137,7 @@ public class OperatorGenerator implements CodeGenerator {
                     }
                 }
             }
-            GeneratorUtils.scanForFieldsAndConstructors(typeElement, shouldBeInitializedFields, mayBeIninitializedFields, cannotBeInitializedFields, constructors);
+            GeneratorUtils.scanForFieldsAndConstructors(typeElement, fields, constructors);
             } finally {
                 CsmCacheManager.leave();
             }
@@ -157,16 +154,20 @@ public class OperatorGenerator implements CodeGenerator {
                 constructorDescription = ElementNode.Description.create(typeElement, baseClassesDescriptions, false, false);
             }
             ElementNode.Description fieldsDescription = null;
-            if (!mayBeIninitializedFields.isEmpty() || !shouldBeInitializedFields.isEmpty() || !cannotBeInitializedFields.isEmpty()) {
+            if (!fields.isEmpty()) {
                 List<ElementNode.Description> fieldDescriptions = new ArrayList<>();
-                for (CsmField variableElement : mayBeIninitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, variableElement.equals(objectUnderOffset)));
-                }
-                for (CsmField variableElement : shouldBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, true, true));
-                }
-                for (CsmField variableElement : cannotBeInitializedFields) {
-                    fieldDescriptions.add(ElementNode.Description.create(variableElement, null, false, false));
+                for (Pair<CsmField,ConstructorGenerator.Inited> variableElement : fields) {
+                    switch(variableElement.second()) {
+                        case must:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
+                            break;
+                        case may:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
+                            break;
+                        case cannot:
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));
+                            break;
+                    }
                 }
                 fieldsDescription = ElementNode.Description.create(typeElement, Collections.singletonList(ElementNode.Description.create(typeElement, fieldDescriptions, false, false)), false, false);
             }
@@ -340,7 +341,6 @@ public class OperatorGenerator implements CodeGenerator {
         }
 
         private void init() {
-            StringBuilder buf = new StringBuilder();
             switch (kind) {
                 case MOD_EQ:
                     name = "operator %="; // NOI18N
@@ -902,6 +902,16 @@ public class OperatorGenerator implements CodeGenerator {
 
         @Override
         public boolean isVirtual() {
+            return false;
+        }
+
+        @Override
+        public boolean isOverride() {
+            return false;
+        }
+
+        @Override
+        public boolean isFinal() {
             return false;
         }
 

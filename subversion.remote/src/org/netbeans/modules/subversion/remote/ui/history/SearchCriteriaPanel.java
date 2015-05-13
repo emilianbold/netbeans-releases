@@ -63,8 +63,8 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.ui.browser.Browser;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -245,11 +245,13 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         );
 
         bBrowseFrom.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                         onFromBrowse(evt);
                 }
         });
         bBrowseTo.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent evt) {
                         onToBrowse(evt);
                 }
@@ -267,7 +269,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
     private void onBrowse(final JTextField destination) {
         final SVNUrl repositoryUrl;
         try {            
-            repositoryUrl = url != null ? url : SvnUtils.getRepositoryRootUrl(roots[0]); 
+            repositoryUrl = url != null ? url : ContextAction.getSvnUrl(new Context(roots[0])); 
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(new Context(roots), ex, true, true);
             return;

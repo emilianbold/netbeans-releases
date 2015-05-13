@@ -137,7 +137,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         assertNotNull("FileObject for " + name + " sample not found", templateFO);
         final DataObject templateDO = DataObject.find(templateFO);
         assertNotNull("DataObject for " + name + " sample not found", templateDO);
-        final AtomicReference<IOException> exRef = new AtomicReference<IOException>();
+        final AtomicReference<IOException> exRef = new AtomicReference<>();
         SwingUtilities.invokeAndWait(new Runnable() {
             @Override
             public void run() {
@@ -164,7 +164,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
 
     @Override
     protected List<Class<?>> getServices() {
-        List<Class<?>> list = new ArrayList<Class<?>>();
+        List<Class<?>> list = new ArrayList<>();
         list.add(MakeProjectTypeImpl.class);
         list.addAll(super.getServices());
         return list;
@@ -386,12 +386,17 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         }
     }
 
-    protected void checkCodeModel(MakeProject makeProject) throws Exception {
+    protected CsmProject getCsmProject(MakeProject makeProject) throws Exception {
         NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
         assertNotNull("Null NativeProject", np);
         CsmModel model = CsmModelAccessor.getModel();
         ((ModelImpl) model).enableProject(np);
         CsmProject csmProject = model.getProject(makeProject);
+        return csmProject;
+    }
+    
+    protected void checkCodeModel(MakeProject makeProject) throws Exception {
+        CsmProject csmProject = getCsmProject(makeProject);
         assertNotNull("Null CsmProject", csmProject);
         csmProject.waitParse();
         checkIncludes(csmProject, true);

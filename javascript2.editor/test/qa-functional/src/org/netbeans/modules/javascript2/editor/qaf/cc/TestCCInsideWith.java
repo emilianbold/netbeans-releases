@@ -47,7 +47,6 @@ import static junit.framework.Assert.fail;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
 import static org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript.NAME_ITERATOR;
 
@@ -59,26 +58,28 @@ import static org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript.NAME
  */
 public class TestCCInsideWith extends GeneralJavaScript {
 
+    static final String[] tests = new String[]{
+        "createApplication",
+        "testSimplePrototype",
+        "testObjectFunction",
+        "testObjectLiteral",
+        "testPrototypeInheritance",
+        "testObjectLiteral",
+        "testIssue215394",
+        "testIssue215393",
+        "testAllCompletionSingleFile",
+        "testAllCompletionMultipleFiles",
+        "testCallAndApply",
+        "testLearning",
+        "testSetterGetter"
+    };
+
     public TestCCInsideWith(String args) {
         super(args);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(TestCCInsideWith.class).addTest(
-                "createApplication",
-                "testSimplePrototype",
-                "testObjectFunction",
-                "testObjectLiteral",
-                "testPrototypeInheritance",
-                "testObjectLiteral",
-                "testIssue215394",
-                "testIssue215393",
-                "testAllCompletionSingleFile",
-                "testAllCompletionMultipleFiles",
-                "testCallAndApply",
-                "testLearning",
-                "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+        return createModuleTest(TestCCInsideWith.class, tests);
     }
 
     public void createApplication() {

@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.ConnectException;
+import java.util.Collection;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.remotefs.versioning.api.*;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -66,9 +69,13 @@ public interface RemoteVcsSupportImplementation {
 
     FileSystem[] getFileSystems();
 
+    FileSystem[] getConnectedFileSystems();
+
     FileSystem getDefaultFileSystem();
 
     boolean isSymlink(VCSFileProxy proxy);
+
+    String readSymbolicLinkPath(VCSFileProxy file) throws IOException;
     
     boolean canRead(VCSFileProxy proxy);
 
@@ -78,7 +85,11 @@ public interface RemoteVcsSupportImplementation {
 
     public VCSFileProxy getCanonicalFile(VCSFileProxy proxy) throws IOException;
 
+    public VCSFileProxy getHome(VCSFileProxy proxy);
+
     public boolean isMac(VCSFileProxy proxy);
+
+    public boolean isSolaris(VCSFileProxy proxy);
 
     public boolean isUnix(VCSFileProxy proxy);
 
@@ -86,9 +97,25 @@ public interface RemoteVcsSupportImplementation {
 
     public String getFileSystemKey(FileSystem proxy);
 
+    public boolean isConnectedFileSystem(FileSystem file);
+
+    public void connectFileSystem(FileSystem file);
+
     public String toString(VCSFileProxy proxy);
 
     public VCSFileProxy fromString(String proxy);
 
     public OutputStream getOutputStream(VCSFileProxy proxy) throws IOException;
+
+    public void delete(VCSFileProxy file);
+    
+    public void deleteExternally(VCSFileProxy file);
+
+    public void setLastModified(VCSFileProxy file, VCSFileProxy referenceFile);
+
+    public FileSystem readFileSystem(DataInputStream is) throws IOException ;
+
+    public void writeFileSystem(DataOutputStream os, FileSystem fs) throws IOException ;
+
+    public void refreshFor(FileSystem fs, String... paths) throws ConnectException, IOException;
 }

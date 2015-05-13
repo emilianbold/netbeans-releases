@@ -62,13 +62,13 @@ import org.openide.util.Exceptions;
 
 class GdbVariable extends Variable {
     static enum DisplayHint {NONE, ARRAY, MAP, STRING}
-    
+
     protected final GdbDebuggerImpl debugger;
     private final boolean isWatch;
-    
+
     private int childrenRequested = 0;
-    private final int REQUEST_STEP = 100;
-    
+    private static final int REQUEST_STEP = 100;
+
     private String mi_name;
     //private String value; // should use the one in parent (VARIABLE) class
     private String mi_format = "natural"; // NOI18N
@@ -78,9 +78,9 @@ class GdbVariable extends Variable {
     private boolean inScope = true;
     private boolean dynamic = false;
     private DisplayHint displayHint = DisplayHint.NONE;
-    
+
     public static final String HAS_MORE = "has_more";   //NOI18N
-    
+
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
 		       String name, String type, String value,
@@ -122,7 +122,7 @@ class GdbVariable extends Variable {
     public DisplayHint getDisplayHint() {
         return displayHint;
     }
-    
+
     private void setDisplayHint(String hint) {
         try {
             displayHint = DisplayHint.valueOf(hint.toUpperCase());
@@ -210,7 +210,7 @@ class GdbVariable extends Variable {
 
         if (waitingForDebugger)
             return new Variable[0];
-                
+
         waitingForDebugger = true;           // reset in setChildren()
         Runnable r = new Runnable() {
             @Override
@@ -223,7 +223,7 @@ class GdbVariable extends Variable {
             }
         };
         SwingUtilities.invokeLater(r);
-        
+
 	// return a dummy place-holder for now.
         return new Variable[0];
     }
@@ -231,20 +231,20 @@ class GdbVariable extends Variable {
     public void setChildren() {
         debugger.getMIChildren(this, getMIName(), 0);
     }
-    
+
     public int getChildrenRequestedCount() {
         return childrenRequested;
     }
-    
+
     public int incrementChildrenRequestedCount() {
         this.childrenRequested += REQUEST_STEP;
         return childrenRequested;
     }
-    
+
     public void resetChildrenRequestedCount() {
         this.childrenRequested = 0;
     }
-    
+
     public void setHasMore(String value) {
         if (value == null || value.isEmpty()) {
             hasMore = false;
@@ -252,7 +252,7 @@ class GdbVariable extends Variable {
             hasMore = !value.equals("0");  //NOI18N
         }
     }
-    
+
     @Override
     public void getMoreChildren() {
         debugger.getMoreMIChildren(this, this.getMIName(), 1);
@@ -351,14 +351,14 @@ class GdbVariable extends Variable {
     public void createWatch() {
         debugger.createWatchFromVariable(this);
     }
-    
+
     //////////////
     // Methods to populate from gdb results
-    
+
     void populateFields(MITList results) {
         setMIName(results.getConstValue("name")); // NOI18N
         setType(results.getConstValue("type")); // NOI18N
-        
+
         String numchild_l = results.getConstValue(GdbDebuggerImpl.MI_NUMCHILD);
         MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
         if (dynamicVal != null) {
@@ -379,7 +379,7 @@ class GdbVariable extends Variable {
         }
         setNumChild(numchild_l); // also set children if there is any
     }
-    
+
     void populateUpdate(MITList results) {
         for (MIResult item : results.getOnly(MIResult.class)) {
             if (item.matches("in_scope")) { //NOI18N

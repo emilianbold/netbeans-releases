@@ -452,7 +452,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
             if (cleanOld) {
                 script.append("rm -rf *").append(";\n");
             }
-            Set<String> checkedPaths = new HashSet<String>();
+            Set<String> checkedPaths = new HashSet<>();
             for (String data : creationData) {
                 if (data.length() < 3 || data.charAt(1) != ' ') {
                     throw new IllegalArgumentException("wrong format: " + data);
@@ -593,7 +593,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     private List<String> readFileLines(File file) throws IOException {
         BufferedReader r = new BufferedReader(new FileReader(file));
         try {
-            List<String> lines = new ArrayList<String>();
+            List<String> lines = new ArrayList<>();
             String line;
             while ((line = r.readLine()) != null) {
                 lines.add(line);

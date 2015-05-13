@@ -178,7 +178,7 @@ public final class ProcessUtils {
             return Collections.<String>emptyList();
         }
 
-        final List<String> result = new LinkedList<String>();
+        final List<String> result = new LinkedList<>();
         final BufferedReader br = getReader(stream, remoteStream);
 
         try {

@@ -104,11 +104,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 	update(template, breakpoint, props);
 	Handler handler = new Handler(debugger, breakpoint);
 	setGenericProperties(handler, props);
-        
+
         if (! (result.matches(GdbDebuggerImpl.MI_BKPT) || result.matches(GdbDebuggerImpl.MI_WPT))) {
             handler.setError(Catalog.get("MSG_InvalidLocation")); //NOI18N
         }
-        
+
 	return handler;
     }
 
@@ -117,7 +117,7 @@ public class GdbHandlerExpert implements HandlerExpert {
         //assertBkptResult(result);
         if ( !(result.matches(GdbDebuggerImpl.MI_BKPT) || result.matches(GdbDebuggerImpl.MI_WPT)) ) {
             if (targetTemplate.length == 1) {
-                
+
                 String newLine = targetTemplate[0].getPos().propertyByName("lineNumber").toString(); //NOI18N
                 originalHandler.breakpoint().getPos().propertyByName("lineNumber").setFromString(newLine); //NOI18N
                 originalHandler.setError(Catalog.get("MSG_InvalidLocation")); //NOI18N
@@ -133,17 +133,19 @@ public class GdbHandlerExpert implements HandlerExpert {
 	setGenericProperties(handler, props);
 	return handler;
     }
-    
+
     private static void assertBkptResult(MIResult result) {
-        assert result.variable().equals(GdbDebuggerImpl.MI_BKPT) || 
+        assert result.variable().equals(GdbDebuggerImpl.MI_BKPT) ||
                 result.variable().equals(GdbDebuggerImpl.MI_WPT) : "Result " + result + " is not a breakpoint"; //NOI18N
     }
 
+    @Override
     public ReplacementPolicy replacementPolicy() {
 	return ReplacementPolicy.EXPLICIT;
     }
 
     // interface HandlerExpert
+    @Override
     public Handler childHandler(NativeBreakpoint bpt) {
 	NativeBreakpoint breakpoint;
 	if (bpt.isToplevel()) {
@@ -171,8 +173,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    if (breakpoint.getCountLimit() == -1) {
 		cmd.append(" -i ").append(infinity);			// NOI18N
 	    } else {
-		Long limit = new Long(breakpoint.getCountLimit() - 1);
-		cmd.append(" -i ").append(limit);	// NOI18N
+		cmd.append(" -i ").append(breakpoint.getCountLimit() - 1);	// NOI18N
 	    }
 	}
 
@@ -198,7 +199,7 @@ public class GdbHandlerExpert implements HandlerExpert {
             LOG.warning(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
 //	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
         }
-        
+
         if (breakpoint.getBreakpointType() instanceof SysCallBreakpointType && !debugger.getGdbVersionPeculiarity().isSyscallBreakpointsSupported()) {
             return  HandlerCommand.makeError(null);
         }
@@ -214,7 +215,7 @@ public class GdbHandlerExpert implements HandlerExpert {
         }
 
         StringBuilder cmd = new StringBuilder();
-        
+
 	Class<?> bClass = breakpoint.getClass(); // dynamic type
 	if (bClass == LineBreakpoint.class) {
 	    LineBreakpoint lb = (LineBreakpoint) breakpoint;
@@ -223,7 +224,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    int line = lb.getLineNumber();
 
 	    file = debugger.localToRemote("LineBreakpoint", file); // NOI18N
-            
+
             // unify separators
             file = file.replace("\\","/"); //NOI18N
 
@@ -294,7 +295,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     // interface HandlerExpert
     @Override
-    public HandlerCommand commandFormCustomize(final NativeBreakpoint clonedBreakpoint, 
+    public HandlerCommand commandFormCustomize(final NativeBreakpoint clonedBreakpoint,
 		                       final NativeBreakpoint repairedBreakpoint) {
         Set<Property> diff = NativeBreakpoint.diff(repairedBreakpoint, clonedBreakpoint);
         GdbHandlerCommand cmd = null;
@@ -305,7 +306,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 if (property.getAsObject() != null) {
                     value = property.getAsObject().toString();
                 }
-                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
+                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE,
                         "-break-after " + repairedBreakpoint.getId() + //NOI18N
                         ' ' + value) {
                             @Override
@@ -320,7 +321,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 if (property.getAsObject() != null) {
                     value = property.getAsObject().toString();
                 }
-                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE, 
+                cmd = new GdbHandlerCommand(GdbHandlerCommand.Type.CHANGE,
                         "-break-condition " + repairedBreakpoint.getId() + //NOI18N
                         ' ' + value) {
                             @Override
@@ -374,7 +375,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 	// enabled
 	String enabledString = props.getConstValue("enabled", "y"); // NOI18N
         handler.setEnabled("y".equals(enabledString)); //NOI18N
-        
+
 	// 'number'
 	int number = Integer.parseInt(props.getConstValue("number", "0")); // NOI18N
 	handler.setId(number);
@@ -423,7 +424,7 @@ public class GdbHandlerExpert implements HandlerExpert {
             if (fullnameValue != null) {
                 fullnameString = fullnameValue.asConst().value();
                 // remove line number
-                int pos = fullnameString.lastIndexOf(":"); //NOI18N
+                int pos = fullnameString.lastIndexOf(':'); //NOI18N
                 if (pos != -1) {
                     fullnameString = fullnameString.substring(0, pos);
                 }
@@ -467,11 +468,11 @@ public class GdbHandlerExpert implements HandlerExpert {
                     return 0;
                 } else {
                     return Integer.parseInt(lineProperty.toString());
-                } 
+                }
             }
             String lineStr = fullnameValue.asConst().value();
             // remove line number
-            int pos = lineStr.lastIndexOf(":"); //NOI18N
+            int pos = lineStr.lastIndexOf(':'); //NOI18N
             if (pos != -1) {
                 lineString = lineStr.substring(pos+1);
             } else {
@@ -480,7 +481,7 @@ public class GdbHandlerExpert implements HandlerExpert {
         } else {
             lineString = lineValue.asConst().value();
         }
-        
+
         try {
             return Integer.parseInt(lineString);
         } catch (NumberFormatException numberFormatException) {
@@ -518,20 +519,20 @@ public class GdbHandlerExpert implements HandlerExpert {
 
 	} else if (template instanceof FunctionBreakpoint) {
 	    FunctionBreakpoint fb = (FunctionBreakpoint) breakpoint;
-            
+
             // All of this does not work for gdb, see IZ 195311
 //	    MIValue funcValue = props.valueOf("func"); // NOI18N
 //	    String funcString;
 //	    if (funcValue != null) {
 //		funcString = funcValue.asConst().value();
 //            } else {
-//		// We'll get an 'at' instead of a 'func' if there's 
+//		// We'll get an 'at' instead of a 'func' if there's
 //		// no src debugging information at the given function.
 //		MIValue atValue = props.valueOf("at"); // NOI18N
 //		if (atValue != null) {
 //		    funcString = atValue.asConst().value();
 //
-//		    // usually of the form 
+//		    // usually of the form
 //		    // "<strdup+4>"
 //		    // (but sometimes of the form "strdup@plt")
 //
@@ -553,7 +554,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 //		    funcString = ((FunctionBreakpoint)template).getFunction();
 //		}
 //	    }
-            
+
             MIValue funcValue = props.valueOf("func"); // NOI18N
             String funcString = ( funcValue == null ? null : funcValue.toString() );
             if (funcString == null) {

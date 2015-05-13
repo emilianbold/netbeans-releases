@@ -59,8 +59,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.gulp.GulpBuildTool;
@@ -149,21 +150,19 @@ public class GulpExecutable {
     }
 
     public Future<List<String>> listTasks() {
-        final GulpTasksLineConvertor gulpTasksLineConvertor = new GulpTasksLineConvertor();
-        ExecutionDescriptor descriptor = getSilentDescriptor()
-                .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
-                    @Override
-                    public LineConvertor newLineConvertor() {
-                        return gulpTasksLineConvertor;
-                    }
-                });
+        final GulpTasksLineProcessor gulpTasksLineProcessor = new GulpTasksLineProcessor();
         Future<Integer> task = getExecutable("list gulp tasks") // NOI18N
                 .noInfo(true)
                 .additionalParameters(Arrays.asList(NO_COLOR_PARAM, SILENT_PARAM, TASKS_PARAM))
                 .redirectErrorStream(false)
-                .run(descriptor);
+                .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.bridge(gulpTasksLineProcessor);
+                    }
+                });
         assert task != null : gulpPath;
-        return new TaskList(task, gulpTasksLineConvertor);
+        return new TaskList(task, gulpTasksLineProcessor);
     }
 
     private ExternalExecutable getExecutable(String title) {
@@ -266,17 +265,26 @@ public class GulpExecutable {
 
     }
 
-    private static final class GulpTasksLineConvertor implements LineConvertor {
+    private static final class GulpTasksLineProcessor implements LineProcessor {
 
         final List<String> tasks = new ArrayList<>();
 
 
         @Override
-        public List<ConvertedLine> convert(String line) {
+        public void processLine(String line) {
             if (StringUtilities.hasText(line)) {
                 tasks.add(line);
             }
-            return Collections.emptyList();
+        }
+
+        @Override
+        public void reset() {
+            // noop
+        }
+
+        @Override
+        public void close() {
+            // noop
         }
 
         public List<String> getTasks() {
@@ -288,17 +296,17 @@ public class GulpExecutable {
     private static final class TaskList implements Future<List<String>> {
 
         private final Future<Integer> task;
-        private final GulpTasksLineConvertor convertor;
+        private final GulpTasksLineProcessor processor;
 
         // @GuardedBy("this")
         private List<String> gulpTasks = null;
 
 
-        TaskList(Future<Integer> task, GulpTasksLineConvertor convertor) {
+        TaskList(Future<Integer> task, GulpTasksLineProcessor processor) {
             assert task != null;
-            assert convertor != null;
+            assert processor != null;
             this.task = task;
-            this.convertor = convertor;
+            this.processor = processor;
         }
 
         @Override
@@ -342,7 +350,7 @@ public class GulpExecutable {
             if (gulpTasks != null) {
                 return Collections.unmodifiableList(gulpTasks);
             }
-            List<String> tasks = new ArrayList<>(convertor.getTasks());
+            List<String> tasks = new ArrayList<>(processor.getTasks());
             Collections.sort(tasks);
             gulpTasks = new CopyOnWriteArrayList<>(tasks);
             return Collections.unmodifiableList(gulpTasks);

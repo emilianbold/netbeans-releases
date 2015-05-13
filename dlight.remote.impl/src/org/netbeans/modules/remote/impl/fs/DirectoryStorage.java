@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 
 /**
@@ -83,19 +84,19 @@ public class DirectoryStorage {
     
     private final Map<String, DirEntry> entries;
     private final File cacheFile;
-    private static final int VERSION = 5;
+    private static final int VERSION = 6;
     /* Incompatible version to discard */
-    private static final int ODD_VERSION = 4;
+    private static final int ODD_VERSION = 5;
 
     public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
         this.cacheFile = file;
-        this.entries = new HashMap<String, DirEntry>();
+        this.entries = new HashMap<>();
         for (DirEntry entry : newEntries) {
             entries.put(entry.getName(), entry);
         }
     }
     
-    static DirectoryStorage load(File storageFile) throws IOException, FormatException {
+    static DirectoryStorage load(File storageFile, ExecutionEnvironment env) throws IOException, FormatException {
         BufferedReader br = null;
         try {
             br = new BufferedReader(new FileReader(storageFile));
@@ -115,7 +116,7 @@ public class DirectoryStorage {
                 throw new FormatException("directory cache file version " + version +  //NNOI18N
                         " not supported: " + storageFile.getAbsolutePath(), true); //NOI18N
             }
-            if (version < ODD_VERSION) {
+            if (version <= ODD_VERSION) {
                 throw new FormatException("Discarding old directory cache file version " + version +  //NNOI18N
                         ' ' + storageFile.getAbsolutePath(), true); //NOI18N
             }
@@ -130,14 +131,14 @@ public class DirectoryStorage {
             } catch (NumberFormatException nfe) {
                 throw new FormatException("wrong dummies count format " + storageFile.getAbsolutePath(), nfe); // NOI18N
             }
-            Collection<DirEntry> loadedEntries = new ArrayList<DirEntry>();
+            Collection<DirEntry> loadedEntries = new ArrayList<>();
 
             for (int i = 0; i < invalidsCount; i++) {
                 line = br.readLine();
                 if (line == null) {
                     throw new FormatException("premature end of file " + storageFile.getAbsolutePath(), false); // NOI18N
                 } else {
-                    loadedEntries.add(DirEntryInvalid.fromExternalForm(line));
+                    loadedEntries.add(new DirEntryInvalid(line));
                 }
             }
             while ((line = br.readLine()) != null) {
@@ -145,7 +146,7 @@ public class DirectoryStorage {
                     continue; // just in case, ignore empty lines
                 }
                 try {
-                    DirEntry entry = DirEntrySftp.fromExternalForm(line);
+                    DirEntry entry = DirEntryImpl.fromExternalForm(line);
                     loadedEntries.add(entry);
                 } catch (FormatException fe) {
                     RemoteLogger.getInstance().log(Level.INFO, "Error loading cache file " + storageFile.getAbsolutePath(), fe);
@@ -172,8 +173,8 @@ public class DirectoryStorage {
             try {
                 wr = new BufferedWriter(new FileWriter(cacheFile));
                 wr.write("VERSION=" + VERSION + "\n"); //NOI18N
-                Collection<DirEntry> invalid = new ArrayList<DirEntry>();
-                Collection<DirEntry> valid = new ArrayList<DirEntry>();
+                Collection<DirEntry> invalid = new ArrayList<>();
+                Collection<DirEntry> valid = new ArrayList<>();
                 for (DirEntry entry : entries.values()) {                   
                     if (entry.isValid()) {
                         valid.add(entry);
@@ -215,7 +216,7 @@ public class DirectoryStorage {
 
     public List<DirEntry> listAll() {
         synchronized (this) {
-            return new ArrayList<DirEntry>(entries.values());
+            return new ArrayList<>(entries.values());
         }
     }
 
@@ -225,7 +226,7 @@ public class DirectoryStorage {
 
     public List<DirEntry> listValid(String nameToSkip) {
         synchronized (this) {
-            ArrayList<DirEntry> result = new ArrayList<DirEntry>(entries.size());
+            ArrayList<DirEntry> result = new ArrayList<>(entries.size());
             for (DirEntry entry : entries.values()) {
                 if (entry.isValid()) {
                     if (nameToSkip == null || !nameToSkip.equals(entry.getName())) {

@@ -54,6 +54,56 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="composition">
+          <api name="templates"/>
+          <summary>Support for composition</summary>
+          <version major="1" minor="5"/>
+          <date year="2015" month="4" day="23"/>
+          <author login="sdedic"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"/>
+          <description>
+              TemplateHandler may need to create additional files, using the same parameters for creation as a base.
+              Attribute providers may need to be processed in a custom way, which requires to create and manage CreateDescriptor
+              by the client. This change allows to clone information from CreateDescriptor into an independent FileBuilder, and
+              to create a Descriptor out of a Builder.
+          </description>
+          <class package="org.netbeans.api.templates" name="FileBuilder"/>
+          <issue number=""/>
+      </change>
+      <change id="techids">
+          <api name="templates"/>
+          <summary>Support for Technology Ids</summary>
+          <version major="1" minor="4"/>
+          <date year="2015" month="3" day="27"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes" binary="compatible" source="compatible"/>
+          <description>
+              <p>
+                  The <a onclick="target='_blank'" href="http://bits.netbeans.org/html+java/">
+                      HTML UI API for Java
+                  </a> 
+                  revision 1.1 supports technolgy identifiers. Now they can
+                  be used via <code>TemplateRegistration</code> 
+                  annotation as well.
+              </p>
+          </description>
+          <class package="org.netbeans.api.templates" name="TemplateRegistration"/>
+          <issue number="246133"/>
+      </change>
+      <change id="javaPackageTargetChooser">
+          <api name="templates"/>
+          <summary>Package like Target Chooser for HTML Wizards</summary>
+          <version major="1" minor="3"/>
+          <date day="5" month="2" year="2015"/>
+          <author login="jtulach"/>
+          <compatibility addition="yes" deletion="no" binary="compatible" 
+                         source="compatible" deprecation="yes"/>
+          <description>
+              One can use <a href="@TOP@/overview-summary.html#javaTargetChooser">targetChooser:java</a>
+              to request Java-like target chooser showing java packages.
+          </description>
+          <issue number="249891"/>
+      </change>
       <change id="htmlui.templates">
           <api name="templates"/>
           <summary>HTML UI for Templates</summary>

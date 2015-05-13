@@ -109,7 +109,7 @@ public class Bugzilla {
     static synchronized void init() {
         getInstance();
     }
-
+    
     public BugzillaRepositoryConnector getRepositoryConnector() {
         return brc;
     }

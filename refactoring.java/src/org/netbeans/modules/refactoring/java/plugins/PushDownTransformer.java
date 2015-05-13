@@ -81,6 +81,7 @@ public class PushDownTransformer extends RefactoringVisitor {
 
     private final MemberInfo<ElementHandle<? extends Element>>[] members;
     private Problem problem;
+    private boolean inSuperClass;
  
     public Problem getProblem() {
         return problem;
@@ -99,13 +100,14 @@ public class PushDownTransformer extends RefactoringVisitor {
         
         ClassTree classTree = node;
         translateQueue.addLast(new HashMap<Tree, Tree>());
-        Tree value = super.visitClass(classTree, source);
         
         Element el = workingCopy.getTrees().getElement(getCurrentPath());
-        if (el.equals(source)) {
+        inSuperClass = el.equals(source);
 
+        Tree value = super.visitClass(classTree, source);
+        
+        if (inSuperClass) {
             classTree = rewriteSuperClass(el, classTree, genUtils);
-
         } else {
             TypeMirror tm = el.asType();
             Types types = workingCopy.getTypes();
@@ -180,9 +182,21 @@ public class PushDownTransformer extends RefactoringVisitor {
         return super.visitMemberSelect(node, source);
     }
 
+    @NbBundle.Messages({"# {0} - Member", "# {1} - Type", "ERR_PushDown_UsedInSuper={0} is referenced by {1}."})
     @Override
     public Tree visitIdentifier(IdentifierTree node, Element source) {
         // Check if from visitClass and return changed tree, otherwise rewrite
+        if(inSuperClass) {
+            final Element el = workingCopy.getTrees().getElement(getCurrentPath());
+            for (int i = 0; i<members.length; i++) {
+                if(members[i].getGroup() != MemberInfo.Group.IMPLEMENTS) {
+                    Element member = members[i].getElementHandle().resolve(workingCopy);
+                    if (el.equals(member)) {
+                        problem = MoveTransformer.createProblem(problem, false, ERR_PushDown_UsedInSuper(member.getSimpleName(), source.getSimpleName()));
+                    }
+                }
+            }
+        }
         return super.visitIdentifier(node, source);
     }
 

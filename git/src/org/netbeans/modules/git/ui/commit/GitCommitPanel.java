@@ -90,7 +90,6 @@ import org.netbeans.modules.versioning.util.common.VCSCommitDiffProvider;
 import org.netbeans.modules.versioning.util.common.VCSCommitFilter;
 import org.netbeans.modules.versioning.util.common.VCSCommitPanel;
 import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCommitParameters;
-import org.netbeans.modules.versioning.util.common.VCSFileNode;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
@@ -326,10 +325,8 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
             }
             List<GitLocalFileNode> nodesList = new ArrayList<>(fileList.size());
             for (File file : fileList) {
-                if (GitUtils.isFromRepository(repository, file)) {
-                    GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
-                    nodesList.add(node);
-                }
+                GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
+                nodesList.add(node);
             }
             final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[nodesList.size()]);
             EventQueue.invokeLater(new Runnable() {
@@ -536,9 +533,10 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
         }
 
         private static List<VCSCommitFilter> createFilters() {
+            assert EventQueue.isDispatchThread();
             disableFilters();
-            FILTER_HEAD_VS_INDEX.setSelected(true);
-            return Collections.<VCSCommitFilter>singletonList(FILTER_HEAD_VS_INDEX);
+            GitCommitPanel.FILTER_HEAD_VS_WORKING.setSelected(true);
+            return Arrays.<VCSCommitFilter>asList(FILTER_HEAD_VS_INDEX, FILTER_HEAD_VS_WORKING);
         }
 
         @Override
@@ -586,7 +584,14 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                     // no need to show the progress component,
                     // which only makes the dialog flicker
                     refreshFinished[0] = true;
-                    files = cache.listFiles(new File[]{repository}, FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
+                    EnumSet<Status> statuses;
+                    final Mode acceptedMode = getAcceptedMode(filter);
+                    if (acceptedMode == Mode.HEAD_VS_INDEX) {
+                        statuses = FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX;
+                    } else {
+                        statuses = FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING;
+                    }
+                    files = cache.listFiles(new File[]{repository}, statuses);
                     if (files.length == 0) {
                         return;
                     }
@@ -594,7 +599,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                     ArrayList<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(files.length);
 
                     for (File file : files) {
-                        GitLocalFileNode node = new GitLocalFileNode(repository, file, getAcceptedMode(filter));
+                        GitLocalFileNode node = new GitFileNode.GitMergeFileNode(repository, file, acceptedMode);
                         nodesList.add(node);
                     }
                     final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[files.length]);
@@ -604,7 +609,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
                         public void run() {
                             getCommitTable().setNodes(nodes);
                             if (diffProvider.isOpen()) {
-                                diffProvider.refreshFiles(nodes, getAcceptedMode(filter));
+                                diffProvider.refreshFiles(nodes, acceptedMode);
                             }
                         }
                     });

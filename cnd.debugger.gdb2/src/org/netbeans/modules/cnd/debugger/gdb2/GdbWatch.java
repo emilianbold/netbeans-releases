@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.RoutingToken;
 
 class GdbWatch extends GdbVariable implements WatchVariable {
 
-    private NativeWatch nativeWatch;
+    private volatile NativeWatch nativeWatch;
 
     public GdbWatch(NativeDebugger debugger, ModelChangeDelegator updater,
 		    String name) {
@@ -66,21 +66,25 @@ class GdbWatch extends GdbVariable implements WatchVariable {
     }
 
     // interface WatchVariable
+    @Override
     public void setNativeWatch(NativeWatch parent) {
 	this.nativeWatch = parent;
     }
 
     // interface WatchVariable
+    @Override
     public NativeWatch getNativeWatch() {
 	return nativeWatch;
     }
 
     // interface ListMapItem
+    @Override
     public boolean hasKey() {
 	return getVariableName() != null;
     }
 
     // interface ListMapItem
+    @Override
     public Object getKey() {
 	return getVariableName();
     }
@@ -93,6 +97,7 @@ class GdbWatch extends GdbVariable implements WatchVariable {
     private int routingToken = 0;
 
     // interface WatchVariable
+    @Override
     public int getRoutingToken() {
 	if (routingToken == 0)
 	    routingToken = RoutingToken.WATCHES.getUniqueRoutingTokenInt();

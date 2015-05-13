@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.antlr.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Hashtable;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -108,6 +109,31 @@ public class CPPParserEx extends CPPParser {
             }
             t.initialize(tok);
             return t;
+        }
+
+        @Override
+        public AST create(int type, String txt, AST t) {
+            if (t instanceof CsmAST) {
+                CsmAST csmAst = (CsmAST) t;
+                int offset = csmAst.getOffset();
+                int line = csmAst.getLine();
+                int column = csmAst.getColumn();
+                int endOffset = csmAst.getEndOffset();
+                int endLine = csmAst.getEndLine();
+                int endColumn = csmAst.getEndColumn();
+                csmAst.initialize(type, txt);
+                if (csmAst.getToken() instanceof APTBaseToken) {
+                    APTBaseToken astToken = (APTBaseToken) csmAst.getToken();
+                    astToken.setOffset(offset);
+                    astToken.setLine(line);
+                    astToken.setColumn(column);
+                    astToken.setEndOffset(endOffset);
+                    astToken.setEndLine(endLine);
+                    astToken.setEndColumn(endColumn);
+                }
+                return csmAst;
+            }
+            return super.create(type, txt, t);
         }
     }
 
@@ -700,22 +726,24 @@ public class CPPParserEx extends CPPParser {
                         getLine(1), qi, _td, id);
             }
 
-            c = new CPPSymbol(id, CPPSymbol.otTypedef);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otTypedef);
             symbols.defineInScope(id, c, externalScope);
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otTypedef);
                 printf("declaratorID[%d]: Declare %s in external scope 1, " + // NOI18N
                         "ObjectType %d\n", getLine(1), id, c.getType()); // NOI18N
             }
         // DW 04/08/03 Scoping not fully implemented
         // Typedefs all recorded in 'external' scope and therefor never removed
         } else if (qi == qiFun) {	// For function declaration
-            c = new CPPSymbol(id, CPPSymbol.otFunction);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otFunction);
             symbols.define(id, c);	// Add to current scope
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otFunction);
                 printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
                         "ObjectType %d\n", getLine(1), id, // NOI18N
                         /*symbols.getCurrentScopeIndex()*/ 0, c.getType());
@@ -727,11 +755,12 @@ public class CPPParserEx extends CPPParser {
             }
 
             // Used to leave otInvalid DW 02/07/03 Think this should be otVariable
-            c = new CPPSymbol(id, CPPSymbol.otVariable);
             /* TODO: revive the original code:
+            c = new CPPSymbol(id, CPPSymbol.otVariable);
             symbols.define(id, c);	// Add to current scope
              */
             if (statementTrace >= 2) {
+                c = new CPPSymbol(id, CPPSymbol.otVariable);
                 printf("declaratorID[%d]: Declare %s in current scope %d, " + // NOI18N
                         "ObjectType %d\n", getLine(1), // NOI18N
                         id, /*symbols.getCurrentScopeIndex()*/ 0, c.getType());
@@ -1166,9 +1195,13 @@ public class CPPParserEx extends CPPParser {
     }
     private static final int MAX_GUESS = 256;
     public static int MAX_GUESS_IDX = 0;
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingTimes = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingCount = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final long[] guessingFailures = new long[MAX_GUESS];
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final String[] guessingNames = new String[MAX_GUESS];
 
 

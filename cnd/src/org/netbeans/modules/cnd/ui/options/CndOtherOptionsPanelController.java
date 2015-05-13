@@ -61,40 +61,49 @@ import org.openide.util.Lookup;
 )
 public final class CndOtherOptionsPanelController extends OptionsPanelController {
 
-    private CndOtherOptionsPanel panel = new CndOtherOptionsPanel();
+    private final CndOtherOptionsPanel panel = new CndOtherOptionsPanel();
 
+    @Override
     public void update() {
         panel.update();
 }
 
+    @Override
     public void applyChanges() {
         panel.applyChanges();
     }
     
+    @Override
     public void cancel() {
         panel.cancel();
     }
     
+    @Override
     public boolean isValid() {
         return true; //panel.dataValid();
     }
     
+    @Override
     public boolean isChanged() {
         return panel.isChanged();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("cnd.optionsDialog"); // NOI18N
     }
     
+    @Override
     public JComponent getComponent(Lookup masterLookup) {
         return panel;
     }
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         panel.addPropertyChangeListener(l);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         panel.removePropertyChangeListener(l);
     }

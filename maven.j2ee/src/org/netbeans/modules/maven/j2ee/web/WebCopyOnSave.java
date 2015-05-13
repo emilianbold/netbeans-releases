@@ -244,6 +244,21 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             CssPreprocessors.getDefault().process(project, fileObject, originalName, originalExtension);
         }
 
+        @Override
+        public void fileFolderCreated(final FileEvent fe) {
+            if (SwingUtilities.isEventDispatchThread()) {//#167740
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        fileFolderCreated(fe);
+                    }
+                });
+                return;
+            }
+                        
+            handleFolderCreated(fe.getFile());
+        }                
+        
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
@@ -258,15 +273,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 });
                 return;
             }
-            try {
-                checkPreprocessors(fe.getFile());
-
-                if (!isInPlace()) {
-                    handleFileCopying(fe.getFile());
-                }
-            } catch (IOException e) {
-                logIOException(fe.getFile(), e);
-            }
+            handleFileChangeEvent(fe.getFile());
         }
 
         @Override
@@ -280,15 +287,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 });
                 return;
             }
-            try {
-                checkPreprocessors(fe.getFile());
-
-                if (!isInPlace()) {
-                    handleFileCopying(fe.getFile());
-                }
-            } catch (IOException e) {
-                logIOException(fe.getFile(), e);
-            }
+            handleFileChangeEvent(fe.getFile());
         }
 
         @Override
@@ -381,6 +380,29 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
             return fo.equals(webModule.getDocumentBase());
         }
 
+        private void handleFolderCreated(FileObject folder) {
+            FileObject[] fos = folder.getChildren();
+            for (FileObject fo : fos) {
+                if(fo.isData()) {
+                    handleFileChangeEvent(fo);
+                } else {
+                    handleFolderCreated(fo);
+                }
+            }            
+        }
+        
+        private void handleFileChangeEvent(final FileObject fo) {
+            try {
+                checkPreprocessors(fo);
+
+                if (!isInPlace()) {
+                    handleFileCopying(fo);
+                }
+            } catch (IOException e) {
+                logIOException(fo, e);
+            }
+        }
+        
         private void handleFileCopying(FileObject fo) throws IOException {
             boolean compileOnSave = RunUtils.isCompileOnSaveEnabled(project);
             boolean deployOnSave;

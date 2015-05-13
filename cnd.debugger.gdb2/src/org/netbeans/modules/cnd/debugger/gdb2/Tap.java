@@ -169,8 +169,7 @@ import org.openide.util.RequestProcessor;
     @Override
     public void inject(String cmd) {
         final char[] cmda = cmd.toCharArray();
-
-        SwingUtilities.invokeLater(new Runnable() {
+        Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 // echo
@@ -190,7 +189,12 @@ import org.openide.util.RequestProcessor;
                     }
                 });
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     /*package*/ void printError(String errMsg) {
@@ -223,6 +227,11 @@ import org.openide.util.RequestProcessor;
                 toDTE.putChars(cmda, 0, cmda.length);
                 // toDTE.putChar(char_CR);			// tack on a CR
                 toDTE.putChars(KeyProcessing.ESCAPES.RESET_SEQUENCE, 0, KeyProcessing.ESCAPES.RESET_SEQUENCE.length);
+                if (prompted) {
+                    toDTE.putChars(PROMPT.toCharArray(), 0, PROMPT.length());
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_CR);			// tack on a CR
+                    toDTE.putChar(KeyProcessing.ESCAPES.CHAR_LF);
+                }
                 toDTE.flush();
             }
         });
@@ -252,9 +261,13 @@ import org.openide.util.RequestProcessor;
 
             // do some pattern recognition and alternative colored output.
             if (line.startsWith("~")) { // NOI18N
-                // comment line
-                toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
-                toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                if (TRACING_IN_CONSOLE) {
+                    // comment line
+                    toTermBuf.insert(0, KeyProcessing.ESCAPES.GREEN_SEQUENCE);
+                    toTermBuf.append(KeyProcessing.ESCAPES.RESET_SEQUENCE);
+                } else {
+                    toTermBuf.delete(0, toTermBuf.length());
+                }
             } else if (line.startsWith("&") || line.startsWith("*") || line.startsWith("=")) { // NOI18N
                 if (TRACING_IN_CONSOLE) {
                     // output

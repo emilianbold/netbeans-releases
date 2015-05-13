@@ -56,6 +56,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.spi.Device;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -181,7 +182,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             null,
                             null);
                     Object value = DialogDisplayer.getDefault().notify(not);
-                    if (NotifyDescriptor.CANCEL_OPTION == value) {
+                    if (NotifyDescriptor.CANCEL_OPTION == value || checkDevices.equals(Bundle.ERR_AdbNotFound())) {
                         return;
                     } else {
                         checkDevices = checkDevices();
@@ -207,7 +208,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                 final Project project = context.lookup(Project.class);
                 if (Browser.CHROME.getName().equals(b.getName()) && project != null) {
                     try {
-                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice16.png"), url)), false);
+                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice16.png"), url)), false);
                     } catch (IllegalStateException ex) {
                         LOGGER.log(Level.INFO, ex.getMessage(), ex);
                         SwingUtilities.invokeLater(new Runnable() {
@@ -249,6 +250,9 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     }
 
     private String checkDevices() {
+        if (!AndroidPlatform.getDefault().adbCommandExists()) {
+            return Bundle.ERR_AdbNotFound();
+        }
         try {
             if (kind.equals(AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT)) { //NOI18N
                 for (Device dev : AndroidPlatform.getDefault().getConnectedDevices()) {

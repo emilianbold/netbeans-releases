@@ -279,6 +279,12 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         accessLock.readLock().lock();
         try {
             if (suspended || suspendedNoFire) {
+                try {
+                    CallStackFrame[] topStackRef = getCallStack(0, 1);
+                    if (topStackRef.length > 0) {
+                        return topStackRef[0].getLineNumber(stratum);
+                    }
+                } catch (AbsentInformationException aiex) {}
                 synchronized (cachedFramesLock) {
                     if (stackDepth < 0) {
                         stackDepth = ThreadReferenceWrapper.frameCount0(threadReference);

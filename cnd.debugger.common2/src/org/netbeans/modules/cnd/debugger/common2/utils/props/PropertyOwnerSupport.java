@@ -61,6 +61,7 @@ public class PropertyOwnerSupport implements PropertyOwner {
     public PropertyOwnerSupport() {
     }
 
+    @Override
     public void register(Property p) {
         props.add(p);
     }
@@ -71,6 +72,7 @@ public class PropertyOwnerSupport implements PropertyOwner {
      * equals() is used for name comparison.
      */
 
+    @Override
     public Property propertyByName(String name) {
 	for (Property p : props) {
 	    if (p.name().equals(name)) {
@@ -85,6 +87,7 @@ public class PropertyOwnerSupport implements PropertyOwner {
      * == is used for key comparison.
      */
 
+    @Override
     public Property propertyByKey(String key) {
         for (Property p : props) {
 	    if (p.key() == key) {
@@ -98,12 +101,14 @@ public class PropertyOwnerSupport implements PropertyOwner {
     /**
      * Number of properties in this owner.
      */
+    @Override
     public int size() {
 	return props.size();
     } 
 
 
     // interface Iterable
+    @Override
     public Iterator<Property> iterator() {
 	return props.iterator();
     }
@@ -124,6 +129,7 @@ public class PropertyOwnerSupport implements PropertyOwner {
     /**
      * Clear the dirty bit.
      */
+    @Override
     public void clearDirty() {
 	dirty = false;
     } 
@@ -131,10 +137,12 @@ public class PropertyOwnerSupport implements PropertyOwner {
     /**
      * Query the dirty bit.
      */
+    @Override
     public boolean isDirty() {
 	return dirty;
     } 
 
+    @Override
     public boolean equals(PropertyOwner that, Comparator comparator) {
 	Iterator<Property> thisIter = this.iterator();
 	Iterator<Property> thatIter = that.iterator();

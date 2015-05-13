@@ -78,31 +78,18 @@ public class IndexingModule {
         @Override
         public void run() {
             closed = true;
-            final CountDownLatch done = new CountDownLatch(1);
             final Runnable postTask = new Runnable() {
-                private AtomicBoolean started = new AtomicBoolean();
                 @Override
                 public void run() {
-                    if (started.compareAndSet(false, true)) {                    
-                        try {
-                            LuceneIndexFactory.getDefault().close();
-                            DocumentBasedIndexManager.getDefault().close();
-                        } finally {
-                            done.countDown();
-                        }
-                    }
+                    LuceneIndexFactory.getDefault().close();
+                    DocumentBasedIndexManager.getDefault().close();
                 }
             };
             try {
                 RepositoryUpdater.getDefault().stop(postTask);
-            } catch (TimeoutException timeout) {
+            } catch (TimeoutException | IllegalStateException e) {
+                //Timeout or already closed
                 postTask.run();
-            } finally {
-                try {
-                    done.await();
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
             }
         }
 

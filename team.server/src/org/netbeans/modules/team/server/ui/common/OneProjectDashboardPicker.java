@@ -60,6 +60,7 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -95,6 +96,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     private final LinkButton btnBookmark;
     private final ProgressLabel lblBookmarkingProgress;
     private final LinkButton btnClose;
+    private final LinkButton btnRefresh;
     private final JToolBar.Separator separator;
 
     private final MouseOverListener mListener;
@@ -149,6 +151,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
 
         JToolBar toolbar = new ProjectToolbar();
         add( toolbar, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
+        Border bBorder = BorderFactory.createEmptyBorder(0, 3, 0, 2); // keep some distance between the buttons
 
         AbstractAction bookmarkAction = new AbstractAction() {
             @Override
@@ -164,10 +167,27 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnBookmark.setRolloverEnabled(true);
         btnBookmark.setVisible(false);
         toolbar.add(btnBookmark);
+        btnBookmark.setBorder(bBorder);
         lblBookmarkingProgress = new ProgressLabel("", this);
         lblBookmarkingProgress.setVisible(false);
         toolbar.add(lblBookmarkingProgress);
         
+        Action refreshAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                assert currentProject != null;
+                if(currentProject != null) {
+                    getDashboard(server).refresh(currentProject);
+                }
+            }
+        };
+        btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/refresh.png", true), refreshAction); //NOI18N
+        btnRefresh.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh"));
+        btnRefresh.setVisible(false);
+        btnRefresh.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Refresh"));
+        toolbar.add(btnRefresh);
+        btnRefresh.setBorder(bBorder);
+
         Action closeAction = new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -184,6 +204,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnClose.setVisible(false);
         btnClose.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, "LBL_Close"));
         toolbar.add(btnClose);
+        btnClose.setBorder(bBorder);
 
         separator = new JToolBar.Separator();
         toolbar.add(separator);
@@ -193,6 +214,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnNewServer.setRolloverEnabled(true);
         btnNewServer.setVisible(false);
         toolbar.add(btnNewServer);
+        btnNewServer.setBorder(bBorder);
 
         mListener = new MouseOverListener();
         addMouseListener(mListener);
@@ -207,6 +229,8 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnNewServer.addMouseMotionListener(mListener);
         btnClose.addMouseListener(mListener);
         btnClose.addMouseMotionListener(mListener);
+        btnRefresh.addMouseListener(mListener);
+        btnRefresh.addMouseMotionListener(mListener);
         btnBookmark.addMouseListener(mListener);
         btnBookmark.addMouseMotionListener(mListener);
         separator.addMouseListener(mListener);
@@ -222,15 +246,16 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             @Override
             public void run() {
                 btnNewServer.setVisible(mListener.mouseOver);
-                
+
                 if (currentProject != null) {
                     boolean isMemberProject = getDashboard(server).isMemberProject(currentProject);
                     btnClose.setVisible(mListener.mouseOver && !isMemberProject);
+                    btnRefresh.setVisible(mListener.mouseOver);
+                    separator.setVisible(mListener.mouseOver);
                     
                     if(getDashboard(server).getDashboardProvider().getProjectAccessor().canBookmark()) {
                         btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
                         lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
-                        separator.setVisible(mListener.mouseOver);
 
                         btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject ? "LBL_LeaveProject" : "LBL_Bookmark"));
                         btnBookmark.setIcon(
@@ -242,6 +267,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                     } 
                 } else {
                     btnClose.setVisible(false);
+                    btnRefresh.setVisible(false);
                     separator.setVisible(false);                    
                     btnBookmark.setVisible(false);
                     lblBookmarkingProgress.setVisible(false);
@@ -422,13 +448,17 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         }
         @Override
         public void mouseExited( MouseEvent e ) {
-            mouseOver = false;
-            setButtons();
+            if(mouseOver) {
+                mouseOver = false;
+                setButtons();
+            }
         }
         @Override
         public void mouseMoved( MouseEvent e ) {
-            mouseOver = true;
-            setButtons();
+            if(!mouseOver) {
+                mouseOver = true;
+                setButtons();
+            }
         }
     };
     

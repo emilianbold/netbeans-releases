@@ -226,7 +226,7 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
                     List<StatementTree> nueStatements = new LinkedList<StatementTree>();
                     ExpressionTree reference = make.Identifier(name);
                     Element clazz = parameter.getTrees().getElement(pathToClass);
-                    ModifiersTree constrMods = clazz.getKind() != ElementKind.ENUM ? make.Modifiers(EnumSet.of(Modifier.PUBLIC)) : make.Modifiers(Collections.EMPTY_SET);
+                    ModifiersTree constrMods = (clazz == null || clazz.getKind() != ElementKind.ENUM) ? make.Modifiers(EnumSet.of(Modifier.PUBLIC)) : make.Modifiers(Collections.EMPTY_SET);
                     nueStatements.add(make.ExpressionStatement(make.Assignment(reference, expression)));
                     BlockTree nueBlock = make.Block(nueStatements, false);
                     MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
@@ -292,8 +292,11 @@ class IntroduceFieldFix extends IntroduceFixBase implements Fix {
         public void run(WorkingCopy parameter) throws Exception {
             parameter.toPhase(JavaSource.Phase.RESOLVED);
             TreePath resolved = handle.resolve(parameter);
+            if (resolved == null) {
+                return; //TODO...
+            }
             TypeMirror tm = IntroduceHint.resolveType(parameter, resolved);
-            if (resolved == null || tm == null) {
+            if (tm == null) {
                 return; //TODO...
             }
             tm = Utilities.convertIfAnonymous(Utilities.resolveCapturedType(parameter, tm));

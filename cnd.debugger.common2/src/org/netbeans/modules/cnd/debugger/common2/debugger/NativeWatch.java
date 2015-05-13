@@ -49,7 +49,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.netbeans.api.debugger.Watch;
 
@@ -234,7 +235,7 @@ public class NativeWatch {
 	}
     }
 
-    private ArrayList<WatchVariable> subWatches = new ArrayList<WatchVariable>();
+    private final List<WatchVariable> subWatches = new CopyOnWriteArrayList<WatchVariable>();
 
     public final WatchVariable[] getSubWatches() {
 	WatchVariable array[] = new WatchVariable[subWatches.size()];
@@ -263,18 +264,10 @@ public class NativeWatch {
 	return null;
     }
 
-    private final int findByWatch(WatchVariable subWatch) {
-	for (int wx = 0; wx < subWatches.size(); wx++) {
-	    WatchVariable candidate = subWatches.get(wx);
-	    if (candidate == subWatch)
-		return wx;
-	}
-	return -1;
-    }
-
     /**
      * Remove 'subWatch' from 'this'.
      *
+     * @param subWatch
      * @param debugger
      * Passed in to double-check if the removed watch truly belongs to
      * the given debugger. may be null.
@@ -287,19 +280,9 @@ public class NativeWatch {
 	assert subWatch.getDebugger() == debugger :
 	       "removeSubWatch(): " + // NOI18N
 	       "sub-watch not associated with debugger or removed twice"; // NOI18N
-	int wx = findByWatch(subWatch);
-	WatchVariable removed = subWatches.remove(wx);
-	assert removed != null :
-	       "removeSubWatch(): " + // NOI18N
-	       "No watch under this debugger " + debugger + "\n" + // NOI18N
-	       "last removal: XXX" // NOI18N
-	       ;
-	assert removed == subWatch :
-	       "removeSubWatch(): " + // NOI18N
-	       "watch under debugger different from one being removed.\n" + // NOI18N
-	       "last removal: XXX" // NOI18N
-	       ;
-	// LATER subWatch.setDebugger(null);
+        // This subWatch may have already been removed by another thread
+        // i.e. one remove initiated by user and another by session finish
+        subWatches.remove(subWatch);
     }
 
     public void setSubWatchFor(WatchVariable subWatch, NativeDebugger debugger) {
@@ -313,6 +296,7 @@ public class NativeWatch {
 	deletingChildren = false;
 
 	subWatch.setNativeWatch(this);
+        assert !subWatches.contains(subWatch);
 	subWatches.add(subWatch);
 	update();
     }

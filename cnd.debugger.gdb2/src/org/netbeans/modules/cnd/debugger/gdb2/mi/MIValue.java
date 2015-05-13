@@ -56,6 +56,7 @@ package org.netbeans.modules.cnd.debugger.gdb2.mi;
  */
 
 public abstract class MIValue extends MITListItem {
+    @Override
     public abstract String toString();
 
     /**

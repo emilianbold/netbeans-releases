@@ -70,6 +70,7 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
@@ -442,24 +443,27 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     
     private void showSurroundWithHint() {
         try {
-            final Position pos = doc.createPosition(component.getCaretPosition());
-            RP.post(new Runnable() {
-                public void run() {
-                    final List<Fix> fixes = SurroundWithFix.getFixes(component);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            if (!fixes.isEmpty()) {
-                                errorDescription = ErrorDescriptionFactory.createErrorDescription(
-                                        Severity.HINT, SURROUND_WITH, surrounsWithFixes = fixes, doc, pos, pos);
+            final Caret caret = component.getCaret();
+            if (caret != null) {
+                final Position pos = doc.createPosition(caret.getDot());
+                RP.post(new Runnable() {
+                    public void run() {
+                        final List<Fix> fixes = SurroundWithFix.getFixes(component);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            public void run() {
+                                if (!fixes.isEmpty()) {
+                                    errorDescription = ErrorDescriptionFactory.createErrorDescription(
+                                            Severity.HINT, SURROUND_WITH, surrounsWithFixes = fixes, doc, pos, pos);
 
-                                HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
-                            } else {
-                                hideSurroundWithHint();
+                                    HintsController.setErrors(doc, SURROUND_WITH, Collections.singleton(errorDescription));
+                                } else {
+                                    hideSurroundWithHint();
+                                }
                             }
-                        }
-                    });
-                }
-            });
+                        });
+                    }
+                });
+            }
         } catch (BadLocationException ble) {
             Logger.getLogger("global").log(Level.WARNING, ble.getMessage(), ble);
         }

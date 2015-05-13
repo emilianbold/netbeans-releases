@@ -66,7 +66,7 @@ import org.netbeans.modules.subversion.remote.ui.update.RevertModifications;
 import org.netbeans.modules.subversion.remote.ui.update.RevertModificationsAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
@@ -343,7 +343,7 @@ final class RepositoryRevision {
                             Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(getFile().normalizeFile());
+                                    VCSFileProxySupport.openFile(getFile().normalizeFile());
                                 }
                             });
                         }
@@ -538,7 +538,7 @@ final class RepositoryRevision {
                     if (f != null) {
                         for (VCSFileProxy selectionRoot : selectionRoots) {
                             // TODO: CND does not support flat folders, Probably should?
-                            if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(selectionRoot, f)) {
+                            if (VCSFileProxySupport.isAncestorOrEqual(selectionRoot, f)) {
                                 break;
                             }
                         }

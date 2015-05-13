@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -74,7 +75,7 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
         if (evt.getNewValue() instanceof  DevelopmentHostConfiguration) {
             ExecutionEnvironment execEnv = ((DevelopmentHostConfiguration) evt.getNewValue()).getExecutionEnvironment();
             RemoteSyncFactory newFactory = ServerList.get(execEnv).getSyncFactory();
-            if ((newFactory == null && factory != null) || !newFactory.equals(factory)) {
+            if (!Objects.equals(newFactory, factory)) {
                 factory = newFactory;
                 PropertyEditor ed = getPropertyEditor();
                 if (ed instanceof PropertyEditorSupport) {
@@ -113,7 +114,7 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
     public void setValue(String val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         throw new UnsupportedOperationException();
     }
-    
+
     @Override
     public Object getValue(String attributeName) {
         if (attributeName.equals("canAutoComplete")) { //NOI18N
@@ -121,5 +122,5 @@ public class RemoteSyncFactoryNodeProp extends Node.Property<String> implements 
         }
         return super.getValue(attributeName);
     }
-    
+
 }

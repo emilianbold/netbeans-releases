@@ -63,11 +63,22 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
+@ProjectServiceProvider(
+        service = {
+            BuildToolImplementation.class,
+            GruntBuildTool.class,
+        }, projectType = {
+            "org-netbeans-modules-web-clientproject", // NOI18N
+            "org-netbeans-modules-php-project", // NOI18N
+            "org-netbeans-modules-web-project", // NOI18N
+            "org-netbeans-modules-maven", // NOI18N
+        }
+)
 public final class GruntBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(GruntBuildTool.class.getName());
 
-    private static final String IDENTIFIER = "Grunt"; // NOI18N
+    public static final String IDENTIFIER = "Grunt"; // NOI18N
 
     private final Project project;
     private final Gruntfile gruntfile;
@@ -75,10 +86,10 @@ public final class GruntBuildTool implements BuildToolImplementation {
     private final GruntPreferences gruntPreferences;
 
 
-    private GruntBuildTool(Project project) {
+    public GruntBuildTool(Project project) {
         assert project != null;
         this.project = project;
-        gruntfile = new Gruntfile(project.getProjectDirectory());
+        gruntfile = Gruntfile.create(project.getProjectDirectory());
         gruntTasks = GruntTasks.create(project, gruntfile);
         gruntPreferences = new GruntPreferences(project);
     }
@@ -93,12 +104,7 @@ public final class GruntBuildTool implements BuildToolImplementation {
     @CheckForNull
     public static GruntBuildTool inProject(Project project) {
         assert project != null;
-        for (BuildToolImplementation buildTool : project.getLookup().lookupAll(BuildToolImplementation.class)) {
-            if (buildTool instanceof GruntBuildTool) {
-                return (GruntBuildTool) buildTool;
-            }
-        }
-        return null;
+        return project.getLookup().lookup(GruntBuildTool.class);
     }
 
     @Override
@@ -164,32 +170,6 @@ public final class GruntBuildTool implements BuildToolImplementation {
             }
         }
         return true;
-    }
-
-    //~ Inner classes
-
-    public static final class Registration {
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-        public static BuildToolImplementation forHtml5Project(Project project) {
-            return new GruntBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-        public static BuildToolImplementation forPhpProject(Project project) {
-            return new GruntBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-web-project") // NOI18N
-        public static BuildToolImplementation forWebProject(Project project) {
-            return new GruntBuildTool(project);
-        }
-
-        @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-maven") // NOI18N
-        public static BuildToolImplementation forMavenProject(Project project) {
-            return new GruntBuildTool(project);
-        }
-
     }
 
 }

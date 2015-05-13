@@ -62,9 +62,9 @@ import org.openide.util.WeakListeners;
 public abstract class SPSCommonImpl implements SolarisPrivilegesSupport {
 
     private final static TasksCachedProcessor<ExecutionEnvironment, List<String>> cachedPrivilegesFetcher =
-            new TasksCachedProcessor<ExecutionEnvironment, List<String>>(new FetchPrivilegesTask(), false);
+            new TasksCachedProcessor<>(new FetchPrivilegesTask(), false);
     private final static TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean> cachedPrivilegesRequestor =
-            new TasksCachedProcessor<RequestPrivilegesTaskParams, Boolean>(new RequestPrivilegesTask(), true);
+            new TasksCachedProcessor<>(new RequestPrivilegesTask(), true);
     private final ExecutionEnvironment execEnv;
     private volatile boolean cancelled = false;
     private final ConnectionListener connectionListener;

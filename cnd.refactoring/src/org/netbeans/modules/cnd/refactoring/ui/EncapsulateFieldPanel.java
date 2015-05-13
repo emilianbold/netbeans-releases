@@ -54,7 +54,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
@@ -71,11 +70,9 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmField;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -99,19 +96,18 @@ import org.openide.util.NbPreferences;
  * @author  Vladimir Voskresensky
  */
 public final class EncapsulateFieldPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
-    private boolean EXPERIMENTAL = CsmRefactoringUtils.REFACTORING_EXTRA;
+    private static final String ALWAYS_USE_ACCESSORS_PROPERTY = "always_use_accessors"; // NOI18N
+    private static final String FIELD_ACCESS_INDEX_PROPERTY = "field_access_index"; // NOI18N
+    private static final String METHOD_ACCESS_INDEX_PROPERTY = "method_access_index"; // NOI18N
 
-    private DefaultTableModel model;
+    private final DefaultTableModel model;
     private final CsmObject selectedObject;
 //    private final CsmContext editorContext;
     private CsmClass csmClassContainer;
-    private ChangeListener parent;
+    private final ChangeListener parent;
     private String classname;
     private boolean isUpperCase;
     private boolean hasOutOfClassMemberDefinitions = false;
-    private static boolean ALWAYS_USE_ACCESSORS = false;
-    private static int FIELD_ACCESS_INDEX = 2;
-    private static int METHOD_ACCESS_INDEX = 0;
     
     private static final String modifierNames[] = {
         "public", // NOI18N
@@ -156,12 +152,12 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         model = new TabM(columnNames, 0);
         initComponents();
         setName(title);
-        jCheckAccess.setSelected(ALWAYS_USE_ACCESSORS);
-        jCheckAccess.setEnabled(false && EXPERIMENTAL);
-        jComboAccess.setSelectedIndex(METHOD_ACCESS_INDEX);
-        jComboAccess.setEnabled(false && EXPERIMENTAL);
-        jComboField.setSelectedIndex(FIELD_ACCESS_INDEX);
-        jComboField.setEnabled(false && EXPERIMENTAL);
+        jCheckAccess.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(EncapsulateFieldPanel.ALWAYS_USE_ACCESSORS_PROPERTY, false));
+        jCheckAccess.setEnabled(false);
+        jComboAccess.setSelectedIndex(NbPreferences.forModule(DeclarationGenerator.class).getInt(EncapsulateFieldPanel.METHOD_ACCESS_INDEX_PROPERTY, 0));
+        jComboAccess.setEnabled(false);
+        jComboField.setSelectedIndex(NbPreferences.forModule(DeclarationGenerator.class).getInt(EncapsulateFieldPanel.FIELD_ACCESS_INDEX_PROPERTY, 2));
+        jComboField.setEnabled(false);
         // *** initialize table
         // set renderer for the column "Field" to display name of the feature (with icon)
         jTableFields.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
@@ -180,9 +176,9 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
         }
 
         initEnumCombo(jComboSort, SortBy.DEFAULT);
-        jComboSort.setEnabled(false && EXPERIMENTAL);
+        jComboSort.setEnabled(false);
         initEnumCombo(jComboJavadoc, Documentation.NONE);
-        jComboJavadoc.setEnabled(false && EXPERIMENTAL);
+        jComboJavadoc.setEnabled(false);
     }
 
     @Override
@@ -236,7 +232,7 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
                 int row = e.getFirstRow();
                 if (col == 1 || col==3 ) {
                     Boolean value = (Boolean) model.getValueAt(row, col);
-                    if (value.booleanValue()) {
+                    if (value) {
                         AccessorInfo ai = (AccessorInfo) model.getValueAt(row, col + 1);
                         if (ai != null) {
                             ai.reset();
@@ -546,7 +542,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     
     private static <E extends Enum<E> & Comparator<E>> void initEnumCombo(JComboBox combo, E defValue) {
         @SuppressWarnings("unchecked")
-        List<E> enumList = new ArrayList<E>(EnumSet.allOf(defValue.getClass()));
+        List<E> enumList = new ArrayList<>(EnumSet.allOf(defValue.getClass()));
         Collections.sort(enumList, defValue);
         combo.setModel(new DefaultComboBoxModel(enumList.toArray()));
         combo.setSelectedItem(defValue);
@@ -580,7 +576,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             assert CsmKindUtilities.isField(selectedResolvedObject): "should be field";
             csmClassContainer = ((CsmField)selectedResolvedObject).getContainingClass();
         }
-        List<CsmField> result = new ArrayList<CsmField>();
+        List<CsmField> result = new ArrayList<>();
         Boolean anIsUpperCase = null;
         for (CsmMember member : csmClassContainer.getMembers()) {
             if (CsmKindUtilities.isField(member)) {
@@ -589,7 +585,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
                 anIsUpperCase = GeneratorUtils.checkStartWithUpperCase((CsmMethod) member);
             }
         }
-        this.isUpperCase = anIsUpperCase != null ? anIsUpperCase.booleanValue() : true;
+        this.isUpperCase = anIsUpperCase != null ? anIsUpperCase : true;
         this.classname = csmClassContainer.getQualifiedName().toString();
         final String title = " - " + classname; // NOI18N
         setName(getName() + title);
@@ -598,39 +594,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     private void initInsertPoints() {
-        CsmClass encloser = csmClassContainer;
-        List<InsertPoint> result = new ArrayList<InsertPoint>();
-        int idx = 0;
-        hasOutOfClassMemberDefinitions = false;
-        for (CsmMember member : encloser.getMembers()) {
-            if (CsmKindUtilities.isMethod(member)) {
-                CsmMethod method = (CsmMethod) member;
-                CsmFunction definition = ((CsmFunction)method).getDefinition();
-                InsertPoint ip = new InsertPoint(encloser, method, definition, idx + 1, NbBundle.getMessage(
-                        EncapsulateFieldPanel.class,
-                        "MSG_EncapsulateFieldInsertPointMethod", // NOI18N
-                        MemberInfo.create(method).getHtmlText()
-                        ));
-                if (definition != null && definition != method) {
-                    hasOutOfClassMemberDefinitions = true;
-                }
-                result.add(ip);
-            }
-            ++idx;
-        }
-        jComboInsertPoint.addItem(InsertPoint.DEFAULT);
-        if (!result.isEmpty()) {
-            InsertPoint first = new InsertPoint(encloser, null, null, Integer.MIN_VALUE,
-            getString("EncapsulateFieldPanel.jComboInsertPoint.first")); // NOI18N
-            InsertPoint last = new InsertPoint(encloser, null, null, Integer.MAX_VALUE,
-            getString("EncapsulateFieldPanel.jComboInsertPoint.last")); // NOI18N
-            jComboInsertPoint.addItem(first); // NOI18N
-            jComboInsertPoint.addItem(last); // NOI18N
-            for (InsertPoint ip : result) {
-                jComboInsertPoint.addItem(ip);
-            }
-        }
-        jComboInsertPoint.setSelectedItem(InsertPoint.DEFAULT);
+        hasOutOfClassMemberDefinitions = InsertPoint.initInsertPoints(jComboInsertPoint, csmClassContainer);
         if (hasOutOfClassMemberDefinitions) {
             jInlineMethods.setSelected(NbPreferences.forModule(DeclarationGenerator.class).getBoolean(DeclarationGenerator.INLINE_PROPERTY, false));
             jInlineMethods.setEnabled(true);
@@ -641,7 +605,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public final Collection<EncapsulateFieldInfo> getAllFields() {
-        List<EncapsulateFieldInfo> result = new ArrayList<EncapsulateFieldInfo>();
+        List<EncapsulateFieldInfo> result = new ArrayList<>();
         List<?> rows = model.getDataVector();
         for (Iterator<?> rowIt = rows.iterator(); rowIt.hasNext();) {
             List<?> row = (List<?>) rowIt.next();
@@ -681,13 +645,15 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
 
     public boolean isCheckAccess() {
-        ALWAYS_USE_ACCESSORS = jCheckAccess.isSelected();
-        return ALWAYS_USE_ACCESSORS;
+        boolean res = jCheckAccess.isSelected();
+        NbPreferences.forModule(DeclarationGenerator.class).putBoolean(EncapsulateFieldPanel.ALWAYS_USE_ACCESSORS_PROPERTY, res);
+        return res;
     }
     
     public Set<CsmVisibility> getFieldModifiers() {
-        FIELD_ACCESS_INDEX = jComboField.getSelectedIndex();
-        CsmVisibility mod = getModifier(FIELD_ACCESS_INDEX);
+        int res = jComboField.getSelectedIndex();
+        NbPreferences.forModule(DeclarationGenerator.class).putInt(EncapsulateFieldPanel.FIELD_ACCESS_INDEX_PROPERTY, res);
+        CsmVisibility mod = getModifier(res);
         if (mod == null) {
             return Collections.emptySet();
         } else {
@@ -696,8 +662,9 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
     }
     
     public Set<CsmVisibility> getMethodModifiers() {
-        METHOD_ACCESS_INDEX = jComboAccess.getSelectedIndex();
-        CsmVisibility mod = getModifier(METHOD_ACCESS_INDEX);
+        int res = jComboAccess.getSelectedIndex();
+        NbPreferences.forModule(DeclarationGenerator.class).putInt(EncapsulateFieldPanel.METHOD_ACCESS_INDEX_PROPERTY, res);
+        CsmVisibility mod = getModifier(res);
         if (mod == null) {
             return Collections.emptySet();
         } else {
@@ -780,7 +747,7 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
             if (column == 1 || column == 3) {
                 return true;
             }
-            return ((Boolean) getValueAt(row, column - 1)).booleanValue();
+            return (Boolean) getValueAt(row, column - 1);
         }
     }
     
@@ -915,46 +882,6 @@ private void jButtonSelectSettersActionPerformed(java.awt.event.ActionEvent evt)
         
     }
     
-    public static final class InsertPoint {
-        
-        public static final InsertPoint DEFAULT = new InsertPoint(null, null, null, Integer.MIN_VALUE,
-                getString("EncapsulateFieldPanel.jComboInsertPoint.default")); // NOI18N
-        private final int index;
-        private final String description;
-        private final CsmOffsetable elemDecl;
-        private final CsmOffsetable elemDef;
-        private final CsmClass clazz;
-
-        private InsertPoint(CsmClass clazz, CsmOffsetable elemDecl, CsmOffsetable elemDef, int index, String description) {
-            this.index = index;
-            this.description = description;
-            this.elemDecl = elemDecl;
-            this.elemDef = elemDef;
-            this.clazz = clazz;
-        }
-
-        public CsmClass getContainerClass() {
-            return clazz;
-        }
-
-        public CsmOffsetable getElementDeclaration() {
-            return elemDecl;
-        }
-
-        public CsmOffsetable getElementDefinition() {
-            return elemDef;
-        }
-
-        public int getIndex() {
-            return index;
-        }
-
-        @Override
-        public String toString() {
-            return description;
-        }
-        
-    }
     
     private static final class EncapsulateCsmFieldTableCellRenderer extends UIUtilities.CsmElementTableCellRenderer {
 

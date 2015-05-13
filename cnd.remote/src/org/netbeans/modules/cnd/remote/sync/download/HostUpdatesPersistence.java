@@ -91,17 +91,24 @@ class HostUpdatesPersistence {
 
     @SuppressWarnings(value = "RV")
     public void store() {
+        OutputStream os = null;
         try {
-            OutputStream os = new BufferedOutputStream(dataFile.getOutputStream());
+            os = new BufferedOutputStream(dataFile.getOutputStream());
             data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
-            os.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             try {
                 dataFile.delete();
             } catch (IOException ex2) {
-                System.err.printf("Error deleting file %s\n", dataFile.getPath());
+                System.err.printf("Error deleting file %s%n", dataFile.getPath());
+            }
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ex) {
+                }
             }
         }
     }

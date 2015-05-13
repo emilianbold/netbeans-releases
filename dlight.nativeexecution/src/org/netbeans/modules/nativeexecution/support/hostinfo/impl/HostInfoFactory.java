@@ -147,8 +147,8 @@ public final class HostInfoFactory {
             if (parts[2].startsWith("groups=")) { // NOI18N
                 String[] groupPairs = parts[2].substring(7).split(", *"); //NOI18N
                 if (groupPairs.length > 0) {
-                    List<Integer> gids = new ArrayList<Integer>(groupPairs.length);
-                    List<String> groups = new ArrayList<String>(groupPairs.length);
+                    List<Integer> gids = new ArrayList<>(groupPairs.length);
+                    List<String> groups = new ArrayList<>(groupPairs.length);
                     for (String pair : groupPairs) {
                         sb = new StringBuilder();
                         int gid = parseIdAndName(pair, sb);

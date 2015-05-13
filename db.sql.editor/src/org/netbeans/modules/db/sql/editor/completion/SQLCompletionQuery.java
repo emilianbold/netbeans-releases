@@ -49,7 +49,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -175,12 +174,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         substitutionOffset = 0;
         items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
         if (env.getTokenSequence().isEmpty()) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         statement = SQLStatementAnalyzer.analyze(env.getTokenSequence(), quoter);
         if (statement == null) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         if (statement.getKind() == SQLStatementKind.CREATE && ((CreateStatement) statement).hasBody()) {
@@ -189,7 +188,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         context = statement.getContextAtOffset(env.getCaretOffset());
         if (context == null) {
-            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE");  //NOI18N
+            completeKeyword("SELECT", "INSERT", "DELETE", "DROP", "UPDATE", "CREATE");  //NOI18N
             return items;
         }
         ident = findIdentifier();
@@ -216,10 +215,33 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case DELETE:
                 completeDelete();
                 break;
+            case CREATE:
+                completeCreate();
+                break;
         }
         return items;
     }
 
+    private void completeCreate() {
+        CreateStatement createStatement = (CreateStatement) statement;
+        tablesClause = createStatement.getTablesInEffect(env.getCaretOffset());
+        switch(context) {
+            case CREATE:
+            case CREATE_DATABASE:
+            case CREATE_FUNCTION:
+            case CREATE_PROCEDURE:
+            case CREATE_SCHEMA:
+            case CREATE_TABLE:
+            case CREATE_TEMPORARY_TABLE:
+            case CREATE_VIEW:
+            case CREATE_VIEW_AS:
+                completeKeyword(context);
+                break;
+            default:
+                completeSelect();
+        }
+    }
+    
     private void completeSelect() {
         SelectStatement selectStatement = (SelectStatement) statement;
         tablesClause = selectStatement.getTablesInEffect(env.getCaretOffset());
@@ -254,6 +276,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     private void completeInsert () {
         InsertStatement insertStatement = (InsertStatement) statement;
+        tablesClause = insertStatement.getTablesInEffect(env.getCaretOffset());
         includeViews = false;
         switch (context) {
             case INSERT:
@@ -267,6 +290,12 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 break;
             case VALUES:
                 break;
+            default:
+                if (!insertStatement.getSubqueries().isEmpty()) {
+                    completeSelect();
+                } else if (tablesClause != null) {
+                    completeColumnWithDefinedTuple(ident);
+                }
         }
     }
 
@@ -400,6 +429,18 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             case VALUES:
                 // nothing to complete
                 break;
+            case CREATE:
+                completeKeyword("PROCEDURE", "FUNCTION", "TABLE", "DATABASE", "SCHEMA", "TEMPORARY", "VIEW");  //NOI18N
+                break;
+            case CREATE_TEMPORARY_TABLE:
+                completeKeyword("TABLE");  //NOI18N
+                break;
+            case CREATE_VIEW:
+                completeKeyword("AS");
+                break;
+            case CREATE_VIEW_AS:
+                completeKeyword("SELECT");
+                break;
         }
     }
 
@@ -458,7 +499,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnSimpleIdent(String typedPrefix, boolean quoted) {
-        if (tablesClause != null) {
+        if (tablesClause != null && !(tablesClause.getUnaliasedTableNames().isEmpty() && tablesClause.getAliasedTableNames().isEmpty())) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
             Schema defaultSchema = metadata.getDefaultSchema();
@@ -542,7 +583,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     /** Adds columns, tuples, schemas and catalogs according to given identifier. */
     private void completeColumnQualIdent(QualIdent fullyTypedIdent, String lastPrefix, boolean quoted) {
-        if (tablesClause != null) {
+        if (tablesClause != null && !(tablesClause.getUnaliasedTableNames().isEmpty() && tablesClause.getAliasedTableNames().isEmpty())) {
             completeQualIdentBasedOnFromClause(fullyTypedIdent, lastPrefix, quoted);
         } else {
             // Assume fullyTypedIdent is a tuple.
@@ -627,7 +668,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Tuples from default schema, restricted to non-aliased tuple names in the FROM clause.
         Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
-            Set<String> simpleTupleNames = new HashSet<String>();
+            Set<String> simpleTupleNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 if (tuple.getParent().isDefault()) {
                     simpleTupleNames.add(tuple.getName());
@@ -640,8 +681,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         }
         // Schemas from default catalog other than the default schema, based on non-aliased tuple names in the FROM clause.
         // Catalogs based on non-aliased tuples names in the FROM clause.
-        Set<String> schemaNames = new HashSet<String>();
-        Set<String> catalogNames = new HashSet<String>();
+        Set<String> schemaNames = new TreeSet<String>();
+        Set<String> catalogNames = new TreeSet<String>();
         for (Tuple tuple : tuples) {
             Schema schema = tuple.getParent();
             Catalog catalog = schema.getParent();
@@ -680,7 +721,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Now assume fullyTypedIdent is the name of a schema in the default catalog.
         Schema schema = resolveSchema(fullyTypedIdent);
         if (schema != null) {
-            Set<String> tupleNames = new HashSet<String>();
+            Set<String> tupleNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 if (tuple.getParent().equals(schema)) {
                     tupleNames.add(tuple.getName());
@@ -694,8 +735,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         // Now assume fullyTypedIdent is the name of a catalog.
         Catalog catalog = resolveCatalog(fullyTypedIdent);
         if (catalog != null) {
-            Set<String> syntheticSchemaTupleNames = new HashSet<String>();
-            Set<String> schemaNames = new HashSet<String>();
+            Set<String> syntheticSchemaTupleNames = new TreeSet<String>();
+            Set<String> schemaNames = new TreeSet<String>();
             for (Tuple tuple : tuples) {
                 schema = tuple.getParent();
                 if (schema.getParent().equals(catalog)) {

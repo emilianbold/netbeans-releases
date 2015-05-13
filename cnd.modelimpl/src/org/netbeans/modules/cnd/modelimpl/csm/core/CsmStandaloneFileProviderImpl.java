@@ -326,7 +326,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static void trace(String pattern, Object... args) {
         assert TRACE : "Should not be called if TRACE is off!"; //NOI18N
-        System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
+        System.err.printf("### Standalone provider:  %s%n", String.format(pattern, args)); //NOI18N
     }
 
     /*package*/ static final class NativeProjectImpl implements NativeProject, ChangeListener, FileChangeListener {
@@ -381,7 +381,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 lang = NativeProjectProvider.getLanguage(file, dao);
                 flavorExt = getDefaultStandard(lang);
             }
-            NativeProject prototype = null;            
+            NativeProject prototype = null;
             for (CsmProject csmProject : model.projects()) {
                 Object p = csmProject.getPlatformProject();
                 if (p instanceof NativeProject) {
@@ -404,7 +404,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             if (prototype != null && ModelImpl.instance().isProjectDisabled(prototype)){
                 return null;
             }
-                    
+
             FileSystem fs;
             try {
                 fs = file.getFileSystem();
@@ -479,7 +479,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                         for (LanguageFlavor lf : LanguageFlavor.values()) {
                             all.append(all.length() > 0 ? ',' : ' ').append(lf.name());
                         }
-                        System.err.printf("Wrong parameter -J-D%s=%s. Should be one of %s\n", key, defFlavorTxt, all);
+                        System.err.printf("Wrong parameter -J-D%s=%s. Should be one of %s%n", key, defFlavorTxt, all);
                     }
                 }
             }
@@ -510,7 +510,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             return flavor;
         }
-        
+
         private NativeProjectImpl(FileObject projectRoot,
                 List<FSPath> sysIncludes, List<FSPath> usrIncludes, List<String> usrFiles,
                 List<String> sysMacros, List<String> usrMacros, List<String> undefinedMacros) {
@@ -523,7 +523,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             this.sysMacros = sysMacros;
             this.usrMacros = usrMacros;
         }
-        
+
         private static FileSystem getFileSystem(FileObject fo) {
             try {
                 return fo.getFileSystem();
@@ -537,7 +537,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             check(sysIncludes);
             check(usrIncludes);
         }
-        
+
         private void check(List<FSPath> list) {
             for(Iterator<FSPath> it = list.iterator(); it.hasNext();){
                 FSPath path = it.next();
@@ -547,7 +547,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 }
             }
         }
-        
+
         private void addFile(FileObject file, NativeFileItem.Language lang, LanguageFlavor flavor) {
             NativeFileItemImpl item = new NativeFileItemImpl(file, this, lang, flavor);
             //TODO: put item in loockup of DataObject
@@ -578,7 +578,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                 Exceptions.printStackTrace(ex);
                 return CndFileUtils.getLocalFileSystem();
             }
-        }        
+        }
 
         @Override
         public String getProjectDisplayName() {
@@ -658,7 +658,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public List<String> getIncludeFiles() {
             return this.usrFiles;
         }
-        
+
         @Override
         public List<String> getSystemMacroDefinitions() {
             return this.sysMacros;
@@ -678,11 +678,11 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public void runOnProjectReadiness(NamedRunnable task) {
             task.run();
         }
-        
+
         @Override
         public void fireFilesPropertiesChanged() {
         }
-        
+
         @Override
         public void fileFolderCreated(FileEvent fe) {
         }
@@ -713,7 +713,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             return CndLanguageStandards.StringToLanguageStandard((String) fo.getAttribute(PROP_LANG_STANDARD));
         }
-        
+
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
             String name = fe.getName();
@@ -782,7 +782,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         public FileObject getFileObject() {
             return fileObject;
         }
-        
+
         @Override
         public String getAbsolutePath() {
             return CndFileUtils.normalizePath(fileObject);
@@ -791,7 +791,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         @Override
         public String getName() {
             return fileObject.getNameExt();
-        }       
+        }
 
         @Override
         public List<FSPath> getSystemIncludePaths() {
@@ -813,7 +813,6 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
 
         private void checkAbsolute(List<FSPath> orig) {
-            List<FSPath> result = new ArrayList<>(orig.size());
             for (FSPath path : orig) {
                 CndUtils.assertAbsolutePathInConsole(path.getPath());
             }
@@ -853,13 +852,13 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return "SA " + fileObject + " " + System.identityHashCode(this) + " " + lang + " from project:" + project; // NOI18N
         }
     }
-    
+
     public void dumpInfo(PrintWriter printOut) {
-        printOut.printf("SAProvider %s has toBeRemoved=%d entries\n", this.getClass().getSimpleName(), toBeRmoved.size());// NOI18N 
+        printOut.printf("SAProvider %s has toBeRemoved=%d entries%n", this.getClass().getSimpleName(), toBeRmoved.size());// NOI18N
         int ind = 1;
         for (String str : toBeRmoved) {
-            printOut.printf("[%d] %s\n", ind++, str);// NOI18N
+            printOut.printf("[%d] %s%n", ind++, str);// NOI18N
         }
     }
-    
+
 }

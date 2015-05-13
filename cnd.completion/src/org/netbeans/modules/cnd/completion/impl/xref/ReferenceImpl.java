@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.TokenId;
@@ -79,6 +80,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     private final int offset;
     private CsmReferenceKind kind;
     private FileReferencesContext fileReferencesContext;
+    private long lastFileVersion;
 
     public ReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<TokenId> token, CsmReferenceKind kind) {
         super(doc, file, token.offset() < 0 ? offset : token.offset());
@@ -86,10 +88,35 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
         this.offset = offset;
         // could be null or known kind like CsmReferenceKind.DIRECT_USAGE or CsmReferenceKind.AFTER_DEREFERENCE_USAGE
         this.kind = kind;
+        this.lastFileVersion = -1;
     }
 
     @Override
     public CsmObject getReferencedObject() {
+        CsmObject out = getReferencedObjectImpl();
+        if (!CsmBaseUtilities.isValid(out)) {
+            if (getFileVersion() != lastFileVersion) {
+                cleanup();
+                out = getReferencedObjectImpl();
+            }
+        }
+        return out;
+    }
+
+    private void cleanup() {
+        this.target = null;
+        this.lastFileVersion = -1;
+        this.findDone = false;
+        this.restoreDone = false;
+        this.closestTopLevelObject = null;
+        this.owner = null;
+    }
+
+    private long getFileVersion() {
+        return CsmFileInfoQuery.getDefault().getFileVersion(getContainingFile());
+    }
+
+    private CsmObject getReferencedObjectImpl() {
         if (!findDone && isValid()) {
             restoreIfPossible();
 
@@ -103,6 +130,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                 //        }
                 //    }
                 //}
+                lastFileVersion = getFileVersion();
                 target = ReferencesSupport.instance().findReferencedObject(getContainingFile(), getDocument(),
                         this.offset, token, fileReferencesContext);
                 if (target != null) {
@@ -142,6 +170,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             //    }
             //}
             if (candidate != null) {
+                lastFileVersion = getFileVersion();
                 target = candidate.getReferencedObject();
                 if (target == null) {
                     Logger.getLogger("xRef").log(Level.FINE, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
@@ -187,11 +216,12 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     @SuppressWarnings("deprecation")
     public String toString() {
         return "'" + org.netbeans.editor.EditorDebug.debugString(getText().toString()) // NOI18N
-                + "', tokenID=" + this.token.id().toString().toLowerCase() // NOI18N
+                + "', tokenID=" + this.token.id().toString().toLowerCase(Locale.getDefault()) // NOI18N
                 + ", offset=" + this.offset + " [" + super.getStartPosition() + "-" + super.getEndPosition() + "]"; // NOI18N
     }
 
     /*package*/ final void setTarget(CsmObject target) {
+        this.lastFileVersion = getFileVersion();
         this.target = target;
     }
 
@@ -239,7 +269,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                     assert targetDecl != null;
                     outKind = CsmReferenceKind.DIRECT_USAGE;
                     if (anOwner != null) {
-                        if (CsmKindUtilities.isClassForwardDeclaration(owner) || 
+                        if (CsmKindUtilities.isClassForwardDeclaration(owner) ||
                             CsmClassifierResolver.getDefault().isForwardClassifier(owner)) {
                             outKind = CsmReferenceKind.DIRECT_USAGE;
                         } else if (anOwner.equals(targetDef)) {
@@ -275,7 +305,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             CsmObject lastObject = context.getLastObject();
             if (CsmKindUtilities.isType(lastObject) || CsmKindUtilities.isTemplateParameter(lastObject)) {
                 lastObject = context.getLastScope();
-            }   
+            }
             closestTopLevelObject = CsmBaseUtilities.findClosestTopLevelObject(lastObject);
         }
     }

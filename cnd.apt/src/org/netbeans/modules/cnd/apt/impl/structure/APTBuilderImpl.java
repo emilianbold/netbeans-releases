@@ -93,7 +93,7 @@ public final class APTBuilderImpl {
         }
         return aptFile;
     }
-    
+
     public static APT buildAPTLight(APT apt) {
         assert (apt != null);
         assert (isRootNode(apt));
@@ -155,7 +155,7 @@ public final class APTBuilderImpl {
     }
     //////Build APT without recursion (a little bit faster, can be tuned even more)
     private LinkedList<Pair> nodeStack = new LinkedList<Pair>();
-    
+
     private APTToken nonRecursiveBuild(APTFileNode aptFile, TokenStream stream, GuardDetector guardDetector) throws TokenStreamException {
         assert(stream != null);
         Pair root = new Pair(aptFile);
@@ -171,7 +171,7 @@ public final class APTBuilderImpl {
             APTNodeBuilder builder = createNodeBuilder(nextToken);
             nextToken = initNode(aptFile, builder, (APTToken) stream.nextToken(), stream);
             APTBaseNode activeNode = builder.getNode();
-            
+
             if (APTUtils.isEndConditionNode(activeNode.getType())) {
                 if (!nodeStack.isEmpty()) {
                     root = nodeStack.removeLast();
@@ -204,18 +204,18 @@ public final class APTBuilderImpl {
         }
         return nextToken;
     }
-    
+
     private APTToken initNode(APTFileNode aptFile, APTNodeBuilder builder, APTToken nextToken, TokenStream stream) throws TokenStreamException {
         while (!APTUtils.isEOF(nextToken) && builder.accept(aptFile, nextToken)) {
             nextToken = (APTToken) stream.nextToken();
-        }   
+        }
         if (APTUtils.isEndDirectiveToken(nextToken.getType())) {
             // eat it
             nextToken = (APTToken) stream.nextToken();
         }
         return nextToken;
     }
-    
+
     private APTNodeBuilder createNodeBuilder(APTToken token) {
         assert (!APTUtils.isEOF(token));
         int ttype = token.getType();
@@ -245,18 +245,19 @@ public final class APTBuilderImpl {
             case APTTokenTypes.PRAGMA:
                 return new APTPragmaNode(token);
             case APTTokenTypes.LINE:
-            case APTTokenTypes.PREPROC_DIRECTIVE:                
+            case APTTokenTypes.PREPROC_DIRECTIVE:
                 return new APTUnknownNode(token);
             default:
-                assert (!APTUtils.isPreprocessorToken(ttype)) : 
+                assert (!APTUtils.isPreprocessorToken(ttype)) :
                     "all preprocessor tokens should be handled above"; // NOI18N
-                return new APTStreamNode(token);            
-        }        
-    }    
+                return new APTStreamNode(token);
+        }
+    }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("BC")
     public static APT createLightCopy(APT apt) {
         assert (apt != null);
-        assert (isRootNode(apt));        
+        assert (isRootNode(apt));
         APT light = null;
         switch (apt.getType()) {
             case APT.Type.TOKEN_STREAM:
@@ -279,7 +280,7 @@ public final class APTBuilderImpl {
             case APT.Type.ELIF:
                 light = new APTElifNode((APTElifNode)apt);
                 break;
-            case APT.Type.ELSE:             
+            case APT.Type.ELSE:
                 light = new APTElseNode((APTElseNode)apt);
                 break;
             case APT.Type.ENDIF:
@@ -304,15 +305,15 @@ public final class APTBuilderImpl {
                 break;
         }
         return light;
-    }  
-    
+    }
+
     static private boolean isRootNode(APT apt) {
         switch (apt.getType()) {
             case APT.Type.IFDEF:
             case APT.Type.IFNDEF:
             case APT.Type.IF:
             case APT.Type.ELIF:
-            case APT.Type.ELSE:    
+            case APT.Type.ELSE:
             case APT.Type.ENDIF:
             case APT.Type.INCLUDE:
             case APT.Type.INCLUDE_NEXT:
@@ -323,7 +324,7 @@ public final class APTBuilderImpl {
             case APT.Type.PRAGMA:
                 return true;
         }
-        return false;        
+        return false;
     }
 
     static private APT nextRoot(APT apt) {
@@ -361,7 +362,7 @@ public final class APTBuilderImpl {
             state = State.INITIAL;
             attachLexerCallback();
         }
-        
+
         private APTLexer findLexer(TokenStream ts) {
             if (ts instanceof APTLexer) {
                 return (APTLexer) ts;
@@ -455,6 +456,7 @@ public final class APTBuilderImpl {
             }
         }
 
+        @org.netbeans.api.annotations.common.SuppressWarnings("BC")
         public void onTopLevelAPTNode(APT apt) {
             assert !attached: "can not be attached in state " + state + " " + aptFile;
             switch (state) {

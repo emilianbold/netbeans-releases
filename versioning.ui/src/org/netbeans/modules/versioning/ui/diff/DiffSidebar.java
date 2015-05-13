@@ -152,6 +152,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     private VersioningSystem ownerVersioningSystem;
     private final LookupListener lookupListenerGC;
     private Color bgColor = Color.WHITE;
+    private Lookup.Result   colorResult;
 
     public DiffSidebar(JTextComponent target, FileObject file) {
         LOG.log(Level.FINE, "creating DiffSideBar for {0}", file != null ? file.getPath() : null);
@@ -160,24 +161,31 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         this.foldHierarchy = FoldHierarchy.get(target);
         this.document = (BaseDocument) textComponent.getDocument();
         this.markProvider = new DiffMarkProvider();
-        final Lookup.Result r = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(target)).lookupResult(FontColorSettings.class);
-        lookupListenerGC = new LookupListener() {
+        colorResult = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(target)).lookupResult(FontColorSettings.class);
+        
+        class LL implements LookupListener, Runnable {
             @Override
             public void resultChanged(LookupEvent ev) {
-                Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
-                if (fcsIt.hasNext()) {
-                    updateColors(r);
+                if (!EventQueue.isDispatchThread()) {
+                    EventQueue.invokeLater(this);
+                } else {
+                    updateColors();
                 }
             }
-        };
-        r.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , r));
+
+            @Override
+            public void run() {
+                updateColors();
+            }
+        }
+        lookupListenerGC = new LL();
+        colorResult.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , colorResult));
         bgColor = defaultBackground();
-        updateColors(r);
         setToolTipText(""); // NOI18N
         refreshDiffTask = DiffSidebarManager.getInstance().createDiffSidebarTask(new RefreshDiffTask());
         setMaximumSize(new Dimension(BAR_WIDTH, Integer.MAX_VALUE));
     }
-
+    
     FileObject getFileObject() {
         return fileObject;
     }
@@ -626,6 +634,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
                 }
             }).schedule(0);
         }
+        updateColors();
     }
 
     private void shutdown() {
@@ -1276,21 +1285,19 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
     }
     
-    private void updateColors (Lookup.Result r) {
-        Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
-        if (!fcsIt.hasNext()) {
+    private void updateColors() {
+        if (getParent() == null) {
             return;
         }
-        FontColorSettings fcs = fcsIt.next();
-        
-        AttributeSet as = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
-        Color oldC = bgColor;
-        Coloring coloring = as == null ? null : Coloring.fromAttributeSet(as);
-        Color newC = null;
-        if (coloring != null) {
-            newC = coloring.getBackColor();
+        Iterator<FontColorSettings> fcsIt = colorResult.allInstances().iterator();
+        if (fcsIt.hasNext()) {
+            updateColors(fcsIt.next());
         }
-        bgColor = newC == null ? defaultBackground() : newC;
+    }
+
+    private void updateColors (FontColorSettings fcs) {
+        Color oldC = bgColor;
+        bgColor = getParent().getBackground();
         if (!bgColor.equals(oldC)) {
             EventQueue.invokeLater(new Runnable() {
 

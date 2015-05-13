@@ -62,7 +62,7 @@ import org.openide.util.actions.CookieAction;
     @ActionReference(path = "Editors/text/x-c++/Popup/goto", position = 1100),
     @ActionReference(path = "Editors/text/x-c/Popup/goto", position = 1100)})
 public final class ShowIncludeHierarchyAction extends CookieAction {
-    
+
     @Override
     protected void performAction(Node[] activatedNodes) {
         HierarchyTopComponent view = HierarchyTopComponent.findInstance();
@@ -72,7 +72,7 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         view.setFile(new InclideContextFinder(activatedNodes), false);
         view.requestActive();
     }
-    
+
     @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes != null && activatedNodes.length > 0) {
@@ -80,39 +80,39 @@ public final class ShowIncludeHierarchyAction extends CookieAction {
         }
         return false;
     }
-    
+
     @Override
     protected int mode() {
         return CookieAction.MODE_EXACTLY_ONE;
     }
-    
+
     @Override
     public String getName() {
         return NbBundle.getMessage(getClass(), "CTL_ShowIncludeAction"); // NOI18N
     }
-    
+
     @Override
     protected Class<?>[] cookieClasses() {
-        return new Class[] {
+        return new Class<?>[] {
             EditorCookie.class
         };
     }
-    
+
     @Override
     protected void initialize() {
         super.initialize();
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
 }
 

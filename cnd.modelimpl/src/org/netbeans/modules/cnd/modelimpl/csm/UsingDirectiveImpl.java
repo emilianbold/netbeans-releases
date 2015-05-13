@@ -105,7 +105,9 @@ public final class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsing
             CsmObject result = null;
             Resolver aResolver = ResolverFactory.createResolver(this);
             try {
-                result = aResolver.resolve(Utils.splitQualifiedName(name.toString()), Resolver.NAMESPACE);
+                if (!aResolver.isRecursionOnResolving(Resolver.INFINITE_RECURSION)) {
+                    result = aResolver.resolve(Utils.splitQualifiedName(name.toString()), Resolver.NAMESPACE);
+                }
             } finally {
                 ResolverFactory.releaseResolver(aResolver);
             }

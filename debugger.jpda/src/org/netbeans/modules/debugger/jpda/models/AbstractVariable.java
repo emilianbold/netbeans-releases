@@ -195,6 +195,10 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         if (expression.equals(oldValue)) {
             return ; // Do nothing, since the values are identical
         }
+        VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) {
+            return ; // Debugger has finished, no VM to set the value to.
+        }
         Value value;
         Value oldV = getInnerValue();
         //ObjectReference valueToEnableCollectionOn = null;
@@ -205,11 +209,11 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             } else if ((oldV instanceof StringReference || oldV == null) &&
                        expression.startsWith("\"") && expression.endsWith("\"") && expression.length() > 1) {
                 value = VirtualMachineWrapper.mirrorOf(
-                        debugger.getVirtualMachine(),
+                        vm,
                         expression.substring(1, expression.length() - 1));
             } else if (oldV instanceof StringReference) {
                 value = VirtualMachineWrapper.mirrorOf(
-                        debugger.getVirtualMachine(),
+                        vm,
                         expression);
             } else if (oldV instanceof ObjectReference &&
                        ObjectReferenceWrapper.referenceType((ObjectReference) oldV) instanceof ClassType &&
@@ -488,31 +492,13 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                 v = VariableMirrorTranslator.createValueFromMirror(obj,
                                                                    this instanceof ObjectVariable,
                                                                    getDebugger());
-            } catch (IllegalArgumentExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (InternalExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ObjectCollectedExceptionWrapper ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (InvalidTypeException ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ClassNotLoadedException ex) {
-                InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
-                ioex.initCause(ex);
-                throw ioex;
-            } catch (ClassNotPreparedExceptionWrapper ex) {
+            } catch (IllegalArgumentExceptionWrapper |
+                     InternalExceptionWrapper |
+                     VMDisconnectedExceptionWrapper |
+                     ObjectCollectedExceptionWrapper |
+                     InvalidTypeException |
+                     ClassNotLoadedException |
+                     ClassNotPreparedExceptionWrapper ex) {
                 InvalidObjectException ioex = new InvalidObjectException(ex.getLocalizedMessage());
                 ioex.initCause(ex);
                 throw ioex;

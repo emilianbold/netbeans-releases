@@ -49,6 +49,7 @@ import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -133,7 +134,7 @@ public class ConfigureFXMLPanelVisual extends JPanel implements ActionListener, 
         locationComboBox.setSelectedItem(preselectedGroup);
         ignoreRootCombo = false;
         FileObject targetFolder = preselectedFolder;
-        if(isMaven) {
+        if(isMaven && support.getType().equals(JavaProjectConstants.SOURCES_TYPE_RESOURCES)) {
             packageComboBox.getEditor().setItem(FXMLTemplateWizardIterator.defaultMavenFXMLPackage);
             targetFolder = null;
             if(preselectedGroup.isReal()) {

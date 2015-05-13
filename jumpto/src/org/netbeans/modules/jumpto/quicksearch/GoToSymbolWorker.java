@@ -93,7 +93,7 @@ public class GoToSymbolWorker implements Runnable {
             LOGGER.fine("Worker for " + text + " exited after cancel " + (System.currentTimeMillis() - createTime) + " ms.");
             return;
         }
-        final ListModel fmodel = Models.fromList(types);
+        final ListModel fmodel = Models.fromList(types, null);
         if (isCanceled) {
             LOGGER.fine("Worker for " + text + " exited after cancel " + (System.currentTimeMillis() - createTime) + " ms.");
             return;
@@ -137,8 +137,8 @@ public class GoToSymbolWorker implements Runnable {
         items = new ArrayList<SymbolDescriptor>(128);
         String[] message = new String[1];
         SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
-        SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
         for (SymbolProvider provider : getTypeProviders()) {
+            SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context, provider);
             current = provider;
             if (isCanceled) {
                 return null;

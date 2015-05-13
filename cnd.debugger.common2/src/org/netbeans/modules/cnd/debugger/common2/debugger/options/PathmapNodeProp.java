@@ -63,10 +63,12 @@ public final class PathmapNodeProp extends PropertySupport<Pathmap> {
 	this.profile = profile;
     }
 
+    @Override
     public Pathmap getValue() {
 	return profile.pathmap();
     }
 
+    @Override
     public void setValue(Pathmap v) {
 	profile.pathmap().assign(v);
     }
@@ -145,6 +147,7 @@ public final class PathmapNodeProp extends PropertySupport<Pathmap> {
 	}
 	
 	// interface ExPropertyEditor
+        @Override
 	public void attachEnv(PropertyEnv env) {
 	    this.env = env;
 	}

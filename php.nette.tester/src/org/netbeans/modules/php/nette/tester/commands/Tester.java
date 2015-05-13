@@ -51,9 +51,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -80,6 +80,7 @@ import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
@@ -93,12 +94,25 @@ public final class Tester {
 
     public static final String TESTER_FILE_NAME = "tester"; // NOI18N
 
-    private static final String TAP_FORMAT_PARAM = "--tap"; // NOI18N
+    private static final File COVERAGE_LOG;
+
+    private static final String OUTPUT_PARAM = "-o"; // NOI18N
+    private static final String TAP_OUTPUT_PARAM = "tap"; // NOI18N
     private static final String SKIP_INFO_PARAM = "-s"; // NOI18N
     private static final String PHP_INI_PARAM = "-c"; // NOI18N
     private static final String BINARY_EXECUTABLE_PARAM = "-p"; // NOI18N
+    private static final String COVERAGE_PARAM = "--coverage"; // NOI18N
+    private static final String COVERAGE_SRC_PARAM = "--coverage-src"; // NOI18N
+    private static final String DEFINE_INI_ENTRY_PARAM = "-d"; // NOI18N
+    private static final String XDEBUG_INI_ENTRY_PARAM = "zend_extension=xdebug." + (Utilities.isWindows() ? "dll" : "so"); // NOI18N
 
     private final String testerPath;
+
+
+    static {
+        String logDirName = System.getProperty("java.io.tmpdir"); // NOI18N
+        COVERAGE_LOG = new File(logDirName, "nb-tester-coverage.xml"); // NOI18N
+    }
 
 
     private Tester(String testerPath) {
@@ -187,16 +201,47 @@ public final class Tester {
     }
 
     @CheckForNull
+    public File getCoverageLog() {
+        if (COVERAGE_LOG.isFile()) {
+            return COVERAGE_LOG;
+        }
+        return null;
+    }
+
+    @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
         PhpExecutable tester = getExecutable(phpModule, getOutputTitle(runInfo));
         List<String> params = new ArrayList<>();
-        params.add(TAP_FORMAT_PARAM);
+        params.add(OUTPUT_PARAM);
+        params.add(TAP_OUTPUT_PARAM);
         params.add(SKIP_INFO_PARAM);
         addBinaryExecutable(phpModule, params);
         addPhpIni(phpModule, params);
         if (runInfo.isCoverageEnabled()) {
-            // XXX add coverage params once tester supports it
-            LOGGER.info("Nette Tester currently does not support code coverage via command line");
+            // delete the old file
+            if (COVERAGE_LOG.isFile()) {
+                if (!COVERAGE_LOG.delete()) {
+                    LOGGER.info("Cannot delete Nette Tester coverage log file");
+                }
+            }
+            // add params
+            params.add(DEFINE_INI_ENTRY_PARAM);
+            params.add(XDEBUG_INI_ENTRY_PARAM);
+            params.add(COVERAGE_PARAM);
+            params.add(COVERAGE_LOG.getAbsolutePath());
+            String coverageSourcePath = null;
+            if (TesterPreferences.isCoverageSourcePathEnabled(phpModule)) {
+                coverageSourcePath = TesterPreferences.getCoverageSourcePath(phpModule);
+            } else {
+                FileObject sourceDirectory = phpModule.getSourceDirectory();
+                if (sourceDirectory != null) {
+                    coverageSourcePath = FileUtil.toFile(sourceDirectory).getAbsolutePath();
+                }
+            }
+            if (coverageSourcePath != null) {
+                params.add(COVERAGE_SRC_PARAM);
+                params.add(coverageSourcePath);
+            }
         }
         // custom tests
         List<TestRunInfo.TestInfo> customTests = runInfo.getCustomTests();
@@ -308,7 +353,7 @@ public final class Tester {
 
     //~ Inner classes
 
-    private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static final class ParsingFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         private final TestSession testSession;
 

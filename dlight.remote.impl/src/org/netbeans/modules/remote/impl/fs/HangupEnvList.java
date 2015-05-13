@@ -52,7 +52,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 public class HangupEnvList {
 
     private static final ConcurrentHashMap<ExecutionEnvironment, Boolean> hanged = 
-            new ConcurrentHashMap<ExecutionEnvironment, Boolean>();
+            new ConcurrentHashMap<>();
     
     private HangupEnvList() {
     }
@@ -61,7 +61,11 @@ public class HangupEnvList {
         hanged.put(env, Boolean.TRUE);
     }
 
+    public static void clearHung(ExecutionEnvironment env) {
+        hanged.remove(env);
+    }
+
     public static boolean isHung(ExecutionEnvironment env) {
         return hanged.containsKey(env);
-    }
+    }    
 }

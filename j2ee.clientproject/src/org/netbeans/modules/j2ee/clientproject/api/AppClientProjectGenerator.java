@@ -430,10 +430,16 @@ public class AppClientProjectGenerator {
             }
         }
         Profile j2eeProfile = createData.getJavaEEProfile();
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
-                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            if (rh.getProjectLibraryManager().getLibrary(AntProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(AntProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
+        String libraryName = null;
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            libraryName = AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_6;
+        }
+        if (j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
+            libraryName = AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_7;
+        }
+        if (libraryName != null) {
+            if (rh.getProjectLibraryManager().getLibrary(libraryName) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(libraryName)); // NOI18N
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
@@ -643,9 +649,11 @@ public class AppClientProjectGenerator {
             ep.put(AppClientProjectProperties.CLIENT_NAME, mainClassArgs);
         }
 
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
-                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_6});
+        }
+        if (j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_7});
         }
 
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);

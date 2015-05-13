@@ -122,7 +122,11 @@ public class SimpleIssueFinder {
          * no matter what is their case.
          */
 
-        private static final String[] BUGWORDS = new String[] {"bug", "issue"}; //NOI18N
+        private static final String[] BUGWORDS = new String[] {"bug", "issue", // NOI18N
+                                                               // some people prefer to refer to issues by their type
+                                                               "defect", "feature", "task", "enhancement", "task-id", // NOI18N
+                                                               // to typo is human
+                                                               "isseu" }; // NOI18N
         private static final String BUG_NUMBER_PREFIX = "duplicate of"; //NOI18N
         private static final String[] BUGNUM_PREFIX_PARTS;
 
@@ -231,10 +235,10 @@ public class SimpleIssueFinder {
                     }
                     break;
                 case CHARS:
-                    if (isLetter(c)) {
+                    if (isLetter(c) || c == '-') {
                         newState = CHARS;
                         keepCountingBugwords = true;
-                    } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n')) {
+                    } else if ((c == ' ') || (c == '\t') || (c == '\r') || (c == '\n') || (c == ':')) {
                         if ((bugnumPrefixPartsProcessed == 0) && isBugword()
                                 || tryHandleBugnumPrefixPart()) {
                             newState = ((c == ' ') || (c == '\t')) ? BUGWORD

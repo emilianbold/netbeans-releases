@@ -431,6 +431,10 @@ public final class FormatContext {
         return (BaseDocument) context.document();
     }
 
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
+
     public void indentLine(int voffset, int indentationSize,
             JsFormatter.Indentation indentationCheck, CodeStyle.Holder codeStyle) {
 

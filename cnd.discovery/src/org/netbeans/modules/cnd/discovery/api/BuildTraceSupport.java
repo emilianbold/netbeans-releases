@@ -67,10 +67,10 @@ public final class BuildTraceSupport {
     public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
     public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
     private static final String SEPARATOR = ":"; //NOI18N
-    
+
     private BuildTraceSupport() {
     }
-    
+
     public static boolean useBuildTrace(MakeConfiguration conf) {
         return conf.getCodeAssistanceConfiguration().getBuildAnalyzer().getValue();
     }
@@ -78,7 +78,7 @@ public final class BuildTraceSupport {
     public static boolean resolveSymbolicLinks(MakeConfiguration conf) {
         return conf.getCodeAssistanceConfiguration().getResolveSymbolicLinks().getValue();
     }
-    
+
     public static String getTools(MakeConfiguration conf, ExecutionEnvironment execEnv) {
         String res = conf.getCodeAssistanceConfiguration().getTools().getValue();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
@@ -93,13 +93,12 @@ public final class BuildTraceSupport {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             HostInfo.OSFamily osFamily = hostInfo.getOSFamily();
             HostInfo.CpuFamily cpuFamily = hostInfo.getCpuFamily();
-            String version = hostInfo.getOS().getVersion();
-            
+
             switch(osFamily) {
                 case MACOSX:
                     return cpuFamily == HostInfo.CpuFamily.X86;
                 case LINUX:
-                    return cpuFamily == HostInfo.CpuFamily.X86;
+                    return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
                 case SUNOS:
                     return cpuFamily == HostInfo.CpuFamily.X86 || cpuFamily == HostInfo.CpuFamily.SPARC;
             }
@@ -149,7 +148,7 @@ public final class BuildTraceSupport {
         }
         return res;
     }
-    
+
     private static String prepengTool(CompilerSet compilerSet, ExecutionEnvironment execEnv, PredefinedToolKind kind, String res) {
         if (compilerSet == null) {
             return res;
@@ -174,11 +173,11 @@ public final class BuildTraceSupport {
             }
         } catch (IOException ex) {
         }
-        return res; 
+        return res;
     }
-    
+
     private static String addIfNeeded(String name, String res) {
-        for(String s : res.split(SEPARATOR)) { 
+        for(String s : res.split(SEPARATOR)) {
             if (s.equals(name)) {
                 return res;
             }
@@ -190,7 +189,7 @@ public final class BuildTraceSupport {
         }
         return res;
     }
-    
+
     private static void addTool(Project project, PredefinedToolKind kind, Set<String> res) {
         if (project != null) {
             ProjectBridge projectBridge = new ProjectBridge(project);
@@ -237,5 +236,5 @@ public final class BuildTraceSupport {
                 }
             }
         }
-    }    
+    }
 }

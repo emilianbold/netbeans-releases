@@ -130,6 +130,7 @@ public abstract class AbstractRecordList<R extends Record>
      * increasing its size by one.
      * @param   record   the component to be added.
      */
+    @Override
     public void addRecord(R record) {
 	addRecord(record, true);
     }
@@ -140,6 +141,7 @@ public abstract class AbstractRecordList<R extends Record>
      * increasing its size by one.
      * @param   record   the component to be added.
      */
+    @Override
     public synchronized void addRecord(R record, boolean reuse) {
 	// Is this the only method that needs to synchronized??? FIXUP
 
@@ -172,6 +174,7 @@ public abstract class AbstractRecordList<R extends Record>
 	fireContentsChanged(this, null);
     }
 
+    @Override
     public void addRecordAfter(R record, int after) {
 
 	// Protect against bad indices
@@ -201,10 +204,12 @@ public abstract class AbstractRecordList<R extends Record>
      * @return  true if it exists as determined by the <tt>equals</tt> method;
      *          <code>false</code> otherwise.
      */
+    @Override
     public boolean contains(R record) {
 	return list.contains(record);
     }
 
+    @Override
     public int indexOf(R record) {
 	return list.indexOf(record);
     }
@@ -213,6 +218,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Return the index of the record whose key matches 'key' or -1 if
      * no match was found.
      */
+    @Override
     public int recordByKey(String key) {
 	int i = 0;
 	for (R r : this) {
@@ -227,6 +233,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Returns the index of current Record
      * @return the index of <code>R</code>
      */
+    @Override
     public int getCurrentRecordIndex() {
         return currentRecordIndex;
     }
@@ -236,6 +243,7 @@ public abstract class AbstractRecordList<R extends Record>
      * @param index the requested index
      * @return the value at <code>index</code>
      */
+    @Override
     public R getRecordAt(int index) {
 	try {
 	    currentRecordIndex = index;
@@ -245,10 +253,12 @@ public abstract class AbstractRecordList<R extends Record>
 	}
     }
 
+    @Override
     public Iterator<R> iterator() {
 	return list.iterator();
     }
 
+    @Override
     public String[] getRecordsName() {
         String[] recordsName = new String[getSize()];
         int i = 0;
@@ -257,6 +267,7 @@ public abstract class AbstractRecordList<R extends Record>
         return recordsName;
     }
 
+    @Override
     public String[] getRecordsDisplayName() {
         String[] recordsDisplayName = new String[getSize()];
 	int i = 0;
@@ -269,6 +280,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Returns the max length of the list, 0 being variable sized.
      * @return the max length of the list, 0 being variable sized
      */
+    @Override
     public int getMaxSize() {
 	return maxSize;
     }
@@ -277,6 +289,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Returns the top-most record in the list if not empty, othervise null.
      * @return the top-most record in the list
      */
+    @Override
     public R getMostRecentUsedRecord() {
 	if (getSize() > 0)
 	    return list.get(0);
@@ -288,6 +301,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Returns the length of the list.
      * @return the length of the list
      */
+    @Override
     public int getSize() {
 	return list.size();
     }
@@ -295,6 +309,7 @@ public abstract class AbstractRecordList<R extends Record>
     /**
      * Removes all records from this list and sets its size to zero.
      */
+    @Override
     public void removeAllRecords() {
 	list.clear();
 	
@@ -315,6 +330,7 @@ public abstract class AbstractRecordList<R extends Record>
 	return null;
     }
 
+    @Override
     public void removeAllButArchetype() {
 	R archetype = findArchetype();
 	list.clear();
@@ -332,6 +348,7 @@ public abstract class AbstractRecordList<R extends Record>
      * @param   record   the record to be removed.
      * @return  the record removed if found, null othervise.
      */
+    @Override
     public R removeRecord(R record) {
 	return removeRecordAt(indexOf(record));
     }
@@ -349,6 +366,7 @@ public abstract class AbstractRecordList<R extends Record>
      * @param      index   the index of the object to remove.
      * @return  the record removed if index valid, null othervise.
      */
+    @Override
     public R removeRecordAt(int index) {
 	R toBeRemoved = null;
 	if (index < 0 || index >= getSize()) {
@@ -370,6 +388,7 @@ public abstract class AbstractRecordList<R extends Record>
      * @param      index   the index of the object to remove.
      * @return  the record replaced if index valid, null othervise.
      */
+    @Override
     public R replaceRecordAt(R record, int index) {
 	if (index < 0 || index >= getSize()) {
 	    return null;
@@ -387,6 +406,7 @@ public abstract class AbstractRecordList<R extends Record>
      * to the data model occurs.
      * @param l the <code>RecordListListener</code> to be added
      */  
+    @Override
     public void addRecordListListener(RecordListListener l) {
 	getListenerList().add(RecordListListener.class, l);
     }
@@ -396,6 +416,7 @@ public abstract class AbstractRecordList<R extends Record>
      * change to the data model occurs.
      * @param l the <code>RecordListListener</code> to be removed
      */  
+    @Override
     public void removeRecordListListener(RecordListListener l) {
 	getListenerList().remove(RecordListListener.class, l);
     }
@@ -404,6 +425,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Notify that the contents of record 'i' changed.
      * For now overkills by claiming the whole RecordList changed.
      */
+    @Override
     public void fireRecordChanged(int i) {
 	fireContentsChanged(this, null);
     }
@@ -415,12 +437,14 @@ public abstract class AbstractRecordList<R extends Record>
      * use our cloning constructor:
      * protected AbstractRecordList(int max, RecordList<R> that)
      */
+    @Override
     public abstract RecordList<R> cloneList();
 
 
     /**
      * Shallow copy all records from 'that' to 'this'. (aka assign())
      */
+    @Override
     public void copyList(RecordList<R> that, Object obj) {
 	list.clear();
 	// list.addAll(that); 'that' needs to be a Collection
@@ -432,6 +456,7 @@ public abstract class AbstractRecordList<R extends Record>
     /**
      * Dumps all list records to std out (for debugging...)
      */
+    @Override
     public void dumpRecords() {
 	for (int i = 0; i < getSize(); i++)
 	    System.out.println("[" + i + "] " + list.get(i).displayName()); // NOI18N
@@ -442,6 +467,7 @@ public abstract class AbstractRecordList<R extends Record>
      * Default implementation.
      * Can be overriden in subclass.
      */
+    @Override
     public String newKey() {
 	return null;
     }

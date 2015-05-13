@@ -118,7 +118,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     }
 
     @NbBundle.Messages(
-            {"MSG_from_odcs_project=(from ODCS project)"}
+            {"MSG_from_odcs_project=(from Developer project)"}
     )
     private List<JobHandle> getJobs(ProjectHandle<ODCSProject> projectHandle,
             boolean onlyWatched) {
@@ -673,6 +673,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
          */
         @Override
         public void contentChanged() {
+            if (!instance.isConnected()) {
+                return; // HudsonInstance fires content change on terminate (IDE exit), does not makes sense to try to refresh
+            }
             ProjectHandle<ODCSProject> ph = projectHandle.get();
             if (ph != null) {
                 PairOfDifferentLists lists = checkJobList();

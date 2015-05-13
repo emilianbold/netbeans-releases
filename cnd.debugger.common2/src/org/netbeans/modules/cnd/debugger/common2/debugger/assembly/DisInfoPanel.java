@@ -51,7 +51,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SideBarFactory;
-import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
@@ -154,6 +153,7 @@ public class DisInfoPanel extends JPanel {
 //        add(functionText, gridBagConstraints);
         
         addressText.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 addressChanged();
             }

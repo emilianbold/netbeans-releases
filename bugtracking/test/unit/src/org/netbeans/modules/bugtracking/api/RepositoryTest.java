@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.TestIssue;
 import org.openide.util.test.MockLookup;
@@ -63,6 +64,20 @@ public class RepositoryTest extends NbTestCase {
         super(arg0);
     }
 
+    public static junit.framework.Test suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new RepositoryTest("testAttributes"));
+        suite.addTest(new RepositoryTest("testCreateIssueSumDesc"));
+        suite.addTest(new RepositoryTest("testUrlChanged"));
+        suite.addTest(new RepositoryTest("testCanAttachFiles"));
+        suite.addTest(new RepositoryTest("testQueryListChanged"));
+        suite.addTest(new RepositoryTest("testDisplayNameChanged"));
+        suite.addTest(new RepositoryTest("testGetQueries"));
+        suite.addTest(new RepositoryTest("testGetIssues"));
+        suite.addTest(new RepositoryTest("testIsMutable"));    
+        return suite;
+    }
+    
     @Override
     protected Level logLevel() {
         return Level.ALL;
@@ -79,7 +94,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     public void testAttributes() {
-        Repository repo = getRepo();
+        Repository repo = getRepo();        
         assertEquals(APITestRepository.DISPLAY_NAME, repo.getDisplayName());
         assertEquals(APITestRepository.TOOLTIP, repo.getTooltip());
         assertEquals(APITestRepository.URL, repo.getUrl());

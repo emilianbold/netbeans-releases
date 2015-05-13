@@ -86,9 +86,9 @@ public class NativeExecutionTestSupport {
 
     private static ExecutionEnvironment defaultTestExecutionEnvironment;
     private static RcFile localRcFile;
-    private static Map<ExecutionEnvironment, RcFile> remoteRcFiles = new HashMap<ExecutionEnvironment, RcFile>();
-    private static final Map<String, ExecutionEnvironment> spec2env = new LinkedHashMap<String, ExecutionEnvironment>();
-    private static final Map<ExecutionEnvironment, String> env2spec = new LinkedHashMap<ExecutionEnvironment, String>();
+    private static Map<ExecutionEnvironment, RcFile> remoteRcFiles = new HashMap<>();
+    private static final Map<String, ExecutionEnvironment> spec2env = new LinkedHashMap<>();
+    private static final Map<ExecutionEnvironment, String> env2spec = new LinkedHashMap<>();
 
     private NativeExecutionTestSupport() {
     }
@@ -97,7 +97,8 @@ public class NativeExecutionTestSupport {
         if (localRcFile == null) {
             String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
             if (rcFileName == null) {
-                String homePath = System.getProperty("user.home");                if (homePath != null) {
+                String homePath = System.getProperty("user.home");                
+                if (homePath != null) {
                     File homeDir = new File(homePath);
                     localRcFile = RcFile.create(new File(homeDir, ".cndtestrc"));
                 }
@@ -289,7 +290,7 @@ public class NativeExecutionTestSupport {
         try {
             try {
                 RcFile rcFile = NativeExecutionTestSupport.getRcFile();
-                List<String> result = new ArrayList<String>();
+                List<String> result = new ArrayList<>();
                 // We specify environments as just keys in the given section - without values.
                 // We also allow specifying some other parameters in the same sections.
                 // So we treat a key=value pair as another parameter, not an execution environment
@@ -327,8 +328,8 @@ public class NativeExecutionTestSupport {
         if (mspec == null) {
             return null;
         }
-        final AtomicReference<ExecutionEnvironment> result = new AtomicReference<ExecutionEnvironment>();
-        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        final AtomicReference<ExecutionEnvironment> result = new AtomicReference<>();
+        final AtomicReference<char[]> passwd = new AtomicReference<>();
         processTestUserInfo(new UsetrInfoProcessor() {
             @Override
             public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {
@@ -355,7 +356,7 @@ public class NativeExecutionTestSupport {
         if (env == null) {
             return null;
         }
-        final AtomicReference<char[]> passwd = new AtomicReference<char[]>();
+        final AtomicReference<char[]> passwd = new AtomicReference<>();
         processTestUserInfo(new UsetrInfoProcessor() {
             @Override
             public boolean processLine(String spec, ExecutionEnvironment e, char[] p) {

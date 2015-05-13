@@ -67,7 +67,7 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "}", false)
                 .sourceLevel("1.5")
                 .run(UnnecessaryBoxing.class)
-                .findWarning("5:12-5:26:verifier:Unnecessary boxing to Integer").
+                .findWarning("5:12-5:26:verifier:TEXT_UnnecessaryBoxing").
                 applyFix().assertOutput("package test;\n"
                 + "final class Test  {\n"
                 + "    public void test() {\n"
@@ -105,7 +105,7 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "}", false)
                 .sourceLevel("1.5")
                 .run(UnnecessaryBoxing.class)
-                .findWarning("3:24-3:42:verifier:Unnecessary boxing to Integer").
+                .findWarning("3:24-3:42:verifier:TEXT_UnnecessaryBoxing").
                 applyFix().
                 assertOutput("package test;\n"
                 + "final class Test  {\n"
@@ -124,10 +124,18 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "        Long a = t ? new Integer(1) : Long.valueOf(5);\n"
                 + "    }\n"
                 + "}", false)
-                .sourceLevel("1.5")
+                .sourceLevel("1.5").preference(UnnecessaryBoxing.PREFER_CAST_TO_BOXING, true)
                 .run(UnnecessaryBoxing.class)
-                .assertWarnings("3:21-3:35:verifier:Unnecessary boxing to Integer",
-                "3:38-3:53:verifier:Unnecessary boxing to Long");
+                .assertWarnings("3:21-3:35:verifier:TEXT_UnnecessaryBoxing",
+                    "3:38-3:53:verifier:TEXT_UnnecessaryBoxing")
+                .findWarning("3:38-3:53:verifier:TEXT_UnnecessaryBoxing")
+                .applyFix()
+                .assertOutput("package test;\n"
+                + "final class Test  {\n"
+                + "    public void test(boolean t) {\n"
+                + "        Long a = t ? new Integer(1) : (long) 5;\n"
+                + "    }\n"
+                + "}");
     }
 
     public void testConditionalDifferentTypes() throws Exception {
@@ -139,9 +147,9 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 + "        Long a = t ? new Float(1) : Long.valueOf(5);\n"
                 + "    }\n"
                 + "}", false)
-                .sourceLevel("1.5")
+                .sourceLevel("1.5").preference(UnnecessaryBoxing.PREFER_CAST_TO_BOXING, true)
                 .run(UnnecessaryBoxing.class)
-                .assertWarnings("3:36-3:51:verifier:Unnecessary boxing to Long");
+                .assertWarnings("3:36-3:51:verifier:TEXT_UnnecessaryBoxing");
     }
 
     public void testQualifiedMethodOverload() throws Exception {
@@ -160,5 +168,47 @@ public class UnnecessaryBoxingTest extends NbTestCase {
                 .sourceLevel("1.5")
                 .run(UnnecessaryBoxing.class)
                 .assertWarnings();
+    }
+    
+    public void testBoxingToSpecificType() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n"
+                + "import javax.swing.AbstractAction;\n" +
+                  "import javax.swing.Action;\n" +
+                  "import javax.swing.text.DefaultEditorKit.BeepAction;"
+                + "final class Test  {\n"
+                + "    public void test(boolean t) {\n"
+                + "    public void test() {\n" +
+                  "        AbstractAction aa = new BeepAction();\n" +
+                  "        aa.putValue(Action.MNEMONIC_KEY, Integer.valueOf('E'));\n" +
+                  "    }\n"
+                + "    }\n"
+                + "}", false)
+                .sourceLevel("1.5")
+                .run(UnnecessaryBoxing.class)
+                .assertWarnings();
+        
+    }
+
+    public void testBoxingToSameType() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n"
+                + "import javax.swing.AbstractAction;\n" +
+                  "import javax.swing.Action;\n" +
+                  "import javax.swing.text.DefaultEditorKit.BeepAction;"
+                + "final class Test  {\n"
+                + "    public void test(boolean t) {\n"
+                + "    public void test() {\n" +
+                  "        AbstractAction aa = new BeepAction();\n" +
+                  "        aa.putValue(Action.MNEMONIC_KEY, Integer.valueOf(0));\n" +
+                  "    }\n"
+                + "    }\n"
+                + "}", false)
+                .sourceLevel("1.5")
+                .run(UnnecessaryBoxing.class)
+                .assertWarnings("7:41-7:59:verifier:TEXT_UnnecessaryBoxing");
+        
     }
 }

@@ -64,31 +64,37 @@ public class OptionLayers implements OptionSet {
 	layer.push(next);
     }
 
+    @Override
     public void save() {
 	for (OptionSet os : layer)
 	    os.save();
     }
 
+    @Override
     public void open() {
 	for (OptionSet os : layer)
 	    os.open();
     }
 
+    @Override
     public void markChanges() {
 	for (OptionSet os : layer)
 	    os.markChanges();
     }
 
+    @Override
     public void doneApplying() {
 	for (OptionSet os : layer)
 	    os.doneApplying();
     }
 
+    @Override
     public void applyTo(OptionClient client) {
 	for (OptionSet os : layer)
 	    os.applyTo(client);
     }
 
+    @Override
     public boolean isDirty() {
 	for (OptionSet os : layer) {
 	    if (os.isDirty()) {
@@ -98,11 +104,13 @@ public class OptionLayers implements OptionSet {
 	return false;
     }
 
+    @Override
     public void clearDirty() {
 	for (OptionSet os : layer)
 	    os.clearDirty();
     }
 
+    @Override
     public OptionValue byType(Option type) {
 	OptionValue ov = null;
 	for (OptionSet os : layer) {
@@ -113,6 +121,7 @@ public class OptionLayers implements OptionSet {
 	return ov;
     }
 
+    @Override
     public OptionValue byName(String name) {
 	OptionValue ov = null;
 	for (OptionSet os : layer) {
@@ -123,30 +132,37 @@ public class OptionLayers implements OptionSet {
 	return ov;
     }
 
+    @Override
     public void deltaWithRespectTo(OptionSet that) {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public void assign(OptionSet that) {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public void assignNonClient(OptionSet that) {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public OptionSet makeCopy() {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public ArrayList<OptionValue> values() {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public String tag() {
 	throw new UnsupportedOperationException();
     }
 
+    @Override
     public String description() {
 	throw new UnsupportedOperationException();
     }

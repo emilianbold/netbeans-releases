@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     private static final int COMMENTS_FOLD = CppFoldRecord.COMMENTS_FOLD;
     private static final int INITIAL_COMMENT_FOLD = CppFoldRecord.INITIAL_COMMENT_FOLD;
     private static final int BLOCK_COMMENT_FOLD = CppFoldRecord.BLOCK_COMMENT_FOLD;
-    
+
     // states
     private static final int BEFORE_FIRST_TOKEN_STATE = 0;
     private static final int INIT_STATE = 1;
@@ -74,14 +74,14 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
     private final TokenStream orig;
     private int state = BEFORE_FIRST_TOKEN_STATE;
-    
+
     private int lastTokenLine = -1;
-    
+
     // folds
     private CppFoldRecord initialCommentFold = null;
-    private List<CppFoldRecord> blockCommentFolds = new ArrayList<CppFoldRecord>();
-    private List<CppFoldRecord> lineCommentFolds = new ArrayList<CppFoldRecord>();
-        
+    private List<CppFoldRecord> blockCommentFolds = new ArrayList<>();
+    private List<CppFoldRecord> lineCommentFolds = new ArrayList<>();
+
     /** Creates a new instance of APTCommentsFilter */
     public APTFoldingCommentFilter(TokenStream orig) {
         this.orig = orig;
@@ -113,16 +113,16 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     needNext = false;
                     lastTokenLine = next.getEndLine();
                     createLineCommentsFoldIfNeeded();
-            }    
+            }
         }
         return next;
-    }    
+    }
 
     @Override
     public String toString() {
         String retValue = orig.toString();
         return retValue;
-    }   
+    }
 
     public void onPreprocNode(APT apt) {
         switch (state) {
@@ -134,11 +134,13 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 // met #-directive, flush line comments
                 createLineCommentsFoldIfNeeded();
                 break;
+            default:
+                break;
         }
     }
 
     public List<CppFoldRecord> getFolders() {
-        List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(blockCommentFolds.size() + lineCommentFolds.size() + 1);
+        List<CppFoldRecord> out = new ArrayList<>(blockCommentFolds.size() + lineCommentFolds.size() + 1);
         if (initialCommentFold != null) {
             out.add(initialCommentFold);
         }
@@ -148,7 +150,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     }
 
     private void createLineCommentsFoldIfNeeded() {
-        if (state == AFTER_LINE_COMMENT) {        
+        if (state == AFTER_LINE_COMMENT) {
             if (firstLineComment != lastLineComment) {
                 assert (firstLineComment != null);
                 assert (lastLineComment != null);
@@ -157,11 +159,11 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 }
             }
             firstLineComment = null;
-            lastLineComment = null;        
+            lastLineComment = null;
             state = INIT_STATE;
         }
     }
-    
+
     private void createBlockCommentsFold(APTToken token) {
         createLineCommentsFoldIfNeeded();
         if (token.getLine() != token.getEndLine()) {
@@ -175,16 +177,16 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         state = INIT_STATE;
     }
-    
+
     private APTToken firstLineComment = null;
     private APTToken lastLineComment = null;
-    
+
     private CppFoldRecord createFoldRecord(int folderKind, APTToken begin, APTToken end) {
         if (APTFoldingUtils.isStandalone()) {
             return new CppFoldRecord(folderKind, begin.getLine(), begin.getOffset(), end.getEndLine(), end.getEndOffset());
         } else {
-            return new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset());            
-        }        
+            return new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset());
+        }
     }
-    
+
 }

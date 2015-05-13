@@ -48,6 +48,8 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -72,7 +74,7 @@ import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -87,7 +89,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public final class SvnOptionsController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
+public final class SvnOptionsController extends OptionsPanelController implements ItemListener, ActionListener, VCSOptionsKeywordsProvider {
     
     private final SvnOptionsPanel panel;
     private Repository repository;
@@ -96,8 +98,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
     private FileSystem fileSystem;
         
     public SvnOptionsController() {    
-        fileSystem = VCSFileProxySupport.getDefaultFileSystem();
-        FileSystem[] fileSystems = VCSFileProxySupport.getFileSystems();
+        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        if (fileSystems.length > 0) {
+            fileSystem = fileSystems[0];
+        }
         
         annotationSettings = new AnnotationSettings(fileSystem);
         
@@ -106,10 +110,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
         panel.manageConnSettingsButton.addActionListener(this);
         panel.manageLabelsButton.addActionListener(this);
         
-        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS);               
+        String tooltip = NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettingsPanel.annotationTextField.toolTipText", Annotator.LABELS.toArray(new String[Annotator.LABELS.size()]));
         panel.annotationTextField.setToolTipText(tooltip);                
         panel.addButton.addActionListener(this);         
-        panel.cbBuildHost.addActionListener(this);
+        panel.cbBuildHost.addItemListener(this);
         panel.cbBuildHost.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -119,9 +123,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             }
         });
-        panel.cbBuildHost.setModel(new DefaultComboBoxModel(fileSystems));
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel<FileSystem>(fileSystems));
+        panel.fileSystemChanged(fileSystem);
         panel.textPaneClient.addHyperlinkListener(new HyperlinkListener() {
             @Override
+            @org.netbeans.api.annotations.common.SuppressWarnings("RCN") // assert in release mode does not guarantee that "displayer != null"
             public void hyperlinkUpdate (HyperlinkEvent e) {
                 if(e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
                     return;
@@ -154,7 +160,16 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     @Override
     public void update() {
-        fileSystem = (FileSystem) panel.cbBuildHost.getSelectedItem();
+        FileSystem[] fileSystems = VCSFileProxySupport.getConnectedFileSystems();
+        if (fileSystems.length > 0) {
+            fileSystem = fileSystems[0];
+        } else {
+            fileSystem = null;
+        }
+        panel.cbBuildHost.setModel(new DefaultComboBoxModel<FileSystem>(fileSystems));
+        if (fileSystem == null) {
+            return;
+        }
         panel.executablePathTextField.setText(SvnModuleConfig.getDefault(fileSystem).getExecutableBinaryPath());
         panel.annotationTextField.setText(SvnModuleConfig.getDefault(fileSystem).getAnnotationFormat());
         panel.cbOpenOutputWindow.setSelected(SvnModuleConfig.getDefault(fileSystem).getAutoOpenOutput());
@@ -233,7 +248,18 @@ public final class SvnOptionsController extends OptionsPanelController implement
     public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
         
     }
-    
+
+    @Override
+    public void itemStateChanged(ItemEvent ev) {
+        if (ev.getStateChange() == ItemEvent.SELECTED) {
+            Object item = ev.getItem();
+            if (item instanceof FileSystem) {
+                fileSystem = (FileSystem) item;
+                panel.fileSystemChanged(fileSystem);
+            }
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent evt) {
         if(evt.getSource() == panel.browseButton) {
@@ -304,6 +330,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
     }
 
     private void onManageConnClick() {
+        fileSystem = (FileSystem) panel.cbBuildHost.getSelectedItem();
+        if (fileSystem == null) {
+            return;
+        }
         if (repository == null) {
             panel.manageConnSettingsButton.setEnabled(false);
             new SvnProgressSupport(fileSystem) {
@@ -336,10 +366,10 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onManageLabelsClick() {     
         String labelFormat = panel.annotationTextField.getText().replaceAll(" ", ""); //NOI18N  
-        annotationSettings.show(labelFormat != null && labelFormat.indexOf("{folder}") > -1); //NOI18N         
+        annotationSettings.show(labelFormat.indexOf("{folder}") > -1); //NOI18N         
     }
-    
-    private class LabelVariable {
+
+    private static class LabelVariable {
         private String description;
         private String variable;
          
@@ -364,11 +394,11 @@ public final class SvnOptionsController extends OptionsPanelController implement
     
     private void onAddClick() {
         LabelsPanel labelsPanel = new LabelsPanel();
-        List<LabelVariable> variables = new ArrayList<>(Annotator.LABELS.length);
-        for (int i = 0; i < Annotator.LABELS.length; i++) {   
+        List<LabelVariable> variables = new ArrayList<>(Annotator.LABELS.size());
+        for (int i = 0; i < Annotator.LABELS.size(); i++) {
             LabelVariable variable = new LabelVariable(
-                    Annotator.LABELS[i], 
-                    "{" + Annotator.LABELS[i] + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS[i])
+                    Annotator.LABELS.get(i),
+                    "{" + Annotator.LABELS.get(i) + "} - " + NbBundle.getMessage(AnnotationSettings.class, "AnnotationSettings.label." + Annotator.LABELS.get(i))
             );
             variables.add(variable);   
         }       

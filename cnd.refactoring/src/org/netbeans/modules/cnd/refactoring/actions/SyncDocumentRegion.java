@@ -84,7 +84,7 @@ public final class SyncDocumentRegion {
         if (regionsSortPerformed) {
             sortedRegions = regions;
         } else {
-            sortedRegions = new ArrayList<MutablePositionRegion>(regions);
+            sortedRegions = new ArrayList<>(regions);
             Collections.sort(sortedRegions, PositionRegion.getComparator());
         }
     }
@@ -126,7 +126,7 @@ public final class SyncDocumentRegion {
      *  down. It may be 0 to signal that the startng position should
      *  stay as is.
      */
-    public void sync(int moveStartDownLength) {
+    public boolean sync(int moveStartDownLength) {
         if (moveStartDownLength != 0) {
             // Move first region's start offset down
             MutablePositionRegion firstRegion = getRegion(0);
@@ -142,6 +142,7 @@ public final class SyncDocumentRegion {
         }
 
         String firstRegionText = getFirstRegionText();
+        boolean insideRegionsTextModification = false;
         if (firstRegionText != null) {
             int regionCount = getRegionCount();
             for (int i = 1; i < regionCount; i++) {
@@ -159,6 +160,7 @@ public final class SyncDocumentRegion {
                                 break;
                             }
                         }
+                        insideRegionsTextModification = true;
                         String insert = firstRegionText.substring(res+1);
                         CharSequence remove = old.subSequence(res + 1, old.length());
                         if (insert.length() > 0) {
@@ -174,6 +176,7 @@ public final class SyncDocumentRegion {
 
             }
         }
+        return insideRegionsTextModification;
     }
 
     private String getFirstRegionText() {

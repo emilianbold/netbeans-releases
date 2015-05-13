@@ -100,15 +100,21 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
     
     protected EnumForwardDeclarationImpl(AST ast, CsmFile file, boolean global) {
         super(file, getEnumForwardStartOffset(ast), getEnumForwardEndOffset(ast));
-        AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.IDENT);
-        if (qid == null) {
-            qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-        }
+        AST qid = getNameAst(ast);
         assert qid != null;
         assert !AstRenderer.isScopedId(qid) : qid;
         name = QualifiedNameCache.getManager().getString(AstUtil.getText(qid));
         nameParts = new CharSequence[] {name};
         this.templateDescriptor = TemplateDescriptor.createIfNeeded(ast, file, null, global);
+    }
+    
+    public static boolean isCorrectOpaqueEnumDeclaration(AST ast) {
+        /*
+          opaque-enum-declaration:
+              enum-key attribute-specifier-seq(opt) identifier enum-base(opt);
+        */
+        AST qid = getNameAst(ast);
+        return qid != null && !AstRenderer.isScopedId(qid);
     }
 
     public static EnumForwardDeclarationImpl create(AST ast, CsmFile file, CsmScope scope, MutableDeclarationsContainer container, boolean global) {
@@ -153,6 +159,14 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
             }
         }
         return getEndOffset(ast);        
+    }
+    
+    private static AST getNameAst(AST ast) {
+        AST qid = AstUtil.findChildOfType(ast, CPPTokenTypes.IDENT);
+        if (qid == null) {
+            qid = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        }
+        return qid;
     }
     
     @Override

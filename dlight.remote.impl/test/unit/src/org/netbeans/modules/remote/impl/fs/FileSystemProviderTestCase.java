@@ -42,15 +42,6 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import junit.framework.Test;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -59,7 +50,6 @@ import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
  *

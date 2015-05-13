@@ -134,14 +134,17 @@ public class EditMaxFramePanel extends javax.swing.JPanel {
 
 	// Arrange to revalidate on changes
 	maxFrameText.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
 	    public void changedUpdate(DocumentEvent e) {
 		controller.validChanged();
 	    }
 
+            @Override
 	    public void insertUpdate(DocumentEvent e) {
 		controller.validChanged();
 	    }
 
+            @Override
 	    public void removeUpdate(DocumentEvent e) {
 		controller.validChanged();
 	    }
@@ -164,6 +167,7 @@ public class EditMaxFramePanel extends javax.swing.JPanel {
 	    new PropertyChangeSupport(this);
 
 	// interface Controller
+        @Override
 	public boolean ok() {
 	    if (!validateFields())
 		return false;
@@ -173,11 +177,13 @@ public class EditMaxFramePanel extends javax.swing.JPanel {
 	}
 
 	// interface Controller
+        @Override
 	public boolean cancel() {
 	    return true;
 	}
 
         // interface Controller
+        @Override
         public boolean isValid() {
 	    if (IpeUtils.isEmpty(maxFrameText.getText()))
 		return false;
@@ -192,11 +198,13 @@ public class EditMaxFramePanel extends javax.swing.JPanel {
         }
 
         // interface Controller
+        @Override
         final public void addPropertyChangeListener(PropertyChangeListener l) {
 	    pcs.addPropertyChangeListener(l);
         }
 
         // interface Controller
+        @Override
         final public void removePropertyChangeListener(PropertyChangeListener l) {
 	    pcs.removePropertyChangeListener(l);
         }

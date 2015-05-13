@@ -141,8 +141,11 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, null);
 
         String host = hostNameTextField.getText();
+        if (host != null) {
+            host = host.trim();
+        }
 
-        if (host == null || host.trim().isEmpty()) {
+        if (host == null || host.isEmpty()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     WLInstantiatingIterator.decorateMessage(NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ERR_EMPTY_HOST"))); // NOI18N
             return false;
@@ -192,12 +195,12 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setHost(host);
         instantiatingIterator.setRemote(true);
         instantiatingIterator.setRemoteDebug(debugModeCheckBox.isSelected());
+        instantiatingIterator.setSsl(sslCheckBox.isSelected());
         return true; 
     }
     
     private String getUrl(String host, int port) {
-        return WLDeploymentFactory.URI_PREFIX + host
-                + ":" + port + ":" + instantiatingIterator.getServerRoot(); // NOI18N
+        return WLDeploymentFactory.getUrl(host, port, instantiatingIterator.getServerRoot(), null);
     }
 
     /**
@@ -245,6 +248,7 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
         debugPortLabel = new javax.swing.JLabel();
         debugPortTextField = new javax.swing.JTextField();
         debugModeCheckBox = new javax.swing.JCheckBox();
+        sslCheckBox = new javax.swing.JCheckBox();
 
         usernameLabel.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         usernameLabel.setLabelFor(usernameField);
@@ -281,6 +285,8 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(sslCheckBox, org.openide.util.NbBundle.getMessage(ServerRemotePropertiesVisual.class, "ServerRemotePropertiesVisual.sslCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -293,6 +299,8 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(sslCheckBox)
                         .addContainerGap())
                     .addComponent(hostNameTextField)))
             .addGroup(layout.createSequentialGroup()
@@ -322,7 +330,8 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(adminPortLabel)
-                    .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(adminPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sslCheckBox))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(debugModeCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -362,6 +371,7 @@ public class ServerRemotePropertiesVisual extends javax.swing.JPanel {
     private javax.swing.JTextField hostNameTextField;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
+    private javax.swing.JCheckBox sslCheckBox;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables

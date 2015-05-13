@@ -192,31 +192,38 @@ public class ArchetypeWizardUtils {
     }
 
     public static Set<FileObject> openProjects(File dirF, File mainProjectDir) throws IOException {
-        List<FileObject> resultList = new ArrayList<FileObject>();
-
-        // Always open top dir as a project:
         FileObject fDir = FileUtil.toFileObject(dirF);
-        if (fDir != null) {
-            // the archetype generation didn't fail.
-            FileObject mainFO = mainProjectDir != null ? FileUtil.toFileObject(mainProjectDir) : null;
-            resultList.add(fDir);
-            processProjectFolder(fDir);
+        if (fDir == null) {
+            return Collections.emptySet();
+        }
+        FileObject mainFO = mainProjectDir != null ? FileUtil.toFileObject(mainProjectDir) : null;
+        return openProjects(fDir, mainFO);
+    }
+    static Set<FileObject> openProjects(FileObject fDir, FileObject mainFO) throws IOException {
+        List<FileObject> resultList = new ArrayList<>();
 
-            // Look for nested projects to open as well:
-            Enumeration<? extends FileObject> e = fDir.getFolders(true);
-            while (e.hasMoreElements()) {
-                FileObject subfolder = e.nextElement();
-                if (ProjectManager.getDefault().isProject(subfolder)) {
-                    if (subfolder.equals(mainFO)) {
-                        resultList.add(0, subfolder);
-                    } else {
-                        resultList.add(subfolder);
-                    }
-                    processProjectFolder(subfolder);
+        // the archetype generation didn't fail.
+        resultList.add(fDir);
+        processProjectFolder(fDir);
+        collectProjects(fDir, mainFO, resultList);
+        return new LinkedHashSet<>(resultList);
+    }
+
+    private static void collectProjects(FileObject fDir, FileObject mainFO, List<FileObject> resultList) {
+        for (FileObject subfolder : fDir.getChildren()) {
+            if (!subfolder.isFolder()) {
+                continue;
+            }
+            if (ProjectManager.getDefault().isProject(subfolder)) {
+                if (subfolder.equals(mainFO)) {
+                    resultList.add(0, subfolder);
+                } else {
+                    resultList.add(subfolder);
                 }
+                processProjectFolder(subfolder);
+                collectProjects(subfolder, mainFO, resultList);
             }
         }
-        return new LinkedHashSet<FileObject>(resultList);
     }
 
     private static void processProjectFolder(final FileObject fo) {

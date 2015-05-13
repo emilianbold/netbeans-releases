@@ -52,13 +52,14 @@ public class DbActionsTest extends JellyTestCase {
     /**
      * constructor required by JUnit
      *
-     * @param testName method name to be used as testcase
+     * @param testName method name to be used as test case
      */
     public DbActionsTest(String testName) {
         super(testName);
     }
 
-    /** method used for explicit testsuite definition
+    /**
+     * method used for explicit test suite definition
      */
     public static Test suite() {
         return createModuleTest(DbActionsTest.class, "testInstantiateActions");
@@ -69,14 +70,14 @@ public class DbActionsTest extends JellyTestCase {
         System.out.println("### " + getName() + " ###");  // NOI18N
     }
 
-    /** Calls constructor fo each DB action class*/
+    /**
+     * Calls constructor for each DB action class
+     */
     public void testInstantiateActions() {
         new AddDriverAction();
         new ConnectAction();
         new ConnectUsingAction();
-        new DisableDebugAction();
         new DisconnectAction();
-        new EnableDebugAction();
         new ExecuteCommandAction();
     }
 }

@@ -69,8 +69,8 @@ import org.openide.util.CharSequences;
  */
 public class KeyUtilities {
     
-    // This constant is used as delimiter between function name and signature when signature present
-    public static final String UID_SIGNATURE_PREFIX = "###"; // NOI18N
+    // This constant is used as delimiter between function name and internal data (like signature) when it is necessary
+    public static final String UID_INTERNAL_DATA_PREFIX = "###"; // NOI18N
     
     public static final int NON_INITIALIZED = Integer.MIN_VALUE + 1;
 
@@ -229,7 +229,7 @@ public class KeyUtilities {
     public static CharSequence getKeyName(Key key, boolean internalName) {
         if (key instanceof OffsetableKey) {
             CharSequence name = ((OffsetableKey) key).getName();
-            return internalName ? name : filterFunctionSignature(name);
+            return internalName ? name : filterOutInternalData(name);
         } else if (key instanceof FileKey) {
             FileKey fk = (FileKey) key;
             return getFileNameByIdSafe(fk.getUnitId(), fk.getProjectFileIndex());
@@ -278,8 +278,8 @@ public class KeyUtilities {
         }
     }
     
-    private static final CharSequence filterFunctionSignature(CharSequence name) {
-        int indexOfSignature = CharSequences.indexOf(name, UID_SIGNATURE_PREFIX);
+    private static final CharSequence filterOutInternalData(CharSequence name) {
+        int indexOfSignature = CharSequences.indexOf(name, UID_INTERNAL_DATA_PREFIX);
         return indexOfSignature >= 0 ? name.subSequence(0, indexOfSignature) : name;
     }
     // have to be public or UID factory does not work

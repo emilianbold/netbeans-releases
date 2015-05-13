@@ -49,12 +49,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
+import org.netbeans.modules.php.spi.phpmodule.ImportantFilesImplementation;
 import org.openide.util.Parameters;
 
 /**
@@ -145,17 +147,38 @@ public abstract class PhpFrameworkProvider {
     public abstract boolean isInPhpModule(PhpModule phpModule);
 
     /**
+     * Deprecated, use {@link #getConfigurationFiles2(PhpModule)} instead.
+     * <p>
      * Returns the configuration files (no directories allowed!) belonging to this framework. The files
      * do not need to exist, however only existing files are taken into account.
      * <p>
-     * These files are displayed under <tt>Important Files</tt> node in <tt>Projects</tt> view.
+     * These files are displayed under <tt>Configuration Files</tt> node in <tt>Projects</tt> view.
      * <p>
      * <b>This method should be as fast as possible.</b>
      *
      * @param  phpModule the PHP module for which the configuration files are returned; never <code>null</code>.
      * @return an array containing the configuration files; can be empty but never <code>null</code>.
      */
-    public abstract File[] getConfigurationFiles(PhpModule phpModule);
+    @Deprecated
+    public File[] getConfigurationFiles(PhpModule phpModule) {
+        return new File[0];
+    }
+
+    /**
+     * Returns the configuration files (no directories allowed!) belonging to this framework.
+     * These files are displayed under <tt>Configuration Files</tt> node in <tt>Projects</tt> view.
+     * <p>
+     * Please note that {@link ImportantFilesImplementation#getFiles() files} are not sorted so <b>sorted collection should be returned</b>.
+     * Also, {@link ImportantFilesImplementation.FileInfo#getDescription()} is always ignored.
+     *
+     * @param  phpModule the PHP module for which the configuration files are returned; never <code>null</code>.
+     * @return configuration files, can be <code>null</code> if no configuration files exist
+     * @since 0.23
+     */
+    @CheckForNull
+    public ImportantFilesImplementation getConfigurationFiles2(PhpModule phpModule) {
+        return null;
+    }
 
     /**
      * Creates a {@link PhpModuleExtender PHP module extender} for this framework

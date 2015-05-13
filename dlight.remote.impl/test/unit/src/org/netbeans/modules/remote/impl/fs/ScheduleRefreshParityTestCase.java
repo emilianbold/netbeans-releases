@@ -124,7 +124,7 @@ public class ScheduleRefreshParityTestCase extends RemoteFileTestBase {
             Worker worker = new Worker();
             worker.create();
             baseDirFO.refresh();
-            Set<FileObject> bag = new HashSet<FileObject>();
+            Set<FileObject> bag = new HashSet<>();
             recurse(baseDirFO, bag);
             
             String prefix = baseDirFO.getPath();

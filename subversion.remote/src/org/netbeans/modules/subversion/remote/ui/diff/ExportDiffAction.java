@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.remote.ui.diff;
 
+import org.netbeans.modules.remotefs.versioning.api.ExportDiffSupport;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -76,7 +77,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -203,8 +204,8 @@ public class ExportDiffAction extends ContextAction {
                 }
             }
             List<VCSFileProxy> setupFiles = new ArrayList<>(setups.size());
-            for (Iterator i = setups.iterator(); i.hasNext();) {
-                Setup setup = (Setup) i.next();
+            for (Iterator<Setup> i = setups.iterator(); i.hasNext();) {
+                Setup setup = i.next();
                 setupFiles.add(setup.getBaseFile()); 
             }
             root = getCommonParent(setupFiles.toArray(new VCSFileProxy[setupFiles.size()]));
@@ -297,11 +298,11 @@ public class ExportDiffAction extends ContextAction {
                 }
             }
             if (success) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", new Integer(exportedFiles)));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExportDiffAction.class, "BK3004", exportedFiles));
                 if (exportedFiles == 0) {
                     VCSFileProxySupport.delete(destination);
                 } else {
-                    org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(destination.normalizeFile());
+                    VCSFileProxySupport.openFile(destination.normalizeFile());
                 }
             } else {
                 VCSFileProxySupport.delete(destination);
@@ -316,7 +317,7 @@ public class ExportDiffAction extends ContextAction {
             root = root.getParentFile();
         }
         for (int i = 1; i < files.length; i++) {
-            root = org.netbeans.modules.subversion.remote.versioning.util.Utils.getCommonParent(root, files[i]);
+            root = VCSFileProxySupport.getCommonParent(root, files[i]);
             if (root == null) {
                 return null;
             }
@@ -325,9 +326,10 @@ public class ExportDiffAction extends ContextAction {
     }
 
     /** Writes contextual diff into given stream.*/
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE") // ignore warning in finally block
     private void exportDiff(Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources();
-        DiffProvider diff = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);
+        DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
 
         Reader r1 = null;
         Reader r2 = null;
@@ -344,6 +346,8 @@ public class ExportDiffAction extends ContextAction {
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
 
+        r1 = null;
+        r2 = null;
         VCSFileProxy file = setup.getBaseFile();
         try {
             InputStream is;

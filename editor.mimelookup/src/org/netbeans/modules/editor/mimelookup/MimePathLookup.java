@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.editor.mimelookup.MimeLookupInitializer;
 import org.openide.util.*;
 import org.openide.util.Lookup.Template;
+import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 
@@ -85,12 +86,23 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
 
         this.mimePath = mimePath;
         this.mimePathBanned = mimePath.size() > 0 && mimePath.getMimeType(0).contains("text/base"); //NOI18N
+        
+        class R implements Runnable {
+            Lookup.Result<MimeDataProvider> dataProviders;
+            Lookup.Result<MimeLookupInitializer> mimeInitializers;
+            
+            public void run() {
+                dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
+                dataProviders.addLookupListener(WeakListeners.create(LookupListener.class, MimePathLookup.this, dataProviders));
 
-        dataProviders = Lookup.getDefault().lookup(new Lookup.Template<MimeDataProvider>(MimeDataProvider.class));
-        dataProviders.addLookupListener(WeakListeners.create(LookupListener.class, this, dataProviders));
-
-        mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
-        mimeInitializers.addLookupListener(WeakListeners.create(LookupListener.class, this, mimeInitializers));
+                mimeInitializers = Lookup.getDefault().lookup(new Lookup.Template<MimeLookupInitializer>(MimeLookupInitializer.class));
+                mimeInitializers.addLookupListener(WeakListeners.create(LookupListener.class, MimePathLookup.this, mimeInitializers));
+            }
+        }
+        R r = new R();
+        Lookups.executeWith(null, r);
+        this.dataProviders = r.dataProviders;
+        this.mimeInitializers = r.mimeInitializers;
     }
 
     @Override

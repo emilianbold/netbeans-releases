@@ -331,7 +331,7 @@ public abstract class BasicCompilerConfiguration implements AllOptionsProvider, 
             if (odirName == null) {
                 odirName = ""; // NOI18N
             }
-            String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Math.abs(odirName.hashCode()) + '/' + ofileName; // UNIX path
+            String absPath = dirName + '/' + MakeConfiguration.EXT_FOLDER + '/' + Integer.toHexString(odirName.hashCode()) + '/' + ofileName; // UNIX path
             absPath = CndPathUtilities.replaceOddCharacters(absPath, '_');
             return absPath;
         } else {

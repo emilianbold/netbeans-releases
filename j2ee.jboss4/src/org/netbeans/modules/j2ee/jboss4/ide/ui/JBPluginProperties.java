@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -64,6 +65,7 @@ public class JBPluginProperties {
     public static final String PROPERTY_ROOT_DIR = "root-dir";//NOI18N
     public static final String PROPERTY_HOST = "host";//NOI18N
     public static final String PROPERTY_PORT = "port";//NOI18N
+    public static final String PROPERTY_JMX_PORT = "jmx-Port";//NOI18N
     public static final String PROPERTY_JAVA_OPTS = "java_opts"; // NOI18N
     
     private static JBPluginProperties pluginProperties = null;
@@ -167,7 +169,7 @@ public class JBPluginProperties {
 
     public boolean isCurrentServerLocationValid() {
         if (getInstallLocation() != null) {
-            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()));
+            return JBPluginUtils.isGoodJBServerLocation(new File(getInstallLocation()), (Version) null);
         }
 
         return false;

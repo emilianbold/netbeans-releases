@@ -67,11 +67,11 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.base.ProcessBuilder;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -325,7 +325,7 @@ public final class ExternalExecutable {
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
      * or {@code null} if the executable cannot be run
      * @see #run(ExecutionDescriptor)
-     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      * @see ExecutionService#run()
      */
     @CheckForNull
@@ -336,8 +336,8 @@ public final class ExternalExecutable {
     /**
      * Run this executable with the given execution descriptor.
      * <p>
-     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
-     * {@link ExternalExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)} instead.
+     * <b>WARNING:</b> If any {@link ExecutionDescriptor.InputProcessorFactory2 output processor factory} should be used, use
+     * {@link ExternalExecutable#run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)} instead.
      * @param executionDescriptor execution descriptor
      * @return task representing the actual run, value representing result of the {@link Future} is exit code of the process
      * or {@code null} if the executable cannot be run
@@ -359,12 +359,12 @@ public final class ExternalExecutable {
      * or {@code null} if the executable cannot be run
      * @see #run()
      * @see #run(ExecutionDescriptor)
-     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory)
+     * @see #run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2)
      * @see ExecutionService#run()
      * @since 0.2
      */
     @CheckForNull
-    public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
+    public Future<Integer> run(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
         return runInternal(executionDescriptor, outProcessorFactory);
     }
@@ -376,7 +376,7 @@ public final class ExternalExecutable {
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #runAndWait(ExecutionDescriptor, String)
-     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)
      */
     @CheckForNull
     public Integer runAndWait(@NonNull String progressMessage) throws ExecutionException {
@@ -387,14 +387,14 @@ public final class ExternalExecutable {
      * Run this executable with the given execution descriptor, <b>blocking but not blocking the UI thread</b>
      * (it displays progress dialog if it is running in it).
      * <p>
-     * <b>WARNING:</b> If any {@link InputProcessorFactory output processor factory} should be used, use
-     * {@link ExternalExecutable#runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)} instead.
+     * <b>WARNING:</b> If any {@link ExecutionDescriptor.InputProcessorFactory2 output processor factory} should be used, use
+     * {@link ExternalExecutable#runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String) run(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)} instead.
      * @param executionDescriptor execution descriptor to be used
      * @param progressMessage message displayed if the task is running in the UI thread
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #runAndWait(String)
-     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory, String)
+     * @see #runAndWait(ExecutionDescriptor, ExecutionDescriptor.InputProcessorFactory2, String)
      */
     @CheckForNull
     public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NonNull String progressMessage) throws ExecutionException {
@@ -413,7 +413,7 @@ public final class ExternalExecutable {
      * @see #runAndWait(ExecutionDescriptor, String)
      */
     @CheckForNull
-    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory,
+    public Integer runAndWait(@NonNull ExecutionDescriptor executionDescriptor, @NullAllowed ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory,
             @NonNull final String progressMessage) throws ExecutionException {
         Parameters.notNull("progressMessage", progressMessage); // NOI18N
         final Future<Integer> result = run(executionDescriptor, outProcessorFactory);
@@ -427,7 +427,7 @@ public final class ExternalExecutable {
                     // let's wait in EDT to avoid flashing dialogs
                     getResult(result, 90L);
                 } catch (TimeoutException ex) {
-                    ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                    BaseProgressUtils.showProgressDialogAndRun(new Runnable() {
                         @Override
                         public void run() {
                             try {
@@ -447,7 +447,7 @@ public final class ExternalExecutable {
     }
 
     @CheckForNull
-    private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
+    private Future<Integer> runInternal(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) {
         Parameters.notNull("executionDescriptor", executionDescriptor); // NOI18N
         final String error = ExternalExecutableValidator.validateCommand(executable, executableName);
         if (error != null) {
@@ -464,42 +464,39 @@ public final class ExternalExecutable {
             }
             return null;
         }
-        ExternalProcessBuilder processBuilder = getProcessBuilder();
-        if (processBuilder == null) {
-            return null;
-        }
+        ProcessBuilder processBuilder = getProcessBuilder();
         executionDescriptor = getExecutionDescriptor(executionDescriptor, outProcessorFactory);
         return ExecutionService.newService(processBuilder, executionDescriptor, getDisplayName()).run();
     }
 
-    @CheckForNull
-    private ExternalProcessBuilder getProcessBuilder() {
-        ExternalProcessBuilder processBuilder = createProcessBuilder();
-        if (processBuilder == null) {
-            return null;
-        }
+    private ProcessBuilder getProcessBuilder() {
+        ProcessBuilder processBuilder = createProcessBuilder();
+        List<String> arguments = new ArrayList<>();
         for (String param : parameters) {
             fullCommand.add(param);
-            processBuilder = processBuilder.addArgument(param);
+            arguments.add(param);
         }
         for (String param : additionalParameters) {
             fullCommand.add(param);
-            processBuilder = processBuilder.addArgument(param);
+            arguments.add(param);
         }
+        processBuilder.setArguments(arguments);
         if (workDir != null) {
-            processBuilder = processBuilder.workingDirectory(workDir);
+            processBuilder.setWorkingDirectory(workDir.getAbsolutePath());
         }
         for (Map.Entry<String, String> variable : environmentVariables.entrySet()) {
-            processBuilder = processBuilder.addEnvironmentVariable(variable.getKey(), variable.getValue());
+            processBuilder.getEnvironment().setVariable(variable.getKey(), variable.getValue());
         }
-        processBuilder = processBuilder.redirectErrorStream(redirectErrorStream);
+        processBuilder.setRedirectErrorStream(redirectErrorStream);
         return processBuilder;
     }
 
-    private ExternalProcessBuilder createProcessBuilder() {
+    private ProcessBuilder createProcessBuilder() {
         fullCommand.clear();
         fullCommand.add(executable);
-        return new ExternalProcessBuilder(executable);
+        ProcessBuilder processBuilder = ProcessBuilder.getLocal();
+        processBuilder.setExecutable(executable);
+        return processBuilder;
     }
 
     private String getDisplayName() {
@@ -541,20 +538,20 @@ public final class ExternalExecutable {
         return null;
     }
 
-    private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
-        final List<ExecutionDescriptor.InputProcessorFactory> inputProcessors = new CopyOnWriteArrayList<>();
+    private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory2 outProcessorFactory) {
+        final List<ExecutionDescriptor.InputProcessorFactory2> inputProcessors = new CopyOnWriteArrayList<>();
         // colors
-        ExecutionDescriptor.InputProcessorFactory infoOutProcessorFactory = getInfoOutputProcessorFactory();
+        ExecutionDescriptor.InputProcessorFactory2 infoOutProcessorFactory = getInfoOutputProcessorFactory();
         if (infoOutProcessorFactory != null) {
             inputProcessors.add(infoOutProcessorFactory);
         }
         // output
-        ExecutionDescriptor.InputProcessorFactory outputOutProcessorFactory = getOutputProcessorFactory();
+        ExecutionDescriptor.InputProcessorFactory2 outputOutProcessorFactory = getOutputProcessorFactory();
         if (outputOutProcessorFactory != null) {
             inputProcessors.add(outputOutProcessorFactory);
         }
         // file output
-        ExecutionDescriptor.InputProcessorFactory fileOutProcessorFactory = getFileOutputProcessorFactory();
+        ExecutionDescriptor.InputProcessorFactory2 fileOutProcessorFactory = getFileOutputProcessorFactory();
         if (fileOutProcessorFactory != null) {
             inputProcessors.add(fileOutProcessorFactory);
             if (fileOutputOnly) {
@@ -568,7 +565,7 @@ public final class ExternalExecutable {
             inputProcessors.add(outProcessorFactory);
         }
         if (!inputProcessors.isEmpty()) {
-            executionDescriptor = executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+            executionDescriptor = executionDescriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory2() {
                 @Override
                 public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                     InputProcessor[] processors = new InputProcessor[inputProcessors.size()];
@@ -582,12 +579,12 @@ public final class ExternalExecutable {
         return executionDescriptor;
     }
 
-    private ExecutionDescriptor.InputProcessorFactory getInfoOutputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory2 getInfoOutputProcessorFactory() {
         if (noInfo) {
             // no info
             return null;
         }
-        return new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory2() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return new InfoInputProcessor(defaultProcessor, fullCommand);
@@ -595,12 +592,12 @@ public final class ExternalExecutable {
         };
     }
 
-    private ExecutionDescriptor.InputProcessorFactory getOutputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory2 getOutputProcessorFactory() {
         if (noOutput) {
             // no output
             return null;
         }
-        return new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory2() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return defaultProcessor;
@@ -608,11 +605,11 @@ public final class ExternalExecutable {
         };
     }
 
-    private ExecutionDescriptor.InputProcessorFactory getFileOutputProcessorFactory() {
+    private ExecutionDescriptor.InputProcessorFactory2 getFileOutputProcessorFactory() {
         if (fileOutput == null) {
             return null;
         }
-        return new ExecutionDescriptor.InputProcessorFactory() {
+        return new ExecutionDescriptor.InputProcessorFactory2() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
                 return new RedirectOutputProcessor(fileOutput);

@@ -133,7 +133,10 @@ void buffer_free(buffer* buf);
 bool visit_dir_entries(
         const char* path, 
         bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
+        void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
         void *data);
+
+void default_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data);
 
 const char* get_basename(const char *path);
 
@@ -145,6 +148,26 @@ bool is_subdir(const char* child, const char* parent);
 
 /** The same as strncpy, but stores trailing zero byte even in src len is more than limit */
 char *strncpy_w_zero(char *dst, const char *src, size_t limit);
+
+typedef enum file_type {
+    FILETYPE_FIFO = 'p',
+    FILETYPE_CHR = 'c',
+    FILETYPE_DIR = 'd',
+    FILETYPE_BLK = 'b',
+    FILETYPE_REG = '-',
+    FILETYPE_LNK = 'l',
+    FILETYPE_SOCK = 's',
+    FILETYPE_DOOR = 'D',
+    FILETYPE_PORT = 'P', 
+    FILETYPE_UNKNOWN = 'u'
+} file_type;
+
+char mode_to_file_type_char(int mode);
+file_type mode_to_file_type(int mode);
+
+bool can_read(const struct stat *stat);
+bool can_write(const struct stat *stat);
+bool can_exec(const struct stat *stat);
 
 #ifdef	__cplusplus
 }

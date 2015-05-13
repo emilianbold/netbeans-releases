@@ -77,6 +77,7 @@ public final class EvalAnnotation extends Annotation {
     private final RequestProcessor RP = new RequestProcessor("Debugger tooltip evaluation", 2); //NOI18N
 
     // interface Annotation
+    @Override
     public String getAnnotationType() {
         // By returning null we announce that we're a tooltip as opposed
         // to an annotation.
@@ -92,6 +93,7 @@ public final class EvalAnnotation extends Annotation {
      */
 
     // interface Annotation
+    @Override
     public String getShortDescription() {
         final Part lp = (Part) getAttachedAnnotatable();
 
@@ -100,6 +102,7 @@ public final class EvalAnnotation extends Annotation {
         }
         
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 evalExpression(lp);
             }

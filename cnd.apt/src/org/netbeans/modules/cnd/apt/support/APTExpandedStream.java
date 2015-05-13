@@ -78,26 +78,26 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 
     private static final int MAX_PARAMETERS_SIZE = Integer.getInteger("apt.limit.expanded.params", 1000); // NOI18N
     private final TokenStreamSelector selector = new TokenStreamSelector();
-    
+
     /** callback to be used for macro substitutions */
     private final APTMacroCallback callback;
-    
-    /** 
-     * state to indicate the phase of extracting params for macros 
+
+    /**
+     * state to indicate the phase of extracting params for macros
      * in this state next token is not tried to be macro substituted
      */
     private boolean extractingMacroParams = false;
-    
+
     // flag to specify that original stream is from preprocessor expression
     private final boolean expandPPExpression;
-    
+
     public APTExpandedStream(TokenStream stream, APTMacroCallback callback, boolean expandPPExpression) {
         selector.select(stream);
         this.callback = callback;
         this.expandPPExpression = expandPPExpression;
         assert (!(callback instanceof APTSystemMacroMap)):"system macro map can't be used as callback"; // NOI18N
     }
-    
+
     /**
      * Creates a new instance of APTExpandedStream
      */
@@ -125,10 +125,10 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 return token;
             } else {
                 // get token from selector and check for ID tokens
-                // only ID tokens are candidates for macro expanding               
+                // only ID tokens are candidates for macro expanding
                 switchMacroExpanding = false;
                 if (APTUtils.isID(token)) {
-                    // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator  
+                    // #197997 - Macro interpreter does not support macro evaluation if expression has in expansion 'defined' operator
                     if (!callback.popPPDefined()) {
                         // check if ID needs macro expanding
                         // but prevent recursive re expanding
@@ -142,7 +142,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             } else {
                                 APTUtils.LOG.log(Level.SEVERE, "not handled 'defined' operator on expanding {0}\n", token); // NOI18N
                             }
-                        } 
+                        }
                     } else {
                         token = new APTBaseLanguageFilter.FilterToken(token, APTTokenTypes.ID_DEFINED);
                     }
@@ -162,13 +162,13 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
     private boolean isExpandingPPExpression() {
         return expandPPExpression;
     }
-    
+
     private boolean pushMacroExpanding(APTToken token, APTMacro macro) {
         boolean res = true;
         try {
             APTTokenStream expanded = createMacroBodyWrapper(token, macro);
             // remember macro currently expanding
-            res = callback.pushExpanding(token);    
+            res = callback.pushExpanding(token);
             if (res) {
                 // push wrapper into selector
                 selector.push((TokenStream)expanded);
@@ -182,22 +182,22 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         }
         return res;
     }
-    
+
     private boolean popMacroExpanding() {
-        // macro was complitely expanded, 
+        // macro was complitely expanded,
         // notify callback and pop current stream from selector
         boolean res = true;
         callback.popExpanding();
         selector.pop();
         return res;
-    }    
-    
+    }
+
     protected APTTokenStream createMacroBodyWrapper(APTToken token, APTMacro macro) throws TokenStreamException, RecognitionException {
         // associated macro must be valid
         assert (macro != null) : "must be valid macro object"; // NOI18N
-        assert (macro.getName() != null) : 
+        assert (macro.getName() != null) :
                 "macro object must have valid name token"; // NOI18N
-        assert (!callback.isExpanding(macro.getName())) : 
+        assert (!callback.isExpanding(macro.getName())) :
                 "macro must not be under recursive expanding"; // NOI18N
         // use body's stream depending on kind of token
         // the out will have start offset for all tokens the same as original token
@@ -205,7 +205,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 
         // clear info about RPAREN
         paramsRParen = null;
-        
+
         if (!macro.isFunctionLike()) {
             TokenStream body = macro.getBody();
             Token toCheck = body.nextToken();
@@ -237,7 +237,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             }
         } else {
             // create wrapper for function-like macro:
-	    
+
             APTToken next;
             boolean cont;
             do {
@@ -249,7 +249,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 cont = APTUtils.isEOF(next) && continueOnEOF();
             } while (cont);
 	    if (next.getType() == APTTokenTypes.LPAREN) {
-		// - extract macro parameters 
+		// - extract macro parameters
 		List<List<APTToken>> params = extractParams(macro, token, next);
 		// - subsitute all parameters in macro body
 		List<APTToken> substParamsList = subsituteParams(macro, params, callback, isExpandingPPExpression());
@@ -257,7 +257,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 		out = new LinkedListBasedTokenStream(substParamsList);
 	    }
 	    else {
-		// if function-like macro us used without parenthesis, 
+		// if function-like macro us used without parenthesis,
 		// it shouldn't be expanded
 		List<APTToken> l = new ArrayList<APTToken>(2);
 		l.add(token);
@@ -266,9 +266,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
 	    }
         }
         if (APTUtils.LOG.isLoggable(Level.INFO)) {
-            APTUtils.LOG.log(Level.INFO, 
+            APTUtils.LOG.log(Level.INFO,
                         "token {0} \n was expanded by macro substitution to \n {1}", // NOI18N
-                        new Object[] { token, out }); 
+                        new Object[] { token, out });
         }
         return out;
     }
@@ -282,13 +282,13 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         }
         return cont;
     }
-    
+
     private APTToken paramsRParen = null;
-    
+
     protected final APTToken getLastExtractedParamRPAREN() {
         return paramsRParen;
     }
-    
+
     private List<List<APTToken>> extractParams(APTMacro macro, APTToken token, APTToken next) throws TokenStreamException, RecognitionException {
         // set special state to prevent macro expanding of parameters
         assert extractingMacroParams == false : "already extracting params";
@@ -299,8 +299,8 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             if (next.getType() != APTTokenTypes.LPAREN) {
                 throw new RecognitionException("Error on expanding " + token + "\n by macro " + macro + // NOI18N
                                                 "\n Expecting LPAREN, found " + next); // NOI18N
-            }  
-            // use balanced parens for correct detecting of ended parameter 
+            }
+            // use balanced parens for correct detecting of ended parameter
             int paren = 0;
             // Each parameter is list of tokens
             int paramCount = 0;
@@ -371,17 +371,17 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                         }
                         break;
                 }
-            }         
+            }
             // check for error
             if (APTUtils.isEOF(next)) {
                 APTUtils.LOG.log(Level.INFO, "error expanding macro {0} : unterminated arguments list {1}", new Object[] {token, Thread.currentThread().getName()});
             }
         } finally {
-            extractingMacroParams = false;              
-        }        
+            extractingMacroParams = false;
+        }
         return params;
     }
-    
+
     private boolean add2Param( List<APTToken> param, APTToken next) {
         // any non comment token is valid in parameters
         if (!APTUtils.isCommentToken(next)) {
@@ -389,15 +389,15 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             return true;
         }
         return false;
-    }         
-    
+    }
+
     private static final int BODY_STREAM = 0;
     private static final int STRINGIZE_PARAM = 1;
-    private static final int CONCATENATE = 2; 
+    private static final int CONCATENATE = 2;
     // threashold to limit the size of expanded macro parameters
     // boost uses delay.c test from boost_1_33_1/libs/preprocessor/doc/examples/delay.c
     // to slow down everything using preprocessor only
-    // gcc consumes 2.5G and fails, 
+    // gcc consumes 2.5G and fails,
     // we are trying to prevent such experiments, especially in IDE
     private static final long MACRO_EXPANDING_THREASHOLD = 16*1024;
     private static List<APTToken> subsituteParams(APTMacro macro, List<List<APTToken>> params, APTMacroCallback callback, boolean expandPPExpression) throws TokenStreamException {
@@ -413,7 +413,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                 case BODY_STREAM:
                 {
                     token = laToken;
-                    laToken = body.nextToken();  
+                    laToken = body.nextToken();
                     // the most important is ## concatenation
                     // it available only by lookup
                     switch (laToken.getType()) {
@@ -423,19 +423,19 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                             state = CONCATENATE;
                             token = null;
                             break;
-                        }                        
+                        }
                         default:
                         switch (token.getType()) {
                             case APTTokenTypes.SHARP:
                             {
-                                // stringize next token, it must be param!      
+                                // stringize next token, it must be param!
                                 state = STRINGIZE_PARAM;
                                 token = null;
-                                break;                            
+                                break;
                             }
                             case APTTokenTypes.IDENT:
                             {
-                                // may be it is parameter of macro to substitute with input parameter value  
+                                // may be it is parameter of macro to substitute with input parameter value
                                 List<APTToken> paramValue = paramsMap.get(token.getTextID());
                                 if (paramValue != null) {
                                     // found param, so expand it and skip current token
@@ -448,7 +448,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                                     if (expandedValue.size() > MACRO_EXPANDING_THREASHOLD) {
                                         if (DebugUtils.STANDALONE) {
                                             System.err.printf(
-                                                    "parameter '%s' was empty substituted due to very long output value when expanding macros:\n %s\n", // NOI18N
+                                                    "parameter '%s' was empty substituted due to very long output value when expanding macros:%n %s%n", // NOI18N
                                                     token.getText(), macro.getName());
                                         } else {
                                             APTUtils.LOG.log(Level.WARNING,
@@ -461,8 +461,8 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                                     expanded.addAll(expandedValue);
                                 }
                                 break;
-                            } 
-                        }                       
+                            }
+                        }
                     }
                     break;
                 }
@@ -487,7 +487,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     switch (laToken.getType()) {
                         case APTTokenTypes.DBL_SHARP:
                         {
-                            // on more ##, like 
+                            // on more ##, like
                             // #define var(name,ind) m_##name##ind;
                             // remember right most of concatenated tokens to use on next iteration
                             int lastInd = concatList.size() - 1;
@@ -509,8 +509,8 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     break;
                 }
                 case STRINGIZE_PARAM: // stringizing token after #
-                {  
-                    token = null;                    
+                {
+                    token = null;
                     // stringize next token, it must be param
                     // unless macro is incomplete
                     if (laToken != null && laToken.getType() == APTTokenTypes.IDENT) {
@@ -543,7 +543,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     token = null;
                 }
             }
-        } while (token == null);        
+        } while (token == null);
         return expanded;
     }
 
@@ -566,7 +566,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             lastMacroParam = macroParam;
         }
         // TODO: need to support ELLIPSIS for IZ#83949
-        // if remains values and last param of macro is VA_ARG => 
+        // if remains values and last param of macro is VA_ARG =>
         // add all remains to the last value separating by comma as it was in macro call
         if (i < numInList && APTUtils.isVaArgsToken(lastMacroParam)) {
             List<APTToken> vaArgsVal = map.get(lastMacroParam.getTextID());
@@ -576,7 +576,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             }
         }
         return map;
-    }    
+    }
 
     private static List<APTToken> createConcatenation(APTToken tokenLeft, List<APTToken> tokensRight, final Map<CharSequence/*getTokenTextKey(token)*/, List<APTToken>> paramsMap) {
         //TODO: finish it, use lexer
@@ -608,9 +608,9 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
             rightText = tokensRightMerged.toString();
         }
         // IZ#149505: special handling of __VA_ARGS__ with preceding comma
-        if (tokenLeft.getType() == APTTokenTypes.COMMA && rightText.length() == 0 && 
+        if (tokenLeft.getType() == APTTokenTypes.COMMA && rightText.length() == 0 &&
             APTUtils.isVaArgsToken(tokensRight.get(0))) {
-            // when __VA_ARGS__ is empty expanded => 
+            // when __VA_ARGS__ is empty expanded =>
             // need to eat comma as well and should return no tokens
             return new ArrayList<APTToken>();
         }
@@ -628,7 +628,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         token.setText(toText(param, true));
         return token;
     }
-    
+
     private static String toText(List<APTToken> tokens, boolean stringize) {
         StringBuilder out = new StringBuilder();
         if (stringize) {
@@ -650,7 +650,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
         }
         return out.toString();
     }
-    
+
     private static CharSequence escape(CharSequence cs) {
         StringBuilder out = new StringBuilder();
         for (int i = 0; i < cs.length(); ++i) {

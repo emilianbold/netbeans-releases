@@ -58,7 +58,7 @@ public class HostMappingProviderSamba implements HostMappingProvider {
 
     @Override
     public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        Map<String, String> mappings = new HashMap<String, String>();
+        Map<String, String> mappings = new HashMap<>();
         ProcessUtils.ExitStatus exit = ProcessUtils.execute(execEnv, "cat", "/etc/sfw/smb.conf"); //NOI18N
         if (exit.isOK()) {
             mappings.putAll(parseOutput(new StringReader(exit.output)));
@@ -75,7 +75,7 @@ public class HostMappingProviderSamba implements HostMappingProvider {
     private static final String PATH = "path"; //NOI18N
 
     static Map<String, String> parseOutput(Reader outputReader) {
-        Map<String, String> mappings = new HashMap<String, String>();
+        Map<String, String> mappings = new HashMap<>();
         SimpleConfigParser parser = new SimpleConfigParser();
         parser.parse(outputReader);
         for (String name : parser.getSections()) {

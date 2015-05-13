@@ -99,6 +99,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     private final Lookup lookup;
     private final Lookup.Result<DependencyNode> result;
     private final static @StaticResource String LIBRARIES_ICON = "org/netbeans/modules/maven/actions/libraries.gif";;
+    private boolean createRunning;
 
     @Messages("ACT_Library=Create Library")
     @java.lang.SuppressWarnings("LeakingThisInConstructor")
@@ -127,11 +128,18 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         pnl.createValidations(dd);
 
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
+            createRunning = true;
+            setEnabled();
             RequestProcessor.getDefault().post(new Runnable() {
                 public @Override void run() {
-                    Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project, pnl.getCopyDirectory());
-                    if (lib != null) {
-                        LibrariesCustomizer.showCustomizer(lib, pnl.getLibraryManager());
+                    try {
+                        Library lib = createLibrary(pnl.getLibraryManager(), pnl.getLibraryName(), pnl.getIncludeArtifacts(), pnl.isAllSourceAndJavadoc(), project, pnl.getCopyDirectory());
+                        if (lib != null) {
+                            LibrariesCustomizer.showCustomizer(lib, pnl.getLibraryManager());
+                        }
+                    } finally {
+                        createRunning = false;
+                        setEnabled();
                     }
                 }
             });
@@ -139,13 +147,17 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     }
 
     public @Override void resultChanged(LookupEvent ev) {
+        setEnabled();
+    }
+
+    private void setEnabled() {
         SwingUtilities.invokeLater(new Runnable() {
             public @Override void run() {
-                setEnabled(result.allInstances().size() > 0);
+                setEnabled(!createRunning && result.allInstances().size() > 0);
             }
         });
     }
-
+    
     @Messages({
         "MSG_Create_Library=Create Library",
         "# {0} - Maven coordinates", "MSG_Downloading=Maven: downloading {0}",

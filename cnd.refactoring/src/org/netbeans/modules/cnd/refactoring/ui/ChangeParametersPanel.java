@@ -516,12 +516,12 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private void initTableData() {
         Collection<CsmParameter> pars = functionObj.getParameters();
 
-        List<CsmType> typeList = new ArrayList<CsmType>();
+        List<CsmType> typeList = new ArrayList<>();
         for (CsmParameter par: pars) {
             typeList.add(par.getType());
         }
 
-        Collection<CsmFunction> allMethods = new LinkedHashSet<CsmFunction>();
+        Collection<CsmFunction> allMethods = new LinkedHashSet<>();
         allMethods.add(functionObj);
         if (CsmKindUtilities.isMethod(functionObj)) {
             CsmMethod method = (CsmMethod)functionObj;
@@ -531,7 +531,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             }
         }
 
-        Collection<CsmFunction> allFunctions = new LinkedHashSet<CsmFunction>();
+        Collection<CsmFunction> allFunctions = new LinkedHashSet<>();
         for (CsmFunction csmFunction : allMethods) {
             CsmFunctionDefinition definition = csmFunction.getDefinition();
             if (definition != null) {

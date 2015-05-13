@@ -70,6 +70,135 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testJavadocMethodRef() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * Not {@link #bar}.\n"
+                + "     * @see #foo() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().foo();\n"
+                + "    }\n"
+                + "}"));
+        performRename(src.getFileObject("t/A.java"), 1, -1, "fooBar", null, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void fooBar() {\n"
+                + "    }\n"
+                + "    \n"
+                + "    /**\n"
+                + "     * Not {@link #bar}.\n"
+                + "     * @see #fooBar() we just call method foo()\n"
+                + "     */\n"
+                + "    public static void main() {\n"
+                + "        new A().fooBar();\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void testJavadocClassRef() throws Exception { // #250415 - Refactor Rename ... Class should rename Class in @see or @link Class#member javadoc
+        writeFilesAndWaitForScan(src,
+                new File("t/B.java", "package t;\n"
+                        + "/**\n"
+                        + " * Extends {@link A} with own main method\n"
+                        + " * implemented using the BaseClass {@link A#main main} method.\n"
+                        + " * \n"
+                        + " * @see A\n"
+                        + " */\n"
+                        + "public class B extends A {\n"
+                        + "  /**\n"
+                        + "   * Calls {@link A#main}.\n"
+                        + "   * @see A#main\n"
+                        + "   */\n"
+                        + "  public static void main(String[] parameters) {\n"
+                        + "    A.main(new B(), parameters);\n"
+                        + "  }\n"
+                        + "}"),
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static void main(A base, String[] parameters) {\n"
+                        + "    }\n"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), -1, -1, "C", null, false);
+        verifyContent(src,
+                new File("t/B.java", "package t;\n"
+                        + "/**\n"
+                        + " * Extends {@link C} with own main method\n"
+                        + " * implemented using the BaseClass {@link C#main main} method.\n"
+                        + " * \n"
+                        + " * @see C\n"
+                        + " */\n"
+                        + "public class B extends C {\n"
+                        + "  /**\n"
+                        + "   * Calls {@link C#main}.\n"
+                        + "   * @see C#main\n"
+                        + "   */\n"
+                        + "  public static void main(String[] parameters) {\n"
+                        + "    C.main(new B(), parameters);\n"
+                        + "  }\n"
+                        + "}"),
+                new File("t/A.java", "package t;\n"
+                        + "public class C {\n"
+                        + "    public static void main(C base, String[] parameters) {\n"
+                        + "    }\n"
+                        + "}"));
+    }
+    
+    public void test236868() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "        public void method(int x) {\n"
+                        + "        LABEL:\n"
+                        + "        while (x > 0) {\n"
+                        + "            LABEL2:\n"
+                        + "            for (int i = 0; i < 10; i++) {\n"
+                        + "                if (x == 1) {\n"
+                        + "                    break LABEL;\n"
+                        + "                }\n"
+                        + "                if (x == 2) {\n"
+                        + "                    continue LABEL;\n"
+                        + "                }\n"
+                        + "                if (x == 3) {\n"
+                        + "                    break LABEL2;\n"
+                        + "                }\n"
+                        + "            }\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}"));
+        performRename(src.getFileObject("t/A.java"), source.indexOf("LABEL") + 1, "LABEL1", null, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public int x;\n"
+                        + "        public void method(int x) {\n"
+                        + "        LABEL1:\n"
+                        + "        while (x > 0) {\n"
+                        + "            LABEL2:\n"
+                        + "            for (int i = 0; i < 10; i++) {\n"
+                        + "                if (x == 1) {\n"
+                        + "                    break LABEL1;\n"
+                        + "                }\n"
+                        + "                if (x == 2) {\n"
+                        + "                    continue LABEL1;\n"
+                        + "                }\n"
+                        + "                if (x == 3) {\n"
+                        + "                    break LABEL2;\n"
+                        + "                }\n"
+                        + "            }\n"
+                        + "        }\n"
+                        + "    }"
+                        + "}"));
+    }
+    
     public void test238268() throws Exception {
         String source;
         writeFilesAndWaitForScan(src, new File("t/A.java", source = "package t;\n"
@@ -506,6 +635,32 @@ public class RenameTest extends RefactoringTestBase {
                 + "    }\n"
                 + "}"));
 
+    }
+    
+    public void test234094() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A {\n"
+                + "}"));
+        writeFilesAndWaitForScan(test,
+                new File("t/ATest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class ATest extends TestCase {\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        props.setIsRenameTestClass(true);
+        performRename(src.getFileObject("t/A.java"), -1, -1, "B", props, true);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n" // XXX: Why use old filename, is it not renamed?
+                + "public enum B {\n"
+                + "}"));
+        verifyContent(test,
+                new File("t/BTest.java", "package t;\n"
+                + "import junit.framework.TestCase;\n"
+                + "\n"
+                + "public class BTest extends TestCase {\n"
+                + "}"));
     }
     
     public void test200224() throws Exception {

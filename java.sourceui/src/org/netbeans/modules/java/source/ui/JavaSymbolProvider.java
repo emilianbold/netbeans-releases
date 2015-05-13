@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -108,7 +108,7 @@ import org.openide.util.Pair;
 public class JavaSymbolProvider implements SymbolProvider {
 
     private static final Logger LOGGER = Logger.getLogger(JavaSymbolProvider.class.getName());
-    
+
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
     private static final String INIT = "<init>"; //NOI18N
@@ -122,7 +122,7 @@ public class JavaSymbolProvider implements SymbolProvider {
     public String getDisplayName() {
         return NbBundle.getMessage(JavaTypeProvider.class, "MSG_JavaSymbols");
     }
-        
+
     public void computeSymbolNames(final Context context, final Result result) {
         try {
             final SearchType st = context.getSearchType();
@@ -133,7 +133,6 @@ public class JavaSymbolProvider implements SymbolProvider {
                 prefix = textToSearch.substring(0, dotIndex);
                 textToSearch = textToSearch.substring(dotIndex+1);
             }
-            String[] _ident = new String[] {textToSearch};
             ClassIndex.NameKind _kind;
             boolean _caseSensitive;
             switch (st) {
@@ -143,14 +142,18 @@ public class JavaSymbolProvider implements SymbolProvider {
                     break;
                 case REGEXP:
                     _kind = ClassIndex.NameKind.REGEXP;
-                    _ident[0] = removeNonJavaChars(_ident[0]);
-                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
+                    textToSearch = NameMatcherFactory.wildcardsToRegexp(
+                            removeNonJavaChars(textToSearch),
+                            true);
                     _caseSensitive = true;
                     break;
                 case CAMEL_CASE:
-                    _ident = createCamelCase(_ident);
                     _kind = ClassIndex.NameKind.CAMEL_CASE;
                     _caseSensitive = true;
+                    break;
+                case CASE_INSENSITIVE_CAMEL_CASE:
+                    _kind = ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE;
+                    _caseSensitive = false;
                     break;
                 case EXACT_NAME:
                     _kind = ClassIndex.NameKind.SIMPLE_NAME;
@@ -166,14 +169,15 @@ public class JavaSymbolProvider implements SymbolProvider {
                     break;
                 case CASE_INSENSITIVE_REGEXP:
                     _kind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP;
-                    _ident[0] = removeNonJavaChars(_ident[0]);            
-                    _ident[0] = NameMatcherFactory.wildcardsToRegexp(_ident[0],true);
+                    textToSearch = NameMatcherFactory.wildcardsToRegexp(
+                            removeNonJavaChars(textToSearch),
+                            true);
                     _caseSensitive = false;
                     break;
                 default:
                     throw new IllegalArgumentException();
             }
-            final String[] ident = _ident;
+            final String ident = textToSearch;
             final ClassIndex.NameKind kind = _kind;
             final boolean caseSensitive = _caseSensitive;
             final Pair<NameMatcher,Boolean> restriction;
@@ -196,7 +200,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                 for(FileObject root : roots) {
                     if (canceled) {
                         return;
-                    }                    
+                    }
                     rootUrls.add(root.toURL());
                 }
 
@@ -223,10 +227,8 @@ public class JavaSymbolProvider implements SymbolProvider {
                             final Project project = FileOwnerQuery.getOwner(root);
                             final ClassIndexImpl impl = manager.getUsagesQuery(root.toURL(), true);
                             if (impl != null) {
-                                final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
-                                for (String currentIdent : ident) {
-                                    impl.getDeclaredElements(currentIdent, kind, DocumentUtil.elementHandleConvertor(),r);
-                                }
+                                final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<>();
+                                impl.getDeclaredElements(ident, kind, DocumentUtil.elementHandleConvertor(),r);
                                 if (!r.isEmpty()) {
                                     //Needs FileManagerTransaction as it creates CPI with backgroundCompilation == true
                                     TransactionContext.
@@ -247,6 +249,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                         if (idents.contains(getSimpleName(te, null)) && matchesRestrictions(te, restriction)) {
                                                             result.addResult(new JavaSymbolDescriptor(
                                                                     te.getSimpleName().toString(),
+                                                                    null,
                                                                     te.getKind(),
                                                                     te.getModifiers(),
                                                                     owner,
@@ -257,8 +260,10 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                         }
                                                         for (Element ne : te.getEnclosedElements()) {
                                                             if (idents.contains(getSimpleName(ne, te)) && matchesRestrictions(ne, restriction)) {
+                                                                final Pair<String,String> name = getDisplayName(ne, te);
                                                                 result.addResult(new JavaSymbolDescriptor(
-                                                                    getDisplayName(ne, te),
+                                                                    name.first(),
+                                                                    name.second(),
                                                                     ne.getKind(),
                                                                     ne.getModifiers(),
                                                                     owner,
@@ -315,7 +320,7 @@ public class JavaSymbolProvider implements SymbolProvider {
         final Element owner = e.getEnclosingElement();
         if (owner == null) {
             return false;
-        }                
+        }
         final Name n;
         if (restriction.second() && (owner instanceof QualifiedNameable)) {
             n = ((QualifiedNameable)owner).getQualifiedName();
@@ -345,67 +350,59 @@ public class JavaSymbolProvider implements SymbolProvider {
         }
         return false;
     }
-    
-    private static String getDisplayName (
+
+    @NonNull
+    private static Pair<String,String> getDisplayName (
             @NonNull final Element e,
             @NonNull final Element enclosingElement) {
         assert e != null;
+        String name;
+        String suffix = null;
         if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
-            StringBuilder sb = new StringBuilder();
-            if (e.getKind() == ElementKind.CONSTRUCTOR) {
-                sb.append(enclosingElement.getSimpleName());
-            } else {
-                sb.append(e.getSimpleName());
-            }
+            name = (e.getKind() == ElementKind.CONSTRUCTOR ?
+                    enclosingElement.getSimpleName():
+                    e.getSimpleName()).toString();
+            final StringBuilder sb = new StringBuilder();
             sb.append('('); //NOI18N
             ExecutableElement ee = (ExecutableElement) e;
             final List<? extends VariableElement> vl = ee.getParameters();
             for (Iterator<? extends VariableElement> it = vl.iterator(); it.hasNext();) {
                 final VariableElement v = it.next();
-                final TypeMirror tm = v.asType();                
+                final TypeMirror tm = v.asType();
                 sb.append(getTypeName(tm, false, true));
                 if (it.hasNext()) {
                     sb.append(", ");    //NOI18N
                 }
             }
             sb.append(')');
-            return sb.toString();
-        }
-        return e.getSimpleName().toString();
-    }
-    
-    private static String[] createCamelCase(final String[] text) {
-        if (text[0].length() == 0) {
-            return text;
+            suffix = sb.toString();
         } else {
-            return new String[] {
-                text[0],
-                Character.toLowerCase(text[0].charAt(0)) + text[0].substring(1)
-            };
+            name = e.getSimpleName().toString();
         }
+        return Pair.of(name,suffix);
     }
-    
+
     private static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
             return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
-    
+
     private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
+
         private boolean varArg;
         private boolean insideCapturedWildcard = false;
-        
+
         private TypeNameVisitor(boolean varArg) {
             super(new StringBuilder());
             this.varArg = varArg;
         }
-        
+
         @Override
         public StringBuilder defaultAction(TypeMirror t, Boolean p) {
             return DEFAULT_VALUE.append(t);
         }
-        
+
         @Override
         public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
             Element e = t.asElement();
@@ -422,12 +419,12 @@ public class JavaSymbolProvider implements SymbolProvider {
                     }
                     DEFAULT_VALUE.append(">"); //NOI18N
                 }
-                return DEFAULT_VALUE;                
+                return DEFAULT_VALUE;
             } else {
                 return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
         }
-                        
+
         @Override
         public StringBuilder visitArray(ArrayType t, Boolean p) {
             boolean isVarArg = varArg;
@@ -501,7 +498,7 @@ public class JavaSymbolProvider implements SymbolProvider {
             return DEFAULT_VALUE;
         }
     }
-    
+
     private static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
 
@@ -518,7 +515,7 @@ public class JavaSymbolProvider implements SymbolProvider {
         canceled = true;
     }
 
-    public void cleanup() {        
+    public void cleanup() {
         canceled = false;
     }
 

@@ -50,11 +50,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.data.GlassFishAdminInterface;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishAdminInterface;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.keyring.Keyring;
@@ -657,7 +657,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
 
             for (int i = 0; i < instanceFOs.length; i++) {
                 if (url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))
-                        && !GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
+                        && !instanceFOs[i].getName().startsWith(GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE)) {
                     instanceFO = instanceFOs[i];
                 }
             }
@@ -1767,19 +1767,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             return false;
         }
         // Domain name can be null so we shall avoid NPE.
-        boolean domainName = (
-                getDomainName() == null && other.getDomainName() == null)
-                || ((getDomainName() != null && other.getDomainName() != null)
-                && getDomainName().equals(other.getDomainName()));
+        boolean domainName = Objects.equals(getDomainName(), other.getDomainName());
         // Domains root can be null so we shall avoid NPE.
-        boolean domainsRoot = (
-                getDomainsRoot() == null && other.getDomainsRoot() == null)
-                || ((getDomainsRoot() != null && other.getDomainsRoot() != null)
-                && getDomainsRoot().equals(other.getDomainsRoot()));
+        boolean domainsRoot = Objects.equals(getDomainsRoot(), other.getDomainsRoot());
         return domainName && domainsRoot
-                && getDeployerUri().replace("127.0.0.1", "localhost").
-                equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
-                && getDomainName().equals(other.getDomainName()) 
+                && getDeployerUri().replace("127.0.0.1", "localhost")
+                        .equals(other.getDeployerUri().replace("127.0.0.1", "localhost"))
                 && getHttpPort().equals(other.getHttpPort());
     }
 

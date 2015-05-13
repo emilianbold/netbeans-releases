@@ -99,6 +99,7 @@ public final class FileChooserBuilder {
         public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
+        public abstract ExecutionEnvironment getExecutionEnvironment();
         
         /** 
          * Very close to getHomeDirectory, but isn't quite the same:
@@ -149,7 +150,7 @@ public final class FileChooserBuilder {
             if(isAcceptAllFileFilterUsed()) {
                 addChoosableFileFilter(getAcceptAllFileFilter());
             }
-    }        
+        }        
         
         
     }
@@ -246,6 +247,11 @@ public final class FileChooserBuilder {
                 }
                 return result;
             }
+        }
+
+        @Override
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return ExecutionEnvironmentFactory.getLocal();
         }
 
         @Override
@@ -384,6 +390,11 @@ public final class FileChooserBuilder {
                 }
                 return result.toArray(new FileObject[result.size()]);
             }
+        }
+
+        @Override
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return env;
         }
         
         @Override

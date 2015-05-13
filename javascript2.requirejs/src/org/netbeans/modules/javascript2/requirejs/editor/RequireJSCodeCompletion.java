@@ -124,7 +124,7 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                     writtenPath = text.substring(0, offset - ts.offset());
                 }
             }
-            if (writtenPath.startsWith("text!")) {
+            if (writtenPath.startsWith("text!")) {  //NOI18N
                 // we need to complete the file extension as well
                 addExtensionInCC = true;
             }
@@ -238,7 +238,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                                 break;
                             }
                         }
-                    } else {
+                    }
+                    if (topFolder == null) {
                         topFolder = project.getProjectDirectory();
                     }
                     try {

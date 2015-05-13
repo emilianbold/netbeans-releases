@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.netbeans.editor.*;
@@ -75,35 +76,35 @@ import org.openide.util.RequestProcessor;
  * Completion module API test: completion/CompletionTestPerformer
  * </B>
  * </FONT>
- * 
+ *
  * <P>
  * <B>What it tests:</B><BR>
  * The purpose of this test is to test C/C++ code completion. This test
  * is done on some layer between user and API. It uses file and completion
  * is called on the top of the file, but it is never shown.
  * </P>
- * 
+ *
  * <P>
  * <B>How it works:</B><BR>
  * TestFile is opened, given text is written to it, and code completion is
  * asked to return response for (row, col) position of document.
- * The type of completion is defined by the type of the file. 
+ * The type of completion is defined by the type of the file.
  * Unfortunately, it is not possible to ask completion for response
  * without opening the file.
  * </P>
- * 
+ *
  * <P>
  * <B>Settings:</B><BR>
  * This test is not complete test, it's only stub, so for concrete test instance
  * it's necessary to provide text to add and whether the response should be
  * sorted. No more settings needed, when runned on clean build.
  * </P>
- * 
+ *
  * <P>
  * <B>Output:</B><BR>
  * The output should be completion reponse in human readable form.
  * </P>
- * 
+ *
  * <P>
  * <B>Possible reasons of failure:</B><BR>
  * <UL>
@@ -116,19 +117,19 @@ import org.openide.util.RequestProcessor;
  * opening sequence, but the editor is not opened, it may lock.</LI>
  * </UL>
  * </P>
- * 
- * 
+ *
+ *
  * (copy of Jan Lahoda CompletionTest.java)
- * 
+ *
  * @author Vladimir Voskresensky
  * @version 1.0
  */
 public class CompletionTestPerformer {
-    
+
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
     private static final RequestProcessor RP = new RequestProcessor("CompletionTestPerformer", 1);
-    
+
     private final CompletionResolver.QueryScope queryScope;
     /**
      * Creates new CompletionTestPerformer
@@ -136,11 +137,11 @@ public class CompletionTestPerformer {
     public CompletionTestPerformer() {
         this(CompletionResolver.QueryScope.GLOBAL_QUERY);
     }
-    
+
     public CompletionTestPerformer(CompletionResolver.QueryScope queryScope) {
         this.queryScope = queryScope;
     }
-    
+
     protected CompletionItem[] completionQuery(
             PrintWriter  log,
             final JEditorPane  editor,
@@ -150,7 +151,7 @@ public class CompletionTestPerformer {
             final boolean tooltip) throws InterruptedException {
         final BaseDocument doc = aDoc == null ? Utilities.getDocument(editor) : aDoc;
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
-        assert csmFile != null : "Must be csmFile for document " + doc;        
+        assert csmFile != null : "Must be csmFile for document " + doc;
         final CsmCompletionQuery query = CsmCompletionProvider.getTestCompletionQuery(csmFile, this.queryScope);
         final AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();
         RP.post(new Runnable() {
@@ -159,12 +160,12 @@ public class CompletionTestPerformer {
                 res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
             }
         }).waitFinished(OPENING_TIMEOUT);
-        
+
         CompletionItem[] array =  res.get() == null ? new CompletionItem[0] : res.get().getItems().toArray(new CompletionItem[res.get().getItems().size()]);
         assert array != null;
         return array;
     }
-    
+
     /**Currently, this method is supposed to be runned inside the AWT thread.
      * If this condition is not fullfilled, an IllegalStateException is
      * thrown. Do NOT modify this behaviour, or deadlock (or even Swing
@@ -178,7 +179,7 @@ public class CompletionTestPerformer {
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
-            final String textToInsert, int offsetAfterInsertion, 
+            final String textToInsert, int offsetAfterInsertion,
             int lineIndex,
             int colIndex,
             boolean tooltip) throws BadLocationException, IOException, InterruptedException {
@@ -189,7 +190,7 @@ public class CompletionTestPerformer {
         doc = doc == null ? Utilities.getDocument(editor) : doc;
         assert doc != null;
         int offset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, colIndex);
-        
+
         if (textToInsert.length() > 0) {
             final int insOffset = offset;
             final BaseDocument insDoc = doc;
@@ -215,29 +216,29 @@ public class CompletionTestPerformer {
         if (editor != null) {
             editor.grabFocus();
             editor.getCaret().setDot(offset);
-        }        
-        
+        }
+
         CompletionItem items[] = completionQuery(log, editor, doc, offset, unsorted, tooltip);
-        
+
         CompletionTestResultItem results[] = new CompletionTestResultItem[items.length];
-        
-        int lineBeginningOffset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, 1);        
+
+        int lineBeginningOffset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, 1);
         JEditorPane textComponent = new JEditorPane();
         textComponent.setDocument(new BaseDocument(false, "text/plain"));
-        
+
         for (int i = 0; i < items.length; i++) {
             textComponent.setText(doc.getText(0, doc.getLength()));
-            
+
             items[i].defaultAction(textComponent);
 
-            int lineEndingOffset = Utilities.getRowEnd((BaseDocument) textComponent.getDocument(), offset);
-            
-            results[i] = new CompletionTestResultItem(items[i], textComponent.getText(lineBeginningOffset, lineEndingOffset - lineBeginningOffset));            
+            int lineEndingOffset = LineDocumentUtils.getLineEnd((BaseDocument) textComponent.getDocument(), offset);
+
+            results[i] = new CompletionTestResultItem(items[i], textComponent.getText(lineBeginningOffset, lineEndingOffset - lineBeginningOffset));
         }
-        
+
         return results;
     }
-    
+
     public CompletionTestResultItem[] test(final PrintWriter log,
             final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
             final File testSourceFile, final int line, final int col, final boolean tooltip) throws Exception {
@@ -245,7 +246,7 @@ public class CompletionTestPerformer {
             final CompletionTestResultItem[][] array = new CompletionTestResultItem[][] {null};
             log.println("Completion test start.");
             log.flush();
-            
+
             final FileObject testFileObject = getTestFile(testSourceFile, log);
             final DataObject testFile = DataObject.find(testFileObject);
             if (testFile == null) {
@@ -297,7 +298,7 @@ public class CompletionTestPerformer {
             throw e;
         }
     }
-    
+
     private FileObject getTestFile(File testFile, PrintWriter log) throws IOException, InterruptedException, PropertyVetoException {
         FileObject test = CndFileUtils.toFileObject(testFile);
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(test), true, false);
@@ -307,7 +308,7 @@ public class CompletionTestPerformer {
         log.println("File found: " + csmFile);
         return test;
     }
-    
+
     private static void parseModifiedFile(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
 //        SaveCookie sc = dob.getCookie(SaveCookie.class);
 //        assert sc != null : "document must have save cookie " + dob;
@@ -339,5 +340,5 @@ public class CompletionTestPerformer {
         prj.waitParse();
         assert csmFile.isParsed() : " file must be parsed: " + csmFile;
         assert prj.isStable(null) : " full project must be parsed" + prj;
-    }   
+    }
 }

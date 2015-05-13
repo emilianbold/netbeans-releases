@@ -76,6 +76,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         
         String host = panel.getHost();
         String port = panel.getPort();
+        String jmxPort = panel.getJmxPort();
         
         if(panel.isLocalServer()){
             // wrong domain path
@@ -132,6 +133,13 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InvalidPort"));  //NOI18N
                 return false;
             }
+            try{
+                Integer.parseInt(jmxPort);
+            } catch(Exception e) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_InvalidJmxPort"));  //NOI18N
+                return false;
+            }
             
             
         } else { //remote
@@ -145,6 +153,11 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
                         NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterPort"));  //NOI18N
                 return false;
             }
+            if (jmxPort.length() < 1) {
+                wizard.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                        NbBundle.getMessage(AddServerPropertiesPanel.class, "MSG_EnterJmxPort"));  //NOI18N
+                return false;
+            }
         }
         
         wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
@@ -152,6 +165,7 @@ public class AddServerPropertiesPanel implements WizardDescriptor.Panel, ChangeL
         
         instantiatingIterator.setHost(host);
         instantiatingIterator.setPort(port);
+        instantiatingIterator.setJmxPort(jmxPort);
         instantiatingIterator.setServer(panel.getDomain());
         instantiatingIterator.setServerPath(panel.getDomainPath());
         instantiatingIterator.setDeployDir(JBPluginUtils.getDeployDir( panel.getDomainPath()));

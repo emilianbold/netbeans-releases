@@ -180,7 +180,7 @@ public class ElementOrderingTest extends NbTestCase {
     }
     
     public void testDefaultLocale() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale-1.xml");
         FacesConfig facesConfig = model.getRootComponent();
 
         model.startTransaction();
@@ -204,24 +204,24 @@ public class ElementOrderingTest extends NbTestCase {
     }
     
     public void testEmptyLocale() throws Exception {
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale.xml");
+        JSFConfigModel model = Util.loadRegistryModel("faces-config-locale-2.xml");
         FacesConfig facesConfig = model.getRootComponent();
-        
+
         model.startTransaction();
         Application application = facesConfig.getApplications().get(0);
         LocaleConfig config = application.getLocaleConfig().get(0);
         clearConfig(config);
-        
+
         SupportedLocale locale = model.getFactory().createSupportedLocale();
         config.addSupportedLocales(locale);
         DefaultLocale defaultLocale = model.getFactory().createDefatultLocale();
         config.setDefaultLocale( defaultLocale );
         locale = model.getFactory().createSupportedLocale();
         config.addSupportedLocales( locale );
-        
+
         endModelTransaction(model);
         model.sync();
-        
+
         Element element  = Util.getElement( config.getPeer(), 0 );
         assertEquals( "Element locale-config should contain " +
         		"default-locale as first child element, " +

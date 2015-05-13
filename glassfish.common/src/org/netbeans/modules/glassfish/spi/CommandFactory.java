@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.glassfish.spi;
 
-import org.glassfish.tools.ide.admin.CommandSetProperty;
+import org.netbeans.modules.glassfish.tooling.admin.CommandSetProperty;
 
 /**
  *

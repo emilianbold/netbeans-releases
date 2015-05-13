@@ -44,7 +44,6 @@ package org.netbeans.modules.php.symfony;
 
 import java.beans.PropertyChangeEvent;
 import java.util.prefs.Preferences;
-import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommand;
 import java.util.LinkedList;
 import java.util.List;
@@ -151,27 +150,12 @@ public class CommandsLineProcessorTest extends NbTestCase {
         }
 
         @Override
-        public FileObject getTestDirectory() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public PhpModuleProperties getProperties() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public Preferences getPreferences(Class<?> clazz, boolean shared) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
         public boolean isBroken() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public void openCustomizer(String category) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

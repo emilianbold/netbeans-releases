@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -63,11 +63,11 @@ import org.openide.util.actions.NodeAction;
  */
 public abstract class ProjectActionBase extends NodeAction {
 
-    private final boolean enabledAction;    
+    private final boolean enabledAction;
     protected enum State {
         NoProjects, Enabled, Disabled, Indeterminate
     }
-    
+
     private boolean running;
     private JMenuItem presenter;
     private boolean inited = false;
@@ -77,7 +77,7 @@ public abstract class ProjectActionBase extends NodeAction {
     }
 
     protected abstract void performAction(Collection<CsmProject> projects);
-    
+
     @Override
     public JMenuItem getMenuPresenter() {
         return getPresenter();
@@ -96,7 +96,7 @@ public abstract class ProjectActionBase extends NodeAction {
         }
         final Collection<CsmProject> projects = getCsmProjects(getActivatedNodes());
         if (enabledAction) {
-            if (projects == null || projects.isEmpty()) {
+            if (projects.isEmpty()) {
                 setEnabled(!running);
                 presenter.setVisible(false);
             } else {
@@ -116,7 +116,7 @@ public abstract class ProjectActionBase extends NodeAction {
 
         return presenter;
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
@@ -133,12 +133,12 @@ public abstract class ProjectActionBase extends NodeAction {
         Collection<CsmProject> projects = getCsmProjects(activatedNodes);
         return isEnabledEx(activatedNodes, projects);
     }
-    
+
     protected boolean isEnabledEx(Node[] activatedNodes, Collection<CsmProject> projects) {
          State state = getState(projects);
-         return state != State.Indeterminate;        
+         return state != State.Indeterminate;
     }
-    
+
     @Override
     public void performAction(final Node[] activatedNodes) {
         running = true;
@@ -159,8 +159,8 @@ public abstract class ProjectActionBase extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
-    
-    /** 
+
+    /**
      * Gets the collection of native projects that correspond the given nodes.
      * @return in the case all nodes correspond to native projects -
      * collection of native projects; otherwise null
@@ -172,7 +172,7 @@ public abstract class ProjectActionBase extends NodeAction {
             if (csm == null) {
                 NativeProject nativeProject = nodes[i].getLookup().lookup(NativeProject.class);
                 if (nativeProject == null) {
-                    Object o = nodes[i].getValue("Project"); // NOI18N 
+                    Object o = nodes[i].getValue("Project"); // NOI18N
                     if (o instanceof Project) {
                         nativeProject = ((Project) o).getLookup().lookup(NativeProject.class);
                     }
@@ -211,5 +211,5 @@ public abstract class ProjectActionBase extends NodeAction {
     private State getState(CsmProject csmPrj) {
         return csmPrj != null && csmPrj.isStable(null) ? State.Enabled : State.Disabled;
     }
-    
+
 }

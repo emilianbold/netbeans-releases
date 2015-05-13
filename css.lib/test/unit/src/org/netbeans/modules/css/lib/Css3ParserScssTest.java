@@ -1760,4 +1760,105 @@ public class Css3ParserScssTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(source);
         assertResultOK(result);
     }
+    
+    public void testMultiDimensionalMaps() {
+        String source = "$type-scale: (\n"
+                + "    tiny: (\n"
+                + "        font-size: 10.24px,\n"
+                + "        base-lines: 0.5\n"
+                + "    ),\n"
+                + "    small: (\n"
+                + "        font-size: 12.8px,\n"
+                + "        base-lines: 0.75\n"
+                + "    )\n"
+                + ");\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+
+    public void testErrorWithSemi() {
+        String source = "@mixin adjust-location($x, $y) {\n"
+                + "  @if unitless($x) {\n"
+                + "    @error \"$x may not be unitless, was #{$x}.\";\n"
+                + "  }\n"
+                + "  position: relative; left: $x; top: $y;\n"
+                + "}\n"
+                + "";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testAtRootDeclaration() {
+        String source = "@media print {\n"
+                + "  .page {\n"
+                + "    width: 8in;\n"
+                + "    @at-root (without: media) {\n"
+                + "      color: red;\n"
+                + "    }\n"
+                + "  }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testKeyframesInSass() {
+        String source = "@mixin keyframes($name)\n"
+                + "{\n"
+                + "    @-webkit-keyframes $name\n"
+                + "    {\n"
+                + "        @content;\n"
+                + "    }\n"
+                + "    @keyframes $name\n"
+                + "    {\n"
+                + "        @content;\n"
+                + "    }\n"
+                + "}";
+        CssParserResult result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        source = "@mixin keyframes($name) {\n"
+                + "  @-webkit-keyframes #{$name} {\n"
+                + "    @content; \n"
+                + "  }}";
+        
+        result = TestUtil.parse(source);
+        assertResultOK(result);
+        
+        source = "@include keyframes(slide-down) {\n"
+                + "  0% { opacity: 1; }\n"
+                + "  90% { opacity: 0; }\n"
+                + "}";
+        
+        result = TestUtil.parse(source);
+        assertResultOK(result);
+    }
+    
+    public void testSassNestingGreater() {
+        assertParses("div {\n"
+                + "    margin: 0;\n"
+                + "    > {\n"
+                + "        label {\n"
+                + "            float: left;\n"
+                + "        }\n"
+                + "        input {\n"
+                + "            width: 70%; \n"
+                + "        }\n"
+                + "    }\n"
+                + "}");
+    } 
+    
+    public void testPseudoClassBeforeAmpersand() {
+        assertParses("  li {\n"
+                + "        a:hover, &.selected {\n"
+                + "            display: block;\n"
+                + "        }\n"
+                + "    }");
+
+    }
+    
+    public void testDotInterpolationMinus() {
+    assertParses("$fa-css-prefix : test;\n"
+                + ".#{$fa-css-prefix}-2x { font-size: 2em; }");
+    }
 }

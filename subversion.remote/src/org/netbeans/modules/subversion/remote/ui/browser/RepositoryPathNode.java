@@ -608,7 +608,7 @@ public class RepositoryPathNode extends AbstractNode {
      * Lists it's children from the repository after the second expand in the browser
      */
     private static class DelayedExpandNode extends RepositoryPathNode {
-        private final int IGNORE_EXPANDS = 0;
+        private static final int IGNORE_EXPANDS = 0;
         private int expanded = 0;
         public DelayedExpandNode(BrowserClient client, RepositoryPathEntry entry, boolean repositoryFolder) {
             super(client, entry, repositoryFolder);

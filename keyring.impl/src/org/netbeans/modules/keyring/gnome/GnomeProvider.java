@@ -64,17 +64,6 @@ public class GnomeProvider implements KeyringProvider {
             LOG.fine("native keyring integration disabled");
             return false;
         }
-        boolean envVarSet = false;
-        for (String key : System.getenv().keySet()) {
-            if (key.startsWith("GNOME_KEYRING_")) { // NOI18N
-                envVarSet = true;
-                break;
-            }
-        }
-        if (!envVarSet) {
-            LOG.fine("no GNOME_KEYRING_* environment variable set");
-            return false;
-        }
         String appName;
         try {
             appName = MessageFormat.format(
@@ -191,6 +180,5 @@ public class GnomeProvider implements KeyringProvider {
         if (code != 0 && code != 9) {
             LOG.log(Level.WARNING, "gnome-keyring error: {0}", ERRORS[code]);
         }
-    }
-
+    }    
 }

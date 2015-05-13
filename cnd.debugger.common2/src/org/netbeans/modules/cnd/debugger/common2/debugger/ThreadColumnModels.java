@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger;
 
-import java.beans.PropertyEditor;
 
 import org.netbeans.modules.cnd.debugger.common2.values.StringEditor;
 

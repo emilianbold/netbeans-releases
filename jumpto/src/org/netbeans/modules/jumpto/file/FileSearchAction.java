@@ -49,10 +49,7 @@
 
 package org.netbeans.modules.jumpto.file;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
+import org.netbeans.modules.jumpto.common.CurrentSearch;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -60,6 +57,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -68,18 +69,12 @@ import javax.swing.AbstractAction;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -90,16 +85,17 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
-import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.Factory;
-import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
+import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.awt.HtmlRenderer;
 import org.openide.awt.Mnemonics;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -122,12 +118,25 @@ import org.openide.windows.TopComponent;
 public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
+    /* package */ static final String CAMEL_CASE_SEPARATOR = "\\p{javaUpperCase}|-|_|\\.";    //NOI18N
+    /* package */ static final String CAMEL_CASE_PART = "\\p{javaLowerCase}|\\p{Digit}|\\$";         //NOI18N
+    /* package */ static final Map<String,Object> SEARCH_OPTIONS;
+    static {
+        Map<String,Object> m = new HashMap<>();
+        m.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, CAMEL_CASE_SEPARATOR);
+        m.put(Queries.OPTION_CAMEL_CASE_PART, CAMEL_CASE_PART);
+        SEARCH_OPTIONS = Collections.unmodifiableMap(m);
+    }
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
 
     private static final ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     //Threading: Throughput 1 required due to inherent sequential code in Work.Request.exclude
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
+    private final FilterFactory filterFactory = new FilterFactory();
+    private final CurrentSearch<FileDescriptor> currentSearch = new CurrentSearch(filterFactory);
+    //@GuardedBy("this")
+    private FileComarator itemsComparator;
     //@GuardedBy("this")
     private Worker[] running;
     //@GuardedBy("this")
@@ -164,128 +173,136 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
 
     @Override
+    @NonNull
     public ListCellRenderer getListCellRenderer(
             @NonNull final JList list,
             @NonNull final Document nameDocument,
-            @NonNull final ButtonModel caseSensitive) {
+            @NonNull final ButtonModel caseSensitive,
+            @NonNull final ButtonModel colorPrefered) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("nameDocument", nameDocument);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, nameDocument, caseSensitive);
+        return ItemRenderer.Builder.create(
+                    list,
+                    caseSensitive,
+                    new FileDescriptorConvertor(nameDocument)).
+                setCamelCaseSeparator(CAMEL_CASE_SEPARATOR).
+                setColorPreferedProject(colorPrefered).
+                build();
     }
 
 
     @Override
-    public void setListModel(final FileSearchPanel panel, String text ) {
-        if (openBtn != null) {
-            openBtn.setEnabled (false);
-        }
+    public boolean setListModel(final FileSearchPanel panel, String text ) {
+        enableOK(false);
 
         cancel();
 
         if ( text == null ) {
             panel.setModel(EMPTY_LIST_MODEL, true);
-            return;
+            currentSearch.resetFilter();
+            return false;
         }
         boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
             panel.setModel(EMPTY_LIST_MODEL, true);
-            return;
+            currentSearch.resetFilter();
+            return false;
         }
 
         //Extract linenumber from search text
         //Pattern is like 'My*Object.java:123'
-        final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
-        int lineNr;
-        if (matcher.matches()) {
-            text = matcher.group(1);
-            try {
-                lineNr = Integer.parseInt(matcher.group(2));
-            } catch (NumberFormatException numberFormatException) {
-                //prevent non convertable numbers
-                lineNr=-1;
-            }
-        } else {
-            lineNr = -1;
-        }
-        QuerySupport.Kind nameKind;
-        int wildcard = Utils.containsWildCard(text);
-        if (exact) {
-            //nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.EXACT : QuerySupport.Kind.CASE_INSENSITIVE_EXACT;
-            nameKind = QuerySupport.Kind.EXACT;
-        }
-        else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.REGEXP : QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+        final Pair<String,Integer> nameLinePair = splitNameLine(text);
+        text = nameLinePair.first();
+        final int lineNr = nameLinePair.second();
+        final QuerySupport.Kind nameKind = Utils.toQueryKind(Utils.getSearchType(
+                text,
+                exact,
+                panel.isCaseSensitive(),
+                CAMEL_CASE_SEPARATOR,
+                CAMEL_CASE_PART));
+        if (nameKind == QuerySupport.Kind.REGEXP || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
-        }
-        else if ((Utils.isAllUpper(text) && text.length() > 1) || Utils.isCamelCase(text)) {
-            nameKind = QuerySupport.Kind.CAMEL_CASE;
-        }
-        else {
-            nameKind = panel.isCaseSensitive() ? QuerySupport.Kind.PREFIX : QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
         }
 
         // Compute in other thread
         synchronized(this) {
-            final Models.MutableListModel baseListModel = Models.mutable(
-                    new FileComarator(
+            final SearchType searchType = Utils.toSearchType(nameKind);
+            if (currentSearch.isNarrowing(searchType, text, null)) {
+                itemsComparator.setUsePreferred(panel.isPreferedProject());
+                filterFactory.setLineNumber(lineNr);
+                currentSearch.filter(searchType, text);
+                enableOK(panel.searchCompleted(true));
+                return false;
+            } else {
+                final String searchText = text;
+                itemsComparator = new FileComarator(
                         panel.isPreferedProject(),
-                        panel.isCaseSensitive()));
-            panel.setModel(Models.refreshable(
-                    baseListModel,
-                    new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
-                        @Override
-                        public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                            return new AsyncFileDescriptor(param.first(), param.second());
-                        }
-                    }),
-                    false);
-            final Worker.Request request = Worker.newRequest(
-                text,
-                nameKind,
-                panel.getCurrentProject(),
-                lineNr);
-            final Worker.Collector collector = Worker.newCollector(
-                baseListModel,
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
+                        panel.isCaseSensitive());
+                final Models.MutableListModel baseListModel = Models.mutable(
+                        itemsComparator,
+                        currentSearch.resetFilter());
+                panel.setModel(Models.refreshable(
+                        baseListModel,
+                        new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
                             @Override
-                            public void run() {
-                                panel.searchProgress();
-                                if (openBtn != null && baseListModel.getSize() > 0) {
-                                    openBtn.setEnabled (true);
-                                }
+                            public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
+                                return new AsyncFileDescriptor(param.first(), param.second());
                             }
-                        });
-                    }
-                },
-                new Runnable(){
-                    @Override
-                    public void run() {
-                        panel.searchCompleted();
-                    }
-                },
-                panel.time);
-            final Worker.Type[] wts = Worker.Type.values();
-            final Worker[] workers = new Worker[wts.length];
-            //Threading: All workers need to be created before they are scheduled
-            for (int i = 0; i < wts.length; i++) {
-                workers[i] = Worker.newWorker(request, collector, wts[i]);
-            }
-            running = workers;
-            final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
-            for (int i = 0; i < workers.length; i++) {
-                tasks[i] = rp.post(workers[i], 220);
-            }
-            scheduledTasks = tasks;
-            if ( panel.time != -1 ) {
-                LOGGER.log(
-                    Level.FINE,
-                    "Worker posted after {0} ms.",  //NOI18N
-                    System.currentTimeMillis() - panel.time );
+                        }),
+                        false);
+                final Worker.Request request = Worker.newRequest(
+                    searchText,
+                    nameKind,
+                    panel.getCurrentProject(),
+                    lineNr);
+                final Worker.Collector collector = Worker.newCollector(
+                    baseListModel,
+                    new Runnable () {
+                        @Override
+                        public void run() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.searchProgress();
+                                    enableOK(baseListModel.getSize() > 0);
+                                }
+                            });
+                        }
+                    },
+                    new Runnable () {
+                        @Override
+                        public void run() {
+                            currentSearch.searchCompleted(searchType, searchText, null);
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.searchCompleted(true);
+                                }
+                            });
+                        }
+                    },
+                    panel.time);
+                final Worker.Type[] wts = Worker.Type.values();
+                final Worker[] workers = new Worker[wts.length];
+                //Threading: All workers need to be created before they are scheduled
+                for (int i = 0; i < wts.length; i++) {
+                    workers[i] = Worker.newWorker(request, collector, wts[i]);
+                }
+                running = workers;
+                final RequestProcessor.Task[] tasks = new RequestProcessor.Task[workers.length];
+                for (int i = 0; i < workers.length; i++) {
+                    tasks[i] = rp.post(workers[i], 220);
+                }
+                scheduledTasks = tasks;
+                if ( panel.time != -1 ) {
+                    LOGGER.log(
+                        Level.FINE,
+                        "Worker posted after {0} ms.",  //NOI18N
+                        System.currentTimeMillis() - panel.time );
+                }
+                return true;
             }
         }
     }
@@ -302,6 +319,12 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     }
 
     // Private methods ---------------------------------------------------------
+
+    private void enableOK(final boolean enable) {
+        if (openBtn != null) {
+            openBtn.setEnabled (enable);
+        }
+    }
 
     private FileDescriptor[] getSelectedFiles() {
         FileDescriptor[] result = null;
@@ -343,9 +366,9 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         Mnemonics.setLocalizedText(openBtn, NbBundle.getMessage(FileSearchAction.class, "CTL_Open"));
         openBtn.getAccessibleContext().setAccessibleDescription(openBtn.getText());
         openBtn.setEnabled( false );
-        
+
         final Object[] buttons = new Object[] { openBtn, DialogDescriptor.CANCEL_OPTION };
-        
+
         String title = NbBundle.getMessage(FileSearchAction.class, "MSG_FileSearchDlgTitle");
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 panel,
@@ -354,18 +377,18 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 buttons,
                 openBtn,
                 DialogDescriptor.DEFAULT_ALIGN,
-                HelpCtx.DEFAULT_HELP, 
+                HelpCtx.DEFAULT_HELP,
                 new DialogButtonListener(panel));
         dialogDescriptor.setClosingOptions(buttons);
 
         Dialog d = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         d.getAccessibleContext().setAccessibleName(NbBundle.getMessage(FileSearchAction.class, "AN_FileSearchDialog"));
         d.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(FileSearchAction.class, "AD_FileSearchDialog"));
-                
+
         // Set size
         d.setPreferredSize( new Dimension(  FileSearchOptions.getWidth(),
                                                  FileSearchOptions.getHeight() ) );
-        
+
         // Center the dialog after the size changed.
         Rectangle r = Utilities.getUsableScreenBounds();
         int maxW = (r.width * 9) / 10;
@@ -383,7 +406,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         return d;
     }
-    
+
     /** For original of this code look at:
      *  org.netbeans.modules.project.ui.actions.ActionsUtil
      */
@@ -435,47 +458,41 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 }
                 running = null;
                 scheduledTasks = null;
+                panel.searchCompleted(false);
             }
         }
+    }
+
+    @NonNull
+    private static Pair<String,Integer> splitNameLine(@NonNull String text) {
+        final Matcher matcher = PATTERN_WITH_LINE_NUMBER.matcher(text);
+        int lineNr = -1;
+        if (matcher.matches()) {
+            text = matcher.group(1);
+            try {
+                lineNr = Integer.parseInt(matcher.group(2));
+            } catch (NumberFormatException e) {
+               //pass
+            }
+        }
+        return Pair.of(text,lineNr);
     }
 
     // Private classes ---------------------------------------------------------
     private class DialogButtonListener implements ActionListener {
-        
+
         private FileSearchPanel panel;
-        
+
         public DialogButtonListener(FileSearchPanel panel) {
             this.panel = panel;
         }
-        
+
         @Override
-        public void actionPerformed(ActionEvent e) {       
+        public void actionPerformed(ActionEvent e) {
             if ( e.getSource() == openBtn) {
                 panel.setSelectedFile();
             }
         }
-    }
-
-    //Inner classes
-    private static class RendererComponent extends JPanel {
-	private FileDescriptor fd;
-
-	void setDescription(FileDescriptor fd) {
-	    this.fd = fd;
-	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
-	}
-
-	@Override
-	public String getToolTipText() {
-	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
-	    if( text == null ) {
-                if( fd != null) {
-                    text = fd.getFileDisplayPath();
-                }
-                putClientProperty(TOOL_TIP_TEXT_KEY, text);
-	    }
-	    return text;
-	}
     }
 
     private static final class AsyncFileDescriptor extends FileDescriptor implements Runnable {
@@ -568,186 +585,51 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     }
 
-    public static class Renderer extends EntitiesListCellRenderer implements ActionListener, DocumentListener {
-
-        public  static Icon WAIT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/wait.gif", false); // NOI18N
-
-        private final HighlightingNameFormatter fileNameFormatter;
-
-        private RendererComponent rendererComponent;
-        private JLabel jlName = HtmlRenderer.createLabel();
-        private JLabel jlPath = new JLabel();
-        private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 15;
-        private int LIGHTER_COLOR_COMPONENT = 80;
-        private Color fgColor;
-        private Color fgColorLighter;
-        private Color bgColor;
-        private Color bgColorDarker;
-        private Color bgSelectionColor;
-        private Color fgSelectionColor;
-        private Color bgColorGreener;
-        private Color bgColorDarkerGreener;
-
+    private static final class FileDescriptorConvertor implements ItemRenderer.Convertor<FileDescriptor>, DocumentListener {
         private String textToFind = "";   //NOI18N
-        private boolean caseSensitive;
-        private JList jList;
 
-        private boolean colorPrefered;
-
-        public Renderer(
-                @NonNull final JList list,
-                @NonNull final Document nameDocument,
-                @NonNull final ButtonModel caseSensitive) {
-            jList = list;
-            this.caseSensitive = caseSensitive.isSelected();
-            resetName();
-            Container container = list.getParent();
-            if ( container instanceof JViewport ) {
-                ((JViewport)container).addChangeListener(this);
-                stateChanged(new ChangeEvent(container));
-            }
-
-            rendererComponent = new RendererComponent();
-            rendererComponent.setLayout(new BorderLayout());
-            rendererComponent.add( jlName, BorderLayout.WEST );
-            rendererComponent.add( jlPath, BorderLayout.CENTER);
-            rendererComponent.add( jlPrj, BorderLayout.EAST );
-
-
-            jlPath.setOpaque(false);
-            jlPrj.setOpaque(false);
-            jlPath.setFont(list.getFont());
-            jlPrj.setFont(list.getFont());
-
-
-            jlPrj.setHorizontalAlignment(RIGHT);
-            jlPrj.setHorizontalTextPosition(LEFT);
-
-            // setFont( list.getFont() );
-            fgColor = list.getForeground();
-            fgColorLighter = new Color(
-                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
-                                  );
-
-            bgColor = new Color( list.getBackground().getRGB() );
-            bgColorDarker = new Color(
-                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
-                            );
-            bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();
-
-
-            bgColorGreener = new Color(
-                                    Math.abs(bgColor.getRed() - 20),
-                                    Math.min(255, bgColor.getGreen() + 10 ),
-                                    Math.abs(bgColor.getBlue() - 20) );
-
-
-            bgColorDarkerGreener = new Color(
-                                    Math.abs(bgColorDarker.getRed() - 35),
-                                    Math.min(255, bgColorDarker.getGreen() + 5 ),
-                                    Math.abs(bgColorDarker.getBlue() - 35) );
-            fileNameFormatter = HighlightingNameFormatter.createBoldFormatter();
-            nameDocument.addDocumentListener(this);
-            caseSensitive.addActionListener(this);
-            jlName.setOpaque(true);
-        }
-
-        public @Override Component getListCellRendererComponent( JList list,
-                                                       Object value,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean hasFocus) {
-
-            // System.out.println("Renderer for index " + index );
-
-            int height = list.getFixedCellHeight();
-            int width = list.getFixedCellWidth() - 1;
-
-            width = width < 200 ? 200 : width;
-
-            // System.out.println("w, h " + width + ", " + height );
-
-            Dimension size = new Dimension( width, height );
-            rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-            resetName();
-            if ( isSelected ) {
-                jlName.setForeground(fgSelectionColor);
-                jlName.setBackground( bgSelectionColor );
-                jlPath.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
-                rendererComponent.setBackground(bgSelectionColor);
-            }
-            else {
-                jlName.setForeground(fgColor);
-                jlName.setBackground(bgColor);
-                jlPath.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);
-                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
-            }
-
-            if ( value instanceof FileDescriptor ) {
-                FileDescriptor fd = (FileDescriptor)value;
-                jlName.setIcon(fd.getIcon());
-                final String formattedFileName = fileNameFormatter.formatName(
-                    fd.getFileName(),
-                    textToFind,
-                    caseSensitive,
-                    isSelected? fgSelectionColor : fgColor);
-                jlName.setText(formattedFileName);
-                jlPath.setIcon(null);
-                jlPath.setHorizontalAlignment(SwingConstants.LEFT);
-                jlPath.setText(fd.getOwnerPath().length() > 0 ? " (" + fd.getOwnerPath() + ")" : " ()"); //NOI18N
-                setProjectName(jlPrj, fd.getProjectName());
-                jlPrj.setIcon(fd.getProjectIcon());
-                if (!isSelected) {
-                    final boolean cprj = FileProviderAccessor.getInstance().isFromCurrentProject(fd) && colorPrefered;
-                    final Color bgc =  index % 2 == 0 ?
-                        (cprj ? bgColorGreener : bgColor ) :
-                        (cprj ? bgColorDarkerGreener : bgColorDarker );
-                    jlName.setBackground(bgc);  //Html does not support transparent bg
-                    rendererComponent.setBackground(bgc);
-                }
-                rendererComponent.setDescription(fd);
-            }
-            else {
-                jlName.setText( "" ); // NOI18M
-                jlName.setIcon(null);
-                jlPath.setIcon(Renderer.WAIT_ICON);
-                jlPath.setHorizontalAlignment(SwingConstants.CENTER);
-                jlPath.setText( value.toString() );
-                jlPrj.setIcon(null);
-                jlPrj.setText( "" ); // NOI18N
-            }
-
-            return rendererComponent;
+        FileDescriptorConvertor(@NonNull final Document doc) {
+            doc.addDocumentListener(this);
         }
 
         @Override
-        public void stateChanged(ChangeEvent event) {
-
-            JViewport jv = (JViewport)event.getSource();
-
-            jlName.setText( "Sample" ); // NOI18N
-            jlName.setIcon( new ImageIcon() );
-
-            jList.setFixedCellHeight(jlName.getPreferredSize().height);
-            jList.setFixedCellWidth(jv.getExtentSize().width);
-        }
-
-        public void setColorPrefered( boolean colorPrefered ) {
-            this.colorPrefered = colorPrefered;
+        public String getName(@NonNull final FileDescriptor item) {
+            return item.getFileName();
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        public String getHighlightText(@NonNull final FileDescriptor item) {
+            return textToFind;
+        }
+
+        @Override
+        public String getOwnerName(@NonNull final FileDescriptor item) {
+            return item.getOwnerPath().length() > 0 ? " (" + item.getOwnerPath() + ")" : "";    //NOI18N
+        }
+
+        @Override
+        public String getProjectName(@NonNull final FileDescriptor item) {
+            return item.getProjectName();
+        }
+
+        @Override
+        public String getFilePath(@NonNull final FileDescriptor item) {
+            return item.getFileDisplayPath();
+        }
+
+        @Override
+        public Icon getItemIcon(@NonNull final FileDescriptor item) {
+            return item.getIcon();
+        }
+
+        @Override
+        public Icon getProjectIcon(@NonNull final FileDescriptor item) {
+            return item.getProjectIcon();
+        }
+
+        @Override
+        public boolean isFromCurrentProject(@NonNull final FileDescriptor item) {
+            return FileProviderAccessor.getInstance().isFromCurrentProject(item);
         }
 
         @Override
@@ -763,19 +645,35 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         @Override
         public void changedUpdate(DocumentEvent e) {
             try {
-                textToFind = e.getDocument().getText(0, e.getDocument().getLength());
+                textToFind = splitNameLine(e.getDocument().getText(0, e.getDocument().getLength())).first();
             } catch (BadLocationException ex) {
                 textToFind = "";    //NOI18N
             }
         }
 
-        private void resetName() {
-            ((HtmlRenderer.Renderer)jlName).reset();
-            jlName.setFont(jList.getFont());
-            jlName.setOpaque(true);
-            ((HtmlRenderer.Renderer)jlName).setHtml(true);
-            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
+    }
+
+    //@NotThreadSafe
+    private static final class FilterFactory implements Callable<Models.Filter<FileDescriptor>> {
+        private int currentLineNo;
+
+        void setLineNumber(final int lineNo) {
+            this.currentLineNo = lineNo;
         }
 
-     }
+        @Override
+        public Models.Filter<FileDescriptor> call() throws Exception {
+            return new AbstractModelFilter<FileDescriptor>(SEARCH_OPTIONS) {
+                @NonNull
+                @Override
+                protected String getItemValue(@NonNull final FileDescriptor item) {
+                    return item.getFileName();
+                }
+                @Override
+                protected void update(@NonNull final FileDescriptor item) {
+                    FileProviderAccessor.getInstance().setLineNumber(item, currentLineNo);
+                }
+            };
+        }
+    }
 }

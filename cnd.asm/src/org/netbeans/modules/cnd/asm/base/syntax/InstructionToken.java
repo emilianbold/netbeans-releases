@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmBaseTokenId;
 
 public class InstructionToken extends AsmToken {     
-    private Instruction instr;
+    private final Instruction instr;
     
     public InstructionToken(Instruction instr, String text, int start, int end) {
         super(AsmBaseTokenId.ASM_INSTRUCTION, text, start, end);

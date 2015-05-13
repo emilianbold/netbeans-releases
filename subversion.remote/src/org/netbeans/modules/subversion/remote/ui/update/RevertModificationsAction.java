@@ -64,7 +64,7 @@ import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -132,7 +132,7 @@ public class RevertModificationsAction extends ContextAction {
         final SVNUrl url;
         
         try {
-            rootUrl = SvnUtils.getRepositoryRootUrl(interestingFile);
+            rootUrl = ContextAction.getSvnUrl(ctx);
             url = SvnUtils.getRepositoryUrl(interestingFile);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
@@ -176,7 +176,7 @@ public class RevertModificationsAction extends ContextAction {
         if (onlySelectedFiles) {
             split = new VCSFileProxy[2][0];
         } else {
-            split = org.netbeans.modules.subversion.remote.versioning.util.Utils.splitFlatOthers(files);
+            split = VCSFileProxySupport.splitFlatOthers(files);
         }
         try {
             SvnUtils.runWithoutIndexing(new Callable<Void>() {

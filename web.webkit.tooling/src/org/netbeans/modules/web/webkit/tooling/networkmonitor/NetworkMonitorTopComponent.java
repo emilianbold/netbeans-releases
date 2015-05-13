@@ -119,8 +119,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
     private final InputOutput io;
-    private MyProvider ioProvider;
-    private UIUpdater updater;
+    private final MyProvider ioProvider;
+    private final UIUpdater updater;
     private boolean debuggingSession;
 
     NetworkMonitorTopComponent(Model m, boolean debuggingSession) {
@@ -144,8 +144,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     private static class UIUpdater implements ActionListener {
 
-        private Timer t;
-        private NetworkMonitorTopComponent comp;
+        private final Timer t;
+        private final NetworkMonitorTopComponent comp;
         private ModelItem modelItem;
 
         public UIUpdater(NetworkMonitorTopComponent comp) {
@@ -669,7 +669,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         private String failureCause = null;
         private final BrowserFamilyId browserFamilyId;
         private final Project project;
-        private AtomicBoolean dataLoaded = new AtomicBoolean(false);
+        private final AtomicBoolean dataLoaded = new AtomicBoolean(false);
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
@@ -1157,13 +1157,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
                 sb.append(",\n");
             }
             if (value instanceof JSONObject) {
-                jsonPrettyPrintObject((JSONObject)value, sb, indent+4);
+                jsonPrettyPrintObject((JSONObject)value, sb, indent+2);
             } else if (value instanceof JSONArray) {
-                jsonPrettyPrintArray((JSONArray)value, sb, indent+4);
+                jsonPrettyPrintArray((JSONArray)value, sb, indent+2);
             } else if (value instanceof String) {
                 print(sb, "\""+((String)value).replace("\"", "\\\"")+"\"", indent+2);
             } else {
-                print(sb, value.toString(), indent+2);
+                print(sb, String.valueOf(value), indent+2);
             }
             first = false;
         }

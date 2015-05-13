@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -77,6 +77,27 @@ public final class FileSystemProvider {
         void problemOccurred(FileSystem fileSystem, String path);
         void recovered(FileSystem fileSystem);
     }
+    
+    public enum AccessCheckType {
+        FAST,
+        FULL;
+        public String getDisplayName() {
+            switch (this) {
+                case FAST:
+                    return NbBundle.getMessage(FileSystemProvider.class, "AccessType_Fast");
+                case FULL:
+                    return NbBundle.getMessage(FileSystemProvider.class, "AccessType_Full");
+                default:
+                    throw new IllegalArgumentException("Unexpected access type: " + this); //NOI18N
+            }
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }        
+    }
+    
     // create own copy of lookup to avoid performance issues in ProxyLookup.LazyCollection.iterator()
     private static final  Collection<FileSystemProviderImplementation> ALL_PROVIDERS =
             new ArrayList<FileSystemProviderImplementation>(Lookup.getDefault().lookupAll(FileSystemProviderImplementation.class));
@@ -552,6 +573,38 @@ public final class FileSystemProvider {
             }
         }
         return fo.getInputStream();
+    }
+
+
+    public static boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(execEnv)) {
+                return provider.canSetAccessCheckType(execEnv);
+            }
+        }
+        noProvidersWarning(execEnv);
+        return false;
+    }
+
+    public static void setAccessCheckType(ExecutionEnvironment execEnv, AccessCheckType accessCheckType) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(execEnv)) {
+                provider.setAccessCheckType(execEnv, accessCheckType);
+                return;
+            }
+        }
+        noProvidersWarning(execEnv);
+    }
+
+    /** can be null if provider does not support this or no providers found */
+    public static AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(execEnv)) {
+                return provider.getAccessCheckType(execEnv);
+            }
+        }
+        noProvidersWarning(execEnv);
+        return null;
     }
 
     private static void noProvidersWarning(Object object) {

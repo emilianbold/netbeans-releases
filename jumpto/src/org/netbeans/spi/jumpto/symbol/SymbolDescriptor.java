@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,15 +34,16 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.spi.jumpto.symbol;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,69 +57,70 @@ import org.openide.util.Parameters;
 public abstract class SymbolDescriptor {
 
     private String matchedSymbolName;
-    
-    /** 
+    private SymbolProvider provider;
+
+    /**
      * Return an icon that should be shown for this symbol descriptor. The icon
      * should give a visual indication of the type of match, e.g. method versus
      * field.  A default icon will be supplied if this method returns null.
-     * 
+     *
      * @return An Icon to be shown on the left hand side with the type entry
      */
     public abstract Icon getIcon();
-    
+
     /**
      * Returns symbol display name
      * @return the symbol display name
      */
     public abstract String getSymbolName();
-    
+
     /**
      * Returns display name of the owner in which the symbol is declared.
      * @return the owner display name
      */
     public abstract String getOwnerName();
-        
+
     /**
      * Return the display name of the project owning the file containing the
      * symbol declaration.
-     * 
+     *
      * @return The display name of the project owning the file containing the
      * symbol declaration.
      */
     public abstract String getProjectName();
-         
+
     /**
      * Return an icon that is applicable for the project owning the file containing the
      * symbol declaration.
      * Generally, this should be the same as the project icon.  This method will only
      * be called if {@link #getProjectName} returned a non-null value.
-     * 
+     *
      * @return A project icon corresponding to the project owning the file containing the
      * symbol declaration.
      */
     public abstract Icon getProjectIcon();
-    
+
     /**
      * Return a FileObject for this symbol.
      * This will only be called when the dialog is opening the type or when
      * the user selects the file, so it does not have to be as fast as the other
      * descriptor attributes.
-     * 
+     *
      * @return The file object where the declared symbol
      */
     public abstract FileObject getFileObject();
-    
+
     /**
      * Return the document offset corresponding to the symbol.
      * This will only be called when the dialog is opening the symbol, so
      * does not have to be as fast as the other descriptor attributes.
-     * 
+     *
      * @return The document offset of the type declaration in the declaration file
      */
     public abstract int getOffset();
-    
+
     /**
-     * Open the type declaration in the editor. 
+     * Open the type declaration in the editor.
      */
     public abstract void open();
 
@@ -139,6 +141,17 @@ public abstract class SymbolDescriptor {
            FileUtil.getFileDisplayName(fo);
     }
 
+    /**
+     * Returns the simple symbol name.
+     * The simple symbol name is just a name without parameters or types.
+     * @return the simple name or null
+     * @since 1.48
+     */
+    @CheckForNull
+    public String getSimpleName() {
+        return null;
+    }
+
     final void setHighlightText(@NonNull final String matchedSymbolName) {
         Parameters.notNull("matchedSymbolName", matchedSymbolName); //NOI18N
         this.matchedSymbolName = matchedSymbolName;
@@ -149,4 +162,13 @@ public abstract class SymbolDescriptor {
         return this.matchedSymbolName;
     }
 
+    final void setSymbolProvider(@NonNull final SymbolProvider provider) {
+        Parameters.notNull("provider", provider);   //NOI18N
+        this.provider = provider;
+    }
+
+    @CheckForNull
+    final SymbolProvider getSymbolProvider() {
+        return this.provider;
+    }
 }

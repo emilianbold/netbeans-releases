@@ -94,7 +94,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     static {
         CsmCorePackageAccessor.register(new AccessorImpl());
     }
-    
+
     public ModelImpl() {
         startup();
     }
@@ -175,7 +175,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             synchronized (lock) {
                 prj = obj2Project(id);
                 if (prj == null && id instanceof Project) {
-                    // for compatibility 
+                    // for compatibility
                     if (TraceFlags.DEBUG) {
                         System.err.println("getProject called with Project... expected NativeProject");
                         new Throwable().printStackTrace(System.err);
@@ -222,7 +222,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
                 }
                 prj = obj2Project(id);
                 if (prj == null) {
-                    try {                        
+                    try {
                         projectsBeingCreated.add(id);
                         prj = ProjectImpl.createInstance(this, id, name);
                         putProject2Map(id, prj);
@@ -403,7 +403,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     public static boolean isModelRequestProcessorThread() {
         return ModelImpl.instance().modelProcessor.isRequestProcessorThread();
     }
-    
+
     public void waitModelTasks() {
         RequestProcessor.Task task = enqueueModelTask(new Runnable() {
             @Override
@@ -412,7 +412,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }, "wait finished other tasks"); //NOI18N
         task.waitFinished();
     }
-    
+
     private RequestProcessor.Task enqueueOrCreate(boolean post, RequestProcessor processor, final Runnable task, final String taskName) {
         if (TraceFlags.TRACE_182342_BUG) {
             new Exception(taskName).printStackTrace(System.err);
@@ -468,7 +468,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
         return ret.toArray(new CsmFile[ret.size()]);
     }
-    
+
     @Override
     public CsmFile findFile(FSPath absPath, boolean createIfPossible, boolean snapShot) {
         CndUtils.assertAbsolutePathInConsole(absPath.getPath());
@@ -542,9 +542,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
             System.err.println("ModelImpl.closing");
         }
         waitModelTasks();
-        setState(CsmModelState.CLOSING);        
+        setState(CsmModelState.CLOSING);
     }
-    
+
     public void shutdown() {
 
         if (TraceFlags.TRACE_MODEL_STATE) {
@@ -599,7 +599,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         final boolean warning = percentage >= warningThreshold && projects().size() > 0;
 
 //	final boolean fatal = percentage >= fatalThreshold && projects().size() > 0;
-//	
+//
 //	if( fatal ) {
 //	    LowMemoryNotifier.instance().removeListener(this);
 //	}
@@ -767,7 +767,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         boolean actionPerformed = false;
         if (project != null) {
             NativeProjectSettings settings = project.getLookup().lookup(NativeProjectSettings.class);
-            if (settings != null) {                
+            if (settings != null) {
                 settings.setCodeAssistanceEnabled(enable);
                 actionPerformed = true;
             }
@@ -781,7 +781,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 //            CndUtils.assertTrueInConsole(false, msg, project);
 //        }
     }
-    
+
     public static Lookup.Provider findProjectByNativeProject(NativeProject nativeProjectToSearch) {
         for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             if (nativeProject == nativeProjectToSearch) {
@@ -792,12 +792,13 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     /**
-     * @return 
+     * @return
      * Boolean.TRUE if the project is enabled
      * Boolean.FALSE if the project is disabled
      * null if the project is being created
      */
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP")
     public Boolean isProjectEnabled(Object nativeProject) {
         assert nativeProject instanceof NativeProject : "unexpected class " + nativeProject;
         if (projectsBeingCreated.contains((NativeProject)nativeProject)) {
@@ -821,7 +822,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
         APTDriver.close();
-        APTFileCacheManager.close();
         UIDManager.instance().dispose();
         KeyManager.instance().dispose();
         CndFileUtils.clearFileExistenceCache();
@@ -834,6 +834,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         CndFileUtils.clearFileExistenceCache();
         ParserQueue.instance().clearParseWatch();
         APTFileCacheManager.invalidateAll();
+        APTSystemStorage.dispose();
         Collection<LibProjectImpl> libs = new HashSet<>();
         Collection<ProjectBase> toReparse = new HashSet<>();
         for (CsmProject csmProject : projects) {
@@ -884,7 +885,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         LibraryManager.cleanLibrariesData(libs);
         for (Object platformProject : platformProjects) {
             ProjectBase newPrj = (ProjectBase) _getProject(platformProject);
-            if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed? 
+            if (newPrj != null) { // VK: at least once I've got NPE here: might be already closed?
                 newPrj.scheduleReparse();
                 ListenersImpl.getImpl().fireProjectOpened(newPrj);
             }
@@ -904,45 +905,45 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final Set<Runnable> modelProcessorTasks = new HashSet<>();
     private final RequestProcessor userTasksProcessor = new RequestProcessor("User model tasks processor", 4); // NOI18N
     private final Set<Runnable> userProcessorTasks = new HashSet<>();
-        
-    /////////// 
+
+    ///////////
     // tracing
     public void dumpInfo(PrintWriter printOut, boolean withContainers) {
-        printOut.printf("ModelImpl: disabled=%d, projects=%d\n", disabledProjects.size(), platf2csm.size());// NOI18N
+        printOut.printf("ModelImpl: disabled=%d, projects=%d%n", disabledProjects.size(), platf2csm.size());// NOI18N
         int ind = 1;
         for (Object prj : disabledProjects) {
-            printOut.printf("D[%d] %s\n", ind++, prj);// NOI18N
+            printOut.printf("D[%d] %s%n", ind++, prj);// NOI18N
         }
         ind=1;
         for (Map.Entry<Object, CsmUID<CsmProject>> entry : platf2csm.entrySet()) {
             final Object key = entry.getKey();
             CsmUID<CsmProject> value = entry.getValue();
-            printOut.printf("[%d] key=[%s] %s\n\tprj=(%d)%s\n", ind, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
+            printOut.printf("[%d] key=[%s] %s%n\tprj=(%d)%s%n", ind, key.getClass().getSimpleName(), key, System.identityHashCode(value), value);// NOI18N
             CsmProject prj = UIDCsmConverter.UIDtoProject(value);
             if (prj == null) {
-                printOut.printf("Project was NOT restored from repository\n");// NOI18N
+                printOut.printf("Project was NOT restored from repository%n");// NOI18N
             } else if (prj instanceof ProjectBase) {
-                printOut.printf("[%d] disposing?=%s\n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
+                printOut.printf("[%d] disposing?=%s%n", ind, ((ProjectBase)prj).isDisposing());// NOI18N
                 Collection<CsmProject> libraries = prj.getLibraries();
                 int libInd = 0;
                 for (CsmProject lib : libraries) {
-                    printOut.printf("\tlib[%d]=%s\n", ++libInd, lib);// NOI18N
+                    printOut.printf("\tlib[%d]=%s%n", ++libInd, lib);// NOI18N
                 }
                 Object platformProject = prj.getPlatformProject();
-                printOut.printf("platformProjec=%s\n", platformProject);// NOI18N
+                printOut.printf("platformProjec=%s%n", platformProject);// NOI18N
                 if (platformProject instanceof NativeProject) {
                     NativeProject np = (NativeProject) platformProject;
                     List<NativeProject> dependences = np.getDependences();
                     libInd = 0;
                     for (NativeProject nativeLib : dependences) {
-                        printOut.printf("\tnativeLib[%d]=%s\n", ++libInd, nativeLib);// NOI18N
+                        printOut.printf("\tnativeLib[%d]=%s%n", ++libInd, nativeLib);// NOI18N
                     }
                 }
                 if (withContainers) {
                     ProjectBase.dumpFileContainer(prj, printOut);
                 }
             } else {
-                printOut.printf("Project has unexpected class type %s\n", prj.getClass().getName());// NOI18N
+                printOut.printf("Project has unexpected class type %s%n", prj.getClass().getName());// NOI18N
             }
             ind++;
         }

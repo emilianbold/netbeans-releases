@@ -70,7 +70,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.source.save.ElementOverlay;
@@ -99,18 +98,12 @@ public final class ModificationResult {
 
     private static final Logger LOG = Logger.getLogger(ModificationResult.class.getName());
     
-    private Collection<Source> sources;
     private boolean committed;
     Map<FileObject, List<Difference>> diffs = new HashMap<FileObject, List<Difference>>();
     Map<?, int[]> tag2Span = new IdentityHashMap<Object, int[]>();
     
     /** Creates a new instance of ModificationResult */
-    ModificationResult(final JavaSource js) {
-        this.sources = js != null ? JavaSourceAccessor.getINSTANCE().getSources(js) : null;
-    }
-
-    private ModificationResult(Collection<Source> sources) {
-        this.sources = sources;
+    ModificationResult() {
     }
 
     private final Throwable creator;
@@ -133,7 +126,7 @@ public final class ModificationResult {
      * @since 0.42
      */
     public static @NonNull ModificationResult runModificationTask(final @NonNull Collection<Source> sources, final @NonNull UserTask task) throws ParseException {
-        final ModificationResult result = new ModificationResult(sources);
+        final ModificationResult result = new ModificationResult();
         final ElementOverlay overlay = ElementOverlay.getOrCreateOverlay();
         ParserManager.parse(sources, new UserTask() {
             @Override
@@ -217,16 +210,13 @@ public final class ModificationResult {
                 }
             } finally {
 //                RepositoryUpdater.getDefault().unlockRU();
-                Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
+                Set<FileObject> alreadyRefreshed = new HashSet<>();
                 try {
-                    if (sources != null) {
-                        final SourceFileManager.ModifiedFiles modifiedFiles = SourceFileManager.getModifiedFiles();
-                        for (Source source : sources) {
-                            Utilities.revalidate(source);
-                            final FileObject srcFile = source.getFileObject();
-                            alreadyRefreshed.add(srcFile);
-                            modifiedFiles.fileModified(srcFile.toURI());
-                        }
+                    final SourceFileManager.ModifiedFiles modifiedFiles = SourceFileManager.getModifiedFiles();
+                    for (FileObject srcFile : diffs.keySet()) {
+                        Utilities.revalidate(srcFile);
+                        alreadyRefreshed.add(srcFile);
+                        modifiedFiles.fileModified(srcFile.toURI());
                     }
                 } finally {
                     IndexingController.getDefault().exitProtectedMode(null);
@@ -250,7 +240,6 @@ public final class ModificationResult {
             lastCommitted.addFirst(creator);
         } finally {
             this.committed = true;
-            this.sources = null;
         }
     }
     

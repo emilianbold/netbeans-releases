@@ -87,6 +87,6 @@ class ModelAttribute {
         return PREFFERED;
     }
     
-    private String myName;
+    private final String myName;
 
 }

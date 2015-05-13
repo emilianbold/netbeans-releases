@@ -57,6 +57,7 @@ import java.util.*;
 import java.util.List;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNClientException;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
@@ -73,7 +74,6 @@ import org.netbeans.modules.subversion.remote.util.SvnUtils;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
-import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.WeakListeners;
 
 /**
@@ -283,8 +283,8 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
     }
 
-    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results, Map<String, KenaiUser> kenaiUserMap) {
-        super(createViewSummaryMaster(master), results, kenaiUserMap);
+    public SummaryView (SearchHistoryPanel master, List<? extends LogEntry> results) {
+        super(createViewSummaryMaster(master), results, null);
         this.master = master;
     }
     
@@ -497,7 +497,7 @@ class SummaryView extends AbstractSummaryView implements DiffSetupSource {
                     Subversion.getInstance().getParallelRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            org.netbeans.modules.subversion.remote.versioning.util.Utils.openFile(drev[0].getFile().normalizeFile());
+                            VCSFileProxySupport.openFile(drev[0].getFile().normalizeFile());
                         }
                     });
                 }

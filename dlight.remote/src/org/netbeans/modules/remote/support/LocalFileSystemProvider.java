@@ -493,4 +493,18 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     public InputStream getInputStream(FileObject fo, int maxSize) throws IOException {
         return fo.getInputStream();
     }
+
+    @Override
+    public boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
+        return false;
+    }
+
+    @Override
+    public void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
+    }
+
+    @Override
+    public FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
+        return null;
+    }    
 }

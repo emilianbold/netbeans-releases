@@ -1434,6 +1434,17 @@ public class JavaFixUtilities {
         if (outter.getKind() == Kind.METHOD_INVOCATION) {
             if (((MethodInvocationTree) outter).getArguments().contains(original)) return false;
         }
+        
+        if (outter.getKind() == Kind.LAMBDA_EXPRESSION) {
+            LambdaExpressionTree lt = ((LambdaExpressionTree)outter);
+            if (lt.getParameters().contains(original)) {
+                return false;
+            }
+            if (lt.getBodyKind() == LambdaExpressionTree.BodyKind.STATEMENT) {
+                return false;
+            }
+            return original.getKind() == Tree.Kind.PARENTHESIZED;
+        }
 
         if (outter.getKind() == Kind.NEW_CLASS) {
             if (((NewClassTree) outter).getArguments().contains(original)) return false;

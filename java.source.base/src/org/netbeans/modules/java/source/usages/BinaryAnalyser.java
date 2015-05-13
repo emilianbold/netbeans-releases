@@ -131,7 +131,7 @@ import org.openide.util.BaseUtilities;
  */
 public class BinaryAnalyser {
 
-    
+
     public static final class Changes {
 
         private static final Changes UP_TO_DATE = new Changes(
@@ -179,7 +179,7 @@ public class BinaryAnalyser {
     private static final String CRC = "crc.properties"; //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BinaryAnalyser.class.getName());
     private static final String JCOMPONENT = javax.swing.JComponent.class.getName();
-    static final String OBJECT = Object.class.getName();    
+    static final String OBJECT = Object.class.getName();
 
     private static boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
 
@@ -207,7 +207,7 @@ public class BinaryAnalyser {
     public final Changes analyse (final @NonNull Context ctx) throws IOException, IllegalArgumentException  {
         Parameters.notNull("ctx", ctx); //NOI18N
         final RootProcessor p = createProcessor(ctx);
-        if (p.execute()) {            
+        if (p.execute()) {
             if (!p.hasChanges() && timeStampsEmpty()) {
                 assert refs.isEmpty();
                 assert toDelete.isEmpty();
@@ -249,7 +249,7 @@ public class BinaryAnalyser {
                 null,
                 null));
     }
- 
+
     //<editor-fold defaultstate="collapsed" desc="Private helper methods">
     @NonNull
     private RootProcessor createProcessor(@NonNull final Context ctx) throws IOException {
@@ -353,7 +353,7 @@ public class BinaryAnalyser {
             }
         }
     }
-    
+
     @NonNull
     private Pair<LongHashMap<String>,Set<String>> getTimeStamps() throws IOException {
         if (timeStamps == null) {
@@ -467,13 +467,13 @@ public class BinaryAnalyser {
         }
         return new Changes(true, added, removed, changed, preBuildArgs);
     }
-    
-        
+
+
     private void releaseData() {
         refs.clear();
         toDelete.clear();
     }
-    
+
     private void flush() throws IOException {
         try {
             if (this.refs.size()>0 || this.toDelete.size()>0) {
@@ -491,7 +491,7 @@ public class BinaryAnalyser {
         } finally {
             releaseData();
         }
-    }    
+    }
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Class file introspection">
@@ -499,7 +499,7 @@ public class BinaryAnalyser {
         assert className != null;
         this.toDelete.add(Pair.<String,String>of(className,null));
     }
-    
+
     private void analyse (final InputStream inputStream) throws IOException {
         final ClassFile classFile = new ClassFile(inputStream);
         final ClassFileProcessor cfp =
@@ -512,12 +512,12 @@ public class BinaryAnalyser {
         final Pair<String,String> pair = Pair.<String,String>of(classNameType, null);
         addReferences (pair, usages);
     }
-    
+
     private void addReferences (
         @NonNull final Pair<String,String> name,
         @NonNull final UsagesData<ClassName> usages) {
         assert name != null;
-        assert usages != null;        
+        assert usages != null;
         final Object[] cr = new Object[] {
             usages.usagesToStrings(),
             usages.featureIdentsToString(),
@@ -644,7 +644,7 @@ public class BinaryAnalyser {
                     }
                 }
             }
-        }        
+        }
     }
 
     private static class ClassSignatureProcessor extends ClassFileProcessor {
@@ -687,7 +687,7 @@ public class BinaryAnalyser {
 
             // 3. Add top-level class annotations:
             handleAnnotations(cf.getAnnotations(), true);
-            super.visit(cf);            
+            super.visit(cf);
         }
 
         @Override

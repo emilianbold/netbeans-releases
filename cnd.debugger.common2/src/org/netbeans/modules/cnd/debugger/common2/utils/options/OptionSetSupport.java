@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.debugger.common2.utils.options;
 
 import java.util.*;
 
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 public abstract class OptionSetSupport implements OptionSet {
 
@@ -55,6 +54,7 @@ public abstract class OptionSetSupport implements OptionSet {
 
     private ArrayList<OptionValue> values = new ArrayList<OptionValue>();
 
+    @Override
     public ArrayList<OptionValue> values() { return values; }
 
     protected OptionSetSupport() {
@@ -111,6 +111,7 @@ public abstract class OptionSetSupport implements OptionSet {
      * New values are marked dirty if they change due to assignment.
      */
 
+    @Override
     public void assign(OptionSet that) {
 	assignHelp(that, false, false);
     }
@@ -120,6 +121,7 @@ public abstract class OptionSetSupport implements OptionSet {
      * Assign non-client option values from 'that' into 'this'.
      */
 
+    @Override
     public void assignNonClient(OptionSet that) {
 	assignHelp(that, false, true);
     }
@@ -140,10 +142,12 @@ public abstract class OptionSetSupport implements OptionSet {
      * Given the name of the option, find its instance
      */
 
+    @Override
     public OptionValue byName(String name) {
 	return nameMap.get(name);
     }
 
+    @Override
     public OptionValue byType(Option type) {
 	for (OptionValue o : values) {
 	    if (o.type() == type)
@@ -152,6 +156,7 @@ public abstract class OptionSetSupport implements OptionSet {
 	return null;
     }
 
+    @Override
     public boolean isDirty() {
 	for (OptionValue o : values) {
 	    if (o.isDirty()) {
@@ -161,12 +166,14 @@ public abstract class OptionSetSupport implements OptionSet {
 	return false;
     }
 
+    @Override
     public void clearDirty() {
 	for (OptionValue o : values) {
 	    o.setDirty(false);
 	}
     }
 
+    @Override
     public void applyTo(OptionClient client) {
 	if (client == null)
 	    return;
@@ -178,6 +185,7 @@ public abstract class OptionSetSupport implements OptionSet {
     /*
      * Mark all values as having been applied.
      */
+    @Override
     public void doneApplying() {
 	for (OptionValue o : values)
 	    o.setDirty(false);
@@ -187,6 +195,7 @@ public abstract class OptionSetSupport implements OptionSet {
      * Mark all options which are not the same as the defaults
      * as "dirty" (such that an apply will set them).
      */
+    @Override
     public void markChanges() {
 	for (OptionValue o : values)
 	    o.setDirty(true);
@@ -198,6 +207,7 @@ public abstract class OptionSetSupport implements OptionSet {
      * corresponding options in 'that'.
      */
 
+    @Override
     public void deltaWithRespectTo(OptionSet that) {
 
 	if (this.getClass() != that.getClass())
@@ -227,6 +237,8 @@ public abstract class OptionSetSupport implements OptionSet {
 	needSave = true;
     } 
 
+    @Override
     abstract public void save();
+    @Override
     abstract public void open();
 }

@@ -48,10 +48,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -115,12 +117,18 @@ public class FSCompletionUtils {
             }
         } else {
             //relative path
-            for (FileObject f : relativeTo) {
+            for (Iterator<? extends FileObject> it = relativeTo.iterator(); it.hasNext();) {
+                FileObject f = it.next();
                 if (pathPrefix != null) {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
-                        URI resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
-                        if (resolve.getScheme() == null || FILE.equals(resolve.getScheme())) {
+                        URI resolve = null;
+                        try {
+                            resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
+                        } catch (IllegalArgumentException ex) {
+                            resolve = null;
+                        }
+                        if (resolve != null && (resolve.getScheme() == null || FILE.equals(resolve.getScheme()))) {
                             File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
                             f = FileUtil.toFileObject(normalizedFile);
                         }
@@ -311,7 +319,7 @@ public class FSCompletionUtils {
     }
 
     public static FileObject findFileObject(final FileObject fromFO, final String path, boolean filesOnly) {
-        FileObject parent = fromFO;
+        FileObject parent = fromFO.getParent();
         FileObject targetFO;
         Project project = FileOwnerQuery.getOwner(fromFO);
         String projectDirectoryPath = ""; //NOI18N
@@ -332,7 +340,74 @@ public class FSCompletionUtils {
                 parent = parent.getParent();
             }
         }
+
+        // try to find the file in other source root
+        final List<FileObject> fromOtherRoots = findFileObjects(project, path, filesOnly);
+        if (!fromOtherRoots.isEmpty()) {
+            return fromOtherRoots.get(0);
+        }
+
         return null;
+    }
+
+    private static List<FileObject> findFileObjects(final Project project, final String path, boolean filesOnly) {
+        final List<FileObject> result = new ArrayList<>();
+        RequireJsIndex index = null;
+        try {
+            index = RequireJsIndex.get(project);
+        } catch (IOException ex) {
+            Logger.getLogger(FSCompletionUtils.class.getName()).info("Cannot get RequireJS index."); //NOI18N
+        }
+        if (index != null && !path.isEmpty()) {
+            final Collection<String> sourceRoots = new ArrayList<>();
+            final Collection<String> modulePaths = new ArrayList<>();
+            final Map<String, String> packages = index.getPackages();
+            final Collection<String> basePaths = index.getBasePaths();
+            sourceRoots.addAll(index.getSourceRoots());
+
+            if (!packages.isEmpty()) {
+                String requiredPath = path;
+                if (path.startsWith("./")) { //NOI18N
+                    requiredPath = path.substring(2, path.length());
+                }
+                if (requiredPath.contains("/")) { //NOI18N
+                    final int slashIndex = requiredPath.indexOf("/"); // NOI18N
+                    String pkgName = requiredPath.substring(0, slashIndex);
+                    if (packages.get(pkgName) != null) {
+                        requiredPath = packages.get(pkgName)
+                                + File.separator
+                                + requiredPath.substring(slashIndex + 1, requiredPath.length());
+                    }
+                }
+                if (!basePaths.isEmpty() && !requiredPath.startsWith("/")) { //NOI18N
+                    for (String bp : basePaths) {
+                        modulePaths.add(bp + File.separator + requiredPath);
+                    }
+                } else {
+                    modulePaths.add(requiredPath);
+                }
+            }
+
+            if (modulePaths.isEmpty()) {
+                modulePaths.add(path);
+            }
+            for (String rootName : sourceRoots) {
+                final FileObject root = project.getProjectDirectory().getFileObject(rootName);
+                if (root != null) {
+                    for (String mp : modulePaths) {
+                        FileObject targetFO = root.getFileObject(mp);
+                        if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
+                            result.add(targetFO);
+                        }
+                        targetFO = root.getFileObject(mp + ".js"); //NOI18N
+                        if (targetFO != null) {
+                            result.add(targetFO);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private static String composePath(String... parts) {

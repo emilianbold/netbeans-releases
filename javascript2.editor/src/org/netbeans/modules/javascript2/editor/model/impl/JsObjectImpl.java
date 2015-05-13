@@ -246,6 +246,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public void addAssignment(TypeUsage typeName, int offset) {
+        if (Type.UNDEFINED.equals(typeName) && assignments.size() > 0) {
+            // don't add undefined type, if there are already some types
+            return;
+        }
         Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
             types = new ArrayList<TypeUsage>();
@@ -493,6 +497,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             unresolved.addAll(resolved);
         }
 
+        if (!isAnonymous()) {
+            List<OffsetRange> docOccurrences = jsDocHolder.getOccurencesMap().get(getFullyQualifiedName());
+            if (docOccurrences != null) {
+                for (OffsetRange offsetRange : docOccurrences) {
+                    addOccurrence(offsetRange);
+                }
+            }
+        }
+        
         if (!isAnonymous() && assignments.isEmpty()) {
             // try to recount occurrences
             JsObject global = ModelUtils.getGlobalObject(parent);
@@ -512,9 +525,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 }
             }
 
-            if (occurrences.size() != correctedOccurrences.size()) {
-                occurrences.clear();
-                occurrences.addAll(correctedOccurrences);
+            for(Occurrence occurrence : correctedOccurrences){
+                addOccurrence(occurrence.getOffsetRange());
             }
         }
 
@@ -779,7 +791,15 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             if (index > -1 && !typeFQN.contains(toType)
                     && (index == 0 || typeFQN.charAt(index - 1) == '.' || typeFQN.charAt(index - 1) == ';')
                     && ((index + fromType.length()) == typeFQN.length() || typeFQN.charAt(index + fromType.length()) == '.')) {
-                typeR = typeFQN.substring(0, index) + toType + typeFQN.substring(index + fromType.length());
+                boolean replace = (index == 0 || typeFQN.startsWith(SemiTypeResolverVisitor.ST_START_DELIMITER));
+                if (!replace && index > 0) {
+                    String typePrefix = typeFQN.substring(0, index - 1);
+                    JsObject global = ModelUtils.getGlobalObject(this);
+                    replace = ModelUtils.findJsObjectByName(global, typePrefix) != null;
+                }
+                if (replace) {
+                    typeR = typeFQN.substring(0, index) + toType + typeFQN.substring(index + fromType.length());
+                }
             }
         }
         return typeR;

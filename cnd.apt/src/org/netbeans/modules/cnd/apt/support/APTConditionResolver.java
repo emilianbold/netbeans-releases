@@ -69,7 +69,8 @@ public final class APTConditionResolver {
      */
     private APTConditionResolver() {
     }
-    
+
+    @org.netbeans.api.annotations.common.SuppressWarnings("BC")
     public static boolean evaluate(APT cond, APTMacroCallback callback) throws TokenStreamException {
         boolean res = false;
         switch (cond.getType()) {
@@ -99,15 +100,15 @@ public final class APTConditionResolver {
                 res = out.booleanValue();
                 break;
             default:
-                assert (false) : "support only #ifdef,#ifndef,#if,#elif"; // NOI18N                
+                assert (false) : "support only #ifdef,#ifndef,#if,#elif"; // NOI18N
         }
         return res;
     }
-    
+
     private static boolean isDefined(APTToken macro, APTMacroCallback callback) {
         return callback.isDefined(macro);
     }
-    
+
     private static Boolean evaluate(APTIfCondition apt, APTMacroCallback callback, boolean bigIntegers) throws TokenStreamException {
         TokenStream expr = apt.getCondition();
         Boolean res;
@@ -144,25 +145,25 @@ public final class APTConditionResolver {
                         new Object[] { expr, expandedTS, res });
             }
         } catch (NullPointerException ex) {
-            APTUtils.LOG.log(Level.SEVERE, 
+            APTUtils.LOG.log(Level.SEVERE,
                     "exception on resolving expression: {0}\n{1}", // NOI18N
                     new Object[] {expr, ex});
             res = false;
         } catch (ArithmeticException ex) {
             if (DebugUtils.STANDALONE) {
-                System.err.printf("arithmetic error \"%s\" on resolving expression:\n\t %s\n", // NOI18N
+                System.err.printf("arithmetic error \"%s\" on resolving expression:%n\t %s%n", // NOI18N
                     ex.getMessage(), expr);
             } else {
-                APTUtils.LOG.log(Level.WARNING, 
+                APTUtils.LOG.log(Level.WARNING,
                     "arithmetic error \"{0}\" on resolving expression\n: {1}", // NOI18N
                     new Object[] {ex.getMessage(), expr});
             }
             res = PREPROCESSOR_ERROR_DEFAULT_RETURN_VALUE;
         }
-        
+
         return res;
     }
-    
+
     private static TokenStream expandTokenStream(TokenStream orig, APTMacroCallback callback) {
         // need to generate expanded token stream to have all macro substituted
         return new APTExpandedStream(orig, callback, true);

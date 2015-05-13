@@ -241,13 +241,16 @@ public class MeasureStartupTimeTestCase extends org.netbeans.junit.NbPerformance
      * @return current platform name
      */
     protected static String getPlatform() {
-        String platformString = (System.getProperty("os.name", "") + "," + System.getProperty("os.arch", "")).replace(' ', '_');
-        for (String[] platform : SUPPORTED_PLATFORMS) {
-            if (platformString.equalsIgnoreCase(platform[0])) {
-                return platform[1];
-            }
+        String osName = System.getProperty("os.name", "").toLowerCase();
+        if (osName.startsWith("windows")) {
+            return WINDOWS;
+        } else if (osName.startsWith("linux") || osName.startsWith("sun")) {
+            return UNIX;
+        } else if (osName.startsWith("mac")) {
+            return MAC;
+        } else {
+            return UNKNOWN;
         }
-        return UNKNOWN;
     }
 
     /**

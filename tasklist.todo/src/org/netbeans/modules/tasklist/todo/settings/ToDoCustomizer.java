@@ -800,7 +800,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         editor.addCellEditorListener( new CellEditorListener() {
             public void editingStopped(ChangeEvent e) {
                 editor.removeCellEditorListener( this );
-                table.setValueAt(editor.getCellEditorValue(), model.getRowCount() - 1, 0);
+                model.setValueAt(editor.getCellEditorValue(), model.getRowCount() - 1, 0);
                 fireChanged();
                 firePropertyChange( OptionsPanelController.PROP_CHANGED, new Boolean(wasChanged), Boolean.TRUE);
                 firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

@@ -60,7 +60,6 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import static org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server.*;
-import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV3ServerNode;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyException;
@@ -380,6 +379,7 @@ public class J2eeTestCase extends JellyTestCase {
      *         <arg value="${glassfish.home}/glassfish"/>
      *         <classpath>
      *             <fileset dir="${netbeans.dest.dir}">
+     *                 <include name="platform/core/core-base.jar"/>
      *                 <include name="platform/core/core.jar"/>
      *                 <include name="platform/lib/boot.jar"/>
      *                 <include name="platform/lib/org-openide-modules.jar"/>
@@ -387,10 +387,11 @@ public class J2eeTestCase extends JellyTestCase {
      *                 <include name="platform/lib/org-openide-util.jar"/>
      *                 <include name="platform/lib/org-openide-util-base.jar"/>
      *                 <include name="platform/lib/org-openide-util-lookup.jar"/>
+     *                 <include name="platform/lib/org-openide-util-ui.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-glassfish-common.jar"/>
-     *                 <include name="enterprise/modules/ext/glassfish-tooling-sdk.jar"/>
+     *                 <include name="enterprise/modules/org-netbeans-modules-glassfish-tooling.jar"/>
      *             </fileset>
      *         </classpath>
      *     </java>
@@ -443,6 +444,7 @@ public class J2eeTestCase extends JellyTestCase {
      *         <arg value="${tomcat.home}"/>
      *         <classpath>
      *             <fileset dir="${netbeans.dest.dir}">
+     *                 <include name="platform/core/core-base.jar"/>
      *                 <include name="platform/core/core.jar"/>
      *                 <include name="platform/lib/boot.jar"/>
      *                 <include name="platform/lib/org-openide-modules.jar"/>
@@ -450,7 +452,8 @@ public class J2eeTestCase extends JellyTestCase {
      *                 <include name="platform/lib/org-openide-util.jar"/>
      *                 <include name="platform/lib/org-openide-util-base.jar"/>
      *                 <include name="platform/lib/org-openide-util-lookup.jar"/>
-     *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
+     *                 <include name="platform/lib/org-openide-util-ui.jar"/>
+    *                 <include name="enterprise/modules/org-netbeans-modules-j2eeapis.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-j2eeserver.jar"/>
      *                 <include name="enterprise/modules/org-netbeans-modules-tomcat5.jar"/>
      *             </fileset>
@@ -528,6 +531,7 @@ public class J2eeTestCase extends JellyTestCase {
      */
     private static List<File> getJars(Server server) {
         List<File> jars = new ArrayList<File>();
+        jars.add(new File(findCluster("platform"), "core/core-base.jar"));
         jars.add(new File(findCluster("platform"), "core/core.jar"));
         jars.add(new File(findCluster("platform"), "lib/boot.jar"));
         jars.add(new File(findCluster("platform"), "lib/org-openide-modules.jar"));
@@ -535,11 +539,12 @@ public class J2eeTestCase extends JellyTestCase {
         jars.add(new File(findCluster("platform"), "lib/org-openide-util.jar"));
         jars.add(new File(findCluster("platform"), "lib/org-openide-util-base.jar"));
         jars.add(new File(findCluster("platform"), "lib/org-openide-util-lookup.jar"));
+        jars.add(new File(findCluster("platform"), "lib/org-openide-util-ui.jar"));
         jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeapis.jar"));
         jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-j2eeserver.jar"));
         if (server == GLASSFISH) {
             jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-glassfish-common.jar"));
-            jars.add(new File(findCluster("enterprise"), "modules/ext/glassfish-tooling-sdk.jar"));
+            jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-glassfish-tooling.jar"));
         } else if (server == TOMCAT) {
             jars.add(new File(findCluster("enterprise"), "modules/org-netbeans-modules-tomcat5.jar"));
         }

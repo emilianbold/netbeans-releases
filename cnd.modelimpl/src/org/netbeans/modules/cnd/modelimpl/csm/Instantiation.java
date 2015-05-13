@@ -88,7 +88,6 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndCollectionUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.MutableObject;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.Pair;
 
@@ -479,22 +478,39 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static <T extends CsmInstantiation> CsmUID<?> createInstantiationUID(CsmInstantiation inst) {
         if(CsmKindUtilities.isClass(inst) && inst.getTemplateDeclaration() instanceof ClassImpl) {
             final Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = inst.getMapping();        
-            boolean persistable = !mapping.keySet().isEmpty();
-            for (CsmTemplateParameter param : mapping.keySet()) {
-                CsmSpecializationParameter specParam = mapping.get(param);
-                if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
-                    if(!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
+            boolean persistable = !mapping.isEmpty();
+            if (persistable) {
+                for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> param : mapping.entrySet()) {
+                    CsmSpecializationParameter specParam = param.getValue();
+                    if(CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam)) {
+                        if (!PersistentUtils.isPersistable(((CsmTypeBasedSpecializationParameter)specParam).getType())) {
+                            persistable = false;
+                            break;
+                        } else if (!isScopePersistable(specParam.getScope())) {
+                            persistable = false;
+                            break;
+                        }
+                    } else {
                         persistable = false;
+                        break;
                     }
-                } else {
-                    persistable = false;
                 }
             }
-            if(persistable) {
+            if (persistable) {
                 return UIDUtilities.createInstantiationUID(inst);
             }
         }
         return new InstantiationSelfUID((Instantiation)inst);
+    }
+    
+    private static boolean isScopePersistable(CsmScope scope) {
+        if (scope != null) {
+            if (scope instanceof CsmIdentifiable) {
+                return UIDProviderIml.isPersistable(((CsmIdentifiable) scope).getUID());
+            }
+            return false;
+        }
+        return true; // null could be persisted
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -1359,6 +1375,16 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         @Override
         public boolean isVirtual() {
             return declaration.isVirtual();
+        }
+
+        @Override
+        public boolean isOverride() {
+            return declaration.isOverride();
+        }
+
+        @Override
+        public boolean isFinal() {
+            return declaration.isFinal();
         }
 
         @Override

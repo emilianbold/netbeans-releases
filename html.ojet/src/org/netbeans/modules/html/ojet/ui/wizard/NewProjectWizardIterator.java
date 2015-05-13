@@ -113,7 +113,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newProject_displayName(),
                 "OracleJETApplication", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
+                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/OracleJET_QuickStartBasic.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "OracleJET_QuickStartBasic.zip") // NOI18N
         );
     }
@@ -129,7 +129,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         return new NewProjectWizardIterator(
                 Bundle.NewProjectWizardIterator_newComponentInteractionSample_displayName(),
                 "OracleJETComponentInteraction", // NOI18N
-                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/public_samples/JET-ComponentInteraction.zip", // NOI18N
+                "http://slc01hih.us.oracle.com:8080/hudson/job/OJET_Build/lastSuccessfulBuild/artifact/apps/components/public_html/public_samples/JET-ComponentInteraction.zip", // NOI18N
                 new File(System.getProperty("java.io.tmpdir"), "JET-ComponentInteraction.zip") // NOI18N
         );
     }
@@ -151,9 +151,7 @@ public final class NewProjectWizardIterator implements WizardDescriptor.Progress
         assert projectDirectory != null : "FileObject must be found for " + projectDir;
         files.add(projectDirectory);
 
-        CreateProjectProperties createProperties = new CreateProjectProperties()
-                .setProjectDir(projectDirectory)
-                .setProjectName((String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
+        CreateProjectProperties createProperties = new CreateProjectProperties(projectDirectory, (String) wizardDescriptor.getProperty(CreateProjectUtils.PROJECT_NAME))
                 .setSiteRootFolder(""); // NOI18N
         ClientSideProjectGenerator.createProject(createProperties);
 

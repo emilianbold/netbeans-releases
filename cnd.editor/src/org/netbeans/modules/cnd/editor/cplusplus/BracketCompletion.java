@@ -379,7 +379,7 @@ public class BracketCompletion {
         return tp.getBalance();
     }
 
-    private static Set<? extends TokenId> STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET = EnumSet.of(CppTokenId.LBRACE, CppTokenId.RBRACE, CppTokenId.SEMICOLON);
+    private static final Set<? extends TokenId> STOP_TOKENS_FOR_SKIP_CLOSING_BRACKET = EnumSet.of(CppTokenId.LBRACE, CppTokenId.RBRACE, CppTokenId.SEMICOLON);
     /**
      * Check whether the typed bracket should stay in the document
      * or be removed.
@@ -494,7 +494,7 @@ public class BracketCompletion {
         return skipClosingBracket;
 
     }
-    private static Set<? extends TokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(CppTokenId.STRING_LITERAL, CppTokenId.LINE_COMMENT, CppTokenId.DOXYGEN_COMMENT, CppTokenId.DOXYGEN_LINE_COMMENT, CppTokenId.BLOCK_COMMENT);
+    private static final Set<? extends TokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(CppTokenId.STRING_LITERAL, CppTokenId.LINE_COMMENT, CppTokenId.DOXYGEN_COMMENT, CppTokenId.DOXYGEN_LINE_COMMENT, CppTokenId.BLOCK_COMMENT);
 
     private static boolean isStringOrComment(TokenId tokenId) {
         return STRING_AND_COMMENT_TOKENS.contains(tokenId);
@@ -522,7 +522,7 @@ public class BracketCompletion {
         if (isEscapeSequence(doc, dotPos)) {
             return;
         }
-        CppTokenId[] tokenIds = theBracket == '\"' ? 
+        CppTokenId[] tokenIds = theBracket == '\"' ?
                   new CppTokenId[]{CppTokenId.STRING_LITERAL, CppTokenId.RAW_STRING_LITERAL, CppTokenId.PREPROCESSOR_USER_INCLUDE}
                 : new CppTokenId[]{CppTokenId.CHAR_LITERAL};
         if ((posWithinQuotes(doc, dotPos + 1, theBracket, tokenIds) && isCompletablePosition(doc, dotPos + 1)) &&
@@ -775,16 +775,17 @@ public class BracketCompletion {
             default:
                 return null;
         }
-    }    
-    
+    }
+
     /**
      * A token processor used to find out the length of a token.
      */
     static class MyTokenProcessor implements TokenProcessor {
 
-        public TokenID tokenID = null;
-        public int tokenStart = -1;
+        private TokenID tokenID;
+        private int tokenStart = -1;
 
+        @Override
         public boolean token(TokenID tokenID, TokenContextPath tcp,
                 int tokBuffOffset, int tokLength) {
             this.tokenStart = tokenBuffer2DocumentOffset(tokBuffOffset);
@@ -792,10 +793,12 @@ public class BracketCompletion {
             return false;
         }
 
-        public int eot(int offset) { 
+        @Override
+        public int eot(int offset) {
             return 0;
         }
 
+        @Override
         public void nextBuffer(char[] buffer, int offset, int len, int startPos, int preScan, boolean lastBuffer) {
             this.bufferStartPos = startPos - offset;
         }
@@ -811,9 +814,9 @@ public class BracketCompletion {
      */
     private static class BalanceTokenProcessor extends CndAbstractTokenProcessor<Token<TokenId>> {
 
-        private CppTokenId leftTokenID;
-        private CppTokenId rightTokenID;
-        private Stack<Integer> stack = new Stack<Integer>();
+        private final CppTokenId leftTokenID;
+        private final CppTokenId rightTokenID;
+        private final Stack<Integer> stack = new Stack<Integer>();
         private int balance;
         private boolean isDefine;
 

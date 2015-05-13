@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.InterruptedIOException;
 import java.io.Reader;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -136,7 +137,10 @@ class HTMLJavadocParser {
                 }
             } catch (FileNotFoundException x) {
                 break; // e.g. missing com.sun.** class in network Javadoc; ignore
-            } catch(IOException ioe){
+            } catch (InterruptedIOException x) {
+                //Http javadoc timeout
+                break;
+            }catch(IOException ioe){
                 ioe.printStackTrace();
                 break;
             }finally{

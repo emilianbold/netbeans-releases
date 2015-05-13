@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -209,7 +208,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private synchronized void onDispose() {
         if (this.containerRef == null) {
             // restore container from it's UID when needed
-            this.containerRef = this.containerRef != null ? this.containerRef : UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
+            this.containerRef = UIDCsmConverter.UIDtoIdentifiable(this.containerUID);
             assert (this.containerRef != null || this.containerUID == null) : "null object for UID " + this.containerUID;
         }
     }

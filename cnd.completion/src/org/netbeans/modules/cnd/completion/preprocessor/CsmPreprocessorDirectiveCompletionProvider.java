@@ -160,7 +160,7 @@ public class CsmPreprocessorDirectiveCompletionProvider implements CompletionPro
             }
             Collection<CsmPreprocessorDirectiveCompletionItem> items = getItems((BaseDocument) doc, caretOffset);
             if (this.queryAnchorOffset > 0) {
-                if (items != null && items.size() > 0) {
+                if (!items.isEmpty()) {
                     this.results = items;
                     items = getFilteredData(items, this.filterPrefix);
                     resultSet.estimateItems(items.size(), -1);

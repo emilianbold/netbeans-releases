@@ -175,7 +175,7 @@ public final class JavaElementFoldVisitor<T> extends CancellableTreePathScanner<
                 int start = (int)sp.getStartPosition(cu, node);
                 int end   = (int)sp.getEndPosition(cu, node);
 
-                if (start != (-1) && end != (-1)) {
+                if (start != (-1) && start < end) {
                     addFold(creator.createCodeBlockFold(start, end), symStart);
                 }
             }
@@ -202,10 +202,10 @@ public final class JavaElementFoldVisitor<T> extends CancellableTreePathScanner<
         super.visitClass(node, Boolean.TRUE);
         try {
             if (p == Boolean.TRUE) {
-                int start = Utilities.findBodyStart(node, cu, sp, doc);
+                int start = Utilities.findBodyStart(info, node, cu, sp, doc);
                 int end   = (int)sp.getEndPosition(cu, node);
 
-                if (start != (-1) && end != (-1)) {
+                if (start != (-1) && start < end) {
                     addFold(creator.createInnerClassFold(start, end), (int)sp.getStartPosition(cu, node));
                   }
             }

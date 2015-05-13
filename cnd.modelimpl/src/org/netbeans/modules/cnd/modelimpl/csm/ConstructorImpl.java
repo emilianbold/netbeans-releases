@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
@@ -73,22 +72,20 @@ import org.openide.util.CharSequences;
 public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements CsmConstructor {
 
     protected ConstructorImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, false, file, startOffset, endOffset, global);
+        super(name, rawName, cls, visibility, _virtual, false, false, _explicit, _static, _const, false, file, startOffset, endOffset, global);
     }
 
     public static ConstructorImpl createConstructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
@@ -106,19 +103,17 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
                     break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        ConstructorImpl constructorImpl = new ConstructorImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        ConstructorImpl constructorImpl = new ConstructorImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, constructorImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, constructorImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         constructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         constructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, constructorImpl, file));
-        constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, fileContent), 
+        constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         postObjectCreateRegistration(global, constructorImpl);
         nameHolder.addReference(fileContent, constructorImpl);
@@ -129,7 +124,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
     public Collection<CsmExpression> getInitializerList() {
         return Collections.<CsmExpression>emptyList();
     }
-        
+
     @Override
     public CsmType getReturnType() {
         return NoType.instance();
@@ -140,7 +135,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         public ConstructorBuilder(SimpleDeclarationBuilder builder) {
             super(builder);
         }
-        
+
         @Override
         public ConstructorImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             CsmClass cls = (CsmClass) getScope();
@@ -151,7 +146,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
             ConstructorImpl method = new ConstructorImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
@@ -171,13 +166,13 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
 //            addMember(method);
             return method;
         }
-        
-    }          
-        
+
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     public ConstructorImpl(RepositoryDataInput input) throws IOException {
         super(input);
-    }    
+    }
 }

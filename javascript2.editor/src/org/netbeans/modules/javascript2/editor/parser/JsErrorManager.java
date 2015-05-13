@@ -41,6 +41,7 @@ import jdk.nashorn.internal.parser.Token;
 import jdk.nashorn.internal.parser.TokenType;
 import jdk.nashorn.internal.runtime.ErrorManager;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.css.lib.api.FilterableError;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import static org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId.values;
@@ -64,7 +66,7 @@ import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Hejl, Petr Pisl
  */
 public class JsErrorManager extends ErrorManager {
 
@@ -128,12 +130,16 @@ public class JsErrorManager extends ErrorManager {
         if (parserErrors == null) {
             return null;
         }
+        final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
+        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
+        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
                 return new JsParserError(convert(error),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false, false);
+                        Severity.ERROR, null, true, false, false, 
+                        enableFilterAction, disableFilterAction);
             }
         }
         return null;
@@ -143,12 +149,16 @@ public class JsErrorManager extends ErrorManager {
         if (parserErrors == null) {
             return null;
         }
+        final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
+        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
+        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
         for (ParserError error : parserErrors) {
             if (error.message != null
                     && error.message.contains("Expected ;")) { // NOI18N
                 return new JsParserError(convert(error),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false, false);
+                        Severity.ERROR, null, true, false, false,
+                        enableFilterAction, disableFilterAction);
             }
         }
         return null;
@@ -179,7 +189,7 @@ public class JsErrorManager extends ErrorManager {
         LOGGER.log(Level.FINE, "Warning {0}", message);
     }
 
-    public List<? extends Error> getErrors() {
+    public List<? extends FilterableError> getErrors() {
         if (convertedErrors == null) {
             if (parserErrors == null) {
                 convertedErrors = Collections.emptyList();
@@ -272,7 +282,9 @@ public class JsErrorManager extends ErrorManager {
         // basically we are solwing showExplorerBadge attribute here
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
-
+        Collection<FilterableError.SetFilterAction> enableFilterAction = ParsingErrorFilter.getEnableFilterAction(file);
+        FilterableError.SetFilterAction disableFilterAction = ParsingErrorFilter.getDisableFilterAction(file);
+        
         if (snapshot != null && JsParserResult.isEmbedded(snapshot)) {
             int nextCorrect = -1;
             boolean afterGeneratedIdentifier = false;
@@ -315,11 +327,11 @@ public class JsErrorManager extends ErrorManager {
                 } else {
                     showInEditor = false;
                 }
-                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, SHOW_BADGES_EMBEDDED, showInEditor));
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, SHOW_BADGES_EMBEDDED, showInEditor, enableFilterAction, disableFilterAction));
             }
         } else {
             for (SimpleError error : errors) {
-                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true, true));
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true, true, enableFilterAction, disableFilterAction));
             }
         }
         return ret;
@@ -378,7 +390,7 @@ public class JsErrorManager extends ErrorManager {
         public ParserError(String message, int line, int column, long token) {
             if (message.length() > MAX_MESSAGE_LENGTH) {
                 int index = message.indexOf('\n', MAX_MESSAGE_LENGTH);
-                this.message = message.substring(0, index > 0 ? index : MAX_MESSAGE_LENGTH);
+                this.message = message.substring(0, (index < MAX_MESSAGE_LENGTH && index > 0) ? index : MAX_MESSAGE_LENGTH);
                 LOGGER.log(Level.FINE, "Too long error message {0}", message);
             } else {
                 this.message = message;

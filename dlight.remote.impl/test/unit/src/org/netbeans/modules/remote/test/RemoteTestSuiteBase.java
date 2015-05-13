@@ -94,9 +94,9 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
     }
     
         
-    private static final Map<String, Long> stats = new HashMap<String, Long>();
+    private static final Map<String, Long> stats = new HashMap<>();
     private static final Object statsLock = new Object();
-    static final ThreadLocal<Long> suiteStartTime = new ThreadLocal<Long>();
+    static final ThreadLocal<Long> suiteStartTime = new ThreadLocal<>();
     
     private static TimeoutThreadDumper suiteTimeoutThreadDumper;
     private static TimeoutThreadDumper testTimeoutThreadDumper;
@@ -189,7 +189,7 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
     private static void clearStats(String suiteName) {
         Map<String, Long> statsCopy;
         synchronized (statsLock) {
-            statsCopy = new HashMap<String, Long>(stats);
+            statsCopy = new HashMap<>(stats);
             stats.clear();
         }
         if (!statsCopy.isEmpty()) {
@@ -201,7 +201,7 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
     private static void printStats(String suiteName, long suiteTime) {
         Map<String, Long> statsCopy;
         synchronized (statsLock) {
-            statsCopy = new HashMap<String, Long>(stats);
+            statsCopy = new HashMap<>(stats);
         }        
         String title = String.format("\n\n### Test suite %s took %d seconds\n", suiteName, suiteTime/1000);
         printStats(title, statsCopy);
@@ -209,7 +209,7 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
     
     private static void printStats(String title, Map<String, Long> statsCopy) {
         System.err.printf("%s\n", title);
-        ArrayList<Map.Entry<String, Long>> entries = new ArrayList<Map.Entry<String, Long>>(statsCopy.entrySet());
+        ArrayList<Map.Entry<String, Long>> entries = new ArrayList<>(statsCopy.entrySet());
         Collections.sort(entries, new Comparator<Map.Entry<String, Long>>() {
             @Override
             public int compare(Map.Entry<String, Long> o1, Map.Entry<String, Long> o2) {

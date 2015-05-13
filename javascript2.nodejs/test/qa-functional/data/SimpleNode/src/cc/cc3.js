@@ -98,5 +98,5 @@ var oo = new modul.constr();
 
 //cc;1;require("../complexModule").justCallObj().;0;attempt,getSomething,ale,ale2,hasOwnProperty;getSomething;require("../complexModule").justCallObj().getSomething();fakeOrigin,getDate
 
-//cc;1;require("../complexModule").justCallLit().;0;oo,oo2,hasOwnProperty;oo2;require("../complexModule").justCallLit().oo2;fakeOrigin,getDate
+//cc;1;require("../complexModule").justCallLit().;0;oo,oo1,hasOwnProperty;oo1;require("../complexModule").justCallLit().oo1;fakeOrigin,getDate
 

@@ -58,8 +58,8 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.util.NbMutexEventProvider;
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
@@ -117,7 +117,7 @@ implements CloneableEditorSupport.Env  {
     }
     @Override
     protected void setUp () throws Exception {
-        System.setProperty ("org.openide.util.Lookup", "org.openide.text.ExternalDeleteOfModifiedContentTest$Lkp");
+        MockServices.setServices(DD.class);
         
         
         clearWorkDir();
@@ -219,26 +219,9 @@ implements CloneableEditorSupport.Env  {
         });
     }
 
-    //
-    // Our fake lookup
-    //
-    public static final class Lkp extends org.openide.util.lookup.AbstractLookup {
-        static final long serialVersionUID = 3L;
-
-        public Lkp () {
-            this (new org.openide.util.lookup.InstanceContent ());
-        }
-        
-        private Lkp (org.openide.util.lookup.InstanceContent ic) {
-            super (ic);
-            ic.add (new DD ());
-            ic.add (new NbMutexEventProvider());
-        }
-    }
-
     /** Our own dialog displayer.
      */
-    private static final class DD extends org.openide.DialogDisplayer {
+    public static final class DD extends org.openide.DialogDisplayer {
         public static Object[] options;
         public static Stack<Object> toReturn;
         public static Object message;

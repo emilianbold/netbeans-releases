@@ -57,7 +57,7 @@ import org.openide.util.Exceptions;
 public final class MeasurableSocketFactory implements SocketFactory {
 
     private static final MeasurableSocketFactory instance = new MeasurableSocketFactory();
-    private final CopyOnWriteArrayList<IOListener> listeners = new CopyOnWriteArrayList<IOListener>();
+    private final CopyOnWriteArrayList<IOListener> listeners = new CopyOnWriteArrayList<>();
 
     private MeasurableSocketFactory() {
     }

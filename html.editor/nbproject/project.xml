@@ -541,6 +541,7 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>com.ext4yii.editor</friend>
                 <friend>nl.truesoftware.blendsdk</friend>
+                <friend>org.netbeans.api.knockout</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.html.angular</friend>

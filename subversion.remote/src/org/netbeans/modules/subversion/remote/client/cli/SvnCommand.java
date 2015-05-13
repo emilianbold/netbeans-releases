@@ -48,6 +48,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.ISVNNotifyListener;
@@ -57,7 +58,7 @@ import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient.NotificationHandler;
 import org.netbeans.modules.subversion.remote.client.cli.Parser.Line;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -67,6 +68,8 @@ import org.openide.filesystems.FileSystem;
  * @author Maros Sandor
  */
 public abstract class SvnCommand implements CommandNotificationListener {
+    
+    private static final boolean EXPAND_TARGETS_OPTION = true;
                
     private final List<String> cmdError = new ArrayList<>(10);
        
@@ -178,11 +181,30 @@ public abstract class SvnCommand implements CommandNotificationListener {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
                     Subversion.LOG.fine("outputText [" + line.getPath() + "]");
                 }
-                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, line.getPath()));
+                String path = getAbsolutePath(line.getPath());
+                if (!path.startsWith("/")) { //NOI18N
+                    path = "/"+path; //NOI18N
+                }
+                notificationHandler.notifyListenersOfChange(VCSFileProxySupport.getResource(fileSystem, path));
             }
             notify(line);
             notificationHandler.logMessage(lineString);
         }
+    }
+    
+    public String getAbsolutePath(String path) {
+        return path;
+    }
+    
+    protected final  String getAbsolutePath(String path, VCSFileProxy... files) {
+        if (!path.startsWith("/")) { //NOI18N
+            for(VCSFileProxy f : files){
+                if (f.getPath().endsWith("/"+path)) { //NOI18N
+                    return f.getPath();
+                }
+            }
+        }
+        return path;
     }
     
     public void output(byte[] bytes) {
@@ -191,7 +213,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
     @Override
     public void errorText(String line) {
-        if (line.toLowerCase().contains("killed by signal")) { //NOI18N
+        if (line.toLowerCase(Locale.ENGLISH).contains("killed by signal")) { //NOI18N
             // commandline normal output on linux for ssh connections
             return;
         }
@@ -302,7 +324,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
 
         PrintWriter writer = null; 
         try {
-            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile)));
+            writer = new PrintWriter(new OutputStreamWriter(VCSFileProxySupport.getOutputStream(targetFile), "UTF-8"));
             for (int i = 0; i < lines.length; i++) {
                 writer.print(i < lines.length -1 ? lines[i] + "\n" : lines[i]); //NOI18N
             }
@@ -400,13 +422,29 @@ public abstract class SvnCommand implements CommandNotificationListener {
         }                    
 
         public void addPathArguments(String... paths) throws IOException {        
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(paths));
+            if (EXPAND_TARGETS_OPTION && paths.length > 0 && paths.length < 500) {
+                for(String path : paths) {
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(paths));
+            }
         }
         
         public void addFileArguments(VCSFileProxy... files) throws IOException {        
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(files));
+            if (EXPAND_TARGETS_OPTION && files.length > 0 && files.length < 500) {
+                for(VCSFileProxy file : files) {
+                    String path = file.getPath();            
+                    if (path.indexOf('@') != -1) { //NOI18N
+                        path += '@'; //NOI18N
+                    }
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(files));
+            }
         }
 
         public void addUrlArguments(SVNUrl... urls) throws IOException {        
@@ -414,8 +452,14 @@ public abstract class SvnCommand implements CommandNotificationListener {
             for (int i = 0; i < urls.length; i++) {
                 paths[i] = makeCliUrlString(urls[i], true);
             }
-            add("--targets"); //NOI18N
-            add(createTempCommandFile(paths));
+            if (EXPAND_TARGETS_OPTION && paths.length > 0 && paths.length < 500) {
+                for(String path : paths) {
+                    add("'"+path+"'"); //NOI18N
+                }
+            } else {
+                add("--targets"); //NOI18N
+                add(createTempCommandFile(paths));
+            }
         }
 
         private String makeCliUrlString(SVNUrl url, boolean appendAtSign) {
@@ -441,7 +485,7 @@ public abstract class SvnCommand implements CommandNotificationListener {
             }
             add("--force-log"); //NOI18N
             add("-F"); //NOI18N             
-            String msgFile = createTempCommandFile((message != null) ? message : ""); //NOI18N
+            String msgFile = createTempCommandFile(message);
             add(msgFile);                               		
         }
         

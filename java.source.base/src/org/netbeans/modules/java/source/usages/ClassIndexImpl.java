@@ -59,6 +59,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -128,8 +129,24 @@ public abstract class ClassIndexImpl {
             @NonNull String name,
             @NonNull ClassIndex.NameKind kind,
             @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull FieldSelector selector,
             @NonNull Convertor<? super Document, T> convertor,
             @NonNull Collection<? super T> result) throws IOException, InterruptedException;
+
+    public final <T> void getDeclaredTypes (
+            @NonNull String name,
+            @NonNull ClassIndex.NameKind kind,
+            @NonNull Set<? extends ClassIndex.SearchScopeType> scope,
+            @NonNull Convertor<? super Document, T> convertor,
+            @NonNull Collection<? super T> result) throws IOException, InterruptedException {
+        getDeclaredTypes(
+            name,
+            kind,
+            scope,
+            DocumentUtil.declaredTypesFieldSelector(false),
+            convertor,
+            result);
+    }
 
     public abstract <T> void getDeclaredElements (
             String ident,

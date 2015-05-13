@@ -164,8 +164,9 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.core.startup</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
+                        <recursive/>
+                         <compile-dependency/>
+                   </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
                         <compile-dependency/>
@@ -265,7 +266,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.cnd.remote</friend>
-                <friend>org.netbeans.modules.subversion.remote</friend>
+                <friend>org.netbeans.modules.remotefs.versioning.api</friend>
                 <friend>org.netbeans.modules.team.ide</friend>
                 <friend>org.netbeans.modules.versioning.util</friend>
                 <package>org.netbeans.modules.favorites.api</package>

@@ -149,7 +149,7 @@ public class ListenersTestCase extends RemoteFileTestBase {
         String baseDir = null;
         try {          
             baseDir = mkTempAndRefreshParent(true);
-            Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
+            Map<FileObject, FileEvent> evMap = new HashMap<>();
             FileObject baseDirFO = getFileObject(baseDir);
             FCL fcl = new FCL("baseDir", evMap);
             switch (kind) {
@@ -189,7 +189,7 @@ public class ListenersTestCase extends RemoteFileTestBase {
         String baseDir = null;
         try {          
             baseDir = mkTempAndRefreshParent(true);
-            Map<FileObject, FileEvent> evMap = new HashMap<FileObject, FileEvent>();
+            Map<FileObject, FileEvent> evMap = new HashMap<>();
             FileObject baseDirFO = getFileObject(baseDir);
             FCL fcl = new FCL("baseDir", evMap);
             baseDirFO.addFileChangeListener(fcl);
@@ -235,8 +235,8 @@ public class ListenersTestCase extends RemoteFileTestBase {
             FileObject baseDirFO = getFileObject(baseDir);
             FileObject childFO = baseDirFO.createData("child_file_1");
 
-            Map<FileObject, FileEvent> childMap = new HashMap<FileObject, FileEvent>();
-            Map<FileObject, FileEvent> parentMap = new HashMap<FileObject, FileEvent>();
+            Map<FileObject, FileEvent> childMap = new HashMap<>();
+            Map<FileObject, FileEvent> parentMap = new HashMap<>();
 
             baseDirFO.addFileChangeListener(new FCL("Dir", parentMap));
             childFO.addFileChangeListener(new FCL("File", childMap));

@@ -54,8 +54,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.*;
 import org.openide.nodes.Node;
@@ -135,7 +134,7 @@ public class ConflictResolvedAction extends ContextAction {
                 }
             }
         };
-        SVNUrl url = SvnUtils.getRepositoryRootUrl(file);
+        SVNUrl url =  ContextAction.getSvnUrl(new Context(file));
         support.start(Subversion.getInstance().getRequestProcessor(url), url, NbBundle.getMessage(ConflictResolvedAction.class, "LBL_ResolvingConflicts")); //NOI18N
     }
 

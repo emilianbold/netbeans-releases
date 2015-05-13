@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.remote.Subversion;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -145,9 +145,9 @@ public class KVFile {
         Map<String, byte[]> stringValue = new HashMap<>(keyValue.size());
         Iterator<Map.Entry<Key, byte[]>> it = keyValue.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry next = it.next();
+            Map.Entry<Key, byte[]> next = it.next();
             // getKey().toString() == the normalization
-            stringValue.put(next.getKey().toString(), (byte[]) next.getValue());
+            stringValue.put(next.getKey().toString(), next.getValue());
         }
         return stringValue;
     }
@@ -245,8 +245,8 @@ public class KVFile {
             baos.write(b);
             b = (byte) is.read();
         }
-        String line = baos.toString();
-        return Integer.decode(line.substring(2)).intValue();
+        String line = baos.toString("UTF-8"); //NOI18N
+        return Integer.decode(line.substring(2));
     }          
 
     public void store() throws IOException {        
@@ -261,8 +261,8 @@ public class KVFile {
                 VCSFileProxySupport.mkdirs(parent);
             }
             os = VCSFileProxySupport.getOutputStream(file);
-            for (Iterator it = getMap().keySet().iterator(); it.hasNext();) {
-                Key key = (Key) it.next();
+            for (Iterator<Key> it = getMap().keySet().iterator(); it.hasNext();) {
+                Key key = it.next();
                 byte[] value = getMap().get(key);                
                 
                 StringBuffer sb = new StringBuffer();
@@ -276,9 +276,9 @@ public class KVFile {
                 sb.append("\n"); // NOI18N
                 os.write(sb.toString().getBytes("UTF8")); //NOI18N
                 os.write(value);            
-                os.write("\n".getBytes()); // NOI18N
+                os.write("\n".getBytes("UTF8")); //NOI18N
             }
-            os.write("END\n".getBytes()); // NOI18N
+            os.write("END\n".getBytes("UTF8")); //NOI18N
             os.flush();
             
         } finally {
@@ -296,14 +296,19 @@ public class KVFile {
         return file;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     void setValue(Key key, String value) {
-        setValue(key, value.getBytes());
+        try {
+            setValue(key, value.getBytes("UTF-8"));
+        } catch (UnsupportedEncodingException ex) {
+            setValue(key, value.getBytes());
+        }
     }
 
     /**
      * Represents a key
      */
-    protected static class Key implements Comparable {
+    protected static class Key implements Comparable<Key> {
         /** the key index */
         private final int idx;
         /** the keys name */
@@ -335,11 +340,7 @@ public class KVFile {
             return sb.toString().hashCode();
         }
         @Override
-        public int compareTo(Object obj) {
-            if( !(obj instanceof Key) ) {
-                return 0;
-            }
-            Key key = (Key) obj;
+        public int compareTo(Key key) {
             if (key.getIndex() < getIndex()) {
                 return 1;
             } else if (key.getIndex() > getIndex()) {

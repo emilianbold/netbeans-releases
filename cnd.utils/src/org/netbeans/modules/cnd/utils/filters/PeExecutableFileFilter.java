@@ -49,7 +49,7 @@ import org.openide.util.NbBundle;
 
 public class PeExecutableFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"exe"}; // NOI18N
+    private static final String suffixes[] = {"exe"}; // NOI18N
     private static PeExecutableFileFilter instance = null;
 
     public PeExecutableFileFilter() {

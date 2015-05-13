@@ -45,13 +45,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import org.netbeans.modules.html.angular.Utils;
+import org.netbeans.modules.html.angular.index.AngularJsController;
 import org.netbeans.modules.html.angular.index.AngularJsIndexer;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -62,7 +65,7 @@ import org.openide.filesystems.FileObject;
 @FunctionInterceptor.Registration(priority = 16)
 public class AngularWhenInterceptor implements FunctionInterceptor {
 
-    private final static Pattern PATTERN = Pattern.compile("(.)*\\.when");  //NOI18N
+    private final static Pattern PATTERN = Pattern.compile("(.)*\\.(when|state)");  //NOI18N
     public final static String TEMPLATE_URL_PROP = "templateUrl";  //NOI18N
     public final static String CONTROLLER_PROP = "controller";     //NOI18N
     public final static String CONTROLLER_AS_PROP = "controllerAs"; //NOI18N
@@ -73,7 +76,8 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, 
+            String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!AngularJsIndexer.isScannerThread()) {
             return Collections.emptyList();
         }
@@ -91,6 +95,17 @@ public class AngularWhenInterceptor implements FunctionInterceptor {
                     if (content != null) {
                         String template = getStringValueAt(content, url.getOffsetRange().getStart());
                         String controllerName = getStringValueAt(content, controller.getOffsetRange().getStart());
+                        if (controllerName.isEmpty()
+                                && (controller.getJSKind() == JsElement.Kind.METHOD
+                                || controller.getJSKind() == JsElement.Kind.FUNCTION)) {
+                            // probably anonymous function as a controller
+                            controllerName = controller.getFullyQualifiedName();
+                            if (controllerName != null && !controllerName.isEmpty()) {
+                                // save the controller itself to the index
+                                AngularJsIndexer.addController(fo.toURI(),
+                                        new AngularJsController(controllerName, controllerName, fo.toURL(), controller.getOffset()));
+                            }
+                        }
                         String controllerAsName = null;
                         if (controllerAs != null) {
                             controllerAsName = getStringValueAt(content, controllerAs.getOffsetRange().getStart());

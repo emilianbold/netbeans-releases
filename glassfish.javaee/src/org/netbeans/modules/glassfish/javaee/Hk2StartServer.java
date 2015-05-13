@@ -60,10 +60,10 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
-import org.glassfish.tools.ide.TaskEvent;
-import org.glassfish.tools.ide.TaskState;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.TaskEvent;
+import org.netbeans.modules.glassfish.tooling.TaskState;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
@@ -151,7 +151,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                             TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                                org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
                     }
                 }, GlassfishModule.ServerState.RUNNING);
             } else if (commonSupport != null) { // this is the remote case
@@ -162,7 +162,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                             TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                                org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
                     }
                 });
             }
@@ -184,7 +184,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                             TaskEvent event, String... args) {
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                             CommandType.STOP, translateState(newState), ActionType.EXECUTE, 
-                            org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                            org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
                 }
             });
         } else if (null != commonSupport) { // this is the remote case
@@ -240,7 +240,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                             TaskEvent event, String... args) {
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                                org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
                     }
                 }, GlassfishModule.ServerState.RUNNING);
             } else if  (null != commonSupport) { // this is the remote case
@@ -262,7 +262,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                         }
                         fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                                 CommandType.START, translateState(newState), ActionType.EXECUTE,
-                                org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                                org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
                     }
                 });
             }
@@ -484,7 +484,7 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
                     }
                     fireHandleProgressEvent(null, new Hk2DeploymentStatus(
                         CommandType.START, translateState(newState), ActionType.EXECUTE,
-                        org.glassfish.tools.ide.utils.Utils.concatenate(args)));
+                        org.netbeans.modules.glassfish.tooling.utils.Utils.concatenate(args)));
 
                     // FIXME this is pretty ugly workaround and if this is still
                     // needed once GF plugin is rewritten we should introduce

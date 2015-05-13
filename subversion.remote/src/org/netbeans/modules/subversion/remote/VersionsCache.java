@@ -64,7 +64,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientFactory;
 import org.netbeans.modules.subversion.remote.ui.diff.Setup;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.historystore.Storage;
 import org.netbeans.modules.versioning.historystore.StorageManager;
@@ -232,7 +232,7 @@ public class VersionsCache {
                         if (url != null) {
                             in = getInputStream(client, url, revision, pegRevision);
                         } else {
-                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes()); // NOI18N
+                            in = new ByteArrayInputStream(org.openide.util.NbBundle.getMessage(VersionsCache.class, "MSG_UnknownURL").getBytes("UTF-8")); // NOI18N
                         }                
                     }
                 } catch (SVNClientException e) {
@@ -298,7 +298,7 @@ public class VersionsCache {
                     return expanded;
                 }
                 expanded = getContentBase(referenceFile, expanded);
-                VCSFileProxySupport.setLastModified(expanded, svnBase.lastModified());
+                VCSFileProxySupport.setLastModified(expanded, svnBase);
                 return expanded;
             }
         } catch (SVNClientException e) {

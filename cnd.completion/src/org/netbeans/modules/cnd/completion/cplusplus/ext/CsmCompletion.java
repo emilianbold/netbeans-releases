@@ -58,12 +58,15 @@ import java.util.Map;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureClassifier;
+import org.netbeans.modules.cnd.api.model.CsmClosureType;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -71,8 +74,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
-import org.netbeans.modules.cnd.api.model.CsmTypeAlias;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
@@ -174,7 +175,7 @@ abstract public class CsmCompletion {
         types = new BaseType[]{
                     NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE,
                     CONST_BOOLEAN_TYPE, CONST_BYTE_TYPE, CONST_CHAR_TYPE, CONST_DOUBLE_TYPE, CONST_FLOAT_TYPE,
-                    CONST_INT_TYPE, CONST_LONG_TYPE, CONST_SHORT_TYPE, CONST_VOID_TYPE                    
+                    CONST_INT_TYPE, CONST_LONG_TYPE, CONST_SHORT_TYPE, CONST_VOID_TYPE
                  };
 
         for (int i = types.length - 1; i >= 0; i--) {
@@ -243,9 +244,9 @@ abstract public class CsmCompletion {
         if (baseType != null) {
             // wrap with correct offsetable information
             return new OffsetableType(
-                    baseType, 
-                    containingFile, 
-                    start, 
+                    baseType,
+                    containingFile,
+                    start,
                     end,
                     item.getTokenCount() > 0 ? "0".equals(item.getTokenText(0)) : false // NOI18N
             );
@@ -254,7 +255,7 @@ abstract public class CsmCompletion {
         }
     }
 
-    public static Iterator getPrimitiveClassIterator() {
+    public static Iterator<CsmClassifier> getPrimitiveClassIterator() {
         return str2PrimitiveClass.values().iterator();
     }
 
@@ -315,6 +316,9 @@ abstract public class CsmCompletion {
         if (cls == null) {
             return null;
         }
+        if (CsmKindUtilities.isClosureClassifier(cls)) {
+            return new CompletionClosureType(((CsmClosureClassifier) cls).getLambda(), refDepth, _const);
+        }
         return new BaseType(cls, ptrDepth, refDepth, arrayDepth, _const);
     }
 
@@ -330,7 +334,7 @@ abstract public class CsmCompletion {
         }
         return new SimpleNamespace(project, ns);
     }
-    
+
     private static final class SimpleNamespace implements CsmNamespace {
         private final CsmNamespace wrapped;
         private final CsmProject project;
@@ -339,7 +343,7 @@ abstract public class CsmCompletion {
             this.project = owner;
             this.wrapped = ns;
         }
-        
+
         @Override
         public CsmNamespace getParent() {
             CsmNamespace p = wrapped.getParent();
@@ -379,7 +383,7 @@ abstract public class CsmCompletion {
         public boolean isInline() {
             return wrapped.isInline();
         }
-        
+
         @Override
         public CsmProject getProject() {
             return project;
@@ -431,7 +435,7 @@ abstract public class CsmCompletion {
             return "SimpleNamespace{" + "wrapped=" + wrapped + ", project=" + project + '}'; // NOI18N
         }
     }
-    
+
     public static class SimpleClass implements CsmClassifier {
 
         protected CharSequence name;
@@ -559,7 +563,7 @@ abstract public class CsmCompletion {
             }
             return order;
         }
-        
+
         @Override
         public int hashCode() {
             return name.hashCode() ^ packageName.hashCode();
@@ -637,7 +641,7 @@ abstract public class CsmCompletion {
 
         BaseType() {
         }
-        
+
         @Override
         public int getArrayDepth() {
             return arrayDepth;
@@ -766,7 +770,7 @@ abstract public class CsmCompletion {
         public boolean isRValueReference() {
             return reference == 2;
         }
-        
+
         @Override
         public boolean isConst() {
             return _const;
@@ -915,7 +919,7 @@ abstract public class CsmCompletion {
         public boolean isRValueReference() {
             return delegate.isRValueReference();
         }
-        
+
         @Override
         public boolean isConst() {
             return delegate.isConst();
@@ -959,6 +963,82 @@ abstract public class CsmCompletion {
         @Override
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return delegate.isBuiltInBased(resolveTypeChain);
+        }
+    }
+
+    public static class CompletionClosureClassifier implements CsmClosureClassifier {
+
+        private final CsmFunctionDefinition lambda;
+
+        public CompletionClosureClassifier(CsmFunctionDefinition lambda) {
+            this.lambda = lambda;
+        }
+
+        @Override
+        public CsmFunctionDefinition getLambda() {
+            return lambda;
+        }
+
+        @Override
+        public Kind getKind() {
+            return CsmDeclaration.Kind.FUNCTION_TYPE;
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return lambda.getScope();
+        }
+
+        @Override
+        public CharSequence getUniqueName() {
+            return lambda.getUniqueName();
+        }
+
+        @Override
+        public CharSequence getQualifiedName() {
+            return lambda.getQualifiedName();
+        }
+
+        @Override
+        public CsmType getReturnType() {
+            return lambda.getReturnType();
+        }
+
+        @Override
+        public Collection<CsmParameter> getParameters() {
+            return lambda.getParameters();
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return lambda.getSignature();
+        }
+
+        @Override
+        public CharSequence getName() {
+            return lambda.getName();
+        }
+
+        @Override
+        public boolean isValid() {
+            return lambda.isValid();
+        }
+    }
+
+    public static class CompletionClosureType extends BaseType implements CsmClosureType {
+
+        public CompletionClosureType(CsmFunctionDefinition lambda, int reference, boolean _const) {
+            super(new CompletionClosureClassifier(lambda), 0, reference, 0, _const);
+        }
+
+        @Override
+        public CsmFunctionDefinition getLambda() {
+            return ((CsmClosureClassifier) clazz).getLambda();
+        }
+
+        @Override
+        public CsmScope getScope() {
+            return ((CsmClosureClassifier) clazz).getScope();
         }
     }
 

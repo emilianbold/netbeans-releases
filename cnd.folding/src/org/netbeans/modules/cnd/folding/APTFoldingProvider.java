@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.folding;
 
-import java.io.Reader;
 import java.util.List;
 import org.netbeans.modules.cnd.editor.parser.CppFoldRecord;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
@@ -56,7 +55,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vladimir Voskresensky
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.parser.FoldingParser.class, position = 1)
 public class APTFoldingProvider implements FoldingParser {
     
     /** we need public constructor for lookup */

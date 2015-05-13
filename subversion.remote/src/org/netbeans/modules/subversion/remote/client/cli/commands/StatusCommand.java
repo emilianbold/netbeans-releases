@@ -59,7 +59,7 @@ import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 import org.openide.xml.XMLUtil;
@@ -410,14 +410,14 @@ public class StatusCommand extends SvnCommand {
                     rev = new SVNRevision.Number(Long.parseLong(revisionValue));
                 } catch (NumberFormatException e) {
                     // ignore
-                    new SVNRevision.Number(-1);
+                    rev = new SVNRevision.Number(-1);
                 }
             }
             return rev;
         }                
     }       
 
-    public class Status {
+    public static class Status {
         private final VCSFileProxy path;        
         private final SVNStatusKind wcStatus;
         private final SVNStatusKind wcPropsStatus;
@@ -509,6 +509,11 @@ public class StatusCommand extends SvnCommand {
 
         public SVNConflictDescriptor getConflictDescriptor() {
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return path+"("+wcStatus+")";
         }
     }
 }

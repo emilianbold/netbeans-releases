@@ -76,12 +76,9 @@ import org.openide.util.RequestProcessor;
  * Simple Web Server supporting only GET command on project's source files.
  */
 public final class WebServer {
-
-    private static int PORT = 8383;
-    
+    private static final int PORT = 8383;
     private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
-
-    private WeakHashMap<Project, Pair> deployedApps = new WeakHashMap<Project, Pair>();
+    private final WeakHashMap<Project, Pair> deployedApps = new WeakHashMap<>();
     private boolean init = false;
     private Server server;
     private static WebServer webServer;
@@ -105,6 +102,10 @@ public final class WebServer {
     
     /**
      * Start serving project's sources under given web context root.
+     * 
+     * @param p project whose sources should be served.
+     * @param siteRoot site root.
+     * @param webContextRoot web context root.
      */
     public void start(Project p, FileObject siteRoot, String webContextRoot) {
         assert webContextRoot != null && webContextRoot.startsWith("/") : // NOI18N
@@ -137,6 +138,8 @@ public final class WebServer {
     
     /**
      * Stop serving project's sources.
+     * 
+     * @param p project whose sources should no longer be served.
      */
     public void stop(Project p) {
         deployedApps.remove(p);
@@ -145,6 +148,8 @@ public final class WebServer {
 
     /**
      * Port server is running on.
+     * 
+     * @return port the server is running on.
      */
     public int getPort() {
         checkStartedServer();
@@ -153,6 +158,8 @@ public final class WebServer {
 
     /**
      * Converts project's file into server URL.
+     * 
+     * @param projectFile project's file to convert.
      * @return returns null if project is not currently served
      */
     public URL toServer(FileObject projectFile) {
@@ -181,6 +188,9 @@ public final class WebServer {
 
     /**
      * Converts server URL back into project's source file.
+     * 
+     * @param serverURL server URL to convert.
+     * @return project's source file corresponding to the given server URL.
      */
     public FileObject fromServer(URL serverURL) {
         String path;
@@ -204,7 +214,7 @@ public final class WebServer {
                 return findFile(entry, serverURLPath);
             }
         }
-        if (rootEntry != null) {
+        if (rootEntry != null && serverURLPath.startsWith("/")) { // NOI18N
             return findFile(rootEntry, serverURLPath);
         }
         return null;
@@ -236,7 +246,7 @@ public final class WebServer {
         private AtomicBoolean stop = new AtomicBoolean(false);
         private ServerSocket sock;
         private int port;
-        private static Map<String, String> mimeTypes = new HashMap<>();
+        private static final Map<String, String> mimeTypes = new HashMap<>();
 
         public Server() {
             port = PORT;

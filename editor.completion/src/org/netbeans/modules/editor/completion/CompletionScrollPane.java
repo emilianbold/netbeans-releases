@@ -68,6 +68,7 @@ import javax.swing.text.Keymap;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileUtil;
 
 /**
 * Pane displaying the completion view and accompanying components
@@ -126,8 +127,7 @@ public class CompletionScrollPane extends JScrollPane {
     
     public void setData(List data, String title, int selectedIndex) {
         dataObj = data;
-        view.setData(data);
-        view.setSelectedIndex(selectedIndex);
+        view.setData(data, selectedIndex);
         Rectangle r = view.getCellBounds(selectedIndex, selectedIndex);
         if (r != null)
             view.scrollRectToVisible(r);
@@ -256,8 +256,10 @@ public class CompletionScrollPane extends JScrollPane {
         KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
         BaseKit.endLineAction, component);
 
+        Action action = FileUtil.getConfigObject("Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance", Action.class); //NOI18N
+        KeyStroke ks = action != null ? (KeyStroke) action.getValue(Action.ACCELERATOR_KEY) : null;
         registerKeybinding(ACTION_COMPLETION_SUBITEMS_SHOW, COMPLETION_SUBITEMS_SHOW,
-        KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_MASK),
+        ks != null ? ks : KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.ALT_MASK),
         null, component);
     }
 

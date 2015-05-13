@@ -157,7 +157,7 @@ public class Schema2BeansUtil {
         NodeList childNodes = node.getChildNodes();
         List children = relevantNodes(childNodes);
         Document document = getOwnerDocument(node);
-        for (int i = childNodes.getLength() - 1; i >= 0; i--) {
+        for (int i = childNodes.getLength() - 1; i >= 0; i--) {//remove all comments and break lines from current document node
             Node childNode = childNodes.item(i);
             if (!isRelevantNode(childNode)) {
                 node.removeChild(childNode);
@@ -178,29 +178,48 @@ public class Schema2BeansUtil {
                     foundBean = null;
                     foundChild = null;
                 }
-                if (foundChild == null) {
-                    foundChild = takeEqualNode(children, patternChild);
-                }
-                if (foundChild != null) {
-                    if (foundChild != currentChild) {
-                        node.removeChild(foundChild);
-                        node.insertBefore(foundChild, currentChild);
-                    }
-                    if (foundBean != null) {
-                        mergeBeans(nodeMap, foundBean, patternBean);
-                    } else if (isRelevantNode(foundChild)) {
-                        mergeNode(nodeMap, foundChild, patternChild);
-                    } else {
-                        foundChild.setNodeValue(patternChild.getNodeValue());
-                    }
-                } else {
-                    Node child = document.importNode(patternChild, true);
-                    node.insertBefore(child, currentChild);
-                }
+                mergeChildNodes(node, foundChild, foundBean, currentChild, patternChild, nodeMap, document, patternBean, children);
             } else {
-                Node child = document.importNode(patternChild, true);
-                node.insertBefore(child, currentChild);
+                mergeChildNodes(node, null, null, currentChild, patternChild, nodeMap, document, null, children);
             }
+        }
+    }
+    
+    /**
+     * Merge child nodes
+     * 
+     * @param node     current node base
+     * @param childNode child node if exist
+     * @param foundBean child bean
+     * @param currentChild current child node
+     * @param patternChild current pattern child
+     * @param nodeMap node map
+     * @param document document
+     * @param patternBean pattern bean
+     * @param children list relevant childs current node base
+     */
+    private static void mergeChildNodes(Node node, Node childNode, BaseBean foundBean,
+            Node currentChild, Node patternChild, Map nodeMap, Document document,
+            BaseBean patternBean, List children) {
+        Node foundChild = childNode;
+        if (foundChild == null) {
+            foundChild = takeEqualNode(children, patternChild);
+        }
+        if (foundChild != null) {
+            if (foundChild != currentChild) {
+                node.removeChild(foundChild);
+                node.insertBefore(foundChild, currentChild);
+            }
+            if (foundBean != null) {
+                mergeBeans(nodeMap, foundBean, patternBean);
+            } else if (isRelevantNode(foundChild) && foundChild.hasChildNodes()) {
+                mergeNode(nodeMap, foundChild, patternChild);
+            } else {
+                foundChild.setNodeValue(patternChild.getNodeValue());
+            }
+        } else {
+            Node child = document.importNode(patternChild, true);
+            node.insertBefore(child, currentChild);
         }
     }
 
@@ -311,7 +330,7 @@ public class Schema2BeansUtil {
         }
         if (trueList.size() == 1) {
             return trueList;
-        } else if (trueList.size() == 0) {
+        } else if (trueList.isEmpty()) {
             trueList = falseList;
         }
 
@@ -326,7 +345,31 @@ public class Schema2BeansUtil {
         }
         if (trueList.size() == 1) {
             return trueList;
-        } else if (trueList.size() == 0) {
+        } else if (trueList.isEmpty()) {
+            trueList = falseList;
+        }
+
+        if (patternNode.getChildNodes().getLength() == 1) {
+            Node child = patternNode.getFirstChild();
+            if (child.getNodeType() == Node.TEXT_NODE) {
+                for (Iterator it = trueList.iterator(); it.hasNext();) {
+                    Node node = (Node) it.next();
+                    boolean keep = false;
+                    if (node.getChildNodes().getLength() == 1) {
+                        Node otherChild = node.getFirstChild();
+                        keep = otherChild.getNodeType() == Node.TEXT_NODE
+                                && equals(child.getTextContent(), otherChild.getTextContent());
+                    }
+                    if (!keep) {
+                        it.remove();
+                        falseList.add(node);
+                    }
+                }
+            }
+        }
+        if (trueList.size() == 1) {
+            return trueList;
+        } else if (trueList.isEmpty()) {
             trueList = falseList;
         }
 
@@ -339,7 +382,7 @@ public class Schema2BeansUtil {
                 falseList.add(node);
             }
         }
-        if (trueList.size() == 0) {
+        if (trueList.isEmpty()) {
             return falseList;
         } else {
             return trueList;

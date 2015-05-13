@@ -437,10 +437,20 @@ public class ResultsOutlineSupport {
     }
 
     private void expandOnlyChilds(Node parent) {
-        if (parent.getChildren().getNodesCount(true) == 1) {
-            Node onlyChild = parent.getChildren().getNodeAt(0);
-            outlineView.expandNode(onlyChild);
-            expandOnlyChilds(onlyChild);
+        setExpansionListenerEnabled(false);
+        try {
+            Node node = parent;
+            while (node != null) {
+                Children children = node.getChildren();
+                if (children.getNodesCount(true) == 1) {
+                    node = children.getNodeAt(0);
+                    outlineView.expandNode(node);
+                } else {
+                    node = null;
+                }
+            }
+        } finally {
+            setExpansionListenerEnabled(true);
         }
     }
 

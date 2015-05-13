@@ -263,7 +263,7 @@ public class DoubleCheck {
                             // if the local variable has exactly one possible value,
                             // use it as the field 
                             target = info.getTrees().getElement(v);
-                            if (target.getKind() == ElementKind.FIELD) {
+                            if (target != null && target.getKind() == ElementKind.FIELD) {
                                 var = info.getTrees().getPath(target);
                                 if (!sameCompilationUnit(var, varFirst)) {
                                     // the variable is somewhere ... 
@@ -345,6 +345,10 @@ public class DoubleCheck {
             TreePath fieldPath = fieldHandle.resolve(wc);
             
             Element ve = wc.getTrees().getElement(fieldPath);
+            if (ve == null) {
+                // TODO: log/inform the user
+                return;
+            }
             VariableTree vt = (VariableTree)fieldPath.getLeaf();
             
             if (!vt.getModifiers().getFlags().contains(Modifier.VOLATILE)) {

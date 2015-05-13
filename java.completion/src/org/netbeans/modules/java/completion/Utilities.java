@@ -276,11 +276,9 @@ public final class Utilities {
 
         if (include != null && !include.isEmpty()) {
             for (String entry : include) {
-                if (entry.length() > fqn.length()) {
-                    if (entry.startsWith(s)) {
-                        return false;
-                    }
-                } else if (s.startsWith(entry)) {
+                if ((entry.endsWith("*") && entry.length() - 1 <= s.length()
+                        && s.startsWith(entry.substring(0, entry.length() - 1)))
+                        || s.equals(entry)) {
                     return false;
                 }
             }
@@ -288,8 +286,10 @@ public final class Utilities {
 
         if (exclude != null && !exclude.isEmpty()) {
             for (String entry : exclude) {
-                if (entry.length() <= fqn.length() && s.startsWith(entry)) {
-                    return true;
+                if ((entry.endsWith("*") && entry.length() - 1 <= s.length() //NOI18N
+                        && s.startsWith(entry.substring(0, entry.length() - 1)))
+                        || s.equals(entry)) {
+                        return true;
                 }
             }
         }

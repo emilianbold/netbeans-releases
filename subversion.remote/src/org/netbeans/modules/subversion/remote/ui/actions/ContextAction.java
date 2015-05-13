@@ -134,12 +134,17 @@ public abstract class ContextAction extends NodeAction {
     }
 
     protected SVNUrl getSvnUrl(Node[] nodes) throws SVNClientException {
-        return getSvnUrl(getContext(nodes)); 
+        return ContextAction.getSvnUrl(getContext(nodes)); 
     }
 
     public static SVNUrl getSvnUrl(Context ctx) throws SVNClientException {
         VCSFileProxy[] roots = ctx.getRootFiles();
-        return roots.length == 0 ? null : SvnUtils.getRepositoryRootUrl(roots[0]);        
+        if (roots.length == 0) {
+            return null;
+        }
+        SVNUrl cachedUrl = Subversion.getInstance().getTopmostRepositoryUrl(roots[0]);
+        //assert Objects.equals(cachedUrl, SvnUtils.getRepositoryRootUrl(roots[0]));
+        return cachedUrl;
     }
 
     protected abstract void performContextAction(Node[] nodes);
@@ -250,18 +255,18 @@ public abstract class ContextAction extends NodeAction {
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Context"),  // NOI18N
-                                            new Object [] { name });
+                                            name);
         } else {
             if (projectsOnly) {
                 try {
                     return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Projects"),  // NOI18N
-                                                new Object [] { new Integer(objectCount) });
+                                                objectCount);
                 } catch (MissingResourceException ex) {
                     // ignore use files alternative bellow
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(this.getClass()).getString(baseName + "_Context_Multiple"),  // NOI18N
-                                        new Object [] { new Integer(objectCount) });
+                                        objectCount);
         }
     }
     
@@ -316,13 +321,13 @@ public abstract class ContextAction extends NodeAction {
             if (projectsOnly) {
                 try {
                     return MessageFormat.format(NbBundle.getBundle(ContextAction.class).getString("MSG_ActionContext_MultipleProjects"),  // NOI18N
-                                                new Object [] { new Integer(objectCount) });
+                                                objectCount);
                 } catch (MissingResourceException ex) {
                     // ignore use files alternative bellow
                 }
             }
             return MessageFormat.format(NbBundle.getBundle(ContextAction.class).getString("MSG_ActionContext_MultipleFiles"),  // NOI18N
-                                        new Object [] { new Integer(objectCount) });
+                                        objectCount);
         }
     }    
         
@@ -355,7 +360,7 @@ public abstract class ContextAction extends NodeAction {
     protected RequestProcessor createRequestProcessor(Context ctx) {
         SVNUrl repository = null;
         try {
-            repository = getSvnUrl(ctx);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
         }
@@ -398,7 +403,7 @@ public abstract class ContextAction extends NodeAction {
                         LOG.log(Level.FINE, "Running a task with an empty context.", new Exception()); //NOI18N
                     }
                 }
-                url = getSvnUrl(actionContext);
+                url = ContextAction.getSvnUrl(actionContext);
             } catch (SVNClientException ex) {
                 SvnClientExceptionHandler.notifyException(ctx, ex, false, false);
             }                    

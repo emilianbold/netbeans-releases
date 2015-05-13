@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.javaee.wildfly.config;
 
-import org.netbeans.modules.javaee.wildfly.config.xml.jms.WildflyMessageDestinationHandler;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentManager;
+import org.netbeans.modules.javaee.wildfly.config.xml.jms.WildflyMessageDestinationHandler;
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -84,16 +84,17 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
 
     private final FileObject serverDir;
     private final FileObject configFile;
-    private WildflyDeploymentManager dm;
+    private final WildflyDeploymentManager dm;
 
-    private final boolean isAs7;
-
-    public WildflyMessageDestinationManager(WildflyDeploymentManager dm, boolean isAs7) {
+    public WildflyMessageDestinationManager(WildflyDeploymentManager dm) {
         this.dm = dm;
         InstanceProperties ip = InstanceProperties.getInstanceProperties(dm.getUrl());
         String serverDirPath = ip.getProperty(WildflyPluginProperties.PROPERTY_SERVER_DIR);
         serverDir = FileUtil.toFileObject(new File(serverDirPath));
-        FileObject config = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE)));
+        FileObject config = null;
+        if(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE) != null){
+            config = FileUtil.toFileObject(new File(ip.getProperty(WildflyPluginProperties.PROPERTY_CONFIG_FILE)));
+        }
         if (config == null) {
             config = serverDir.getFileObject("configuration/standalone.xml");
         }
@@ -101,7 +102,6 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
             config = serverDir.getFileObject("configuration/domain.xml");
         }
         this.configFile = config;
-        this.isAs7 = isAs7;
     }
 
     @Override
@@ -187,14 +187,14 @@ public final class WildflyMessageDestinationManager implements MessageDestinatio
         if (!conflictJMS.isEmpty()) {
             // TODO exception or nothing ?
         }
-        ProgressObject po = dm.deployMessageDestinations(toDeploy);                
+        ProgressObject po = dm.deployMessageDestinations(toDeploy);
 
         ProgressObjectSupport.waitFor(po);
 
         if (po.getDeploymentStatus().isFailed()) {
             String msg = NbBundle.getMessage(WildflyMessageDestinationManager.class, "MSG_FailedToDeployJMS");
             throw new ConfigurationException(msg);
-        }       
+        }
     }
 
 }

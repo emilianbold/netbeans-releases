@@ -42,16 +42,27 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import java.io.IOException;
 import java.util.EnumSet;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.DocIdSet;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.FilteredTermEnum;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.OpenBitSet;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -134,12 +145,12 @@ class QueryUtil {
             @NonNull final Set<? extends SearchScopeType> scope) {
         assert q != null;
         assert scope != null;
-        Set<String> pkgs = null;
+        TreeSet<String> pkgs = null;
         for (SearchScopeType s : scope) {
-            Set<? extends String> sp = s.getPackages();
+            final Set<? extends String> sp = s.getPackages();
             if (sp != null) {
                 if (pkgs == null) {
-                    pkgs = new HashSet<String>();
+                    pkgs = new TreeSet<>();
                 }
                 pkgs.addAll(sp);
             }
@@ -165,19 +176,7 @@ class QueryUtil {
             }
             default:
             {
-                final BooleanQuery qPkgs = new BooleanQuery();
-                for (String pkg : pkgs) {
-                    qPkgs.add(
-                        new TermQuery(
-                            new Term(
-                                DocumentUtil.FIELD_PACKAGE_NAME,
-                                pkg)),
-                            Occur.SHOULD);
-                }
-                final BooleanQuery qFiltered = new BooleanQuery();
-                qFiltered.add(q, Occur.MUST);
-                qFiltered.add(qPkgs, Occur.MUST);
-                return qFiltered;
+                return new FilteredQuery(q, new PackagesFilter(pkgs));
             }
         }
     }
@@ -193,7 +192,7 @@ class QueryUtil {
     // <editor-fold defaultstate="collapsed" desc="Private implementation">
                             
                                     
-    private static class PackageFilter implements StoppableConvertor<Term, String> {
+    private static final class PackageFilter implements StoppableConvertor<Term, String> {
         
         private static final Stop STOP = new Stop();
         
@@ -225,6 +224,100 @@ class QueryUtil {
                 return currentText;
             }
             return null;
+        }
+    }
+
+    private static final class PackagesFilter extends Filter {
+
+        private final SortedSet<String> pkgs;
+
+        PackagesFilter(@NonNull final SortedSet<String> pkgs) {
+            assert pkgs != null;
+            this.pkgs = pkgs;
+        }
+
+        @NonNull
+        @Override
+        public DocIdSet getDocIdSet(@NonNull final IndexReader reader) throws IOException {
+            final TermEnum enumerator = getTermEnum(reader);
+            // if current term in enum is null, the enum is empty -> shortcut
+            if (enumerator.term() == null) {
+                return DocIdSet.EMPTY_DOCIDSET;
+            }
+            try {
+                // else fill into a OpenBitSet
+                final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
+                final int[] docs = new int[32];
+                final int[] freqs = new int[32];
+                final TermDocs termDocs = reader.termDocs();
+                try {
+                    do {
+                        final Term term = enumerator.term();
+                        if (term == null) {
+                            break;
+                        }
+                        termDocs.seek(term);
+                        while (true) {
+                            final int count = termDocs.read(docs, freqs);
+                            if (count != 0) {
+                                for (int i = 0; i < count; i++) {
+                                    bitSet.set(docs[i]);
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                    } while (enumerator.next());
+                } finally {
+                    termDocs.close();
+                }
+                return bitSet;
+            } finally {
+                enumerator.close();
+            }
+        }
+
+        private TermEnum getTermEnum(@NonNull final IndexReader reader) {
+            return new TermEnum () {
+                private Iterator<String> pkgsIt = pkgs.iterator();
+                private String current;
+                {
+                    next();
+                }
+
+                @Override
+                public boolean next() {
+                    if (pkgsIt == null) {
+                        throw new IllegalStateException("Already closed."); //NOI18N
+                    }
+                    if (pkgsIt.hasNext()) {
+                        current = pkgsIt.next();
+                        return true;
+                    } else {
+                        current = null;
+                        return false;
+                    }
+                }
+
+                @Override
+                public Term term() {
+                    return current == null ?
+                        null :
+                        new Term (DocumentUtil.FIELD_PACKAGE_NAME, current);
+                }
+
+                @Override
+                public int docFreq() {
+                    return current == null ?
+                        -1 :
+                         0;
+                }
+
+                @Override
+                public void close() throws IOException {
+                    pkgsIt = null;
+                }
+            };
         }
     }
     //</editor-fold>

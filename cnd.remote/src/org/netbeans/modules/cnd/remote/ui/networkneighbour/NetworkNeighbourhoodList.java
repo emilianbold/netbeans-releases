@@ -42,11 +42,9 @@
 package org.netbeans.modules.cnd.remote.ui.networkneighbour;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Image;
 import java.awt.dnd.DnDConstants;
 import java.lang.reflect.InvocationTargetException;
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;

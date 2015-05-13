@@ -48,8 +48,8 @@ import java.util.logging.Level;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
-import org.netbeans.modules.subversion.remote.util.ProcessUtils;
-import org.netbeans.modules.subversion.remote.util.ProcessUtils.Canceler;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils;
+import org.netbeans.modules.remotefs.versioning.api.ProcessUtils.Canceler;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileSystem;
@@ -118,14 +118,16 @@ class Commandline {
             if (Subversion.LOG.isLoggable(Level.FINE)) {
                 Subversion.LOG.fine("cli: process created");                        // NOI18N
             }
-            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir(null, getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args);
+            ProcessUtils.ExitStatus exitStatus = ProcessUtils.executeInDir("/", getEnvVar(), command.hasBinaryOutput(), canceled, processBuilder, executable, args); //NOI18N
 
             if(command.hasBinaryOutput()) {
                 if (Subversion.LOG.isLoggable(Level.FINE)) {
                     Subversion.LOG.fine("cli: ready for binary OUTPUT \"");         // NOI18N          
                 }
                 if(Subversion.LOG.isLoggable(Level.FINER)) {
-                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes)); // NOI18N
+                    // supose that encoding is UTF-8.
+                    // it can be wrong for cat command (ignore because it is a logging)
+                    Subversion.LOG.log(Level.FINER, "cli: BIN OUTPUT \"{0}\"", new String(exitStatus.bytes, "UTF-8")); // NOI18N
                 }
                 command.output(exitStatus.bytes);
             } else {             

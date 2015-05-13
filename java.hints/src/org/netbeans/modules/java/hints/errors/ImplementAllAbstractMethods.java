@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
@@ -59,6 +60,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -74,6 +76,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementUtilities;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -128,6 +132,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                 return null;
             }
         }
+        if (e == null) {
+            return null;
+        }
         List<? extends ExecutableElement> lee = info.getElementUtilities().findUnimplementedMethods((TypeElement)e);
         Scope s = info.getTrees().getScope(path);
         for (ExecutableElement ee : lee) {
@@ -154,6 +161,9 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
             public void makeClassAbstract(TreePath pathToModify, String className) {
                 Tree toModify = pathToModify.getLeaf();
                 Element el = info.getTrees().getElement(pathToModify);
+                if (el == null) {
+                    return;
+                }
                 if (el.getKind() == ElementKind.ENUM) {
                     result.add(new ImplementOnEnumValues(info.getJavaSource(), offset));
                 } else {
@@ -306,6 +316,10 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                         return;
                     }
                     Element el = copy.getTrees().getElement(enumPath);
+                    if (el == null) {
+                        // TODO: report to user
+                        return;
+                    }
                     ArrayList<? extends Element> al = new ArrayList(el.getEnclosedElements());
                     Collections.reverse(al);
                     for (VariableElement e : ElementFilter.fieldsIn(al)) {
@@ -342,6 +356,10 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
                         return;
                     }
                     Element el = copy.getTrees().getElement(enumPath);
+                    if (el == null) {
+                        // TODO: report to user
+                        return;
+                    }
                     for (VariableElement e : ElementFilter.fieldsIn(el.getEnclosedElements())) {
                         if (e.getKind() != ElementKind.ENUM_CONSTANT) {
                             continue;
@@ -366,10 +384,44 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Boolean>, Ov
         }
     }
     
+    // copy from GeneratorUtils, need to change the processing a little.
+    public static Map<? extends ExecutableElement, ? extends ExecutableElement> generateAllAbstractMethodImplementations(
+            WorkingCopy wc, TreePath path) {
+        assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
+        TypeElement te = (TypeElement)wc.getTrees().getElement(path);
+        if (te == null) {
+            return null;
+        }
+        Map<? extends ExecutableElement, ? extends ExecutableElement> ret;
+        ClassTree clazz = (ClassTree)path.getLeaf();
+        GeneratorUtilities gu = GeneratorUtilities.get(wc);
+        ElementUtilities elemUtils = wc.getElementUtilities();
+        List<? extends ExecutableElement> toImplement = elemUtils.findUnimplementedMethods(te);
+        ret = Utilities.findConflictingMethods(wc, te, toImplement);
+        if (ret.size() < toImplement.size()) {
+            toImplement.removeAll(ret.keySet());
+            List<? extends MethodTree> res = gu.createAbstractMethodImplementations(te, toImplement);
+            clazz = gu.insertClassMembers(clazz, res);
+            wc.rewrite(path.getLeaf(), clazz);
+        }
+        if (ret.isEmpty()) {
+            return ret;
+        }
+        // should be probably elsewhere: UI separation
+        String msg = ret.size() == 1 ?
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "WARN_FoundConflictingMethods1", 
+                        ret.keySet().iterator().next().getSimpleName()) :
+                NbBundle.getMessage(ImplementAllAbstractMethods.class, "WARN_FoundConflictingMethodsMany", 
+                        ret.keySet().size());
+        
+        StatusDisplayer.getDefault().setStatusText(msg, StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
+        return ret;
+    }
+
     private static void fixClassOrVariable(WorkingCopy copy, TreePath pathToModify, Tree toModify,
             int[] offset, boolean[] repeat) {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(toModify.getKind())) {
-            GeneratorUtils.generateAllAbstractMethodImplementations(copy, pathToModify);
+            generateAllAbstractMethodImplementations(copy, pathToModify);
             return;
         } else if (!(toModify.getKind() == Kind.NEW_CLASS || toModify.getKind() == Kind.VARIABLE)) {
             return;

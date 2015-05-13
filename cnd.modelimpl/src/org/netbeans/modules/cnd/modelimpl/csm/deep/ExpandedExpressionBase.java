@@ -48,8 +48,6 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTExpandedTokensChecker;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil.ASTTokensStringizer;

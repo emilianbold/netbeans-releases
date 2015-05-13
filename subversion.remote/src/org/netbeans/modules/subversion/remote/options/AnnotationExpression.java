@@ -120,7 +120,7 @@ public class AnnotationExpression {
                     } else {
                         if(groupStr.length() > 0) {
                             try {
-                                int group = Integer.valueOf(groupStr.toString()).intValue();    
+                                int group = Integer.parseInt(groupStr.toString());
                                 copyName.append(m.group(group));
                             } catch (Exception e) {
                                 copyName.append('\\');
@@ -139,7 +139,7 @@ public class AnnotationExpression {
             }
             if(groupStr.length() > 0) {
                 try {
-                    int group = Integer.valueOf(groupStr.toString()).intValue();
+                    int group = Integer.parseInt(groupStr.toString());
                     copyName.append(m.group(group));
                 } catch (Exception e) {
                     copyName.append('\\');

@@ -72,6 +72,8 @@ import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.common.URLDisplayerAction;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -249,8 +251,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
                     } else {
                         bookmark(prj);
                     }
-                } catch (KenaiException ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (KenaiException ex) {                    
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(KenaiPopupActionsProvider.class, "ERROR_CONNECTION_GEN", ex.getAsString()))); //NOI18N                    
                 } finally {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

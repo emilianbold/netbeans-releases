@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -97,7 +98,7 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Alexander Simon
  */
 final class ViewItemNode extends FilterNode implements ChangeListener {
-    
+
     private static final RequestProcessor RP = new RequestProcessor("ViewItemNode", 1); //NOI18N
     private static CodeAssistance cachedCA;
 
@@ -141,7 +142,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         }
         itemIsExcludedCache = isExcluded();
     }
-    
+
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
         this(childrenKeys, folder, item, dataObject, project, false);
     }
@@ -160,7 +161,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     static RequestProcessor getRP(){
         return RP;
     }
-    
+
     public Folder getFolder() {
         return folder;
     }
@@ -263,7 +264,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         }
         return runAction;
     }
-    
+
     @Override
     public Action getPreferredAction() {
         if (simpleRunDebug && !getItem().getFolder().isDiskFolder() && MIMENames.isBinary(MIMESupport.getBinaryFileMIMEType(getItem().getFileObject()))) {
@@ -271,7 +272,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         }
         return super.getPreferredAction();
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         // Replace DeleteAction with Remove Action
@@ -298,7 +299,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     newActions.add(NodeActionFactory.createRenameAction());
                     NodeActionFactory.addSyncActions(newActions);
                 } else if (key != null && key.equals("delete")) { // NOI18N
-                    newActions.add(NodeActionFactory.createDeleteAction());               
+                    newActions.add(NodeActionFactory.createDeleteAction());
                 } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                     newActions.add(SystemAction.get(PropertiesItemAction.class));
                 } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
@@ -335,11 +336,11 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     newActions.add(NodeActionFactory.createDeleteAction());
                 } else if (simpleRunDebug && key != null && key.equals("CndDebugCorefileNodeAction")) { //NOI18N
                     // not need this for binaries added to logical folders
-                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof CreateProjectAction) { 
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof CreateProjectAction) {
                     // not need this for binaries added to logical folders
-                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof RunDialogAction) { 
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof RunDialogAction) {
                    newActions.add(getRunAction(oldActions[i]));
-                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof DebugDialogAction) { 
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof DebugDialogAction) {
                    newActions.add(((DebugDialogAction) oldActions[i]).new SimpleDebugActionProxy(project, item.getAbsolutePath()));
                 } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
                     // skip
@@ -371,12 +372,12 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         }
         return gray;
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
         if (itemIsExcludedCache) {
             String baseName = super.getHtmlDisplayName();
-            if (baseName != null && baseName.toLowerCase().contains("color=")) { // NOI18N
+            if (baseName != null && baseName.toLowerCase(Locale.getDefault()).contains("color=")) { // NOI18N
                 // decorating node already has color, leave it
                 return baseName;
             } else {
@@ -416,12 +417,12 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         }
         return res;
     }
-    
+
     private class VisualUpdater implements Runnable {
         private final AtomicBoolean finished = new AtomicBoolean(true);
 
         private VisualUpdater() {
-        }                
+        }
 
         private void postIfNeed() {
             ViewItemNode.this.itemIsExcludedCache = ViewItemNode.this.isExcluded();
@@ -429,7 +430,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 EventQueue.invokeLater(this);
             }
         }
-        
+
         @Override
         public void run() {
             finished.set(true);

@@ -75,11 +75,15 @@ public class RequireJsIndexer extends EmbeddingIndexer {
     public static final String FIELD_PATH_MAP = "mp";   //NOI18N
     public static final String FIELD_BASE_PATH = "bp";  //NOI18N
     public static final String FIELD_USED_PLUGINS = "up"; //NOI18N
+    public static final String FIELD_PACKAGES = "pk"; //NOI18N
+    public static final String FIELD_SOURCE_ROOT = "sr"; //NOI18N
 
     private static final ThreadLocal<Map<URI, Collection<? extends TypeUsage>>> exposedTypes = new ThreadLocal();
     private static final ThreadLocal<Map<URI, Map<String, String>>> pathsMapping = new ThreadLocal();
     private static final ThreadLocal<Map<URI, String>> basePath = new ThreadLocal();
     private static final ThreadLocal<Map<URI, Collection<String>>> usedPlugins = new ThreadLocal();
+    private static final ThreadLocal<Map<URI, Map<String, String>>> packageLocations = new ThreadLocal();
+    private static final ThreadLocal<Map<URI, String>> sourceRoot = new ThreadLocal();
 
     @Override
     protected void index(Indexable indexable, Parser.Result parserResult, Context context) {
@@ -148,7 +152,29 @@ public class RequireJsIndexer extends EmbeddingIndexer {
                 storeDocument = true;
             }
         }
-        
+
+        Map<URI, Map<String, String>> pkgLocations = packageLocations.get();
+        if (pkgLocations != null && !pkgLocations.isEmpty()) {
+            Map<String, String> pkgLocation = pkgLocations.remove(fo.toURI());
+            if (pkgLocation != null && !pkgLocation.isEmpty()) {
+                for (Map.Entry<String, String> entry : pkgLocation.entrySet()) {
+                    StringBuilder sb = new StringBuilder();
+                    sb.append(entry.getKey()).append(";").append(entry.getValue()); //NOI18N
+                    elementDocument.addPair(FIELD_PACKAGES, sb.toString(), true, true);
+                }
+                storeDocument = true;
+            }
+        }
+
+        Map<URI, String> sourceRoots = sourceRoot.get();
+        if (sourceRoots != null && !sourceRoots.isEmpty()) {
+            String rootName = sourceRoots.remove(fo.toURI());
+            if (rootName != null && !rootName.isEmpty()) {
+                elementDocument.addPair(FIELD_SOURCE_ROOT, rootName, true, true);
+                storeDocument = true;
+            }
+        }
+
         if (storeDocument) {
             support.addDocument(elementDocument);
         }
@@ -188,6 +214,24 @@ public class RequireJsIndexer extends EmbeddingIndexer {
             throw new IllegalStateException("RequireJsIndexer.addUsedPlugins can be called only from scanner thread.");  //NOI18N
         }
         map.put(uri, plugins);
+    }
+
+    public static void addPackages(final URI uri, final Map<String, String> packages) {
+        final Map<URI, Map<String, String>> map = packageLocations.get();
+
+        if (map == null) {
+            throw new IllegalStateException("RequireJsIndexer.addPackages can be called only from scanner thread.");  //NOI18N
+        }
+        map.put(uri, packages);
+    }
+
+    public static void addSourceRoot(final URI uri, String rootName) {
+        final Map<URI, String> map = sourceRoot.get();
+
+        if (map == null) {
+            throw new IllegalStateException("RequireJsIndexer.addSourceRoot can be called only from scanner thread.");  //NOI18N
+        }
+        map.put(uri, rootName);
     }
 
     public static final class Factory extends EmbeddingIndexerFactory {
@@ -245,6 +289,8 @@ public class RequireJsIndexer extends EmbeddingIndexer {
             pathsMapping.set(new HashMap<URI, Map<String, String>>());
             basePath.set(new HashMap<URI, String>(1));
             usedPlugins.set(new HashMap<URI, Collection<String>>());
+            packageLocations.set(new HashMap<URI, Map<String, String>>());
+            sourceRoot.set(new HashMap<URI, String>(1));
             return super.scanStarted(context);
         }
 

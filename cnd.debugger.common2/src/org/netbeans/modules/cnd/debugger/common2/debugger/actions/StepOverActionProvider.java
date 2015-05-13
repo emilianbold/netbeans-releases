@@ -64,11 +64,13 @@ public class StepOverActionProvider extends NativeActionsProvider {
     }
 
     /* interface ActionsProvider */
+    @Override
     public Set getActions() {
 	return Collections.singleton (ActionsManager.ACTION_STEP_OVER);
     }
 
     /* abstract in ActionsProviderSupport */
+    @Override
     public void doAction(Object action) {
         if (Disassembly.isInDisasm()) {
             getDebugger().stepOverInst();
@@ -78,6 +80,7 @@ public class StepOverActionProvider extends NativeActionsProvider {
     }
 
     /* interface NativeActionsProvider */
+    @Override
     public void update(State state) {
 	boolean enable;
 	if (!state.isLoaded) {

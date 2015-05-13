@@ -106,6 +106,53 @@ public class PackageJsonTest extends NbTestCase {
         assertEquals(getFile().getAbsolutePath(), packageJson.getPath());
     }
 
+    public void testDependencies() throws Exception {
+        PackageJson invalidPackageJson = new PackageJson(FileUtil.toFileObject(getDataDir()), "invalid-package.json");
+        assertTrue(invalidPackageJson.getFile().getAbsolutePath(), invalidPackageJson.exists());
+        PackageJson.NpmDependencies dependencies = invalidPackageJson.getDependencies();
+        assertEquals(28, dependencies.getCount());
+        assertEquals(7, dependencies.dependencies.size());
+        assertEquals(7, dependencies.devDependencies.size());
+        assertEquals(7, dependencies.peerDependencies.size());
+        assertEquals(7, dependencies.optionalDependencies.size());
+        Map<String, String> expectedDependencies = new HashMap<>();
+        expectedDependencies.put("a/b", "1.13.1");
+        expectedDependencies.put("c/d", "1");
+        expectedDependencies.put("e/f", "1.5");
+        expectedDependencies.put("g/h", "null");
+        expectedDependencies.put("i/j", "true");
+        expectedDependencies.put("k/l", "{myver=123}");
+        expectedDependencies.put("m/n", "[1, 2]");
+        assertEquals(expectedDependencies, dependencies.dependencies);
+        Map<String, String> expectedDevDependencies = new HashMap<>();
+        expectedDevDependencies.put("aa/bb", "42");
+        expectedDevDependencies.put("cc/dd", "1");
+        expectedDevDependencies.put("ee/ff", "1.5");
+        expectedDevDependencies.put("gg/hh", "null");
+        expectedDevDependencies.put("ii/jj", "true");
+        expectedDevDependencies.put("kk/ll", "{myver=123}");
+        expectedDevDependencies.put("mm/nn", "[1, 2]");
+        assertEquals(expectedDevDependencies, dependencies.devDependencies);
+        Map<String, String> expectedPeerDependencies = new HashMap<>();
+        expectedPeerDependencies.put("aaa/bbb", "42");
+        expectedPeerDependencies.put("ccc/ddd", "1");
+        expectedPeerDependencies.put("eee/fff", "1.5");
+        expectedPeerDependencies.put("ggg/hhh", "null");
+        expectedPeerDependencies.put("iii/jjj", "true");
+        expectedPeerDependencies.put("kkk/lll", "{myver=123}");
+        expectedPeerDependencies.put("mmm/nnn", "[1, 2]");
+        assertEquals(expectedPeerDependencies, dependencies.peerDependencies);
+        Map<String, String> expectedOptionalDependencies = new HashMap<>();
+        expectedOptionalDependencies.put("aaaa/bbbb", "42");
+        expectedOptionalDependencies.put("cccc/dddd", "1");
+        expectedOptionalDependencies.put("eeee/ffff", "1.5");
+        expectedOptionalDependencies.put("gggg/hhhh", "null");
+        expectedOptionalDependencies.put("iiii/jjjj", "true");
+        expectedOptionalDependencies.put("kkkk/llll", "{myver=123}");
+        expectedOptionalDependencies.put("mmmm/nnnn", "[1, 2]");
+        assertEquals(expectedOptionalDependencies, dependencies.optionalDependencies);
+    }
+
     public void testNameChange() throws Exception {
         CountDownLatch countDownLatch1 = new CountDownLatch(1);
         PropertyChangeListenerImpl listener = new PropertyChangeListenerImpl();

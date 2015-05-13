@@ -84,6 +84,7 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     }
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
         int lineNo = EditorContextBridge.getCurrentLineNumber();
         if (lineNo < 0) {
@@ -94,12 +95,14 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     
 
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_RunToCursorInstAction"); // NOI18N
     }
     
 
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
@@ -121,6 +124,7 @@ public class RunToCursorInstAction extends CallableSystemAction implements State
     }    
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	if (state == null) {
 	    setEnabled(false);

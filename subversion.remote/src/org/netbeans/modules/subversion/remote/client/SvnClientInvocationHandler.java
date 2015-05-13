@@ -51,6 +51,7 @@ import java.security.InvalidKeyException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,7 +64,7 @@ import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.Cancellable;
@@ -243,7 +244,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             } catch (SSLKeyException ex) {
                 if(ex.getCause() instanceof InvalidKeyException) {
                     InvalidKeyException ike = (InvalidKeyException) ex.getCause();
-                    if(ike.getMessage().toLowerCase().equals("illegal key size or default parameters")) { // NOI18N
+                    if(ike.getMessage().toLowerCase(Locale.ENGLISH).equals("illegal key size or default parameters")) { // NOI18N
                         SvnClientExceptionHandler.handleInvalidKeyException(ike);
                     }
                     return null; 

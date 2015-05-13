@@ -48,7 +48,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import static org.netbeans.modules.subversion.remote.RemoteVersioningTestBase.addTest;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
@@ -56,7 +56,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author alsimon
  */
-@ClassForAllEnvironments
+@ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorAttributeTest extends RemoteVersioningTestBase {
 
     public InterceptorAttributeTest(String testName, ExecutionEnvironment execEnv) {

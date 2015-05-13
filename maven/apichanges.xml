@@ -107,6 +107,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="jpda-attach">
+           <api name="general"/>
+           <summary>Attach to Debugger after Goal Execution</summary>
+           <version major="2" minor="113"/>
+           <date day="10" month="3" year="2015"/>
+           <author login="jtulach"/>
+           <compatibility modification="yes" semantic="compatible"/>
+           <description>
+               <p>
+                   New properties to allow one to attach debugger after
+                   a goal is executed: 
+    <code>ACTION_PROPERTY_JPDAATTACH</code>,
+    <code>ACTION_PROPERTY_JPDAATTACH_ADDRESS</code>,
+    <code>ACTION_PROPERTY_JPDAATTACH_PORT</code>. Read more about 
+    usage of these properties in 
+    the <a href="@TOP@architecture-summary.html#property-jpda.attach">nbactions.xml file</a>.
+               </p>
+           </description>
+           <class package="org.netbeans.modules.maven.api" name="Constants"/>
+           <issue number="229192"/>
+        </change>
         
         <change id="nbactions-profiles">
            <api name="general"/>

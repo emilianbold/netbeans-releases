@@ -44,17 +44,18 @@ package org.netbeans.modules.glassfish.cloud.javaee;
 import java.awt.Image;
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.data.GlassFishLibrary;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.ConfigBuilder;
-import org.glassfish.tools.ide.server.config.Config;
-import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishLibrary;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilder;
+import org.netbeans.modules.glassfish.tooling.server.config.Config;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.glassfish.cloud.data.GlassFishCloudInstanceProvider;
@@ -64,6 +65,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Common Java EE platform SPI interface implementation for Java EE platform
@@ -241,11 +243,11 @@ public abstract class GlassFishPlatformImpl
                     = new J2eeLibraryTypeProvider().createLibrary();
             li.setName(lib.getLibraryID());
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH,
-                    lib.getClasspath());
+                    translateArchiveUrls(lib.getClasspath()));
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_JAVADOC,
-                    lib.getJavadocs());
+                    translateArchiveUrls(lib.getJavadocs()));
             li.setContent(J2eeLibraryTypeProvider.VOLUME_TYPE_SRC,
-                    lib.getSources());
+                    translateArchiveUrls(lib.getSources()));
             lis[i++] = li;
         }
         return lis;
@@ -393,6 +395,18 @@ public abstract class GlassFishPlatformImpl
                 builder = null;
                 break;
         }
+    }
+
+    private List<URL> translateArchiveUrls(List<URL> urls) {
+        List<URL> result = new ArrayList<URL>(urls.size());
+        for (URL u : urls) {
+            if (FileUtil.isArchiveFile(u)) {
+                result.add(FileUtil.getArchiveRoot(u));
+            } else {
+                result.add(u);
+            }
+        }
+        return result;
     }
     
 }

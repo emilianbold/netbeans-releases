@@ -138,7 +138,7 @@ public class PhysicalView {
         return nodes;
     }
 
-    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    private static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
 
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -146,19 +146,23 @@ public class PhysicalView {
             VisibilityQuery.getDefault().addChangeListener(this);
         }
 
+        @Override
         public boolean acceptDataObject(DataObject obj) {
             FileObject fo = obj.getPrimaryFile();
             return VisibilityQuery.getDefault().isVisible(fo);
         }
 
+        @Override
         public void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
         }
 
+        @Override
         public void addChangeListener(ChangeListener listener) {
             changeSupport.addChangeListener(listener);
         }
 
+        @Override
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
         }
@@ -169,8 +173,8 @@ public class PhysicalView {
         private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
         static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
                 PhysicalView.class, "FMT_PhysicalView_GroupName"); // NOI18N
-        private ProjectInformation pi;
-        private SourceGroup group;
+        private final ProjectInformation pi;
+        private final SourceGroup group;
         private boolean isProjectDir;
 
         public GroupNode(Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder) {
@@ -241,18 +245,18 @@ public class PhysicalView {
         }
 
         /* public Action[] getActions( boolean context ) {
-        
+
         if ( context ) {
         return super.getActions( true );
         }
-        else { 
+        else {
         Action[] folderActions = super.getActions( false );
         Action[] projectActions;
-        
+
         if ( isProjectDir ) {
-        // If this is project dir then the properties action 
+        // If this is project dir then the properties action
         // has to be replaced to invoke project customizer
-        projectActions = new Action[ folderActions.length ]; 
+        projectActions = new Action[ folderActions.length ];
         for ( int i = 0; i < folderActions.length; i++ ) {
         if ( folderActions[i] instanceof org.openide.actions.PropertiesAction ) {
         projectActions[i] = CommonProjectActions.customizeProjectAction();
@@ -265,12 +269,13 @@ public class PhysicalView {
         else {
         projectActions = folderActions;
         }
-        
+
         return projectActions;
-        }                                            
+        }
         }*/
 
-        // Private methods -------------------------------------------------    
+        // Private methods -------------------------------------------------
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String prop = evt.getPropertyName();
             if (ProjectInformation.PROP_DISPLAY_NAME.equals(prop)) {
@@ -286,7 +291,7 @@ public class PhysicalView {
             } else if ("icon".equals(prop)) { // NOI18N
                 // OK, ignore
             } else if ("rootFolder".equals(prop)) { // NOI18N
-                // XXX Do something to children and lookup 
+                // XXX Do something to children and lookup
                 fireNameChange(null, null);
                 fireDisplayNameChange(null, null);
                 fireShortDescriptionChange(null, null);
@@ -311,14 +316,14 @@ public class PhysicalView {
      * Specially displays nodes corresponding to files which are not contained in this source group.
      * /
     private static final class GroupContainmentFilterNode extends FilterNode {
-    
+
     private final SourceGroup g;
-    
+
     public GroupContainmentFilterNode(Node orig, SourceGroup g) {
     super(orig, orig.isLeaf() ? Children.LEAF : new GroupContainmentFilterChildren(orig, g));
     this.g = g;
     }
-    
+
     public String getHtmlDisplayName() {
     Node orig = getOriginal();
     DataObject d = (DataObject) orig.getCookie(DataObject.class);
@@ -340,16 +345,16 @@ public class PhysicalView {
     }
     return "<font color='!Label.disabledForeground'>" + barename + "</font>"; // NOI18N
     }
-    
+
     private static final class GroupContainmentFilterChildren extends FilterNode.Children {
-    
+
     private final SourceGroup g;
-    
+
     public GroupContainmentFilterChildren(Node orig, SourceGroup g) {
     super(orig);
     this.g = g;
     }
-    
+
     protected Node copyNode(Node node) {
     if (original.getCookie(DataFolder.class) != null && node.getCookie(DataObject.class) != null) {
     return new GroupContainmentFilterNode(node, g);
@@ -357,14 +362,14 @@ public class PhysicalView {
     return super.copyNode(node);
     }
     }
-    
+
     }
-    
+
     }
      */
     public static class PathFinder {
 
-        private SourceGroup group;
+        private final SourceGroup group;
 
         public PathFinder(SourceGroup group) {
             this.group = group;

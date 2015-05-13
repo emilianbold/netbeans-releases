@@ -66,12 +66,17 @@ class InsertStatementAnalyzer extends SQLStatementAnalyzer {
         }
         InsertStatementAnalyzer sa = new InsertStatementAnalyzer(seq, quoter);
         sa.parse();
+        TableIdent ti = new TableIdent(sa.table, null);
+        TablesClause tablesClause = sa.context.isAfter(Context.FROM) ? sa.createTablesClause(Collections.singletonList(ti)) : null;
         return new InsertStatement(
                 sa.startOffset, seq.offset() + seq.token().length(),
                 sa.getTable(),
                 Collections.unmodifiableList(sa.columns),
                 Collections.unmodifiableList(sa.values),
-                sa.offset2Context);
+                sa.offset2Context,
+                tablesClause,
+                Collections.unmodifiableList(sa.subqueries)
+        );
     }
 
     private InsertStatementAnalyzer (TokenSequence<SQLTokenId> seq, Quoter quoter) {
@@ -103,6 +108,8 @@ class InsertStatementAnalyzer extends SQLStatementAnalyzer {
                         case KEYWORD:
                             if (SQLStatementAnalyzer.isKeyword ("VALUES", seq)) {  //NOI18N
                                 moveToContext(Context.VALUES);
+                            } else if (SQLStatementAnalyzer.isKeyword ("SET", seq)) {  //NOI18N
+                                moveToContext(Context.SET);
                             }
                             break;
                     }

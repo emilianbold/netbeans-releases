@@ -49,7 +49,6 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.PasswordAuthentication;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,6 +63,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -86,13 +86,13 @@ import org.netbeans.modules.subversion.remote.api.SVNRevision;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.CommandlineClient;
 import org.netbeans.modules.subversion.remote.config.CertificateFile;
-import org.netbeans.modules.subversion.remote.kenai.SvnKenaiAccessor;
+import org.netbeans.modules.subversion.remote.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.remote.ui.repository.Repository;
 import org.netbeans.modules.subversion.remote.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.remote.ui.wcadmin.UpgradeAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.KeyringSupport;
 import org.netbeans.modules.versioning.util.Utils;
@@ -117,7 +117,7 @@ public class SvnClientExceptionHandler {
     
     private String methodName;
     
-    private class CertificateFailure {
+    private static class CertificateFailure {
         int mask;
         String error;
         String message;
@@ -189,21 +189,6 @@ public class SvnClientExceptionHandler {
         throw getException();
     }
        
-    private boolean handleKenaiAuthorization(SvnKenaiAccessor support, String url) {
-        PasswordAuthentication pa = support.getPasswordAuthentication(url, true);
-        if(pa == null) {
-            return false;
-        }
-
-        String user = pa.getUserName();
-        char[] password = pa.getPassword();
-        
-        adapter.setUsername(user != null ? user : "");
-        adapter.setPassword(password != null ? new String(password) : "");
-
-        return true;
-    }
-    
     void setMethod (String methodName) {
         this.methodName = methodName;
     }
@@ -215,73 +200,54 @@ public class SvnClientExceptionHandler {
             return false;
         }
 
-        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
-        String sUrl = url.toString();
-        if(support.isKenai(sUrl)) {
-            if ("commit".equals(methodName)) { //NOI18N
-                if (!support.canWrite(sUrl)) {
-                    throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.write"));//NOI18N
-                }
-            } else if (!support.canRead(sUrl)) {
-                throw new SVNClientException(NbBundle.getMessage(Repository.class, "MSG_Repository.kenai.insufficientRights.read"));//NOI18N
+        if (Thread.interrupted()) {
+            if (Subversion.LOG.isLoggable(Level.FINE)) {
+                Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
             }
-            return support.showLogin() && handleKenaiAuthorization(support, sUrl);
-        } else {
-            if (Thread.interrupted()) {
-                if (Subversion.LOG.isLoggable(Level.FINE)) {
-                    Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
-                }
-                return false;
-            }
-            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
-            repository.selectUrl(url, true);
-
-            JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
-            String title = ((exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) ?
-                                org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") :
-                                org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
-            Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
-                    retryButton);
-
-            boolean ret = (option == retryButton);
-            if(ret) {
-                RepositoryConnection rc = repository.getSelectedRC();
-                String username = rc.getUsername();
-                char[] password = rc.getPassword();
-
-                adapter.setUsername(username);
-                adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
-                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(rc);
-            }
-            return ret;
+            return false;
         }
+        Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+        repository.selectUrl(url, true);
+
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
+        String title = ((exceptionMask & EX_NO_HOST_CONNECTION) == exceptionMask) ?
+                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_CouldNotConnect") :
+                            org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
+        Object option = repository.show(title, new HelpCtx(this.getClass()), new Object[] {retryButton, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel")},    // NOI18N
+                retryButton);
+
+        boolean ret = (option == retryButton);
+        if(ret) {
+            RepositoryConnection rc = repository.getSelectedRC();
+            String username = rc.getUsername();
+            char[] password = rc.getPassword();
+
+            adapter.setUsername(username);
+            adapter.setPassword(password != null ? new String(password) : ""); //NOI18N
+            SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(rc);
+        }
+        return ret;
     }
 
     @NbBundle.Messages("CTL_Action_Cancel=Cancel")
     public boolean handleAuth (SVNUrl url) {
-        SvnKenaiAccessor support = SvnKenaiAccessor.getInstance();
-        String sUrl = url.toString();
-        if(support.isKenai(sUrl)) {
-            return support.showLogin() && support.getPasswordAuthentication(sUrl, true) != null;
-        } else {
-            Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
-            repository.selectUrl(url, true);
+        Repository repository = new Repository(adapter.getFileSystem(), Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
+        repository.selectUrl(url, true);
 
-            JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
-            String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
-            Object option = repository.show(
-                    title, 
-                    new HelpCtx("org.netbeans.modules.subversion.client.SvnClientExceptionHandler"), //NOI18N
-                    new Object[] { retryButton,
-                        Bundle.CTL_Action_Cancel()
-                    }, retryButton);
+        JButton retryButton = new JButton(org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Retry"));           // NOI18N
+        String title = org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_AuthFailed");
+        Object option = repository.show(
+                title, 
+                new HelpCtx("org.netbeans.modules.subversion.client.SvnClientExceptionHandler"), //NOI18N
+                new Object[] { retryButton,
+                    Bundle.CTL_Action_Cancel()
+                }, retryButton);
 
-            boolean ret = (option == retryButton);
-            if(ret) {
-                SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(repository.getSelectedRC());
-            }
-            return ret;
+        boolean ret = (option == retryButton);
+        if(ret) {
+            SvnModuleConfig.getDefault(adapter.getFileSystem()).insertRecentUrl(repository.getSelectedRC());
         }
+        return ret;
     }
 
     private boolean handleNoCertificateError() throws SVNClientException {
@@ -292,10 +258,12 @@ public class SvnClientExceptionHandler {
         // copy the certificate if it already exists        
         VCSFileProxy certFile = CertificateFile.getSystemCertFile(adapter.getFileSystem(), realmString);
         try {
-            VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
-            if( !nbCertFile.exists() &&  certFile.exists() ) {            
-                VCSFileProxySupport.copyFile(certFile, nbCertFile);
-                return true;
+            if (SvnConfigFiles.COPY_CONFIG_FILES) {
+                VCSFileProxy nbCertFile = CertificateFile.getNBCertFile(adapter.getFileSystem(), realmString);
+                if( !nbCertFile.exists() &&  certFile.exists() ) {            
+                    VCSFileProxySupport.copyFile(certFile, nbCertFile);
+                    return true;
+                }
             }
         } catch (IOException ex) {
             throw new SVNClientException(ex);
@@ -382,7 +350,7 @@ public class SvnClientExceptionHandler {
     }
 
     private String getRealmFromException() {        
-        String exceptionMessage = exception.getMessage().toLowerCase();             
+        String exceptionMessage = exception.getMessage().toLowerCase(Locale.ENGLISH);
         String[] errorMessages = new String[] {
             "host not found (",  //NOI18N
             "could not connect to server (",  //NOI18N
@@ -395,7 +363,7 @@ public class SvnClientExceptionHandler {
             if(idxL < 0) {
                 continue;
             }
-            int idxR = exceptionMessage.indexOf(")", idxL + errorMessage.length()); //NOI18N
+            int idxR = exceptionMessage.indexOf(')', idxL + errorMessage.length()); //NOI18N
             if(idxR < 0) {
                 continue;
             }
@@ -443,7 +411,7 @@ public class SvnClientExceptionHandler {
             }
             if(!directWorks) {
                 proxySocket = new Socket(java.net.Proxy.NO_PROXY); // reusing sockets seems to cause problems - see #138916
-                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.valueOf(proxyPort)));
+                proxySocket.connect(new InetSocketAddress(proxyHost, Integer.parseInt(proxyPort)));
                 String username = NetworkSettings.getAuthenticationUsername(uri);
                 String password = null;
                 if (username != null) {
@@ -480,7 +448,7 @@ public class SvnClientExceptionHandler {
                 return null;
             }
             String certFile = rc.getCertFile();
-            if(certFile == null || certFile.trim().equals("")) {                            // NOI18N
+            if(certFile.trim().isEmpty()) {
                 return null;
             }               
             char[] certPasswordChars = rc.getCertPassword();
@@ -504,12 +472,13 @@ public class SvnClientExceptionHandler {
         return null;
     }
         
+    @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
     private void connectProxy(Socket proxy, String host, int port, String proxyHost, String proxyPort, String userName, String password) throws IOException {
       StringBuilder sb = new StringBuilder("CONNECT ").append(host).append(":").append(port).append(" HTTP/1.0\r\n") //NOI18N
               .append("Connection: Keep-Alive\r\n");                    //NOI18N
       if (userName != null && password != null && userName.length() > 0) {
           Subversion.LOG.info("connectProxy: adding proxy authorization field"); //NOI18N
-          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes())).append("\r\n"); //NOI18N
+          sb.append("Proxy-Authorization: Basic ").append(Base64Encoder.encode((userName + ":" + password).getBytes("UTF-8"))).append("\r\n"); //NOI18N
       }
       String connectString = sb.append("\r\n").toString(); //NOI18N
       byte connectBytes[];
@@ -551,7 +520,7 @@ public class SvnClientExceptionHandler {
       } catch (UnsupportedEncodingException ignored) {
         ret = new String(reply, 0, replyLen);
       }
-        if (!isOKresponse(ret.toLowerCase())) {
+        if (!isOKresponse(ret.toLowerCase(Locale.ENGLISH))) {
             throw new IOException("Unable to connect through proxy "            // NOI18N
                                  + proxyHost + ":" + proxyPort                  // NOI18N
                                  + ".  Proxy returns \"" + ret + "\"");         // NOI18N
@@ -641,7 +610,7 @@ public class SvnClientExceptionHandler {
         if(msg == null || msg.trim().equals("")) {
             return EX_UNKNOWN;
         }
-        msg = msg.toLowerCase();        
+        msg = msg.toLowerCase(Locale.ENGLISH);
         if(isAuthentication(msg)) {         
             return EX_AUTHENTICATION;
         } else if (isCancelledAction(msg)) {
@@ -679,13 +648,13 @@ public class SvnClientExceptionHandler {
     }
 
     static boolean isOperationCancelled(String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.indexOf("operation canceled") > -1 //NOI18N
                 || message.contains("closedchannelexception"); //NOI18N - canceling a command while in svnkit/sqljet throws ClosedChannelException, no CanceledEx
     }
 
     public static boolean isAuthentication(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("authentication error from server: username not found") > - 1 || // NOI18N
                msg.indexOf("authorization failed") > - 1 ||                                 // NOI18N
                msg.indexOf("authentication failed") > - 1 ||                                // NOI18N
@@ -700,7 +669,7 @@ public class SvnClientExceptionHandler {
     }
 
     public static boolean isNoCertificate(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("server certificate verification failed") > -1 // NOI18N
                 || msg.contains("server ssl certificate untrusted") //NOI18N
                 || msg.contains("server ssl certificate verification failed"); //NOI18N
@@ -709,14 +678,14 @@ public class SvnClientExceptionHandler {
     public static boolean isWrongUrl(String msg) {
 //      javahl: org.tigris.subversion.javahl.ClientException: Bad URL passed to RA layer
 //      svn: URL 'file:///data/subversion/dilino' non-existent in revision 88
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("(not a valid url)") > - 1 ||                                      // NOI18N
                (msg.contains("svn:") && msg.contains("url") && msg.contains("non-existent in")) || //NOI18N
                (msg.indexOf("bad url passed to ra layer") > - 1 ); //NOI18N
     }
 
     private static boolean isNoHostConnection(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("host not found") > -1 ||                                        // NOI18N
                msg.indexOf("could not connect to server") > -1 ||                           // NOI18N
                msg.contains("cannot connect to") && msg.contains("there was a problem while connecting to") || // NOI18N
@@ -724,7 +693,7 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isUnversionedResource(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("(not a versioned resource)") > -1 ||                            // NOI18N
                msg.indexOf("is not a working copy") > -1 ||                                 //NOI18N
                msg.contains("some targets are not versioned") ||                            //NOI18N
@@ -733,17 +702,17 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean hasNoBaseRevision (String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.contains("has no base revision until it is committed"); //NOI18N
     }
 
     public static boolean isTooOldClientForWC(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("this client is too old") > -1;                                   // NOI18N
     }
     
     public static boolean isWrongURLInRevision(String msg) {        
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         if (isNoSuchRevision(msg)) {
             return true;
         }
@@ -757,7 +726,7 @@ public class SvnClientExceptionHandler {
     }    
 
     public static boolean isNoSuchRevision (String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.contains("no such revision"); //NOI18N
     }
 
@@ -770,12 +739,12 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isSSLNegotiation(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("ssl negotiation failed: ssl error: sslv3 alert handshake failure") > -1;                                                     // NOI18N
     }
 
     public static boolean isReportOf200(String msg) {  
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         int idx = msg.indexOf("svn: report of");            // NOI18N
         if(idx < 0) {
             return false;
@@ -784,7 +753,7 @@ public class SvnClientExceptionHandler {
     }
     
     public static boolean isSecureConnTruncated(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("could not read chunk size: secure connection truncated") > -1;  // NOI18N
     }        
 
@@ -796,50 +765,50 @@ public class SvnClientExceptionHandler {
 //      cli:
 //      svn: File not found: revision 87, path '/JavaApplication31/src/javaapplication31/Main.java'
 
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("file not found: revision") > -1 ||                                                  // NOI18N
               (msg.indexOf("unable to find repository location for") > -1 && msg.indexOf("in revision") > -1);  // NOI18N
     }
     
     public static boolean isPathNotFound(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("path not found") > -1;  // NOI18N
     }
         
     private static boolean isAlreadyAWorkingCopy(String msg) {   
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("is already a working copy for a different url") > -1;           // NOI18N
     }
 
     private static boolean isClosedConnection(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("could not read status line: an existing connection was forcibly closed by the remote host.") > -1; // NOI18N
     }
 
     private static boolean isCommitFailed(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("commit failed (details follow)") > -1;                          // NOI18N
     }
 
     public static boolean isFileAlreadyExists(String msg) {
-        msg = msg.toLowerCase();        
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("file already exists") > -1 ||                                   // NOI18N
                (msg.indexOf("mkcol") > -1 && isHTTP405(msg));                               // NOI18N
     }
     
     private static boolean isOutOfDate(String msg) {
-        msg = msg.toLowerCase();       
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return msg.indexOf("out of date") > -1 || msg.indexOf("out-of-date") > -1;                                             // NOI18N
     }
     
     public static boolean isNoCliSvnClient(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return (msg.indexOf("command line client adapter is not available") > -1) ||  //NOI18N
                (msg.indexOf(CommandlineClient.ERR_CLI_NOT_AVALABLE) > -1);
     }
 
     public static boolean isMissingOrLocked(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         int idx = msg.indexOf("svn: working copy");                                         // NOI18N
         if(idx > -1) {
             return msg.indexOf("is missing or not locked", idx + 17) > -1;                  // NOI18N
@@ -857,7 +826,7 @@ public class SvnClientExceptionHandler {
      * @return <code>true</code> if <code>msg</code> is a message returned from a command called on a directory, <code>false</code> otherwise.
      */
     public static boolean isTargetDirectory(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return (msg.indexOf("refers to a directory") > -1);                                         // NOI18N
     }
 
@@ -867,32 +836,32 @@ public class SvnClientExceptionHandler {
      * @return
      */
     public static boolean isWrongUUID(String msg) {
-        msg = msg.toLowerCase();
+        msg = msg.toLowerCase(Locale.ENGLISH);
         return (msg.contains("has uuid") && msg.contains("but the wc has")); //NOI18N
     }
     
     public static boolean isNotUnderVersionControl (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.contains("is not under version control"); //NOI18N
     }
 
     public static boolean isNodeUnderVersionControl (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.contains("is not under version control"); //NOI18N
     }
     
     public static boolean isNodeNotFound (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return (message.contains(": the node") && message.contains("not found")); //NOI18N
     }
     
     public static boolean isPartOfNewerWC (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.contains("this client is too old to work with the working copy"); //NOI18N
     }
 
     public static boolean isTooOldWorkingCopy (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.contains("working copy") //NOI18N
                 && message.contains("is too old") // NOI18N
                 || message.contains("working copy needs to be upgraded"); //NOI18N
@@ -955,7 +924,7 @@ public class SvnClientExceptionHandler {
     })
     private static String getCustomizedMessage(Exception exception) {
         String exMsg = exception.getMessage();
-        String msg = exMsg.toLowerCase();
+        String msg = exMsg.toLowerCase(Locale.ENGLISH);
         if (isHTTP405(msg)) {
             msg = exMsg + "\n\n" + NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error405");                                // NOI18N
         } else if(isOutOfDate(msg) || isMissingOrLocked(msg)) {
@@ -1003,7 +972,7 @@ public class SvnClientExceptionHandler {
     }
 
     private boolean isBadRecordMac (String message) {
-        message = message.toLowerCase();
+        message = message.toLowerCase(Locale.ENGLISH);
         return message.contains("received fatal alert")                 //NOI18N
                 && message.contains("bad_record_mac");                  //NOI18N
     }

@@ -44,10 +44,8 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
-import java.io.IOException;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.IntegerProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
@@ -219,17 +217,20 @@ public final class LineBreakpoint extends NativeBreakpoint {
         this.fs = fs;
     }
 
+    @Override
     protected final String getSummary() {
 	return Catalog.format("CTL_Line_event_name", // NOI18N
 		              getFileName(),
 		              getLineNumber());
     } 
 
+    @Override
     protected String getDisplayNameHelp() {
 	return CndPathUtilities.getBaseName(getFileName()) +
 	    ":" + getLineNumber(); // NOI18N
     }
 
+    @Override
     protected void processOriginalEventspec(String oeventspec) {
 	assert IpeUtils.isEmpty(oeventspec);
     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.remote.ui.wcadmin;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +59,7 @@ import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.NotifyHtmlPanel;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -120,9 +121,9 @@ public class UpgradeAction extends ContextAction {
         for (VCSFileProxy root : roots) {
             boolean needsUpgrade = false;
             try {
-                SvnUtils.getRepositoryRootUrl(root);
+                ContextAction.getSvnUrl(new Context(root));
             } catch (SVNClientException ex) {
-                String msg = ex.getMessage().toLowerCase();
+                String msg = ex.getMessage().toLowerCase(Locale.ENGLISH);
                 if (SvnClientExceptionHandler.isTooOldWorkingCopy(msg) && (
                         msg.contains("upgrade") //NOI18N
                         || (msg.contains("working copy format") && msg.contains("is too old")))) { //NOI18N
@@ -161,8 +162,9 @@ public class UpgradeAction extends ContextAction {
                                 Subversion.getInstance().getStatusCache().refreshAsync(Subversion.getInstance().getStatusCache().listFiles(
                                         new VCSFileProxy[] { Subversion.getInstance().getTopmostManagedAncestor(wcRoot) }, FileInformation.STATUS_LOCAL_CHANGE));
                                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_UpgradeAction_statusBar_upgraded(root.getPath()));
+                                Subversion.getInstance().refreshTopmostRepositoryUrl(root);
                             } catch (SVNClientException ex) {
-                                String msg = ex.getMessage().toLowerCase();
+                                String msg = ex.getMessage().toLowerCase(Locale.ENGLISH);
                                 if (msg.contains("as it is not a pre-1.7 working copy root")) { //NOI18N
                                     // probably we don't have the working copy root yet
                                     for (String s : new String[] { ".*root is \'([^\']+)\'.*" }) { //NOI18N

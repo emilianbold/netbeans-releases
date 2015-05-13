@@ -341,5 +341,14 @@ public abstract class NativeDebuggerInfo {
 	    return executor.is_64(debuggee);
 	}
     }
+    
+    private String symbolFile;
+    public String getSymbolFile() {
+        return symbolFile;
+    }
 
+    public void setSymbolFile(String symbolFile) {
+        this.symbolFile = symbolFile;
+    }
+    
 }

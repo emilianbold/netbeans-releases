@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFolderItemsInfo;
 import org.netbeans.modules.cnd.makeproject.api.LogicalFoldersInfo;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator.ProjectParameters;
@@ -212,7 +213,7 @@ public class MakeProjectGeneratorImpl {
         Element nameEl = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.PROJECT_CONFIGURATION__NAME_NAME);
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        
+
         FileObject sourceBaseFO = dirFO;
         h.putPrimaryConfigurationData(data, true);
 
@@ -242,16 +243,18 @@ public class MakeProjectGeneratorImpl {
 
         projectDescriptor.save();
         // finish postponed activity when project metadata is ready
-        if (MakeTemplateListener.INSTANCE != null) {
-            MakeTemplateListener.INSTANCE.setContext(project, projectDescriptor);
+        MakeTemplateListener instance = MakeTemplateListener.getInstance();
+        if (instance != null) {
+            instance.setContext(project, projectDescriptor);
         }
         mainFileParams.doPostProjectCreationWork();
-        if (MakeTemplateListener.INSTANCE != null) {
-            MakeTemplateListener.INSTANCE.clearContext();
+        instance = MakeTemplateListener.getInstance();
+        if (instance != null) {
+            instance.clearContext();
         }
         projectDescriptor.closed();
         projectDescriptor.clean();
-        
+
         if (!prjParams.isMakefileProject()) {
             FileObject baseDirFileObject = projectDescriptor.getBaseDirFileObject();
             FileObject createData = baseDirFileObject.createData(projectDescriptor.getProjectMakefileName());
@@ -289,8 +292,8 @@ public class MakeProjectGeneratorImpl {
         BufferedReader br = null;
         BufferedWriter bw = null;
         try {
-            br = new BufferedReader(new InputStreamReader(is));
-            bw = new BufferedWriter(new OutputStreamWriter(os));
+            br = new BufferedReader(new InputStreamReader(is, "UTF-8")); //NOI18N
+            bw = new BufferedWriter(new OutputStreamWriter(os, FileEncodingQuery.getDefaultEncoding())); //NOI18N
             String line;
 
             while ((line = br.readLine()) != null) {

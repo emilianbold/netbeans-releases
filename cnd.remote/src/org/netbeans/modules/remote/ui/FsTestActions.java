@@ -112,7 +112,7 @@ public class FsTestActions {
             if (activatedNodes == null) {
                 return;
             }
-            List<FileObject> fileObjects = new ArrayList<FileObject>();
+            List<FileObject> fileObjects = new ArrayList<>();
             for (Node node : activatedNodes) {
                 FileObject fo = node.getLookup().lookup(FileObject.class);
                 if (fo != null) {

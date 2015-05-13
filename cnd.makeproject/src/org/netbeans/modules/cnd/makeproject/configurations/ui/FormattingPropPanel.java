@@ -72,7 +72,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private static final String SEPARATOR = ","; // NOI18N
     private final Project project;
     private final MakeConfigurationDescriptor makeConfigurationDescriptor;
-    
+
     // copy-paste from org.netbeans.modules.cnd.editor.options.EditorOptions
     private static final String APACHE_PROFILE = "Apache"; // NOI18N
     private static final String DEFAULT_PROFILE = "Default"; // NOI18N
@@ -109,7 +109,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         if (def != null) {
             cComboBox.setSelectedItem(def);
         }
-        
+
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE);
         def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
@@ -124,7 +124,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         if (def != null) {
             cppComboBox.setSelectedItem(def);
         }
-        
+
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE);
         def = null;
         for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
@@ -147,7 +147,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
             globalRadioButtonActionPerformed(null);
         }
     }
-    
+
     public static Map<String,CodeStyleWrapper> getAllStyles(String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
@@ -173,17 +173,19 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         if (pref != null) {
             if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-                styles = pref.node(C_CODE_STYLES).get(LIST_OF_STYLES, def.toString()); 
+                styles = pref.node(C_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
             } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
                 styles = pref.node(CPP_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
             } else  if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
                 styles = pref.node(H_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
+            } else {
+                styles = def.toString();
             }
         } else {
             styles = def.toString();
         }
         Map<String,CodeStyleWrapper> res = new TreeMap<>();
-        StringTokenizer st = new StringTokenizer(styles, SEPARATOR); 
+        StringTokenizer st = new StringTokenizer(styles, SEPARATOR);
         while(st.hasMoreTokens()) {
             String nextToken = st.nextToken();
             String styleDisplayName = getStyleDisplayName(pref, myProvider, nextToken);
@@ -191,7 +193,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         return res;
     }
-    
+
     public static String getStyleDisplayName(String styleId, String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
@@ -206,7 +208,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         return getStyleDisplayName(pref, myProvider, styleId);
     }
-    
+
     private static String getStyleDisplayName(Preferences pref, CodeStylePreferences.Provider myProvider, String styleId) {
         for (String name : PREDEFINED_STYLES) {
             if (styleId.equals(name)) {
@@ -250,7 +252,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         return true;
     }
-    
+
     @Override
     public void save() {
         ((MakeProject)project).setProjectFormattingStyle(projectRadioButton.isSelected());

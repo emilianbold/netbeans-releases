@@ -83,6 +83,9 @@ public class JQueryDeclarationFinder implements DeclarationFinder {
             if (rule != null) {
                 RefactoringElementType type = rule.rule.charAt(0) == '#' ? RefactoringElementType.ID : RefactoringElementType.CLASS;
                 Map<FileObject, Collection<EntryHandle>> findAll = CssRefactoring.findAllOccurances(rule.rule.substring(1), type, info.getSnapshot().getSource().getFileObject(), true);
+                if (findAll == null) {
+                    return DeclarationLocation.NONE;
+                }
                 DeclarationLocation dl = null;
                 for (Map.Entry<FileObject, Collection<EntryHandle>> entry : findAll.entrySet()) {
                     FileObject f = entry.getKey();

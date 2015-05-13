@@ -502,7 +502,7 @@ public class BuildActionsPanel extends javax.swing.JPanel implements HelpCtx.Pro
         return NbBundle.getBundle(BuildActionsPanel.class).getString(s);
     }
 
-    private class LogFileFilter extends javax.swing.filechooser.FileFilter {
+    private static class LogFileFilter extends javax.swing.filechooser.FileFilter {
         public LogFileFilter() {
         }
         @Override

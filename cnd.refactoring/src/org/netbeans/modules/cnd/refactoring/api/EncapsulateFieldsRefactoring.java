@@ -144,7 +144,7 @@ public final class EncapsulateFieldsRefactoring extends AbstractRefactoring {
      */
     public void setRefactorFields(Collection<EncapsulateFieldInfo> refactorFields) {
         this.refactorFields = Collections.unmodifiableCollection(
-                new ArrayList<EncapsulateFieldInfo>(refactorFields));
+                new ArrayList<>(refactorFields));
     }
 
     /**

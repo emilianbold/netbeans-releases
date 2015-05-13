@@ -81,7 +81,7 @@ public class MIRecord {
      */
     public boolean isError() {
 	return isError;
-    } 
+    }
 
 
     /**
@@ -101,7 +101,7 @@ public class MIRecord {
 
     public int token() {
 	return token;
-    } 
+    }
 
 
     /**
@@ -111,7 +111,7 @@ public class MIRecord {
 
     public char type() {
 	return type;
-    } 
+    }
 
 
     /**
@@ -119,7 +119,7 @@ public class MIRecord {
      */
     public boolean isStream() {
 	return isStream;
-    } 
+    }
 
 
     /**
@@ -129,7 +129,7 @@ public class MIRecord {
 
     public String stream() {
 	return stream;
-    } 
+    }
 
 
     /**
@@ -141,7 +141,7 @@ public class MIRecord {
 
     public String cls() {
 	return cls;
-    } 
+    }
 
 
     /**
@@ -153,7 +153,7 @@ public class MIRecord {
 
     public MITList results() {
 	return results;
-    } 
+    }
 
     /**
      * Return true if there are no results.
@@ -172,22 +172,22 @@ public class MIRecord {
 
     @Override
     public String toString() {
-	String s = new String();
+	StringBuilder s = new StringBuilder();
 	if (token != 0)
-	    s += "" + token;
-	s += type;
+	    s.append(token);
+	s.append(type);
 	if (isStream) {
-	    s += "\"" + stream + "\""; // NOI18N
+	    s.append('"').append(stream).append('"'); // NOI18N
 	} else {
 	    if (results.isEmpty())
-		s += cls;
+		s.append(cls);
 	    else
-		s += cls + "," + results.toString(); // NOI18N
+		s.append(cls).append(',').append(results.toString()); // NOI18N
 	}
 
 	if (isError)
-	    s += " ERROR: " + error; // NOI18N
+	    s.append(" ERROR: ").append(error); // NOI18N
 
-	return s;
+	return s.toString();
     }
 }

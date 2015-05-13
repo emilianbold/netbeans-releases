@@ -48,7 +48,7 @@ import java.util.regex.Pattern;
 /**
  *
  * @author thp
- * Simple man output to HTML formatter. 
+ * Simple man output to HTML formatter.
  */
 public class Man2HTML {
     public static final int MAX_WIDTH = 65;
@@ -167,13 +167,11 @@ public class Man2HTML {
                 break;
             }
             // Skip headers/footers
-            if (line != null) {
-                if (line.indexOf("BSD ") >= 0 || // NOI18N
-                    line.startsWith("Standard C") || // NOI18N
-                    line.startsWith("SunOS") || // NOI18N
-                    line.startsWith("User Commands")) { // NOI18N
-                    line = null;
-                }
+            if (line.contains("BSD ") || // NOI18N
+                line.startsWith("Standard C") || // NOI18N
+                line.startsWith("SunOS") || // NOI18N
+                line.startsWith("User Commands")) { // NOI18N
+                line = null;
             }
             // Skip multiple blank lines
             if (previousLine != null && previousLine.length() == 0 && line != null && line.length() == 0) {

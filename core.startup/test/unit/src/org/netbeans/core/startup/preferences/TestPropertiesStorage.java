@@ -87,7 +87,7 @@ public class TestPropertiesStorage extends TestFileStorage {
     
     @Override
     protected NbPreferences.FileStorage getInstance() {
-        return PropertiesStorage.instanceReadOnly("/PropertiesStorageTest/" + getName());//NOI18N);
+        return PropertiesStorage.instanceReadOnly(FileUtil.getSystemConfigRoot(), "/PropertiesStorageTest/" + getName());//NOI18N);
     }
     
     @Override

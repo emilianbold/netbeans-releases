@@ -44,7 +44,6 @@
 package org.netbeans.modules.subversion.remote.client.parser;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -60,7 +59,7 @@ import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.subversion.remote.api.SVNConflictDescriptor;
 import org.netbeans.modules.subversion.remote.client.parser.ConflictDescriptionParser.ParserConflictDescriptor;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -159,7 +158,7 @@ public class EntriesCache {
         cachedConflicts = new WeakHashMap<>(5);
     }
 
-    static EntriesCache getInstance() {
+    static synchronized EntriesCache getInstance() {
         if(instance == null) {
             instance = new EntriesCache();
         }
@@ -479,7 +478,7 @@ public class EntriesCache {
         return entries;
     }
 
-    private class EntriesFile {
+    private static class EntriesFile {
         long ts;
         long size;
         EntryAttributes attributes;
@@ -490,21 +489,21 @@ public class EntriesCache {
         }
     }
 
-    private class Entries extends LinkedHashMap<String, EntriesFile> {
+    private static class Entries extends LinkedHashMap<String, EntriesFile> {
         @Override
         protected boolean removeEldestEntry(Entry<String, EntriesFile> eldest) {
             return MAX_SIZE > -1 && size() > MAX_SIZE;
         }
     };
 
-    private class EntryAttributes extends HashMap<String, Map<String, String>> {
+    private static class EntryAttributes extends HashMap<String, Map<String, String>> {
         public EntryAttributes() {}
         public EntryAttributes(int initialCapacity) {
             super(initialCapacity);
         }
     };
 
-    private class AttributePool {        
+    private static class AttributePool {        
         private Map<String, String> m = new WeakHashMap<>();
         public String get(String str) {
             if(str == null ) return null;

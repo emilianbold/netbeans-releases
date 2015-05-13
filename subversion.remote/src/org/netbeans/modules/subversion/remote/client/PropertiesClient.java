@@ -57,7 +57,7 @@ import org.netbeans.modules.subversion.remote.client.parser.SvnWcUtils;
 import org.netbeans.modules.subversion.remote.config.KVFile;
 import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -204,11 +204,6 @@ public final class PropertiesClient {
         } else {
             return SvnWcUtils.getPropertiesFile(file, base);
         }
-    }
-
-    /** Not implemented. */
-    public Map getProperties(int revision) throws IOException {
-        throw new UnsupportedOperationException();
     }
 
     private static boolean hasOldMetadata (VCSFileProxy file) {

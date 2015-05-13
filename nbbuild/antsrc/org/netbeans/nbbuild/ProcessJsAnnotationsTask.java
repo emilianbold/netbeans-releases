@@ -126,8 +126,9 @@ public final class ProcessJsAnnotationsTask extends Task {
             }
             arr.addFirst(loc);
         }
-        URLClassLoader l = new URLClassLoader(arr.toArray(new URL[arr.size()]));
         try {
+            arr.addFirst(classes.toURI().toURL());
+            URLClassLoader l = new URLClassLoader(arr.toArray(new URL[arr.size()]));
             processClasses(l, master, classes);
         } catch (IOException ex) {
             throw new BuildException("Problem converting JavaScriptXXX annotations", ex);

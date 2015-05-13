@@ -69,7 +69,7 @@ import org.openide.text.PositionRef;
 public final class ModificationResult implements org.netbeans.modules.refactoring.spi.ModificationResult {
 
     private final CsmProject project;
-    Map<FileObject, Collection<Difference>> diffs = new HashMap<FileObject, Collection<Difference>>();
+    Map<FileObject, Collection<Difference>> diffs = new HashMap<>();
 
     /** Creates a new instance of ModificationResult */
     public ModificationResult(CsmProject project) {
@@ -80,7 +80,7 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
     public void addDifference(FileObject fo, Difference diff) {
         Collection<Difference> foDiffs = diffs.get(fo);
         if (foDiffs == null) {
-            foDiffs = new LinkedHashSet<Difference>();
+            foDiffs = new LinkedHashSet<>();
             diffs.put(fo, foDiffs);
         }
         foDiffs.add(diff);
@@ -265,7 +265,7 @@ public final class ModificationResult implements org.netbeans.modules.refactorin
     }
 
     public Set<File> getNewFiles() {
-        Set<File> newFiles = new HashSet<File>();
+        Set<File> newFiles = new HashSet<>();
         for (Collection<Difference> ds : diffs.values()) {
             for (Difference d : ds) {
                 if (d.getKind() == Difference.Kind.CREATE) {

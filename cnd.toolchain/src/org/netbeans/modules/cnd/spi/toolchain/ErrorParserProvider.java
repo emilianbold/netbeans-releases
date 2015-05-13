@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
@@ -57,6 +58,8 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.windows.IOPosition;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -86,13 +89,21 @@ public abstract class ErrorParserProvider {
     public final static class OutputListenerRegistry {
         private final Map<FileObject,Set<OutputListener>> storage = new HashMap<FileObject,Set<OutputListener>>();
         private final Project project;
+        private final InputOutput io;
         
-        protected OutputListenerRegistry(Project project) {
+        private boolean scrollingSupported = false;
+        
+        protected OutputListenerRegistry(Project project, InputOutput io) {
             this.project = project;
+            this.io = io;
+            
+            scrollingSupported = IOPosition.isSupported(io);
         }
 
         public OutputListener register(FileObject file, int line, boolean isError, String description) {
-            OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description);
+            IOPosition.Position ioPos = IOPosition.currentPosition(io); // null is ok
+
+            OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description, ioPos);
             synchronized(storage) {
                 Set<OutputListener> list = storage.get(file);
                 if (list == null) {
@@ -106,6 +117,10 @@ public abstract class ErrorParserProvider {
 
         Project getProject() {
             return project;
+        }
+
+        public InputOutput getIO() {
+            return io;
         }
 
         public Set<OutputListener> getFileListeners(FileObject file){

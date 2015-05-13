@@ -516,6 +516,13 @@ public final class FormatToken {
             }
         },
 
+        BEFORE_ARRAY {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
+
         // around binary operator
         BEFORE_BINARY_OPERATOR,
         AFTER_BINARY_OPERATOR,
@@ -550,10 +557,34 @@ public final class FormatToken {
         AFTER_TYPEOF_KEYWORD,
 
         // keywords with possible space before
-        BEFORE_WHILE_KEYWORD,
-        BEFORE_ELSE_KEYWORD,
-        BEFORE_CATCH_KEYWORD,
-        BEFORE_FINALLY_KEYWORD,
+        // or placed on the new line
+        BEFORE_WHILE_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_ELSE_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_CATCH_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_FINALLY_KEYWORD {
+            @Override
+            public boolean isAlignmentMarker() {
+                return true;
+            }
+        },
 
         BEFORE_SEMICOLON,
         AFTER_SEMICOLON,
@@ -602,17 +633,90 @@ public final class FormatToken {
         AFTER_LEFT_BRACE,
 
         // before braces
-        BEFORE_FUNCTION_DECLARATION_BRACE,
-        BEFORE_IF_BRACE,
-        BEFORE_ELSE_BRACE,
-        BEFORE_WHILE_BRACE,
-        BEFORE_FOR_BRACE,
-        BEFORE_DO_BRACE,
-        BEFORE_SWITCH_BRACE,
-        BEFORE_TRY_BRACE,
-        BEFORE_CATCH_BRACE,
-        BEFORE_FINALLY_BRACE,
-        BEFORE_WITH_BRACE,
+        BEFORE_FUNCTION_DECLARATION_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_IF_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_ELSE_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_WHILE_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_FOR_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_DO_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_SWITCH_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_TRY_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_CATCH_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_FINALLY_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        BEFORE_WITH_BRACE {
+            @Override
+            public boolean isBraceMarker() {
+                return true;
+            }
+        },
+
+        // placed after right curly brace to decrease indentation
+        AFTER_END_BRACE {
+            @Override
+            public boolean isSpaceMarker() {
+                return false;
+            }
+        },
 
         // array literal brackets
         AFTER_ARRAY_LITERAL_BRACKET,
@@ -628,6 +732,14 @@ public final class FormatToken {
 
         public boolean isSpaceMarker() {
             return true;
+        }
+
+        public boolean isBraceMarker() {
+            return false;
+        }
+
+        public boolean isAlignmentMarker() {
+            return false;
         }
     }
 

@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.openide.util.CharSequences;
 
@@ -103,8 +104,12 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
     
     protected final CsmProject getProject() {
         CsmFile file = this.getContainingFile();
-        assert file != null;
-        return file != null ? file.getProject() : null;
+        if (file == null) {
+            CndUtils.assertUnconditional("Null containing file"); //NOI18N
+            return null;
+        } else {
+            return file.getProject();
+        }
     }    
     
     public CharSequence getQualifiedNamePostfix() {
@@ -185,7 +190,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
             // 1. check for definition of template class's method
             // like template<class A> C<A>:C() {}
             AST startTemplateSign = qIdToken != null ? AstUtil.findChildOfType(qIdToken, CPPTokenTypes.LESSTHAN) : null;
-            while (startTemplateSign != null) {
+            while (templateNode != null && startTemplateSign != null) {
                 // TODO: fix parsing of inline definition of template operator <
                 // like template<class T, class P> bool operator<(T x, P y) {return x<y};
                 // workaround is next validation
@@ -216,6 +221,15 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 } else {
                     break;
                 }
+            }
+            
+            if (false) {
+              // Both templateNode and startTemplateSign should be null
+              if (templateNode != startTemplateSign) {
+                // TODO: maybe notify here about error: unbalanced "template <>" nodes and specialization suffixes "<smth>"
+                // Example: template<> void A<short>::f<int>()
+                return null;
+              }
             }
             
             if (!_template) {

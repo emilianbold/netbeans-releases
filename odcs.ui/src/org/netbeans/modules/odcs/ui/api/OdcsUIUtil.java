@@ -80,7 +80,7 @@ public final class OdcsUIUtil {
         ODCSUiServer.forServer(server).getDashboard().removePropertyChangeListener(propertyChangeListener);
     }
     
-    @NbBundle.Messages("CTL_AddInstance=Add ODCS Server")
+    @NbBundle.Messages("CTL_AddInstance=Add Developer Server")
     public static Action createAddInstanceAction() {
         return new AddInstanceAction(ODCSServerProviderImpl.getDefault(), CTL_AddInstance());
     }

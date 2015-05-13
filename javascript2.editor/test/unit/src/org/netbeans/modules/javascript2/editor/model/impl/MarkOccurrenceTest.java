@@ -1215,7 +1215,219 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue249119.js", "^g2();", true);
     }
     
-   private String getTestName() {
+    public void testIssue250099_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyC^ontext.CarDescription} carDescription", true); 
+    }
+    
+    public void testIssue250099_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {MyContext.CarDesc^ription} carDescription", true); 
+    }
+    
+    public void testIssue250099_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250099.js", "* @param {Na^me} name", true); 
+    }
+    
+    public void testIssue250112_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250112.js", "* @typedef {Object} MyCont^ext.Address description", true); 
+    }
+    
+    public void testIssue250112_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250112.js", "* @typedef {Object} MyContext.Add^ress description", true); 
+    }
+     
+    public void testIssue250110_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250110.js", "* @typedef {Object} MyCont^ext~Address description", true); 
+    }
+    
+    public void testIssue250110_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250110.js", "* @typedef {Object} MyContext~Add^ress description", true); 
+    }
+    
+    public void testIssue250121_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyCon^text~Address} addressDescription", true); 
+    }
+    
+    public void testIssue250121_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Add^ress} addressDescription", true); 
+    }
+    
+    public void testIssue250121_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250121.js", "* @param {MyContext~Address} add^ressDescription", true); 
+    }
+    
+    public void testIssue249619_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249619.js", "console.log(er^r.stack);", true); 
+    }
+    
+    public void testCallBackDeclaration_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requ^ester~requestCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requester~reque^stCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration1.js", "* @param {Requester~requestCallback} c^b - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration2.js", " * @param {requ^estCallback} cb - The callback that handles the response.", true); 
+    }
+    
+    public void testCallBackDeclaration_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/callbackDeclaration2.js", " * @param {requestCallback} c^b - The callback that handles the response.", true); 
+    }
+    
+    public void testIssue251794_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "function Mod^el () {};", true); 
+    }
+    
+    public void testIssue251794_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "Model.comp^ile = function compile () {", true); 
+    }
+    
+    public void testIssue251794_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "Model.compile = function comp^ile () {", true); 
+    }
+    
+    public void testIssue251794_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "model.__pro^to__ = Model;", true); 
+    }
+    
+    public void testIssue251794_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251794.js", "mod^el.__proto__ = Model;", true); 
+    }
+    
+    public void testIssue251853_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251853.js", "return new MyLib.Ob^jB(); ", true); 
+    }
+    
+    public void testIssue251853_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251853.js", "return new My^Lib.ObjB(); ", true); 
+    }
+    
+    public void testIssue251824_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251824.js", "var b1 = MyLib.obj^B();", true); 
+    }
+    
+    public void testIssue251823_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251823.js", "MyLib.Obj^B = function (arg) {", true); 
+    }
+    
+    public void testIssue251892_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251823.js", "MyL^ib.ObjB = function (arg) {", true); 
+    }
+    
+    public void testIssue251883_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251823.js", "return new MyLib.O^bjB(); ", true); 
+    }
+    
+    public void testIssue250434_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250434.js", "function TripDayFormCtrl($scope, TripMo^del, TripHandler) { // lineA", true); 
+    }
+    
+    public void testIssue251911_01() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "var _my^Lib = this;", true); 
+    }
+    
+    public void testIssue251911_02() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "var TR^UE   = !0,", true); 
+    }
+    
+    public void testIssue251911_03() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "FAL^SE  = !1;", true); 
+    }
+    
+    public void testIssue251911_04() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLi^b_in(item, container) {", true); 
+    }
+    
+    public void testIssue251911_05() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLib_in(it^em, container) {", true); 
+    }
+    
+    public void testIssue251911_06() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "function _myLib_in(item, con^tainer) {", true); 
+    }
+    
+    public void testIssue251911_07() throws Exception {
+        checkOccurrences("testfiles/model/issue251911.js", "for( var k^ey in container ) {", true); 
+    }
+    
+    public void testIssue242454B_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242454B.js", "this.y1 = f^1;", true); 
+    }
+    
+    public void testIssue242454B_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue242454B.js", "this.y2 = f^2;", true); 
+    }
+    
+    public void testIssue251984_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "var myL^ib = new function MyLib() {", true); 
+    }
+    
+    public void testIssue251984_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "var myLib = new function My^Lib() {", true); 
+    }
+    
+    public void testIssue251984_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "function f^1(f1arg) {", true); 
+    }
+    
+    public void testIssue251984_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue251984.js", "function f^2(f2arg) {", true); 
+    }
+    
+    public void testIssue252022_01() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "function fn^2() {", true); 
+    }
+    
+    public void testIssue252022_02() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "fn^2().toLowerCase();  // test", true); 
+    }
+    
+    public void testIssue252022_03() throws Exception {
+        checkOccurrences("testfiles/hints/issue252022.js", "fn2().toLower^Case();  // test", true); 
+    }
+    
+    public void testIssue249487_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(this.iA^rg);", true); 
+    }
+    
+    public void testIssue249487_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(test.iA^rg);", true); 
+    }
+    
+    public void testIssue249487_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "console.log(te^st.iArg);", true); 
+    }
+    
+    public void testIssue249487_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEv^ent = new MyApi.Event(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyA^pi.Event(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyApi.Ev^ent(myEventArgs);", true); 
+    }
+    
+    public void testIssue249487_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.myEvent = new MyApi.Event(myEv^entArgs);", true); 
+    }
+    
+    public void testIssue249487_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "function myEventArgs(iAr^g) {", true); 
+    }
+    
+    public void testIssue249487_09() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue249487.js", "this.iA^rg = iArg;", true); 
+    }
+    
+    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
         if (indexOf != -1) {

@@ -53,6 +53,7 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.test.TestBase;
+import org.netbeans.modules.db.test.Util;
 import org.openide.nodes.Node;
 
 /**
@@ -63,6 +64,12 @@ public class ConnectionNodeTest extends TestBase {
 
     public ConnectionNodeTest(String testName) {
         super(testName);
+    }
+    
+    @Override
+    protected void setUp() throws Exception {
+        Util.suppressSuperfluousLogging();
+        super.setUp();
     }
 
     public void testClipboardCopy() throws Exception {

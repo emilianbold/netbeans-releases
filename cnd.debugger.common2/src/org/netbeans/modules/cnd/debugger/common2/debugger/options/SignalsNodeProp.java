@@ -62,10 +62,12 @@ public final class SignalsNodeProp extends PropertySupport<Signals> {
 	this.profile = profile;
     }
 
+    @Override
     public Signals getValue() {
 	return profile.signals();
     }
 
+    @Override
     public void setValue(Signals v) {
 	profile.signals().assign(v);
     }
@@ -150,6 +152,7 @@ public final class SignalsNodeProp extends PropertySupport<Signals> {
 	}
 	
 	// interface ExPropertyEditor
+        @Override
 	public void attachEnv(PropertyEnv env) {
 	    this.env = env;
 	}

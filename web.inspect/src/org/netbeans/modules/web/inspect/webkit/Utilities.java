@@ -51,6 +51,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -471,9 +472,9 @@ public class Utilities {
      */
     public static Node findRule(Node root, Rule rule) {
         Rule candidate = root.getLookup().lookup(Rule.class);
-        if (candidate != null &&  rule.getId().equals(candidate.getId())
-                && rule.getSourceURL().equals(candidate.getSourceURL())
-                && rule.getSelector().equals(candidate.getSelector())) {
+        if (candidate != null && Objects.equals(rule.getId(), candidate.getId())
+                && Objects.equals(rule.getSourceURL(), candidate.getSourceURL())
+                && Objects.equals(rule.getSelector(), candidate.getSelector())) {
             return root;
         }
         for (Node node : root.getChildren().getNodes()) {
@@ -741,10 +742,17 @@ public class Utilities {
             // Check if attributes are the same
             Map<String,String> attributes = new HashMap<String,String>();
             for (org.netbeans.modules.web.webkit.debugging.api.dom.Node.Attribute attribute : domNode.getAttributes()) {
-                attributes.put(attribute.getName().toUpperCase(), attribute.getValue());
+                String name = attribute.getName().toUpperCase();
+                if (ignoreWhenMatching(name)) {
+                    continue;
+                }
+                attributes.put(name, attribute.getValue());
             }
             for (Attribute attribute : tag.attributes()) {
                 String name = attribute.name().toString().toUpperCase();
+                if (ignoreWhenMatching(name)) {
+                    continue;
+                }
                 String domValue = attributes.get(name);
                 CharSequence sourceSeq = attribute.unquotedValue();
                 String sourceValue = (sourceSeq == null) ? "" : sourceSeq.toString(); // NOI18N
@@ -753,18 +761,25 @@ public class Utilities {
                 }
                 attributes.remove(name);
             }
-            for (String attribute : attributes.keySet()) {
-                String name = attribute.toUpperCase();
-                // Ignore STYLE and CLASS attributes - they are often modified
-                // dynamically during JavaScript-based styling.
-                if (!("STYLE".equals(name) || "CLASS".equals(name))) { // NOI18N
-                    return false;
-                }
-            }
-            return true;
+            return attributes.isEmpty();
         } else {
             return false;
         }
+    }
+
+    /**
+     * Determines whether to ignore attribute with the specified name
+     * when determining whether two elements match.
+     * 
+     * @param attribute attribute to check.
+     * @return {@code true} when the attribute should be ignore,
+     * returns {@code false} otherwise.
+     */
+    private static boolean ignoreWhenMatching(String attribute) {
+        // Ignore STYLE and CLASS attributes - they are often modified
+        // dynamically during JavaScript-based styling.
+        // DATA- attributes are used to store various data.
+        return ("STYLE".equals(attribute) || "CLASS".equals(attribute) || attribute.startsWith("DATA-")); // NOI18N
     }
 
     /**

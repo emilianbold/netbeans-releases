@@ -49,6 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.net.URI;
+import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,6 +58,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -695,7 +697,10 @@ public final class NbMavenProjectImpl implements Project {
                 Files.walkFileTree(sourceRoot, visitor);
                 toRet.addAll(visitor.getOtherRoots());
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                // log as info to keep trace about possible problems, 
+                // but lets not be too agressive with level and notification                
+                // see also issue #251071
+                LOG.log(Level.INFO, null, ex);
             }
         }
         URI[] res = getResources(test);

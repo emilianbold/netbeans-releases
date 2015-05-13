@@ -62,6 +62,7 @@ FormatToken{kind=EOL, offset=90, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=91, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=92, text=
 , id=EOL}

@@ -104,7 +104,7 @@ public class IllegalInstanceOf extends AbstractHint {
             String verifyClass = packagesToCheck.get(leftPackageFQN);
             TypeElement loadedVerify = info.getElements().getTypeElement(verifyClass);
             
-            if (!info.getTypes().isSubtype(left.asType(), loadedVerify.asType()))
+            if (loadedVerify == null || !info.getTypes().isSubtype(left.asType(), loadedVerify.asType()))
                 return null;
             
             if (!info.getTypes().isSubtype(right.asType(), loadedVerify.asType()))

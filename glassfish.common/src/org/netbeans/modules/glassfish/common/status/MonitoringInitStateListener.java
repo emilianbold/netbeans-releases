@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.glassfish.common.status;
 
-import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
+import org.netbeans.modules.glassfish.tooling.GlassFishStatus;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishServer;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishStatusTask;
 
 /**
  * Notification about server state check results.

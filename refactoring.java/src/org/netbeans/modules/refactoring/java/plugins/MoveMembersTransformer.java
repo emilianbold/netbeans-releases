@@ -409,7 +409,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                         TreePath thisPath = new TreePath(currentPath, node);
                         Element el = workingCopy.getTrees().getElement(thisPath);
-                        if (isElementBeingMoved(el) != null) {
+                        if (el != null && isElementBeingMoved(el) != null) {
                             return false;
                         }
                     }
@@ -421,7 +421,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     TreePath thisPath = new TreePath(currentPath, node);
                     Element el = workingCopy.getTrees().getElement(thisPath);
                     
-                    if (isElementBeingMoved(el) == null) {
+                    if (el != null && isElementBeingMoved(el) == null) {
                         String isThis = node.toString();
                         // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                         if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
@@ -533,32 +533,30 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 Tree member = resolvedPath.getLeaf();
                 Tree newMember = null;
                 Element resolvedElement = workingCopy.getTrees().getElement(resolvedPath);
-
+                final GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+                genUtils.importComments(member, resolvedPath.getCompilationUnit());
                 // Make a new Method tree
                 if (member.getKind() == Tree.Kind.METHOD) {
 
                     // Change Modifiers
                     final MethodTree methodTree = (MethodTree) member;
                     ExecutableElement method = (ExecutableElement) resolvedElement;
-                    ModifiersTree modifiers = changeModifiers(methodTree.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(genUtils.importFQNs(methodTree.getModifiers()), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Find and remove a usable parameter
                     final List<? extends VariableTree> parameters = methodTree.getParameters();
                     LinkedList<VariableTree> newParameters;
                     VariableTree removedParameter = null;
-                    if (!method.getModifiers().contains(Modifier.STATIC)) {
-                        newParameters = new LinkedList<VariableTree>();
-                        for (int i = 0; i < parameters.size(); i++) {
-                            VariableTree variableTree = parameters.get(i);
-                            TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
-                            if (removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
-                                removedParameter = variableTree;
-                            } else {
-                                newParameters.add(variableTree);
-                            }
+                    boolean isStatic = method.getModifiers().contains(Modifier.STATIC);
+                    newParameters = new LinkedList<VariableTree>();
+                    for (int i = 0; i < parameters.size(); i++) {
+                        VariableTree variableTree = parameters.get(i);
+                        TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
+                        if (!isStatic && removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
+                            removedParameter = variableTree;
+                        } else {
+                            newParameters.add(genUtils.importFQNs(variableTree));
                         }
-                    } else {
-                        newParameters = new LinkedList<VariableTree>(parameters);
                     }
                     // Scan the body and fix references
                     BlockTree body = methodTree.getBody();
@@ -593,13 +591,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if (isElementBeingMoved(el) != null) {
+                                if (el != null && isElementBeingMoved(el) != null) {
                                     return false;
                                 }
                             } else {
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if (isElementBeingMoved(el) != null &&
+                                if (el != null && isElementBeingMoved(el) != null &&
                                         el.getKind() != ElementKind.PACKAGE &&
                                         el.getModifiers().contains(Modifier.STATIC)) {
                                     ExpressionTree ident = make.Identifier(target);
@@ -617,7 +615,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                             boolean result = false;
 
-                            if (isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
+                            if (el != null && isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                                 String isThis = node.toString();
@@ -688,7 +686,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
 
                     // Addimports
-                    body = GeneratorUtilities.get(workingCopy).importFQNs(body);
+                    body = genUtils.importFQNs(body);
                     List<TypeParameterTree> typeParameters = new LinkedList<TypeParameterTree>(methodTree.getTypeParameters());
                     if(method.getReturnType().getKind() == TypeKind.TYPEVAR) {
                         Element element = workingCopy.getTypes().asElement(method.getReturnType());
@@ -710,7 +708,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         final TreePath returnPath = new TreePath(resolvedPath, returnType);
                         Element returnTypeEl = trees.getElement(returnPath);
                         if(returnTypeEl != null && returnTypeEl.getKind() != ElementKind.TYPE_PARAMETER && isElementBeingMoved(returnTypeEl) == null) {
-                            returnType = GeneratorUtilities.get(workingCopy).importFQNs(returnType);
+                            returnType = genUtils.importFQNs(returnType);
                         }
                     }
                     newMember = make.Method(modifiers, methodTree.getName(), returnType, typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
@@ -718,20 +716,19 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Make a new Variable (Field) tree
                 } else if (member.getKind() == Tree.Kind.VARIABLE) {
                     VariableTree field = (VariableTree) member;
-                    ModifiersTree modifiers = changeModifiers(field.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(genUtils.importFQNs(field.getModifiers()), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Scan the initializer and fix references
                     ExpressionTree initializer = field.getInitializer();
                     initializer = fixReferences(initializer, target, resolvedPath);
-                    VariableTree importFQNs = GeneratorUtilities.get(workingCopy).importFQNs(field);
+                    VariableTree importFQNs = genUtils.importFQNs(field);
                     newMember = make.Variable(modifiers, field.getName(), importFQNs.getType(), initializer);
                 }
 
                 // Insert the member and copy its comments
                 if (newMember != null) {
-                    GeneratorUtilities.get(workingCopy).importComments(member, resolvedPath.getCompilationUnit());
-                    GeneratorUtilities.get(workingCopy).copyComments(member, newMember, true);
-                    GeneratorUtilities.get(workingCopy).copyComments(member, newMember, false);
+                    genUtils.copyComments(member, newMember, true);
+                    genUtils.copyComments(member, newMember, false);
                     if(newMember.getKind() == Tree.Kind.METHOD) {
                         if(updateJavadoc) {
                             MethodTree method = (MethodTree) newMember;
@@ -750,7 +747,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             make.addComment(newMember, comment, true);
                         }
                     }
-                    newClassTree = GeneratorUtilities.get(workingCopy).insertClassMember(newClassTree, newMember);
+                    newClassTree = genUtils.insertClassMember(newClassTree, newMember);
                 }
             }
             rewrite(node, newClassTree);
@@ -943,7 +940,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 newModifiers.add(Modifier.PRIVATE);
                 break;
         }
-        ModifiersTree modifiers = make.Modifiers(newModifiers);
+        ModifiersTree modifiers = make.Modifiers(newModifiers, modifiersTree.getAnnotations());
         return modifiers;
     }
 
@@ -977,7 +974,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                 }
                 Element element = workingCopy.getTrees().getElement(currentPath);
                 ExpressionTree methodSelect = node.getMethodSelect();
-                if (isElementBeingMoved(element) == null) {
+                if (element != null && isElementBeingMoved(element) == null) {
                     if (element.getModifiers().contains(Modifier.STATIC)) {
                         Tree newTree = make.QualIdent(element);
                         original2Translated.put(methodSelect, newTree);
@@ -991,7 +988,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             @Override
             public Void visitMemberSelect(MemberSelectTree node, Void p) {
                 Element element = workingCopy.getTrees().getElement(new TreePath(resolvedPath, node));
-                if (isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
+                if (element != null && isElementBeingMoved(element) == null && element.getModifiers().contains(Modifier.STATIC)) {
                     Tree newTree = make.QualIdent(element);
                     original2Translated.put(node, newTree);
                 }

@@ -186,6 +186,7 @@ FormatToken{kind=EOL, offset=237, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=238, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=239, text=
 , id=EOL}
@@ -296,6 +297,7 @@ FormatToken{kind=EOL, offset=390, text=
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=391, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=395, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=396, text=
 , id=EOL}
@@ -311,6 +313,7 @@ FormatToken{kind=EOL, offset=414, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=415, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=416, text=
 , id=EOL}
@@ -419,11 +422,13 @@ FormatToken{kind=EOL, offset=582, text=
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=583, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=587, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=588, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=589, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=590, text=
 , id=EOL}
@@ -556,11 +561,13 @@ FormatToken{kind=EOL, offset=814, text=
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=815, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=819, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=820, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=821, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=822, text=
 , id=EOL}
@@ -688,6 +695,7 @@ FormatToken{kind=EOL, offset=1005, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=1006, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=1007, text=
 , id=EOL}
@@ -734,6 +742,7 @@ FormatToken{kind=EOL, offset=1074, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=1075, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=1076, text=
 , id=EOL}
@@ -784,6 +793,7 @@ FormatToken{kind=EOL, offset=1146, text=
 , id=EOL}
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=TEXT, offset=1147, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=AFTER_STATEMENT, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=1148, text=
 , id=EOL}
@@ -908,6 +918,7 @@ FormatToken{kind=EOL, offset=1324, text=
 FormatToken{kind=INDENTATION_DEC, offset=-1, text=null, id=null}
 FormatToken{kind=WHITESPACE, offset=1325, text=    , id=WHITESPACE}
 FormatToken{kind=TEXT, offset=1329, text=}, id=BRACKET_RIGHT_CURLY}
+FormatToken{kind=AFTER_END_BRACE, offset=-1, text=null, id=null}
 FormatToken{kind=EOL, offset=1330, text=
 , id=EOL}
 FormatToken{kind=BEFORE_RIGHT_BRACE, offset=-1, text=null, id=null}

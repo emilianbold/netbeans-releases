@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeListener;
@@ -171,6 +172,7 @@ public final class NpmLibraries {
         }
 
         private void fireChange() {
+            npmLibrariesChildren.refreshDependencies();
             changeSupport.fireChange();
         }
 
@@ -240,10 +242,12 @@ public final class NpmLibraries {
         }
 
         public boolean hasDependencies() {
-            refreshDependencies();
-            return getNodesCount() > 0;
+            return !packageJson.getDependencies().isEmpty();
         }
 
+        public void refreshDependencies() {
+            setKeys();
+        }
 
         @Override
         protected Node[] createNodes(NpmLibraryInfo key) {
@@ -257,7 +261,7 @@ public final class NpmLibraries {
         })
         @Override
         protected void addNotify() {
-            refreshDependencies();
+            setKeys();
         }
 
         @Override
@@ -266,7 +270,7 @@ public final class NpmLibraries {
         }
 
 
-        private void refreshDependencies() {
+        private void setKeys() {
             PackageJson.NpmDependencies dependencies = packageJson.getDependencies();
             if (dependencies.isEmpty()) {
                 setKeys(Collections.<NpmLibraryInfo>emptyList());
@@ -366,6 +370,9 @@ public final class NpmLibraries {
 
 
         NpmLibraryInfo(Image icon, String name, String descrition) {
+            assert icon != null;
+            assert name != null;
+            assert descrition != null;
             this.icon = icon;
             this.name = name;
             this.description = descrition;
@@ -374,6 +381,25 @@ public final class NpmLibraries {
         @Override
         public int compareTo(NpmLibraryInfo other) {
             return name.compareToIgnoreCase(other.name);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 13 * hash + Objects.hashCode(this.name);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NpmLibraryInfo other = (NpmLibraryInfo) obj;
+            return name.equalsIgnoreCase(other.name);
         }
 
     }

@@ -48,7 +48,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
@@ -78,7 +78,7 @@ public class SvnWcUtils {
                 return getSvnFile(file.getParentFile(), PROPS + "/" + file.getName() + getPropFileNameSuffix(base)); //NOI18N
             }            
         } else {            
-            return getSvnFile(file, base ? "/dir-prop-base" : "/dir-props"); //NOI18N
+            return getSvnFile(file, base ? "dir-prop-base" : "dir-props"); //NOI18N
         }        
     }
 
@@ -99,7 +99,7 @@ public class SvnWcUtils {
         if (inputValue != null) {              
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); //NOI18N
             dateFormat.setTimeZone(java.util.TimeZone.getTimeZone("GMT")); //NOI18N
-            int idx = inputValue.lastIndexOf("."); //NOI18N
+            int idx = inputValue.lastIndexOf('.'); //NOI18N
             if(idx > 0) {
                 idx = (idx + 4 > inputValue.length()) ? inputValue.length() : idx + 4; // parse as mili-, not microseconds
                 inputValue = inputValue.substring(0, idx) + "Z"; //NOI18N

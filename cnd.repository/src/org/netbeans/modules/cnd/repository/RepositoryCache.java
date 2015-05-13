@@ -435,6 +435,7 @@ public final class RepositoryCache {
                 name, readCnt, readHitCnt, hitPercentage);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("UL") // bug in find bugs!
     public void debugPrintDistribution() {
         Map<String, Integer> stat = new TreeMap<String, Integer>();
         Map<String, Integer> statSoft = new TreeMap<String, Integer>();

@@ -55,6 +55,7 @@ package org.netbeans.modules.cnd.dwarfdump.section;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -68,7 +69,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
  */
 public class DwarfNameLookupTableSection extends ElfSection {
     private List<DwarfNameLookupTable> tables = null;
-    
+
     public DwarfNameLookupTableSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
     }
@@ -77,23 +78,23 @@ public class DwarfNameLookupTableSection extends ElfSection {
         if (tables == null) {
             tables = readNameLookupTables();
         }
-        
+
         return tables;
     }
 
     private List<DwarfNameLookupTable> readNameLookupTables() throws IOException {
         List<DwarfNameLookupTable> result = new ArrayList<DwarfNameLookupTable>();
-        
+
         long currPos = reader.getFilePointer();
         reader.seek(header.getSectionOffset());
 
         DwarfDebugInfoSection debugInfo = (DwarfDebugInfoSection)reader.getSection(SECTIONS.DEBUG_INFO);
 
         long bytesToRead = header.getSectionSize();
-        
+
         while (bytesToRead > 0) {
             DwarfNameLookupTable table = new DwarfNameLookupTable();
-            
+
             long before = reader.getFilePointer();
             table.unit_length = reader.readDWlen();
             long after = reader.getFilePointer();
@@ -106,14 +107,14 @@ public class DwarfNameLookupTableSection extends ElfSection {
             long savePosition = reader.getFilePointer();
             CompilationUnit cu = debugInfo.getCompilationUnit(table.debug_info_offset);
             reader.seek(savePosition);
-            
+
             if (cu == null) {
 		continue;
 	    }
 
             for (;;) {
                 long entryOffset = reader.read3264();
-                
+
                 if (entryOffset == 0) {
                     break;
                 }
@@ -122,16 +123,16 @@ public class DwarfNameLookupTableSection extends ElfSection {
 
             result.add(table);
         }
-        
+
         reader.seek(currPos);
-        
+
         return result;
     }
-    
+
     @Override
     public void dump(PrintStream out) {
         super.dump(out);
-        
+
         for (DwarfNameLookupTable table : tables) {
             table.dump(out);
         }
@@ -139,10 +140,14 @@ public class DwarfNameLookupTableSection extends ElfSection {
 
     @Override
     public String toString() {
-        ByteArrayOutputStream st = new ByteArrayOutputStream();
-        PrintStream out = new PrintStream(st);
-        dump(out);
-        return st.toString();
+        try {
+            ByteArrayOutputStream st = new ByteArrayOutputStream();
+            PrintStream out = new PrintStream(st, false, "UTF-8"); // NOI18N
+            dump(out);
+            return st.toString("UTF-8"); //NOI18N
+        } catch (IOException ex) {
+            return ""; // NOI18N
+        }
     }
 
     public DwarfNameLookupTable getNameLookupTableFor(long info_offset) throws IOException {
@@ -151,8 +156,8 @@ public class DwarfNameLookupTableSection extends ElfSection {
                 return table;
             }
         }
-        
+
         return null;
     }
-    
+
 }

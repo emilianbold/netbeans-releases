@@ -167,6 +167,11 @@ public class TemplateProcessor extends LayerGeneratingProcessor {
         if (!t.targetName().trim().isEmpty()) {
             f.bundlevalue("targetName", t.targetName());                //NOI18N
         }
+        String[] techIds = t.techIds();
+        for (int i = 0; i < techIds.length; i++) {
+            String id = techIds[i];
+            f.stringvalue("techId." + i, id); // NOI18N
+        }
         f.write();
     }
 

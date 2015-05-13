@@ -61,7 +61,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
@@ -79,6 +78,7 @@ public class SiteTemplateWizard extends JPanel {
 
     static final Logger LOGGER = Logger.getLogger(SiteTemplateWizard.class.getName());
     private static final SiteTemplateImplementation NO_SITE_TEMPLATE = new DummySiteTemplateImplementation(null);
+    private static final RequestProcessor RP = new RequestProcessor(SiteTemplateWizard.class.getName(), 2);
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     // @GuardedBy("EDT")
@@ -123,7 +123,7 @@ public class SiteTemplateWizard extends JPanel {
         // data
         onlineTemplateList.setModel(onlineTemplatesListModel);
         onlineTemplatesListModel.addElement(new DummySiteTemplateImplementation(Bundle.SiteTemplateWizard_loading()));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Collection<? extends SiteTemplateImplementation> templates = Lookup.getDefault().lookupAll(SiteTemplateImplementation.class);
@@ -300,22 +300,23 @@ public class SiteTemplateWizard extends JPanel {
     public String prepareTemplate() {
         assert !EventQueue.isDispatchThread();
         final String templateName;
+        // #242666
+        final SiteTemplateImplementation siteTemplateRef;
         synchronized (siteTemplateLock) {
             if (siteTemplate.isPrepared()) {
                 // already prepared
                 return null;
             }
             templateName = siteTemplate.getName();
+            siteTemplateRef = siteTemplate;
         }
         // prepare
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+        ProgressHandle progressHandle = ProgressHandle.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
         progressHandle.start();
         try {
             for (;;) {
                 try {
-                    synchronized (siteTemplateLock) {
-                        siteTemplate.prepare();
-                    }
+                    siteTemplateRef.prepare();
                     break;
                 } catch (NetworkException ex) {
                     LOGGER.log(Level.INFO, null, ex.getCause());
@@ -459,7 +460,7 @@ public class SiteTemplateWizard extends JPanel {
 
     private void clearCacheLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_clearCacheLabelMousePressed
         updateClearCacheLabel(true);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Enumeration templates = onlineTemplatesListModel.elements();

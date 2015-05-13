@@ -41,6 +41,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.extexecution.base</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.php.api.phpmodule</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -91,14 +100,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -112,6 +113,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -145,12 +154,14 @@
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.apigen</friend>
                 <friend>org.netbeans.modules.php.atoum</friend>
+                <friend>org.netbeans.modules.php.cake3</friend>
                 <friend>org.netbeans.modules.php.code.analysis</friend>
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.doctrine2</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.nette.tester</friend>
+                <friend>org.netbeans.modules.php.phing</friend>
                 <friend>org.netbeans.modules.php.phpcsfixer</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
                 <friend>org.netbeans.modules.php.phpunit</friend>

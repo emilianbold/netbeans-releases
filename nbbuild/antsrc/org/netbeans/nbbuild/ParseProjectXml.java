@@ -870,7 +870,7 @@ public final class ParseProjectXml extends Task {
         String result;
         AntClassLoader loader = new AntClassLoader();
         try {
-        for (String[] coreModuleVariants : new String[][] {{"org.openide.util", "org.openide.util.base"}, {"org.openide.modules"}, {"org.netbeans.bootstrap"}, {"org.netbeans.core.startup"}}) {
+        for (String[] coreModuleVariants : new String[][] {{"org.openide.util", "org.openide.util.base"}, {"org.openide.modules"}, {"org.netbeans.bootstrap"}, {"org.netbeans.core.startup"}, {"org.netbeans.core.startup.base"}}) {
             ModuleListParser.Entry entry = null;
             for (String coreModule : coreModuleVariants) {
                 entry = modules.findByCodeNameBase(coreModule);

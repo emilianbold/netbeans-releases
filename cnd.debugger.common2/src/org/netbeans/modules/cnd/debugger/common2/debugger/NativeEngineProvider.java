@@ -59,6 +59,7 @@ public abstract class NativeEngineProvider extends DebuggerEngineProvider {
     } 
 
     // interface DebuggerEngineProvider
+    @Override
     public void setDestructor(DebuggerEngine.Destructor destructor) {
 	this.destructor = destructor;
     } 
@@ -68,12 +69,15 @@ public abstract class NativeEngineProvider extends DebuggerEngineProvider {
     }
 
     // interface DebuggerEngineProvider
+    @Override
     public abstract String [] getLanguages();
 
     // interface DebuggerEngineProvider
+    @Override
     public abstract String getEngineTypeID();
 
     // interface DebuggerEngineProvider
+    @Override
     public Object[] getServices() {
 	return new Object[0];
     }

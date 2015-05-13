@@ -61,7 +61,7 @@ import org.netbeans.modules.subversion.remote.api.SVNScheduleKind;
 import org.netbeans.modules.subversion.remote.api.SVNUrl;
 import org.netbeans.modules.subversion.remote.client.cli.SvnCommand;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileSystem;
 
@@ -282,7 +282,12 @@ public class InfoCommand extends SvnCommand {
         
         @Override
 	public String getPath() {
-            return infoMap.get(INFO_PATH);
+            final String path = infoMap.get(INFO_PATH);
+            if (path.startsWith("/")) { //NOI18N
+                return path;
+            } else {
+                return "/"+path; //NOI18N
+            }
 	}
         
         @Override
@@ -327,6 +332,11 @@ public class InfoCommand extends SvnCommand {
         @Override
         public int getDepth() {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return getPath();
         }
     }
 

@@ -117,7 +117,7 @@ public class ReplaceBufferByString {
         TreePath vp = ctx.getVariables().get("$x"); // NOI18N
         TreePath initP = ctx.getVariables().get("$expr"); // NOI18N
         Element el = ci.getTrees().getElement(vp);
-        if (el.getKind() != ElementKind.LOCAL_VARIABLE) {
+        if (el == null || el.getKind() != ElementKind.LOCAL_VARIABLE) {
             return null;
         }
         
@@ -219,6 +219,11 @@ public class ReplaceBufferByString {
             }
             this.wc = ctx.getWorkingCopy();
             this.mk = wc.getTreeMaker();
+            Element el = wc.getTrees().getElement(p);
+            if (el == null) {
+                return;
+            }
+
             this.gu = GeneratorUtilities.get(wc);
             gu.importComments(p.getLeaf(), wc.getCompilationUnit());
             try {
@@ -229,7 +234,7 @@ public class ReplaceBufferByString {
                 stringType = (DeclaredType)stringEl.asType();
                 VariableTree vt = (VariableTree)p.getLeaf();
                 rewriteAppends(new TreePath(p, vt.getInitializer()));
-                ToStringTranslator tst = new ToStringTranslator(wc, wc.getTrees().getElement(p));
+                ToStringTranslator tst = new ToStringTranslator(wc, el);
                 tst.scan(ctx.getPath(), tst);
                 Tree t = mk.Type(stringType);
                 gu.copyComments(vt.getType(), t, true);

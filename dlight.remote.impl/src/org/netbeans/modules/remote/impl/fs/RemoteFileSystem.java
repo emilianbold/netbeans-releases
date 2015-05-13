@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.impl.fs;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.Image;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
@@ -63,6 +64,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -129,17 +131,19 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /** Directory synchronization statistics */
     private final AtomicInteger dirSyncCount = new AtomicInteger(0);
     private static final Object mainLock = new Object();
-    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<File, WeakReference<ReadWriteLock>>();
+    private static final Map<File, WeakReference<ReadWriteLock>> locks = new HashMap<>();
     private final AtomicBoolean readOnlyConnectNotification = new AtomicBoolean(false);
     private final List<FileSystemProblemListener> problemListeners =
-            new ArrayList<FileSystemProblemListener>();
+            new ArrayList<>();
     transient private final StatusImpl status = new StatusImpl();
-    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
-    private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<RemoteFileObjectBase>();
-    private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<RemoteFileObjectBase>();
+    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<>();
+    private final ThreadLocal<RemoteFileObjectBase> beingRemoved = new ThreadLocal<>();
+    private final ThreadLocal<RemoteFileObjectBase> beingCreated = new ThreadLocal<>();
+    private final ThreadLocal<RemoteFileObjectBase> externallyRemoved = new ThreadLocal<>();
     private final RemoteFileZipper remoteFileZipper;
+    private final ThreadLocal<Integer> isInsideVCS = new ThreadLocal<>();
 
-    private final RequestProcessor RP = new RequestProcessor("Connection and R/W change", 1); //NOI18N
+    private final RequestProcessor.Task connectionTask;
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -155,7 +159,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
         cache = new File(filePrefix);
         if (!cache.exists() && !cache.mkdirs()) {
-            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
+            throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath())); // new IOException sic! (ctor)
         }
         this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
         factory.register(rootDelegate);
@@ -179,12 +183,27 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
             @Override
             public void run() {
-                //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
-                WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
+                if (!GraphicsEnvironment.isHeadless()) {
+                    //WindowManager.getDefault().getMainWindow().addWindowFocusListener(focusListener);
+                    WindowManager.getDefault().getMainWindow().addWindowFocusListener(windowFocusListener);
+                }
             }
         });
+        connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
+    }
+
+    public boolean isInsideVCS() {
+        Integer currValue = isInsideVCS.get();        
+        int level = ((currValue == null) ? 0 : currValue.intValue());
+        return level > 0;
+    }
+
+    public void setInsideVCS(boolean value) {
+        Integer currValue = isInsideVCS.get();
+        int newValue = ((currValue == null) ? 0 : currValue.intValue()) + (value ? +1 : -1);
+        isInsideVCS.set(newValue);
     }
 
     void warmup(Collection<String> paths, FileSystemProvider.WarmupMode mode, Collection<String> extensions) {
@@ -210,20 +229,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private class ConnectionChangeRunnable implements Runnable {
 
-        private final Collection<RemoteFileObjectBase> cachedFileObjects;
-        private final boolean connect;
-
-        public ConnectionChangeRunnable(boolean connect) {
-            this.connect = connect;
-            this.cachedFileObjects = factory.getCachedFileObjects();
+        public ConnectionChangeRunnable() {
         }
 
         @Override
         public void run() {
-            if (connect) {
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                 refreshManager.scheduleRefreshOnConnect();
             }
-            for (RemoteFileObjectBase fo : cachedFileObjects) {
+            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
                 fo.connectionChanged();
             }
         }
@@ -233,7 +247,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
-            RP.post(new ConnectionChangeRunnable(true));
+            connectionTask.schedule(0);
         }
     }
 
@@ -241,7 +255,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
-            RP.post(new ConnectionChangeRunnable(false));
+            connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
     }
@@ -252,6 +266,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     public RemoteFileObjectFactory getFactory() {
         return factory;
+    }
+    
+    public int getCachedFileObjectsCount() {
+        return factory.getCachedFileObjectsCount();
     }
 
     public RefreshManager getRefreshManager() {
@@ -277,7 +295,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             ReadWriteLock result = (ref == null) ? null : ref.get();
             if (result == null) {
                 result = new ReentrantReadWriteLock();
-                locks.put(file, new WeakReference<ReadWriteLock>(result));
+                locks.put(file, new WeakReference<>(result));
             }
             return result;
         }
@@ -348,11 +366,13 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
                 return tmpDir;
             } else {
-                throw new IOException("Cannot find temporary folder"); // NOI18N
+                throw RemoteExceptions.createIOException(
+                        NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantFindTemp")); //NOI18N
             }
         } catch (CancellationException ex) {
-            throw new IOException("Cannot find temporary folder", ex); // NOI18N
-        }        
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantFindTemp", ex)); //NOI18N
+        }
     }
     
     @Override
@@ -380,10 +400,11 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 }
             }
         }
-        throw new IOException("Cannot create temporary file"); // NOI18N
+        throw RemoteExceptions.createIOException(
+                NbBundle.getMessage(RemoteFileSystem.class, "EXC_CantCantCreateTemp")); // NOI18N
     }
     
-    public RemoteFileObjectBase findResourceImpl(String name, Set<String> antiloop) {
+    public RemoteFileObjectBase findResourceImpl(String name, @NonNull Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot().getImplementor();
         } else {
@@ -426,7 +447,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             fileOtputStream = new FileOutputStream(attr);
             table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(new IOException(
+                    "Can not set attribute for " + file + "; attr. cache is " + attr, ex)); // NOI18N
         } finally {
             if (fileOtputStream != null) {
                 try {
@@ -456,7 +478,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
-    private static final Map<String, AttrStat> attrStats = new TreeMap<String, AttrStat> ();
+    private static final Map<String, AttrStat> attrStats = new TreeMap<> ();
 
     private static void logAttrName(String name, boolean write) {
         synchronized(attrStats) {
@@ -481,7 +503,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     /*package*/ void dumpAttrStat() {
         Map<String, AttrStat> toDump;
         synchronized(attrStats) {
-            toDump= new TreeMap<String, AttrStat>(attrStats);
+            toDump= new TreeMap<>(attrStats);
         }
         System.out.printf("\n\nDumping attributes statistics (%d elements)\n\n", toDump.size()); // NOI18N
         for (Map.Entry<String, AttrStat> entry : toDump.entrySet()) {
@@ -531,7 +553,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             if (RemoteFileObjectBase.USE_VCS) {
                 FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(this);
                 if (interceptor != null) {
-                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                    try {
+                        setInsideVCS(true);
+                        return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(file.getOwnerFileObject()), attrName);
+                    } finally {
+                        setInsideVCS(false);
+                    }
                 }
             }
         }
@@ -546,7 +573,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (parent != null) {
             File attr = getAttrFile(parent);
             Properties table = readProperties(attr);
-            List<String> res = new ArrayList<String>();
+            List<String> res = new ArrayList<>();
             Enumeration<Object> keys = table.keys();
             String prefix = file.getNameExt()+"["; // NOI18N
             while(keys.hasMoreElements()) {
@@ -684,7 +711,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private void fireProblemListeners(String path) {
         List<FileSystemProblemListener> listenersCopy;
         synchronized (problemListeners) {
-            listenersCopy = new ArrayList<FileSystemProblemListener>(problemListeners);
+            listenersCopy = new ArrayList<>(problemListeners);
         }
         for (FileSystemProblemListener l : listenersCopy) {
             if (path == null) {
@@ -742,7 +769,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private void releaseResources() {
     	ArrayList<String> toBeDeleted;
         synchronized(deleteOnExitFiles) {
-        	toBeDeleted = new ArrayList<String>(deleteOnExitFiles);
+        	toBeDeleted = new ArrayList<>(deleteOnExitFiles);
         }
     	Collections.reverse(toBeDeleted);
         for (String filename : toBeDeleted) {
@@ -755,6 +782,15 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     /*package*/ void setBeingRemoved(RemoteFileObjectBase fo) {
         beingRemoved.set(fo);
+    }
+
+    /*package*/ void setBeingCreated(RemoteFileObjectBase fo) {
+        beingCreated.set(fo);
+    }
+    
+    /** Be very CAUCIOUS when using this FO - it can be in process of VCS operations  */
+    public RemoteFileObjectBase getBeingCreated() {
+        return beingCreated.get();
     }
 
     /*package*/ void setExternallyRemoved(RemoteFileObjectBase fo) {
@@ -772,6 +808,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return fo;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsDirectory(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -811,6 +848,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsFile(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -835,6 +873,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeIsSymbolicLink(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -851,6 +890,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeCanonicalPathDiffers(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase removed = externallyRemoved.get();
@@ -867,6 +907,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP") // Three state
     public Boolean vcsSafeExists(String path) {
         path = PathUtilities.normalizeUnixPath(path);
         RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
@@ -927,9 +968,9 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             Collection<? extends AnnotationProvider> add;
 
             if (previousProviders != null) {
-                add = new HashSet<AnnotationProvider>(now);
+                add = new HashSet<>(now);
                 add.removeAll(previousProviders);
-                HashSet<AnnotationProvider> toRemove = new HashSet<AnnotationProvider>(previousProviders);
+                HashSet<AnnotationProvider> toRemove = new HashSet<>(previousProviders);
                 toRemove.removeAll(now);
                 for (AnnotationProvider ap : toRemove) {
                     ap.removeFileStatusListener(this);
@@ -1033,7 +1074,12 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         public Object getAttribute(String attrName) {
             if (FileOperationsProvider.ATTRIBUTE.equals(attrName)) {
                 if (USE_VCS) {
-                    return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                    try {
+                        //getFileSystem().setInsideVCS(true);
+                        return FileOperationsProvider.getDefault().getFileOperations(getFileSystem());
+                    } finally {
+                        //getFileSystem().setInsideVCS(false);
+                    }
                 }
             }
             return super.getAttribute(attrName);
@@ -1053,9 +1099,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             } catch (ConnectException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);
                 ConnectionNotifier.addTask(execEnv, this);
-            } catch (InterruptedException ex) {
-                RemoteLogger.finest(ex);
-            } catch (InterruptedIOException ex) {
+            } catch (InterruptedException | InterruptedIOException ex) {
                 RemoteLogger.finest(ex);
             } catch (IOException ex) {
                 RemoteLogger.getInstance().log(Level.INFO, NbBundle.getMessage(getClass(), "RemoteFileSystemNotifier.ERROR", execEnv), ex);

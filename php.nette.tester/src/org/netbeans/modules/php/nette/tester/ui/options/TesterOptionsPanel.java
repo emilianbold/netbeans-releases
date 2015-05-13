@@ -230,8 +230,7 @@ public class TesterOptionsPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(testerPathLabel)
@@ -271,8 +270,7 @@ public class TesterOptionsPanel extends JPanel {
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, phpIniBrowseButton, searchTesterButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(searchTesterButton)

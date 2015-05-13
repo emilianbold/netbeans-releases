@@ -42,7 +42,9 @@
 package org.netbeans.lib.v8debug.vars;
 
 import java.util.Map;
+import org.netbeans.lib.v8debug.PropertyBoolean;
 import org.netbeans.lib.v8debug.PropertyLong;
+import org.netbeans.lib.v8debug.V8Scope;
 
 /**
  *
@@ -54,30 +56,34 @@ public final class V8Function extends V8Object {
     
     private final String name;
     private final String inferredName;
+    private final PropertyBoolean resolved;
     private final String source;
     private final PropertyLong scriptRef;
-    private final long scriptId;
+    private final PropertyLong scriptId;
     private final PropertyLong position;
     private final PropertyLong line;
     private final PropertyLong column;
+    private final V8Scope[] scopes;
     
     public V8Function(long handle, PropertyLong constructorFunctionHandle,
                       PropertyLong protoObjectHandle, PropertyLong prototypeObjectHandle,
-                      String name, String inferredName,
-                      String source, PropertyLong scriptRef, long scriptId,
+                      String name, String inferredName, Boolean resolved,
+                      String source, PropertyLong scriptRef, Long scriptId,
                       PropertyLong position, PropertyLong line, PropertyLong column,
-                      Map<String, Property> properties, String text) {
+                      V8Scope[] scopes, Map<String, Property> properties, String text) {
         super(handle, V8Value.Type.Function, FUNCTION_CLASS_NAME,
               constructorFunctionHandle, protoObjectHandle, prototypeObjectHandle,
               properties, text);
         this.name = name;
         this.inferredName = inferredName;
+        this.resolved = new PropertyBoolean(resolved);
         this.source = source;
         this.scriptRef = scriptRef;
-        this.scriptId = scriptId;
+        this.scriptId = new PropertyLong(scriptId);
         this.position = position;
         this.line = line;
         this.column = column;
+        this.scopes = scopes;
     }
 
     public String getName() {
@@ -86,6 +92,10 @@ public final class V8Function extends V8Object {
 
     public String getInferredName() {
         return inferredName;
+    }
+    
+    public PropertyBoolean isResolved() {
+        return resolved;
     }
 
     public String getSource() {
@@ -96,7 +106,7 @@ public final class V8Function extends V8Object {
         return scriptRef;
     }
 
-    public long getScriptId() {
+    public PropertyLong getScriptId() {
         return scriptId;
     }
 
@@ -110,6 +120,10 @@ public final class V8Function extends V8Object {
 
     public PropertyLong getColumn() {
         return column;
+    }
+    
+    public V8Scope[] getScopes() {
+        return scopes;
     }
     
 }

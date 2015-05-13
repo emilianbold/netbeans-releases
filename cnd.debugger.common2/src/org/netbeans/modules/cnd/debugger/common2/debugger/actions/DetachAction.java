@@ -48,8 +48,6 @@ import java.lang.String;
 
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.HelpCtx;
-import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
@@ -67,11 +65,13 @@ public class DetachAction
     
 
     // interface CallableSystemAction
+    @Override
     protected boolean asynchronous() {
 	return false;
     } 
 
     // interface CallableSystemAction
+    @Override
     public void performAction() {
 	NativeDebugger debugger = NativeDebuggerManager.get().currentDebugger();
 	if (debugger != null) {
@@ -80,27 +80,32 @@ public class DetachAction
     }
     
     // interface SystemAction
+    @Override
     public String getName() {
 	return Catalog.get("LBL_Detach"); // NOI18N
     }
     
     // interface SystemAction
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx ("Welcome_fdide_home"); // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/cnd/debugger/common2/icons/detach_from_process.png"; // NOI18N
     }
 
     // interface SystemAction
+    @Override
     protected void initialize() {
 	super.initialize();
 	setEnabled(false);
     }    
 
     // interface StateListener
+    @Override
     public void update(State state) {
 	if (state == null) {
 	    setEnabled(false);

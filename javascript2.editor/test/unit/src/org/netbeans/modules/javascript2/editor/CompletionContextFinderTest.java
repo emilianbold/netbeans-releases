@@ -150,6 +150,18 @@ public class CompletionContextFinderTest extends JsTestBase {
         checkCompletionContext("testfiles/completion/issue249264.js", "document.getElementsByClassName('^');", CompletionContext.STRING_ELEMENTS_BY_CLASS_NAME);
     }
     
+    public void testCallArgumentContext_01() throws Exception {
+        checkCompletionContext("testfiles/completion/simpleCallArgumentContext.js", "r.send(^);", CompletionContext.CALL_ARGUMENT);
+    }
+    
+    public void testCallArgumentContext_02() throws Exception {
+        checkCompletionContext("testfiles/completion/simpleCallArgumentContext.js", "r.send({}, ^);", CompletionContext.CALL_ARGUMENT);
+    }
+    
+    public void testIssue250369() throws Exception {
+        checkCompletionContext("testfiles/completion/issue250369.js", "* @^", CompletionContext.DOCUMENTATION);
+    }
+    
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

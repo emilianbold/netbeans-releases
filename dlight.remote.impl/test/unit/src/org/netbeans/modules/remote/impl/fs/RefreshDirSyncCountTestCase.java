@@ -78,7 +78,7 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
     public void test_iz_210439() throws Exception {
         String baseDir = null;
         try {
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             baseDir = mkTempAndRefreshParent(true);
             String[] struct = new String[] {
                 "d real_dir_1",
@@ -118,7 +118,7 @@ public class RefreshDirSyncCountTestCase extends RemoteFileTestBase {
     }
     
     private static Collection<RemoteFileObjectBase> filterDirectories(Collection<RemoteFileObjectBase> fileObjects) {
-        Collection<RemoteFileObjectBase> result = new HashSet<RemoteFileObjectBase>();
+        Collection<RemoteFileObjectBase> result = new HashSet<>();
         for (RemoteFileObjectBase fo : fileObjects) {
             // Don't call isValid() or isFolder() - they might be SLOW!
             if (isDirectoryXXX(fo)) {

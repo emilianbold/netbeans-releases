@@ -46,7 +46,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
-import org.glassfish.tools.ide.utils.NetUtils;
+import org.netbeans.modules.glassfish.tooling.utils.NetUtils;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassFishSettings;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
@@ -84,6 +84,9 @@ public abstract class InstancePanel extends javax.swing.JPanel {
         /** Start Derby property. */
         final String startDerbyProperty;
 
+        /** Loopback property. */
+        final String loopbackProperty;
+
         /**
          * Creates an instance of check box fields properties by retrieving them
          * from GlassFish instance object.
@@ -106,7 +109,8 @@ public abstract class InstancePanel extends javax.swing.JPanel {
                     GlassfishModule.SESSION_PRESERVATION_FLAG);
             startDerbyProperty
                     = instance.getProperty(GlassfishModule.START_DERBY_FLAG);
-            
+            loopbackProperty
+                    = instance.getProperty(GlassfishModule.LOOPBACK_FLAG);
         }
 
         /**
@@ -145,6 +149,7 @@ public abstract class InstancePanel extends javax.swing.JPanel {
                 final boolean jdbcDriverDeploymentFlag,
                 final boolean preserveSessionsFlag,
                 final boolean startDerbyFlag,
+                final boolean loopbackFlag,
                 final GlassfishInstance instance) {
             // Update properties only when stored value differs.
             if (cometSupportFlag != getCommetSupportProperty()) {
@@ -167,6 +172,10 @@ public abstract class InstancePanel extends javax.swing.JPanel {
             if (startDerbyFlag != getStartDerbyProperty()) {
                 storeBooleanProperty(GlassfishModule.START_DERBY_FLAG,
                         startDerbyFlag, instance);
+            }
+            if (loopbackFlag != getLoopbackProperty()) {
+                storeBooleanProperty(GlassfishModule.LOOPBACK_FLAG,
+                        loopbackFlag, instance);
             }
         }
 
@@ -215,6 +224,10 @@ public abstract class InstancePanel extends javax.swing.JPanel {
             return Boolean.parseBoolean(startDerbyProperty);
         }
 
+        protected boolean getLoopbackProperty() {
+            return Boolean.parseBoolean(loopbackProperty);
+        }
+
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -259,6 +272,8 @@ public abstract class InstancePanel extends javax.swing.JPanel {
 
     /** Start Derby flag. */
     protected boolean startDerbyFlag;
+
+    protected boolean loopbackFlag;
 
     /** Configuration file <code>domain.xml</code> was parsed successfully. */
     protected boolean configFileParsed;
@@ -363,7 +378,8 @@ public abstract class InstancePanel extends javax.swing.JPanel {
         httpMonitorFlag = properties.getHttpMonitorProperty();
         jdbcDriverDeploymentFlag= properties.getJdbcDriverDeploymentProperty();
         preserverSessionsFlag = properties.getPreserveSessionsProperty();
-        startDerbyFlag = properties.getStartDerbyProperty();        
+        startDerbyFlag = properties.getStartDerbyProperty();
+        loopbackFlag = properties.getLoopbackProperty();
     }
 
     /**
@@ -386,6 +402,7 @@ public abstract class InstancePanel extends javax.swing.JPanel {
         showPassword.setSelected(showPasswordFlag);
         preserveSessions.setSelected(preserverSessionsFlag);
         startDerby.setSelected(startDerbyFlag);
+        localIpCB.setSelected(loopbackFlag);
     }
 
     /**
@@ -412,7 +429,7 @@ public abstract class InstancePanel extends javax.swing.JPanel {
         CheckBoxProperties properties = new CheckBoxProperties(instance);
         properties.store(cometSupportFlag, httpMonitorFlag,
                 jdbcDriverDeploymentFlag, preserverSessionsFlag,
-                startDerbyFlag, instance);
+                startDerbyFlag, loopbackFlag, instance);
         GlassFishSettings.setGfShowPasswordInPropertiesForm(showPasswordFlag);
     }
 
@@ -554,6 +571,8 @@ public abstract class InstancePanel extends javax.swing.JPanel {
         initCredentials();
         initCheckBoxes();
         updatePasswordVisibility();
+        // do the magic according to loopback checkbox
+        localIpCBActionPerformed(null);
     }
 
     /**
@@ -885,6 +904,7 @@ public abstract class InstancePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_startDerbyActionPerformed
 
     private void localIpCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_localIpCBActionPerformed
+        loopbackFlag = localIpCB.isSelected();
         Object hostValue = hostLocalField.getEditor().getItem();
         hostLocalField.setEnabled(false);
         ((IpComboBox)hostLocalField).updateModel(ips, localIpCB.isSelected());

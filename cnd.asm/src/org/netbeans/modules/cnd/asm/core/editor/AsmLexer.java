@@ -60,11 +60,11 @@ import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmTokenId;
 public class AsmLexer implements Lexer<AsmTokenId> {
     
     private AsmHighlightLexer lexer;
-    private LexerRestartInfo info;
-    private AsmSyntax syntax;
-    private LexerInput input;
+    private final LexerRestartInfo info;
+    private final AsmSyntax syntax;
+    private final LexerInput input;
     
-    private TokenFactory<AsmTokenId> tokenFactory;
+    private final TokenFactory<AsmTokenId> tokenFactory;
 
     public AsmLexer(LexerRestartInfo<AsmTokenId> info, AsmSyntax syntax) {
         this.syntax = syntax;

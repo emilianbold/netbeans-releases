@@ -44,8 +44,11 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -60,6 +63,7 @@ import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -76,26 +80,19 @@ import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.spi.model.CsmBaseUtilitiesProvider;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
 public class CsmBaseUtilities {
-    
+
     private static final int MAX_DEPTH = 20;
-    
-    
+
+
     /** Creates a new instance of CsmBaseUtilities */
     private CsmBaseUtilities() {
-    }
-    
-    public static String getFileLanguage(CsmFile file) {
-        return CsmBaseUtilitiesProvider.getDefault().getFileLanguage(file);
-    }
-    
-    public static String getFileLanguageFlavor(CsmFile file) {
-        return CsmBaseUtilitiesProvider.getDefault().getFileLanguageFlavor(file);
     }
 
     public static boolean isValid(CsmObject obj) {
@@ -105,11 +102,11 @@ public class CsmBaseUtilities {
             return obj != null;
         }
     }
-    
+
     public static boolean isUnresolved(Object obj) {
         return CsmBaseUtilitiesProvider.getDefault().isUnresolved(obj);
     }
-    
+
     public static boolean isPointer(CsmType type) {
         int iteration = MAX_DEPTH;
         while (type != null && iteration != 0) {
@@ -150,8 +147,8 @@ public class CsmBaseUtilities {
             iteration--;
         }
         return 0;
-    }    
-    
+    }
+
     public static CsmFunctionPointerType tryGetFunctionPointerType(CsmType type) {
         int iteration = MAX_DEPTH;
         while (type != null && iteration != 0) {
@@ -168,8 +165,8 @@ public class CsmBaseUtilities {
             iteration--;
         }
         return null;
-    }          
-    
+    }
+
     /**
      * Checks if variable has external linkage
      * @param var
@@ -178,14 +175,43 @@ public class CsmBaseUtilities {
     public static boolean isGlobalVariable(CsmVariable var) {
         return CsmBaseUtilitiesProvider.getDefault().isGlobalVariable(var);
     }
-    
+
     public static boolean isGlobalNamespace(CsmScope scope) {
         if (CsmKindUtilities.isNamespace(scope)) {
             return ((CsmNamespace)scope).isGlobal();
         }
         return false;
     }
-    
+
+    public static CsmScope getLastCommonScope(CsmScope first, CsmScope second) {
+        if (first == null || second == null) {
+            return null;
+        }
+        if (first.equals(second)) {
+            return first;
+        }
+        int firstDepth = getScopeDepth(first);
+        int secondDepth = getScopeDepth(second);
+        while (firstDepth > secondDepth && CsmKindUtilities.isScopeElement(first)) {
+            first = ((CsmScopeElement) first).getScope();
+            --firstDepth;
+        }
+        while (firstDepth < secondDepth && CsmKindUtilities.isScopeElement(second)) {
+            second = ((CsmScopeElement) second).getScope();
+            --secondDepth;
+        }
+        if (firstDepth == secondDepth) {
+            while (!Objects.equals(first, second) && CsmKindUtilities.isScopeElement(first) && CsmKindUtilities.isScopeElement(second)) {
+                first = ((CsmScopeElement) first).getScope();
+                second = ((CsmScopeElement) second).getScope();
+            }
+            if (Objects.equals(first, second)) {
+                return first;
+            }
+        }
+        return null;
+    }
+
     public static boolean sameSignature(CsmFunction checkDecl, CsmFunction targetDecl) {
         // we treat const and non-const functions as the same
         CharSequence sigCheck = checkDecl.getSignature().toString().replace("const", "").trim(); // NOI18N // NOI18N
@@ -195,7 +221,7 @@ public class CsmBaseUtilities {
         }
         return false;
     }
-    
+
     public static boolean isInlineFunction(CsmFunction fun) {
         if (fun.isInline()) {
             return true;
@@ -212,7 +238,7 @@ public class CsmBaseUtilities {
             }
         }
     }
-    
+
     public static boolean isStaticContext(CsmFunction fun) {
         assert (fun != null) : "must be not null";
         // static context is in global functions and static methods
@@ -226,9 +252,9 @@ public class CsmBaseUtilities {
         }
         return false;
     }
-    
+
     private static boolean TRACE_XREF_REPOSITORY = Boolean.getBoolean("cnd.modelimpl.trace.xref.repository");
-    
+
     public static CsmFunction getOperator(CsmClassifier cls, CsmFunction.OperatorKind opKind) {
         if (!CsmKindUtilities.isClass(cls)) {
             return null;
@@ -239,18 +265,18 @@ public class CsmBaseUtilities {
                     return (CsmFunction)member;
                 }
             }
-        }        
+        }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param target
      * @return new CsmObject[] { declaration, definion }
      */
     public static CsmObject[] getDefinitionDeclaration(CsmObject target, boolean unboxInstantiation) {
         CsmObject decl;
-        CsmObject def; 
+        CsmObject def;
         if (unboxInstantiation && CsmKindUtilities.isTemplateInstantiation(target)) {
             target = ((CsmInstantiation)target).getTemplateDeclaration();
         }
@@ -313,7 +339,7 @@ public class CsmBaseUtilities {
                 decl = classifiers.iterator().next();
                 def = cls;
                 if (TRACE_XREF_REPOSITORY) {
-                    System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
+                    System.err.printf("not found declaration for self: %s; use %s%n", target, decl);
                 }
             } else {
                 decl = target;
@@ -326,10 +352,10 @@ public class CsmBaseUtilities {
         assert decl != null;
         return new CsmObject[] { decl, def };
     }
-    
+
     public static CsmClass getFunctionClass(CsmFunction fun) {
         return CsmBaseUtilitiesProvider.getDefault().getFunctionClass(fun);
-    }   
+    }
 
     public static CsmClass getFunctionClassByQualifiedName(CsmFunction fun) {
         if (fun != null) {
@@ -362,7 +388,7 @@ public class CsmBaseUtilities {
         }
         return objClass;
     }
-    
+
     public static CsmNamespace getObjectNamespace(CsmObject obj) {
         CsmNamespace objNs = null;
         if (CsmKindUtilities.isNamespace(obj)) {
@@ -381,19 +407,19 @@ public class CsmBaseUtilities {
         }
         return objNs;
     }
-    
+
     public static CsmNamespace getFunctionNamespace(CsmFunction fun) {
         return CsmBaseUtilitiesProvider.getDefault().getFunctionNamespace(fun);
     }
-    
+
     public static CsmNamespace getClassNamespace(CsmClassifier cls) {
         return CsmBaseUtilitiesProvider.getDefault().getClassNamespace(cls);
-    } 
-    
+    }
+
     public static CsmFunction getFunctionDeclaration(CsmFunction fun) {
         return CsmBaseUtilitiesProvider.getDefault().getFunctionDeclaration(fun);
-    }    
-    
+    }
+
     public static boolean isFileLocalFunction(CsmFunction fun) {
         CsmFunction decl = getFunctionDeclaration(fun);
         if (decl != null && CsmKindUtilities.isFile(decl.getScope())) {
@@ -401,7 +427,7 @@ public class CsmBaseUtilities {
         }
         return false;
     }
-    
+
     public static boolean isDeclarationFromUnnamedNamespace(CsmObject obj) {
         if (CsmKindUtilities.isScopeElement(obj)) {
             CsmScope scope = ((CsmScopeElement)obj).getScope();
@@ -414,22 +440,22 @@ public class CsmBaseUtilities {
         }
         return false;
     }
-    
+
     public static CsmClass getContextClass(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {
             return null;
-        }   
+        }
         CsmClass clazz = null;
         if (CsmKindUtilities.isClass(contextDeclaration)) {
             clazz = (CsmClass)contextDeclaration;
         } else if (CsmKindUtilities.isClassMember(contextDeclaration)) {
-            clazz = ((CsmMember)contextDeclaration).getContainingClass();            
+            clazz = ((CsmMember)contextDeclaration).getContainingClass();
         } else if (CsmKindUtilities.isFunction(contextDeclaration)) {
             clazz = getFunctionClass((CsmFunction)contextDeclaration);
         }
         return clazz;
     }
-    
+
     public static CsmFunction getContextFunction(CsmOffsetableDeclaration contextDeclaration) {
         if (contextDeclaration == null) {
             return null;
@@ -439,8 +465,8 @@ public class CsmBaseUtilities {
             fun = (CsmFunction)contextDeclaration;
         }
         return fun;
-    }      
-    
+    }
+
     public static CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
         return CsmClassifierResolver.getDefault().getOriginalClassifier(orig, contextFile);
     }
@@ -464,7 +490,7 @@ public class CsmBaseUtilities {
                     }
                     // we have top level declaration or decl with unresolved scope
                     return elem;
-                }   
+                }
                 // else let scope to be analyzed
             } else if(CsmKindUtilities.isInclude(csmTopLevelObject)) {
                 return (CsmInclude)csmTopLevelObject;
@@ -476,8 +502,8 @@ public class CsmBaseUtilities {
             }
         }
         return csmTopLevelObject;
-    }    
-    
+    }
+
     private static boolean stopOnScope(CsmScope scope) {
         if (scope == null) {
             return true;
@@ -498,5 +524,14 @@ public class CsmBaseUtilities {
             }
         }
         return false;
+    }
+
+    private static int getScopeDepth(CsmScope scope) {
+        int depth = 1;
+        while (CsmKindUtilities.isScopeElement(scope)) {
+            scope = ((CsmScopeElement) scope).getScope();
+            ++depth;
+        }
+        return depth;
     }
 }

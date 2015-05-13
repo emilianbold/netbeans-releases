@@ -66,7 +66,7 @@ public interface FontColorProvider {
         FUNCTION("cc-highlighting-function"), // NOI18N
         FUNCTION_USAGE("cc-highlighting-function-usage"), // NOI18N
         CLASS_FIELD("cc-highlighting-class-fields"), // NOI18N
-        MARK_OCCURENCES("cc-highlighting-mark-occurrences"), // NOI18N
+        MARK_OCCURENCES("mark-occurrences"), // NOI18N
         TYPEDEF("cc-highlighting-typedefs"), // NOI18N
         UNUSED_VARIABLES("cc-highlighting-unused-variables"); // NOI18N
 

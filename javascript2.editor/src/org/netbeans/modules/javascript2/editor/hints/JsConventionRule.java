@@ -199,6 +199,10 @@ public class JsConventionRule extends JsAstRule {
             ts.move(offset);
             if (ts.movePrevious() && ts.moveNext()) {
                 JsTokenId id = ts.token().id();
+                if (id == JsTokenId.ERROR) {
+                    // don't display hints for error tokens. 
+                    return;
+                }
                 if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
@@ -219,8 +223,8 @@ public class JsConventionRule extends JsAstRule {
                     //try to find ; or , after
                     Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     id = next.id();
-                    if (id == JsTokenId.IDENTIFIER) {
-                       // probably we are at the beginning of the next expression
+                    if (id == JsTokenId.IDENTIFIER || id == JsTokenId.BRACKET_RIGHT_CURLY) {
+                       // probably we are at the beginning of the next expression or at the end of the context
                        ts.movePrevious();
                     }
                 }
@@ -232,19 +236,29 @@ public class JsConventionRule extends JsAstRule {
                             && !JsEmbeddingProvider.isGeneratedIdentifier(previous.text().toString())) {
                         fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
                         if (fileOffset >= 0) {
-                            hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
-                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                    new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                            addMissingSemicolonHint(fileOffset, ts.token().text().toString());
                         }
                     }
                 }
             } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
                 // we are probably at the end of file without the semicolon
                 fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
-                hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
-                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                        new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
+                addMissingSemicolonHint(fileOffset, ts.token().text().toString());
             }
+        }
+        
+        private void addMissingSemicolonHint(int offset, String problemText) {
+            String correctedText = problemText;
+            int index = correctedText.indexOf('\n');
+            if (index == 0) {
+                index = correctedText.indexOf('\n', 1);
+            }
+            if ( index > 0 ) {
+                correctedText = correctedText.substring(0, index);
+            }
+             hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(correctedText),
+                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                    new OffsetRange(offset, offset + correctedText.length()), null, 500));
         }
 
         @NbBundle.Messages("AssignmentCondition=Expected a conditional expression and instead saw an assignment.")
@@ -255,9 +269,31 @@ public class JsConventionRule extends JsAstRule {
             if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
                 if (binaryNode.isAssignment()) {
-                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), condition.getStart());
+                    if (ts == null) {
+                        return;
+                    }
+                    ts.move(condition.getStart());
+                    int parenBalance = 0;
+                    if (ts.moveNext()) {
+                        JsTokenId id = ts.token().id();
+                        
+                        while ( id != JsTokenId.KEYWORD_IF && id != JsTokenId.KEYWORD_FOR && id != JsTokenId.KEYWORD_WHILE && ts.movePrevious()) {
+                            id = ts.token().id();
+                            if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                parenBalance--;
+                            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                parenBalance++;
+                            }
+                        }
+                    }
+                    if (parenBalance == 1) {
+                        // 1 -> if ( a = b ) -> hint is valid
+                        // > 1 -> if ((a=b)) -> hint is not valid - see https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Statements/if...else
+                        hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
+                                context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    }
                 }
                 if (binaryNode.lhs() instanceof BinaryNode) {
                     checkAssignmentInCondition(binaryNode.lhs());

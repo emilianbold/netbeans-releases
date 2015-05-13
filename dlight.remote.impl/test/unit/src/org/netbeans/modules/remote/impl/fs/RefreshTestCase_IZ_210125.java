@@ -42,7 +42,6 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -50,7 +49,6 @@ import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
-import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
 import org.netbeans.modules.remote.test.RemoteApiTest;
 import org.openide.filesystems.FileObject;
@@ -91,7 +89,7 @@ public class RefreshTestCase_IZ_210125 extends RemoteFileTestBase {
             String dirPath1 = dirFO1.getPath();
             String filePath1 = fileFO1.getPath();
             //RemoteFileSystemManager.getInstance().getFileSystem(execEnv).getRefreshManager().testWaitLastRefreshFinished();
-            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv);
+            RemoteFileSystemManager.getInstance().resetFileSystem(execEnv, false);
             sleep(100); // just in case
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", "rm -rf " + dirPath1);
             assertTrue("error removing " + dirPath1 + " at " + execEnv, res.isOK());

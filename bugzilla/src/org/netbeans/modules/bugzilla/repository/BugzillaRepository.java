@@ -95,6 +95,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 
 /**
  *
@@ -119,7 +120,8 @@ public class BugzillaRepository {
     private final Object CACHE_LOCK = new Object();
     private UnsubmittedTasksContainer unsubmittedTasksContainer;
     private PropertyChangeListener unsubmittedTasksListener;
-
+    private boolean queryCleanedup = false;
+    
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         support = new PropertyChangeSupport(this);
@@ -451,6 +453,21 @@ public class BugzillaRepository {
     
     private Set<BugzillaQuery> getQueriesIntern() {
         if(queries == null) {
+            if(!queryCleanedup) {
+                // clean up. we are deleting adhoc queries when closing the query dialog
+                // an eventual crash could have left some stored in MylynSupport
+                queryCleanedup = true;
+                try {
+                    Set<IRepositoryQuery> iqs = MylynSupport.getInstance().getRepositoryQueries(taskRepository);
+                    for (IRepositoryQuery q : iqs) {
+                        if(q.getSummary().startsWith(BugzillaQuery.BUGZILLA_ADHOC_QUERY_PREFIX)) {
+                            MylynSupport.getInstance().deleteQuery(q);
+                        }
+                    }
+                } catch (CoreException ex) { 
+                    Bugzilla.LOG.log(Level.INFO, null, ex);
+                }
+            }
             queries = new HashSet<BugzillaQuery>(10);
             String[] qs = BugzillaConfig.getInstance().getQueries(getID());
             for (String queryName : qs) {

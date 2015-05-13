@@ -45,8 +45,8 @@ package org.netbeans.modules.glassfish.spi;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
-import org.glassfish.tools.ide.TaskStateListener;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.tooling.TaskStateListener;
+import org.netbeans.modules.glassfish.tooling.admin.ResultString;
 
 /**
  * Extended version of GlassfishModule supporting deployment of standalone

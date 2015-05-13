@@ -63,11 +63,13 @@ public abstract class DbgProfileXMLCodec extends XMLDecoder implements XMLEncode
     } 
 
     // interface XMLDecoder
+    @Override
     public String tag() {
 	return profile.getId();
     }
 
     // interface XMLDecoder
+    @Override
     public void start(Attributes atts) throws VersionException {
 	String what = "Debug profile"; // NOI18N
 	int maxVersion = 1;
@@ -75,16 +77,20 @@ public abstract class DbgProfileXMLCodec extends XMLDecoder implements XMLEncode
     }
 
     // interface XMLDecoder
+    @Override
     public void end() {
 	profile.clearChanged();
     }
 
     // interface XMLDecoder
-    public abstract void startElement(String element, Attributes atts) ;
+    @Override
+    public abstract void startElement(String element, Attributes atts);
 
     // interface XMLDecoder
-    public abstract void endElement(String element, String currentText) ;
+    @Override
+    public abstract void endElement(String element, String currentText);
 
     // intrface XMLEncoder
-    public abstract void encode(XMLEncoderStream xes) ;
+    @Override
+    public abstract void encode(XMLEncoderStream xes);
 }

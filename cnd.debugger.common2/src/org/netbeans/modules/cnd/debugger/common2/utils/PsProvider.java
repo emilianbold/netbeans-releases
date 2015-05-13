@@ -197,14 +197,17 @@ public abstract class PsProvider {
 	    super(host);
 	}
 
+        @Override
 	public int commandColumnIndex() {
 	    return 4;
 	}
 
+        @Override
         public int pidColumnIndex() {
 	    return 1;
 	}
 
+        @Override
 	public String[] headerStr() {
 	    return header_str_solaris;
 	}
@@ -221,6 +224,7 @@ public abstract class PsProvider {
 //	    return args;
 //	}
 
+        @Override
 	protected String uidCommand() {
 	    return "/usr/xpg4/bin/id -u";	// NOI18N
 	}
@@ -250,6 +254,7 @@ public abstract class PsProvider {
 	}
 	*/
 	
+        @Override
 	protected String psCommand(String uid) {
 	    // SHOULD set LC_ALL=C here since we're depending
 	    // on column widths to get to the individual ps items!
@@ -335,14 +340,17 @@ public abstract class PsProvider {
 	    super(host);
 	}
 
+        @Override
 	public int commandColumnIndex() {
 	    return 4;
 	}
 
+        @Override
         public int pidColumnIndex() {
 	    return 1;
 	}
 
+        @Override
 	public String[] headerStr() {
 	    return header_str_linux;
 	}
@@ -359,6 +367,7 @@ public abstract class PsProvider {
 //	    return args;
 //	}
 
+        @Override
 	protected String uidCommand() {
 	    return "/usr/bin/id -u";	// NOI18N
 	}
@@ -386,6 +395,7 @@ public abstract class PsProvider {
 	}
 	*/
 
+        @Override
 	protected String psCommand(String uid) {
 	    // SHOULD set LC_ALL=C here since we're depending
 	    // on column widths to get to the individual ps items!
@@ -456,6 +466,7 @@ public abstract class PsProvider {
 	    super(host);
 	}
 
+        @Override
 	public int commandColumnIndex() {
 	    return 4;
 	}
@@ -466,18 +477,22 @@ public abstract class PsProvider {
             return 1;
         }
 
+        @Override
         public int pidColumnIndex() {
 	    return 0;
 	}
 
+        @Override
 	public String[] headerStr() {
 	    return header_str_windows;
 	}
 
+        @Override
 	protected String uidCommand() {
 	    return getUtilityPath("id") + " -u";	// NOI18N
 	}
 
+        @Override
 	protected String psCommand(String uid) {
 	    // SHOULD set LC_ALL=C here since we're depending
 	    // on column widths to get to the individual ps items!

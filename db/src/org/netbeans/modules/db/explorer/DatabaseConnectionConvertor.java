@@ -115,11 +115,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     // Ensures DO's created for newly registered connections cannot be garbage-collected
     // before they are recognized by FolderLookup. This makes sure the FolderLookup
     // will return the originally registered connection instance.
-    private static final WeakHashMap<DatabaseConnection, DataObject> newConn2DO = new WeakHashMap<DatabaseConnection, DataObject>();
+    private static final WeakHashMap<DatabaseConnection, DataObject> newConn2DO = new WeakHashMap<>();
 
     // Helps ensure that when recognizing a new DO for a newly registered connection,
     // the DO will hold the originally registered connection instance instead of creating a new one.
-    private static final Map<FileObject, DatabaseConnection> newFile2Conn = new ConcurrentHashMap<FileObject, DatabaseConnection>();
+    private static final Map<FileObject, DatabaseConnection> newFile2Conn = new ConcurrentHashMap<>();
     
     private final Reference<XMLDataObject> holder;
 
@@ -128,7 +128,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      */
     private Lookup lookup = null;
 
-    private Reference<DatabaseConnection> refConnection = new WeakReference<DatabaseConnection>(null);
+    private Reference<DatabaseConnection> refConnection = new WeakReference<>(null);
     
     private PCL listener;
 
@@ -138,12 +138,12 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     }
     
     private DatabaseConnectionConvertor() {
-        holder = new WeakReference<XMLDataObject>(null);
+        holder = new WeakReference<>(null);
     }
 
     @SuppressWarnings("LeakingThisInConstructor")
     private DatabaseConnectionConvertor(XMLDataObject object) {
-        holder = new WeakReference<XMLDataObject>(object);
+        holder = new WeakReference<>(object);
         InstanceContent cookies = new InstanceContent();
         cookies.add(this);
         lookup = new AbstractLookup(cookies);
@@ -151,7 +151,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     
     private DatabaseConnectionConvertor(XMLDataObject object, DatabaseConnection existingInstance) {
         this(object);
-        refConnection = new WeakReference<DatabaseConnection>(existingInstance);
+        refConnection = new WeakReference<>(existingInstance);
         attachListener();
     }
     
@@ -202,7 +202,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             try {
                 XMLReader reader = XMLUtil.createXMLReader();
                 InputSource is = new InputSource(obj.getPrimaryFile().getInputStream());
-                is.setSystemId(connectionFO.getURL().toExternalForm());
+                is.setSystemId(connectionFO.toURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(EntityCatalog.getDefault());
@@ -211,14 +211,15 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
             } catch (SAXException ex) {
                 Exception x = ex.getException();
                 LOGGER.log(Level.FINE, "Cannot read " + obj + ". Cause: " + ex.getLocalizedMessage(), ex);
-                if (x instanceof java.io.IOException)
+                if (x instanceof java.io.IOException) {
                     throw (IOException)x;
-                else
+                } else {
                     throw new java.io.IOException(ex.getMessage());
+            }
             }
 
             DatabaseConnection inst = createDatabaseConnection(handler);
-            refConnection = new WeakReference<DatabaseConnection>(inst);
+            refConnection = new WeakReference<>(inst);
             attachListener();
             return inst;
         }
@@ -256,7 +257,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         if (handler.useScrollableCursors != null) {
             dbconn.setUseScrollableCursors(handler.useScrollableCursors);
         }
-        LOGGER.fine("Created DatabaseConnection[" + dbconn.toString() + "] from file: " + handler.connectionFileName);
+        LOGGER.log(Level.FINE, "Created DatabaseConnection[{0}] from file: {1}",
+                new Object[] {dbconn, handler.connectionFileName});
 
         return dbconn;
     }
@@ -265,7 +267,7 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
      * Creates the XML file describing the specified database connection.
      */
     public static DataObject create(DatabaseConnection dbconn) throws IOException {
-        FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH);
+        FileObject fo = FileUtil.createFolder(FileUtil.getConfigRoot(), CONNECTIONS_PATH);
         DataFolder df = DataFolder.findFolder(fo);
 
         AtomicWriter writer = new AtomicWriter(dbconn, df, convertToFileName(dbconn.getName()));
@@ -283,13 +285,18 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
     public static void remove(DatabaseConnection dbconn) throws IOException {
         String name = dbconn.getName();
         FileObject fo = FileUtil.getConfigFile(CONNECTIONS_PATH); //NOI18N
+        // If CONNECTIONS_PATH can't be found (getConfigFile returns null)
+        // its useless to try to delete any connection
+        if (fo == null) {
+            return;
+        }
         DataFolder folder = DataFolder.findFolder(fo);
         DataObject[] objects = folder.getChildren();
         
         for (int i = 0; i < objects.length; i++) {
             InstanceCookie ic = objects[i].getCookie(InstanceCookie.class);
             if (ic != null) {
-                Object obj = null;
+                Object obj;
                 try {
                     obj = ic.instanceCreate();
                 } catch (ClassNotFoundException e) {
@@ -373,13 +380,11 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 lck = data.lock();
             }
 
-            try {
-                OutputStream ostm = data.getOutputStream(lck);
-                PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+            try (OutputStream ostm = data.getOutputStream(lck);
+                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
+                    ) {
                 write(writer, data.getNameExt());
                 writer.flush();
-                writer.close();
-                ostm.close();
             } finally {
                 lck.releaseLock();
             }
@@ -479,8 +484,8 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
         Properties connectionProperties;
         boolean separateSystemTables = false;
         Boolean useScrollableCursors = null;
-        List<String> importantSchemas = new ArrayList<String>();
-        List<String> importantCatalogs = new ArrayList<String>();
+        List<String> importantSchemas = new ArrayList<>();
+        List<String> importantCatalogs = new ArrayList<>();
         
         public Handler(String connectionFileName) {
             this.connectionFileName = connectionFileName;
@@ -527,18 +532,17 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
                 } catch (IllegalArgumentException e) {
                     LOGGER.log(Level.WARNING,
                             "Illegal Base 64 string in password for connection " 
-                            + connectionFileName + ", cause: " + e); // NOI18N
-                    
+                            + connectionFileName, e); // NOI18N
                         // no password stored => this will require the user to re-enter the password
                 }
                 if (bytes != null) {
                     try {
-                        LOGGER.log(Level.FINE, "Reading old settings from " + connectionFileName);
+                        LOGGER.log(Level.FINE, "Reading old settings from {0}", connectionFileName);
                         DatabaseConnection.storePassword(connectionFileName, decodePassword(bytes).toCharArray());
                     } catch (CharacterCodingException e) {
                         LOGGER.log(Level.WARNING,
-                                "Illegal UTF-8 bytes in password for connection " 
-                                + connectionFileName + ", cause: " + e); // NOI18N
+                                "Illegal UTF-8 bytes in password for connection "
+                                + connectionFileName, e); // NOI18N
                         // no password stored => this will require the user to re-enter the password
                     }
                 }
@@ -589,24 +593,19 @@ public class DatabaseConnectionConvertor implements Environment.Provider, Instan
          * The list of PropertyChangeEvent that cause the connections to be saved.
          * Should probably be a set of DatabaseConnection's instead.
          */
-        LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<PropertyChangeEvent>();
+        LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<>();
         
         RequestProcessor.Task saveTask = null;
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            // TODO: Fix properties - these five properties should by folded
-            // into one
-            if (evt.getPropertyName().equals("connected") //NOI18N
-                    || evt.getPropertyName().equals("connectionComplete")//NOI18N
-                    || evt.getPropertyName().equals("connecting") //NOI18N
-                    || evt.getPropertyName().equals("disconnected") //NOI18N
-                    || evt.getPropertyName().equals("failed")) { //NOI18N
+            if ("state".equals(evt.getPropertyName())) { //NOI18N
                 return;
             }
             synchronized (this) {
-                if (saveTask == null)
+                if (saveTask == null) {
                     saveTask = RP.create(this);
+                }
                 keepAlive.add(evt);
             }
             saveTask.schedule(DELAY);

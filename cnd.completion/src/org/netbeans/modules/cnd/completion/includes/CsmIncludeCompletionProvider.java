@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -57,7 +58,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider {
-    
+
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.includes.trace");
 
     @Override
@@ -384,8 +385,8 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         private boolean matchPrefix(CsmIncludeCompletionItem itm, String prefix) {
             String item = itm.getItemText();
             if (!this.caseSensitive) {
-                item = item.toLowerCase();
-                prefix = prefix.toLowerCase();
+                item = item.toLowerCase(Locale.getDefault());
+                prefix = prefix.toLowerCase(Locale.getDefault());
             }
             return item.startsWith(prefix);
         }

@@ -7,7 +7,7 @@ ant verify-libs-and-licenses || exit
 ant -f autoupdate.services/build.xml # build first to ensure DTD validation works
 ant -Dcluster.config=experimental \
     -Dkeystore=$keystore -Dstorepass=$storepass -Djavadoc.fail.on.error=false -Dnbms.fail.on.error=false \
-    build-nbms || exit
+    build-nonsigned-nbms || exit
 ant -Dcluster.config=stableuc create-license-summary || exit
 ant -Dcluster.config=experimental create-netbeans-import finish-build || exit
 

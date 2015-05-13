@@ -107,10 +107,10 @@ final class CreateFilesWorker {
                 allFilesUID.removeAll(handledFiles);
                 if (TraceFlags.TRACE_VALIDATION) {
                     for (CsmUID<CsmFile> csmUID : handledFiles) {
-                        System.err.printf("Hanlded %s - %d\n", csmUID, System.identityHashCode(csmUID));
+                        System.err.printf("Hanlded %s - %d%n", csmUID, System.identityHashCode(csmUID));
                     }
                     for (CsmUID<CsmFile> csmUID : allFilesUID) {
-                        System.err.printf("To handle %s - %d\n", csmUID, System.identityHashCode(csmUID));
+                        System.err.printf("To handle %s - %d%n", csmUID, System.identityHashCode(csmUID));
                     }
                 }
                 // check that all headers are checked as well even if they are not part
@@ -125,18 +125,18 @@ final class CreateFilesWorker {
                         FileImpl fileImpl = (FileImpl) file;
                         if (fileImpl.getState() == FileImpl.State.INITIAL || !fileImpl.validate()) {
                             if (TraceFlags.TRACE_VALIDATION) {
-                                System.err.printf("Validation: %s file [%d %s] to be parsed, because of state %s\n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
+                                System.err.printf("Validation: %s file [%d %s] to be parsed, because of state %s%n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
                             }
                             reparseOnEdit.add(fileImpl);
                         } else {
                             if (TraceFlags.TRACE_VALIDATION) {
-                                System.err.printf("Validation: skip %s file [%d %s], because of state %s\n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
+                                System.err.printf("Validation: skip %s file [%d %s], because of state %s%n", fileImpl.getAbsolutePath(), System.identityHashCode(csmUID), fileImpl.getFileType(), fileImpl.getState()); //NOI18N
                             }
                         }
                     } else {
                         failureDetected.set(true);
                         RepositoryUtils.registerRepositoryError(project, new Exception("Validation: file was not restored from " + csmUID)); // NOI18N
-                        System.err.printf("Validation: file was not restored from %s\n", csmUID); //NOI18N
+                        System.err.printf("Validation: file was not restored from %s%n", csmUID); //NOI18N
                         break;
                     }
                 }
@@ -181,7 +181,7 @@ final class CreateFilesWorker {
             this.sources = sources;
             this.handledFiles = handledFiles;
         }
-        
+
         @Override
         public void run() {
             try {
@@ -202,13 +202,13 @@ final class CreateFilesWorker {
             final CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.printf("createProjectFilesIfNeedRun: %s file [%s] is interrupted on closing model\n", nativeFileItem.getAbsolutePath(), project.getName());
-                }                
+                    System.err.printf("createProjectFilesIfNeedRun: %s file [%s] is interrupted on closing model%n", nativeFileItem.getAbsolutePath(), project.getName());
+                }
                 return false;
-            }            
+            }
             if (project.isDisposing()) {
                 if (TraceFlags.TRACE_MODEL_STATE) {
-                    System.err.printf("filling parser queue interrupted for %s\n", project.getName());
+                    System.err.printf("filling parser queue interrupted for %s%n", project.getName());
                 }
                 return false;
             }

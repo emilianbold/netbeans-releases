@@ -89,8 +89,8 @@ import org.openide.util.Lookup;
     "WizardPanel1UI_DescriptionLabelText=Description:",
     "WizardPanel1UI_SupportedModesLabelText=Supported modes:",
     "WizardPanel1UI_MonitorModeString=Monitor",
-    "WizardPanel1UI_CpuModeString=CPU",
-    "WizardPanel1UI_MemoryModeString=Memory",
+    "WizardPanel1UI_CpuModeString=Methods",
+    "WizardPanel1UI_MemoryModeString=Objects",
     "WizardPanel1UI_PpListAccessName=List of available Profiling Points",
     "WizardPanel1UI_ProjectsListAccessName=List of open projects"
 })

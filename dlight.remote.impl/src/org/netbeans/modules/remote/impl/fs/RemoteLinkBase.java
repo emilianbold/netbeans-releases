@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -64,6 +65,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -88,7 +90,8 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected abstract RemoteFileObjectBase getDelegateImpl();
  
     protected FileNotFoundException fileNotFoundException(String operation) {
-        return new FileNotFoundException("can not " + operation + ' ' + getPath() + ": can not find link target"); //NOI18N
+        return RemoteExceptions.createFileNotFoundException(NbBundle.getMessage(RemoteLinkBase.class,
+                "EXC_CantPerformOpOnDeadLink", operation, getDisplayName())); //NOI18N
     }
     
     @Override
@@ -129,13 +132,13 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    protected boolean hasCache() {
+    public boolean hasCache() {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         return (delegate == null) ? false : delegate.hasCache();
     }
 
     @Override
-    public RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(name, ext, antiLoop);
@@ -148,7 +151,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null) {
             RemoteFileObject fo = delegate.getFileObject(relativePath, antiLoop);
@@ -245,9 +248,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }    
     
     @Override
-    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    public final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
-            antiLoop = new HashSet<String>();
+            antiLoop = new HashSet<>();
         }
         if (antiLoop.contains(getPath())) {
             return;
@@ -330,7 +333,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     public boolean isCyclicLink() {
-        Set<RemoteFileObjectBase> antiCycle = new HashSet<RemoteFileObjectBase>();
+        Set<RemoteFileObjectBase> antiCycle = new HashSet<>();
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null && getPath() != null) {
             // self-referencing link

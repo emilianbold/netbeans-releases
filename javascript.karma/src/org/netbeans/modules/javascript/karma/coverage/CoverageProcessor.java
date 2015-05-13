@@ -45,9 +45,11 @@ package org.netbeans.modules.javascript.karma.coverage;
 import java.awt.EventQueue;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -91,7 +93,7 @@ public final class CoverageProcessor {
         assert !EventQueue.isDispatchThread();
         Reader reader;
         try {
-            reader = new BufferedReader(new FileReader(logFile));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(logFile), StandardCharsets.UTF_8));
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             return;

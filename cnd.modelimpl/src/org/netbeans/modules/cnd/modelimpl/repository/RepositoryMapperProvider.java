@@ -72,7 +72,7 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
         if (np == null) {
             return sourceFilePath.getPath();
         }
-        Collection<? extends NativeProjectRelocationMapperProvider> providers = 
+        Collection<? extends NativeProjectRelocationMapperProvider> providers =
                 Lookup.getDefault().lookupAll(NativeProjectRelocationMapperProvider.class);
         for (NativeProjectRelocationMapperProvider provider : providers) {
             CharSequence destinationPath = provider.getDestinationPath(np, sourceFilePath.getPath());
@@ -80,9 +80,9 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
                 return destinationPath;
             }
         }
-        
+
         return sourceFilePath.getPath();
-                
+
     }
 
     @Override
@@ -95,10 +95,10 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
             return true;
         }
         mapDescriptor = sourceDescriptor(descriptor1.getFileSystem(), descriptor2);
-        matches =  mapDescriptor != null && mapDescriptor.equals(descriptor1);        
+        matches =  mapDescriptor.equals(descriptor1);
         return matches;
     }
-    
+
     private NativeProject findProjectsByDescriptor(Collection<NativeProject> projects, UnitDescriptor unitDescriptor) {
         for (NativeProject np : projects) {
             UnitDescriptor currDescriptor = KeyUtilities.createUnitDescriptor(np);
@@ -107,7 +107,7 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
             }
         }
         return null;
-    }    
+    }
 
     @Override
     public UnitDescriptor destinationDescriptor(FileSystem targetFileSystem, UnitDescriptor sourceUnitDescriptor) {
@@ -117,7 +117,7 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
         NativeProject sourceProject = findProjectsByDescriptor(projects, sourceUnitDescriptor);
         //if it is NOT null we need to understand how the name of project is mapped
         if (sourceProject != null) {
-            Collection<? extends NativeProjectRelocationMapperProvider> providers = 
+            Collection<? extends NativeProjectRelocationMapperProvider> providers =
                     Lookup.getDefault().lookupAll(NativeProjectRelocationMapperProvider.class);
             for (NativeProjectRelocationMapperProvider provider : providers) {
                 CharSequence destinationName = provider.getSourceProjectName(sourceProject);
@@ -133,16 +133,16 @@ public class RepositoryMapperProvider implements RepositoryPathMapperImplementat
 
     @Override
     public UnitDescriptor sourceDescriptor(FileSystem targetFileSystem, UnitDescriptor destinationDescriptor) {
-        Collection<? extends NativeProjectRelocationMapperProvider> providers = 
+        Collection<? extends NativeProjectRelocationMapperProvider> providers =
                 Lookup.getDefault().lookupAll(NativeProjectRelocationMapperProvider.class);
         for (NativeProjectRelocationMapperProvider provider : providers) {
             NativeProject destinationProject = provider.findDestinationProject(destinationDescriptor.getName());
-            if (destinationProject != null && 
+            if (destinationProject != null &&
                     destinationProject.getFileSystem().equals(targetFileSystem)) {
                 return KeyUtilities.createUnitDescriptor(destinationProject);
             }
         }
-        return new UnitDescriptor(destinationDescriptor.getName(), targetFileSystem); 
+        return new UnitDescriptor(destinationDescriptor.getName(), targetFileSystem);
     }
 
 }

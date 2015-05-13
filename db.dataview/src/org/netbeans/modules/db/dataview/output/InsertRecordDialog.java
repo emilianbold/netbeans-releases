@@ -375,51 +375,37 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return;
         }
 
-        // Get out of AWT thread because SQLExecutionHelper does calls to AWT
-        // and we need to wait here to show possible exceptions.
+        // Get out of AWT thread
         new SwingWorker<Integer, Void>() {
 
             @Override
             protected Integer doInBackground() throws Exception {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
+                String inserts[] = new String[rows];
+
                 for (int i = 0; i < rows; i++) {
-                    boolean wasException;
-                    try {
-                        Object[] insertedRow = insertedRows[i];
-                        String insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
-                        RequestProcessor.Task task = execHelper.executeInsertRow(pageContext, insertTable, insertSQL, insertedRow);
-                        task.waitFinished();
-                        wasException = dataView.hasExceptions();
-                    } catch (DBException ex) {
-                        LOG.log(Level.INFO, ex.getLocalizedMessage(), ex);
-                        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
-                        wasException = true;
-                    }
-                    if (wasException) {
-                        return i;
-                    }
+                    inserts[i] = stmtBldr.generateInsertStatement(insertTable, insertedRows[i]);
                 }
-                return null;
+
+                return execHelper.executeInsertRow(pageContext, insertTable, inserts, insertedRows);
             }
 
             @Override
             protected void done() {
-                Integer brokeOn;
+                Integer doneCount;
                 try {
-                    brokeOn = get();
+                    doneCount = get();
 
-                    if (brokeOn == null) {
+                    if (doneCount == rows) {
                         dispose();
                     } else {
                         // remove i already inserted
-                        for (int j = 0; j < brokeOn; j++) {
+                        for (int j = 0; j < doneCount; j++) {
                             insertRecordTableUI.getModel().removeRow(0);
                         }
                     }
-                } catch (InterruptedException ex) {
-                    throw new RuntimeException(ex);
-                } catch (ExecutionException ex) {
+                } catch (InterruptedException | ExecutionException ex) {
                     throw new RuntimeException(ex);
                 }
             }

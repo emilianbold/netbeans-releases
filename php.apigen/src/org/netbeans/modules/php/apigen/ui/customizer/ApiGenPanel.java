@@ -425,6 +425,7 @@ final class ApiGenPanel extends JPanel {
 
         targetLabel.setLabelFor(targetTextField);
         Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetButton.text")); // NOI18N
         targetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -436,24 +437,35 @@ final class ApiGenPanel extends JPanel {
         Mnemonics.setLocalizedText(titleLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.titleLabel.text")); // NOI18N
 
         charsetsLabel.setLabelFor(charsetsTextField);
-
         Mnemonics.setLocalizedText(charsetsLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.charsetsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(charsetsInfoLabel, "INFO"); // NOI18N
+
         Mnemonics.setLocalizedText(excludesLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.excludesLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(excludesInfoLabel, "INFO"); // NOI18N
 
         accessLevelLabel.setLabelFor(accessLevelPublicCheckBox);
-
         Mnemonics.setLocalizedText(accessLevelLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(accessLevelPublicCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelPublicCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(accessLevelProtectedCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelProtectedCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(accessLevelPrivateCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.accessLevelPrivateCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(internalCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.internalCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(phpCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.phpCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(treeCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.treeCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(deprecatedCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.deprecatedCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(todoCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.todoCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(downloadCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.downloadCheckBox.text")); // NOI18N
+
         Mnemonics.setLocalizedText(sourceCodeCheckBox, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.sourceCodeCheckBox.text")); // NOI18N
 
         configButtonGroup.add(configRadioButton);
@@ -461,6 +473,7 @@ final class ApiGenPanel extends JPanel {
 
         configLabel.setLabelFor(configTextField);
         Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(configButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configButton.text")); // NOI18N
         configButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -470,19 +483,9 @@ final class ApiGenPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(145, 145, 145)
-                .addComponent(excludesTextField))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(145, 145, 145)
-                .addComponent(charsetsTextField))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(145, 145, 145)
-                .addComponent(titleTextField))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(145, 145, 145)
+                .addGap(116, 116, 116)
                 .addComponent(targetTextField)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(targetButton))
@@ -496,15 +499,18 @@ final class ApiGenPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(noConfigRadioButton)
-                    .addComponent(configRadioButton)
+                    .addComponent(configRadioButton))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(targetLabel)
+                    .addComponent(titleLabel)
+                    .addComponent(charsetsLabel)
+                    .addComponent(excludesLabel)
+                    .addComponent(accessLevelLabel))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(targetLabel)
-                            .addComponent(titleLabel)
-                            .addComponent(charsetsLabel)
-                            .addComponent(excludesLabel)
-                            .addComponent(accessLevelLabel))
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(accessLevelPublicCheckBox)
@@ -522,15 +528,18 @@ final class ApiGenPanel extends JPanel {
                             .addComponent(accessLevelPrivateCheckBox)
                             .addComponent(sourceCodeCheckBox)))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(145, 145, 145)
-                        .addComponent(charsetsInfoLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(145, 145, 145)
-                        .addComponent(excludesInfoLabel)))
-                .addContainerGap())
+                        .addGap(8, 8, 8)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(charsetsTextField)
+                            .addComponent(excludesTextField)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(excludesInfoLabel)
+                                    .addComponent(charsetsInfoLabel))
+                                .addGap(0, 242, Short.MAX_VALUE))
+                            .addComponent(titleTextField)))))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(noConfigRadioButton)
                 .addPreferredGap(ComponentPlacement.RELATED)

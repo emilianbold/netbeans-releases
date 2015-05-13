@@ -336,8 +336,8 @@ public class TreeEvaluator {
         } catch (ClassNotLoadedException cnlex) {
             throw new InvalidExpressionException (cnlex);
         } catch (IncompatibleThreadStateException itsex) {
-            InvalidExpressionException ieex = new InvalidExpressionException (itsex);
-            ieex.initCause(itsex);
+            String message = NbBundle.getMessage(EvaluatorVisitor.class, "MSG_IncompatibleThreadStateMessage");
+            InvalidExpressionException ieex = new InvalidExpressionException (message, itsex);
             throw ieex;
         } catch (InvocationException iex) {
             InvocationExceptionTranslated ex;
@@ -355,11 +355,9 @@ public class TreeEvaluator {
                 }
             }
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
-            ieex.initCause(ex);
             throw ieex;
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
-            ieex.initCause(uoex);
             throw ieex;
         } catch (InternalExceptionWrapper iex) {
             throw new InvalidExpressionException(iex.getLocalizedMessage());

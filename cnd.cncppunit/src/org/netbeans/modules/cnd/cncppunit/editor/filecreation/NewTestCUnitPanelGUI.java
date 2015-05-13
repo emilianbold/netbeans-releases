@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.cncppunit.editor.filecreation;
 import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.util.Locale;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,12 +77,12 @@ import org.openide.util.NbBundle;
 
 /**
  * NewCndFileChooserPanelGUI is SimpleTargetChooserPanelGUI extended with extension selector and logic
- * 
+ *
  */
 class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
     private final String baseTestName;
-    private final Logger logger;
+    private final Logger logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
     private final String defaultExtension;
     private String expectedExtension;
     private final MIMEExtensions es;
@@ -97,31 +98,30 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
         this.baseTestName = baseTestName;
 
-        this.logger = Logger.getLogger("cnd.editor.filecreation"); // NOI18N
         this.es = es;
         this.fileWithoutExtension = "".equals(defaultExt);
-        
+
         initComponents();
-        
+
         locationComboBox.setRenderer( CELL_RENDERER );
-        
+
         if ( bottomPanel != null ) {
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
         defaultExtension = defaultExt;
         initValues(null, null, null);
-        
+
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         sourceTextField.getDocument().addDocumentListener( this );
         folderTextField.getDocument().addDocumentListener( this );
-        
+
         setName (NbBundle.getMessage(NewTestCUnitPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name")); // NOI18N
     }
-    
+
     public void initValues( FileObject template, FileObject preselectedFolder, String documentName ) {
         assert project != null;
-        
+
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
         Sources sources = ProjectUtils.getSources( project );
@@ -145,19 +145,19 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
             // more source groups user needs to select location
             locationLabel.setVisible( true );
             locationComboBox.setVisible( true );
-            
+
         }
-        
+
         locationComboBox.setModel( new DefaultComboBoxModel( folders ) );
         // Guess the group we want to create the file in
-        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );        
-        locationComboBox.setSelectedItem( preselectedGroup );               
+        SourceGroup preselectedGroup = getPreselectedGroup( folders, preselectedFolder );
+        locationComboBox.setSelectedItem( preselectedGroup );
         // Create OS dependent relative name
         folderTextField.setText( getRelativeNativeName( preselectedGroup.getRootFolder(), preselectedFolder ) );
         if(folderTextField.getText().isEmpty()) {
             folderTextField.setText(DEFAULT_TESTS_FOLDER);
         }
-        
+
         String ext = defaultExtension == null? es.getDefaultExtension() : defaultExtension;
         sourceExtComboBox.setSelectedItem(ext);
         sourceExtComboBox.enableInputMethods(true);
@@ -175,7 +175,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
                         Exceptions.printStackTrace(ex);
                     }
                 }
-               
+
                 public void insertUpdate(DocumentEvent e) {
                     update(e.getDocument());
                 }
@@ -189,7 +189,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
                 }
             });
         }
-        
+
         String displayName = null;
         try {
             if (template != null) {
@@ -199,13 +199,13 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         } catch (DataObjectNotFoundException ex) {
             displayName = template.getName ();
         }
-        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N        
+        putClientProperty ("NewFileWizard_Title", displayName);// NOI18N
 
         if (template != null) {
             if (documentName == null) {
                 String baseName = (baseTestName == null) ?
                     NEW_FILE_PREFIX + template.getName() :
-                    getMessage("TestFileSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(); // NOI18N
+                    getMessage("TestFileSuggestedName", baseTestName).replaceAll(" ", "_").toLowerCase(Locale.getDefault()); // NOI18N
                 documentName = baseName;
                 FileObject currentFolder = preselectedFolder != null ? preselectedFolder : getTargetGroup().getRootFolder().getFileObject(DEFAULT_TESTS_FOLDER);
                 if (currentFolder != null) {
@@ -218,7 +218,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
                         documentName = baseName + ++index;
                     }
                 }
-                
+
             }
             sourceTextField.setText (documentName);
         }
@@ -308,20 +308,20 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     }
 
     public String getTestFolder() {
-        
+
         String folderName = folderTextField.getText().trim();
-        
+
         if ( folderName.length() == 0 ) {
             return "";
         }
-        else {           
+        else {
             return folderName.replace( File.separatorChar, '/' ); // NOI18N
         }
     }
-    
+
     public String getTestFileName() {
         String documentName = sourceTextField.getText().trim();
-        
+
         if ( documentName.length() == 0){
             return null;
         }
@@ -343,7 +343,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
         }
         return documentName;
     }
-        
+
     public String getTargetExtension() {
         return expectedExtension;
     }
@@ -351,21 +351,21 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     public boolean useTargetExtensionAsDefault() {
         return false;
     }
-        
+
     protected void updateCreatedFile() {
         FileObject root = getTargetGroup().getRootFolder();
 
         String folderName = folderTextField.getText().trim();
         String documentName = sourceTextField.getText().trim();
         String docExt = FileUtil.getExtension( documentName );
-        
-        String createdFileName = FileUtil.getFileDisplayName( root ) + 
+
+        String createdFileName = FileUtil.getFileDisplayName( root ) +
             ( folderName.startsWith("/") || folderName.startsWith( File.separator ) ? "" : "/" ) + // NOI18N
-            folderName + 
+            folderName +
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
             documentName ; // NOI18N
-        
-//      Use Cases:        
+
+//      Use Cases:
 //        1) User wants to use different (but known) extension then the default one (for example "cpp")
 //        1.1 He chooses this extension from the list in the combo box.
 //           This extension becomes a new default.
@@ -380,8 +380,8 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 //
 //        2.2) He types the full name with the extension.
 //           The "Extension" combo box gets disabled and no extension is added to the file name.
-//           The notification is displayed at the bottom part of the panel.           
-        
+//           The notification is displayed at the bottom part of the panel.
+
         if (docExt.length() == 0) {
             sourceExtComboBox.setEnabled(true);
             createdFileName += "." + expectedExtension; // NOI18N
@@ -390,7 +390,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
             sourceExtComboBox.setSelectedItem(docExt);
             expectedExtension = docExt;
         }
-            
+
         createdFileName = createdFileName.replace( '/', File.separatorChar );
         if (!createdFileName.equals(createdFilesArea.getText())) {
             createdFilesArea.setText(createdFileName);
@@ -561,12 +561,12 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(NewTestCUnitPanelGUI.class).getString("AD_SimpleTargetChooserPanelGUI_1")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void sourceExtComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sourceExtComboBoxActionPerformed
         expectedExtension = (String)sourceExtComboBox.getSelectedItem();
         updateCreatedFile();
     }//GEN-LAST:event_sourceExtComboBoxActionPerformed
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel bottomPanelContainer;
     private javax.swing.JButton browseButton;
@@ -593,18 +593,18 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
     public void actionPerformed(java.awt.event.ActionEvent e) {
         if ( browseButton == e.getSource() ) {
             FileObject fo=null;
-            // Show the browse dialog             
+            // Show the browse dialog
 
             SourceGroup group = getTargetGroup();
 
-            fo = BrowseFolders.showDialog( new SourceGroup[] { group }, 
-                                           project, 
+            fo = BrowseFolders.showDialog( new SourceGroup[] { group },
+                                           project,
                                            folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
-                        
+
             if ( fo != null && fo.isFolder() ) {
                 String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
                 folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
-            }                        
+            }
         }
         else if ( locationComboBox == e.getSource() )  {
             updateCreatedFile();
@@ -612,7 +612,7 @@ class NewTestCUnitPanelGUI extends CndPanelGUI implements ActionListener{
             expectedExtension = (String)sourceExtComboBox.getEditor().getItem();
             updateCreatedFile();
         }
-    }    
+    }
 
     protected static String getMessage(String name) {
         return NbBundle.getMessage( NewTestCUnitPanelGUI.class, name);

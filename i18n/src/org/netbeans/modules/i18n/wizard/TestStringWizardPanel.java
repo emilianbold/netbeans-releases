@@ -126,6 +126,8 @@ final class TestStringWizardPanel extends JPanel {
         initTable();
 
         setComboModel(sourceMap);
+        
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_FOUNDMISSINGRESOURCES);
     }
 
         

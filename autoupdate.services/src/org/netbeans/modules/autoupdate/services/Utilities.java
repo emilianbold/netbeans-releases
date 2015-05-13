@@ -47,11 +47,22 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.*;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.Security;
+import java.security.cert.CertPath;
+import java.security.cert.CertPathValidator;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.PKIXCertPathValidatorResult;
+import java.security.cert.PKIXParameters;
+import java.security.cert.TrustAnchor;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -93,11 +104,13 @@ import org.xml.sax.SAXException;
  * @author Jiri Rechtacek, Radek Matous
  */
 public class Utilities {
-    public static final String UNSIGNED = "UNSIGNED";
     public static final String N_A = "N/A";
+    public static final String UNSIGNED = "UNSIGNED";
+    public static final String SIGNATURE_UNVERIFIED = "SIGNATURE_UNVERIFIED";
+    public static final String SIGNATURE_VERIFIED = "SIGNATURE_VERIFIED";
     public static final String TRUSTED = "TRUSTED";
-    public static final String UNTRUSTED = "UNTRUSTED";
-
+    public static final String MODIFIED = "MODIFIED";
+    
     private Utilities() {}
 
     public static final String UPDATE_DIR = "update"; // NOI18N
@@ -127,7 +140,7 @@ public class Utilities {
         if (c == null || c.isEmpty ()) {
             return Collections.emptyList ();
         }
-        List<KeyStore> kss = new ArrayList<KeyStore> ();
+        List<KeyStore> kss = new ArrayList ();
         
         for (KeyStoreProvider provider : c) {
             KeyStore ks = provider.getKeyStore ();
@@ -142,15 +155,100 @@ public class Utilities {
     public static String verifyCertificates(Collection<Certificate> archiveCertificates, Collection<Certificate> trustedCertificates) {
         if (archiveCertificates == null) {
             return N_A;
-        }
-        if (! archiveCertificates.isEmpty()) {
-            Collection<Certificate> c = new HashSet<Certificate>(trustedCertificates);
+        }       
+        if (!archiveCertificates.isEmpty()) {
+            Collection<Certificate> c = new HashSet(trustedCertificates);
             c.retainAll(archiveCertificates);
-            if (! c.isEmpty()) {
-            //if (trustedCertificates.containsAll(archiveCertificates)) {
-                return TRUSTED;
+            if (c.isEmpty()) {                
+                Map<Principal, X509Certificate> certSubjectsMap = new HashMap();               
+                Set<Principal> certIssuersSet = new HashSet();
+                for (Certificate cert : archiveCertificates) {
+                    if (cert != null) {
+                        X509Certificate x509Cert = (X509Certificate) cert;
+                        certSubjectsMap.put(x509Cert.getSubjectDN(), x509Cert);
+                        if (x509Cert.getIssuerDN() != null) {
+                            certIssuersSet.add(x509Cert.getIssuerDN());
+                        }
+                    }
+                }
+                
+                Map<X509Certificate, X509Certificate> candidates = new HashMap();
+                    
+                for (Principal p : certSubjectsMap.keySet()) {
+                    // cert chain may not be ordered - trust anchor could before certificate itself
+                    if (certIssuersSet.contains(p)) {
+                        continue;
+                    }
+                    
+                    X509Certificate cert = certSubjectsMap.get(p);
+                
+                    Principal tap = cert.getIssuerDN();
+                    if (tap != null) {
+                        X509Certificate tempTrustAnchor = certSubjectsMap.get(tap);
+                        if (tempTrustAnchor != null) {
+                            candidates.put(cert, tempTrustAnchor);
+                        }
+                    }
+                }                                               
+
+                // TRUSTED = 2
+                // SIGNATURE_VERIFIED = 1
+                // SIGNATURE_UNVERIFIED = 0
+                int res = 0;                
+                for (X509Certificate cert : candidates.keySet()) {
+                    X509Certificate trustCert = candidates.get(cert);
+                    PKIXCertPathValidatorResult validResult = null;
+                    try {
+                        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                        List certList = new ArrayList();
+                        certList.add(cert);
+                        CertPath cp = cf.generateCertPath(certList);
+                        TrustAnchor trustAnchor = new TrustAnchor(trustCert, null);
+                        PKIXParameters params = new PKIXParameters(Collections.singleton(trustAnchor));
+                        params.setRevocationEnabled(true);
+                        Security.setProperty("ocsp.enable", "true");
+                        System.setProperty("com.sun.security.enableCRLDP", "true"); // CRL fallback
+                        CertPathValidator cpv = CertPathValidator.getInstance("PKIX");
+                        validResult = (PKIXCertPathValidatorResult) cpv.validate(cp, params);
+                    } catch (CertificateException | InvalidAlgorithmParameterException | NoSuchAlgorithmException ex) {
+                        // CertificateException - Should not get here - "X.509" is proper certificate type
+                        // InvalidAlgorithmParameterException - Should not get here - trustAnchor cannot be null -> collection cannot be empty
+                        // NoSuchAlgorithmException - Should not get here - "PKIX" is proper algorythm
+                        err.log(Level.SEVERE, "Certificate verification failed - " + ex.getMessage(), ex);
+                        //SIGNATURE_UNVERIFIED - result = 0;
+                    } catch (CertPathValidatorException ex) {
+                        // CertPath cannot be validated
+                        err.log(Level.INFO, "Cannot validate certificate path - " + ex.getMessage(), ex);
+                        //SIGNATURE_UNVERIFIED - result = 0;
+                    } catch (SecurityException ex) {
+                        // When jar/nbm correctly signed, but content modified                    
+                        err.log(Level.INFO, "The content of the jar/nbm has been modified - " + ex.getMessage(), ex);
+                        return MODIFIED;                    
+                    }
+
+                    if (validResult != null) {
+                        String certDNName = cert.getSubjectDN().getName();
+                        if (certDNName.contains("CN=\"Oracle America, Inc.\"")
+                                && (certDNName.contains("OU=Software Engineering") || certDNName.contains("OU=Code Signing Bureau"))) {
+                            res = 2;
+                            break;
+                        } else {
+                            res = 1;
+                        }                        
+                    }
+                }
+                
+                switch (res) {
+                    case 2:
+                        return TRUSTED;
+                    case 1:
+                        return SIGNATURE_VERIFIED;
+                    default:
+                        return SIGNATURE_UNVERIFIED;                    
+                }
             } else {
-                return UNTRUSTED;
+                // signed by trusted certificate stored in user's keystore od ide.ks
+                return TRUSTED;
             }
         }
         return UNSIGNED;
@@ -628,31 +726,34 @@ public class Utilities {
             DependencyAggregator deco = DependencyAggregator.getAggregator(d);
             int type = d.getType();
             String name = d.getName();
-            for (ModuleInfo depMI : deco.getDependening()) {
-                Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
-                if (depM == null) {
-                    continue;
-                }
-                if (!depM.getProblems().isEmpty()) {
-                    // skip this module because it has own problems already
-                    continue;
-                }
-                for (Dependency toTry : depM.getDependencies()) {
-                    // check only relevant deps
-                    if (type == toTry.getType() && name.equals(toTry.getName())
-                            && !DependencyChecker.checkDependencyModule(toTry, mi)) {
-                        UpdateUnit tryUU = UpdateManagerImpl.getInstance().getUpdateUnit(depM.getCodeNameBase());
-                        if (!tryUU.getAvailableUpdates().isEmpty()) {
-                            UpdateElement tryUE = tryUU.getAvailableUpdates().get(0);
+            Collection<ModuleInfo> dependings = deco.getDependening();
+            synchronized (dependings) {
+                for (ModuleInfo depMI : dependings) {
+                    Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
+                    if (depM == null) {
+                        continue;
+                    }
+                    if (!depM.getProblems().isEmpty()) {
+                        // skip this module because it has own problems already
+                        continue;
+                    }
+                    for (Dependency toTry : depM.getDependencies()) {
+                        // check only relevant deps
+                        if (type == toTry.getType() && name.equals(toTry.getName())
+                                && !DependencyChecker.checkDependencyModule(toTry, mi)) {
+                            UpdateUnit tryUU = UpdateManagerImpl.getInstance().getUpdateUnit(depM.getCodeNameBase());
+                            if (!tryUU.getAvailableUpdates().isEmpty()) {
+                                UpdateElement tryUE = tryUU.getAvailableUpdates().get(0);
 
-                            ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl(tryUE)).getModuleInfo();
-                            Set<Dependency> deps = new HashSet<Dependency>(tryUpdated.getDependencies());
-                            Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo>(forInstall);
-                            Set<Dependency> newones;
-                            while (!(newones = processDependencies(deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty()) {
-                                deps = newones;
+                                ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl(tryUE)).getModuleInfo();
+                                Set<Dependency> deps = new HashSet<Dependency>(tryUpdated.getDependencies());
+                                Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo>(forInstall);
+                                Set<Dependency> newones;
+                                while (!(newones = processDependencies(deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty()) {
+                                    deps = newones;
+                                }
+                                moreRequested.add(tryUE);
                             }
-                            moreRequested.add(tryUE);
                         }
                     }
                 }
@@ -673,9 +774,15 @@ public class Utilities {
     private static Reference<Set<UpdateElement>> cachedResultReference = null;
     
     private static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
-        if (cachedInfosReference != null && cachedInfosReference.get() != null && cachedInfosReference.get().equals(forInstall)) {
-            if (cachedResultReference != null && cachedResultReference.get() != null) {
-                return cachedResultReference.get();
+        if (cachedInfosReference != null) {
+            Set<ModuleInfo> cir = cachedInfosReference.get();
+            if (cir != null && cir.equals(forInstall) ) {
+                if (cachedResultReference != null) {
+                    Set<UpdateElement> crr = cachedResultReference.get();
+                    if (crr != null) {
+                        return crr;
+                    }
+                }
             }
         }
         cachedInfosReference = new WeakReference<Set<ModuleInfo>>(forInstall);
@@ -861,7 +968,9 @@ public class Utilities {
             // Dependency.TYPE_MODULE
             for (Dependency d : Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ())) {
                 DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                for (ModuleInfo depMI : deco.getDependening ()) {
+                Collection<ModuleInfo> dependings = deco.getDependening();
+                synchronized (dependings) {
+                    for (ModuleInfo depMI : dependings) {
                         //Module depM = Utilities.toModule (depMI);
                         Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                         if (depM == null) {
@@ -878,6 +987,7 @@ public class Utilities {
                                 brokenDependencies.add (toTry);
                             }
                         }
+                    }
                 }
             }
             // Dependency.TYPE_REQUIRES
@@ -891,7 +1001,9 @@ public class Utilities {
                 deps.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
                 for (Dependency d : deps) {
                     DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                    for (ModuleInfo depMI : deco.getDependening ()) {
+                    Collection<ModuleInfo> dependings = deco.getDependening();
+                    synchronized (dependings) {
+                        for (ModuleInfo depMI : dependings) {
                             //Module depM = Utilities.toModule (depMI);
                             Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
                             if (depM == null) {
@@ -908,6 +1020,7 @@ public class Utilities {
                                 }
                             }
                         }
+                    }
                 }
             }
         }

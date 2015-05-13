@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
@@ -124,8 +125,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (getName().startsWith("set ")) { //NOI18N
             return JsElement.Kind.PROPERTY_SETTER;
         }
-        if (getParent() != null && getParent() instanceof JsFunction) {
-            JsObject prototype = null;
+        if (getParent() != null /*&& getParent() instanceof JsFunction*/) {
+             JsObject prototype = null;
             for (JsObject property : getProperties().values()) {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
@@ -143,6 +144,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }
+//        if (getParent() != null && !getParent().isDeclared()) {
+//            
+//        }
 
         JsElement.Kind result = JsElement.Kind.FUNCTION;
 
@@ -238,29 +242,12 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public boolean moveProperty(String name, JsObject newParent) {
         JsObject property = getProperty(name);
-        if (property != null) {
-            correctDeclarationScope(property, this, new HashSet<String>());
+        if (property != null && (newParent instanceof DeclarationScope)) {
+            FrameworksUtils.changeDeclarationScope(property, (DeclarationScope)newParent);
         }
         return super.moveProperty(name, newParent); 
     }
 
-    private static void correctDeclarationScope(JsObject where, DeclarationScope newScope, Set<String> done) {
-        if (!done.contains(where.getFullyQualifiedName())) {
-            done.add(where.getFullyQualifiedName());
-            if (where instanceof DeclarationScope) {
-                DeclarationScope scope = (DeclarationScope)where;
-                if (scope.getParentScope() != null) {
-                    scope.getParentScope().getChildrenScopes().remove(scope);
-                }
-                newScope.addDeclaredScope(scope);
-            } else {
-                for (JsObject property : where.getProperties().values()) {
-                    correctDeclarationScope(property, newScope, done);
-                }
-            }
-        }
-    }
-    
     @Override
     public void resolveTypes(JsDocumentationHolder docHolder) {
         super.resolveTypes(docHolder);
@@ -295,7 +282,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     JsObject global = ModelUtils.getGlobalObject(this);
                     jsObject = ModelUtils.findJsObjectByName(global, type.getType());
                 }
-                if (jsObject != null) {
+                if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
                     int index = type.getType().lastIndexOf('.');
                     int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
                     ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));
@@ -304,15 +291,27 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
         returnTypes.clear();
         returnTypes.addAll(resolved);
-        
+         
         // parameters and type type resolving for occurrences
+        JsObject global = ModelUtils.getGlobalObject(this);
         for(JsObject param : parameters) {
             Collection<? extends TypeUsage> types = param.getAssignmentForOffset(param.getDeclarationName().getOffsetRange().getStart());
             for(TypeUsage type: types) {
-                JsObject jsObject = ModelUtils.getJsObjectByName(this, type.getType());
+                JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());//getJsObjectByName(this, type.getType());
                 if (jsObject != null) {
                     ModelUtils.addDocTypesOccurence(jsObject, docHolder);
                     moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
+                    if (type.getType().indexOf('.') > -1) {
+                        // mark occurrences also for the parent if the type is like Contex.Object
+                        String[] typeParts = type.getType().split("\\.");
+                        JsObject parent = jsObject.getParent();
+                        for (int i = (typeParts.length - 2); i > -1 && parent != null; i--) {
+                            if (parent.getName().equals(typeParts[i])) {
+                                ModelUtils.addDocTypesOccurence(parent, docHolder);
+                            }
+                            parent = parent.getParent();
+                        }
+                    }
                 }
             }
             List<JsObject> paramProperties = new ArrayList(param.getProperties().values());

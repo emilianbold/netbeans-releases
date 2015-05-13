@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -905,7 +906,7 @@ public final class RemoteClient implements Cancellable {
             } finally {
                 lock.releaseLock();
             }
-        } catch (IOException ex) {
+        } catch (IOException | InvalidPathException ex) {
             LOGGER.log(Level.INFO, "Error while moving local file", ex);
             moved = false;
         } catch (DownloadSkipException ex) {

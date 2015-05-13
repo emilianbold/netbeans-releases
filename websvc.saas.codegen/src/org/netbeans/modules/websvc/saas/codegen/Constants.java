@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.websvc.saas.codegen;
 
-//import javax.lang.model.element.Modifier;
-
 /**
  *
  * @author PeterLiu
@@ -149,13 +147,13 @@ public class Constants {
     
     public static final String DEFAULT_VALUE = REST_API_PACKAGE + DEFAULT_VALUE_ANNOTATION;
 
-    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException";
+    public static final String WEB_APPLICATION_EXCEPTION = REST_API_PACKAGE + "WebApplicationException"; // NOI18N
     
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
     public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI18N
     
-    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
+    public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity"; // NOI18N
     
     public static final String HTTP_CONTEXT = REST_API_PACKAGE + "core.Context";    //NOI18N
     
@@ -169,9 +167,9 @@ public class Constants {
     
     public static final String ENTITY_MANAGER_FACTORY = "javax.persistence.EntityManagerFactory";       //NOI18N
     
-    public static final String ENTITY_TRANSACTION = "javax.persistence.EntityTransaction";
+    public static final String ENTITY_TRANSACTION = "javax.persistence.EntityTransaction"; // NOI18N
     
-    public static final String PERSISTENCE = "javax.persistence.Persistence";
+    public static final String PERSISTENCE = "javax.persistence.Persistence"; // NOI18N
     
     public static final String NO_RESULT_EXCEPTION = "javax.persistence.NoResultException";        //NOI18N
     
@@ -193,17 +191,17 @@ public class Constants {
    
     public static final String JAVA_EXT = "java"; //NI18N
     
-    public static final String PHP_EXT = "php";
+    public static final String PHP_EXT = "php"; // NOI18N
         
     public enum DropFileType {
-        JAVA_CLIENT("java", "System.out"), 
-        RESOURCE("resource", "System.out"),
-        SERVLET("servlet", "out"),
-        JSP("jsp", "out"),
-        PHP("php", "out");
+        JAVA_CLIENT("java", "System.out"), // NOI18N
+        RESOURCE("resource", "System.out"), // NOI18N
+        SERVLET("servlet", "out"), // NOI18N
+        JSP("jsp", "out"), // NOI18N
+        PHP("php", "out"); // NOI18N
         
-        private String prefix; 
-        private String printWriterType;
+        private final String prefix; 
+        private final String printWriterType;
         
         DropFileType(String prefix, String printWriterType) {
             this.prefix = prefix;
@@ -229,8 +227,8 @@ public class Constants {
         TEXT("text/plain", "Text"),         //NOI18N
         HTML("text/html", "Html");          //NOI18N
         
-        private String value;
-        private String suffix;
+        private final String value;
+        private final String suffix;
         
         MimeType(String value, String suffix) {
             this.value = value;
@@ -247,26 +245,28 @@ public class Constants {
         
         public static MimeType find(String value) {
             for(MimeType m:values()) {
-                if(m.value().equals(value))
+                if(m.value().equals(value)) {
                     return m;
+                }
             }
             return null;
         }
         
+        @Override
         public String toString() {
             return value;
         }
     }
     
     public enum HttpMethodType {
-        GET("get", Constants.GET),
-        HEAD("head", Constants.HEAD),
-        PUT("put", Constants.PUT),
-        POST("post", Constants.POST),
-        DELETE("delete", Constants.DELETE);
+        GET("get", Constants.GET), // NOI18N
+        HEAD("head", Constants.HEAD), // NOI18N
+        PUT("put", Constants.PUT), // NOI18N
+        POST("post", Constants.POST), // NOI18N
+        DELETE("delete", Constants.DELETE); // NOI18N
         
-        private String prefix; 
-        private String annotationType;
+        private final String prefix; 
+        private final String annotationType;
         
         HttpMethodType(String prefix, String annotationType) {
             this.prefix = prefix;
@@ -287,15 +287,15 @@ public class Constants {
     }
     
     public enum SaasAuthenticationType {
-        PLAIN("Plain", "plain"),
-        HTTP_BASIC("HttpBasic", "http-basic"), 
-        API_KEY("ApiKey", "api-key"),
-        CUSTOM("Custom", "custom"),
-        SIGNED_URL("SignedUrl", "signed-url"),
-        SESSION_KEY("SessionKey", "session-key");
+        PLAIN("Plain", "plain"), // NOI18N
+        HTTP_BASIC("HttpBasic", "http-basic"), // NOI18N
+        API_KEY("ApiKey", "api-key"), // NOI18N
+        CUSTOM("Custom", "custom"), // NOI18N
+        SIGNED_URL("SignedUrl", "signed-url"), // NOI18N
+        SESSION_KEY("SessionKey", "session-key"); // NOI18N
         
-        private String classId;
-        private String value;
+        private final String classId;
+        private final String value;
         
         SaasAuthenticationType(String classId, String value) {
             this.classId = classId;

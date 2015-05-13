@@ -19,9 +19,20 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="1" attributes="1">
+                      <Component id="jScrollField" pref="575" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jButtonSelectAll" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectNone" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectGetters" linkSize="1" min="-2" max="-2" attributes="1"/>
+                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="jCheckAccess" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="jInlineMethods" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" max="-2" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="jLblAccessVis" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="jLblFieldVis" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -37,18 +48,6 @@
                           <Component id="jComboField" linkSize="2" min="-2" max="-2" attributes="0"/>
                           <Component id="jComboAccess" linkSize="2" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="125" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="1">
-                      <Component id="jScrollField" pref="575" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jButtonSelectAll" linkSize="1" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectNone" linkSize="1" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectGetters" linkSize="1" min="-2" max="-2" attributes="1"/>
-                          <Component id="jButtonSelectSetters" linkSize="1" min="-2" max="-2" attributes="1"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jLblTitle" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>

@@ -165,6 +165,11 @@ public class StaticImportTest extends NbTestCase {
         performAnalysisTest(test);
     }
 
+    public void testIgnoreClass() throws Exception {
+        String test = "package test; public class Test { public vod x() { Class c = Test.c|lass; } }";
+        performAnalysisTest(test);
+    }
+
     // test is single line source code for test.Test, | in the member select, space before
     // golden is the output to test against
     // sn is the simple name of the static method

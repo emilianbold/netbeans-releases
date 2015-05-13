@@ -214,13 +214,12 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
         instantiatingIterator.setDomainName(instance.getDomainName());
         instantiatingIterator.setHost(instance.getHost());
         instantiatingIterator.setRemote(false);
+        instantiatingIterator.setSsl(false);
         return true;
     }
 
     private String getUrl(Instance instance) {
-        return WLDeploymentFactory.URI_PREFIX + instance.getHost()
-                + ":" + instance.getPort() + ":" + instantiatingIterator.getServerRoot() // NOI18N;
-                + ":" + instance.getDomainPath(); // NOI18N;
+        return WLDeploymentFactory.getUrl(instance.getHost(), instance.getPort(), instantiatingIterator.getServerRoot(), instance.getDomainPath());
     }
 
     /**
@@ -488,7 +487,7 @@ public class ServerLocalPropertiesVisual extends javax.swing.JPanel {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         Object item = localInstancesCombo.getEditor().getItem();
-        if (item != null && item.toString().trim().length() > 0) {
+        if (item != null && !item.toString().trim().isEmpty()) {
             chooser.setSelectedFile(new File(item.toString()));
         } else {
             chooser.setSelectedFile(new File(instantiatingIterator.getServerRoot()));

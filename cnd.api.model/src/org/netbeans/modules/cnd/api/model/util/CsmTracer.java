@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
@@ -61,7 +62,7 @@ public final class CsmTracer {
 
     private static final String NULL_TEXT = "null"; // NOI18N
     private final int step = 4;
-    private StringBuilder indentBuffer = new StringBuilder();
+    private final StringBuilder indentBuffer = new StringBuilder();
     private boolean deep = true;
     private boolean testUniqueName = false;
     private PrintStream printStream;
@@ -84,14 +85,14 @@ public final class CsmTracer {
         this.printStream = printStream;
     }
 
-    public CsmTracer(Writer writer) {
+    public CsmTracer(Writer writer) throws IOException {
         this.printStream = toPrintStream(writer);
     }
-    
-    public static PrintStream toPrintStream(Writer writer) {
-        return new PrintStream(new WriterOutputStream(writer));
+
+    public static PrintStream toPrintStream(Writer writer) throws IOException {
+        return new PrintStream(new WriterOutputStream(writer), false, "UTF-8"); //NOI18N
     }
-    
+
     public void setDeep(boolean deep) {
         this.deep = deep;
     }
@@ -299,7 +300,7 @@ public final class CsmTracer {
                 }
                 if (type.isReference()) {
                     sb.append("&"); // NOI18N
-                } 
+                }
             }
             CsmClassifier classifier = type.getClassifier();
             if (classifier != null) {
@@ -469,12 +470,12 @@ public final class CsmTracer {
         return name;
     }
 
-    public void dumpParameters(Collection/*<CsmParameter>*/ parameters) {
+    public void dumpParameters(Collection<CsmParameter> parameters) {
         print("PARAMETERS:"); // NOI18N
         if (parameters != null && parameters.size() > 0) {
             indent();
-            for (Iterator iter = parameters.iterator(); iter.hasNext();) {
-                print(toString((CsmParameter) iter.next(), false));
+            for (Iterator<CsmParameter> iter = parameters.iterator(); iter.hasNext();) {
+                print(toString(iter.next(), false));
             }
             unindent();
         }
@@ -527,8 +528,8 @@ public final class CsmTracer {
 
     public void dumpStatement(CsmCompoundStatement stmt) {
         if (stmt != null) {
-            for (Iterator iter = stmt.getStatements().iterator(); iter.hasNext();) {
-                dumpStatement((CsmStatement) iter.next());
+            for (Iterator<CsmStatement> iter = stmt.getStatements().iterator(); iter.hasNext();) {
+                dumpStatement(iter.next());
             }
         }
     }
@@ -537,8 +538,8 @@ public final class CsmTracer {
         print("TRY:"); // NOI18N
         dumpStatement(stmt.getTryStatement());
         print("HANDLERS:"); // NOI18N
-        for (Iterator iter = stmt.getHandlers().iterator(); iter.hasNext();) {
-            dumpStatement((CsmStatement) iter.next());
+        for (Iterator<CsmExceptionHandler> iter = stmt.getHandlers().iterator(); iter.hasNext();) {
+            dumpStatement((CsmStatement)iter.next());
         }
     }
 
@@ -560,8 +561,8 @@ public final class CsmTracer {
     }
 
     public void dumpStatement(CsmDeclarationStatement stmt) {
-        for (Iterator iter = stmt.getDeclarators().iterator(); iter.hasNext();) {
-            dumpModel((CsmDeclaration) iter.next());
+        for (Iterator<CsmDeclaration> iter = stmt.getDeclarators().iterator(); iter.hasNext();) {
+            dumpModel(iter.next());
         }
     }
 
@@ -601,8 +602,8 @@ public final class CsmTracer {
     public void dumpNamespaceDefinitions(CsmNamespace nsp) {
         print("NAMESPACE DEFINITIONS for " + nsp.getName() + " (" + nsp.getQualifiedName() + ") "); // NOI18N
         indent();
-        for (Iterator iter = nsp.getDefinitions().iterator(); iter.hasNext();) {
-            CsmNamespaceDefinition def = (CsmNamespaceDefinition) iter.next();
+        for (Iterator<CsmNamespaceDefinition> iter = nsp.getDefinitions().iterator(); iter.hasNext();) {
+            CsmNamespaceDefinition def = iter.next();
             print(def.getContainingFile().getName().toString() + ' ' + getOffsetString(def, false));
         }
         unindent();
@@ -686,11 +687,11 @@ public final class CsmTracer {
             print("<no includes>"); // NOI18N
             unindent();
         }
-        Collection macros = file.getMacros();
+        Collection<CsmMacro> macros = file.getMacros();
         print("Macros:"); // NOI18N
         if (macros.size() > 0) {
-            for (Iterator iter = macros.iterator(); iter.hasNext();) {
-                CsmMacro o = (CsmMacro) iter.next();
+            for (Iterator<CsmMacro> iter = macros.iterator(); iter.hasNext();) {
+                CsmMacro o = iter.next();
                 print(o.toString());
             }
         } else {
@@ -868,7 +869,7 @@ public final class CsmTracer {
             dumpModel((CsmTypedef) decl);
         } else if (decl.getKind() == CsmDeclaration.Kind.TYPEALIAS) {
             dumpModel((CsmTypeAlias) decl);
-// commented out till there is convenient moment to update tests                
+// commented out till there is convenient moment to update tests
 //        } else if ( decl.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
 //            dumpModel((CsmClassForwardDeclaration) decl);
         } else {
@@ -895,11 +896,11 @@ public final class CsmTracer {
         print("TYPEDEF " + td.getName() + ' ' + getOffsetString(td, false) + " TYPE: " + toString(td.getType(), false) + // NOI18N
                 ' ' + getScopeString(td)); // NOI18N
     }
-    
+
     public void dumpModel(CsmTypeAlias td) {
         print("TYPEALIAS " + td.getName() + ' ' + getOffsetString(td, false) + " TYPE: " + toString(td.getType(), false) + // NOI18N
                 ' ' + getScopeString(td)); // NOI18N
-    }    
+    }
 
     public void dumpModel(CsmUsingDirective ud) {
         CsmNamespace nsp = ud.getReferencedNamespace();
@@ -940,16 +941,16 @@ public final class CsmTracer {
         indent();
         print("BASE CLASSES:"); // NOI18N
         indent();
-        for (Iterator iter = cls.getBaseClasses().iterator(); iter.hasNext();) {
-            CsmInheritance inh = (CsmInheritance) iter.next();
+        for (Iterator<CsmInheritance> iter = cls.getBaseClasses().iterator(); iter.hasNext();) {
+            CsmInheritance inh = iter.next();
             print(toString(inh));
         }
         unindent();
         print("MEMBERS:"); // NOI18N
         indent();
-        Collection/*<CsmMember>*/ members = cls.getMembers();
-        for (Iterator iter = members.iterator(); iter.hasNext();) {
-            CsmMember member = (CsmMember) iter.next();
+        Collection<CsmMember> members = cls.getMembers();
+        for (Iterator<CsmMember> iter = members.iterator(); iter.hasNext();) {
+            CsmMember member = iter.next();
             if (CsmKindUtilities.isClass(member)) {
                 dumpModel((CsmClass) member);
             } else if (member.getKind() == CsmDeclaration.Kind.ENUM) {
@@ -970,7 +971,7 @@ public final class CsmTracer {
                 dumpModel((CsmTypedef) member);
             } else if (member.getKind() == CsmDeclaration.Kind.TYPEALIAS) {
                 dumpModel((CsmTypeAlias) member);
-// commented out till there is convenient moment to update tests                
+// commented out till there is convenient moment to update tests
 //	    } else if ( member.getKind() == CsmDeclaration.Kind.CLASS_FORWARD_DECLARATION ) {
 //		dumpModel((CsmClassForwardDeclaration) member);
             } else {
@@ -1009,12 +1010,12 @@ public final class CsmTracer {
             }
         }
         unindent();
-        Collection/*<CsmMember>*/ friends = cls.getFriends();
+        Collection<CsmFriend> friends = cls.getFriends();
         if (!friends.isEmpty()) {
             print("FRIENDS:"); // NOI18N
             indent();
-            for (Iterator iter = friends.iterator(); iter.hasNext();) {
-                CsmFriend friend = (CsmFriend) iter.next();
+            for (Iterator<CsmFriend> iter = friends.iterator(); iter.hasNext();) {
+                CsmFriend friend = iter.next();
                 if (friend.getKind() == CsmDeclaration.Kind.CLASS_FRIEND_DECLARATION) {
                     CsmFriendClass frClass = (CsmFriendClass) friend;
                     StringBuilder sb = new StringBuilder(frClass.getKind().toString());
@@ -1047,7 +1048,7 @@ public final class CsmTracer {
         unindent();
     }
 
-// commented out till there is convenient moment to update tests                
+// commented out till there is convenient moment to update tests
 //    public void dumpModel(CsmClassForwardDeclaration fwd) {
 //        StringBuilder sb = new StringBuilder("CLASS FORWARD "); // NOI18N
 //	if( CsmKindUtilities.isClassMember(fwd) ) {
@@ -1072,8 +1073,8 @@ public final class CsmTracer {
     public void dumpModel(CsmEnum enumeration) {
         print((enumeration.isStronglyTyped() ? "STRONGLY TYPED " : "") + "ENUM " + enumeration.getName() + getOffsetString(enumeration, false) + ' ' + getScopeString(enumeration)); // NOI18N
         indent();
-        for (Iterator iter = enumeration.getEnumerators().iterator(); iter.hasNext();) {
-            CsmEnumerator enumerator = (CsmEnumerator) iter.next();
+        for (Iterator<CsmEnumerator> iter = enumeration.getEnumerators().iterator(); iter.hasNext();) {
+            CsmEnumerator enumerator = iter.next();
             StringBuilder sb = new StringBuilder(enumerator.getName());
             if (enumerator.getExplicitValue() != null) {
                 sb.append(' ');
@@ -1087,8 +1088,8 @@ public final class CsmTracer {
     public void dumpModel(CsmNamespaceDefinition nsp) {
         print("NAMESPACE DEFINITOIN " + nsp.getName() + getOffsetString(nsp, false) + ' ' + getScopeString(nsp)); // NOI18N
         indent();
-        for (Iterator iter = nsp.getDeclarations().iterator(); iter.hasNext();) {
-            dumpModel((CsmDeclaration) iter.next());
+        for (Iterator<CsmOffsetableDeclaration> iter = nsp.getDeclarations().iterator(); iter.hasNext();) {
+            dumpModel(iter.next());
         }
         unindent();
     }
@@ -1109,7 +1110,7 @@ public final class CsmTracer {
         }
     }
 
-    public void dumpFilesCollection(Collection/*<CsmFile>*/ files, String title) {
+    public void dumpFilesCollection(Collection<CsmFile> files, String title) {
         if (!files.isEmpty()) {
             print(title);
             indent();
@@ -1118,16 +1119,16 @@ public final class CsmTracer {
         }
     }
 
-    public void dumpFilesCollection(Collection/*<CsmFile>*/ files) {
+    public void dumpFilesCollection(Collection<CsmFile> files) {
         if (!files.isEmpty()) {
-            for (Iterator iter = files.iterator(); iter.hasNext();) {
-                CsmFile file = (CsmFile) iter.next();
+            for (Iterator<CsmFile> iter = files.iterator(); iter.hasNext();) {
+                CsmFile file = iter.next();
                 print(file == null ? NULL_TEXT : file.getAbsolutePath().toString()); // NOI18N
             }
         }
     }
 
-    public void dumpDeclarationsCollection(Collection/*<CsmDeclaration>*/ declarations, String title) {
+    public void dumpDeclarationsCollection(Collection<? extends CsmDeclaration> declarations, String title) {
         if (!declarations.isEmpty()) {
             print(title);
             indent();
@@ -1136,16 +1137,16 @@ public final class CsmTracer {
         }
     }
 
-    public void dumpDeclarationsCollection(Collection/*<CsmDeclaration>*/ declarations) {
+    public void dumpDeclarationsCollection(Collection<? extends CsmDeclaration> declarations) {
         if (!declarations.isEmpty()) {
-            for (Iterator iter = declarations.iterator(); iter.hasNext();) {
-                CsmDeclaration decl = (CsmDeclaration) iter.next();
+            for (Iterator<? extends CsmDeclaration> iter = declarations.iterator(); iter.hasNext();) {
+                CsmDeclaration decl = iter.next();
                 print(decl == null ? NULL_TEXT : (decl.getUniqueName() + " of kind: " + decl.getKind())); // NOI18N
             }
         }
     }
 
-    public void dumpNamespacesCollection(Collection/*<CsmNamespace>*/ namespaces, String title) {
+    public void dumpNamespacesCollection(Collection<CsmNamespace> namespaces, String title) {
         if (!namespaces.isEmpty()) {
             print(title);
             indent();
@@ -1154,15 +1155,15 @@ public final class CsmTracer {
         }
     }
 
-    public void dumpNamespacesCollection(Collection/*<CsmNamespace>*/ namespaces) {
+    public void dumpNamespacesCollection(Collection<CsmNamespace> namespaces) {
         if (!namespaces.isEmpty()) {
-            for (Iterator iter = namespaces.iterator(); iter.hasNext();) {
-                CsmNamespace nsp = (CsmNamespace) iter.next();
+            for (Iterator<CsmNamespace> iter = namespaces.iterator(); iter.hasNext();) {
+                CsmNamespace nsp = iter.next();
                 print(nsp == null ? NULL_TEXT : nsp.getQualifiedName().toString()); // NOI18N
             }
         }
     }
-    
+
     private final static class WriterOutputStream extends OutputStream {
 
         private final Writer writer;
@@ -1173,12 +1174,13 @@ public final class CsmTracer {
 
         @Override
         public void write(int b) throws IOException {
-            // It's tempting to use writer.write((char) b), but that may get the encoding wrong  
-            // This is inefficient, but it works  
+            // It's tempting to use writer.write((char) b), but that may get the encoding wrong
+            // This is inefficient, but it works
             write(new byte[]{(byte) b}, 0, 1);
         }
 
         @Override
+        @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
         public void write(byte b[], int off, int len) throws IOException {
             writer.write(new String(b, off, len));
         }
@@ -1192,5 +1194,5 @@ public final class CsmTracer {
         public void close() throws IOException {
             writer.close();
         }
-    }    
+    }
 }

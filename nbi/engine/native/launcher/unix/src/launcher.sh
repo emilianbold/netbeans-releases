@@ -727,7 +727,7 @@ installJVM() {
 			debug "... unpacked file = $unpacked"
 			fEsc=`escapeString "$f"`
 			uEsc=`escapeString "$unpacked"`
-			cmd="$jvmDirEscaped/bin/unpack200 $fEsc $uEsc"
+			cmd="$jvmDirEscaped/bin/unpack200 -r $fEsc $uEsc"
 			runCommand "$cmd"
 			if [ $? != 0 ] ; then
 			    message "$MSG_ERROR_UNPACK_JVM_FILE" "$f"
@@ -1060,13 +1060,28 @@ searchJavaUserDefined() {
 	fi
 }
 
+searchJavaInstallFolder() {
+        installFolder="`dirname \"$0\"`"
+        installFolder="`( cd \"$installFolder\" && pwd )`"
+        installFolder="$installFolder/bin/jre"
+        tempJreFolder="$TEST_JVM_CLASSPATH/_jvm"
+
+        if [ -d "$installFolder" ] ; then
+            #copy nested JRE to temp folder
+            cp -r "$installFolder" "$tempJreFolder"
+
+            verifyJVM "$tempJreFolder"
+        fi
+}
+
 searchJava() {
 	message "$MSG_JVM_SEARCH"
         if [ ! -f "$TEST_JVM_CLASSPATH" ] && [ ! $isSymlink "$TEST_JVM_CLASSPATH" ] && [ ! -d "$TEST_JVM_CLASSPATH" ]; then
                 debug "Cannot find file for testing JVM at $TEST_JVM_CLASSPATH"
 		message "$MSG_ERROR_JVM_NOT_FOUND" "$ARG_JAVAHOME"
                 exitProgram $ERROR_TEST_JVM_FILE
-        else		
+        else	
+                searchJavaInstallFolder
 		searchJavaUserDefined
 		installBundledJVMs
 		searchJavaEnvironment
@@ -1191,22 +1206,19 @@ checkJavaHierarchy() {
 	javaHierarchy=0
 	if [ -n "$tryJava" ] ; then
 		if [ -d "$tryJava" ] || [ $isSymlink "$tryJava" ] ; then # existing directory or a isSymlink        			
-			javaLib="$tryJava"/"lib"
+			javaBin="$tryJava"/"bin"
 	        
-			if [ -d "$javaLib" ] || [ $isSymlink "$javaLib" ] ; then
-				javaLibDtjar="$javaLib"/"dt.jar"
-				if [ -f "$javaLibDtjar" ] || [ -f "$javaLibDtjar" ] ; then
-					#definitely JDK as the JRE doesn`t have dt.jar
+			if [ -d "$javaBin" ] || [ $isSymlink "$javaBin" ] ; then
+				javaBinJavac="$javaBin"/"javac"
+				if [ -f "$javaBinJavac" ] || [ $isSymlink "$javaBinJavac" ] ; then
+					#definitely JDK as the JRE doesn`t contain javac
 					javaHierarchy=2				
 				else
 					#check if we inside JRE
-					javaLibJce="$javaLib"/"jce.jar"
-					javaLibCharsets="$javaLib"/"charsets.jar"					
-					javaLibRt="$javaLib"/"rt.jar"
-					if [ -f "$javaLibJce" ] || [ $isSymlink "$javaLibJce" ] || [ -f "$javaLibCharsets" ] || [ $isSymlink "$javaLibCharsets" ] || [ -f "$javaLibRt" ] || [ $isSymlink "$javaLibRt" ] ; then
+					javaBinJava="$javaBin"/"java"
+					if [ -f "$javaBinJava" ] || [ $isSymlink "$javaBinJava" ] ; then
 						javaHierarchy=1
-					fi
-					
+					fi					
 				fi
 			fi
 		fi

@@ -48,10 +48,12 @@ import java.awt.Font;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
 import org.netbeans.modules.subversion.remote.util.SvnUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -94,15 +96,33 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
             keywords = new String[] {
                 "SVN", //NOI18N
                 "SUBVERSION", //NOI18N
-                Bundle.SvnOptionsPanel_kw1().toUpperCase(),
-                Bundle.SvnOptionsPanel_kw2().toUpperCase(),
-                Bundle.SvnOptionsPanel_kw3().toUpperCase(),
-                Bundle.SvnOptionsPanel_kw4().toUpperCase(),
-                Bundle.SvnOptionsPanel_kw5().toUpperCase()
+                Bundle.SvnOptionsPanel_kw1().toUpperCase(Locale.getDefault()),
+                Bundle.SvnOptionsPanel_kw2().toUpperCase(Locale.getDefault()),
+                Bundle.SvnOptionsPanel_kw3().toUpperCase(Locale.getDefault()),
+                Bundle.SvnOptionsPanel_kw4().toUpperCase(Locale.getDefault()),
+                Bundle.SvnOptionsPanel_kw5().toUpperCase(Locale.getDefault())
             };
         }
         return Collections.unmodifiableList(Arrays.asList(keywords));
     }
+
+    void fileSystemChanged(FileSystem fileSystem) {
+        boolean enabled = fileSystem != null;
+        addButton.setEnabled(enabled);
+        annotationTextField.setEnabled(enabled);
+        browseButton.setEnabled(enabled);
+        cbAutoLockFiles.setEnabled(enabled);
+        cbDetermineBranches.setEnabled(enabled);
+        cbGetRemoteLocks.setEnabled(enabled);
+        cbOpenOutputWindow.setEnabled(enabled);
+        excludeNewFiles.setEnabled(enabled);
+        executablePathTextField.setEnabled(enabled);
+        manageConnSettingsButton.setEnabled(enabled);
+        manageLabelsButton.setEnabled(enabled);
+        prefixRepositoryPath.setEnabled(enabled);
+        textPaneClient.setEnabled(enabled);
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -405,5 +425,4 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JCheckBox prefixRepositoryPath = new javax.swing.JCheckBox();
     final javax.swing.JTextPane textPaneClient = new javax.swing.JTextPane();
     // End of variables declaration//GEN-END:variables
-
 }

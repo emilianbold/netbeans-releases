@@ -80,7 +80,7 @@ public final class SSHKeyFileCompletionProvider extends FileNamesCompletionProvi
             return Collections.emptyList();
         }
 
-        List<String> result = new ArrayList<String>(listFiles.length);
+        List<String> result = new ArrayList<>(listFiles.length);
         int idx = dirFile.getAbsolutePath().length();
 
         for (File f : listFiles) {

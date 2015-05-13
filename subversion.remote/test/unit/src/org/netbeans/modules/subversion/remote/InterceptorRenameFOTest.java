@@ -47,7 +47,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import static org.netbeans.modules.subversion.remote.RemoteVersioningTestBase.addTest;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.util.Utilities;
 
@@ -55,7 +55,7 @@ import org.openide.util.Utilities;
  *
  * @author alsimon
  */
-@ClassForAllEnvironments
+@ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
 
     public InterceptorRenameFOTest(String testName, ExecutionEnvironment execEnv) {
@@ -77,8 +77,8 @@ public class InterceptorRenameFOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorRenameFOTest.class, "renameFileTree_FO"); // failed
         addTest(suite, InterceptorRenameFOTest.class, "renameA2CB2A_FO");
         addTest(suite, InterceptorRenameFOTest.class, "renameA2a_FO");
-        addTest(suite, InterceptorRenameFOTest.class, "deleteA_renameB2A2B_FO");
-        addTest(suite, InterceptorRenameFOTest.class, "deleteA_renameUnversioned2A_FO");
+        addTest(suite, InterceptorRenameFOTest.class, "deleteA_renameB2A2B_FO"); // failed
+        addTest(suite, InterceptorRenameFOTest.class, "deleteA_renameUnversioned2A_FO"); // failed
         return(suite);
     }
     

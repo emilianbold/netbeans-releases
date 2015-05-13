@@ -166,7 +166,7 @@ public class SideEffectVisitor extends TreePathScanner {
     @Override
     public Object visitNewClass(NewClassTree node, Object p) {
         Element e = ci.getTrees().getElement(getCurrentPath()).getEnclosingElement();
-        if (e.getKind().isClass()) {
+        if (e != null && e.getKind().isClass()) {
             Object r = scan(node.getEnclosingExpression(), p);
             r = scanAndReduce(node.getIdentifier(), p, r);
             r = scanAndReduce(node.getTypeArguments(), p, r);
@@ -206,7 +206,7 @@ public class SideEffectVisitor extends TreePathScanner {
         Object o = reduce(r, x);
 
         Element e = ci.getTrees().getElement(getCurrentPath());
-        if (e.getKind() != ElementKind.METHOD) {
+        if (e != null && e.getKind() != ElementKind.METHOD) {
             return o;
         }
         if (invocationChainLevel > 0) {

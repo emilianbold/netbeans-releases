@@ -123,7 +123,9 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
         "const",        "float", 	"native", 	"super", 	"while",
     }));
-    private static final int MAX_TOOLTIP_TEXT = 100000;
+    private static final boolean isJDK8 = System.getProperty("java.version").startsWith("1.8.");
+    // There is a severe memory defect on JDK 8 (https://bugs.openjdk.java.net/browse/JDK-8072775):
+    private static final int MAX_TOOLTIP_TEXT = isJDK8 ? 1000 : 100000;
 
     private Part lp;
     private EditorCookie ec;
@@ -254,7 +256,15 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             String type = v.getType ();
             if (v instanceof ObjectVariable) {
                 tooltipVariable = (ObjectVariable) v;
-                v = getFormattedValue(d, (ObjectVariable) v);
+                try {
+                    Object jdiValue = v.getClass().getMethod("getJDIValue").invoke(v);
+                    if (jdiValue == null) {
+                        tooltipVariable = null;
+                    }
+                } catch (Exception ex) {}
+                if (tooltipVariable != null) {
+                    v = getFormattedValue(d, (ObjectVariable) v);
+                }
             }
             if (v instanceof ObjectVariable) {
                 try {

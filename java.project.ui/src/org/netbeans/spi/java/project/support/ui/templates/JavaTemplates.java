@@ -44,11 +44,12 @@
 
 package org.netbeans.spi.java.project.support.ui.templates;
 
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.project.ui.JavaTargetChooserPanel;
 import org.netbeans.modules.java.project.ui.NewJavaFileWizardIterator;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.openide.WizardDescriptor;
 import org.netbeans.api.templates.TemplateRegistration;
 
@@ -71,6 +72,14 @@ public class JavaTemplates {
      */
     public static WizardDescriptor.Panel<WizardDescriptor> createPackageChooser(Project project, SourceGroup[] folders) throws IllegalArgumentException {
         return createPackageChooser(project, folders, null);
+    }
+
+    // friend API method used from templatesui module
+    static WizardDescriptor.Panel<WizardDescriptor> createPackageChooser(Object project, String type) throws Exception {
+        Project p = (Project) project;
+        Sources src = ProjectUtils.getSources(p);
+        SourceGroup[] groups = src.getSourceGroups(type);
+        return JavaTemplates.createPackageChooser(p, groups);
     }
     
     /**

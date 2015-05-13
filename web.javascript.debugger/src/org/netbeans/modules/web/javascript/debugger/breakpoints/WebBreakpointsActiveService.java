@@ -50,6 +50,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.javascript2.debug.breakpoints.JSBreakpointsInfo;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
@@ -95,13 +96,13 @@ public class WebBreakpointsActiveService implements JSBreakpointsInfo {
             return false;
         }
         String mimeType = mostRecentFile.getMIMEType();
-        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
+        return MiscEditorUtil.isJSOrWrapperMIMEType(mimeType);
     }
 
     @Override
     public boolean isAnnotatable(FileObject fo) {
         String mimeType = fo.getMIMEType();
-        return "text/javascript".equals(mimeType) || "text/html".equals(mimeType);  // NOI18N
+        return MiscEditorUtil.isJSOrWrapperMIMEType(mimeType);
     }
 
     @Override

@@ -121,13 +121,19 @@ public final class TestRunnerReporter {
         }
         
         if(index == -1) {
+            if (trouble != null) { // stacktrace from javascript/selenium mocha runner
+                stackTrace.add(getStacktrace(line));
+                return showOutput ? line : null;
+            }
             return logMessage;
         }
         
         matcher = SESSION_START_PATTERN.matcher(line);
         if (matcher.find()) {
             // in "multi capability" mode session is started only once
-            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) {
+            if (multiCapabilities == 0 || // capabilities is used
+                    (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
                 sessionStarted(line);
             }
             return showOutput ? line : null;
@@ -137,7 +143,9 @@ public final class TestRunnerReporter {
         if (matcher.find()) {
             handleTrouble();
             // in "multi capability" mode session is finished only once
-            if (multiCapabilities == 0 || (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == multiCapabilities)) {
+            if (multiCapabilities == 0 || // capabilities is used
+                    (multiCapabilities > 0 && matcher.group("CAPABILITY") == null) || // multiCapabilities is used with only one browser
+                    (multiCapabilities > 0 && Integer.parseInt(matcher.group("CAPABILITY")) == 1)) { // multiCapabilities is used with more than one browser
                 sessionFinished(line);
             }
             return showOutput ? "" : null;
@@ -174,7 +182,7 @@ public final class TestRunnerReporter {
             getManager().displayOutput(testSession, output2display, false);
             return output2display;
         }
-        if(trouble != null) {
+        if(trouble != null) { // stacktrace from selenium jasmine runner
             stackTrace.add(getStacktrace(line));
         }
         return showOutput ? line : null;
@@ -348,7 +356,10 @@ public final class TestRunnerReporter {
 
         // at /Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:1425:29
         // at notify (/Users/fanis/selenium2_work/NodeJsApplication/node_modules/selenium-webdriver/lib/webdriver/promise.js:465:12)
-        static final Pattern FILE_LINE_PATTERN = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        // at C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\lib\protractor.js:1041:17
+        // at [object Object].webdriver.promise.ControlFlow.runInNewFrame_ (C:\Users\toikonom\AppData\Local\Temp\AngularJSPhoneCat\node_modules\protractor\node_modules\selenium-webdriver\lib\webdriver\promise.js:1539:20)
+        static final Pattern FILE_LINE_PATTERN_UNIX = Pattern.compile("^" + CAPABILITY + "(.*)at ([^/]*)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
+        static final Pattern FILE_LINE_PATTERN_WINDOWS = Pattern.compile("^" + CAPABILITY + "(.*)at (.*)(?<DRIVE>[a-zA-Z]:)(?<FILE>[^:]+):(?<LINE>\\d+):(?<COLUMN>\\d+)"); // NOI18N
 
         final Project project;
 
@@ -360,9 +371,18 @@ public final class TestRunnerReporter {
 
         @Override
         public Pair<File, int[]> parseLocation(String callStack, boolean underTestRoot) {
-            Matcher matcher = FILE_LINE_PATTERN.matcher(callStack.trim());
-            if (matcher.find()) {
-                File path = new File(matcher.group("FILE").replace('/', File.separatorChar)); // NOI18N
+            Matcher matcher = FILE_LINE_PATTERN_WINDOWS.matcher(callStack.trim());
+            boolean matchFound = matcher.find();
+            String drive = null;
+            if(matchFound) {
+                drive = matcher.group("DRIVE"); // NOI18N
+            } else {
+                matcher = FILE_LINE_PATTERN_UNIX.matcher(callStack.trim());
+                matchFound = matcher.find();
+            }
+            if (matchFound) {
+                String pathname = drive == null ? matcher.group("FILE") : drive.concat(matcher.group("FILE")); // NOI18N
+                File path = new File(pathname);
                 File file;
                 FileObject projectDir = project.getProjectDirectory();
                 if (path.isAbsolute()) {

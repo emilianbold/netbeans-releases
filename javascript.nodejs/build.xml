@@ -52,6 +52,7 @@ Portions Copyrighted 2014 Sun Microsystems, Inc.
         <zip basedir="samples_src/ListDirectory" destfile="${samples}/ListDirectory.zip"/>
         <zip basedir="samples_src/MessagesKnockout" destfile="${samples}/MessagesKnockout.zip"/>
         <zip basedir="samples_src/MessagesAngular" destfile="${samples}/MessagesAngular.zip"/>
+        <zip basedir="samples_src/MessagesExpress" destfile="${samples}/MessagesExpress.zip"/>
     </target>
 
 </project>

@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.netbeans.api.progress.*;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 
@@ -126,10 +127,8 @@ public final class WebKitDebuggingSupport {
                 //phonegap
                 String id = context.lookup(String.class);
                 transport.setBundleIdentifier(id);
-                if (context != null) {
-                    BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
-                    transport.setBrowserURLMapper(mapper);
-                }
+                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
+                transport.setBrowserURLMapper(mapper);
             }
             boolean attached = transport.attach();
             if (!attached) {
@@ -153,7 +152,16 @@ public final class WebKitDebuggingSupport {
             consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
             networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
             dispatcher = new MessageDispatcherImpl();
-            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(Image.class), dispatcher));
+            BrowserFamilyId browserFamilyId = context.lookup(BrowserFamilyId.class);
+            if (browserFamilyId == null) {
+                browserFamilyId = BrowserFamilyId.UNKNOWN;
+            }
+            PageInspector.getDefault().inspectPage(Lookups.fixed(
+                    webKitDebugging,
+                    p,
+                    context.lookup(Image.class),
+                    browserFamilyId,
+                    dispatcher));
         } finally {
             startDebuggingInProgress = false;
             handle.finish();

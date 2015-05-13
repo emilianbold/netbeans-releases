@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.project.MakeProjectTestBase;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.Utilities;
@@ -83,6 +82,10 @@ public class QT_QLifeTestCase extends MakeProjectTestBase {
             return;
         }
         HostInfo hostInfo = HostInfoUtils.getHostInfo(getEE());
+        if (hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS) {
+            //Solaris is not desctop system. Impossible to port Qt on Solaris.
+            return;
+        }
         boolean useStudio = false;
         if (hostInfo.getOSFamily() == HostInfo.OSFamily.SUNOS && hostInfo.getCpuFamily() == HostInfo.CpuFamily.SPARC) {
             useStudio = true;

@@ -201,6 +201,7 @@ public final class ItemSelectorDialog extends JPanel implements ActionListener {
 	// setup listener after we have all the buttons ready
 
 	list.addListSelectionListener(new ListSelectionListener() {
+            @Override
 	    public void valueChanged(ListSelectionEvent e) {
 		sensitizeButtons();
 	    }
@@ -260,6 +261,7 @@ public final class ItemSelectorDialog extends JPanel implements ActionListener {
 	}
     }
 
+    @Override
     public void actionPerformed(java.awt.event.ActionEvent actionEvent) {
 
 	if (actionEvent.getSource() == okButton) {

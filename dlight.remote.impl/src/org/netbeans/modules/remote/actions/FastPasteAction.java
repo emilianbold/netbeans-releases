@@ -45,7 +45,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -59,7 +58,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.util.datatransfer.PasteType;
 
 /**
  *
@@ -74,7 +72,7 @@ public class FastPasteAction extends CookieAction {
 
     @Override
     protected void performAction(Node[] nodes) {
-        Set<FileObject> fileObjects = new HashSet<FileObject>();
+        Set<FileObject> fileObjects = new HashSet<>();
         Transferable rf = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
         DataFlavor[] flavors = rf.getTransferDataFlavors();
         for (DataFlavor fl : flavors) {
@@ -90,9 +88,7 @@ public class FastPasteAction extends CookieAction {
                             }
                         }
                     }
-                } catch (UnsupportedFlavorException ex) {
-                    RemoteLogger.fine(ex);
-                } catch (IOException ex) {
+                } catch (UnsupportedFlavorException | IOException ex) {
                     RemoteLogger.fine(ex);
                 }
             }
@@ -169,9 +165,7 @@ public class FastPasteAction extends CookieAction {
                             }
                         }
                     }
-                } catch (UnsupportedFlavorException ex) {
-                    RemoteLogger.fine(ex);
-                } catch (IOException ex) {
+                } catch (UnsupportedFlavorException | IOException ex) {
                     RemoteLogger.fine(ex);
                 }
             }

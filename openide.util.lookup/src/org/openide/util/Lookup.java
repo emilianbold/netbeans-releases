@@ -149,6 +149,8 @@ public abstract class Lookup {
             if (className != null) {
                 Object o = Class.forName(className, true, l).newInstance();
                 defaultLookup = (Lookup)o;
+                // set the global global Lookuo
+                GlobalLookup.setSystemLookup(defaultLookup);
                 LOG.log(Level.FINE, "Default lookup initialized {0}", defaultLookup);
                 // for testing purposes, tests may setup a class implementing both interfaces
                 if (o instanceof Lookup.Provider) {

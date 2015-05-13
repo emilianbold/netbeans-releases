@@ -44,6 +44,8 @@
 package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.awt.Color;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.lang.ref.Reference;
@@ -65,10 +67,13 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -108,7 +113,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jan Lahoda
  * @author Vladimir Voskresensky
  */
-public class InstantRenamePerformer implements DocumentListener, KeyListener {
+public class InstantRenamePerformer implements DocumentListener, KeyListener, FocusListener {
     private static final String POSITION_BAG = "CndInstantRenamePerformer"; // NOI18N
 
     private SyncDocumentRegion region;
@@ -122,7 +127,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	this.doc = target.getDocument();
 	
 	MutablePositionRegion mainRegion = null;
-	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+	List<MutablePositionRegion> regions = new ArrayList<>();
         bag = new PositionsBag(doc);
         
 	for (CsmReference h : highlights) {
@@ -130,13 +135,25 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    Position end = NbDocument.createPosition(doc, h.getEndOffset(), Bias.Forward);
 	    MutablePositionRegion current = new MutablePositionRegion(start, end);
 	    
+            AttributeSet attribs;
 	    if (isIn(current, caretOffset)) {
 		mainRegion = current;
+                attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext"); //NOI18N
 	    } else {
 		regions.add(current);
+                attribs = getSyncedTextBlocksHighlight("synchronized-text-blocks-ext-slave"); //NOI18N
 	    }
 	    
-            bag.addHighlight(start, end, COLORING);
+            Color foreground = (Color) attribs.getAttribute(StyleConstants.Foreground);
+            Color background = (Color) attribs.getAttribute(StyleConstants.Background);
+            AttributeSet attribsAll = createAttributeSet(
+                StyleConstants.Background, background,
+                EditorStyleConstants.LeftBorderLineColor, foreground, 
+                EditorStyleConstants.RightBorderLineColor, foreground,
+                EditorStyleConstants.TopBorderLineColor, foreground, 
+                EditorStyleConstants.BottomBorderLineColor, foreground
+            );
+            bag.addHighlight(start, end, attribsAll);
 	}
 	
         if (mainRegion == null) {
@@ -160,7 +177,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	regions.add(0, mainRegion);
 	
 	this.region = new SyncDocumentRegion(doc, regions);
-	
+        
         if (doc instanceof BaseDocument) {
             final BaseDocument bdoc = (BaseDocument) doc;
             bdoc.addPostModificationDocumentListener(InstantRenamePerformer.this);
@@ -170,10 +187,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 //                l.undoableEditHappened(new UndoableEditEvent(doc, undo));
 //            }            
         }
-        
-	target.addKeyListener(InstantRenamePerformer.this);
-	
-	target.putClientProperty(InstantRenamePerformer.class, InstantRenamePerformer.this);
+        target.addFocusListener(InstantRenamePerformer.this);
+
+        target.addKeyListener(InstantRenamePerformer.this);
+
+        target.putClientProperty(InstantRenamePerformer.class, InstantRenamePerformer.this);
 	
         getHighlightsBag(doc).setHighlights(bag);
         
@@ -308,31 +326,46 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     @Override
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
-	inSync = true;
-	region.sync(0);
-        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-	target.repaint();
+        if (inSync) {
+            return;
+        }
+        updateOnInsertRemove();
     }
 
     @Override
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
+        if (inSync) {
+            return ;
+        }
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
         if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null) {
             return ;
         }
-        
-	inSync = true;
-	region.sync(0);
-        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-	target.repaint();
+
+        updateOnInsertRemove();
+    }
+
+    private void updateOnInsertRemove() {
+      inSync = true;
+      JTextComponent aTarget = target;
+      if (region.sync(0)) {
+          getHighlightsBag(doc).setHighlights(bag);
+      } else {
+          release();
+      }
+      inSync = false;
+      aTarget.repaint();
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        release();
     }
 
     @Override
@@ -372,21 +405,48 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             return;
         }
         
-	target.putClientProperty(InstantRenamePerformer.class, null);
+        target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
-	target.removeKeyListener(this);
+        target.removeKeyListener(this);
+        target.removeFocusListener(this);
         getHighlightsBag(doc).clear();
 
-	region = null;
-	doc = null;
-	target = null;
+        region = null;
+        doc = null;
+        target = null;
         instance = null;
     }
+    
+    private static AttributeSet createAttributeSet(Object... keyValuePairs) {
+        assert keyValuePairs.length % 2 == 0 : "There must be even number of prameters. " +
+            "They are key-value pairs of attributes that will be inserted into the set."; //NOI18N
 
+        List<Object> list = new ArrayList<>();
+        
+        for(int i = keyValuePairs.length / 2 - 1; i >= 0 ; i--) {
+            Object attrKey = keyValuePairs[2 * i];
+            Object attrValue = keyValuePairs[2 * i + 1];
+
+            if (attrKey != null && attrValue != null) {
+                list.add(attrKey);
+                list.add(attrValue);
+            }
+        }
+        
+        return AttributesUtilities.createImmutable(list.toArray());
+    }
+    
     private static InstantRenamePerformer instance = null;
-    private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    //private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
+    private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
+    
+    private static AttributeSet getSyncedTextBlocksHighlight(String name) {
+        FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
+        AttributeSet as = fcs != null ? fcs.getFontColors(name) : null;
+        return as == null ? COLORING : as;
+    }
     
     public static PositionsBag getHighlightsBag(Document doc) {
         PositionsBag bag = (PositionsBag) doc.getProperty(POSITION_BAG);
@@ -395,13 +455,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         }
         return bag;
     }
-    
+
     private static class CancelInstantRenameUndoableEdit extends AbstractUndoableEdit {
 
         private final Reference<InstantRenamePerformer> performer;
 
         public CancelInstantRenameUndoableEdit(InstantRenamePerformer performer) {
-            this.performer = new WeakReference<InstantRenamePerformer>(performer);
+            this.performer = new WeakReference<>(performer);
         }
 
         @Override

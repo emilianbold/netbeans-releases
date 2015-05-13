@@ -60,7 +60,7 @@ public final class FileSearchParams {
         }
 
         this.execEnv = execEnv;
-        this.searchPaths = Collections.unmodifiableList(new ArrayList<String>(searchPaths));
+        this.searchPaths = Collections.unmodifiableList(new ArrayList<>(searchPaths));
         this.filename = filename;
         this.searchInUserPaths = searchInUserPaths;
     }

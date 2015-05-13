@@ -211,7 +211,7 @@ public class ProjectSupport {
     
     /** Listener for project open. */
     static class ProjectListListener implements PropertyChangeListener {
-        public boolean projectListChanged = false;
+        public volatile boolean projectListChanged = false;
         
         /** Listen for property which changes when project is hopefully opened. */
         @Override

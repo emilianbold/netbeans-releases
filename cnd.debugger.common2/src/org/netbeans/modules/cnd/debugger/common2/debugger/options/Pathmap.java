@@ -88,12 +88,6 @@ public final class Pathmap extends ProfileCategory {
     }
 
     @Override
-    public int hashCode() {
-	int hash = 7;
-	hash = 79 * hash + (this.pathmap != null ? this.pathmap.hashCode() : 0);
-	return hash;
-    }
-
     public boolean equals(Object thatObject) {
 	// canonical part
 	if (this == thatObject)
@@ -124,6 +118,7 @@ public final class Pathmap extends ProfileCategory {
 	return true;
     }
 
+    @Override
     public Object clone() {
 	Pathmap clone = new Pathmap(owner);
 
@@ -136,6 +131,7 @@ public final class Pathmap extends ProfileCategory {
 	return clone;
     }
 
+    @Override
     public void assign(Object thatObject) {
 	// canonical part
 	if (this.equals(thatObject))

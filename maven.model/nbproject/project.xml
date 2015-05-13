@@ -140,6 +140,7 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings.storage</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -201,6 +202,8 @@
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <!-- danis@netbeans.org -->
                 <friend>org.vaadin.netbeans.maven</friend>
+                <!-- NetBeans support for Google App Engine -->
+                <friend>org.netbeans.modules.j2ee.appengine</friend>
                 <friend>org.netbeans.modules.maven.util</friend>
                 <package>org.netbeans.modules.maven.model</package>
                 <package>org.netbeans.modules.maven.model.pom</package>

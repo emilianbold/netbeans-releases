@@ -105,39 +105,48 @@ public class PreviewPreferences extends AbstractPreferences {
         return styleId;
     }
 
+    @Override
     protected void putSpi(String key, String value) {
         map.put(key, value);
     }
 
+    @Override
     protected String getSpi(String key) {
         return (String) map.get(key);
     }
 
+    @Override
     protected void removeSpi(String key) {
         map.remove(key);
     }
 
+    @Override
     protected void removeNodeSpi() throws BackingStoreException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     protected String[] keysSpi() throws BackingStoreException {
         String[] array = new String[map.keySet().size()];
         return map.keySet().toArray(array);
     }
 
+    @Override
     protected String[] childrenNamesSpi() throws BackingStoreException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     protected AbstractPreferences childSpi(String name) {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     protected void syncSpi() throws BackingStoreException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
+    @Override
     protected void flushSpi() throws BackingStoreException {
         throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }

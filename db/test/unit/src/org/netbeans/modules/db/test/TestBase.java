@@ -83,6 +83,7 @@ public abstract class TestBase extends NbTestCase {
                             // NOOP - force a wait
                         }
                     });
+            Thread.sleep(1 * 1000);
             SwingUtilities.invokeAndWait(new Runnable() {
                 @Override
                 public void run() {

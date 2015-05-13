@@ -65,8 +65,12 @@ public class JavaOutputListenerProvider implements OutputProcessor {
     
     private static final String[] JAVAGOALS = new String[] {
         "mojo-execute#compiler:compile", //NOI18N
-        "mojo-execute#compiler:testCompile" //NOI18N
+        "mojo-execute#compiler:testCompile", //NOI18N
+        // issue #252093
+        "mojo-execute#takari-lifecycle-plugin:compile", //NOI18N
+        "mojo-execute#takari-lifecycle-plugin:testCompile" //NOI18N
     };
+    
     private final Pattern failPattern;
     private String windowsDrive; // #197381
     /** @see org.codehaus.plexus.compiler.javac.JavacCompiler#compile */

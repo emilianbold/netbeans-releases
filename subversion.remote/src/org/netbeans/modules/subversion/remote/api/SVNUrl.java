@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -73,7 +74,7 @@ public class SVNUrl {
         if (i < 0) {
             throw new MalformedURLException("Invalid SVN URL: "+url); //NOI18N
         }
-        protocol = tmp.substring(0,i).toLowerCase();
+        protocol = tmp.substring(0,i).toLowerCase(Locale.ENGLISH);
         if (!(SVN_PROTOCOL.equals(protocol) || SVNSSH_PROTOCOL.equals(protocol) || HTTP_PROTOCOL.equals(protocol) ||
             HTTPS_PROTOCOL.equals(protocol) || FILE_PROTOCOL.equals(protocol))) {
             throw new MalformedURLException("Unsupported protocol of SVN URL: "+url); //NOI18N
@@ -82,7 +83,7 @@ public class SVNUrl {
         if (tmp.isEmpty()) {
             throw new MalformedURLException("Invalid path of SVN URL: "+url); //NOI18N
         }
-        i = tmp.indexOf("/"); //NOI18N
+        i = tmp.indexOf('/'); //NOI18N
         if (i < 0) {
             i = tmp.length();
         }
@@ -95,7 +96,7 @@ public class SVNUrl {
             }
         } else {
             //http://llvm.org:80/svn/llvm-project/llvm/branches/release_34
-            String hostAndPort = tmp.substring(0, i).toLowerCase();
+            String hostAndPort = tmp.substring(0, i).toLowerCase(Locale.ENGLISH);
             String[] split = hostAndPort.split(":"); //NOI18N
             if (split.length == 1) {
                 host = split[0];

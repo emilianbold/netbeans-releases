@@ -56,6 +56,7 @@ public abstract class EnumEditor extends AsyncEditor {
     /**
      * Force subclasses to define PropertyEditorSupport.getTags().
      */
+    @Override
     abstract public String[] getTags();
 
     /**
@@ -63,6 +64,7 @@ public abstract class EnumEditor extends AsyncEditor {
      */
     abstract protected Enum byTag(String text);
 
+    @Override
     public void setAsText(String newText) {
 	// Called when an edit is commited through user action
 

@@ -96,7 +96,6 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.util.SharedClassObject;
 import org.openide.util.WeakListeners;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
@@ -476,7 +475,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (flavors[i].getSubType().equals(MakeLogicalViewProvider.SUBTYPE)) {
                 try {
                     ViewItemNode viewItemNode = (ViewItemNode) transferable.getTransferData(flavors[i]);
-                    int type = new Integer(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
+                    int type = Integer.parseInt(flavors[i].getParameter(MakeLogicalViewProvider.MASK));
                     list.add(new ViewItemPasteType(this.getFolder(), viewItemNode, type, provider));
                 } catch (Exception e) {
                 }

@@ -58,8 +58,8 @@ class BracesStack implements Cloneable {
     private static final boolean TRACE_STACK = false;
     private static final boolean TRACE_STATEMENT = false;
     
-    private Stack<StackEntry> stack = new Stack<StackEntry>();
-    private CodeStyle codeStyle;
+    private final Stack<StackEntry> stack = new Stack<StackEntry>();
+    private final CodeStyle codeStyle;
     private StatementContinuation statementContinuation = StatementContinuation.STOP;
     int lastStatementStart = -1;
     int parenDepth = 0;

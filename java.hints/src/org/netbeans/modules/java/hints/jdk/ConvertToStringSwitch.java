@@ -42,54 +42,27 @@
 
 package org.netbeans.modules.java.hints.jdk;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.BlockTree;
-import com.sun.source.tree.BreakTree;
-import com.sun.source.tree.CaseTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
-import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.ParenthesizedTree;
-import com.sun.source.tree.StatementTree;
-import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import com.sun.source.util.TreePathScanner;
-import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
-import org.netbeans.modules.java.hints.bugs.NPECheck;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.suggestions.IfToSwitchSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.MatcherUtilities;
 import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.Hint;
@@ -141,152 +114,93 @@ public class ConvertToStringSwitch {
     };
 
     @TriggerPattern(value="if ($cond) $body; else $else;")
-    public static List<ErrorDescription> hint(HintContext ctx) {
+    public static List<ErrorDescription> hint(final HintContext ctx) {
         if (   ctx.getPath().getParentPath().getLeaf().getKind() == Kind.IF
             || ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) {
             return null;
         }
 
-        TypeElement jlString = ctx.getInfo().getElements().getTypeElement("java.lang.String"); // NOI18N
+        final TypeElement jlString = ctx.getInfo().getElements().getTypeElement("java.lang.String"); // NOI18N
 
         if (jlString == null) {
             return null;
         }
-        
-        List<CatchDescription<TreePathHandle>> literal2Statement = new ArrayList<CatchDescription<TreePathHandle>>();
-        TreePathHandle defaultStatement = null;
-
-        Iterable<? extends TreePath> conds = linearizeOrs(ctx.getVariables().get("$cond")); // NOI18N
-        Iterator<? extends TreePath> iter = conds.iterator();
-        TreePath first = iter.next();
-        TreePath variable = null;
-        Set<String> seenLiterals = new HashSet<String>();
-        Map<TreePath, String> duplicateLiterals = Collections.emptyMap();
-        
-        // if .equals is called on the variable, it is definitively not null.
-        boolean[] varNotNull = new boolean[] { false };
-        TreePath lastCondition = null;
-        
-        Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length + INIT_PATTERNS_EQ.length);
+        final Collection<String> initPatterns = new ArrayList<String>(INIT_PATTERNS.length + INIT_PATTERNS_EQ.length);
 
         initPatterns.addAll(Arrays.asList(INIT_PATTERNS));
-
+        
         if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
             initPatterns.addAll(Arrays.asList(INIT_PATTERNS_EQ));
         }
         
-        for (String initPattern : initPatterns) {
-            if (MatcherUtilities.matches(ctx, first, initPattern, true)) {
-                lastCondition = first;
-                TreePath c1 = ctx.getVariables().get("$c1"); // NOI18N
-                TreePath c2 = ctx.getVariables().get("$c2"); // NOI18N
-                TreePath body = ctx.getVariables().get("$body"); // NOI18N
-                List<TreePathHandle> literals = new LinkedList<TreePathHandle>();
+        IfToSwitchSupport eval = new IfToSwitchSupport(ctx) {
+            private boolean [] varConst = new boolean[1];
 
-                Object c = ArithmeticUtilities.compute(ctx.getInfo(), c1, true, true);
-                if (c instanceof String) {
-                    literals.add(TreePathHandle.create(c1, ctx.getInfo()));
-                    variable = c2;
-                } else {
-                    // c1.equals -> c1 is not null
-                    c = ArithmeticUtilities.compute(ctx.getInfo(), c2, true, true);
-                    if (c instanceof String) {
-                        varNotNull[0] = true;
-                        literals.add(TreePathHandle.create(c2, ctx.getInfo()));
-                        variable = c1;
-                    } else {
-                        return null;
+            @Override
+            protected Object evalConstant(TreePath path) {
+                TypeMirror m = ci.getTrees().getTypeMirror(path);
+                if (ci.getTypes().asElement(m) == jlString) {
+                    Object o = ArithmeticUtilities.compute(ci, path, true, true);
+                    if (ArithmeticUtilities.isRealValue(o)) {
+                        return o;
                     }
                 }
-                seenLiterals.add((String)c);
-
-                TypeMirror varType = ctx.getInfo().getTrees().getTypeMirror(variable);
-
-                if (varType == null || !ctx.getInfo().getTypes().isSameType(varType, jlString.asType())) {
+                return null;
+            }
+            
+            
+            @Override
+            protected TreePath matchesChainedItem(TreePath test, TreePath variable) {
+                varConst[0] = false;
+                TreePath p = isStringComparison(ctx, test, varConst, variable);
+                if (p == null) {
                     return null;
                 }
-                
-                ctx.getVariables().put("$var", variable); //XXX: hack
-
-                while (iter.hasNext()) {
-                    TreePath lt = isStringComparison(ctx, iter.next(), varNotNull);
-                    
-                    if (lt == null) {
-                        return null;
-                    }
-                    Object o = ArithmeticUtilities.compute(ctx.getInfo(), lt, true, true);
-                    if (!(o instanceof String)) {
-                        return null;
-                    }
-                    if (seenLiterals.contains((String)o)) {
-                        if (duplicateLiterals.isEmpty()) {
-                            duplicateLiterals = new LinkedHashMap<TreePath, String>(3);
-                        }
-                        duplicateLiterals.put(lt, (String)o);
-                    }
-                    literals.add(TreePathHandle.create(lt, ctx.getInfo()));
+                if (varConst[0]) {
+                    controlVariableNotNull();
                 }
-
-                literal2Statement.add(new CatchDescription<TreePathHandle>(literals, TreePathHandle.create(body, ctx.getInfo())));
-                break;
+                return p;
             }
+
+            @Override
+            protected TreePath matches(TreePath test, boolean initial) {
+                for (String pat : initPatterns) {
+                    if (MatcherUtilities.matches(ctx, test, pat, true)) {
+                        TreePath c1 = ctx.getVariables().get("$c1");
+                        TypeMirror m = ctx.getInfo().getTrees().getTypeMirror(c1);
+                        if (!Utilities.isValidType(m) ||
+                             ctx.getInfo().getTypes().asElement(m) != jlString) {
+                            continue;
+                        }
+                        TreePath c2 = ctx.getVariables().get("$c2");
+                        m = ctx.getInfo().getTrees().getTypeMirror(c2);
+                        if (!Utilities.isValidType(m) ||
+                             ctx.getInfo().getTypes().asElement(m) != jlString) {
+                            continue;
+                        }
+                        reportConstantAndLiteral(c1, c2);
+                        return c1;
+                    }
+                }
+                return null;
+            }
+            
+        };
+        if (!eval.process(ctx.getVariables().get("$cond"))) {
+            return null;
         }
 
-        if (variable == null) {
+        if (eval.getNumberOfBranches() <= 1) {
             return null;
         }
         
-        TreePath tp = ctx.getVariables().get("$else"); // NOI18N
-
-        while (true) {
-            if (tp.getLeaf().getKind() == Kind.IF) {
-                IfTree it = (IfTree) tp.getLeaf();
-                List<TreePathHandle> literals = new LinkedList<TreePathHandle>();
-                lastCondition = new TreePath(tp, it.getCondition());
-                for (TreePath cond : linearizeOrs(lastCondition)) {
-                    TreePath lt = isStringComparison(ctx, cond, varNotNull);
-
-                    if (lt == null) {
-                        return null;
-                    }
-                    Object o = ArithmeticUtilities.compute(ctx.getInfo(), lt, true, true);
-                    if (!ArithmeticUtilities.isRealValue(o) || !(o instanceof String)) {
-                        return null;
-                    }
-                    if (seenLiterals.contains((String)o)) {
-                        if (duplicateLiterals.isEmpty()) {
-                            duplicateLiterals = new LinkedHashMap<TreePath, String>(3);
-                        }
-                        duplicateLiterals.put(lt, (String)o);
-                    }
-
-                    literals.add(TreePathHandle.create(lt, ctx.getInfo()));
-                }
-
-                literal2Statement.add(new CatchDescription<TreePathHandle>(literals, TreePathHandle.create(new TreePath(tp, it.getThenStatement()), ctx.getInfo())));
-                
-                if (it.getElseStatement() == null) {
-                    break;
-                }
-
-                tp = new TreePath(tp, it.getElseStatement());
-            } else {
-                defaultStatement = TreePathHandle.create(tp, ctx.getInfo());
-                break;
-            }
-        }
-
-        if (literal2Statement.size() <= 1) {
-            return null;
-        }
-        
-        if (!duplicateLiterals.isEmpty()) {
-            List<ErrorDescription> descs = new ArrayList<>(duplicateLiterals.size());
-            seenLiterals.clear();
-            for (Map.Entry<TreePath, String> en : duplicateLiterals.entrySet()) {
-                String lit = en.getValue();
+        if (eval.containsDuplicateConstants()) {
+            List<ErrorDescription> descs = new ArrayList<>(eval.getDuplicateConstants().size());
+            Set<Object> seen = new HashSet<>();
+            for (Map.Entry<TreePath, Object> en : eval.getDuplicateConstants().entrySet()) {
+                String lit = en.getValue().toString();
                 // do not report a single value more than once; confusing.
-                if (!seenLiterals.add(lit)) {
+                if (!seen.add(lit)) {
                     continue;
                 }
                 TreePath t = en.getKey();
@@ -295,11 +209,7 @@ public class ConvertToStringSwitch {
             return descs;
         }
 
-        Fix convert = new ConvertToSwitch(ctx.getInfo(),
-                                 ctx.getPath(),
-                                 TreePathHandle.create(variable, ctx.getInfo()),
-                                 literal2Statement,
-                                 defaultStatement, varNotNull[0]).toEditorFix();
+        Fix convert = eval.createFix(NbBundle.getMessage(ConvertToStringSwitch.class, "FIX_ConvertToStringSwitch"), false).toEditorFix(); // NOI18N
         ErrorDescription ed = ErrorDescriptionFactory.forName(ctx,
                                                               ctx.getPath(),
                                                               Bundle.TEXT_ConvertToSwitch(),
@@ -308,7 +218,7 @@ public class ConvertToStringSwitch {
         return Collections.singletonList(ed);
     }
 
-    private static TreePath isStringComparison(HintContext ctx, TreePath tp, boolean[] varConst) {
+    private static TreePath isStringComparison(HintContext ctx, TreePath tp, boolean[] varConst, TreePath var) {
         Tree leaf = tp.getLeaf();
 
         while (leaf.getKind() == Kind.PARENTHESIZED) {
@@ -320,6 +230,7 @@ public class ConvertToStringSwitch {
 
         patterns.addAll(Arrays.asList(PATTERNS));
 
+        ctx.getVariables().put("$var", var);
         if (ctx.getPreferences().getBoolean(KEY_ALSO_EQ, DEF_ALSO_EQ)) {
             patterns.addAll(Arrays.asList(PATTERNS_EQ));
         }
@@ -338,315 +249,6 @@ public class ConvertToStringSwitch {
         }
 
         return null;
-    }
-
-    private static Iterable<? extends TreePath> linearizeOrs(TreePath cond) {
-        List<TreePath> result = new LinkedList<TreePath>();
-
-        while (cond.getLeaf().getKind() == Kind.CONDITIONAL_OR || cond.getLeaf().getKind() == Kind.PARENTHESIZED) {
-            if (cond.getLeaf().getKind() == Kind.PARENTHESIZED) {
-                cond = new TreePath(cond, ((ParenthesizedTree) cond.getLeaf()).getExpression());
-                continue;
-            }
-            
-            BinaryTree bt = (BinaryTree) cond.getLeaf();
-            
-            result.add(new TreePath(cond, bt.getRightOperand()));
-            cond = new TreePath(cond, bt.getLeftOperand());
-        }
-
-        result.add(cond);
-
-        Collections.reverse(result);
-
-        return result;
-    }
-
-    private static final class ConvertToSwitch extends JavaFix {
-
-        private final TreePathHandle value;
-        private final List<CatchDescription<TreePathHandle>> literal2Statement;
-        private final TreePathHandle defaultStatement;
-        private boolean varNotNull;
-        
-        private Set<Tree> ifSeen = new HashSet<Tree>();
-
-        public ConvertToSwitch(CompilationInfo info, TreePath create, TreePathHandle value, List<CatchDescription<TreePathHandle>> literal2Statement, TreePathHandle defaultStatement, 
-                boolean varNotNull) {
-            super(info, create);
-            this.value = value;
-            this.literal2Statement = literal2Statement;
-            this.defaultStatement = defaultStatement;
-            this.varNotNull = varNotNull;
-        }
-
-        public String getText() {
-            return NbBundle.getMessage(ConvertToStringSwitch.class, "FIX_ConvertToStringSwitch"); // NOI18N
-        }
-
-        @Override
-        protected void performRewrite(TransformationContext ctx) {
-            WorkingCopy copy = ctx.getWorkingCopy();
-            TreePath it = ctx.getPath();
-            TreeMaker make = copy.getTreeMaker();
-            List<CaseTree> cases = new LinkedList<CaseTree>();
-            List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
-            Map<TreePath, Set<Name>> catch2Declared = new IdentityHashMap<TreePath, Set<Name>>();
-            Map<TreePath, Set<Name>> catch2Used = new IdentityHashMap<TreePath, Set<Name>>();
-            Map<BreakTree, StatementTree> break2Target = new IdentityHashMap<BreakTree, StatementTree>();
-            
-            for (CatchDescription<TreePathHandle> d : ConvertToSwitch.this.literal2Statement) {
-                TreePath s = d.path.resolve(copy);
-
-                if (s == null) {
-                    return ;
-                }
-
-                resolved.add(new CatchDescription<TreePath>(d.literals, s));
-                catch2Declared.put(s, declaredVariables(s));
-                catch2Used.put(s, usedVariables(copy, s, break2Target));
-            }
-
-            if (defaultStatement != null) {
-                TreePath s = defaultStatement.resolve(copy);
-
-                if (s == null) {
-                    return ;
-                }
-
-                resolved.add(new CatchDescription<TreePath>(null, s));
-                catch2Declared.put(s, declaredVariables(s));
-                catch2Used.put(s, usedVariables(copy, s, break2Target));
-            }
-
-            for (CatchDescription<TreePath> d : resolved) {
-                if (addCase(copy, d, cases, catch2Declared, catch2Used)) {
-                    return;
-                }
-            }
-
-            TreePath value = ConvertToSwitch.this.value.resolve(copy);
-
-            if (!varNotNull) {
-                varNotNull = NPECheck.isSafeToDereference(copy, value);
-            }
-            
-            
-            SwitchTree s = make.Switch((ExpressionTree) value.getLeaf(), cases);
-
-            Utilities.copyComments(copy, it.getLeaf(), s, true);
-            
-            Tree nue = s;
-            
-            if (!varNotNull) {
-                nue = make.If(
-                        make.Parenthesized(
-                            make.Binary(Kind.NOT_EQUAL_TO, make.Literal(null), (ExpressionTree)value.getLeaf())
-                        ),
-                    s, null
-                );
-            }
-            copy.rewrite(it.getLeaf(), nue); //XXX
-
-            TreePath topLevelMethod = Utilities.findTopLevelBlock(it);
-            final Set<String> seenLabels = new HashSet<String>();
-
-            new TreeScanner<Void, Void>() {
-                @Override public Void visitLabeledStatement(LabeledStatementTree node, Void p) {
-                    seenLabels.add(node.getLabel().toString());
-                    return super.visitLabeledStatement(node, p);
-                }
-            }.scan(topLevelMethod.getLeaf(), null);
-
-            Map<StatementTree, String> labels = new IdentityHashMap<StatementTree, String>();
-
-            for (Entry<BreakTree, StatementTree> e : break2Target.entrySet()) {
-                String label = labels.get(e.getValue());
-
-                if (label == null) {
-                    labels.put(e.getValue(), label = computeLabel(seenLabels));
-                    copy.rewrite(e.getValue(), make.LabeledStatement(label, e.getValue()));
-                }
-                
-                copy.rewrite(e.getKey(), make.Break(label));
-            }
-        }
-
-        private static String computeLabel(Set<String> labels) {
-            int index = 0;
-            String label = Bundle.LABEL_OuterGeneratedLabelInitial();
-
-            while (labels.contains(label)) {
-                label = Bundle.LABEL_OuterGeneratedLabel(++index);
-            }
-
-            labels.add(label);
-
-            return label;
-        }
-        
-        private Tree findExpressionParentIf(TreePath p) {
-            while (!StatementTree.class.isAssignableFrom(p.getLeaf().getKind().asInterface()) && p != null) {
-                p = p.getParentPath();
-            }
-            return p == null ? null : p.getLeaf();
-        }
-
-        private boolean addCase(WorkingCopy copy, CatchDescription<TreePath> desc, List<CaseTree> cases, Map<TreePath, Set<Name>> catch2Declared, Map<TreePath, Set<Name>> catch2Used) {
-            TreeMaker make = copy.getTreeMaker();
-            List<StatementTree> statements = new LinkedList<StatementTree>();
-            Tree then = desc.path.getLeaf();
-
-            Tree replacedByCase = null;
-            if (then.getKind() == Kind.BLOCK) {
-                Set<Name> currentDeclared = catch2Declared.get(desc.path);
-                boolean keepBlock = false;
-
-                for (Entry<TreePath, Set<Name>> e : catch2Declared.entrySet()) {
-                    if (e.getKey() == desc.path) continue;
-                    if (!Collections.disjoint(currentDeclared, e.getValue())) {
-                        keepBlock = true;
-                        break;
-                    }
-                }
-
-                if (!keepBlock) {
-                    for (Entry<TreePath, Set<Name>> e : catch2Used.entrySet()) {
-                        if (e.getKey() == desc.path) continue;
-                        if (!Collections.disjoint(currentDeclared, e.getValue())) {
-                            keepBlock = true;
-                            break;
-                        }
-                    }
-                }
-
-                boolean exitsFromAllBranches = false;
-
-                for (Tree st : ((BlockTree) then).getStatements()) {
-                    exitsFromAllBranches |= Utilities.exitsFromAllBranchers(copy, new TreePath(desc.path, st));
-                }
-
-                BlockTree block = (BlockTree) then;
-                if (keepBlock) {
-                    if (!exitsFromAllBranches) {
-                        statements.add(
-                                make.asReplacementOf(
-                                    make.addBlockStatement(block, make.Break(null)), block, true));
-                    } else {
-                        statements.add(block);
-                    }
-                } else {
-                    statements.addAll(block.getStatements());
-                    replacedByCase = block;
-                    if (!exitsFromAllBranches) {
-                        statements.add(make.Break(null));
-                    }
-                }
-            } else {
-                statements.add((StatementTree) then);
-                if (!Utilities.exitsFromAllBranchers(copy, desc.path)) {
-                    statements.add(make.Break(null));
-                }
-            }
-            
-            if (desc.literals == null) {
-                CaseTree ct = make.Case(null, statements);
-                if (replacedByCase != null) {
-                    ct = make.asReplacementOf(ct, replacedByCase, true);
-                }
-                cases.add(ct);
-
-                return false;
-            }
-            
-            for (Iterator<TreePathHandle> it = desc.literals.iterator(); it.hasNext(); ) {
-                TreePathHandle tph = it.next();
-                TreePath lit = tph.resolve(copy);
-
-                if (lit == null) {
-                    //XXX: log
-                    return true;
-                }
-                Tree ifSt = findExpressionParentIf(lit);
-                if (ifSt != null && !ifSeen.add(ifSt)) {
-                    ifSt = null;
-                }
-
-                List<StatementTree> body = it.hasNext() ? Collections.<StatementTree>emptyList() : statements;
-                CaseTree nc = make.Case((ExpressionTree) lit.getLeaf(), body);
-                if (ifSt != null) {
-                    nc = make.asReplacementOf(nc, ifSt, true);
-                }
-                cases.add(nc);
-            }
-                
-            return false;
-        }
-
-        private Set<Name> declaredVariables(TreePath where) {
-            Set<Name> result = new HashSet<Name>();
-            Iterable<? extends Tree> statements;
-
-            if (where.getLeaf().getKind() == Kind.BLOCK) {
-                statements = ((BlockTree) where.getLeaf()).getStatements();
-            } else {
-                statements = Collections.singletonList(where.getLeaf());
-            }
-
-            for (Tree t : statements) {
-                if (t.getKind() == Kind.VARIABLE) {
-                    result.add(((VariableTree) t).getName());
-                }
-            }
-
-            return result;
-        }
-
-        private Set<Name> usedVariables(final CompilationInfo info, TreePath where, final Map<BreakTree, StatementTree> break2Target) {
-            final Set<Name> result = new HashSet<Name>();
-            final Set<Element> declared = new HashSet<Element>();
-            final Set<Tree> above = new HashSet<Tree>();
-
-            for (Tree t : where) {
-                above.add(t);
-            }
-
-            new TreePathScanner<Void, Void>() {
-                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                    if (declared.contains(info.getTrees().getElement(getCurrentPath())))
-                        return null;
-                    result.add(node.getName());
-                    return super.visitIdentifier(node, p);
-                }
-                @Override public Void visitVariable(VariableTree node, Void p) {
-                    declared.add(info.getTrees().getElement(getCurrentPath()));
-                    return super.visitVariable(node, p);
-                }
-                @Override
-                public Void visitBreak(BreakTree node, Void p) {
-                    if (node.getLabel() == null) {
-                        StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
-
-                        if (above.contains(target)) {
-                            break2Target.put(node, target);
-                        }
-                    }
-                    return super.visitBreak(node, p);
-                }
-            }.scan(where, null);
-
-            return result;
-        }
-    }
-
-    private static final class CatchDescription<T> {
-        private final @NullAllowed Iterable<TreePathHandle> literals;
-        private final @NonNull T path;
-
-        public CatchDescription(Iterable<TreePathHandle> literals, T path) {
-            this.literals = literals;
-            this.path = path;
-        }
     }
 
 }

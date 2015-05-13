@@ -109,6 +109,8 @@ public abstract class Executor {
 
     public abstract String readlink(long pid);
     
+    public abstract String readlsof(long pid);
+    
     public abstract String readDirLink(long pid);
 
     public abstract boolean is_64(String p);
@@ -192,6 +194,7 @@ public abstract class Executor {
 	    if (!Log.Executor.debug)
 		return;
 	    javax.swing.SwingUtilities.invokeLater(new Runnable() {
+                @Override
 		public void run() {
 		    System.out.printf(msg);
 		}
@@ -199,6 +202,7 @@ public abstract class Executor {
 	}
 
 	// interface Runnable
+        @Override
 	public void run() {
 	    try {
 		if (Log.Executor.debug) {

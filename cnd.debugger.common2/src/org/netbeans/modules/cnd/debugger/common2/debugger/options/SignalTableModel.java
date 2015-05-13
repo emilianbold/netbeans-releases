@@ -82,6 +82,7 @@ final class SignalTableModel extends AbstractTableModel {
     }
 
     // interface TableModel
+    @Override
     public int getRowCount() {
 	if (haveSignals()) {
 	    return signals.count();
@@ -91,6 +92,7 @@ final class SignalTableModel extends AbstractTableModel {
     }
 
     // interface TableModel
+    @Override
     public int getColumnCount() {
 	return colCount;
     }
@@ -125,6 +127,7 @@ final class SignalTableModel extends AbstractTableModel {
     }
 	
     // interface TableModel
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
 	if (!haveSignals()) {
 	    if (columnIndex == 2)

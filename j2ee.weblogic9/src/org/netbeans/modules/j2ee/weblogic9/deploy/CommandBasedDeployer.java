@@ -117,21 +117,22 @@ public final class CommandBasedDeployer extends AbstractDeployer {
     }
 
     public ProgressObject directoryDeploy(final Target target, String name,
-            File file, String host, String port, J2eeModule.Type type) {
-        return deploy(createModuleId(target, file, host, port, name, type), file, name);
+            File file, String host, String port, boolean secured, J2eeModule.Type type) {
+        return deploy(createModuleId(target, file, host, port, secured, name, type), file, name);
     }
 
     public ProgressObject directoryRedeploy(final TargetModuleID moduleId) {
         return redeploy(new TargetModuleID[] {moduleId}, null);
     }
 
-    public ProgressObject deploy(Target[] target, final File file, final File plan, String host, String port) {
+    public ProgressObject deploy(Target[] target, final File file, final File plan,
+            String host, String port, boolean secured) {
         // TODO is this correct only first server mentioned
         String name = file.getName();
-        if (name.endsWith(".war") || name.endsWith(".ear")) {
+        if (name.endsWith(".war") || name.endsWith(".ear")) { // NOI18N
             name = name.substring(0, name.length() - 4);
         }
-        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, name, null);
+        final TargetModuleID moduleId = createModuleId(target[0], file, host, port, secured, name, null);
         return deploy(moduleId, file, null);
     }
 
@@ -724,30 +725,45 @@ public final class CommandBasedDeployer extends AbstractDeployer {
 
         if (webUrl != null) {
             try {
-                URL url = new URL(webUrl);
+                String realUrl = webUrl;
+
+                // FIXME this is bit hacky
+                if (dm.getCommonConfiguration().isSecured()
+                        && realUrl.startsWith("http:") // NOI18N
+                        && realUrl.contains(":" + dm.getPort() + "/")) { // NOI18N
+                    realUrl = "https:" + realUrl.substring(5); // NOI18N
+                }
+                URL url = new URL(realUrl);
                 String waitingMsg = NbBundle.getMessage(CommandBasedDeployer.class, "MSG_Waiting_For_Url", url);
 
                 progressObject.fireProgressEvent(null,
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
 
+                int timeout = 1000;
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, 1000)) {
+                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, timeout)) {
                         break;
+                    }
+                    if (Thread.currentThread().isInterrupted()) {
+                        throw new InterruptedException();
+                    }
+                    if (timeout < TIMEOUT / 10) {
+                        timeout = Math.min(TIMEOUT / 10, 2 * timeout);
                     }
                 }
             } catch (MalformedURLException ex) {
-                LOGGER.log(Level.INFO, "Malformed URL {0}", webUrl);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
 
     private static WLTargetModuleID createModuleId(Target target, File file,
-            String host, String port, String name, J2eeModule.Type type) {
+            String host, String port, boolean secured, String name, J2eeModule.Type type) {
 
         WLTargetModuleID moduleId = new WLTargetModuleID(target, name, file);
 
         try {
-            String serverUrl = "http://" + host + ":" + port;
+            String serverUrl = (secured ? "https://" : "http://") + host + ":" + port;
 
             // TODO in fact we should look to deployment plan for overrides
             // for now it is as good as previous solution

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.remote.ui;
 
-import java.util.Arrays;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.remote.spi.FileSystemProvider;

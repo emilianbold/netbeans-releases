@@ -47,14 +47,14 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.test.ClassForAllEnvironments;
 import static org.netbeans.modules.subversion.remote.RemoteVersioningTestBase.addTest;
 import org.netbeans.modules.subversion.remote.api.SVNStatusKind;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
  * @author alsimon
  */
-@ClassForAllEnvironments
+@ClassForAllEnvironments(section = "remote.svn")
 public class InterceptorRenameDOTest extends RemoteVersioningTestBase {
 
     public InterceptorRenameDOTest(String testName, ExecutionEnvironment execEnv) {
@@ -73,7 +73,7 @@ public class InterceptorRenameDOTest extends RemoteVersioningTestBase {
         addTest(suite, InterceptorRenameDOTest.class, "renameA2B_CreateA_DO");
         addTest(suite, InterceptorRenameDOTest.class, "deleteA_RenameB2A_DO_129805");
         addTest(suite, InterceptorRenameDOTest.class, "renameVersionedFolder_DO");
-        addTest(suite, InterceptorRenameDOTest.class, "renameFileTree_DO");
+        addTest(suite, InterceptorRenameDOTest.class, "renameFileTree_DO"); // failed
         addTest(suite, InterceptorRenameDOTest.class, "renameA2CB2A_DO");
         addTest(suite, InterceptorRenameDOTest.class, "deleteA_renameB2A2B_DO");
         addTest(suite, InterceptorRenameDOTest.class, "deleteA_renameUnversioned2A_DO");

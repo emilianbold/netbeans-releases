@@ -106,6 +106,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
     public static final String CND_DLIB_EXT_MACRO = "${CND_DLIB_EXT}"; // NOI18N
     public static final String CND_OUTPUT_PATH_MACRO = "${OUTPUT_PATH}"; // NOI18N
+    public static final String PROJECTDIR_MACRO = "${PROJECT_DIR}"; // NOI18N
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
@@ -198,7 +199,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
     private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
         super(fsPath, name);
-        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost() : hostUID;
+        hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost(fsPath.getFileSystem()) : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
             configurationType = new IntConfiguration(null, configurationTypeValue, TYPE_NAMES_UNMANAGED, null);
         } else if (configurationTypeValue == TYPE_APPLICATION || configurationTypeValue == TYPE_DYNAMIC_LIB || configurationTypeValue == TYPE_STATIC_LIB) {
@@ -1147,16 +1148,17 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     
     public String expandMacros(String val) {
         // Substitute macros
-        val = CndPathUtilities.expandMacro(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
-        val = CndPathUtilities.expandMacro(val, "${OUTPUT_PATH}", getOutputValue()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, "${OUTPUT_BASENAME}", CndPathUtilities.getBaseName(getOutputValue())); // NOI18N
-        val = CndPathUtilities.expandMacro(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
-        val = CndPathUtilities.expandMacro(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, "${TESTDIR}", MakeConfiguration.CND_BUILDDIR_MACRO + '/' + MakeConfiguration.CND_CONF_MACRO + '/' + MakeConfiguration.CND_PLATFORM_MACRO + "/" + "tests"); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_OUTPUT_PATH_MACRO, getOutputValue());
+        val = CndPathUtilities.expandAllMacroses(val, "${OUTPUT_BASENAME}", CndPathUtilities.getBaseName(getOutputValue())); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, "${PLATFORM}", getVariant()); // Backward compatibility // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.OBJECTDIR_MACRO, ConfigurationMakefileWriter.getObjectDir(this)); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_PLATFORM_MACRO, getVariant()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_CONF_MACRO, getName()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DISTDIR_MACRO, MakeConfiguration.DIST_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_BUILDDIR_MACRO, MakeConfiguration.BUILD_FOLDER); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.CND_DLIB_EXT_MACRO, getLibraryExtension()); // NOI18N
+        val = CndPathUtilities.expandAllMacroses(val, MakeConfiguration.PROJECTDIR_MACRO, getBaseDir());
         return val;
     }
 

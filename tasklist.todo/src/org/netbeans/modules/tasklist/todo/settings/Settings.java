@@ -108,6 +108,7 @@ final public class Settings {
         ext2commentsDefault.put( "SH", new ExtensionIdentifier("SH", new CommentTags("#"))); //NOI18N //NOI18N
         ext2commentsDefault.put( "RB", new ExtensionIdentifier("RB", new CommentTags("#"))); //NOI18N //NOI18N
         ext2commentsDefault.put( "PHP", new ExtensionIdentifier("PHP", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2commentsDefault.put( "PY", new ExtensionIdentifier("PY", new CommentTags( "#", "\"\"\"", "\"\"\""))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "SCALA", new ExtensionIdentifier("SCALA", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "GROOVY", new ExtensionIdentifier("GROOVY", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "FX", new ExtensionIdentifier("FX", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
@@ -118,7 +119,7 @@ final public class Settings {
         mime2commentsDefault.put( "text/html", new MimeIdentifier("text/html", "HTML Files", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         mime2commentsDefault.put( "application/x-httpd-eruby", new MimeIdentifier("application/x-httpd-eruby", "", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         mime2commentsDefault.put( "text/x-yaml", new MimeIdentifier("text/x-yaml", "Yaml Files", new CommentTags("#"))); //NOI18N //NOI18N
-        mime2commentsDefault.put( "text/x-python", new MimeIdentifier("text/x-python", "Python Files", new CommentTags("#"))); //NOI18N //NOI18N
+        mime2commentsDefault.put( "text/x-python", new MimeIdentifier("text/x-python", "Python Files", new CommentTags("#", "\"\"\"", "\"\"\""))); //NOI18N //NOI18N
         mime2commentsDefault.put( "text/x-fx", new MimeIdentifier("text/x-fx", "JavaFX Files", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
 
         // Ruby, PHP, etc have file extensions listed above, but they are listed here by mime type as well

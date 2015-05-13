@@ -68,7 +68,7 @@ import static org.netbeans.installer.utils.system.windows.WindowsRegistry.HKLM;
 public class JavaUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-    private static Map<File, JavaInfo> knownJdks = new HashMap<File, JavaInfo>();
+    private static Map<File, JavaInfo> knownJdks = new HashMap<>();
     
     public static boolean isJavaHome(File javaHome) {
         if (!javaHome.exists() || !javaHome.isDirectory()) {
@@ -86,27 +86,19 @@ public class JavaUtils {
             return false;
         }
         
-        // now try to deduct whether this is a jre or a jdk (for macos all java
-        // installations would be considered jre, which is ok for the validation
-        // purposes)
-        probe = new File(javaHome, "jre");
-        if (probe.exists()) {
-            probe = new File(javaHome, "lib/dt.jar");
-            if (!probe.exists() || !probe.isFile()) {
-                return false;
-            }
-        } else {
-            probe = new File(javaHome, "lib/charsets.jar");
-            if (!probe.exists() || !probe.isFile()) {
-                // if the probe does not exist, this may mean that we're on macos,
-                // in this case additionally check for 'jce.jar'
-                probe = new File(javaHome, "lib/jce.jar");
+        String extension = "";
+        if (SystemUtils.isWindows()) {
+            extension = ".exe";
+        }
+        
+        probe = new File(javaHome, "bin/javac" + extension);
+        if (!probe.exists() || !probe.isFile()) {
+            probe = new File(javaHome, "bin/java" + extension);
                 if (!probe.exists() || !probe.isFile()) {
                     return false;
                 }
-            }
-        }
-        
+        }           
+
         return true;
     }
     
@@ -115,16 +107,14 @@ public class JavaUtils {
             return false;
         }
         
-        // there is no such thing as private JRE for macos, thus skipping this
-        // part; in fact every javahome on a mac is a jdk
+        String extension = "";
+        if (SystemUtils.isWindows()) {
+            extension = ".exe";
+        }
+
         if (!SystemUtils.isMacOS()) {
-            File privateJRE = new File(javaHome, "jre");
-            
-            if (!privateJRE.exists()) {
-                return false;
-            }
-            
-            if (!privateJRE.isDirectory()) {
+            File javac = new File(javaHome, "bin/javac" + extension);            
+            if (!javac.exists() || !javac.isFile()) {
                 return false;
             }
         }
@@ -396,7 +386,7 @@ public class JavaUtils {
                 
                 // if java.vm.version contains java.version, then use it, as it
                 // usually contains more detailed info
-                if (javaVmVersion.indexOf(javaVersion) != -1) {
+                if (javaVmVersion.contains(javaVersion)) {
                     versionString = javaVmVersion.substring(
                             javaVmVersion.indexOf(javaVersion));
                 } else {
@@ -427,7 +417,7 @@ public class JavaUtils {
                 }
                 
                 // hack for BEA: 1.6.0-20061129 -> 1.6.0.0.20061129
-                if (vendor.indexOf("BEA") != -1) {
+                if (vendor.contains("BEA")) {
                     versionString = versionString.replaceAll(
                             "([0-9]+\\.[0-9]+\\.[0-9])+-([0-9]+)",
                             "$1.0.$2");

@@ -60,6 +60,7 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.refactoring.java.plugins.Bundle.*;
 
 /**
  * Refactoring used to replace all references of an element with its body
@@ -203,6 +204,19 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
     }
 
     @Override
+    @NbBundle.Messages({
+        "ERR_InlineWrongType=Cannot refactor this type of element: {0}.",
+        "ERR_InlineNoVarInitializer=Cannot find the variable initializer.",
+        "ERR_InlineNullVarInitializer=Cannot inline null literal.",
+        "ERR_InlineAssignedOnce=Variable is assigned to more than once.",
+        "WRN_InlineChange=Unsafe -- the functionality of the program may be changed.",
+        "ERR_InlineNotInIterator=Cannot refactor for loop iterator.",
+        "ERR_InlineNotCompoundArrayInit=Array declarations without the \"new\" keyword are not supported.",
+        "ERR_InlineMethodInInterface=Cannot inline method from interface.",
+        "ERR_InlineMethodAbstract=Cannot inline abstract method.",
+        "ERR_InlineMethodPolymorphic=Cannot inline polymorphic method.",
+        "ERR_InlineMethodVoidReturn=Cannot inline method with return statements without return type.",
+        "ERR_InlineMethodRecursion=Cannot inline recursive method."})
     protected Problem preCheck(CompilationController javac) throws IOException {
         Problem preCheckProblem = null;
         javac.toPhase(JavaSource.Phase.RESOLVED);
@@ -222,7 +236,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             case LOCAL_VARIABLE:
                 Tree tree = javac.getTrees().getTree(element);
                 if (!tree.getKind().equals(Tree.Kind.VARIABLE)) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineWrongType", element.getKind().toString())); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineWrongType(element.getKind().toString())); //NOI18N
                 }
                 VariableTree variableTree = (VariableTree) tree;
 
@@ -235,12 +249,12 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 // ----------------------
                 // Need to be initialized
                 if (variableTree.getInitializer() == null) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineNoVarInitializer")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineNoVarInitializer()); //NOI18N
                     return preCheckProblem;
                 }
                 // Not assigned to null
                 if (variableTree.getInitializer().getKind() == Tree.Kind.NULL_LITERAL) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineNullVarInitializer")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineNullVarInitializer()); //NOI18N
                     return preCheckProblem;
                 }
                 // Assigned to exactly once
@@ -250,7 +264,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
 
                 visitor.scan(blockPath.getLeaf(), blockPath);
                 if (visitor.assignmentCount > 0) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineAssignedOnce")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineAssignedOnce()); //NOI18N
                     return preCheckProblem;
                 }
                 // Possible change
@@ -262,21 +276,21 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 TreeScanner<Boolean, Boolean> scanner = new UnsafeTreeScanner(skipFirstMethodInvocation);
                 Boolean isChanged = scanner.scan(initializer, false);
                 if (isChanged != null && isChanged) {
-                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "WRN_InlineChange")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, false, WRN_InlineChange()); //NOI18N
                 }
                 // Not in Iterator
                 TreePath treePath = treePathHandle.resolve(javac);
                 treePath = treePath.getParentPath();
                 Tree loop = treePath.getLeaf();
                 if (loop.getKind() == Tree.Kind.ENHANCED_FOR_LOOP || loop.getKind() == Tree.Kind.FOR_LOOP) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineNotInIterator")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineNotInIterator()); //NOI18N
                     return preCheckProblem;
                 }
                 // Not compound array initialization
                 if (variableTree.getInitializer().getKind() == Tree.Kind.NEW_ARRAY) {
                     NewArrayTree newArrayTree = (NewArrayTree) variableTree.getInitializer();
                     if (newArrayTree.getType() == null || newArrayTree.getDimensions() == null) {
-                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineNotCompoundArrayInit")); //NOI18N
+                        preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineNotCompoundArrayInit()); //NOI18N
                         return preCheckProblem;
                     }
                 }
@@ -284,18 +298,18 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             case METHOD:
                 // Method can not be in annotation or interface
                 if(element.getEnclosingElement().getKind().isInterface()) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodInInterface")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineMethodInInterface()); //NOI18N
                     return preCheckProblem;
                 }
                 if(element.getModifiers().contains(Modifier.ABSTRACT)) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodAbstract")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineMethodAbstract()); //NOI18N
                     return preCheckProblem;
                 }
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
                 Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac,cancelRequested);
                 if (overridenMethods.size() > 0 || overridingMethods.size() > 0) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodPolymorphic")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineMethodPolymorphic()); //NOI18N
                     return preCheckProblem;
                 }
 
@@ -310,43 +324,21 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                 }
                 InlineMethodVisitor methodVisitor = new InlineMethodVisitor(javac, element);
                 methodVisitor.scan(methodPath.getLeaf(), methodPath);
-                if (hasReturn) {
-                    // Method with returntype must have a return statement at the end
-                    if (methodVisitor.nrOfReturnStatements > 1) {
-                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodMultipleReturn")); //NOI18N
-                        return preCheckProblem;
-                    }
-                    StatementTree lastStatement = methodTree.getBody().getStatements().get(methodTree.getBody().getStatements().size() - 1);
-                    if (!lastStatement.getKind().equals(Tree.Kind.RETURN)) {
-                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoLastReturn")); //NOI18N
-                        return preCheckProblem;
-                    }
-                } else {
+                if (!hasReturn) {
                     // Method with returntype void cannot have a return statement
                     if (methodVisitor.nrOfReturnStatements > 0) {
-                        preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodVoidReturn")); //NOI18N
+                        preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineMethodVoidReturn()); //NOI18N
                         return preCheckProblem;
                     }
                 }
                 // Method can not be recursive
                 if (methodVisitor.isRecursive) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodRecursion")); //NOI18N
+                    preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineMethodRecursion()); //NOI18N
                     return preCheckProblem;
                 }
-                // Used accessors must not be local in public method
-//                if (methodVisitor.qualIdentProblem) {
-//                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodLocalAccessors")); //NOI18N
-//                    return preCheckProblem;
-//                }
-                // Used accessors in the method must have the right access specification
-//                if (methodVisitor.accessorRightProblem) {
-//                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoAccessors")); //NOI18N
-//                    return preCheckProblem;
-//                }
-
                 break;
             default:
-                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineWrongType", element.getKind().toString())); //NOI18N
+                preCheckProblem = createProblem(preCheckProblem, true, ERR_InlineWrongType(element.getKind().toString())); //NOI18N
         }
         return preCheckProblem;
     }

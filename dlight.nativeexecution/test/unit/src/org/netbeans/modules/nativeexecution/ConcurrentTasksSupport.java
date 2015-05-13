@@ -62,7 +62,7 @@ public final class ConcurrentTasksSupport {
 
     final private static Logger log = Logger.getLogger(ConcurrentTasksSupport.class.getName());
     final int concurrentTasks;
-    final ArrayList<TaskFactory> factories = new ArrayList<TaskFactory>();
+    final ArrayList<TaskFactory> factories = new ArrayList<>();
     final CyclicBarrier startSignal;
     final Thread[] threads;
 
@@ -153,7 +153,7 @@ public final class ConcurrentTasksSupport {
     public static class Counters {
 
         private final ConcurrentMap<String, AtomicInteger> counters =
-                new ConcurrentHashMap<String, AtomicInteger>();
+                new ConcurrentHashMap<>();
 
         public AtomicInteger getCounter(String id) {
             AtomicInteger newCounter = new AtomicInteger(0);
@@ -167,7 +167,7 @@ public final class ConcurrentTasksSupport {
         }
 
         public void dump(PrintStream stream) {
-            TreeMap<String, AtomicInteger> map = new TreeMap<String, AtomicInteger>(counters);
+            TreeMap<String, AtomicInteger> map = new TreeMap<>(counters);
 
             for (String id : map.keySet()) {
                 stream.println(id + ": " + map.get(id)); // NOI18N

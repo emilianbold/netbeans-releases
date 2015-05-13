@@ -137,6 +137,9 @@ public class DDApiTest extends NbTestCase {
     }
     
     public void test_InitParams() {
+        // unfortunately the test depends on actions made by other tests
+        test_Servlet();
+
         System.out.println("Testing init-params, context-params");
         Servlet s = (Servlet)webApp.findBeanByName("Servlet","ServletName",SERVLET_NAME);
         assertTrue("Servlet "+SERVLET_NAME+" not found", null != s);
@@ -181,6 +184,9 @@ public class DDApiTest extends NbTestCase {
     }
     
     public void test_Description() {
+        // unfortunately the test depends on actions made by other tests
+        test_InitParams();
+
         System.out.println("Testing description, description for locales");
         Servlet s = (Servlet)webApp.findBeanByName("Servlet","ServletName",SERVLET_NAME);
         assertTrue("Servlet "+SERVLET_NAME+" not found", null != s);
@@ -266,6 +272,10 @@ public class DDApiTest extends NbTestCase {
     }
     
     public void test_Result() {
+        // unfortunately the test depends on actions made by other tests
+        test_Description();
+        test_addBean();
+
         System.out.println("Comparing result with golden file");
         
         String testDataDirS = System.getProperty("test.data.dir");
@@ -281,7 +291,7 @@ public class DDApiTest extends NbTestCase {
                 line1 = line1.trim();
                 String line2 = reader2.readLine();
                 if (line2==null) {
-                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                    assertFile("Result different than golden file " + pass.getAbsolutePath() + " " + test.getAbsolutePath(), pass, test, test.getParentFile());
                 }
                 line2=line2.trim();
                 // description order can be changed so it must be compared differently
@@ -289,7 +299,7 @@ public class DDApiTest extends NbTestCase {
                     set1.add(line1);
                     set2.add(line2);
                 } else if (!line1.equals(line2)) {
-                    assertFile("Result different than golden file", pass, test, test.getParentFile());
+                    assertFile("Result different than golden file " + pass.getAbsolutePath() + " " + test.getAbsolutePath(), pass, test, test.getParentFile());
                 }
             }
             reader1.close();reader2.close();
@@ -306,7 +316,7 @@ public class DDApiTest extends NbTestCase {
     private static boolean initialized;
     
     @Override
-        protected void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         System.out.println("setUp() .......................");
         
@@ -338,4 +348,15 @@ public class DDApiTest extends NbTestCase {
         assertTrue("WebApp object not found", null != webApp);
         
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (initialized && fo != null) {
+            fo.delete();
+            fo = null;
+            webApp = null;
+        }
+        super.tearDown();
+    }
+
 }

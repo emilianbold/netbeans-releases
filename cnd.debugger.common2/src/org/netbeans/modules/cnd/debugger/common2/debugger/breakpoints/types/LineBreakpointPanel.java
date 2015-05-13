@@ -63,6 +63,7 @@ class LineBreakpointPanel extends BreakpointPanel {
 
     private LineBreakpoint lb;
     
+    @Override
     public void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
 	lb = (LineBreakpoint) breakpoint;
@@ -116,6 +117,7 @@ class LineBreakpointPanel extends BreakpointPanel {
 	fileText.requestFocus();
     }
 
+    @Override
     public void setDescriptionEnabled(boolean enabled) {
 	lineField.setEnabled(false);
 	// lineLabel.setEnabled(false);
@@ -166,6 +168,7 @@ class LineBreakpointPanel extends BreakpointPanel {
 	    Catalog.getMnemonic("MNEM_Browse"));// NOI18N
 	browseButton.setText(Catalog.get("Browse")); // NOI18N
 	browseButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
 	    public void actionPerformed(java.awt.event.ActionEvent evt) {
 		onBrowse(evt);
 	    }
@@ -258,6 +261,7 @@ class LineBreakpointPanel extends BreakpointPanel {
     private javax.swing.JTextField fileText;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     protected void assignProperties() {
 	int i = 1;
 	try {
@@ -270,6 +274,7 @@ class LineBreakpointPanel extends BreakpointPanel {
 	lb.setFileAndLine(fileText.getText(), i);
     }
     
+    @Override
     protected boolean propertiesAreValid() {
 	if (IpeUtils.isEmpty(lineField.getText()))
 	    return false;

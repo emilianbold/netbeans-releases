@@ -49,10 +49,12 @@ import java.util.ArrayList;
 import org.netbeans.modules.subversion.remote.FileInformation;
 import org.netbeans.modules.subversion.remote.SvnModuleConfig;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
+import org.netbeans.modules.subversion.remote.util.Context;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.*;
 
 /**
@@ -67,6 +69,11 @@ public final class ExcludeFromCommitAction extends ContextAction {
 
     @Override
     protected boolean enable(Node[] nodes) {
+        Context cachedContext = getCachedContext(nodes);
+        final FileSystem fileSystem = cachedContext.getFileSystem();
+        if (fileSystem == null || !VCSFileProxySupport.isConnectedFileSystem(fileSystem)) {
+            return false;
+        }
         return isCacheReady() && getActionStatus(nodes) != UNDEFINED;
     }
 

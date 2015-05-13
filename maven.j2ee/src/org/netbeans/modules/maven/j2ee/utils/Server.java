@@ -112,6 +112,9 @@ public final class Server implements Comparable<Server> {
         String displayName = this.toString();
         String displayName2 = wrapper != null ? wrapper.toString() : "";
 
+        displayName = displayName != null ? displayName : "";
+        displayName2 = displayName2 != null ? displayName2 : "";
+        
         return displayName.compareTo(displayName2);
     }
 

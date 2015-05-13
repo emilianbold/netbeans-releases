@@ -559,4 +559,44 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue249119() throws Exception {
         checkStructure("testfiles/coloring/issue249119.js");
     }
+    
+    public void testIssue250112() throws Exception {
+        checkStructure("testfiles/markoccurences/issue250112.js"); 
+    }
+    
+    public void testIssue250110() throws Exception {
+        checkStructure("testfiles/markoccurences/issue250110.js"); 
+    }
+    
+    public void testCallBackDeclaration1() throws Exception {
+        checkStructure("testfiles/markoccurences/callbackDeclaration1.js"); 
+    }
+    
+    public void testCallBackDeclaration2() throws Exception {
+        checkStructure("testfiles/markoccurences/callbackDeclaration2.js"); 
+    }
+    
+    public void testIssue250392() throws Exception {
+        checkStructure("testfiles/structure/issue250392.js");
+    }
+    
+    public void testIssue251758() throws Exception {
+        checkStructure("testfiles/structure/issue251758.js");
+    }
+    
+    public void testIssue245528() throws Exception {
+        checkStructure("testfiles/structure/issue245528.js");
+    }
+    
+    public void testIssue238685_01() throws Exception {
+        checkStructure("testfiles/model/issue238685_01.js");
+    }
+    
+    public void testIssue252022() throws Exception {
+        checkStructure("testfiles/hints/issue252022.js");
+    }
+    
+    public void testIssue249487() throws Exception {
+        checkStructure("testfiles/markoccurences/issue249487.js");
+    }
 }

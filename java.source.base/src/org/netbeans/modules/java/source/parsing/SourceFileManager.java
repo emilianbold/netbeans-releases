@@ -159,11 +159,11 @@ public class SourceFileManager implements JavaFileManager {
         if (fileRootPair == null) {
             final FileObject[] roots = this.sourceRoots.getRoots();
             if (roots.length == 0) {
-                return null;
+                throw new UnsupportedOperationException("No source path");  //NOI18N
             }
             final File rootFile = FileUtil.toFile(roots[0]);
             if (rootFile == null) {
-                return null;
+                throw new UnsupportedOperationException("No source path");  //NOI18N
             }
             return FileObjects.sourceFileObject(
                 BaseUtilities.toURI(new File(rootFile,FileObjects.convertFolder2Package(rp, File.separatorChar))).toURL(),

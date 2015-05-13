@@ -251,7 +251,7 @@ public class VariablesActionsProvider implements NodeActionsProvider {
             return 1;
         }
         // TODO: Add getClassLineNumber() into EditorContext
-        String editorContextImplName = "org.netbeans.modules.debugger.jpda.projects.EditorContextImpl"; // NOI18N
+        String editorContextImplName = "org.netbeans.modules.debugger.jpda.projects.EditorContextSupport"; // NOI18N
         Class editorContextImpl;
         try {
             editorContextImpl = Thread.currentThread().getContextClassLoader().loadClass(editorContextImplName);

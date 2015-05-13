@@ -77,7 +77,7 @@ public final class JSchChannelsSupport {
     private static final int JSCH_CHANNELS_PER_SESSION = Integer.getInteger("jsch.channels.per.session", 10); // NOI18N
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private static final boolean USE_JZLIB = Boolean.getBoolean("jzlib"); // NOI18N
-    private static final HashMap<String, String> jschSessionConfig = new HashMap<String, String>();
+    private static final HashMap<String, String> jschSessionConfig = new HashMap<>();
     private final JSch jsch;
     private final RemoteUserInfo userInfo;
     private final ExecutionEnvironment env;
@@ -85,12 +85,12 @@ public final class JSchChannelsSupport {
     private final Condition sessionAvailable = sessionsLock.newCondition();
     // AtomicInteger stores a number of available channels for the session
     // We use ConcurrentHashMap to be able fast isConnected() check; in most other cases sessions is guarded bu "this"
-    private final ConcurrentHashMap<Session, AtomicInteger> sessions = new ConcurrentHashMap<Session, AtomicInteger>();
-    private final Set<Channel> knownChannels = new HashSet<Channel>();
+    private final ConcurrentHashMap<Session, AtomicInteger> sessions = new ConcurrentHashMap<>();
+    private final Set<Channel> knownChannels = new HashSet<>();
     private final PortForwarding portForwarding = new PortForwarding();
 
     static {
-        Set<Entry<Object, Object>> data = new HashSet<Entry<Object, Object>>(System.getProperties().entrySet());
+        Set<Entry<Object, Object>> data = new HashSet<>(System.getProperties().entrySet());
 
         for (Entry<Object, Object> prop : data) {
             String var = prop.getKey().toString();
@@ -232,6 +232,10 @@ public final class JSchChannelsSupport {
                 try {
                     newSession = jsch.getSession(env.getUser(), env.getHostAddress(), env.getSSHPort());
                     newSession.setUserInfo(userInfo);
+                    newSession.setConfig(
+                            "kex", //NOI18N
+                            "diffie-hellman-group1-sha1,diffie-hellman-group14-sha1,diffie-hellman-group-exchange-sha1,diffie-hellman-group-exchange-sha256" //NOI18N
+                    );
 
                     for (Entry<String, String> entry : jschSessionConfig.entrySet()) {
                         newSession.setConfig(entry.getKey(), entry.getValue());
@@ -296,7 +300,7 @@ public final class JSchChannelsSupport {
 
         int count = sessions.get(s).incrementAndGet();
 
-        List<Session> sessionsToRemove = new ArrayList<Session>();
+        List<Session> sessionsToRemove = new ArrayList<>();
 
         if (count == JSCH_CHANNELS_PER_SESSION) {
             // No more channels in this session ...

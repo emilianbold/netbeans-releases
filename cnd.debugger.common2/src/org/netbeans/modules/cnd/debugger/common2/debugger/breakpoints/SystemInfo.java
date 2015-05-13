@@ -71,6 +71,7 @@ public abstract class SystemInfo {
 
     public void stuffIntoAsync(final JComboBox combo) {
 	RP.post(new Runnable () {
+            @Override
 	    public void run () {
 		stuffInto(combo);
 	    }
@@ -86,6 +87,7 @@ public abstract class SystemInfo {
 	final DefaultComboBoxModel model;
 	model = new DefaultComboBoxModel(new Vector<String>(items));
 	SwingUtilities.invokeLater(new Runnable () {
+            @Override
 	    public void run () {
 		combo.setModel(model);
 	    }
@@ -107,8 +109,7 @@ public abstract class SystemInfo {
 	    
 	    Process proc = rt.exec(args);
 	    InputStream procIn = proc.getInputStream();
-	    BufferedReader br = new BufferedReader(new InputStreamReader(
-									 procIn));
+	    BufferedReader br = new BufferedReader(new InputStreamReader(procIn, "UTF-8")); // NOI18N
 	    while (true) {
 		String moreoutput = br.readLine();
 		if (moreoutput == null) {
@@ -156,6 +157,7 @@ public abstract class SystemInfo {
 	    //System.out.println("cmd = " + cmd);
 	}
 
+        @Override
 	public String all() {
 	    return Catalog.get("Signal_AllCodes"); // NOI18N
 	}
@@ -177,6 +179,7 @@ public abstract class SystemInfo {
 	}
 
 	// override super
+        @Override
 	public String all() {
 	    return Catalog.get("Signal_AllCodes"); // NOI18N
 	}
@@ -210,6 +213,7 @@ public abstract class SystemInfo {
 	    cmd =
 "LC_ALL=C /usr/bin/grep \"#define\" /usr/include/sys/fault.h | /usr/bin/nawk '{print $2}'"; // NOI18N
 	}
+        @Override
 	public String all() {
 	    return ""; // NOI18N
 	}
@@ -222,6 +226,7 @@ public abstract class SystemInfo {
 	    cmd =
 "LC_ALL=C /usr/bin/grep \"#define\" /usr/include/sys/syscall.h | /usr/bin/nawk '{print $2}' | /usr/bin/cut -c 5-"; // NOI18N
 	}
+        @Override
 	public String all() {
 	    return Catalog.get("SysCall_All"); // NOI18N
 	}

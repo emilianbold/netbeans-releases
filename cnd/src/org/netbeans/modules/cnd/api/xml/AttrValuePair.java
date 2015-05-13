@@ -57,8 +57,8 @@ package org.netbeans.modules.cnd.api.xml;
  * </pre>
  */
 public final class AttrValuePair {
-    private String attr;
-    private String value;
+    private final String attr;
+    private final String value;
 
     public AttrValuePair(String attr, String value) {
 	this.attr = attr;

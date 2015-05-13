@@ -60,6 +60,15 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.css.lib</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.78</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -309,14 +318,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.openide.util.ui</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>9.3</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -330,6 +331,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util.ui</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>9.3</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -433,9 +442,6 @@
                         <code-name-base>org.netbeans.modules.parsing.api</code-name-base>
                         <test/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.projectapi.nb</code-name-base>
-                    </test-dependency>
                 </test-type>
                 <test-type>
                     <name>qa-functional</name>
@@ -470,12 +476,13 @@
                 <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.html.ojet</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.jade</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <friend>org.netbeans.modules.javascript2.prototypejs</friend>
                 <friend>org.netbeans.modules.javascript2.requirejs</friend>
                 <friend>org.netbeans.modules.nodejscodecompletion</friend>
-                <friend>org.netbeans.modules.javascript2.nodejs</friend>
                 <package>org.netbeans.modules.javascript2.editor.api</package>
                 <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
                 <package>org.netbeans.modules.javascript2.editor.index</package>

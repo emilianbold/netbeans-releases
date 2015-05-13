@@ -76,18 +76,20 @@ public class LibletInfo {
     private String name;
     private String vendor;
     private String version;
+    private boolean extractClasses;
 
-    public LibletInfo(ClassPathSupport.Item item, String name, String vendor, String version) {
+    private LibletInfo(ClassPathSupport.Item item, String name, String vendor, String version) {
         this.item = item;
         this.name = name;
         this.vendor = vendor;
         this.version = version;
         this.type = LibletType.LIBLET;
         this.requirement = Requirement.OPTIONAL;
-        this.url = "";
+        this.url = ""; //NOI18N
+        this.extractClasses = false;
     }
 
-    public LibletInfo(LibletType type, String name, String vendor, String version, Requirement requirement, String url) {
+    public LibletInfo(LibletType type, String name, String vendor, String version, Requirement requirement, String url, boolean extractClasses) {
         this.type = type;
         this.name = name;
         this.vendor = vendor;
@@ -95,6 +97,7 @@ public class LibletInfo {
         this.requirement = requirement;
         this.item = null;
         this.url = url;
+        this.extractClasses = extractClasses;
     }
 
     @Override
@@ -229,5 +232,13 @@ public class LibletInfo {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public boolean isExtractClasses() {
+        return extractClasses;
+    }
+
+    public void setExtractClasses(boolean extractClasses) {
+        this.extractClasses = extractClasses;
     }
 }

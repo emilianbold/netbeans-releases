@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -163,7 +164,7 @@ public class CsmFinderImpl implements CsmFinder {
 
 //        repository.beginTrans (false);
         try {
-//            ((JMManager) JMManager.getManager()).setSafeTrans(true);            
+//            ((JMManager) JMManager.getManager()).setSafeTrans(true);
             CsmNamespace nmsp = resolveNamespace(namespaceName, true);
             return nmsp;
         } finally {
@@ -203,18 +204,18 @@ public class CsmFinderImpl implements CsmFinder {
                 String prefix = index > 0 ? name.substring(0, index) : ""; //NOI18N
                 CsmNamespace nmsp = resolveNamespace(prefix, caseSensitive);
                 if (nmsp != null) {
-                    Collection subpackages = nmsp.getNestedNamespaces();
+                    Collection<CsmNamespace> subpackages = nmsp.getNestedNamespaces();
                     List<CsmNamespace> list = new ArrayList<CsmNamespace>();
-                    for (Iterator it = subpackages.iterator(); it.hasNext();) {
-                        CsmNamespace subPackage = (CsmNamespace) it.next();
+                    for (Iterator<CsmNamespace> it = subpackages.iterator(); it.hasNext();) {
+                        CsmNamespace subPackage = it.next();
                         String spName = caseSensitive ? subPackage.getName().toString() : subPackage.getName().toString().toUpperCase();
                         String csName = caseSensitive ? name : name.toUpperCase();
                         if (spName.startsWith(csName)) {
                             list.add(subPackage);
                         }
                     }
-                    for (Iterator iter = list.iterator(); iter.hasNext();) {
-                        CsmNamespace nestedNmsp = (CsmNamespace) iter.next();
+                    for (Iterator<CsmNamespace> iter = list.iterator(); iter.hasNext();) {
+                        CsmNamespace nestedNmsp = iter.next();
                         ret.add(nestedNmsp);
                     }
                 }
@@ -240,7 +241,7 @@ public class CsmFinderImpl implements CsmFinder {
         // System.out.println("findNamespaces: " + name); //NOI18N
 
         CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());
-        return contResolver.getNestedNamespaces(nmsp, name, exactMatch);
+        return contResolver.getNestedNamespaces(nmsp, name, exactMatch, searchNested);
     }
 
     /** Find elements (classes, variables, enumerators) by name and possibly in some namespace
@@ -362,12 +363,23 @@ public class CsmFinderImpl implements CsmFinder {
         }
         if (needFileLocal) {
             assert file != null : "file must be passed if needFileLocal is true";
+            boolean needLocalMerge = merge;
+            if (searchNested && !merge) {
+                // if searchNested is set, then some file local elements already
+                // can be added. To avoid adding duplicates, lets initialize set of added objects
+                for (Object added : ret) {
+                    addFoundElement(set, added);
+                }
+                if (!set.isEmpty()) {
+                    needLocalMerge = true;
+                }
+            }
             elements = contResolver.getFileLocalNamespaceVariables(nmsp, file, name, exactMatch);
-            if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            if (checkStopAfterAppendElements(ret, elements, set, needLocalMerge, searchFirst)) {
                 return true;
             }
             elements = contResolver.getFileLocalNamespaceFunctions(nmsp, file, name, exactMatch);
-            if (checkStopAfterAppendElements(ret, elements, set, merge, searchFirst)) {
+            if (checkStopAfterAppendElements(ret, elements, set, needLocalMerge, searchFirst)) {
                 return true;
             }
         }
@@ -394,14 +406,22 @@ public class CsmFinderImpl implements CsmFinder {
     private void merge(Set<CharSequence> set, List<CsmObject> ret, Collection<CsmObject> classes) {
         if (classes != null) {
             for (CsmObject o : classes) {
-                if (CsmKindUtilities.isQualified(o)) {
-                    if (!set.contains(((CsmQualifiedNamedElement) o).getQualifiedName())) {
-                        ret.add(o);
-                        set.add(((CsmQualifiedNamedElement) o).getQualifiedName());
-                    }
+                if (addFoundElement(set, o)) {
+                    ret.add(o);
                 }
             }
         }
+    }
+
+    private boolean addFoundElement(Set<CharSequence> set, Object obj) {
+        if (CsmKindUtilities.isCsmObject(obj)) {
+            if (CsmKindUtilities.isFunction((CsmObject) obj)) {
+                return set.add(((CsmFunction) obj).getUniqueName());
+            } else if (CsmKindUtilities.isQualified((CsmObject) obj)) {
+                return set.add(((CsmQualifiedNamedElement) obj).getQualifiedName());
+            }
+        }
+        return false;
     }
 
     /** Find classes by name and possibly in some namespace

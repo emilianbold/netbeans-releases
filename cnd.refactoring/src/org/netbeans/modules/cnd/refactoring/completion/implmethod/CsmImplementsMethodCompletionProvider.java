@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -116,6 +117,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
         private int queryAnchorOffset;
         private String filterPrefix;
         private boolean isApplicable = true;
+        private CsmScope insertScope;
 
         /*package*/ Query(int caretOffset) {
             this.creationCaretOffset = caretOffset;
@@ -174,6 +176,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                 }
                 if (CsmKindUtilities.isNamespaceDefinition(decl)) {
                     if (decl.getStartOffset() <= caretOffset && caretOffset <= decl.getEndOffset()) {
+                        insertScope = (CsmNamespaceDefinition)decl;
                         visitDeclarations(classes, ((CsmNamespaceDefinition)decl).getDeclarations(), caretOffset);
                     }
                 } else {
@@ -206,13 +209,14 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
         }
         
         private Collection<CsmImplementsMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
-            Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<CsmImplementsMethodCompletionItem>();
+            Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<>();
             CsmCacheManager.enter();
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
                     if (csmFile != null) {
-                        Set<CsmClass> classes = new HashSet<CsmClass>();
+                        insertScope = csmFile;
+                        Set<CsmClass> classes = new HashSet<>();
                         visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
                         if (isApplicable)  {
                             //if (classes.isEmpty()) {
@@ -249,11 +253,11 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         CsmFunction method = (CsmFunction) member;
                                         CsmFunctionDefinition definition = method.getDefinition();
                                         if (definition == null) {
-                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
+                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method, insertScope));
                                         } else if (method == definition){
                                             if (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.REGULAR) {
                                                 final CsmImplementsMethodCompletionItem item =
-                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
+                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method, insertScope);
                                                 if (item != null) {
                                                     items.add(item);
                                                 }
@@ -266,11 +270,11 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
                                         CsmFriendFunction method = (CsmFriendFunction) member;
                                         CsmFunctionDefinition definition = method.getDefinition();
                                         if (definition == null) {
-                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method));
+                                            items.add(CsmImplementsMethodCompletionItem.createImplementItem(queryAnchorOffset, caretOffset, cls, method, insertScope));
                                         } else if (method == definition){
                                             if (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.REGULAR) {
                                                 final CsmImplementsMethodCompletionItem item =
-                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method);
+                                                        CsmImplementsMethodCompletionItem.createExtractBodyItem(queryAnchorOffset, caretOffset, cls, method, insertScope);
                                                 if (item != null) {
                                                     items.add(item);
                                                 }
@@ -320,7 +324,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             if (prefix == null) {
                 out = data;
             } else {
-                List<CsmImplementsMethodCompletionItem> ret = new ArrayList<CsmImplementsMethodCompletionItem>(data.size());
+                List<CsmImplementsMethodCompletionItem> ret = new ArrayList<>(data.size());
                 for (CsmImplementsMethodCompletionItem itm : data) {
                     if (matchPrefix(itm, prefix)) {
                         ret.add(itm);

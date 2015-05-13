@@ -48,6 +48,7 @@ import java.math.BigDecimal;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.SessionConfig;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
 import org.netbeans.modules.xml.multiview.Utils;
 import org.netbeans.modules.xml.multiview.Error;
@@ -59,8 +60,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
  * @author Petr Slechta
  */
 public class OverviewPanel extends SectionInnerPanel implements java.awt.event.ItemListener {
-    private DDDataObject dObj;
-    private WebApp webApp;
+    private final DDDataObject dObj;
+    private final WebApp webApp;
 
     public OverviewPanel(SectionView sectionView, DDDataObject dObj) {
         super(sectionView);
@@ -86,10 +87,11 @@ public class OverviewPanel extends SectionInnerPanel implements java.awt.event.I
         addValidatee(stTF);
 
         BigDecimal ver = new BigDecimal(webApp.getVersion());
-        boolean jee6 = ver.compareTo(new BigDecimal(3.0)) >= 0;
-        jLabel2.setVisible(jee6);
-        tfName.setVisible(jee6);
-        if (jee6) {
+        boolean showNameElement = (ver.compareTo(new BigDecimal(3.0)) >= 0) && 
+                (webApp instanceof WebFragment);//JavaEE6 and in web-fragment
+        jLabel2.setVisible(showNameElement);
+        tfName.setVisible(showNameElement);
+        if (showNameElement) {
             tfName.setText(getXmlNames());
             addModifier(tfName);
         }

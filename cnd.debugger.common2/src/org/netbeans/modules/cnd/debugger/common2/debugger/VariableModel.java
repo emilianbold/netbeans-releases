@@ -94,7 +94,8 @@ public abstract class VariableModel extends ModelListenerSupport
     implements TreeModel, ExtendedNodeModelFilter, TableModel, TreeExpansionModel, AsynchronousModelFilter {
 
     protected NativeDebugger debugger;
-    
+
+    @Override
     public Executor asynchronous(Executor original, AsynchronousModelFilter.CALL asynchCall, Object node) {
         // for now let's use synchronious model (in EDT)
         // TODO: NativeDebugger or ((Variable)node) should be responsible for providing Threading Model,
@@ -120,31 +121,36 @@ public abstract class VariableModel extends ModelListenerSupport
 
 
     // interface TreeModel
+    @Override
     public Object getRoot() {
 	// redundant?
 	return ROOT;
-    } 
+    }
 
     // interface TreeModel
+    @Override
     public abstract Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException;
 
     // interface TreeModel
+    @Override
     public abstract int getChildrenCount(Object parent) throws UnknownTypeException;
 
     // interface TreeModel
+    @Override
     public boolean isLeaf(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
 	    return v.isLeaf();
-	} 
+	}
 	throw new UnknownTypeException (node);
     }
 
 
 
     // interface NodeModel
+    @Override
     public String getDisplayName(NodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return Catalog.get("PROP_name"); // NOI18N
@@ -172,6 +178,7 @@ public abstract class VariableModel extends ModelListenerSupport
     private static final String ICON_LOCAL_PTR = ICON_LOCAL + "_pointer"; // NOI18N
 
     // interface NodeModel
+    @Override
     public String getIconBase(NodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return null;
@@ -205,6 +212,7 @@ public abstract class VariableModel extends ModelListenerSupport
 
     // interface NodeModel
     // return value of tooltip
+    @Override
     public String getShortDescription(NodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return Catalog.get("PROP_name"); // NOI18N
@@ -224,6 +232,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canCopy(ExtendedNodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -237,6 +246,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public Transferable clipboardCopy(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException, java.io.IOException {
 	if (node == ROOT) {
@@ -249,6 +259,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canCut(ExtendedNodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -262,6 +273,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public Transferable clipboardCut(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException, java.io.IOException {
 	if (node == ROOT) {
@@ -274,6 +286,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public boolean canRename(ExtendedNodeModel original, Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -289,6 +302,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public void setName(ExtendedNodeModel original, Object node, String name)
 	throws UnknownTypeException {
 	if (node == ROOT) {
@@ -311,6 +325,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public PasteType[] getPasteTypes(ExtendedNodeModel original, Object node, Transferable t)
 	throws UnknownTypeException {
 	if (node == ROOT) {
@@ -325,6 +340,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface ExtendedNodeModel
+    @Override
     public String getIconBaseWithExtension(ExtendedNodeModel original, Object node)
 	throws UnknownTypeException {
 
@@ -343,20 +359,21 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TableModel
-    public Object getValueAt(Object node, String columnID) 
+    @Override
+    public Object getValueAt(Object node, String columnID)
 	throws UnknownTypeException {
 	if (node == ROOT) {
 	    return null;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_TYPE || 
-		columnID == Constants.PROP_WATCH_TYPE)
+	    if (Constants.PROP_LOCAL_TYPE.equals(columnID) ||
+		Constants.PROP_WATCH_TYPE.equals(columnID))
 	        return v.getType();
 
-	    else if (columnID == Constants.PROP_LOCAL_VALUE || 
-		     columnID == Constants.PROP_WATCH_VALUE ||
-		     columnID == Constants.PROP_LOCAL_TO_STRING ||
-		     columnID == Constants.PROP_WATCH_TO_STRING ) {
+	    else if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+		     Constants.PROP_WATCH_VALUE.equals(columnID) ||
+		     Constants.PROP_LOCAL_TO_STRING.equals(columnID) ||
+		     Constants.PROP_WATCH_TO_STRING.equals(columnID)) {
 			VariableValue value = new VariableValue(v.getAsText(), v.getDelta());
 			return value.toString();
 		}
@@ -369,15 +386,16 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TableModel
-    public boolean isReadOnly(Object node, String columnID) 
+    @Override
+    public boolean isReadOnly(Object node, String columnID)
 	throws UnknownTypeException {
 
 	if (node == ROOT) {
 	    return false;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_VALUE ||
-		columnID == Constants.PROP_WATCH_VALUE ) 
+	    if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+		Constants.PROP_WATCH_VALUE.equals(columnID) )
 		return !v.isEditable();
 	    else
 		// 6500791 Type column is read only
@@ -388,15 +406,16 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TableModel
-    public void setValueAt(Object node, String columnID, Object value) 
+    @Override
+    public void setValueAt(Object node, String columnID, Object value)
 	throws UnknownTypeException {
 	if (node == ROOT) {
 	    ;
 	} else if (node instanceof Variable) {
 	    Variable v = (Variable) node;
-	    if (columnID == Constants.PROP_LOCAL_VALUE || 
-	        columnID == Constants.PROP_WATCH_VALUE ) {
-		// successful result that come back from cmd 
+	    if (Constants.PROP_LOCAL_VALUE.equals(columnID) ||
+	        Constants.PROP_WATCH_VALUE.equals(columnID) ) {
+		// successful result that come back from cmd
 		// "assign" will do the work, if not, keep the
 		v.setVariableValue((String)value);
 
@@ -407,6 +426,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TreeExpansionModel
+    @Override
     public synchronized boolean isExpanded(Object node) throws UnknownTypeException {
 	if (node == ROOT) {
 	    return false;
@@ -422,6 +442,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TreeExpansionModel
+    @Override
     public synchronized void nodeCollapsed(Object node) {
 	if (node instanceof Variable) {
 	    Variable var = (Variable) node;
@@ -434,6 +455,7 @@ public abstract class VariableModel extends ModelListenerSupport
     }
 
     // interface TreeExpansionModel
+    @Override
     public synchronized void nodeExpanded(Object node) {
 	if (node instanceof Variable) {
 	    Variable var = (Variable) node;
@@ -462,6 +484,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	    }
 	}
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (node instanceof Variable) {
@@ -475,7 +498,7 @@ public abstract class VariableModel extends ModelListenerSupport
         }
     }
 
-    public static final Action Action_DYNAMIC_TYPE = 
+    public static final Action Action_DYNAMIC_TYPE =
 	new DynamicTypeAction();
 
     private static class DynamicTypeAction extends BooleanStateAction {
@@ -483,6 +506,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// interface BooleanStateAction
+        @Override
 	public boolean getBooleanState() {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
@@ -491,26 +515,29 @@ public abstract class VariableModel extends ModelListenerSupport
 	    }
 
 	    setEnabled(false);
-	    return false; 
+	    return false;
 	}
 
 	// interface SystemAction
+        @Override
 	public String getName() {
 	    return Catalog.get("ACT_Dynamic"); // NOI18N
 	}
 
 	// interface SystemAction
+        @Override
 	public HelpCtx getHelpCtx() {
 	    return new HelpCtx("output_dynamic_type");
 	}
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setDynamicType(!getBooleanState());
         }
     }
 
-    public static final Action Action_INHERITED_MEMBERS = 
+    public static final Action Action_INHERITED_MEMBERS =
 	new InheritedMembersAction();
 
     private static class InheritedMembersAction extends BooleanStateAction {
@@ -518,6 +545,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// override BooleanStateAction
+        @Override
 	public boolean getBooleanState() {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
@@ -531,22 +559,25 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// interface SystemAction
+        @Override
 	public String getName() {
 	    return Catalog.get("ACT_Inherited"); // NOI18N
 	}
 
 	// interface SystemAction
+        @Override
 	public HelpCtx getHelpCtx() {
 	    return new HelpCtx("output_inherited_members");
 	}
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setInheritedMembers(!getBooleanState());
         }
     }
 
-    public static final Action Action_STATIC_MEMBERS = 
+    public static final Action Action_STATIC_MEMBERS =
 	new StaticMembersAction();
 
     private static class StaticMembersAction extends BooleanStateAction {
@@ -554,6 +585,7 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// override BooleanStateAction
+        @Override
 	public boolean getBooleanState() {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    if (debugger instanceof NativeDebugger) {
@@ -567,29 +599,32 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// interface SystemAction
+        @Override
 	public String getName() {
 	    return Catalog.get("ACT_Static"); // NOI18N
 	}
 
 	// interface SystemAction
+        @Override
 	public HelpCtx getHelpCtx() {
 	    return new HelpCtx("show_static_members");
 	}
 
+        @Override
 	public void actionPerformed(ActionEvent e) {
 	    NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
 	    debugger.setStaticMembers(!getBooleanState());
         }
     }
 
-    private static final OutputFormatAction Action_OUTPUT_FORMAT = 
+    private static final OutputFormatAction Action_OUTPUT_FORMAT =
 	new OutputFormatAction();
-    
+
     public static Action getOutputFormatAction(Variable v) {
         Action_OUTPUT_FORMAT.setVar(v);
         return Action_OUTPUT_FORMAT;
     }
-    
+
     public static Action getWatchAction(final Variable var) {
         return new AbstractAction(Catalog.get("ACT_Variable_Watch")) { //NOI18N
             @Override
@@ -598,7 +633,7 @@ public abstract class VariableModel extends ModelListenerSupport
             }
         };
     }
-    
+
     private static class OutputFormatAction extends SystemAction
 			implements Presenter.Popup {
 
@@ -609,20 +644,24 @@ public abstract class VariableModel extends ModelListenerSupport
 	}
 
 	// interface SystemAction
+        @Override
 	public String getName () {
 	    return Catalog.get("ACT_Output_Format"); // NOI18N
 	}
 
 	// interface SystemAction
+        @Override
 	public HelpCtx getHelpCtx() {
 	    return new HelpCtx("output_format");
 	}
 
 	// interface SystemAction
+        @Override
 	public void actionPerformed(ActionEvent ev) {
 	}
 
 	// interface Presenter.Popup
+        @Override
 	public JMenuItem getPopupPresenter() {
 	    JMenu mi = new JMenu();
 	    Actions.connect(mi, (Action)this, false);
@@ -632,14 +671,17 @@ public abstract class VariableModel extends ModelListenerSupport
 
 	private class FormatItemListener implements MenuListener {
 
+            @Override
 	    public void menuCanceled(MenuEvent e) {
 	    }
 
+            @Override
 	    public void menuDeselected(MenuEvent e) {
 		JMenu menu = (JMenu)e.getSource();
 		menu.removeAll();
 	    }
 
+            @Override
 	    public void menuSelected (MenuEvent e) {
 		JMenu menu = (JMenu)e.getSource();
 		NativeDebugger debugger = NativeDebuggerManager.get().currentNativeDebugger();
@@ -656,6 +698,7 @@ public abstract class VariableModel extends ModelListenerSupport
 			formatItem.setHorizontalTextPosition(SwingConstants.LEFT);
 
 			formatItem.addActionListener(new ActionListener() {
+                            @Override
 			    public void actionPerformed(ActionEvent actionEvent) {
 				updateFormat(actionEvent.getActionCommand());
 			    }
@@ -669,9 +712,9 @@ public abstract class VariableModel extends ModelListenerSupport
 	    }
 	}
     }
-    
+
     public static final Action Action_PRETTY_PRINT = new PrettyPrintAction();
-    
+
     private static class PrettyPrintAction  extends BooleanStateAction {
 	PrettyPrintAction() {
 	}
@@ -710,18 +753,18 @@ public abstract class VariableModel extends ModelListenerSupport
             debugger.postPrettyPrint(newState);
         }
     }
-        
+
     public static class ShowMoreMessage {
         private final Variable v;
-        
+
         public ShowMoreMessage(Variable v) {
             this.v = v;
         }
-        
+
         public void getMore() {
             v.getMoreChildren();
         }
-        
+
         public String getMessage() {
             return Catalog.get("MSG_Show_More_Message"); // NOI18N
         }

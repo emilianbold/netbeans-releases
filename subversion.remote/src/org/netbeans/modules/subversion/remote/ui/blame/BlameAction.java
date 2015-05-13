@@ -68,8 +68,7 @@ import org.netbeans.modules.subversion.remote.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.remote.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.remote.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.remote.util.Context;
-import org.netbeans.modules.subversion.remote.util.SvnUtils;
-import org.netbeans.modules.subversion.remote.util.VCSFileProxySupport;
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.text.NbDocument;
 import org.openide.util.Mutex;
@@ -163,11 +162,12 @@ public class BlameAction extends ContextAction {
         final AnnotationBar ab = AnnotationBarManager.showAnnotationBar(currentPane);
         ab.setAnnotationMessage(NbBundle.getMessage(BlameAction.class, "CTL_AnnotationSubstitute")); // NOI18N;
 
+        Context ctx = new Context(file);
         SVNUrl repository;
         try {
-            repository = SvnUtils.getRepositoryRootUrl(file);
+            repository = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
-            SvnClientExceptionHandler.notifyException(new Context(file), ex, true, true);
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
             return;
         }
 

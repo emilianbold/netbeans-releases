@@ -99,7 +99,7 @@ public abstract class XMLDecoder {
     protected void deregisterXMLDecoder(XMLDecoder decoder) {
         tagMap.remove(decoder.tag());
     }
-    private Map<String, XMLDecoder> tagMap = new HashMap<String, XMLDecoder>();
+    private final Map<String, XMLDecoder> tagMap = new HashMap<String, XMLDecoder>();
     private XMLDecoder currentDecoder;
     private String currentElement;
 
@@ -168,7 +168,7 @@ public abstract class XMLDecoder {
         int version = 0;
         String versionString = atts.getValue("version");        // NOI18N
         if (versionString != null) {
-            version = new Integer(versionString).intValue();
+            version = Integer.parseInt(versionString);
         }
         return version;
     }

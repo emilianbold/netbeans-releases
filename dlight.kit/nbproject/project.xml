@@ -24,15 +24,45 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.dlight.terminal</code-name-base>
+                    <code-name-base>org.netbeans.modules.dlight.sendto</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.git.remote</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.git.remote.cli</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
                     <code-name-base>org.netbeans.modules.ide.kit</code-name-base>
                     <run-dependency>
                         <specification-version>1.6</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.mercurial.remote</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.remotefs.versioning</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.12.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.remotefs.versioning.api</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

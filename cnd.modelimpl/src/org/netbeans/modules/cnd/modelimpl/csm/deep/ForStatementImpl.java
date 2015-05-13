@@ -63,31 +63,31 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  * @author Vladimir Kvashin
  */
 public final class ForStatementImpl extends StatementBase implements CsmForStatement, CsmRangeForStatement {
-    
+
     private StatementBase init;
     private CsmCondition condition;
     private ExpressionBase iteration;
     private StatementBase body;
     private boolean rangeBased = false;
-    
+
     private ForStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
 
     private ForStatementImpl(CsmScope scope, CsmFile file, int start, int end) {
         super(file, start, end, scope);
-    }    
-    
+    }
+
     public static ForStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
         ForStatementImpl stmt = new ForStatementImpl(ast, file, scope);
         stmt.init(ast);
         return stmt;
     }
-    
+
     private void init(AST ast) {
         render(ast);
     }
-    
+
     @Override
     public CsmStatement.Kind getKind() {
         return rangeBased ? CsmStatement.Kind.RANGE_FOR : CsmStatement.Kind.FOR;
@@ -124,21 +124,21 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         if (condition instanceof Disposable) {
             ((Disposable) condition).dispose();
         }
-        if (init instanceof Disposable) {
-            ((Disposable) init).dispose();
+        if (init != null) {
+            init.dispose();
         }
-        if (iteration instanceof Disposable) {
-            ((Disposable) iteration).dispose();
+        if (iteration != null) {
+            iteration.dispose();
         }
         if (body instanceof Disposable) {
             ((Disposable) body).dispose();
-        }        
+        }
     }
 
     private void render(AST ast) {
-        
+
         AstRenderer renderer = new AstRenderer((FileImpl) getContainingFile());
-        
+
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
             switch( token.getType() ) {
             case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
@@ -215,7 +215,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         assert rangeBased;
         return iteration;
     }
-    
+
     public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer, ExpressionBuilderContainer {
 
         ExpressionBuilder iteration;
@@ -229,7 +229,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         public void addExpressionBuilder(ExpressionBuilder expression) {
             setIteration(expression);
         }
-        
+
         public void setIteration(ExpressionBuilder iteration) {
             this.iteration = iteration;
         }
@@ -237,7 +237,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         public void setInit(StatementBuilder init) {
             this.init = init;
         }
-        
+
         public void setConditionExpression(ConditionExpressionBuilder conditionExpression) {
             this.conditionExpression = conditionExpression;
         }
@@ -253,7 +253,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         public void body() {
             this.head = false;
         }
-        
+
         @Override
         public ForStatementImpl create() {
             ForStatementImpl stmt = new ForStatementImpl(getScope(), getFile(), getStartOffset(), getEndOffset());
@@ -276,7 +276,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
                 init.setScope(stmt);
                 stmt.init = init.create();
             }
-            
+
             return stmt;
         }
 
@@ -288,6 +288,6 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
                 body = builder;
             }
         }
-    }         
-    
+    }
+
 }

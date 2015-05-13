@@ -1166,6 +1166,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug244524.cpp", 37, 18, "bug244524.cpp", 7, 9);        
     }
     
+    public void testBug235102_3() throws Exception {
+        // Bug 235102 - 5% inaccuracy in LLVM
+        performTest("bug235102_3_AAA.cpp", 8, 12, "bug235102_3_AAA.cpp", 3, 5);
+        performTest("bug235102_3_BBB.cpp", 8, 12, "bug235102_3_BBB.cpp", 3, 5);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

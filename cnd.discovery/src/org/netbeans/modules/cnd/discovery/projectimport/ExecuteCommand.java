@@ -97,12 +97,12 @@ public class ExecuteCommand {
         this.execEnv = getExecutionEnvironment();
 
     }
-    
+
     public void setName(String name, String displayName) {
         this.name = name;
         this.displayName = displayName;
     }
-    
+
     public Future<Integer> performAction(ExecutionListener listener, Writer outputListener, List<String> additionalEnvironment) {
         NativeExecutionService es = prepare(listener, outputListener, additionalEnvironment);
         if (es != null) {
@@ -139,17 +139,15 @@ public class ExecuteCommand {
         if (isSunStudio()) {
             envMap.put("SPRO_EXPAND_ERRORS", ""); // NOI18N
         }
-        InputOutput inputOutput = null;
-        if (inputOutput == null) {
-            InputOutput _tab = IOProvider.getDefault().getIO(displayName, false); // This will (sometimes!) find an existing one.
-            _tab.closeInputOutput(); // Close it...
-            InputOutput tab = IOProvider.getDefault().getIO(displayName, true); // Create a new ...
-            try {
-                tab.getOut().reset();
-            } catch (IOException ioe) {
-            }
-            inputOutput = tab;
+
+        InputOutput _tab = IOProvider.getDefault().getIO(displayName, false); // This will (sometimes!) find an existing one.
+        _tab.closeInputOutput(); // Close it...
+        InputOutput inputOutput = IOProvider.getDefault().getIO(displayName, true); // Create a new ...
+        try {
+            inputOutput.getOut().reset();
+        } catch (IOException ioe) {
         }
+
         RemoteSyncWorker syncWorker = RemoteSyncSupport.createSyncWorker(project, inputOutput.getOut(), inputOutput.getErr());
         if (syncWorker != null) {
             if (!syncWorker.startup(envMap)) {
@@ -184,7 +182,7 @@ public class ExecuteCommand {
         }
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(project, getCompilerSet(), execEnv, RemoteFileUtil.getFileObject(buildDir, execEnv)), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, getCompilerSet(), execEnv, RemoteFileUtil.getFileObject(buildDir, execEnv), inputOutput), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).
@@ -209,7 +207,7 @@ public class ExecuteCommand {
 
         descr.noReset(true);
         inputOutput.getOut().println("cd '"+buildDir+"'"); //NOI18N
-        inputOutput.getOut().println(command);       
+        inputOutput.getOut().println(command);
 
         return NativeExecutionService.newService(npb, descr, name);
     }
@@ -233,7 +231,7 @@ public class ExecuteCommand {
             command = command.replace(macro, path);
         }
     }
-    
+
     private CompilerSet getCompilerSet() {
         CompilerSet set = null;
         ToolchainProject toolchain = project.getLookup().lookup(ToolchainProject.class);
@@ -358,7 +356,7 @@ public class ExecuteCommand {
             return envMap;
         }
     }
-    
+
     private Map<String, String> getDefaultEnvironment() {
         PlatformInfo pi = PlatformInfo.getDefault(execEnv);
         String defaultPath = pi.getPathAsString();
@@ -374,8 +372,8 @@ public class ExecuteCommand {
         }
         return Collections.singletonMap(pi.getPathName(), defaultPath);
     }
-    
-    
+
+
     private static final class ProcessChangeListener implements ChangeListener, Runnable, LineConvertorFactory {
 
         private final AtomicReference<NativeProcess> processRef = new AtomicReference<>();

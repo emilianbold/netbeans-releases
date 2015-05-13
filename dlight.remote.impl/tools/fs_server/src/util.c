@@ -50,6 +50,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <limits.h>
 
@@ -354,7 +355,7 @@ char* signal_name(int signal) {
         case SIGPIPE:   return "SIGPIPE";
         case SIGALRM:   return "SIGALRM";
         case SIGTERM:   return "SIGTERM";
-#if __linux__        
+#if __linux__  && ! __sparc__
         case SIGSTKFLT: return "SIGSTKFLT";
 #endif        
 //        case SIGCLD:    return "SIGCLD"; // dup
@@ -404,7 +405,7 @@ static bool removing_visitor(char* name, struct stat *stat_buf, char* link, cons
 
 bool clean_dir(const char* path) {
     bool res = true;
-    visit_dir_entries(path, removing_visitor, &res);
+    visit_dir_entries(path, removing_visitor, NULL, &res);
     return res;
 }
 
@@ -419,8 +420,25 @@ void buffer_free(buffer* buf) {
     }
 }
 
-bool visit_dir_entries(const char* path, 
-        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), void *data) {
+void default_error_handler(bool dir_itself, const char* path, int err, const char* additional_message, void *data) {
+    char buf[400];
+    const char* emsg;
+#if __linux__
+    emsg = strerror_r(err, buf, 400);
+#else
+    emsg = strerror_r(err, buf, 256) ? "?" : buf;
+#endif
+    report_error("%s '%s': %s\n", additional_message, path, emsg);
+}
+
+/** returns 0 in the case of success or errno in the case of failure */
+int visit_dir_entries(const char* path, 
+        bool (*visitor) (char* name, struct stat *st, char* link, const char* abspath, void *data), 
+        void (*error_handler) (bool dir_itself, const char* path, int err, const char* additional_message, void *data),
+        void *data) {
+    if (!error_handler) {
+        error_handler = default_error_handler;
+    }
     DIR *d = d = opendir(path);
     if (d) {
         union {
@@ -438,7 +456,7 @@ bool visit_dir_entries(const char* path,
         struct dirent *entry;
         while (true) {
             if (readdir_r(d, &entry_buf.d, &entry)) {
-                report_error("error reading directory %s: %s\n", path, strerror(errno));
+                error_handler(true, path, errno, "error reading directory", data);
                 break;
             }
             if (!entry) {
@@ -454,7 +472,7 @@ bool visit_dir_entries(const char* path,
                 if (is_link) {
                     ssize_t sz = readlink(abspath, link, buf_size);
                     if (sz == -1) {
-                        report_error("error performing readlink for %s: %s\n", abspath, strerror(errno));
+                        error_handler(false, abspath, errno, "error performing readlink", data);
                         strcpy(link, "?");
                     } else {
                         link[sz] = 0;
@@ -464,7 +482,7 @@ bool visit_dir_entries(const char* path,
                     break;
                 }
             } else {
-                report_error("error getting stat for '%s': %s\n", abspath, strerror(errno));                
+                error_handler(false, abspath, errno, "error getting stat", data);
             }
         }
         free(abspath);
@@ -472,7 +490,7 @@ bool visit_dir_entries(const char* path,
         closedir(d);
         return true; // TODO: error processing: what some of them has errors?
     } else {
-        report_error("error opening directory '%s': %s\n", path, strerror(errno));
+        error_handler(true, path, errno, "error opening directory", data);
         return false;
     }
 }
@@ -551,19 +569,6 @@ bool is_subdir(const char* child, const char* parent) {
             return true;
         }
         return false;
-        
-        //return *c == '/';
-        
-//        if (*c == 0) {
-//            // child ended, parent did not
-//            return true;
-//        } else if (*c == '/') {
-//            return true;
-//        } else if (p > parent && *(p - 1) == '/') {
-//            return true;
-//        } else {
-//            return false;
-//        }
     } 
 }
 
@@ -573,3 +578,87 @@ char *strncpy_w_zero(char *dst, const char *src, size_t limit) {
     dst[limit-1] = 0;
     return res;
 }
+
+char mode_to_file_type_char(int mode) {
+    return (char) mode_to_file_type(mode);
+}
+
+file_type mode_to_file_type(int mode) {
+    
+    if (S_ISFIFO(mode)) {
+        return FILETYPE_FIFO;
+    } else if (S_ISCHR(mode)) {
+        return FILETYPE_CHR;
+    } else if(S_ISDIR(mode)) {
+        return FILETYPE_DIR;
+    } else if(S_ISBLK(mode)) {
+        return FILETYPE_BLK;
+    } else if (S_ISREG(mode)) {
+        return FILETYPE_REG;
+    } else if (S_ISLNK(mode)) {
+        return FILETYPE_LNK;
+    } else if(S_ISSOCK(mode)) {
+        return FILETYPE_SOCK;
+#if __sun__        
+    } else if(S_ISDOOR(mode)) {
+        return FILETYPE_DOOR;
+    } else if(S_ISPORT(mode)) {
+        return FILETYPE_PORT;
+#endif        
+    } else {
+        return FILETYPE_UNKNOWN; // for other stat info to have a default
+    }
+}
+
+static const short ACCESS_MASK = 0x1FF;
+static const short USR_R = 256;
+static const short USR_W = 128;
+static const short USR_X = 64;
+static const short GRP_R = 32;
+static const short GRP_W = 16;
+static const short GRP_X = 8;
+static const short ALL_R = 4;
+static const short ALL_W = 2;
+static const short ALL_X = 1;    
+
+static bool can(const struct stat *stat, short all_mask, short grp_mask, short usr_mask) {
+    static bool first = true;
+    static uid_t uid;
+    static gid_t groups[100];
+    static int group_count;
+    if (first) {
+        first = false;
+        uid = getuid();
+        group_count = getgroups(sizeof groups, groups);
+    }
+    unsigned int access = stat->st_mode & ACCESS_MASK;
+    if (stat->st_uid == uid) {
+        return (access & usr_mask) > 0;
+    } else if (group_count) {
+        bool group_found = false;
+        for (int i = 0; i < group_count; i++) {
+            int curr_grp = groups[i];
+            if (curr_grp == stat->st_gid) {
+                group_found = true;
+                break;  
+            }
+            if (group_found) {
+                return (access & grp_mask) > 0;
+            }
+        }
+    }
+    return (access & all_mask) > 0;
+}
+
+bool can_read(const struct stat *stat) {
+    return can(stat, ALL_R, GRP_R, USR_R);
+}
+
+bool can_write(const struct stat *stat) {
+    return can(stat, ALL_W, GRP_W, USR_W);
+}
+
+bool can_exec(const struct stat *stat) {
+    return can(stat, ALL_X, GRP_X, USR_X);
+}
+

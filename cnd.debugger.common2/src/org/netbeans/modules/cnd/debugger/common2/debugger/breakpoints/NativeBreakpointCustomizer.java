@@ -59,6 +59,7 @@ public class NativeBreakpointCustomizer extends JPanel implements Customizer, Co
     
     private JComponent c;
     
+    @Override
     public void setObject(Object bean) {
         if (!(bean instanceof NativeBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
@@ -76,10 +77,12 @@ public class NativeBreakpointCustomizer extends JPanel implements Customizer, Co
         add(c, gbc);
     }
 
+    @Override
     public boolean ok() {
         return ((ControllerProvider) c).getController().ok();
     }
 
+    @Override
     public boolean cancel() {
         return ((ControllerProvider) c).getController().cancel();
     }

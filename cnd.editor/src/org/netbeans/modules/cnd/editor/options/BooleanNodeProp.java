@@ -100,6 +100,7 @@ public class BooleanNodeProp extends PropertySupport<Boolean> {
         return Boolean.valueOf(state);
     }
 
+    @Override
     public void setValue(Boolean v) {
         state = v;
         getPreferences().putBoolean(optionID, state);

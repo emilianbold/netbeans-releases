@@ -68,7 +68,7 @@ import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.Documentation;
-import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.refactoring.ui.InsertPoint;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.SortBy;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -90,7 +90,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
     private List<EncapsulateFieldRefactoringPlugin> refactorings;
     private final EncapsulateFieldsRefactoring refactoring;
     // objects affected by refactoring
-    private Collection<CsmField> referencedFields = new ArrayList<CsmField>();
+    private Collection<CsmField> referencedFields = new ArrayList<>();
     private CsmClass enclosingClass;
     private ProgressListener listener = new ProgressListener() {
 
@@ -231,7 +231,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 
     private void initRefactorings(Collection<EncapsulateFieldInfo> refactorFields, Set<CsmVisibility> methodModifier, Set<CsmVisibility> fieldModifier, 
             boolean alwaysUseAccessors, boolean methodInline) {
-        refactorings = new ArrayList<EncapsulateFieldRefactoringPlugin>(refactorFields.size());
+        refactorings = new ArrayList<>(refactorFields.size());
         CsmFile[] declDefFiles = null;
         for (EncapsulateFieldInfo info : refactorFields) {
             if (declDefFiles == null) {
@@ -306,7 +306,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
         if (enclosingClass == null) {
             return Collections.emptySet();
         }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
+        Collection<CsmFile> files = new HashSet<>();
         CsmFile startFile = CsmRefactoringUtils.getCsmFile(enclosingClass);
         if (refactoring.isAlwaysUseAccessors()) {
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(enclosingClass, null);
@@ -332,7 +332,7 @@ public final class EncapsulateFieldsPlugin extends CsmModificationRefactoringPlu
 
 
     private void initReferencedObjects(CsmObject referencedObject, Collection<EncapsulateFieldInfo> fieldsInfo) {
-        referencedFields = new ArrayList<CsmField>(fieldsInfo.size());
+        referencedFields = new ArrayList<>(fieldsInfo.size());
         if (!fieldsInfo.isEmpty()) {
             for (EncapsulateFieldInfo info : fieldsInfo) {
                 final CsmField field = info.getField();

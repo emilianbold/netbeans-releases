@@ -151,7 +151,7 @@ public class GrabTableAction extends BaseAction {
                 @Override
                     public void run() {
                         try {
-                            new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class).getConnector(),
+                            new GrabTableHelper().execute(node.getLookup().lookup(DatabaseConnection.class),
                                 spec, node.getTableHandle(), theFile);
                         } catch (Exception exc) {
                             Logger.getLogger(GrabTableAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage(), exc);

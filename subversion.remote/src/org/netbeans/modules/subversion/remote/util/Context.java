@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion.remote.util;
 
+import org.netbeans.modules.remotefs.versioning.api.VCSFileProxySupport;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -50,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.subversion.remote.Subversion;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.openide.filesystems.FileSystem;
@@ -97,13 +99,20 @@ public class Context {
         }
         return null;
     }
+
+    public VCSFileProxy getTopFolder() {
+        for (VCSFileProxy root : rootFiles) {
+            return Subversion.getInstance().getTopmostManagedAncestor(root);
+        }
+        return null;
+    }
     
     private boolean normalize() {
         for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
             VCSFileProxy root = i.next();
             for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
                 VCSFileProxy exclusion = j.next();
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(exclusion, root)) {
+                if (VCSFileProxySupport.isAncestorOrEqual(exclusion, root)) {
                     j.remove();
                     exclusionRemoved(exclusion, root);
                     return true;
@@ -121,10 +130,10 @@ public class Context {
             VCSFileProxy file = i.next();
             for (Iterator<VCSFileProxy> j = newFiles.iterator(); j.hasNext();) {
                 VCSFileProxy includedFile = j.next();
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
+                if (VCSFileProxySupport.isAncestorOrEqual(includedFile, file) && (file.isFile() || !VersioningSupport.isFlat(includedFile))) {
                     continue outter;
                 }
-                if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
+                if (VCSFileProxySupport.isAncestorOrEqual(file, includedFile) && (includedFile.isFile() || !VersioningSupport.isFlat(file))) {
                     j.remove();
                 }
             }
@@ -141,7 +150,7 @@ public class Context {
         }
         for (int i = 0; i < exclusionChildren.length; i++) {
             VCSFileProxy child = exclusionChildren[i];
-            if (!org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(root, child)) {
+            if (!VCSFileProxySupport.isAncestorOrEqual(root, child)) {
                 exclusions.add(child);
             }
         }
@@ -171,12 +180,12 @@ public class Context {
     }
     
     public boolean contains(VCSFileProxy file) {
-        outter : for (Iterator i = rootFiles.iterator(); i.hasNext();) {
-            VCSFileProxy root = (VCSFileProxy) i.next();
+        outter : for (Iterator<VCSFileProxy> i = rootFiles.iterator(); i.hasNext();) {
+            VCSFileProxy root = i.next();
             if (SvnUtils.isParentOrEqual(root, file)) {
-                for (Iterator j = exclusions.iterator(); j.hasNext();) {
-                    VCSFileProxy excluded = (VCSFileProxy) j.next();
-                    if (org.netbeans.modules.subversion.remote.versioning.util.Utils.isAncestorOrEqual(excluded, file)) {
+                for (Iterator<VCSFileProxy> j = exclusions.iterator(); j.hasNext();) {
+                    VCSFileProxy excluded = j.next();
+                    if (VCSFileProxySupport.isAncestorOrEqual(excluded, file)) {
                         continue outter;
                     }
                 }
@@ -230,5 +239,17 @@ public class Context {
             VCSFileProxy root = VCSFileProxySupport.fromURI(uri);
             exclusions.add(root);
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder buf = new StringBuilder();
+        for(VCSFileProxy root : rootFiles) {
+            if (buf.length()>0) {
+                buf.append('\n');
+            }
+            buf.append(root.getPath());
+        }
+        return buf.toString();
     }
 }

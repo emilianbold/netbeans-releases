@@ -99,6 +99,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -151,8 +152,6 @@ public final class QueryTopComponent extends TopComponent
         GroupLayout layout = (GroupLayout) headerPanel.getLayout();
         leftRepoPanel.setVisible(true);
         layout.replace(leftRepoPanel, repoPanel);
-                
-        addNoContentPanel();
         
         /* texts */
         Mnemonics.setLocalizedText(
@@ -203,6 +202,8 @@ public final class QueryTopComponent extends TopComponent
         addQueryComponent(c);
     }
     
+    @NbBundle.Messages({"LBL_RepositoryInit=<Initializing...>",
+                        "LBL_NoRepositorySelected=<no repository selected>"})
     void init(QueryImpl query, RepositoryImpl defaultRepository, File context, boolean suggestedSelectionOnly, QueryController.QueryMode mode, boolean isNew) {
         this.query = query;
         this.context = context;
@@ -257,15 +258,20 @@ public final class QueryTopComponent extends TopComponent
                     }
                 }
             });
+            
+            NoContentPanel ncp = new NoContentPanel();
             if(defaultRepository == null) {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, true);
+                ncp.setText(Bundle.LBL_NoRepositorySelected());
             } else {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
+                ncp.setText(Bundle.LBL_RepositoryInit());
             }
+            queryPanel.add(ncp);
             rs.setLocalRepositoryHidden(true);
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
-        }
+        }                
     }
 
     private void registerListeners() {
@@ -593,13 +599,6 @@ public final class QueryTopComponent extends TopComponent
                 close();
             }
         });
-    }
-
-    @NbBundle.Messages("LBL_NoRepositorySelected=<no repository selected>")
-    private void addNoContentPanel() {
-        NoContentPanel ncp = new NoContentPanel();
-        ncp.setText(Bundle.LBL_NoRepositorySelected());
-        queryPanel.add(ncp);
     }
 
     final static class ResolvableHelper implements Serializable {

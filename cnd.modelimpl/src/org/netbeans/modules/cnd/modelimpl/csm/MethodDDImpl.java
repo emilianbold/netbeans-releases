@@ -57,7 +57,6 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
@@ -86,30 +85,30 @@ import org.openide.util.CharSequences;
 public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinition {
 
     private CsmCompoundStatement body;
-    
+
     private final DefinitionKind definitionKind;
-    
-    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind,  boolean _virtual, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
-        super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, false, file, startOffset, endOffset, global);
+
+    protected MethodDDImpl(CharSequence name, CharSequence rawName, CsmClass cls, CsmVisibility visibility, DefinitionKind defKind, boolean _virtual, boolean _override, boolean _final, boolean _explicit, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
+        super(name, rawName, cls, visibility, _virtual, _override, _final, _explicit, _static, _const, false, file, startOffset, endOffset, global);
         this.definitionKind = defKind;
     }
 
     public static<T> MethodDDImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
-        CsmScope scope = cls;
-        
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
-        
+
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
         if (name.length() == 0) {
             AstRendererException.throwAstRendererException((FileImpl) file, ast, startOffset, "Empty function name."); // NOI18N
         }
         CharSequence rawName = initRawName(ast);
-        
+
         boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
+        boolean _override = false;
+        boolean _final = false;
         boolean _explicit = false;
         boolean afterParen = false;
         boolean afterAssignEqual = false;
@@ -121,6 +120,12 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                     break;
                 case CPPTokenTypes.LITERAL_virtual:
                     _virtual = true;
+                    break;
+                case CPPTokenTypes.LITERAL_override:
+                    _override = true;
+                    break;
+                case CPPTokenTypes.LITERAL_final:
+                    _final = true;
                     break;
                 case CPPTokenTypes.LITERAL_explicit:
                     _explicit = true;
@@ -145,25 +150,23 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                     break;
             }
         }
-        
-        scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
 
-        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, defKind, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodDDImpl<T> methodDDImpl = new MethodDDImpl<>(name, rawName, cls, visibility, defKind, _virtual, _override, _final, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(ast, global, methodDDImpl);
-        
+
         StringBuilder clsTemplateSuffix = new StringBuilder();
         TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, methodDDImpl, clsTemplateSuffix, global);
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
-        
+
         methodDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodDDImpl, file));
-        methodDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodDDImpl, file, fileContent), 
+        methodDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodDDImpl, file, fileContent),
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, methodDDImpl);
         if (body == null) {
             throw AstRendererException.throwAstRendererException((FileImpl)file, ast, startOffset,
                     "Null body in method definition."); // NOI18N
-        }        
+        }
         methodDDImpl.setCompoundStatement(body);
 
         postObjectCreateRegistration(global, methodDDImpl);
@@ -174,7 +177,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     protected void setCompoundStatement(CsmCompoundStatement body) {
         this.body = body;
     }
-    
+
     @Override
     public CsmFunction getDeclaration() {
         return this;
@@ -197,25 +200,25 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     public CsmCompoundStatement getBody() {
         return body;
     }
-    
+
     @Override
     public Kind getKind() {
         return CsmDeclaration.Kind.FUNCTION_DEFINITION;
     }
-    
+
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
         Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }
-    
+
     public static class MethodDDBuilder extends MethodBuilder implements StatementBuilderContainer {
 
         private CompoundStatementBuilder bodyBuilder;
-        
+
         private final List<Token> bodyTokens = new ArrayList<>();
-        
+
         public void setBodyBuilder(CompoundStatementBuilder builder) {
             bodyBuilder = builder;
         }
@@ -223,13 +226,13 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         public CompoundStatementBuilder getBodyBuilder() {
             return bodyBuilder;
         }
-        
+
         public void addBodyToken(Token token) {
             if (!APTUtils.isEOF(token)) {
                 bodyTokens.add(token);
             }
         }
-        
+
         public TokenStream getBodyTokenStream() {
             if(bodyTokens.isEmpty()) {
                 return null;
@@ -242,7 +245,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                     public Token nextToken() throws TokenStreamException {
                         if(bodyTokens.size() > index) {
                             index++;
-                            return bodyTokens.get(index - 1);                        
+                            return bodyTokens.get(index - 1);
                         } else {
                             return null;
                         }
@@ -250,7 +253,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
                 };
             }
         }
-        
+
         @Override
         public MethodDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
@@ -266,10 +269,10 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             boolean _explicit = false;
 
 
-            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
+            MethodDDImpl method = new MethodDDImpl(getName(), getRawName(), cls, getVisibility(), DefinitionKind.REGULAR, _virtual, false, false, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
 
-            StringBuilder clsTemplateSuffix = new StringBuilder();
+            //StringBuilder clsTemplateSuffix = new StringBuilder();
             //TemplateDescriptor templateDescriptor = createTemplateDescriptor(ast, file, functionImpl, clsTemplateSuffix, global);
             //CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 
@@ -286,17 +289,17 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
             getNameHolder().addReference(getFileContent(), method);
 
             addDeclaration(method);
-            
+
             aBodyBuilder.setScope(method);
             method.setCompoundStatement(aBodyBuilder.create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
-            
+
 //            addMember(method);
-            
+
             return method;
-        }        
+        }
 
         @Override
         public void addStatementBuilder(StatementBuilder builder) {
@@ -305,20 +308,20 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         }
 
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // iml of SelfPersistent
-    
+
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeCompoundStatement(this.body, output);
         output.writeByte(definitionKind.toByte());
     }
-    
+
     public MethodDDImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
         this.definitionKind = DefinitionKind.fromByte(input.readByte());
-    }     
+    }
 }

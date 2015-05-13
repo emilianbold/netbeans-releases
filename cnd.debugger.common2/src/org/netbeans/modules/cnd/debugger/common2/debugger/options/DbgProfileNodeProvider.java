@@ -74,6 +74,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
      */
     private CustomizerNode customizerNode = null;
 
+    @Override
     public CustomizerNode factoryCreate(Lookup lookup) {
         if (customizerNode == null) {
             customizerNode = createDebugNode(lookup);
@@ -138,6 +139,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
             return new HelpCtx("ProjectPropsDebugging");
         }
 
+        @Override
         public String getFamily() {
             return "SunStudio"; //NOI18N
         }
@@ -161,6 +163,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
 	    return new HelpCtx("ProjectPropsDebugging" );
 	}
 
+        @Override
         public String getFamily() {
             return "SunStudio"; //NOI18N
         }

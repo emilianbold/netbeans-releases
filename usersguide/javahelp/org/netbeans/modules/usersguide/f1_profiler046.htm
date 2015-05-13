@@ -1,19 +1,20 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
 <title>CPU Snapshot</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
+<p>Beta Draft: 2015-05-08</p>
 <p><a id="CpuSnapshot.HelpCtx" name="CpuSnapshot.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref420" name="sthref420"></a>
+<div id="NBCSH3355"><!-- infolevel="all" infotype="General" --><a id="sthref434" name="sthref434"></a>
 <h1>CPU Snapshot</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to view data on method call chains, times, and invocations. You take a CPU snapshot when you are analyzing application performance. The snapshot is displayed in the main editor window. You can use the dropdown list in the toolbar to change the granularity of the displayed results. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG728">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG728">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -35,25 +36,19 @@
 <td align="left" id="r2c1-t48" headers="r1c1-t48">
 <p>Method Level View (default)</p>
 </td>
-<td align="left" headers="r2c1-t48 r1c2-t48">
-<p>Displays results according to the fully-qualified method names.</p>
-</td>
+<td align="left" headers="r2c1-t48 r1c2-t48">Displays results according to the fully-qualified method names.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t48" headers="r1c1-t48">
 <p>Class Level View</p>
 </td>
-<td align="left" headers="r3c1-t48 r1c2-t48">
-<p>Aggregates in a single entry the results for all methods of the same class.</p>
-</td>
+<td align="left" headers="r3c1-t48 r1c2-t48">Aggregates in a single entry the results for all methods of the same class.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t48" headers="r1c1-t48">
 <p>Package Level View</p>
 </td>
-<td align="left" headers="r4c1-t48 r1c2-t48">
-<p>Aggregates all methods of classes that belong to the same package.</p>
-</td>
+<td align="left" headers="r4c1-t48 r1c2-t48">Aggregates all methods of classes that belong to the same package.</td>
 </tr>
 </tbody>
 </table>
@@ -75,33 +70,25 @@
 <td align="left" id="r2c1-t49" headers="r1c1-t49">
 <p>Call Tree</p>
 </td>
-<td align="left" headers="r2c1-t49 r1c2-t49">
-<p>Displays a call tree showing the method call chain and the time/number of invocations for executing threads and methods in each context. (A context is a unique chain of method calls leading to the method's invocation.)</p>
-</td>
+<td align="left" headers="r2c1-t49 r1c2-t49">Displays a call tree showing the method call chain and the time/number of invocations for executing threads and methods in each context. (A context is a unique chain of method calls leading to the method's invocation.)</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t49" headers="r1c1-t49">
 <p>Hot Spots</p>
 </td>
-<td align="left" headers="r3c1-t49 r1c2-t49">
-<p>Displays the total execution time and number of invocations for each method, irrespective of the context.</p>
-</td>
+<td align="left" headers="r3c1-t49 r1c2-t49">Displays the total execution time and number of invocations for each method, irrespective of the context.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t49" headers="r1c1-t49">
 <p>Combined</p>
 </td>
-<td align="left" headers="r4c1-t49 r1c2-t49">
-<p>Displays the Call Tree information in the upper part of the window and the Hot Spot data in the lower part.</p>
-</td>
+<td align="left" headers="r4c1-t49 r1c2-t49">Displays the Call Tree information in the upper part of the window and the Hot Spot data in the lower part.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t49" headers="r1c1-t49">
 <p>Info</p>
 </td>
-<td align="left" headers="r5c1-t49 r1c2-t49">
-<p>Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</p>
-</td>
+<td align="left" headers="r5c1-t49 r1c2-t49">Displays data on when the snapshot was taken, where it is saved, and the configuration of the profiling session.</td>
 </tr>
 </tbody>
 </table>
@@ -123,48 +110,37 @@
 <td align="left" id="r2c1-t50" headers="r1c1-t50">
 <p>Go To Source</p>
 </td>
-<td align="left" headers="r2c1-t50 r1c2-t50">
-<p>Loads the source <code>.java</code> file containing the class or method.</p>
-</td>
+<td align="left" headers="r2c1-t50 r1c2-t50">Loads the source <code dir="ltr">.java</code> file containing the class or method.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t50" headers="r1c1-t50">
 <p>Show Subtree</p>
 </td>
-<td align="left" headers="r3c1-t50 r1c2-t50">
-<p>Displays the subtree for the selected method.</p>
-</td>
+<td align="left" headers="r3c1-t50 r1c2-t50">Displays the subtree for the selected method.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t50" headers="r1c1-t50">
 <p>Show Back Traces</p>
 </td>
-<td align="left" headers="r4c1-t50 r1c2-t50">
-<p>Displays the back traces for the selected method.</p>
-</td>
+<td align="left" headers="r4c1-t50 r1c2-t50">Displays the back traces for the selected method.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t50" headers="r1c1-t50">
 <p>Find in Hot Spots</p>
 </td>
-<td align="left" headers="r5c1-t50 r1c2-t50">
-<p>Displays the selected class or method in the Hot Spots tab.</p>
-</td>
+<td align="left" headers="r5c1-t50 r1c2-t50">Displays the selected class or method in the Hot Spots tab.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t50" headers="r1c1-t50">
 <p>Find in Call Tree</p>
 </td>
-<td align="left" headers="r6c1-t50 r1c2-t50">
-<p>Displays the selected class or method in the Call Tree tab.</p>
-</td>
+<td align="left" headers="r6c1-t50 r1c2-t50">Displays the selected class or method in the Call Tree tab.</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t50" headers="r1c1-t50">
 <p>Find in Hot Spots</p>
 </td>
-<td align="left" headers="r7c1-t50 r1c2-t50">
-<p>Adds the selected method to the list of roots available when analyzing application performance.</p>
+<td align="left" headers="r7c1-t50 r1c2-t50">Adds the selected method to the list of roots available when analyzing application performance.
 <p>This command is only available when viewing results in method view.</p>
 </td>
 </tr>
@@ -172,10 +148,11 @@
 </table>
 <br />
 <!-- -->
+<a id="NBCSH3369" name="NBCSH3369"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG727">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG727">
 <param name="text" value="<html><u>&quot;Taking a Snapshot&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -183,7 +160,7 @@
 </p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG769">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG769">
 <param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
@@ -197,7 +174,7 @@
 <table summary="" cellspacing="0" cellpadding="0" width="100%">
 <tr>
 <td align="left" width="86%"><a href="legal_notice.htm">
-Copyright&nbsp;&copy;&nbsp;2014,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+Copyright&nbsp;&copy;&nbsp;2015,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
 </td>
 </tr>
 </table>

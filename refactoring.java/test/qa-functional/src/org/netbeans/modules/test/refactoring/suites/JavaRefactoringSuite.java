@@ -48,6 +48,7 @@ import org.netbeans.modules.test.refactoring.EncapsulateFieldTest;
 import org.netbeans.modules.test.refactoring.FindUsagesClassTest;
 import org.netbeans.modules.test.refactoring.FindUsagesMethodTest;
 import org.netbeans.modules.test.refactoring.InspectAndTransformTest;
+import org.netbeans.modules.test.refactoring.IntroduceParameterTest;
 import org.netbeans.modules.test.refactoring.MoveTest;
 import org.netbeans.modules.test.refactoring.PushPullTest;
 import org.netbeans.modules.test.refactoring.RenameTest;
@@ -60,16 +61,12 @@ public class JavaRefactoringSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(FindUsagesClassTest.class).
-                    addTest(FindUsagesMethodTest.class).
-                    addTest(MoveTest.class).
+                NbModuleSuite.createConfiguration(MoveTest.class).
                     addTest(RenameTest.class).
                     addTest(ConvertAnonymousToMemberTest.class).
                     addTest(EncapsulateFieldTest.class).
                     addTest(PushPullTest.class).
                     addTest(InspectAndTransformTest.class));
-        
-                    // addTest(PullUpTest.class))
     }
         
 }

@@ -54,13 +54,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.data.GlassFishConfig;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.glassfish.tools.ide.server.config.GlassFishConfigManager;
-import org.glassfish.tools.ide.server.config.JavaSEPlatform;
-import org.glassfish.tools.ide.server.config.JavaSESet;
-import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishConfig;
+import org.netbeans.modules.glassfish.tooling.data.GlassFishVersion;
+import org.netbeans.modules.glassfish.tooling.server.config.ConfigBuilderProvider;
+import org.netbeans.modules.glassfish.tooling.server.config.GlassFishConfigManager;
+import org.netbeans.modules.glassfish.tooling.server.config.JavaSEPlatform;
+import org.netbeans.modules.glassfish.tooling.server.config.JavaSESet;
+import org.netbeans.modules.glassfish.tooling.utils.ServerUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ui.IpComboBox;
@@ -164,7 +164,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
      */
     @Override
     public HelpCtx getHelp() {
-        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-j2ee-helpset.xml");
+        FileObject fo = FileUtil.getConfigFile("Services/JavaHelp/org-netbeans-modules-usersguide-helpset.xml");
         if (null != fo)
             return new HelpCtx("registering_app_server_hk2_domain"); //NOI18N
         else
