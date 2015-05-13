@@ -65,7 +65,6 @@ import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-
 import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -80,33 +79,33 @@ import org.netbeans.spi.debugger.ui.ViewLifecycle.ModelUpdateListener;
 import org.netbeans.spi.viewmodel.AsynchronousModelFilter;
 import org.netbeans.spi.viewmodel.CheckNodeModel;
 import org.netbeans.spi.viewmodel.CheckNodeModelFilter;
-import org.netbeans.spi.viewmodel.Model;
-import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.ColumnModel;
 import org.netbeans.spi.viewmodel.DnDNodeModel;
 import org.netbeans.spi.viewmodel.DnDNodeModelFilter;
 import org.netbeans.spi.viewmodel.ExtendedNodeModel;
 import org.netbeans.spi.viewmodel.ExtendedNodeModelFilter;
-import org.netbeans.spi.viewmodel.TableModelFilter;
+import org.netbeans.spi.viewmodel.Model;
+import org.netbeans.spi.viewmodel.ModelListener;
+import org.netbeans.spi.viewmodel.Models;
+import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.NodeModelFilter;
-import org.netbeans.spi.viewmodel.TableModel;
-import org.netbeans.spi.viewmodel.TreeExpansionModel;
-import org.netbeans.spi.viewmodel.TreeModel;
-import org.netbeans.spi.viewmodel.TreeModelFilter;
-import org.netbeans.spi.viewmodel.ModelListener;
-import org.netbeans.spi.viewmodel.Models.CompoundModel;
 import org.netbeans.spi.viewmodel.ReorderableTreeModel;
 import org.netbeans.spi.viewmodel.ReorderableTreeModelFilter;
 import org.netbeans.spi.viewmodel.TableHTMLModel;
 import org.netbeans.spi.viewmodel.TableHTMLModelFilter;
+import org.netbeans.spi.viewmodel.TableModel;
+import org.netbeans.spi.viewmodel.TableModelFilter;
 import org.netbeans.spi.viewmodel.TablePropertyEditorsModel;
 import org.netbeans.spi.viewmodel.TablePropertyEditorsModelFilter;
 import org.netbeans.spi.viewmodel.TableRendererModel;
 import org.netbeans.spi.viewmodel.TableRendererModelFilter;
+import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.TreeExpansionModelFilter;
+import org.netbeans.spi.viewmodel.TreeModel;
+import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -294,6 +293,10 @@ public class ViewModelListener extends DebuggerManagerAdapter {
             }
             synchronized (destroyLock) {
                 models.clear();
+                if (hyperModels != null) {
+                    hyperModels.clear();
+                    hyperModels = null;
+                }
                 treeModels = new List[TREE_MODELS.length];
                 treeModelFilters = new List[TREE_MODEL_FILTERS.length];
                 treeExpansionModels = null;

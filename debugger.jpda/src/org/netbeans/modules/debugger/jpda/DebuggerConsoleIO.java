@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.debugger.jpda;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.io.InputOutput;
 import org.netbeans.modules.debugger.jpda.console.DebuggerOutput;
-import org.netbeans.modules.debugger.jpda.console.IOManager;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -68,14 +69,14 @@ public final class DebuggerConsoleIO {
     
     public void println(String text, Line line) {
         if (line != null) {
-            line.debugger = this.debugger;
+            line.setDebuggerTimeStamp(this.debugger);
         }
         output.getIOManager().println(text, line);
     }
     
     public void println(String text, Line line, boolean important) {
         if (line != null) {
-            line.debugger = this.debugger;
+            line.setDebuggerTimeStamp(this.debugger);
         }
         output.getIOManager().println(text, line, important);
     }
@@ -84,15 +85,19 @@ public final class DebuggerConsoleIO {
         
         private final String url;
         private final int lineNumber;
-        private JPDADebugger debugger;
+        private Reference<JPDADebugger> debuggerRef;
         
         public Line (String url, int lineNumber) {
             this.url = url;
             this.lineNumber = lineNumber;
         }
         
+        private void setDebuggerTimeStamp(JPDADebugger debugger) {
+            this.debuggerRef = new WeakReference<>(debugger);
+        }
+        
         public void show () {
-            EditorContextBridge.getContext().showSource (url, lineNumber, debugger);
+            EditorContextBridge.getContext().showSource (url, lineNumber, debuggerRef.get());
         }
     }
 }

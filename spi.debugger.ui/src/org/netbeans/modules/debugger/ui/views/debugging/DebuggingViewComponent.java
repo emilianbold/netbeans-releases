@@ -435,6 +435,7 @@ public class DebuggingViewComponent extends TopComponent implements org.openide.
                 });
             }
             FiltersDescriptor.getInstance().setUpFilters(null);
+            visibleTreePosition = null;
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
