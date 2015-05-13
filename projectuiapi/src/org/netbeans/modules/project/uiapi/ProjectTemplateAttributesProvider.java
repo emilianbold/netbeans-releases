@@ -45,6 +45,8 @@
 package org.netbeans.modules.project.uiapi;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -56,6 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateAttributes;
+import org.netbeans.api.templates.FileBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.CreateFromTemplateAttributesProvider;
@@ -84,7 +87,7 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
         FileObject targetF = desc.getTarget();
         String name = desc.getProposedName();
         Project prj = FileOwnerQuery.getOwner(targetF);
-        Map<String, Object> all = null;
+        Map<String, Object> all = new HashMap();
         if (prj != null) {
             // call old providers
             Collection<? extends CreateFromTemplateAttributesProvider> oldProvs = prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class);
@@ -97,9 +100,6 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                         for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
                             Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
                             if (m != null) {
-                                if (all == null) {
-                                    all = new HashMap<String, Object>();
-                                }
                                 all.putAll(m);
                             }
                         }
@@ -110,12 +110,14 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                 }
             }
             // call new providers last, so they can override anything old providers could screw up.
+            // new providers should get all attributes collected from previous (new-style) CFTAs incl. attributes provided
+            // by [deprecated] CFTAPs accumulated above.
+            FileBuilder bld = FileBuilder.fromDescriptor(desc);
+            // temporary:
             for (CreateFromTemplateAttributes attrs : prj.getLookup().lookupAll(CreateFromTemplateAttributes.class)) {
-                Map<String, ? extends Object> m = attrs.attributesFor(desc);
+                CreateDescriptor childDesc = bld.withParameters(all).createDescriptor(false);
+                Map<String, ? extends Object> m = attrs.attributesFor(childDesc);
                 if (m != null) {
-                    if (all == null) {
-                        all = new HashMap<String, Object>();
-                    }
                     all.putAll(m);
                 }
             }
