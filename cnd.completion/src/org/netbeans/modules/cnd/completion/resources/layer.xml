@@ -78,18 +78,22 @@ made subject to such option by the copyright holder.
                     <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="CsmDefineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="LineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.LineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder>
                 
@@ -150,18 +154,22 @@ made subject to such option by the copyright holder.
                     <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>
                     <file name="CsmDefineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="LineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.LineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder>
 
@@ -223,18 +231,22 @@ made subject to such option by the copyright holder.
                     <file name="CsmHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                     <file name="CsmIncludeHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmIncludeHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1100"/>
                     </file>                    
                     <file name="CsmDefineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="LineHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.completion.cplusplus.hyperlink.LineHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1300"/>
                     </file>
                 </folder>
                 

@@ -361,6 +361,7 @@
                     <file name="MakefileHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.makefile.editor.MakefileHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
 

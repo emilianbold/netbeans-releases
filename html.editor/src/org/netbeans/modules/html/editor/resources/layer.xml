@@ -181,6 +181,7 @@ made subject to such option by the copyright holder.
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
 
@@ -351,6 +352,7 @@ made subject to such option by the copyright holder.
                     <file name="GsfHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
 

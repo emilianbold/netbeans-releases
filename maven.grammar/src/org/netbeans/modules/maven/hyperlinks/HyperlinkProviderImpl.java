@@ -86,8 +86,8 @@ import org.netbeans.modules.maven.spi.nodes.NodeUtils;
  * @author mkleint
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=HyperlinkProviderExt.class),
-    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProviderExt.class)
+    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=HyperlinkProviderExt.class, position = 1000),
+    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProviderExt.class, position = 1000)
 })
 public class HyperlinkProviderImpl implements HyperlinkProviderExt {
     private static final Logger LOG = Logger.getLogger(HyperlinkProviderImpl.class.getName());
