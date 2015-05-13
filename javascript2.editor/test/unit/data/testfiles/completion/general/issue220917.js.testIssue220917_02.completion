@@ -18,4 +18,4 @@ METHOD     createNodeIterator(root: Node,  [PUBLIC]   JS Platform
 METHOD     createProcessingInstruction(ta  [PUBLIC]   JS Platform
 METHOD     createRange(): Range            [PUBLIC,   JS Platform
 METHOD     createTextNode(data: String):   [PUBLIC]   JS Platform
-METHOD     createTreeWalker(root: Node, w  [PUBLIC,   JS Platform
+METHOD     createTreeWalker(root: Node, w  [PUBLIC]   JS Platform
