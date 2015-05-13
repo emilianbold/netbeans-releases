@@ -125,13 +125,14 @@ class NoMatchingConstructor extends AbstractCodeAudit {
         boolean willProduceError = false;
         for (CsmInheritance parent : csmClass.getBaseClasses()) {
             CsmClass parentClass = CsmInheritanceUtilities.getCsmClass(parent);
-            boolean flag = false;
+            if (parentClass != null) {
+                boolean flag = false;
                 for (CsmMember member : parentClass.getMembers()) {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
                         if (testedCtor.getParameters().isEmpty()) {
-                                flag = false;
-                                break;
+                            flag = false;
+                            break;
                         } else {
                             flag = true;
                         }
@@ -141,6 +142,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     willProduceError = flag;
                 }
                 break;
+            }
         }
         
         if (willProduceError) {

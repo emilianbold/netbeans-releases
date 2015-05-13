@@ -79,6 +79,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyleConstants;
 import javax.swing.text.View;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
@@ -304,6 +305,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         if (o == null) {
             component.putClientProperty(PROP_SIDEBAR_MARK, this);
         }
+        prefsListener.preferenceChange(null);
     }
     
     
@@ -336,7 +338,6 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         
         prefs = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(component)).lookup(Preferences.class);
         prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefsListener, prefs));
-        prefsListener.preferenceChange(null);
         
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "Code folding sidebar initialized for: {0}", doc);
@@ -363,10 +364,23 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         }
         revalidate();
     }
+    
+    /**
+     * Resolves background color. Must be called after getColoring(), satisfied in updateColors.
+     * @return 
+     */
+    private Color resolveBackColor() {
+        AttributeSet attr = specificAttrs;
+        Color x = (Color)attr.getAttribute(StyleConstants.ColorConstants.Background);
+        if (x == null) {
+            x = getParent().getBackground();
+        }
+        return x;
+    }
 
     private void updateColors() {
         Coloring c = getColoring();
-        this.backColor = c.getBackColor();
+        this.backColor = resolveBackColor();
         this.foreColor = c.getForeColor();
         this.font = c.getFont();
     }
@@ -1005,7 +1019,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         visibleMarks.clear();
         
         Coloring coloring = getColoring();
-        g.setColor(coloring.getBackColor());
+        g.setColor(resolveBackColor());
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
@@ -1526,6 +1540,8 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         }
         return accessibleContext;
     }
+    
+    private AttributeSet specificAttrs;
 
     private Coloring getColoring() {
         if (attribs == null) {
@@ -1537,10 +1553,13 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
             
             FontColorSettings fcs = fcsLookupResult.allInstances().iterator().next();
             AttributeSet attr = fcs.getFontColors(FontColorNames.CODE_FOLDING_BAR_COLORING);
+            specificAttrs = attr;
             if (attr == null) {
                 attr = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
             } else {
-                attr = AttributesUtilities.createComposite(attr, fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+                attr = AttributesUtilities.createComposite(
+                        attr, 
+                        fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
             }
             attribs = attr;
         }        

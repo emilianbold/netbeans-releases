@@ -50,6 +50,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -132,19 +133,24 @@ public class CsmRenameRefactoringPlugin extends CsmModificationRefactoringPlugin
         fireProgressListenerStart(RenameRefactoring.PRE_CHECK, 6);
         CsmRefactoringUtils.waitParsedAllProjects();
         fireProgressListenerStep();
-        if (this.referencedObjects == null) {
-            initReferencedObjects();
-            fireProgressListenerStep();
-        }    
-        preCheckProblem = isResovledElement(getStartReferenceObject());
-        if (preCheckProblem != null) {
+        CsmCacheManager.enter();
+        try {
+            if (this.referencedObjects == null) {
+                initReferencedObjects();
+                fireProgressListenerStep();
+            }
+            preCheckProblem = isResovledElement(getStartReferenceObject());
+            if (preCheckProblem != null) {
+                return preCheckProblem;
+            }
+            CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
+            // check read-only elements
+            preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
+            fireProgressListenerStop();
             return preCheckProblem;
+        } finally {
+            CsmCacheManager.leave();
         }
-        CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-        // check read-only elements
-        preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
-        fireProgressListenerStop();
-        return preCheckProblem;
     }
 
     private static String getString(String key) {
