@@ -67,6 +67,8 @@ public class DTDDoclet {
 
     private RefList s; //tmp holding whole result
     
+    private String originalFileName;
+    
     private RefList elementIndex = new RefList();
     
     private String comment; //last suitable comment or null if none
@@ -95,8 +97,8 @@ public class DTDDoclet {
     private final String BODY = "body"; // NOI18N
     
     /** Creates new DTDDoclet engine*/
-    public DTDDoclet() {
-        
+    public DTDDoclet(String fileName) {
+        this.originalFileName = fileName;
     }
 
     /**
@@ -111,11 +113,13 @@ public class DTDDoclet {
         
         s.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n"); // NOI18N
         
-        s.appendStartTag(ROOT).append("\n<head>\n<title>" + NbBundle.getMessage(DTDDoclet.class, "PAGE_TITLE") + "</title>\n"); // NOI18N
+        s.appendStartTag(ROOT).append("\n<head>\n<title>" + NbBundle.getMessage(DTDDoclet.class, "PAGE_TITLE", originalFileName) + "</title>\n"); // NOI18N
         s.append("<meta http-equiv=\"Content-Type\" content=\"text/xhtml; charset=" + encoding + "\" />\n");
         s.append("</head>\n");
         s.append("\n<!-- Generated on " + DateFormat.getDateInstance().format(new Date()) + " by NetBeans XML module. -->\n"); // NOI18N
         s.appendStartTag(BODY);
+        
+        s.append("<h1>").append(NbBundle.getMessage(DTDDoclet.class, "DOCUMENT_TITLE", originalFileName)).append("</h1>");
         
         headline1(NbBundle.getMessage(DTDDoclet.class, "TEXT_Element_Index"));
         
