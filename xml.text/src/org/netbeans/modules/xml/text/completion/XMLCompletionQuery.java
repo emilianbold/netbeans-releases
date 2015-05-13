@@ -51,6 +51,11 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.xml.lexer.XMLTokenId;
 
 import org.w3c.dom.*;
 
@@ -330,11 +335,23 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         try {
             Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
             int delLen = 0;
+            String suffix = null;
             if (helper.getToken() != null) {
                 if (helper.getToken().getTokenID() == XMLTokenIDs.TEXT) {
                     String c = helper.getToken().getImage();
                     String p = helper.getPreText();
+                    // special case: do not remove text after newline to
+                    // preserve formatting / indentation
+                    int nlIndex = c.indexOf('\n');
+                    if (nlIndex > 0) {
+                        c = c.substring(0, nlIndex);
+                    }
                     delLen = c.length() - p.length();
+                    // possibly append closing end tag
+                    String tagName = shouldCloseTag(helper, doc, sup);
+                    if (tagName != null) {
+                        suffix = "</" + tagName + ">";
+                    }
                 } else if (helper.getToken().getTokenID() == XMLTokenIDs.VALUE) {
                     String c = helper.getToken().getImage();
                     delLen = c.length();
@@ -346,6 +363,11 @@ public class XMLCompletionQuery implements XMLTokenIDs {
                     if (c.charAt(l) == '"' || c.charAt(l) == '\'') {
                         delLen--;
                     }
+                } else if (helper.getToken().getTokenID() == XMLTokenIDs.TAG) {
+                    String tagName = shouldCloseTag(helper, doc, sup);
+                    if (tagName != null) {
+                        suffix = "</" + tagName + ">";
+                    }
                 }
             }
 //            String curValue = helper.getContext().getNodeValue();
@@ -354,7 +376,7 @@ public class XMLCompletionQuery implements XMLTokenIDs {
 //                curValue = curValue.trim();
 //                curLen = curValue.length();
 //            }
-            return translateValues(res, delLen);
+            return translateValues(res, delLen, suffix);
         } catch (Exception ex) {
             Logger.getLogger(XMLCompletionQuery.class.getName()).log(Level.INFO, "cf. #118136", ex);
             return null;
@@ -415,13 +437,130 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         return result;
     }
     
-    private List<CompletionItem> translateValues(Enumeration values, int delLen) {
+    private String shouldCloseTag(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
+        TokenItem ti = helper.getToken();
+        TokenItem previous = ti.getPrevious();
+        if (previous == null || previous.getTokenID() != XMLTokenIDs.TAG) {
+            // preceded by something else than tag name, i.e. argument, operator...
+            return null;
+        }
+        String tagName  = previous.getImage();
+        if (tagName.equals(">")) { // NOI18N
+            // closing brace of a tag, iterate towards tag's begin, skip attributes and their values.
+             previous = previous.getPrevious();
+            while (previous != null && previous.getTokenID() != XMLTokenIDs.TAG) {
+                previous = previous.getPrevious();
+            }
+            if (previous == null) {
+                return null;
+            }
+            // got tagname.
+            tagName = previous.getImage();
+        }
+        if (tagName.startsWith(END_TAG_PREFIX)) {
+            // traversal through preceding tags, counting end-start pairs not implemented.
+            return null;
+        } else if (!tagName.startsWith(TAG_FIRST_CHAR)) {
+            return null;
+        } 
+        // tag name does not include end sharp brace
+        tagName = tagName.substring(1, tagName.length()).trim();
+        TokenSequence<XMLTokenId> s = (TokenSequence<XMLTokenId>)TokenHierarchy.get(doc).tokenSequence();
+        if (isClosingEndTagFoundAfter(ti.getOffset(), s, tagName)) {
+            // I know, there may be multiple levels of the same tag name, and the innermost may
+            // be missing...
+            return null;
+        }
+        return tagName;
+    }
+    
+    public static final String
+        TAG_FIRST_CHAR = "<", //NOI18N
+        TAG_LAST_CHAR  = ">", //NOI18N
+        END_TAG_PREFIX = "</", //NOI18N
+        END_TAG_SUFFIX = "/>"; //NOI18N
+
+    public static boolean isEndTagPrefix(Token token) {
+        if (token == null) return false;
+
+        TokenId tokenID = token.id();
+        if (tokenID.equals(XMLTokenId.TAG) || tokenID.equals(XMLTokenId.TEXT)) {
+            String tokenText = token.text().toString();
+            if (tokenText.startsWith(END_TAG_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isTagFirstChar(Token token) {
+        if (token == null) return false;
+
+        TokenId tokenID = token.id();
+        if (tokenID.equals(XMLTokenId.TAG) || tokenID.equals(XMLTokenId.TEXT)) {
+            String tokenText = token.text().toString();
+            if ((! isEndTagPrefix(token)) && tokenText.startsWith(TAG_FIRST_CHAR)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static String getTokenTagName(Token token) {
+        if (token == null) return null;
+
+        int index = -1;
+        if (isTagFirstChar(token)) {
+            index = TAG_FIRST_CHAR.length();
+        } else if (isEndTagPrefix(token)) {
+            index = END_TAG_PREFIX.length();
+        } else {
+            return null;
+        }
+        String tokenText = token.text().toString(),
+               tagName = (tokenText == null ? null : tokenText.substring(index));
+        return tagName;
+    }
+    
+    private static boolean isClosingEndTagFoundAfter(int caretPos,
+        TokenSequence tokenSequence, String startTagName) {
+        if ((tokenSequence == null) || (startTagName == null)) return false;
+        tokenSequence.move(caretPos);
+        
+        int unclosedTagCount = 1;
+        while (tokenSequence.moveNext()) {
+            Token token = tokenSequence.token();
+            String nextTagName = getTokenTagName(token);
+            // fix for issue #185048
+            // (http://netbeans.org/bugzilla/show_bug.cgi?id=185048)
+            // also: must not count ends of nested tags, just the
+            // same level
+            if (isEndTagPrefix(token)) {
+                if (unclosedTagCount-- == 0) {
+                    return false;
+                }
+            } else if (isTagFirstChar(token)) {
+                unclosedTagCount++;
+            } else {
+                continue;
+            }
+            if (unclosedTagCount == 0) {
+                if (isEndTagPrefix(token)) {
+                    return startTagName.equals(nextTagName);
+                }
+            }
+        }
+        return false;
+    }
+
+    
+    private List<CompletionItem> translateValues(Enumeration values, int delLen, String suffix) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(3);
         int i = 0;
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
             if(next != null && next.getDisplayName() != null) {
-                ValueResultItem val = new ValueResultItem(i++, next, delLen);
+                ValueResultItem val = new ValueResultItem(i++, next, delLen, suffix);
                 result.add( val );
             }
         }
