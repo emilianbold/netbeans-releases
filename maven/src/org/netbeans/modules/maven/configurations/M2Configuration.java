@@ -73,6 +73,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -315,6 +316,7 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
             protected String getRawMappingsAsString() {
                 NetbeansBuildActionXpp3Writer writer = new NetbeansBuildActionXpp3Writer();
                 StringWriter str = new StringWriter();
+                InputStreamReader rdr = null;
                 try {
                     InputStream in = getActionDefinitionStream();
                     if (in == null) {
@@ -322,14 +324,21 @@ public class M2Configuration extends AbstractMavenActionsProvider implements Mav
                     }
                     if (in == null) {
                         return null;
-                    }
-                    InputStreamReader rdr = new InputStreamReader(in);
+                    }                    
+                    rdr = new InputStreamReader(in);
                     ActionToGoalMapping map = reader.read(rdr);
                     writer.write(str, map);
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Loading raw mappings", ex);
                 } catch (XmlPullParserException ex) {
                     LOG.log(Level.WARNING, "Loading raw mappings", ex);
+                } finally {
+                    if(rdr != null) {
+                        try { 
+                            rdr.close(); 
+                        } catch (IOException ex) { 
+                        }
+                    }
                 }
                 return str.toString();
             }

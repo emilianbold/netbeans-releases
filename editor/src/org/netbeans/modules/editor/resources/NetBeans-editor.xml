@@ -66,4 +66,5 @@ made subject to such option by the copyright holder.
     <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
     <fontcolor name="indent-whitespace"/>
     <fontcolor name="trailing-whitespace"/>
+    <fontcolor name="west-sidebars-color"/>
 </fontscolors>
