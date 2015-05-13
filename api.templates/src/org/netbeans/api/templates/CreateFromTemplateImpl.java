@@ -92,6 +92,11 @@ final class CreateFromTemplateImpl {
         return impl.build();
     }
     
+    static void collectAttributes(FileBuilder flb) {
+        CreateFromTemplateImpl impl = new CreateFromTemplateImpl(flb);
+        flb.withParameters(impl.findTemplateParameters());
+    }
+    
     List<FileObject> build() throws IOException {
         // side effects: replaces the map in CreateDescriptor
         try {
@@ -108,7 +113,7 @@ final class CreateFromTemplateImpl {
             }
             // also modifies desc.getParameters, result not needed.
             findTemplateParameters();
-            computeEffectiveName();
+            computeEffectiveName(desc);
 
             List<FileObject> pf = null;
             for (CreateFromTemplateHandler h : Lookup.getDefault().lookupAll(CreateFromTemplateHandler.class)) {
@@ -129,7 +134,7 @@ final class CreateFromTemplateImpl {
         }
     }
     
-    private void computeEffectiveName() {
+    /* package private */ static void computeEffectiveName(CreateDescriptor desc) {
         String name = desc.getName();
         if (name == null) {
             // name is not set - try to check parameters, if some template attribute handler
