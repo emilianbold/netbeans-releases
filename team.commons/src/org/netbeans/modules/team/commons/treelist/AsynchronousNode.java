@@ -126,9 +126,11 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
                     lblError.setForeground(ColorManager.getDefault().getErrorColor());
                 }
-                String renderedTitle = getTitle(lblTitle, isSelected, hasFocus, rowWidth);
                 lblTitle.setForeground(foreground);
-                lblTitle.setText(renderedTitle != null ? renderedTitle : title);
+                String renderedTitle = getTitle(lblTitle, isSelected, hasFocus, rowWidth);
+                if(renderedTitle != null) {
+                    lblTitle.setText(renderedTitle);
+                }
             }
         }
         return panel;
