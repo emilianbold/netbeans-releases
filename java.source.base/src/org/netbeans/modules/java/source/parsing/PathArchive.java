@@ -66,7 +66,7 @@ import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementa
 public final class PathArchive implements Archive {
 
     private final Path root;
-    private final URI rootURI;
+    private final String rootURI;
     private final char separator;
 
     PathArchive(
@@ -74,7 +74,7 @@ public final class PathArchive implements Archive {
             @NullAllowed final URI rootURI) {
         assert root != null;
         this.root = root;
-        this.rootURI = rootURI;
+        this.rootURI = rootURI == null ? null : rootURI.toString();
         final String separator = root.getFileSystem().getSeparator();
         if (separator.length() != 1) {
             throw new IllegalArgumentException("Multi character separators are unsupported");
@@ -96,7 +96,7 @@ public final class PathArchive implements Archive {
         try (DirectoryStream<Path> dir = Files.newDirectoryStream(target, new KindFilter(kinds))) {
             final List<JavaFileObject> res = new ArrayList<>();
             for (Path dirEnt : dir) {
-                res.add(FileObjects.pathFileObject(dirEnt, root, createURI(rootURI, dirEnt, root), null));
+                res.add(FileObjects.pathFileObject(dirEnt, root, rootURI, null));
             }
             return res;
         } catch (NotDirectoryException | NoSuchFileException e) {
@@ -112,7 +112,7 @@ public final class PathArchive implements Archive {
         }
         final Path target = root.resolve(name);
         return Files.exists(target) ?
-                FileObjects.pathFileObject(target, root, createURI(rootURI, target, root), null) :
+                FileObjects.pathFileObject(target, root, rootURI, null) :
                 null;
     }
 
@@ -125,20 +125,6 @@ public final class PathArchive implements Archive {
     public void clear() {
     }
 
-    @CheckForNull
-    private static URI createURI(
-            @NullAllowed final URI rootURI,
-            @NonNull final Path path,
-            @NonNull final Path root) {
-        if (rootURI == null) {
-            return null;
-        }
-        String relPath = root.relativize(path).toUri().getRawPath();
-        if (relPath.charAt(0) == FileObjects.NBFS_SEPARATOR_CHAR) {
-            relPath = relPath.substring(1);
-        }
-        return URI.create(rootURI.toString() + relPath);
-    }
 
     private static final class KindFilter implements DirectoryStream.Filter<Path> {
         private final Set<JavaFileObject.Kind> kinds;

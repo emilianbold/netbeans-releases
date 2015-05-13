@@ -550,14 +550,24 @@ public class FileObjects {
     public static InferableJavaFileObject pathFileObject(
         @NonNull final Path file,
         @NonNull final Path root,
-        @NullAllowed final URI uri,
+        @NullAllowed final String rootUri,
         @NullAllowed Charset encoding) {
         final char separator = file.getFileSystem().getSeparator().charAt(0);
-        final String relPath = root.relativize(file).toString();
-        final String[] path = getFolderAndBaseName(relPath, separator);
+        final Path relPath = root.relativize(file);
+        final String[] path = getFolderAndBaseName(relPath.toString(), separator);
+        String fileUri;
+        if (rootUri != null) {
+            fileUri = relPath.toUri().getRawPath();
+            if (fileUri.charAt(0) == FileObjects.NBFS_SEPARATOR_CHAR) {
+                fileUri = fileUri.substring(1);
+            }
+            fileUri = rootUri +fileUri;
+        } else {
+            fileUri = null;
+        }
         return new PathFileObject(
                 file,
-                uri != null ? uri : file.toUri(),
+                fileUri,
                 convertFolder2Package(path[0], separator),
                 path[1],
                 encoding);
@@ -1293,12 +1303,13 @@ public class FileObjects {
 
     @Trusted
     private static class PathFileObject extends Base {
-        private final URI uri;
+        private final String rawUri;
         private final Path path;
+        private volatile URI uriCache;
 
         PathFileObject(
                 @NonNull final Path file,
-                @NonNull final URI uri,
+                @NonNull final String rawUri,
                 @NonNull final String pkgName,
                 @NonNull final String name,
                 @NullAllowed final Charset encoding) {
@@ -1309,12 +1320,18 @@ public class FileObjects {
                 !BaseUtilities.isWindows());
             assert file != null;
             this.path = file;
-            this.uri = uri;
+            this.rawUri = rawUri;
         }
 
         @Override
         public URI toUri() {
-            return uri;
+            URI res = uriCache;
+            if (res == null) {
+                res = uriCache = rawUri == null ?
+                    path.toUri() :
+                    URI.create(rawUri);
+            }
+            return res;
         }
 
         @Override
