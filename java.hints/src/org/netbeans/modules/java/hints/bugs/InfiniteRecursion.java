@@ -53,6 +53,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -337,6 +338,8 @@ public class InfiniteRecursion {
         private boolean returnIfRecurse(State s) {
             if (s == State.MUST || s == State.RETURN) {
                 this.knownResult = s;
+            }
+            if (s == State.MUST) {
                 return true;
             } else {
                 return false;
@@ -454,6 +457,12 @@ public class InfiniteRecursion {
                 return s;
             }
             return knownResult = State.RETURN;
+        }
+
+        @Override
+        public State visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            // lambda expressions are not evaluated immediately
+            return State.NO;
         }
 
         @Override

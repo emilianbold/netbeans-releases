@@ -79,6 +79,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -112,7 +113,7 @@ import org.openide.util.WeakListeners;
  * @author sdedic
  */
 public class BraceMatchingSidebarComponent extends JComponent implements 
-        MatchListener, FocusListener, ViewHierarchyListener, ChangeListener {
+        MatchListener, FocusListener, ViewHierarchyListener, ChangeListener, Runnable, LookupListener {
     
     private static final int TOOLTIP_CHECK_DELAY = 700;
     
@@ -182,7 +183,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     /**
      * Prevent listeners from being reclaimed before this Component
      */
-    private LookupListener  lookupListenerGC;
     private PreferenceChangeListener prefListenerGC;
     private JViewport viewport;
 
@@ -191,8 +191,17 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      */
     private Coloring coloring;
     
+    /**
+     * Background color handled specially, inherit means inherit from
+     * parent JComponent, not from default Coloring.
+     */
+    private Color    backColor;
+    
     private static final RequestProcessor RP = new RequestProcessor(BraceMatchingSidebarComponent.class);
     
+    private final Lookup.Result colorResult;
+        
+    @SuppressWarnings("LeakingThisInConstructor")
     public BraceMatchingSidebarComponent(JTextComponent editor) {
         this.editor = editor;
         this.mimeType = DocumentUtilities.getMimeType(editor);
@@ -200,18 +209,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         
         final Lookup.Result r = MimeLookup.getLookup(org.netbeans.lib.editor.util.swing.DocumentUtilities.getMimeType(editor)).lookupResult(
                 FontColorSettings.class);
-        lookupListenerGC = new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
-                if (fcsIt.hasNext()) {
-                  updateColors(r);
-                }
-            }
-        };
         prefListenerGC = new PrefListener();
-
-        r.addLookupListener(WeakListeners.create(LookupListener.class, lookupListenerGC , r));
+        this.colorResult = r;
+        r.addLookupListener(WeakListeners.create(LookupListener.class, this , r));
         prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListenerGC, prefs));
         loadPreferences();
         
@@ -226,14 +226,13 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         if (ui instanceof BaseTextUI) {
             baseUI = (BaseTextUI)ui;
             MasterMatcher.get(editor).addMatchListener(this);
-            updateColors(r);
         } else {
             baseUI = null;
         }
         setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         updatePreferredSize();
     }
-
+    
     private void loadPreferences() {
         showOutline = prefs.getBoolean(SimpleValueNames.BRACE_SHOW_OUTLINE, true);
         showToolTip = prefs.getBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, true);
@@ -265,6 +264,22 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     });
 
     @Override
+    public void resultChanged(LookupEvent ev) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(this);
+        } else {
+            run();
+        }
+    }
+    
+    public void run() {
+        Iterator<FontColorSettings> fcsIt = colorResult.allInstances().iterator();
+        if (fcsIt.hasNext()) {
+            updateColors(fcsIt.next());
+        }
+    }
+    
+    @Override
     public void stateChanged(ChangeEvent e) {
         scrollUpdater.schedule(TOOLTIP_CHECK_DELAY);
     }
@@ -282,7 +297,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                 showToolTip = prefs.getBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, true);
             }
         }
-        
     }
     
     private static JEditorPane findEditorPane(JTextComponent editor) {
@@ -306,6 +320,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     @Override
     public void addNotify() {
         super.addNotify();
+        run();
         ViewHierarchy.get(editor).addViewHierarchyListener(this);
         editor.addFocusListener(this);
     }
@@ -318,19 +333,19 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     }
     
     
-    
-    private void updateColors(Lookup.Result r) {
-        Iterator<FontColorSettings> fcsIt = r.allInstances().iterator();
-        if (!fcsIt.hasNext()) {
-          return;
+    private void updateColors(final FontColorSettings fcs) {
+        if (getParent() == null) {
+            return;
         }
-        FontColorSettings fcs = fcsIt.next();
-        
         AttributeSet as = fcs.getFontColors(BRACES_COLORING);
         if (as == null) {
             as = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+            this.backColor = (Color)as.getAttribute(StyleConstants.ColorConstants.Background);
         } else {
-            as = AttributesUtilities.createComposite(as, fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
+            this.backColor = (Color)as.getAttribute(StyleConstants.ColorConstants.Background);
+            as = AttributesUtilities.createComposite(
+                    as, 
+                    fcs.getFontColors(FontColorNames.DEFAULT_COLORING));
         }
         this.coloring = Coloring.fromAttributeSet(as);
         int w = 0;
@@ -373,7 +388,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         int[] points;
         
         Rectangle clip = getVisibleRect();//g.getClipBounds();
-        g.setColor(coloring.getBackColor());
+        Color backColor = this.backColor;
+        if (backColor == null) {
+            // assume get from parent
+            backColor = getBackground();
+        }
+        g.setColor(backColor);
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
