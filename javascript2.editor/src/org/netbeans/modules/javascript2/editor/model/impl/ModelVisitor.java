@@ -192,6 +192,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (fqName != null && "this".equals(fqName.get(0).getName())) { //NOI18N
                     // a usage of field
                     fieldName = aNode.getProperty().getName();
+                    if (binaryNode.rhs() instanceof IdentNode) {
+                        // resolve occurrence of the indent node sooner, then is created the field. 
+                        addOccurrence((IdentNode)binaryNode.rhs(), fieldName);
+                    }
                     property = (JsObjectImpl)createJsObject(aNode, parserResult, modelBuilder);
 //                    parent = (JsObjectImpl)property.getParent();
 //                    if(property == null) {
@@ -297,12 +301,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-            if (binaryNode.rhs() instanceof IdentNode) {
-                if (fieldName == null) {
-                    addOccurence((IdentNode)binaryNode.rhs(), false);
-                } else {
-                    addOccurrence((IdentNode)binaryNode.rhs(), fieldName);
-                }
+            if (fieldName == null && binaryNode.rhs() instanceof IdentNode) {
+                addOccurence((IdentNode)binaryNode.rhs(), false);
             }
         } else if(binaryNode.tokenType() != TokenType.ASSIGN
                 || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
@@ -1323,7 +1323,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         FunctionNode setter = ((FunctionNode)((ReferenceNode)propertyNode.getSetter()).getReference());
                         property.addOccurrence(new OffsetRange(setter.getIdent().getStart(), setter.getIdent().getFinish()));
                     }
-                    scope.addProperty(name.getName(), property);
+                    property.getParent().addProperty(name.getName(), property);
                     property.setDeclared(true);
                     Node value = propertyNode.getValue();
                     if(value instanceof CallNode) {
@@ -2131,7 +2131,7 @@ public class ModelVisitor extends PathNodeVisitor {
             } else {
                 boolean found = false;
                 JsObject jsProperty = ((JsObject)scope).getProperty(valueName);
-                if (jsProperty != null && jsProperty instanceof JsFunction) {
+                if (jsProperty != null && jsProperty.isDeclared()) {
                     found = true;
                     jsProperty.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
                 } else {
