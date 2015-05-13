@@ -312,7 +312,11 @@ public final class CachingArchiveProvider {
         if (fo != null) {
             final Object attr = fo.getAttribute(Path.class.getName());
             if (attr instanceof Path) {
-                return Pair.<Archive,URI>of(new PathArchive((Path)attr, root.second()),null);
+                return Pair.<Archive,URI>of(
+                        cacheFile ?
+                            new CachingPathArchive((Path)attr, root.second()) :
+                            new PathArchive((Path)attr, root.second()),
+                        null);
             } else {
                 //Slow
                 return Pair.<Archive,URI>of(new FileObjectArchive (fo), null);

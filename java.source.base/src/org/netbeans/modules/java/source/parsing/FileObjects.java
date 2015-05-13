@@ -542,7 +542,7 @@ public class FileObjects {
      * Creates an {@link InferableJavaFileObject} for NIO {@link Path}.
      * @param file the {@link Path} to create file object for
      * @param root the root
-     * @param uri the file {@link URI} or null if the {@link URI} should be taken from file
+     * @param rootUri the root {@link URI} or null if the {@link URI} should be taken from file
      * @param encoding the optional encoding or null for system encoding
      * @return the {@link InferableJavaFileObject}
      */
@@ -561,15 +561,39 @@ public class FileObjects {
             if (fileUri.charAt(0) == FileObjects.NBFS_SEPARATOR_CHAR) {
                 fileUri = fileUri.substring(1);
             }
-            fileUri = rootUri +fileUri;
+            fileUri = rootUri + fileUri;
         } else {
             fileUri = null;
         }
         return new PathFileObject(
                 file,
-                fileUri,
                 convertFolder2Package(path[0], separator),
                 path[1],
+                fileUri,
+                encoding);
+    }
+
+    /**
+     * Creates an {@link InferableJavaFileObject} for NIO {@link Path}.
+     * @param folder the folder
+     * @param baseName the file basename with extension
+     * @param root the classpath root
+     * @param rootUri the root {@link URI} or null if the {@link URI} should be taken from file
+     * @param encoding the optional encoding or null for system encoding
+     * @return the {@link InferableJavaFileObject}
+     */
+    @NonNull
+    public static InferableJavaFileObject pathFileObject(
+        @NonNull final String folder,
+        @NonNull final String baseName,
+        @NonNull final Path root,
+        @NullAllowed final String rootUri,
+        @NullAllowed Charset encoding) {
+        return new LazyPathFileObject(
+                convertFolder2Package(folder),
+                baseName,
+                root,
+                rootUri,
                 encoding);
     }
 
@@ -1301,47 +1325,42 @@ public class FileObjects {
         }
     }
 
-    @Trusted
-    private static class PathFileObject extends Base {
+    private static abstract class PathBase extends Base {
+
         private final String rawUri;
-        private final Path path;
         private volatile URI uriCache;
 
-        PathFileObject(
-                @NonNull final Path file,
-                @NonNull final String rawUri,
-                @NonNull final String pkgName,
+        protected PathBase(@NonNull final String pkgName,
                 @NonNull final String name,
+                @NullAllowed final String rawUri,
                 @NullAllowed final Charset encoding) {
             super(
                 pkgName,
                 name,
                 encoding,
                 !BaseUtilities.isWindows());
-            assert file != null;
-            this.path = file;
             this.rawUri = rawUri;
         }
 
         @Override
-        public URI toUri() {
+        public final URI toUri() {
             URI res = uriCache;
             if (res == null) {
                 res = uriCache = rawUri == null ?
-                    path.toUri() :
+                    resolvePath().toUri() :
                     URI.create(rawUri);
             }
             return res;
         }
 
         @Override
-        public InputStream openInputStream() throws IOException {
-            return Files.newInputStream(path);
+        public final InputStream openInputStream() throws IOException {
+            return Files.newInputStream(resolvePath());
         }
 
         @Override
-        public CharSequence getCharContent(final boolean ignoreEncodingErrors) throws IOException {
-            final long len = Files.size(path);
+        public final CharSequence getCharContent(final boolean ignoreEncodingErrors) throws IOException {
+            final long len = Files.size(resolvePath());
             return FileObjects.getCharContent(
                     openInputStream(),
                     encoding,
@@ -1351,22 +1370,88 @@ public class FileObjects {
         }
 
         @Override
-        public long getLastModified() {
+        public final long getLastModified() {
             try {
-                return Files.getLastModifiedTime(path).toMillis();
+                return Files.getLastModifiedTime(resolvePath()).toMillis();
             } catch (IOException ioe) {
                 return 0L;
             }
         }
 
         @Override
-        public OutputStream openOutputStream() throws IOException {
+        public final OutputStream openOutputStream() throws IOException {
             throw new UnsupportedOperationException("Write not supported");
         }
 
         @Override
-        public boolean delete() {
+        public final boolean delete() {
             throw new UnsupportedOperationException("Delete not supported");
+        }
+
+        @NonNull
+        protected abstract Path resolvePath();
+    }
+
+    @Trusted
+    private static final class PathFileObject extends PathBase {
+        private final Path path;
+
+        PathFileObject(
+                @NonNull final Path file,
+                @NonNull final String pkgName,
+                @NonNull final String name,
+                @NullAllowed final String rawUri,
+                @NullAllowed final Charset encoding) {
+            super(
+                pkgName,
+                name,
+                rawUri,
+                encoding);
+            assert file != null;
+            this.path = file;
+        }
+
+        @Override
+        protected Path resolvePath() {
+            return path;
+        }
+    }
+
+    @Trusted
+    private static final class LazyPathFileObject extends PathBase {
+        private final Path root;
+        private volatile Path fileCache;
+
+        LazyPathFileObject(
+                @NonNull final String pkgName,
+                @NonNull final String name,
+                @NonNull final Path root,
+                @NullAllowed final String rawUri,
+                @NullAllowed final Charset encoding) {
+            super(
+                pkgName,
+                name,
+                rawUri,
+                encoding);
+            assert root != null;
+            this.root = root;
+        }
+
+        @Override
+        @NonNull
+        protected Path resolvePath() {
+            Path file = fileCache;
+            if (file == null) {
+                final char sep = root.getFileSystem().getSeparator().charAt(0);
+                final StringBuilder relPath = new StringBuilder().
+                        append(getPackage().replace('.', sep)).
+                        append(sep).
+                        append(getNameWithoutExtension()).
+                        append('.').
+                        append(getExt());
+                file = fileCache = root.resolve(relPath.toString());
+            }
+            return file;
         }
     }
 
