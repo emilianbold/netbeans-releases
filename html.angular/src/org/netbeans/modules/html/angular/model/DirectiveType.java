@@ -98,5 +98,14 @@ public enum DirectiveType {
      * {object} - any JavaScript object.
      * Used for example by ngModelOptions
      */
-    object
+    object,
+    /**
+     * ngOptions - {comprehension_expression} - The expression used to
+     * dynamically generate a list of <option> elements for the <select>
+     * element.
+     *
+     * For example: "label disable when condition for value in array track by
+     * trackexpr"
+     */
+    comprehensionExpression
 }
