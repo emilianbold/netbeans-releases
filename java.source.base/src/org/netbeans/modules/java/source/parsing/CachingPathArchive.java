@@ -198,13 +198,15 @@ public class CachingPathArchive implements Archive {
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                     final State state = states.getLast();
-                    //Todo: minimize aload (iload)
-                    if (state.currentFolder.length < state.currentOffset+2) {
-                        state.currentFolder = Arrays.copyOfRange(state.currentFolder, 0, 2 + state.currentFolder.length<<1);
+                    int[] cf = state.currentFolder;
+                    int co = state.currentOffset;
+                    if (cf.length < co+2) {
+                        cf = state.currentFolder = Arrays.copyOfRange(cf, 0, 2 + cf.length<<1);
                     }
                     final byte[] name = file.getFileName().toString().getBytes("UTF-8");
-                    state.currentFolder[state.currentOffset++] = putName(name);
-                    state.currentFolder[state.currentOffset++] = name.length;
+                    cf[co] = putName(name);
+                    cf[co+1] = name.length;
+                    state.currentOffset+=2;
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -216,11 +218,11 @@ public class CachingPathArchive implements Archive {
                 @Override
                 public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
                     final State state = states.removeLast();
-                    data.put(
+                    if (state.currentFolder != EMPTY_FOLDER) {
+                        data.put(
                             getResourceName(dir),
-                            state.currentFolder == EMPTY_FOLDER ?
-                                    state.currentFolder :
-                                    Arrays.copyOfRange(state.currentFolder, 0, state.currentOffset));
+                            Arrays.copyOfRange(state.currentFolder, 0, state.currentOffset));
+                    }
                     return FileVisitResult.CONTINUE;
                 }
             });
