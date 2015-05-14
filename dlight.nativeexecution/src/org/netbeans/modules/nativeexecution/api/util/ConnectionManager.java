@@ -45,7 +45,6 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -116,6 +114,8 @@ public final class ConnectionManager {
 
     private final ConnectionWatcher connectionWatcher;
     final int connectionWatcherInterval;
+    
+    private final SlowListenerDetector slowConnectionListenerDetector;
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
@@ -129,6 +129,21 @@ public final class ConnectionManager {
     }
 
     private ConnectionManager() {
+        
+        int timeout = Integer.getInteger(
+                "nativeexecution.slow.connection.listener.timeout", 100); //NOI18N
+        Level level;
+        try {
+            level = Level.parse(System.getProperty("nativeexecution.slow.connection.listener.level", "FINE")); //NOI18N
+        } catch (IllegalArgumentException ex) {
+            level = Level.FINE;
+        }
+        if (timeout > 0 && log.isLoggable(level)) {
+            slowConnectionListenerDetector = new SlowListenerDetector(timeout, log, level);
+        } else {
+            slowConnectionListenerDetector = null;
+        }
+
         // init jsch logging
 
         if (log.isLoggable(Level.FINEST)) {
@@ -241,7 +256,13 @@ public final class ConnectionManager {
         }
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
+            if (slowConnectionListenerDetector != null) {
+                slowConnectionListenerDetector.start("ConnectionListener.connected");
+            }
             connectionListener.connected(execEnv);
+            if (slowConnectionListenerDetector != null) {
+                slowConnectionListenerDetector.stop();
+            }
         }
         updateRecentConnectionsList(execEnv);
     }
@@ -252,7 +273,13 @@ public final class ConnectionManager {
         }
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
+            if (slowConnectionListenerDetector != null) {
+                slowConnectionListenerDetector.start("ConnectionListener.disconnected");
+            }
             connectionListener.disconnected(execEnv);
+            if (slowConnectionListenerDetector != null) {
+                slowConnectionListenerDetector.stop();
+            }
         }
     }
 
