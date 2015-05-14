@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -66,9 +67,11 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public boolean fileExists(String path) {
-            RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment,
-                    "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
-            return support.run() == 0;
+            try {
+                return HostInfoUtils.fileExists(executionEnvironment, path);
+            } catch (IOException | InterruptedException ex) {
+                return false; // so it was before - see RemoteCommandSupport
+            }
         }
 
         @Override
