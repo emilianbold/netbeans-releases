@@ -230,12 +230,21 @@ public class SubversionVCS extends VersioningSystem implements PropertyChangeLis
     @Override
     public void connected(FileSystem fs) {
         Subversion.getInstance().versionedFilesChanged();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
     }
 
     @Override
     public void disconnected(FileSystem fs) {
         Subversion.getInstance().versionedFilesChanged();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
+    }
+    
+    private void postVersionedRootsChanged() {
+        Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                VersioningSupport.versionedRootsChanged();
+            }
+        });
     }
 }
