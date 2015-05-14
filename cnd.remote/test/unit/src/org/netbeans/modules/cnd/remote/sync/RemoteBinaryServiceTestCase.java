@@ -49,6 +49,8 @@ import junit.framework.Test;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -67,17 +69,16 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
         ExecutionEnvironment execEnv = getTestExecutionEnvironment();
 
         // setup: create a temp file and copy /bin/ls into it
-        RemoteCommandSupport rcs;
-        rcs = new RemoteCommandSupport(execEnv, "mktemp");
-        assertTrue("mktemp is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
-        String remotePath = rcs.getOutput();
+        ExitStatus rcs = ProcessUtils.execute(execEnv, "mktemp");
+        assertTrue("mktemp is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
+        String remotePath = rcs.output;
         assertNotNull(remotePath);
         if (remotePath.endsWith("\n")) {
             remotePath = remotePath.substring(0, remotePath.length() - 1);
         }
         assertTrue(remotePath.length() > 0);
-        rcs = new RemoteCommandSupport(execEnv, "cp /bin/ls " + remotePath);
-        assertTrue("cp /bin/ls " + remotePath + "is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
+        rcs = ProcessUtils.execute(execEnv, "cp", "/bin/ls", remotePath);
+        assertTrue("cp /bin/ls " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
 
         String localPath;
         File localFile = null;
@@ -88,8 +89,8 @@ public class RemoteBinaryServiceTestCase extends RemoteTestBase {
                 localFile.delete();
                 expectedDownloadCount++;
             } else if (i == 4) {
-                rcs = new RemoteCommandSupport(execEnv, "touch " + remotePath);
-                assertTrue("touch " + remotePath + "is not successful " + rcs.getErr() + rcs.getFailureReason(), rcs.run() == 0);
+                rcs = ProcessUtils.execute(execEnv, "touch", remotePath);
+                assertTrue("touch " + remotePath + "is not successful " + rcs.exitCode + " rc=" + rcs.error, rcs.isOK());
                 expectedDownloadCount++;
             }
 

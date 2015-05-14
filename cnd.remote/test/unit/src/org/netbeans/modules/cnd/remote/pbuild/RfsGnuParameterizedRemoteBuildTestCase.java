@@ -56,10 +56,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.If;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
@@ -136,9 +136,9 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         }
         long time = System.currentTimeMillis();
         ExecutionEnvironment env = getTestExecutionEnvironment();
-        RemoteCommandSupport rcs = new RemoteCommandSupport(env, "mktemp");
-        assertEquals(0, rcs.run());
-        String tmpFile = rcs.getOutput();
+        ProcessUtils.ExitStatus rcs = ProcessUtils.execute(env, "mktemp");
+        assertEquals(0, rcs.exitCode);
+        String tmpFile = rcs.output;
         tmpFile = stripLf(tmpFile);
         for (File file : files) {
             Future<UploadStatus> task = CommonTasksSupport.uploadFile(file.getAbsolutePath(), env, tmpFile, 0777);
@@ -147,7 +147,7 @@ public class RfsGnuParameterizedRemoteBuildTestCase extends RemoteBuildTestBase 
         time = System.currentTimeMillis() - time;
         System.out.printf("FILES PLAIN COPYING TOOK %d ms\n", time);
         // cleanup
-        int rc = RemoteCommandSupport.run(env, "rm " + tmpFile);
+        int rc = ProcessUtils.execute(env, "rm", tmpFile).exitCode;
         assertEquals(0, rc);
     }
 
