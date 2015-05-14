@@ -54,6 +54,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
+import org.netbeans.modules.web.inspect.webkit.actions.ShowKnockoutContextAction;
+import org.netbeans.modules.web.inspect.webkit.knockout.KnockoutTCController;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
@@ -336,6 +338,9 @@ public class DOMNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(SystemAction.get(GoToNodeSourceAction.class));
+        if (KnockoutTCController.isKnockoutUsed()) {
+            actions.add(SystemAction.get(ShowKnockoutContextAction.class));
+        }
         if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
             for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
                 if (action instanceof ContextAwareAction) {
