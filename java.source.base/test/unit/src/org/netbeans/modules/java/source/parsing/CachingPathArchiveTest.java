@@ -81,19 +81,73 @@ public final class CachingPathArchiveTest extends NbTestCase {
         super(name);
     }
 
-    public void testCorrectness() throws IOException {
+    public void testArchiveCorrectness() throws IOException {
         final FileSystemProvider provider = getJRTFS();
         if (provider != null) {
             final Path fsRoot = provider.getPath(URI.create("jrt:/"));  //NOI18N
             assertNotNull(fsRoot);
             List<? extends Path> modules = getModules(fsRoot);
             for (Path module : modules) {
-                System.out.println("Verify module: " + module.getFileName());
                 verifyModule(module);
             }
         } else {
             System.out.println("No JDK 9, nothing to test");
         }
+    }
+
+    public void testFileObjects() throws IOException {
+        final FileSystemProvider provider = getJRTFS();
+        if (provider != null) {
+            final Path fsRoot = provider.getPath(URI.create("jrt:/"));  //NOI18N
+            assertNotNull(fsRoot);
+            List<? extends Path> modules = getModules(fsRoot);
+            for (Path module : modules) {
+                verifyURIs(module);
+            }
+        } else {
+            System.out.println("No JDK 9, nothing to test");
+        }
+    }
+
+    private static void verifyURIs(Path module) throws IOException {
+        final URI javaHome = BaseUtilities.toURI(getJavaHome());
+        final URI rootURI = URI.create("nbjrt:"+javaHome+"!"+module+"/");
+        final CachingPathArchive cpa = new CachingPathArchive(module, rootURI);
+        final PathArchive pa = new PathArchive(module, rootURI);
+        final Set<String> pkgs = getPackages(module).keySet();
+        for (String pkg : pkgs) {
+            final Iterable<? extends JavaFileObject> cjfos = cpa.getFiles(pkg, null, null, null);
+            final Iterable<? extends JavaFileObject> jfos = pa.getFiles(pkg, null, null, null);
+            assertJFOEquals(jfos, cjfos);
+        }
+    }
+
+    private static void assertJFOEquals(
+        @NonNull final Iterable<? extends JavaFileObject> i1,
+        @NonNull final Iterable<? extends JavaFileObject> i2) {
+        final Map<String,JavaFileObject> i1byName = byName(i1);
+        final Map<String,JavaFileObject> i2byName = byName(i2);
+        assertEquals(i1byName.size(), i2byName.size());
+        for (Map.Entry<String,JavaFileObject> i1e : i1byName.entrySet()) {
+            final FileObjects.Base jfo1 = (FileObjects.Base) i1e.getValue();
+            final FileObjects.Base jfo2 = (FileObjects.Base) i2byName.get(i1e.getKey());
+            assertNotNull(jfo2);
+            assertEquals(jfo1.getPackage(), jfo2.getPackage());
+            assertEquals(jfo1.getNameWithoutExtension(), jfo2.getNameWithoutExtension());
+            assertEquals(jfo1.getExt(), jfo2.getExt());
+            assertEquals(jfo1.getKind(), jfo2.getKind());
+            assertEquals(jfo1.getPath(), jfo2.getPath());
+            assertEquals(jfo1.inferBinaryName(), jfo2.inferBinaryName());
+            assertEquals(jfo1.toUri(), jfo2.toUri());
+        }
+    }
+
+    private static Map<String,JavaFileObject> byName(@NonNull final Iterable<? extends JavaFileObject> it) {
+        final Map<String,JavaFileObject> res = new HashMap<>();
+        for (JavaFileObject jfo : it) {
+            res.put(jfo.getName(), jfo);
+        }
+        return res;
     }
 
     private static void verifyModule(Path module) throws IOException {
@@ -187,10 +241,7 @@ public final class CachingPathArchiveTest extends NbTestCase {
 
     @CheckForNull
     private static FileSystemProvider getJRTFS() throws IOException {
-        final File javaHome = new File(EXPLICIT_JDK9_HOME != null ?
-            EXPLICIT_JDK9_HOME :
-            System.getProperty("java.home"));    //NOI18N
-        final File jrtFsProvider = new File(javaHome,"jrt-fs.jar"); //NOI18N
+        final File jrtFsProvider = new File(getJavaHome(),"jrt-fs.jar"); //NOI18N
         if (jrtFsProvider.exists() && jrtFsProvider.isFile() && jrtFsProvider.canRead()) {
             final ClassLoader cl = new URLClassLoader(new URL[]{
                 BaseUtilities.toURI(jrtFsProvider).toURL()
@@ -203,6 +254,14 @@ public final class CachingPathArchiveTest extends NbTestCase {
             }
         }
         return null;
+    }
+
+    @NonNull
+    private static File getJavaHome() {
+        return new File(
+            EXPLICIT_JDK9_HOME != null ?
+                EXPLICIT_JDK9_HOME :
+                System.getProperty("java.home"));    //NOI18N
     }
 
 }
