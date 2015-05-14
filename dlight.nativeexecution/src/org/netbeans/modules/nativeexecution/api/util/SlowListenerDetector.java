@@ -51,7 +51,7 @@ import javax.swing.Timer;
  *
  * @author vkvashin
  */
-public class SlowListenerDetector {
+class SlowListenerDetector {
     
     private final Logger logger;
     private final Level level;
