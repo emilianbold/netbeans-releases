@@ -365,6 +365,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 1) destroy old model
         if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+            currentTreeModelRoot = null;
         }
         
         // 3) no model => set empty root node & return
@@ -475,6 +476,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 1) destroy old model
         if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+            currentTreeModelRoot = null;
         }
 
         // 3) no model => set empty root node & return
