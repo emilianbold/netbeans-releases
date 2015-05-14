@@ -139,6 +139,7 @@ public final class CachingPathArchiveTest extends NbTestCase {
             assertEquals(jfo1.getPath(), jfo2.getPath());
             assertEquals(jfo1.inferBinaryName(), jfo2.inferBinaryName());
             assertEquals(jfo1.toUri(), jfo2.toUri());
+            assertEquals(jfo1.getLastModified(), jfo2.getLastModified());
         }
     }
 
