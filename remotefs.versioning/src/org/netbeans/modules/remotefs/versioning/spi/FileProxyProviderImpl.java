@@ -72,7 +72,7 @@ import org.openide.util.lookup.ServiceProviders;
 })
 
 public class FileProxyProviderImpl extends FileOperationsProvider implements VCSFileProxyOperations.Provider {
-    private final Map<FileSystem, FileOperationsImpl> map = new HashMap<FileSystem, FileOperationsImpl>();
+    private final Map<FileSystem, FileOperationsImpl> map = new HashMap<>();
     private static final Logger LOG = Logger.getLogger(FileProxyProviderImpl.class.getName());
 
     @Override
@@ -226,7 +226,7 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
 
         @Override
         public void refreshFor(VCSFileProxy... files) {
-            List<FileProxyO> list = new ArrayList<FileProxyO>();
+            List<FileProxyO> list = new ArrayList<>();
             for(VCSFileProxy f : files) {
                 list.add(toFileProxy(f));
             }
@@ -263,7 +263,7 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
             return getInputStream(fo, checkLock);
         }
 
-        private static final Set<Integer> alreadyTraced = new HashSet<Integer>();
+        private static final Set<Integer> alreadyTraced = new HashSet<>();
         private void softEDTAssert() {
             if (assertIt) {
                 if (SwingUtilities.isEventDispatchThread()) {
