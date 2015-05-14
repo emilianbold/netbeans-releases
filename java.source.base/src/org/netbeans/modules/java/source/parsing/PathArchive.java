@@ -135,6 +135,9 @@ public final class PathArchive implements Archive {
 
         @Override
         public boolean accept(Path entry) throws IOException {
+            if (Files.isDirectory(entry)) {
+                return false;
+            }
             if (kinds == null) {
                 return true;
             }
