@@ -149,8 +149,29 @@ public class KnockoutTCController implements PropertyChangeListener {
      * 
      * @return Knockout {@code TopComponent}.
      */
-    static TopComponent getKnockoutTC() {
-        return WindowManager.getDefault().findTopComponent(KnockoutTC.ID);
+    static KnockoutTC getKnockoutTC() {
+        return (KnockoutTC)WindowManager.getDefault().findTopComponent(KnockoutTC.ID);
+    }
+
+    /**
+     * Determines whether the inspected page uses Knockout.
+     * 
+     * @return {@code true} when the inspected page uses knockout,
+     * returns {@code false} otherwise.
+     */
+    public static boolean isKnockoutUsed() {
+        return getKnockoutTC().isKnockoutUsed();
+    }
+
+    /**
+     * Ensures that Knockout context is shown in Knockout TC.
+     */
+    public static void showKnockoutContext() {
+        getKnockoutTCGroup().open();
+        KnockoutTC tc = getKnockoutTC();
+        tc.open();
+        tc.requestActive();
+        tc.showKnockoutContext();
     }
 
     /**

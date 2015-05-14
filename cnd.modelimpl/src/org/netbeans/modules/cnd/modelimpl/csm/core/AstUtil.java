@@ -327,6 +327,14 @@ public class AstUtil {
         }
         return result;
     }
+    
+    public static AST skipTokens(AST ast, int...tokens) {
+        AST next = ast;
+        while (next != null && arrayContains(next.getType(), tokens)) {
+            next = next.getNextSibling();
+        }
+        return next;
+    }
 
     public static AST getLastChild(AST token) {
         if( token == null ) {
@@ -635,7 +643,16 @@ public class AstUtil {
         public int getNumberOfStringizedTokens() {
             return numStringizedTokens;
         }     
-    }        
+    }
+    
+    private static boolean arrayContains(int value, int...array) {
+        for (int elem : array) {
+            if (value == elem) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
  

@@ -84,6 +84,7 @@ public enum Directive {
     _if      (true,  true, true,  true,  expression), // real name is "if"
     include (true,  true, true,  true,  expression),
     init    (true,  true, true,  false, expression),
+    jq      (false,  true, false,  false, string),
     keydown (true,  true, true,  false, expression),
     keypress(true,  true, true,  false, expression),
     keyup   (true,  true, true,  false, expression),
@@ -106,6 +107,7 @@ public enum Directive {
     nonBindable
             (true,  true, true,  false, noValue),
     open    (true,  true, true,  false, expression),
+    options (true,  true, false,  false, comprehensionExpression),
     paste   (true,  true, true,  false, expression),
     //TODO add sub directives
     pluralize

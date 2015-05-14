@@ -1545,7 +1545,11 @@ public class AstRenderer {
         if (tokType != null) {
             if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                     tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
-                AST next = tokType.getNextSibling();
+                AST next = getFirstSiblingSkipQualifiers(
+                    getFirstSiblingSkipFunctionSpecifiers(
+                        AstUtil.skipTokens(tokType.getNextSibling(), CPPTokenTypes.LITERAL_friend)
+                    )
+                );
                 AST ptrOperator = (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) ? next : null;
                 if(inSpecializationParams) {
                     return TypeFactory.createType(typeAST, file, ptrOperator, 0, null, null, true, false);
@@ -1620,6 +1624,22 @@ public class AstRenderer {
          */
         return null;
     }
+    
+    /**
+     * 
+     * @param ast
+     * @return first sibling, skips function specifiers (inline, virtual, explicit)
+     */
+    public static AST getFirstSiblingSkipFunctionSpecifiers(AST ast) {
+        return AstUtil.skipTokens(
+            ast, 
+            CPPTokenTypes.LITERAL_inline, 
+            CPPTokenTypes.LITERAL_virtual,
+            CPPTokenTypes.LITERAL_explicit
+        );
+    }
+    
+    
 
     /**
      * Returns first sibling (or just passed ast), skips cv-qualifiers and storage class specifiers

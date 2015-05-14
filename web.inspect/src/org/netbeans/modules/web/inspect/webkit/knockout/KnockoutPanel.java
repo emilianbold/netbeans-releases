@@ -264,6 +264,23 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
+     * Determines whether the inspected page uses Knockout.
+     * 
+     * @return {@code true} when the inspected page uses knockout,
+     * returns {@code false} otherwise.
+     */
+    boolean isKnockoutUsed() {
+        return knockoutFound;
+    }
+
+    /**
+     * Selects the binding context tab.
+     */
+    void showKnockoutContext() {
+        bindingContextButton.doClick();
+    }
+
+    /**
      * Expands the {@code $data} node of the binding context.
      */
     private void expandDataNode() {
