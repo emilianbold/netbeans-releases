@@ -257,7 +257,7 @@ public final class ConnectionManager {
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
             if (slowConnectionListenerDetector != null) {
-                slowConnectionListenerDetector.start("ConnectionListener.connected");
+                slowConnectionListenerDetector.start("ConnectionListener.connected"); //NOI18N
             }
             connectionListener.connected(execEnv);
             if (slowConnectionListenerDetector != null) {
@@ -274,7 +274,7 @@ public final class ConnectionManager {
         // No need to lock - use thread-safe collection
         for (ConnectionListener connectionListener : connectionListeners) {
             if (slowConnectionListenerDetector != null) {
-                slowConnectionListenerDetector.start("ConnectionListener.disconnected");
+                slowConnectionListenerDetector.start("ConnectionListener.disconnected"); //NOI18N
             }
             connectionListener.disconnected(execEnv);
             if (slowConnectionListenerDetector != null) {
