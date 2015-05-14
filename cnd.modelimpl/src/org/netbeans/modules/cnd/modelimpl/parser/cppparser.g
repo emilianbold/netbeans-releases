@@ -2006,15 +2006,16 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             ts = type_specifier[ds, noTypeId]
             // support for "A const*";
             // need to catch postfix_cv_qualifier
-            (postfix_cv_qualifier | LITERAL_constexpr)? 
-            (
+            //(postfix_cv_qualifier | LITERAL_constexpr)? 
+            (options {greedy=true;} :
                 (literal_inline {ds = dsINLINE;})
-            |
-                (sc = storage_class_specifier)
-            | 
-                LITERAL_virtual
+            |   (sc = storage_class_specifier)
+            |   LITERAL_virtual {ds = dsVIRTUAL;}
+            |   LITERAL_friend  {fd=true;}
+            |   LITERAL_constexpr
+            |   type_attribute_specification
+            |   tq = cv_qualifier
             )*
-            (options {greedy=true;} :type_attribute_specification)?
 
             // fix for unknown specifiers
             unknown_posttype_declaration_specifiers
@@ -2034,7 +2035,7 @@ unknown_pretype_declaration_specifiers
     unknown_pretype_declaration_specifiers_list
     ((literal_ident 
         (
-            LITERAL_friend | LITERAL_typedef | LITERAL_virtual | LITERAL_explicit | LITERAL_final 
+            LITERAL_typedef | LITERAL_explicit | LITERAL_final 
         |   LITERAL_enum | LITERAL_typename | literal_stdcall | literal_clrcall
         |   (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* literal_ident 
             (postfix_cv_qualifier | LITERAL_constexpr | literal_inline | storage_class_specifier)* literal_ident
@@ -3370,7 +3371,7 @@ abstract_declarator_suffix
             (LPAREN RPAREN) => declarator_param_list
         |
             (LPAREN abstract_declarator RPAREN) => LPAREN abstract_declarator RPAREN
-	|
+        |
             declarator_param_list
 	;
 
