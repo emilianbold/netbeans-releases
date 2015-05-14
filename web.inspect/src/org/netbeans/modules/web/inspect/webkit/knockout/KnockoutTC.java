@@ -107,11 +107,15 @@ public final class KnockoutTC extends TopComponent {
      */
     final void update() {
         if (EventQueue.isDispatchThread()) {
-            PageModel pageModel = isOpened() ? PageInspectorImpl.getDefault().getPage() : null;
-            removeAll();
+            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (currentPanel != null) {
-                currentPanel.dispose();
+                if (pageModel == currentPanel.getPageModel()) {
+                    return;
+                } else {
+                    currentPanel.dispose();
+                }
             }
+            removeAll();
             currentPanel = new KnockoutPanel((WebKitPageModel)pageModel);
             if (lastKnockoutPageModel != null) {
                 PageModel knockoutPageModel = lastKnockoutPageModel.get();
@@ -139,12 +143,6 @@ public final class KnockoutTC extends TopComponent {
         update();
     }
 
-    @Override
-    protected void componentClosed() {
-        super.componentClosed();
-        update();
-    }
-
     private Reference<PageModel> lastKnockoutPageModel;
     private String lastKnockoutVersion;
 
@@ -159,10 +157,34 @@ public final class KnockoutTC extends TopComponent {
         if (currentPanel != null) {
             if (currentPanel.getPageModel() == pageModel) {
                 currentPanel.knockoutUsed(koVersion);
+                lastKnockoutVersion = null;
             } else {
                 lastKnockoutPageModel = new WeakReference<PageModel>(pageModel);
                 lastKnockoutVersion = koVersion;
             }
+        }
+    }
+
+    /**
+     * Determines whether the inspected page uses Knockout.
+     * 
+     * @return {@code true} when the inspected page uses knockout,
+     * returns {@code false} otherwise.
+     */
+    boolean isKnockoutUsed() {
+        if (currentPanel == null) {
+            return lastKnockoutVersion != null;
+        } else {
+            return currentPanel.isKnockoutUsed();
+        }
+    }
+
+    /**
+     * Ensures that Knockout context is shown in Knockout TC.
+     */
+    void showKnockoutContext() {
+        if (currentPanel != null) {
+            currentPanel.showKnockoutContext();
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,75 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular.model;
+package org.netbeans.modules.web.inspect.webkit.actions;
+
+import org.netbeans.modules.web.inspect.webkit.knockout.KnockoutTCController;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
+ * Action that shows Knockout Binding Context for the selected node.
  *
- * @author marekfukala
+ * @author Jan Stola
  */
-public enum DirectiveType {
+public class ShowKnockoutContextAction extends NodeAction {
 
-    /**
-     * Directive has no value.
-     *
-     * For example ngChange.
-     */
-    noValue,
-    /**
-     * {expression} – Expression to evaluate.
-     *
-     * Used for example by nbBind.
-     */
-    expression,
-    /**
-     * {string} – template of form {{ expression }} to eval.
-     *
-     * Used for example by ngBindTemplate.
-     */
-    string,
-    /**
-     * {angular.Module} – an optional application module name to load.
-     *
-     * Used by ngApp. http://docs.angularjs.org/api/ng.directive:ngApp
-     */
-    angularModule,
-    /**
-     * {template} – any string which can contain {{}} markup.
-     *
-     * Used for example by ngHref.
-     */
-    template,
-    /**
-     * ngRepeat – {repeat_expression} – The expression indicating how to
-     * enumerate a collection. 
-     * 
-     * Two formats are currently supported: variable in
-     * expression – where variable is the user defined loop variable and
-     * expression is a scope expression giving the collection to enumerate.
-     *
-     * For example: track in cd.tracks.
-     *
-     * (key, value) in expression – where key and value can be any user defined
-     * identifiers, and expression is the scope expression giving the collection
-     * to enumerate.
-     *
-     * For example: (name, age) in {'adam':10, 'amalie':12}.
-     */
-    repeatExpression,
-     /**
-     * {object} - any JavaScript object.
-     * Used for example by ngModelOptions
-     */
-    object,
-    /**
-     * ngOptions - {comprehension_expression} - The expression used to
-     * dynamically generate a list of <option> elements for the <select>
-     * element.
-     *
-     * For example: "label disable when condition for value in array track by
-     * trackexpr"
-     */
-    comprehensionExpression
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        KnockoutTCController.showKnockoutContext();
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return (activatedNodes.length == 1) && KnockoutTCController.isKnockoutUsed();
+    }
+
+    @Override
+    @NbBundle.Messages({
+        "ShowKnockoutContextAction.displayName=Show Knockout Binding Context" // NOI18N
+    })
+    public String getName() {
+        return Bundle.ShowKnockoutContextAction_displayName();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
+
 }

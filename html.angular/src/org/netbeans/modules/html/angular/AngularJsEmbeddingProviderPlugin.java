@@ -191,6 +191,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         case modelOptions:
                             processed = processObject(value);
                             break;
+                        case options:
+                            processed = processComprehensionExpression(value);
+                            stack.peek().addFinishText("}\n"); //NOI18N
+                            break;
                         default:   
                             processed = processExpression(value);
                     }
@@ -448,13 +452,46 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             repeatExpression = asParts[0];
         }
 
+        processed = processRepeatLoop(repeatExpression, 0);
+
+        // now insert the embeddings for "as" alias expression and/or "track by" tracking expression
+        if (asParts.length == 2) {
+            String asPropName = asParts[1].trim();
+            int asPropNameOffset = expression.indexOf(asPropName);
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + asPropNameOffset, asPropName.length(), Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(" = [];\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+        }
+        if (trackByParts.length == 2) {
+            String trackingExpr = trackByParts[1].trim();
+            int trackingExprOffset = expression.indexOf(trackingExpr);
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + trackingExprOffset, trackingExpr.length(), Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+        }
+
+        return processed;
+    }
+
+    /**
+     * Processes the main part (loop itself) of the repeat expression and
+     * filters. E.g. "item in items" or "item in items | filter:searchText".
+     *
+     * @param expression loop expression to process, stripped of all leading
+     * "group by", "as" or "disable when" expressions. It can contain filters
+     * @param initialOffset offset shift from the original expression in
+     * directive's value. For "ng-repeat" it should be always 0. This means that
+     * no parts were stripped from the beginning of the original value
+     * @return {@code true} if cycle has been processed, {@code false} otherwise
+     */
+    private boolean processRepeatLoop(String expression, int initialOffset) {
+        boolean processedCycle = false;
+
         // split the expression with |
         // we expect that the first part is the for cycle and the rest are conditions
         // and attributes like orderby, filter etc.
-        String[] parts = repeatExpression.split("\\|"); //NOI18N
+        String[] parts = expression.split("\\|"); //NOI18N
         if (parts.length > 0) {
             // try to create the for cycle in virtual source
-             if (parts[0].contains(" in ")) {
+            if (parts[0].contains(" in ")) {
                 // we understand only "in"  now
                 String[] forParts = parts[0].trim().split(" in ");   // NOI18N
                 if (forParts.length < 2) {
@@ -478,18 +515,18 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (forParts.length == 2 && propertyToFqn.containsKey(forParts[1])) {
                         // if we know the collection from a controller ....
                         int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + initialOffset, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
                         embeddings.add(snapshot.create(propertyToFqn.get(forParts[1]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos + initialOffset, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                     } else {
                         if (oneTimeBinding) {
                             // we don't know the collection from controller and we have one-time binding present
                             int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
-                            embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
-                            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + initialOffset, lastPartPos - oneTimeBindingShift, Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos + initialOffset, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                         } else {
                             // if we don't know the collection from a controller, put it to the virtual source as it is
-                            embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + initialOffset, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
                         }
                     }
                     embeddings.add(snapshot.create(") {\n", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
@@ -505,11 +542,11 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     }
                     valueExp = valueExp.trim();
                     String[] keyValue = valueExp.split(",");    // NOI18N
-                    
+
                     int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
                     int keyPos = expression.indexOf(keyValue[0]);
                     // map the key name
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + keyPos, keyValue[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + keyPos + initialOffset, keyValue[0].length(), Constants.JAVASCRIPT_MIMETYPE));
                     if (keyValue.length == 1) {
                         // add a comma after variable name to trigger the error if an identifier for value is missing
                         // e.g., ng-repeat="(key, ) in expression" instead of ng-repeat="(key, value) in expression"
@@ -521,30 +558,30 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         // if we know the collection from a controller ....
                         // map the collection
                         embeddings.add(snapshot.create(propertyToFqn.get(forParts[1]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos + initialOffset, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                     } else {
                         // map the collection
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos + initialOffset, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                     }
                     if (keyValue.length == 2) {
                         // both identfiers, for key and value are present: ng-repeat="(key, value) in expression"
                         embeddings.add(snapshot.create(") {\nvar ", Constants.JAVASCRIPT_MIMETYPE));    //NOI18N
                         int valuePos = expression.indexOf(keyValue[1]);
-                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + valuePos, keyValue[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + valuePos + initialOffset, keyValue[1].length(), Constants.JAVASCRIPT_MIMETYPE));
                         embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
                     } else {
                         embeddings.add(snapshot.create(") {\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
                     }
                 }
                 // the for cycle should be closed in appropriate CLOSE_TAG token
-                processed = true;
+                processedCycle = true;
             }
             int partIndex = 1;
             int lastPartPos = parts[0].length() + 1;
             while (partIndex < parts.length) { // are there any condition / attributes of the cycle?
-                 if (parts[partIndex].contains(":")) {
+                if (parts[partIndex].contains(":")) {
                     String[] conditionParts = parts[partIndex].trim().split(":");
-                    if(conditionParts.length > 1) {
+                    if (conditionParts.length > 1) {
                         String propName = conditionParts[1].trim();
                         int indexInName = 0;
                         char ch = propName.charAt(indexInName);
@@ -566,31 +603,18 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         if (propertyToFqn.containsKey(propName)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
                         }
-                        embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(tokenSequence.offset() + position + initialOffset, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
                         embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                     }
                 }
                 lastPartPos = lastPartPos + parts[partIndex].length() + 1;
                 partIndex++;
             }
-
-            // now insert the embeddings for "as" alias expression and/or "track by" tracking expression
-            if (asParts.length == 2) {
-                String asPropName = asParts[1].trim();
-                int asPropNameOffset = expression.indexOf(asPropName);
-                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + asPropNameOffset, asPropName.length(), Constants.JAVASCRIPT_MIMETYPE));
-                embeddings.add(snapshot.create(" = [];\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-            }
-            if (trackByParts.length == 2) {
-                String trackingExpr = trackByParts[1].trim();
-                int trackingExprOffset = expression.indexOf(trackingExpr);
-                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + trackingExprOffset, trackingExpr.length(), Constants.JAVASCRIPT_MIMETYPE));
-                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-            }
         }
-        return processed;
+
+        return processedCycle;
     }
-    
+
     private boolean processExpression(String value) {
         processTemplate();
         boolean processed = false;
@@ -669,7 +693,68 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         }
         return processed;
     }
-    
+
+    private boolean processComprehensionExpression(String expression) {
+        processTemplate();
+        boolean processed = false;
+
+        String comprehensionExpression = expression;
+
+        // split the expression with "track by"
+        // if present, it should be the last thing in expression
+        String[] trackByParts = expression.split(" track by "); //NOI18N
+        if (trackByParts.length == 2) {
+            comprehensionExpression = trackByParts[0];
+        }
+
+        String[] forKeywordParts = comprehensionExpression.split(" for "); //NOI18N
+        if (forKeywordParts.length == 2) {
+            comprehensionExpression = forKeywordParts[1];
+            int initialOffset = forKeywordParts[0].length() + 5; // 5 is length of " for "
+
+            processed = processRepeatLoop(comprehensionExpression, initialOffset);
+
+            String tmpStr = forKeywordParts[0].trim();
+            if (tmpStr.contains(" disable when ")) { //NOI18N
+                String[] disableWhenParts = tmpStr.split(" disable when "); //NOI18N
+                tmpStr = disableWhenParts[0].trim();
+
+                int disableWhenOffset = expression.indexOf(disableWhenParts[1]);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + disableWhenOffset, disableWhenParts[1].trim().length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+            if (tmpStr.contains(" group by ")) { //NOI18N
+                String[] groupByParts = tmpStr.split(" group by "); //NOI18N
+                tmpStr = groupByParts[0].trim();
+
+                int groupByOffset = expression.indexOf(groupByParts[1]);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + groupByOffset, groupByParts[1].trim().length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+            if (tmpStr.contains(" as ")) { //NOI18N
+                String[] asParts = tmpStr.split(" as "); //NOI18N
+                tmpStr = asParts[0].trim();
+
+                int asOffset = expression.indexOf(asParts[1]);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + asOffset, asParts[1].trim().length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+
+            int firstItemOffset = expression.indexOf(tmpStr);
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1 + firstItemOffset, tmpStr.trim().length(), Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+            if (trackByParts.length == 2) {
+                String trackingExpr = trackByParts[1].trim();
+                int trackingExprOffset = expression.indexOf(trackingExpr);
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + trackingExprOffset, trackingExpr.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+        }
+
+        return processed;
+    }
+
     private void processTemplate() {
          if (processedTemplate > -1) {
             // was already processed
