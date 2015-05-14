@@ -1327,28 +1327,24 @@ public class FileObjects {
 
     private static abstract class PathBase extends Base {
 
-        private final String rawUri;
         private volatile URI uriCache;
 
-        protected PathBase(@NonNull final String pkgName,
+        protected PathBase(
+                @NonNull final String pkgName,
                 @NonNull final String name,
-                @NullAllowed final String rawUri,
                 @NullAllowed final Charset encoding) {
             super(
                 pkgName,
                 name,
                 encoding,
                 !BaseUtilities.isWindows());
-            this.rawUri = rawUri;
         }
 
         @Override
         public final URI toUri() {
             URI res = uriCache;
             if (res == null) {
-                res = uriCache = rawUri == null ?
-                    resolvePath().toUri() :
-                    URI.create(rawUri);
+                res = uriCache = resolveURI();
             }
             return res;
         }
@@ -1390,11 +1386,16 @@ public class FileObjects {
 
         @NonNull
         protected abstract Path resolvePath();
+
+        @NonNull
+        protected abstract URI resolveURI();
     }
 
     @Trusted
     private static final class PathFileObject extends PathBase {
+
         private final Path path;
+        private final String rawUri;
 
         PathFileObject(
                 @NonNull final Path file,
@@ -1405,36 +1406,45 @@ public class FileObjects {
             super(
                 pkgName,
                 name,
-                rawUri,
                 encoding);
             assert file != null;
             this.path = file;
+            this.rawUri = rawUri;
         }
 
         @Override
         protected Path resolvePath() {
             return path;
         }
+
+        @Override
+        @NonNull
+        protected URI resolveURI() {
+            return rawUri == null ?
+                resolvePath().toUri() :
+                URI.create(rawUri);
+        }
     }
 
     @Trusted
     private static final class LazyPathFileObject extends PathBase {
         private final Path root;
+        private final String rootUri;
         private volatile Path fileCache;
 
         LazyPathFileObject(
                 @NonNull final String pkgName,
                 @NonNull final String name,
                 @NonNull final Path root,
-                @NullAllowed final String rawUri,
+                @NullAllowed final String rootUri,
                 @NullAllowed final Charset encoding) {
             super(
                 pkgName,
                 name,
-                rawUri,
                 encoding);
             assert root != null;
             this.root = root;
+            this.rootUri = rootUri;
         }
 
         @Override
@@ -1444,14 +1454,30 @@ public class FileObjects {
             if (file == null) {
                 final char sep = root.getFileSystem().getSeparator().charAt(0);
                 final StringBuilder relPath = new StringBuilder().
-                        append(getPackage().replace('.', sep)).
+                        append(convertPackage2Folder(pkgName,sep)).
                         append(sep).
-                        append(getNameWithoutExtension()).
+                        append(nameWithoutExt).
                         append('.').
-                        append(getExt());
+                        append(ext);
                 file = fileCache = root.resolve(relPath.toString());
             }
             return file;
+        }
+
+        @Override
+        @NonNull
+        protected URI resolveURI() {
+            if (rootUri == null) {
+                return resolvePath().toUri();
+            }
+            final StringBuilder sb = new StringBuilder().
+                    append(rootUri).
+                    append(convertPackage2Folder(pkgName)).
+                    append(NBFS_SEPARATOR_CHAR).
+                    append(nameWithoutExt).
+                    append('.').    //NOI18N
+                    append(ext);
+            return URI.create(sb.toString());
         }
     }
 
