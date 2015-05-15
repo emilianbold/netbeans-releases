@@ -99,7 +99,6 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final PreferenceChangeListener preferenceChangeListener = WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class);
 
 
     public KarmaChildrenList(Project project) {
@@ -132,12 +131,12 @@ public class KarmaChildrenList implements NodeList<Node>, PreferenceChangeListen
 
     @Override
     public void addNotify() {
-        KarmaPreferences.addPreferenceChangeListener(project, preferenceChangeListener);
+        KarmaPreferences.addPreferenceChangeListener(project, WeakListeners.create(PreferenceChangeListener.class, this, KarmaPreferences.class));
     }
 
     @Override
     public void removeNotify() {
-        KarmaPreferences.removePreferenceChangeListener(project, preferenceChangeListener);
+        // noop
     }
 
     @Override
