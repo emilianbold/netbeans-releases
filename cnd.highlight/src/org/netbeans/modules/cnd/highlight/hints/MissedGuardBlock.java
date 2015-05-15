@@ -233,11 +233,11 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             Position endifPossition = NbDocument.createPosition(doc, endOffset, Position.Bias.Forward);
             
             // Strings to build guard block
-            final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";
-            final String ifndefMacro = "#ifndef ";
-            final String defineMacro = "#define ";
-            final String endifMacro = "#endif";
-            final String openGuardBlockText = ifndefMacro + defName + defineMacro + defName + "\n";
+            final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";  // NOI18N
+            final String ifndefMacro = "#ifndef ";  // NOI18N
+            final String defineMacro = "#define ";  // NOI18N
+            final String endifMacro = "#endif\n";  // NOI18N
+            final String openGuardBlockText = ifndefMacro + defName + defineMacro + defName + "\n";  // NOI18N
             
             // offsets
             final int ifndefStartPos = startOffset + ifndefMacro.length();
@@ -245,7 +245,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             final int defStartPos = ifndefEndPos + defineMacro.length();
             final int defEndPos = defStartPos + defName.length();
             
-            doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null); // NOI18N
+            doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null);
             doc.insertString(endifPossition.getOffset(), "\n\n"+endifMacro, null); // NOI18N
             
             Position ifndefStart = NbDocument.createPosition(doc, ifndefStartPos, Position.Bias.Forward);
