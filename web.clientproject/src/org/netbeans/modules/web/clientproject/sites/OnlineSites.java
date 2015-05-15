@@ -45,11 +45,9 @@ import org.netbeans.modules.web.clientproject.api.sites.SiteHelper;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -132,11 +130,6 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
         String siteRootFolder = projectProperties.getSiteRootFolder();
         assert siteRootFolder != null;
         return projectDir.getFileObject(siteRootFolder);
-    }
-
-    @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(libFile));
     }
 
     //~ Inner classes
