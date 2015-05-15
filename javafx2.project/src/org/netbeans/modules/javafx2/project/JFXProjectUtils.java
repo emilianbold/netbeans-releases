@@ -430,6 +430,7 @@ public final class JFXProjectUtils {
 
     /**
      * Checks if the project uses Maven build system
+     *
      * @param prj the project to check
      * @return true if is Maven project
      */
@@ -439,12 +440,24 @@ public final class JFXProjectUtils {
             return false;
         }
         fo = fo.getFileObject("pom.xml"); //NOI18N
-        if (fo != null) {
-            return true;
-        }
-        return false;
+        return fo != null;
     }
-    
+
+    /**
+     * Checks if the project uses Gradle build system
+     *
+     * @param prj the project to check
+     * @return true if is Gradle project
+     */
+    public static boolean isGradleProject(@NonNull final Project prj) {
+        FileObject fo = prj.getProjectDirectory();
+        if (fo == null || !fo.isValid()) {
+            return false;
+        }
+        fo = fo.getFileObject("build.gradle"); //NOI18N
+        return fo != null;
+    }
+
     public static boolean isMavenFXProject(@NonNull final Project prj) {
         if (isMavenProject(prj)) {
             try {
