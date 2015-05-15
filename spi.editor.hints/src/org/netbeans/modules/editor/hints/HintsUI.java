@@ -771,6 +771,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                 //user is tired of waiting for refresh before popup is shown
                 cancel.set(true);
             }
+            e.consume();
         } else if ( popupShowing ) {
             ScrollCompletionPane listPane = subhintListComponent != null ? subhintListComponent : hintListComponent;
             InputMap input = listPane.getInputMap();
