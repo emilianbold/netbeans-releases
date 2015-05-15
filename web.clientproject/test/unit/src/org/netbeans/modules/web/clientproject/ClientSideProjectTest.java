@@ -85,28 +85,28 @@ public class ClientSideProjectTest extends NbTestCase {
     }
 
     public void testProjectWithSiteRootCreation() throws Exception {
-        ClientSideProject project = createProject(null, "public_html_XX", "test");
+        ClientSideProject project = createProject(null, "public_html_XX", "test", "selenium");
         assertNoProjectProblems(project);
         assertTrue(project.isHtml5Project());
         assertFalse(project.isJsLibrary());
     }
 
     public void testProjectWithSourcesCreation() throws Exception {
-        ClientSideProject project = createProject("src_XX", null, "test");
+        ClientSideProject project = createProject("src_XX", null, "test", "selenium");
         assertNoProjectProblems(project);
         assertTrue(project.isJsLibrary());
         assertFalse(project.isHtml5Project());
     }
 
     public void testProjectWithSourcesAndSiteRootCreation() throws Exception {
-        ClientSideProject project = createProject("src_XX", "public_html_XX", "test");
+        ClientSideProject project = createProject("src_XX", "public_html_XX", "test", "selenium");
         assertNoProjectProblems(project);
         assertTrue(project.isHtml5Project());
         assertFalse(project.isJsLibrary());
     }
 
     public void testProjectCreationWithProblems() throws Exception {
-        ClientSideProject project = createProject(null, null, null);
+        ClientSideProject project = createProject(null, null, null, null);
         // Site root must be existing folder in order to set it in the project properties, create a temp folder
         FileObject tmpSiteRoot = project.getProjectDirectory().createFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER);
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
@@ -122,7 +122,7 @@ public class ClientSideProjectTest extends NbTestCase {
     }
 
     public void testProjectCreationFromZipTemplate() throws Exception {
-        ClientSideProject project = createProject(null, null, null);
+        ClientSideProject project = createProject(null, null, null, null);
         SiteZip siteZip = new SiteZip();
         FileObject testTemplate = FileUtil.toFileObject(getDataDir()).getFileObject("TestTemplate.zip");
         ((SiteZipPanel) (siteZip.getCustomizer().getComponent())).setTemplate(FileUtil.getFileDisplayName(testTemplate));
@@ -131,7 +131,8 @@ public class ClientSideProjectTest extends NbTestCase {
         ClientSideProjectUtilities.initializeProject(project,
                 templateProperties.getSourceFolder(),
                 templateProperties.getSiteRootFolder(),
-                templateProperties.getTestFolder());
+                templateProperties.getTestFolder(),
+                templateProperties.getTestSeleniumFolder());
         siteZip.apply(project.getProjectDirectory(), templateProperties, ProgressHandleFactory.createHandle("somename"));
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         assertEquals("site root should be created from template",
@@ -141,7 +142,7 @@ public class ClientSideProjectTest extends NbTestCase {
 
     public void testProjectWithProjectServiceProvider() throws Exception {
         int instances = MySupport.INSTANCES.get();
-        ClientSideProject project = createProject("src", "www", "test");
+        ClientSideProject project = createProject("src", "www", "test", "selenium");
         MySupport.query = project;
         MySupport mySupport = project.getLookup().lookup(MySupport.class);
         assertNotNull(mySupport);
@@ -153,14 +154,15 @@ public class ClientSideProjectTest extends NbTestCase {
         assertSame(project, mySupport.getProject());
     }
 
-    private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests) throws Exception {
+    private ClientSideProject createProject(@NullAllowed String sources, @NullAllowed String siteRoot, @NullAllowed String tests,
+            @NullAllowed String testSelenium) throws Exception {
         FileObject projectDir = FileUtil.toFileObject(getWorkDir()).createFolder("Project" + projectCounter++);
         CommonProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(projectDir, projectDir.getName());
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         if (sources != null
                 || siteRoot != null
                 || tests != null) {
-            ClientSideProjectUtilities.initializeProject(project, sources, siteRoot, tests);
+            ClientSideProjectUtilities.initializeProject(project, sources, siteRoot, tests, testSelenium);
             ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
             if (sources != null) {
                 assertEquals("Source folder should exist", projectDir.getFileObject(sources), FileUtil.toFileObject(projectProperties.getResolvedSourceFolder()));
