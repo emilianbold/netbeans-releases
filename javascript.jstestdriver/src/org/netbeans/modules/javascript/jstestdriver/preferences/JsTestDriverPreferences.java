@@ -43,6 +43,9 @@
 package org.netbeans.modules.javascript.jstestdriver.preferences;
 
 import java.io.File;
+import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -55,8 +58,12 @@ import org.openide.filesystems.FileUtil;
  */
 public final class JsTestDriverPreferences {
 
+    public static final String CONFIG = "config"; // NOI18N
+
     private static final String ENABLED = "enabled"; // NOI18N
-    private static final String CONFIG = "config"; // NOI18N
+
+    // @GuardedBy("CACHE")
+    private static final Map<Project, Preferences> CACHE = new WeakHashMap<>();
 
 
     private JsTestDriverPreferences() {
@@ -77,6 +84,14 @@ public final class JsTestDriverPreferences {
 
     public static void setConfig(Project project, String config) {
         getPreferences(project).put(CONFIG, relativizePath(project, config));
+    }
+
+    public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).addPreferenceChangeListener(listener);
+    }
+
+    public static void removePreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).removePreferenceChangeListener(listener);
     }
 
     private static String relativizePath(Project project, String filePath) {
@@ -103,7 +118,16 @@ public final class JsTestDriverPreferences {
     }
 
     private static Preferences getPreferences(Project project) {
-        return ProjectUtils.getPreferences(project, JsTestDriverPreferences.class, false);
+        assert project != null;
+        synchronized (CACHE) {
+            Preferences preferences = CACHE.get(project);
+            if (preferences == null) {
+                preferences = ProjectUtils.getPreferences(project, JsTestDriverPreferences.class, false);
+                CACHE.put(project, preferences);
+            }
+            assert preferences != null : project.getProjectDirectory();
+            return preferences;
+        }
     }
 
 }

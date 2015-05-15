@@ -71,6 +71,7 @@ public final class CreateProjectProperties {
     private String sourceFolder;
     private String siteRootFolder;
     private String testFolder;
+    private String testSeleniumFolder;
     private String jsTestingProvider;
     private String platformProvider;
     private boolean autoconfigured = false;
@@ -174,6 +175,30 @@ public final class CreateProjectProperties {
     @NonNull
     public CreateProjectProperties setTestFolder(@NullAllowed String testFolder) {
         this.testFolder = testFolder;
+        return this;
+    }
+
+    /**
+     * Get Test folder for Selenium tests, usually relative path.
+     *
+     * @return Test folder for Selenium tests, usually relative path; can be {@code null} if no Test folder is present
+     * @since 1.80
+     */
+    @CheckForNull
+    public String getTestSeleniumFolder() {
+        return testSeleniumFolder;
+    }
+
+    /**
+     * Set Test folder for Selenium tests, can be {@code null} if there are no tests available.
+     *
+     * @param testSeleniumFolder Test folder for Selenium tests, can be {@code null} if there is no test folder available
+     * @return itself
+     * @since 1.80
+     */
+    @NonNull
+    public CreateProjectProperties setTestSeleniumFolder(@NullAllowed String testSeleniumFolder) {
+        this.testSeleniumFolder = testSeleniumFolder;
         return this;
     }
 
