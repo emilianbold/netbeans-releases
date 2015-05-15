@@ -443,7 +443,7 @@ public abstract class RemotePathMap extends PathMap {
                     out = null;
 
                     ProcessUtils.ExitStatus rcs = ProcessUtils.execute(
-                            execEnv, "grep", null, // NOI18N
+                            execEnv, "grep", // NOI18N
                             validationLine,
                             rpath + "/" + validationFile.getName()); // NOI18N
 
