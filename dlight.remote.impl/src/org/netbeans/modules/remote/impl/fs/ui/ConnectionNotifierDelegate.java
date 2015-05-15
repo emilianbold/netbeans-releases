@@ -66,6 +66,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier.ExplicitConnectionListener;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
@@ -101,6 +102,7 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private Notification notification; // guards notification and shown fields
     private final Set<ConnectionNotifier.NamedRunnable> tasks = new HashSet<>();
     private final Object lock = new Object();
+    private final List<ExplicitConnectionListener> explicitConnectionListeners = new ArrayList<>();
 
     public ConnectionNotifierDelegate(ExecutionEnvironment execEnv) {
         this.env = execEnv;
@@ -256,7 +258,13 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
     private void connect() {
         try {
             ConnectionManager.getInstance().connectTo(env);
-            //RemoteUtil.checkSetupAfterConnection(env);
+            List<ExplicitConnectionListener> listeners;
+            synchronized (explicitConnectionListeners) {
+                listeners = new ArrayList<>(explicitConnectionListeners);
+            }
+            for (ExplicitConnectionListener l : listeners) {
+                l.connected();
+            }
         } catch (IOException ex) {
             reShow(ex);
         } catch (CancellationException ex) {
@@ -271,5 +279,17 @@ public class ConnectionNotifierDelegate implements ConnectionListener {
         }
         show(error);
         //notification.clear();
+    }
+
+    void addExplicitConnectionListener(ExplicitConnectionListener listener) {        
+        synchronized (explicitConnectionListeners) {
+            explicitConnectionListeners.add(listener);
+        }
+    }
+
+    void removeExplicitConnectionListener(ExplicitConnectionListener listener) {
+        synchronized(explicitConnectionListeners) {
+            explicitConnectionListeners.remove(listener);
+        }
     }
 }

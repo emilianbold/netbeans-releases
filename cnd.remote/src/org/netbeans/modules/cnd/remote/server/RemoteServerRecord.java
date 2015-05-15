@@ -71,6 +71,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -81,7 +82,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord implements ServerRecord {
+public class RemoteServerRecord implements ServerRecord, ConnectionNotifier.ExplicitConnectionListener {
 
     public static enum State {
         UNINITIALIZED, INITIALIZING, ONLINE, OFFLINE, CANCELLED;
@@ -133,7 +134,15 @@ public class RemoteServerRecord implements ServerRecord {
 //        x11forwardingPossible = true;
         
         checkHostInfo(); // is this a paranoya?
+        if (env.isRemote()) {
+            ConnectionNotifier.addExplicitConnectionListener(executionEnvironment, this);
+        }
     }
+
+    @Override
+    public void connected() {
+        RemoteUtil.checkSetupAfterConnection(this);
+    }    
 
     @Override
     public ExecutionEnvironment getExecutionEnvironment() {

@@ -122,6 +122,10 @@ public class RemoteUtil {
 
     public static void checkSetupAfterConnection(ExecutionEnvironment env) {
         RemoteServerRecord record = (RemoteServerRecord) ServerList.get(env);
+        checkSetupAfterConnection(record);
+    }
+
+    public static void checkSetupAfterConnection(RemoteServerRecord record) {
         if (!record.isOnline()) {
             record.resetOfflineState();
             record.init(null);
