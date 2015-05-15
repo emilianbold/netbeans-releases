@@ -42,13 +42,11 @@
 package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * Site template interface. The workflow is:
@@ -124,12 +122,6 @@ public interface SiteTemplateImplementation {
      * @since 1.54
      */
     void cleanup() throws IOException;
-
-    /**
-     * Get list of full relative paths of supported JavaScript libraries.
-     * @return list of full relative paths of supported JavaScript libraries.
-     */
-    Collection<String> supportedLibraries();
 
     //~ Inner classes
 
