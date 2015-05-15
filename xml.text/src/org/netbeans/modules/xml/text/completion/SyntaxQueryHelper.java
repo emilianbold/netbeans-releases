@@ -213,7 +213,7 @@ final class SyntaxQueryHelper {
 
         switch ( id) {
             case XMLDefaultTokenContext.TEXT_ID:
-                if ( preText.endsWith("<" )) {
+                if ( preText.endsWith("<" ) || preText.endsWith("</")) {
                     ctx.init(syntaxNode, "");
                     return COMPLETION_TYPE_ELEMENT;
                 } else if ( preText.startsWith("&")) {

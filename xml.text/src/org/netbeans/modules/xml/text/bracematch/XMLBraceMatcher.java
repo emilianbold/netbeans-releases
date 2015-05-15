@@ -371,36 +371,44 @@ public class XMLBraceMatcher implements BracesMatcher {
     }
     
     private int[] findMatchingTagBackward(TokenSequence ts, String tagToMatch) {
-        Stack<String> stack = new Stack<String>();
+        int matchL = tagToMatch.length();
+        int nesting = 1;
         boolean selfClosing = false;
         while(ts.movePrevious()) {
             Token t = ts.token();
-            if(XMLTokenId.TAG != t.id())
+            if(XMLTokenId.TAG != t.id()) {
                 continue;
+            }
             String tag = t.text().toString();
-            if(">".equals(tag)) {
+            int tl = tag.length();
+            if (tl == 0) {
+                continue;
+            }
+            if (tl < 3 && tag.charAt(tl - 1) == '>') { // NOI18N
+                selfClosing = tag.charAt(0) == '/'; // NOI18N
+                continue;
+            }
+            if (tl < 2) {
+                continue;
+            }
+            if (selfClosing) {
+                // reset, do not count.
                 selfClosing = false;
                 continue;
             }
-            if ("/>".equals(tag)) {
-                selfClosing = true;
-                continue;
-            }
-            if(stack.empty()) {
-                if (!selfClosing) {
-                    if(("<"+tagToMatch).equals(tag)) {
-                        return findTagPosition(ts, true);
-                    }
-                }
-            } else {
-                if(tag.startsWith("<") && ("<"+stack.peek()).equals(tag)) {
-                    stack.pop();
-                }
-            }
-            if(tag.startsWith("</")) {
-                stack.push(tag.substring(2));
-            }
             selfClosing = false;
+            // length checked above.
+            if (tag.charAt(1) == '/') {
+                nesting++;
+            } else if (--nesting < 0) {
+                // error, sorry.
+                return null;
+            }
+            if (nesting == 0 && tl == matchL + 1) {
+                if (tag.regionMatches(1, tagToMatch, 0, matchL)) {
+                    return findTagPosition(ts, true);
+                }
+            }
         }
         
         return null;
