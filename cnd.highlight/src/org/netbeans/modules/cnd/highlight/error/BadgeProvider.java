@@ -56,16 +56,15 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Alexander Simon
  */
 public class BadgeProvider {
-    private static BadgeProvider myInstance = new BadgeProvider();
+    private static final BadgeProvider myInstance = new BadgeProvider();
 
-    private Storage storage = new Storage();
+    private final Storage storage = new Storage();
     private final Object listLock = new Object();
 
     private BadgeProvider() {
@@ -199,13 +198,13 @@ public class BadgeProvider {
 
     public Set<CsmUID<CsmFile>> getFailedFiles(NativeProject nativeProject) {
         synchronized (listLock) {
-            return new HashSet<CsmUID<CsmFile>>(storage.getFiles(nativeProject));
+            return new HashSet<>(storage.getFiles(nativeProject));
         }
     }
 
     public Set<CsmUID<CsmFile>> getFailedFiles(CsmProject csmProject) {
         synchronized (listLock) {
-            return new HashSet<CsmUID<CsmFile>>(storage.getFiles(csmProject));
+            return new HashSet<>(storage.getFiles(csmProject));
         }
     }
 
@@ -223,8 +222,8 @@ public class BadgeProvider {
 
     private static class Storage {
 
-        private Map<CsmProject,Set<CsmUID<CsmFile>>> wrongFiles = new HashMap<CsmProject,Set<CsmUID<CsmFile>>>();
-        private Map<CsmProject,NativeProject> nativeProjects = new HashMap<CsmProject, NativeProject>();
+        private final Map<CsmProject,Set<CsmUID<CsmFile>>> wrongFiles = new HashMap<>();
+        private final Map<CsmProject,NativeProject> nativeProjects = new HashMap<>();
 
         public Set<CsmUID<CsmFile>> getFiles(CsmProject project){
             return wrongFiles.get(project);
@@ -272,7 +271,7 @@ public class BadgeProvider {
                     if (id instanceof NativeProject) {
                         nativeProjects.put(project, (NativeProject) id);
                     }
-                    set = new HashSet<CsmUID<CsmFile>>();
+                    set = new HashSet<>();
                     wrongFiles.put(project,set);
                 }
                 set.add(UIDs.get(file));

@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -155,7 +156,7 @@ public final class SemanticHighlighter extends HighlighterBase {
             if (doc.getLength() < MAX_LINE_NUMBER) {
                 return false;
             }
-            return Utilities.getLineOffset((BaseDocument)doc, doc.getLength() - 1) > MAX_LINE_NUMBER;
+            return LineDocumentUtils.getLineIndex((BaseDocument)doc, doc.getLength() - 1) > MAX_LINE_NUMBER;
         } catch (BadLocationException ex) {
             // skip
             return true;
@@ -183,8 +184,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             if (LOG.isLoggable(Level.FINER)) {
                 LOG.log(Level.FINER, "Semantic Highlighting update() have started for file {0}", csmFile.getAbsolutePath());
             }
-            final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
-            final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
+            final List<SemanticEntity> entities = new ArrayList<>(SemanticEntitiesProvider.instance().get());
+            final List<ReferenceCollector> collectors = new ArrayList<>(entities.size());
             // the following loop deals with entities without collectors
             // and gathers collectors for the next step
             for (Iterator<SemanticEntity> i = entities.iterator(); i.hasNext(); ) {

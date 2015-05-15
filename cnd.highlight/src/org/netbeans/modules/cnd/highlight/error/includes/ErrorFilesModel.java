@@ -60,10 +60,10 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * @author Alexander Simon
  */
 public class ErrorFilesModel implements ListModel{
-    private List<String> names = new ArrayList<String>();
-    private List<CsmOffsetable> failedPreproDirectiveList = new ArrayList<CsmOffsetable>();
+    private final List<String> names = new ArrayList<>();
+    private final List<CsmOffsetable> failedPreproDirectiveList = new ArrayList<>();
     public ErrorFilesModel(List<CsmOffsetable> errors){
-        Map<String, CsmOffsetable> tree = new TreeMap<String,CsmOffsetable>();
+        Map<String, CsmOffsetable> tree = new TreeMap<>();
         for (Iterator<CsmOffsetable> it = errors.iterator(); it.hasNext(); ){
             CsmOffsetable error = it.next();
             String name = error.getContainingFile().getAbsolutePath().toString();

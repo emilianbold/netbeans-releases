@@ -135,7 +135,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
                     }
                 };
                 
-                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<AtomicInteger>(runnable, startOffset);
+                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<>(runnable, startOffset);
                 doc.render(moveBellowCommentsTask);
                 
                 try {
@@ -199,7 +199,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         
         private List<? extends Fix> createFixes(MissedGuardBlock.MissedGuardBlockErrorInfoImpl info) {
             try {
-                List<Fix> fixes = new ArrayList<Fix>();
+                List<Fix> fixes = new ArrayList<>();
                 if (info.getStartOffset() == info.getEndOffset()) {
                     fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.getStartOffset()));
                 } else {
