@@ -200,7 +200,11 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         private List<? extends Fix> createFixes(MissedGuardBlock.MissedGuardBlockErrorInfoImpl info) {
             try {
                 List<Fix> fixes = new ArrayList<Fix>();
-                fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.file.getText().length()-1));
+                if (info.getStartOffset() == info.getEndOffset()) {
+                    fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.getStartOffset()));
+                } else {
+                    fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.file.getText().length()-1));
+                }
                 fixes.add(new MissedGuardBlock.AddPragmaOnce(info.doc, info.file, info.getStartOffset()));
                 return fixes;
             } catch (BadLocationException ex) {
