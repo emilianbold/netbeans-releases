@@ -140,6 +140,7 @@ public interface SiteTemplateImplementation {
         private String sourceFolder;
         private String siteRootFolder;
         private String testFolder;
+        private String testSeleniumFolder;
         private String jsTestingProvider;
 
 
@@ -199,6 +200,27 @@ public interface SiteTemplateImplementation {
          */
         public ProjectProperties setTestFolder(@NullAllowed String testFolder) {
             this.testFolder = testFolder;
+            return this;
+        }
+
+        /**
+         * Get Test folder for Selenium tests, usually relative path.
+         * @return Test folder for Selenium tests, usually relative path; can be {@code null} if no Test folder is present
+         * @since 1.94
+         */
+        @CheckForNull
+        public String getTestSeleniumFolder() {
+            return testSeleniumFolder;
+        }
+
+        /**
+         * Set Test folder for Selenium tests, can be {@code null} if there are no tests available.
+         * @param testSeleniumFolder Test folder for Selenium tests, can be {@code null} if there are no tests available
+         * @return itself
+         * @since 1.94
+         */
+        public ProjectProperties setTestSeleniumFolder(@NullAllowed String testSeleniumFolder) {
+            this.testSeleniumFolder = testSeleniumFolder;
             return this;
         }
 
