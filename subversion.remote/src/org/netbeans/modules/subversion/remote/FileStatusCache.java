@@ -593,7 +593,7 @@ public class FileStatusCache {
                     if (isParentIgnored(file)) {
                         // increase performace and do not query files under ignored parent
                         status = null;
-                    } else {
+                    } else if (Subversion.getInstance().isConnected(file)) {
                         SvnClient client = Subversion.getInstance().getClient(false, new Context(file));
                         status = SvnUtils.getSingleStatus(client, file);
                         if (status != null && SVNStatusKind.UNVERSIONED.equals(status.getTextStatus())) {

@@ -52,7 +52,6 @@ import java.util.concurrent.FutureTask;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.remote.api.RemoteBinaryService;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -61,7 +60,9 @@ import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -182,20 +183,20 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
             return result == null ? lastResult : result;
         }
 
-        private String getFullTimeLsCommand() throws IOException, CancellationException {
+        private Pair<String, String[]> getFullTimeLsCommand(String path) throws IOException, CancellationException {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
             switch (hostInfo.getOSFamily()) {
                 case LINUX:
-                    return "/bin/ls --full-time"; // NOI18N
+                    return Pair.of("/bin/ls", new String[] { "--full-time", path}); // NOI18N
                 case MACOSX:
-                    return "/bin/ls -lT"; // NOI18N
+                    return Pair.of("/bin/ls", new String[] { "-lT", path}); // NOI18N
                 case SUNOS:
-                    return "/bin/ls -lE"; // NOI18N
+                    return Pair.of("/bin/ls", new String[] { "-lE", path}); // NOI18N
                 case WINDOWS:
                     throw new IllegalStateException("Windows in unsupported"); //NOI18N
                 case UNKNOWN:
                 default:
-                    return "/bin/ls -l"; // NOI18N
+                    return Pair.of("/bin/ls", new String[] { "-l", path}); // NOI18N
             }
         }
 
@@ -267,13 +268,19 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
 
         private String getTimestamp() {
             try {
-                String command = getFullTimeLsCommand() + " \"" + remotePath + "\""; // NOI18N
-                RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, command);
-
-                if (rcs.run() == 0) {
-                    return rcs.getOutput();
+                Pair<String, String[]> cmdAndArgs = getFullTimeLsCommand(remotePath); // NOI18N
+                ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, cmdAndArgs.first(), cmdAndArgs.second());
+                if (rc.isOK()) {
+                    return rc.output;
                 } else {
-                    throw new IOException("Cannot run #"+command); // NOI18N
+                    StringBuilder sb = new StringBuilder(cmdAndArgs.first());
+                    for (String arg : cmdAndArgs.second()) {
+                        if (sb.length() > 0) {
+                            sb.append(' '); //NOI18N
+                        }
+                        sb.append(arg);
+                    }
+                    throw new IOException("Cannot run #" + sb + ": " + rc.error); // NOI18N
                 }
             } catch (CancellationException ex) {
                 // TODO:CancellationException error processing

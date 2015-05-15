@@ -54,7 +54,7 @@ import org.openide.util.Lookup;
 
 public final class SemanticHighlightingOptionsPanelController extends OptionsPanelController {
 
-    private SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();
+    private final SemanticHighlightingOptionsPanel panel = new SemanticHighlightingOptionsPanel();
 
     @Override
     public void update() {

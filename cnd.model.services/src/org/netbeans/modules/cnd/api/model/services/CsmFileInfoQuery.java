@@ -140,7 +140,14 @@ public abstract class CsmFileInfoQuery {
      * @return dwarf block offset or null if there are no dwarf blocks in file
      */
     public abstract CsmOffsetable getGuardOffset(CsmFile file);
-
+    
+    /**
+     * 
+     * @param file header file
+     * @return true if header file has a guard block
+     */
+    public abstract boolean hasGuardBlock(CsmFile file);
+    
     /**
      * @return native file item associated with model file
      */
@@ -280,6 +287,11 @@ public abstract class CsmFileInfoQuery {
         @Override
         public CsmOffsetable getGuardOffset(CsmFile file) {
             return null;
+        }
+        
+        @Override
+        public boolean hasGuardBlock(CsmFile file) {
+            return false;
         }
 
         @Override

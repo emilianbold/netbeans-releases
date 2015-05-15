@@ -289,7 +289,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     Folder fld = map.get(dirname);
                     if (fld == null) {
                         fld = new Folder (true, getFlags(dirname));
-                        map.put(new String(dirname).intern(), fld);
+                        map.put(dirname.intern(), fld);
                     }
                     if ( basename != null ) {
                         fld.appendEntry(this, basename, entry.getTime(), entry.offset);
@@ -343,7 +343,7 @@ public class CachingArchive implements Archive, FileChangeListener {
                     Folder fld = map.get(dirname);
                     if (fld == null) {
                         fld = new Folder(false, getFlags(dirname));
-                        map.put(new String(dirname).intern(), fld);
+                        map.put(dirname.intern(), fld);
                     }
 
                     if ( basename != null ) {

@@ -65,14 +65,14 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
  * @author Alexander Simon
  */
 public class ErrorIncludesModel implements ListModel {
-    private List<String> names = new ArrayList<String>();
-    private List<List<CsmOffsetable>> includeList = new ArrayList<List<CsmOffsetable>>();
-    private int errorFiles;
-    private int errorIncludes;
+    private final List<String> names = new ArrayList<>();
+    private final List<List<CsmOffsetable>> includeList = new ArrayList<>();
+    private final int errorFiles;
+    private final int errorIncludes;
     public ErrorIncludesModel(List<CsmInclude> includes, List<CsmErrorDirective> errors){
         errorIncludes = includes.size();
-        Map<String, List<CsmOffsetable>> tree = new TreeMap<String,List<CsmOffsetable>>();
-        Set<CsmFile> files = new HashSet<CsmFile>();
+        Map<String, List<CsmOffsetable>> tree = new TreeMap<>();
+        Set<CsmFile> files = new HashSet<>();
         for (Iterator<CsmInclude> it = includes.iterator(); it.hasNext(); ){
             CsmInclude incl = it.next();
             files.add(incl.getContainingFile());
@@ -84,7 +84,7 @@ public class ErrorIncludesModel implements ListModel {
             }
             List<CsmOffsetable> list = tree.get(name);
             if (list == null){
-                list = new ArrayList<CsmOffsetable>();
+                list = new ArrayList<>();
                 tree.put(name,list);
             }
             list.add(incl);
@@ -94,7 +94,7 @@ public class ErrorIncludesModel implements ListModel {
             String name = error.getText().toString();
             List<CsmOffsetable> list = tree.get(name);
             if (list == null) {
-                list = new ArrayList<CsmOffsetable>();
+                list = new ArrayList<>();
                 tree.put(name, list);
             }
             list.add(error);            

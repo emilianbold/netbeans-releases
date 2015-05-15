@@ -476,22 +476,36 @@ public class Subversion {
     }
 
     private final Set<VCSFileProxy> unversionedParents = Collections.synchronizedSet(new HashSet<VCSFileProxy>(20));
+
+    /**
+     * Return true if file belongs to connected remote file system and is not forbidden
+     *
+     * @param file
+     * @return
+     */
+    public boolean isConnected(VCSFileProxy file) {
+        if (file.toFile() != null) {
+            return false;
+        }
+        if (!isAllowable(file)) {
+            return false;
+        }
+        if (Subversion.LOG.isLoggable(Level.FINE)) {
+            Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
+        }
+        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Delegates to SubversionVCS.getTopmostManagedAncestor
      * @param file a file for which the topmost managed ancestor shall be looked up.
      * @return topmost managed ancestor for the given file
      */
     public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {
-        if (file.toFile() != null) {
-            return null;
-        }
-        if (!isAllowable(file)) {
-            return null;
-        }
-        if (Subversion.LOG.isLoggable(Level.FINE)) {
-            Subversion.LOG.log(Level.FINE, "looking for managed parent for {0}", new Object[] { file });
-        }
-        if (!VCSFileProxySupport.isConnectedFileSystem(VCSFileProxySupport.getFileSystem(file))) {
+        if (!isConnected(file)) {
             return null;
         }
         if(unversionedParents.contains(file)) {

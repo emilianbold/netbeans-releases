@@ -48,11 +48,11 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  * Checks whether X11 forwarding from remote host to local one is possible
@@ -88,10 +88,9 @@ public class X11ForwardingChecker {
 
     private boolean checkSshdConfig() {
         final String x11key = "X11Forwarding"; // NOI18N
-        RemoteCommandSupport rcs = new RemoteCommandSupport(execEnv, "grep -i " + x11key + " /etc/ssh/sshd_config"); // NOI18N
-        int rc = rcs.run();
-        if (rc == 0) {
-            String[] lines = rcs.getOutput().split("\n"); //NOI18N
+        ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv, "grep", "-i", x11key, "/etc/ssh/sshd_config"); // NOI18N
+        if (rc.isOK()) {
+            String[] lines = rc.output.split("\n"); //NOI18N
             for (String line : lines) {
                 if (line.startsWith(x11key)) {
                     String rest = line.substring(x11key.length()).trim();

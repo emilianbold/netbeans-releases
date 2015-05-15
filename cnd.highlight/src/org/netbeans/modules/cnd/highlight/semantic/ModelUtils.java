@@ -123,7 +123,7 @@ public class ModelUtils {
     private static abstract class AbstractReferenceCollector implements ReferenceCollector {
         protected final List<CsmReference> list;
         public AbstractReferenceCollector() {
-            list = new ArrayList<CsmReference>();
+            list = new ArrayList<>();
         }
         @Override
         public List<CsmReference> getReferences() {
@@ -215,7 +215,7 @@ public class ModelUtils {
         private final Interrupter interrupter;
         
         public UnusedVariableCollector(Interrupter interrupter) {
-            counters = new LinkedHashMap<CsmVariable, ReferenceCounter>();
+            counters = new LinkedHashMap<>();
             this.interrupter = interrupter;
         }
         public String getEntityName() {
@@ -239,7 +239,7 @@ public class ModelUtils {
         }
         @Override
         public List<CsmReference> getReferences() {
-            List<CsmReference> result = new ArrayList<CsmReference>();
+            List<CsmReference> result = new ArrayList<>();
             for (ReferenceCounter counter : counters.values()) {
                 if (counter.getCount() == 1) {
                     result.add(counter.getFirstReference());
@@ -267,7 +267,7 @@ public class ModelUtils {
         }
         private Set<CsmParameter> getFunctionDefinitionParameters(CsmFile file) {
             if (parameters == null) {
-                parameters = new HashSet<CsmParameter>();
+                parameters = new HashSet<>();
                 CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.FUNCTION_DEFINITION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
                 Iterator<CsmOffsetableDeclaration> i = CsmSelect.getDeclarations(file, filter);
                 while (i.hasNext()) {
