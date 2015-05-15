@@ -154,6 +154,9 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
 
                         return;
                     }
+                } else if (ts != null && ts.token().id() == JsTokenId.STRING) {
+                    // ignore deleting of '/' inside a string
+                    break;
                 }
             }
             // Fallthrough for match-deletion
