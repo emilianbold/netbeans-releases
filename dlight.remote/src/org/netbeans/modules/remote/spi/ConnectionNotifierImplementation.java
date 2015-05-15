@@ -52,4 +52,6 @@ import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 public interface ConnectionNotifierImplementation {
     void addTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
     void removeTask(ExecutionEnvironment executionEnvironment, ConnectionNotifier.NamedRunnable task);
+    public void addExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
+    public void removeExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ConnectionNotifier.ExplicitConnectionListener listener);
 }

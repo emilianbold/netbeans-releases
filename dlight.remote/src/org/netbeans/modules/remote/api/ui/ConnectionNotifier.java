@@ -63,6 +63,10 @@ import org.openide.util.Lookup;
  * @author Vladimir Kvashin
  */
 public class ConnectionNotifier {
+    
+    public interface ExplicitConnectionListener {
+        void connected();
+    }
 
     public abstract static class NamedRunnable implements Runnable {
 
@@ -103,6 +107,14 @@ public class ConnectionNotifier {
     public static void removeTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {
         getImpl().removeTask(executionEnvironment, task);
     }
+    
+    public static void addExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ExplicitConnectionListener listener) {
+        getImpl().addExplicitConnectionListener(executionEnvironment, listener);
+    }
+
+    public static void removeExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ExplicitConnectionListener listener) {
+        getImpl().removeExplicitConnectionListener(executionEnvironment, listener);
+    }
 
     private static ConnectionNotifierImplementation getImpl() {
         synchronized (ClassNotFoundException.class) {
@@ -118,5 +130,9 @@ public class ConnectionNotifier {
         public void addTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {}
         @Override
         public void removeTask(ExecutionEnvironment executionEnvironment, NamedRunnable task) {}
+        @Override
+        public void addExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ExplicitConnectionListener listener) {}        
+        @Override
+        public void removeExplicitConnectionListener(ExecutionEnvironment executionEnvironment, ExplicitConnectionListener listener) {}        
     }
 }
