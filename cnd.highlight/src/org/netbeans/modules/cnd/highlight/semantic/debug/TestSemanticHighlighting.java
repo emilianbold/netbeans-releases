@@ -60,7 +60,7 @@ public class TestSemanticHighlighting {
     private static final String MIME_TYPE = "text/x-c++"; // NOI18N
     
     public static List<Highlight> gethighlightsBagForTests(Document doc, InterrupterImpl interrupter) {
-        List<Highlight> ret = new ArrayList<Highlight>();
+        List<Highlight> ret = new ArrayList<>();
         
         PositionsBag fastBag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter, true);
         PositionsBag slowBag = SemanticHighlighter.getSemanticBagForTests(doc, interrupter, false);
@@ -80,10 +80,10 @@ public class TestSemanticHighlighting {
     }
     
     public static class Highlight {
-        private Document doc;
-        private int startOffset;
-        private int endOffset;
-        private FontColorProvider.Entity type;
+        private final Document doc;
+        private final int startOffset;
+        private final int endOffset;
+        private final FontColorProvider.Entity type;
 
         public Highlight(Document doc, int startOffset, int endOffset, FontColorProvider.Entity type) {
             this.doc = doc;

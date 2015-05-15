@@ -142,7 +142,7 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
             this.cb = cb;
         }
     }
-    private List<Entity> entities = new ArrayList<Entity>();
+    private final List<Entity> entities = new ArrayList<>();
     JCheckBox cbMacros;
     
     private void addEntity(NamedOption ne) {

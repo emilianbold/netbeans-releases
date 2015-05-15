@@ -100,7 +100,7 @@ import org.openide.util.NbBundle;
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
     private static final String POSITION_BAG = "CndMarkOccurrencesHighlighter"; // NOI18N
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.model.tasks"); //NOI18N
-    private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<String, AttributeSet>();
+    private static final ConcurrentHashMap<String,AttributeSet> defaultColors = new ConcurrentHashMap<>();
     
     private final CancelSupport cancel = CancelSupport.create(this);
     private InterrupterImpl interrupter = new InterrupterImpl();
@@ -457,7 +457,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static final class ConditionalBlock {
 
-        private final List<int[]> directivePositions = new ArrayList<int[]>(4);
+        private final List<int[]> directivePositions = new ArrayList<>(4);
         private final ConditionalBlock parent;
 
         public ConditionalBlock(ConditionalBlock parent) {
@@ -548,7 +548,7 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
             return Collections.<CsmReference>emptyList();
         }
         List<int[]> directives = block.getDirectives();
-        Collection<CsmReference> out = new ArrayList<CsmReference>(directives.size());
+        Collection<CsmReference> out = new ArrayList<>(directives.size());
         for (int[] directive : directives) {
             out.add(new TokenRef(directive[0], directive[1]));
         }
@@ -566,11 +566,11 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
         String tokenText = aText.toString();
         doc.readLock();
         try {
-            Collection<CsmReference> out = new ArrayList<CsmReference>(10);
+            Collection<CsmReference> out = new ArrayList<>(10);
             TokenSequence<?> ts = CndLexerUtilities.getCppTokenSequence(doc, 0, false, false);
             if (ts != null) {
                 ts.move(0);
-                LinkedList<TokenSequence<?>> tss = new LinkedList<TokenSequence<?>>();
+                LinkedList<TokenSequence<?>> tss = new LinkedList<>();
                 tss.addFirst(ts);
                 while (!tss.isEmpty()) {
                     ts = tss.removeFirst();
