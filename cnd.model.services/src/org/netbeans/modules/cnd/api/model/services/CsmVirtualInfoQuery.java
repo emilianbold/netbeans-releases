@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.ClassifiersAntiLoop;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
@@ -169,16 +170,9 @@ public abstract class CsmVirtualInfoQuery {
                 }
                 CsmType type1 = p1.getType();
                 CsmType type2 = p2.getType();
+                // TODO: consider using method CsmUtilities.checkTypesEqual here
                 if (type1 != null && type2 != null) {
-                    CsmClassifier classifier1 = type1.getClassifier();
-                    CsmClassifier classifier2 = type1.getClassifier();
-                    if (classifier1 != null && classifier2 != null) {
-                        if (!classifier1.equals(classifier2)) {
-                            return false;
-                        }
-                        continue;
-                    }
-                    if (CharSequences.comparator().compare(type1.getText(), type2.getText()) != 0 ) {
+                    if (!CsmUtilities.checkTypesEqual(type1, p1.getContainingFile(), type2, p2.getContainingFile(), new CsmUtilities.ExactMatchQualsEqualizer())) {
                         return false;
                     }
                     continue;
