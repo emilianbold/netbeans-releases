@@ -513,7 +513,7 @@ public class NodeExecutable {
 
     private static final class LineConvertorImpl implements LineConvertor {
 
-        private static final RequestProcessor RP = new RequestProcessor("node.js debugger starter"); // NOI18N
+        private static final RequestProcessor RP = new RequestProcessor("node.js debugger starter/connector"); // NOI18N
 
         private final FileLineParser fileLineParser;
         @NullAllowed

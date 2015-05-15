@@ -541,7 +541,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             ClientSideProjectUtilities.initializeProject(project,
                     properties.getSourceFolder(),
                     properties.getSiteRootFolder(),
-                    properties.getTestFolder());
+                    properties.getTestFolder(),
+                    properties.getTestSeleniumFolder());
             // js testing provider
             String jsTestingProvider = properties.getJsTestingProvider();
             if (jsTestingProvider != null) {
@@ -632,7 +633,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                     project,
                     sources != null ? sources.getAbsolutePath() : null,
                     siteRoot != null ? siteRoot.getAbsolutePath() : null,
-                    testFolder);
+                    testFolder,
+                    null);
             return Pair.of(
                     sources != null ? FileUtil.toFileObject(sources) : null,
                     siteRoot != null ? FileUtil.toFileObject(siteRoot) : null);
@@ -727,7 +729,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public Pair<FileObject, FileObject> instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
-            ClientSideProjectUtilities.initializeProject(project, ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER, null, null);
+            ClientSideProjectUtilities.initializeProject(project, ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER, null, null, null);
             FileObject sources = project.getProjectDirectory().getFileObject(ClientSideProjectConstants.DEFAULT_SOURCE_FOLDER);
             FileObject mainFile = createMainFile(sources);
             files.add(mainFile);
