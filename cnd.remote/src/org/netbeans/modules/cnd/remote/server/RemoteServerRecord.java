@@ -71,7 +71,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -82,7 +81,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author gordonp
  */
-public class RemoteServerRecord extends ConnectionNotifier.NamedRunnable implements ServerRecord {
+public class RemoteServerRecord implements ServerRecord {
 
     public static enum State {
         UNINITIALIZED, INITIALIZING, ONLINE, OFFLINE, CANCELLED;
@@ -113,8 +112,7 @@ public class RemoteServerRecord extends ConnectionNotifier.NamedRunnable impleme
      * thread if called during startup from cached information.
      */
     @org.netbeans.api.annotations.common.SuppressWarnings("Dm")
-    /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {        
-        super("RemoteServerRecord setup worker"); //NOI18N
+    /*package-local*/ RemoteServerRecord(final ExecutionEnvironment env, String displayName, RemoteSyncFactory syncFactory, boolean connect) {
         CndUtils.assertTrue(env != null);
         CndUtils.assertTrue(syncFactory != null);
         this.executionEnvironment = env;
@@ -135,15 +133,6 @@ public class RemoteServerRecord extends ConnectionNotifier.NamedRunnable impleme
 //        x11forwardingPossible = true;
         
         checkHostInfo(); // is this a paranoya?
-        ConnectionNotifier.addTask(executionEnvironment, this);
-    }
-
-    @Override
-    protected void runImpl() {
-        // This is called when connection is done via clicking a hyperlink 
-        // "IDE needs to connect... " - see 
-        // #248883 - "Yellow monitor" in toolbar if user connected to host via "IDE needs to reconnect to ..." tooltip
-        RemoteUtil.checkSetupAfterConnection(executionEnvironment);
     }
 
     @Override
