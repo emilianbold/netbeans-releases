@@ -559,8 +559,16 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         int i = 0;
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
+            int dl = delLen;
+            if (next instanceof Text) {
+                // the node provides delete information, use it.
+                dl = ((Text)next).getLength();
+                if (dl < 0) {
+                    dl = delLen;
+                }
+            }
             if(next != null && next.getDisplayName() != null) {
-                ValueResultItem val = new ValueResultItem(i++, next, delLen, suffix);
+                ValueResultItem val = new ValueResultItem(i++, next, dl, suffix);
                 result.add( val );
             }
         }
