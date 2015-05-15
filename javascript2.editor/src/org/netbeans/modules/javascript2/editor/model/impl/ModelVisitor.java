@@ -1588,7 +1588,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (!fnode.isAnonymous()) {
                     // we expect case like: var prom = function name () {}
                     JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
-                    JsObject origFunction = function.getProperty(fnode.getName());
+                    JsObject origFunction = function.getProperty(fnode.getIdent().getName());
                     Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
                     if (name != null && origFunction != null && origFunction instanceof JsFunction) {
                         JsObjectImpl oldVariable = (JsObjectImpl)function.getProperty(name.getName());
