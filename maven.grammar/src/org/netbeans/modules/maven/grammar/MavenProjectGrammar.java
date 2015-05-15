@@ -367,10 +367,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                     }
                     Collection<GrammarResult> elems = new ArrayList<GrammarResult>();
                     Collections.sort(set);
-                    String suffix = virtualTextCtx.getNodeValue().substring(prefix.length());
                     for (String pr : set) {
                         if (pr.startsWith(propPrefix)) {
-                            elems.add(new ExpressionValueTextElement(pr, propPrefix, suffix));
+                            elems.add(new ExpressionValueTextElement(pr, propPrefix, ""));
                         }
                     }
                     return Collections.enumeration(elems);
