@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -100,15 +101,15 @@ public class UploadTestCase extends RemoteTestBase {
         int rc = CommonTasksSupport.uploadFile(localFile.getAbsolutePath(), execEnv, remoteFile, 0770).get().getExitCode();
         assertEquals("Upload RC for " + localFile.getAbsolutePath(), 0, rc);
         assert HostInfoProvider.fileExists(execEnv, remoteFile) : "Error copying file " + remoteFile + " to " + execEnv + " : file does not exist";
-        String catCommand = "cat " + remoteFile;
-        RemoteCommandSupport rcs2 = new RemoteCommandSupport(execEnv, catCommand);
+        ProcessUtils.ExitStatus rcs2 = ProcessUtils.execute(execEnv, "cat", remoteFile);
 //            assert rcs2.run() == 0; // add more output
-        rc = rcs2.run();
+        rc = rcs2.exitCode;
         if (rc != 0) {
-            assert false : "RemoteCommandSupport: " + catCommand + " returned " + rc + " on " + execEnv;
+            assert false : "RemoteCommandSupport: " + "cat " + remoteFile + " returned " + rc + " on " + execEnv;
         }
-        assert rcs2.getOutput().equals(sb.toString());
-        assert RemoteCommandSupport.run(execEnv, "rm " + remoteFile) == 0;
+        assert rcs2.output.equals(sb.toString());
+        ProcessUtils.ExitStatus rc3 = ProcessUtils.execute(execEnv, "rm", remoteFile);
+        assert rc3.exitCode == 0;
         localFile.delete();
     }
     

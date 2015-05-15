@@ -112,7 +112,7 @@ public final class HighlightProvider  {
     private HighlightProvider() {
         res = Lookup.getDefault().lookupResult(CsmErrorProvider.class);
         RP = new RequestProcessor("HighlightProvider", 1); // NOI18N
-        tasks = new ConcurrentHashMap<CsmErrorProvider, MyTask>();
+        tasks = new ConcurrentHashMap<>();
     }
     
     /* package */ void update(CsmFile file, Document doc, DataObject dao, InterrupterImpl interrupter) {
@@ -148,7 +148,7 @@ public final class HighlightProvider  {
         } else {
             event = EditorEvent.FileBased;
         }
-        List<CsmErrorProvider> list = new ArrayList<CsmErrorProvider>();
+        List<CsmErrorProvider> list = new ArrayList<>();
         for(final CsmErrorProvider provider : res.allInstances() ) {
             if (interrupter.cancelled()) {
                 return;
@@ -173,7 +173,7 @@ public final class HighlightProvider  {
             }
         }
         
-        final List<ResponseImpl> responces = new ArrayList<ResponseImpl>();
+        final List<ResponseImpl> responces = new ArrayList<>();
         final RequestImpl request = new RequestImpl(file, doc, event, interrupter);
         final CountDownLatch wait = new CountDownLatch(list.size());
         for(final CsmErrorProvider provider : list) {
@@ -203,7 +203,7 @@ public final class HighlightProvider  {
                 }
                 Hook theHook = HighlightProvider.this.hook;
                 if( theHook != null ) {
-                    List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+                    List<ErrorDescription> descriptions = new ArrayList<>();
                     for(ResponseImpl responce : responces) {
                         descriptions.addAll(responce.descriptions);
                     }
@@ -265,7 +265,7 @@ public final class HighlightProvider  {
 
     private static final class ResponseImpl implements CsmErrorProvider.Response {
 
-        private final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+        private final List<ErrorDescription> descriptions = new ArrayList<>();
         private final CsmErrorProvider provider;
         private final InterrupterImpl interrupter;
         private final DataObject dao;

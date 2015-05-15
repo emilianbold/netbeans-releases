@@ -42,13 +42,9 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.openide.filesystems.FileLock;
-import org.openide.util.Exceptions;
 
 /**
  * Base class for ErrorMaker implementations

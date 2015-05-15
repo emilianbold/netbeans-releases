@@ -48,11 +48,11 @@ import java.io.Writer;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.setup.HostValidator;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP;
 import static org.netbeans.modules.cnd.remote.server.RemoteServerList.TRACE_SETUP_PREFIX;
+import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.ui.setup.StopWatch;
 import org.netbeans.modules.cnd.spi.remote.setup.RemoteSyncFactoryDefaultProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -141,7 +141,7 @@ public class HostValidatorImpl implements HostValidator {
         } catch (InterruptedIOException | CancellationException ex) {
             return false; // don't report InterruptedIOException and CancellationException
         } catch (IOException ex) {
-            writer.print("\n" + RemoteCommandSupport.getMessage(ex)); //NOI18N
+            writer.print("\n" + RemoteUtil.getMessage(ex)); //NOI18N
             return false;
         }
         if (!alreadyOnline) {

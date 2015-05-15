@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.text.Document;
-import static junit.framework.Assert.assertNotNull;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.highlight.semantic.debug.InterrupterImpl;
 import org.netbeans.modules.cnd.highlight.semantic.debug.TestSemanticHighlighting;
@@ -80,7 +79,7 @@ public class SemanticHighlightingNewTestBase extends ProjectBasedTestCase{
         
         List<Highlight> out = TestSemanticHighlighting.gethighlightsBagForTests(doc, new InterrupterImpl());
         assertNotNull(out);
-        List<Highlight> sorted = new ArrayList<Highlight>(out);
+        List<Highlight> sorted = new ArrayList<>(out);
         Collections.sort(sorted, new Comparator<Highlight>() {
 
             @Override

@@ -151,9 +151,9 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
             if (response instanceof AnalyzerResponse) {
                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, csmClass.getContainingFile().getFileObject(),
-                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getEndOffset()));  // NOI18N
+                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
             } else {
-                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getEndOffset()));
+                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
             }
         }
     }

@@ -126,6 +126,9 @@ public class ModelUtils {
                 DeclarationScope scope = builder.getCurrentDeclarationFunction();
                 while (scope != null && tmpObject == null && scope.getParentScope() != null) {
                     tmpObject = ((JsFunction)scope).getParameter(firstName);
+                    if (tmpObject == null) {
+                        tmpObject = ((JsObject)scope).getProperty(firstName);
+                    }
                     scope = scope.getParentScope();
                 }
                 if (tmpObject == null) {

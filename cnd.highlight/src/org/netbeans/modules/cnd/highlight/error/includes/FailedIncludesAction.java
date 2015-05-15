@@ -90,7 +90,7 @@ public class FailedIncludesAction extends NodeAction {
     }
     
     private List<NativeProject> getNativeProjects(Node[] nodes) {
-        List<NativeProject> projects = new ArrayList<NativeProject>();
+        List<NativeProject> projects = new ArrayList<>();
         for (int i = 0; i < nodes.length; i++) {
             Project project = nodes[i].getLookup().lookup(Project.class);
             if(project == null) {
@@ -106,7 +106,7 @@ public class FailedIncludesAction extends NodeAction {
     }
 
     private List<CsmProject> getCsmProjects(Node[] nodes) {
-        List<CsmProject> projects = new ArrayList<CsmProject>();
+        List<CsmProject> projects = new ArrayList<>();
         for (int i = 0; i < nodes.length; i++) {
             CsmProject project = nodes[i].getLookup().lookup(CsmProject.class);
             if(project == null) {

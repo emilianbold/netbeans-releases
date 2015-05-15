@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -51,6 +53,7 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -134,4 +137,17 @@ public class RemoteUtil {
     public static boolean isWindows(ExecutionEnvironment env) {
         return env.isLocal() && Utilities.isWindows();
     }
+    
+    public static String getMessage(IOException e) {
+        String result;
+        String reason = e.getMessage();
+        if (e instanceof UnknownHostException) {
+            result = NbBundle.getMessage(RemoteConnectionSupport.class, "REASON_UnknownHost", e.getMessage());
+        } else if (reason.startsWith("Auth fail")) { // NOI18N
+            result = NbBundle.getMessage(RemoteConnectionSupport.class, "REASON_AuthFailed");
+        } else {
+            result = reason;
+        }
+        return result;
+    }    
 }
