@@ -161,7 +161,15 @@ public class RetrieverTask {
             BufferedInputStream bis = new BufferedInputStream(is, 1024);
             FileObject saveFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(saveFile));
             //create datafile and also all the parents folders
-            saveFile.getParentFile().mkdirs();
+            if (!saveFile.getParentFile().mkdirs()) {
+                LOG.log(Level.INFO, "Unable to make parent directory. savefile={0}, url={1}, rootSaveFile={2}, parentFile={3}, normalized={4}", new Object[] {
+                    saveFile,
+                    rent.getEffectiveAddress(),
+                    retEngine.getCurrentSaveRootFile(),
+                    saveFile.getParentFile(),
+                    FileUtil.normalizeFile(saveFile.getParentFile())
+                });
+            }
             FileObject parent = FileUtil.toFileObject(FileUtil.normalizeFile(saveFile.getParentFile()));
             saveFileObject = FileUtil.createData(parent, saveFile.getName());
             FileLock saveFileLock = saveFileObject.lock();

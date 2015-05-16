@@ -572,12 +572,13 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
     }
      
     protected static class ExpressionValueTextElement extends AbstractSchemaBasedGrammar.MyTextElement {
-        private String suffix;
+        private final String suffix;
+        
         public ExpressionValueTextElement(String pr, String propPrefix, String suffix) {
               super(pr, propPrefix);
               this.suffix = suffix;
         }
-          
+        
           @Override
         public String getNodeValue() {
             String end = name.substring(prefix.length()) + "}";
