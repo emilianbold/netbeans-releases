@@ -1175,9 +1175,8 @@ public class CompletionUtil {
         } else {
             return null;
         }
-        String tokenText = token.text().toString(),
-               tagName = (tokenText == null ? null : tokenText.substring(index));
-        return tagName;
+        String tokenText = token.text().toString().substring(index).trim();
+        return tokenText.isEmpty() ? null : tokenText;
     }
 
     //========================================================================//

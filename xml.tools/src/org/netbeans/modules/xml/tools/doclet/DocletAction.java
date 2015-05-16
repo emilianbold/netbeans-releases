@@ -126,7 +126,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
             }
             final TreeDTD treeDTD = (TreeDTD) result;
 
-            final DTDDoclet doclet = new DTDDoclet();
+            final DTDDoclet doclet = new DTDDoclet(dtdo.getPrimaryFile().getName());
 
             Runnable task = new Runnable() {
                 public void run() {
