@@ -77,7 +77,8 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     private static final Map<JPDADebugger, DebuggingTreeExpansionModelFilter> FILTERS = new WeakHashMap<JPDADebugger, DebuggingTreeExpansionModelFilter>();
     
     private final Set<Object> expandedNodes = new WeakSet<Object>();
-    private final Set<Object> expandedExplicitely = new WeakSet<Object>();
+    private final Set<Object> expandedExplicitly = new WeakSet<Object>();
+    private final Set<Object> collapsedExplicitly = new WeakSet<Object>();
     private final List<ModelListener> listeners = new ArrayList<ModelListener>();
     private final Reference<JPDADebugger> debuggerRef;
     
@@ -111,7 +112,10 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     
     private void expand(Object node) {
         synchronized (this) {
-            expandedExplicitely.add(node);
+            if (collapsedExplicitly.contains(node)) {
+                return ; // Ignore manually collapsed nodes.
+            }
+            expandedExplicitly.add(node);
         }
         //nodeExpanded(node);
         fireNodeExpanded(node);
@@ -120,7 +124,8 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
 
     private boolean isExpanded(Object node) {
         synchronized (this) {
-            return expandedNodes.contains(node) || expandedExplicitely.contains(node);
+            return expandedNodes.contains(node) ||
+                   (expandedExplicitly.contains(node) && !collapsedExplicitly.contains(node));
         }
     }
 
@@ -142,8 +147,11 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
             }
         }
         synchronized (this) {
-            if (expandedExplicitely.contains(node)) {
+            if (expandedExplicitly.contains(node)) {
                 return true;
+            }
+            if (collapsedExplicitly.contains(node)) {
+                return false;
             }
         }
         if (node instanceof JPDADVThreadGroup) {
@@ -171,6 +179,7 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     public void nodeExpanded (Object node) {
         synchronized (this) {
             expandedNodes.add(node);
+            collapsedExplicitly.remove(node);
         }
         if (node instanceof JPDADVThread || node instanceof JPDADVThreadGroup) {
             fireNodeChanged(node);
@@ -185,7 +194,8 @@ public class DebuggingTreeExpansionModelFilter implements TreeExpansionModelFilt
     public void nodeCollapsed (Object node) {
         synchronized (this) {
             expandedNodes.remove(node);
-            expandedExplicitely.remove(node);
+            expandedExplicitly.remove(node);
+            collapsedExplicitly.add(node);
         }
         if (node instanceof JPDADVThread || node instanceof JPDADVThreadGroup) {
             fireNodeChanged(node);
