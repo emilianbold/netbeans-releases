@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
     </folder>
         
     <folder name="Shortcuts">
-        <file name="S-F9.shadow">
+        <file name="CS-F2.shadow">
             <attr name="originalFile" stringvalue="Actions/Profile/org-netbeans-modules-profiler-ppoints-ui-ToggleProfilingPointAction.instance"/>
         </file>
     </folder>

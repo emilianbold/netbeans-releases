@@ -73,7 +73,7 @@ public class AntActions {
     @ActionRegistration(displayName="#LBL_ProfileMainProjectAction", lazy=false)
     @ActionReferences({
         @ActionReference(path="Menu/Profile", position=100),
-        @ActionReference(path="Shortcuts", name="A-F2")
+        @ActionReference(path="Shortcuts", name="C-F2")
     })
     public static Action profileMainProjectAction() {
         Action ref = mainProjectA == null ? null : mainProjectA.get();
