@@ -314,6 +314,7 @@ public final class ExecutionService {
                     synchronized (workingRerunAction) {
                         workingRerunAction.setExecutionService(ExecutionService.this);
                         workingRerunAction.setRerunCondition(descriptor.getRerunCondition());
+                        workingRerunAction.setRerunCallback(descriptor.getRerunCallback());
                         workingRerunAction.setEnabled(false);
                     }
                 }

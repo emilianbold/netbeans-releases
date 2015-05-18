@@ -48,10 +48,10 @@ import java.awt.event.ActionEvent;
 import java.util.concurrent.Future;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCallback;
 import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCondition;
 import org.netbeans.api.extexecution.ExecutionService;
 import org.openide.util.ImageUtilities;
@@ -73,6 +73,8 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
     private ExecutionService service;
 
     private RerunCondition condition;
+
+    private RerunCallback callback;
 
     private ChangeListener listener;
 
@@ -108,18 +110,29 @@ public final class RerunAction extends AbstractAction implements ChangeListener 
         stateChanged(null);
     }
 
+    public void setRerunCallback(RerunCallback callback) {
+        synchronized (this) {
+            this.callback = callback;
+        }
+    }
+
     public void actionPerformed(ActionEvent e) {
         setEnabled(false); // discourage repeated clicking
 
         ExecutionService actionService;
+        RerunCallback actionCallback;
         InputOutput required;
         synchronized (this) {
             actionService = service;
+            actionCallback = callback;
             required = parent;
         }
 
         if (actionService != null) {
-            Accessor.getDefault().run(actionService, required);
+            Future<Integer> task = Accessor.getDefault().run(actionService, required);
+            if (actionCallback != null) {
+                actionCallback.performed(task);
+            }
         }
     }
 

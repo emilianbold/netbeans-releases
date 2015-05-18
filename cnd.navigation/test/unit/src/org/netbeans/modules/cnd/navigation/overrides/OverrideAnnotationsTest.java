@@ -104,6 +104,13 @@ public class OverrideAnnotationsTest extends ProjectBasedTestCase {
     public void testRombInhTree() throws Exception {
         performTest("romb_half_virtual.cc", "\\d*:INHERIT.*", ".extends.ref");
     }
+    
+    public void testBug252147Inh() throws Exception {
+        performTest("bug252147.cpp", "\\d*:INHERIT.*", ".extends.ref");
+    }
+    public void testBug252147Overrides() throws Exception {
+        performTest("bug252147.cpp", "\\d*:OVERRID.*", ".overrides.ref");
+    }
 
     private void performTest(String sourceFileName, String patternString, String refPostfix) throws Exception {
         File testSourceFile = getDataFile(sourceFileName);
