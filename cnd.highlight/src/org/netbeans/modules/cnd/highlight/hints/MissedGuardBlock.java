@@ -242,7 +242,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             
             Position ifndefPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
             doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null);
-            Position endifPossition = NbDocument.createPosition(doc, file.getText().length(), Position.Bias.Forward);
+            Position endifPossition = NbDocument.createPosition(doc, file.getText().length(), Position.Bias.Backward);
             doc.insertString(endifPossition.getOffset(), "\n"+endifMacro, null); // NOI18N
             
             Position ifndefStart = NbDocument.createPosition(doc, ifndefStartPos, Position.Bias.Forward);
