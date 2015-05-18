@@ -53,8 +53,10 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -62,11 +64,12 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JRootPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
@@ -509,7 +512,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         List<UpdateElement> unsigned = new ArrayList<UpdateElement>();
         List<UpdateElement> modified = new ArrayList<UpdateElement>();
         int trustedCount = 0;
-        String certs = "";
+        Map<Object, String> certs = new HashMap<>();
         for (UpdateElement el : model.getAllUpdateElements ()) {
             boolean writeCert = false;
             if (support.isContentModified(inst, el))  {
@@ -531,14 +534,14 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             if (writeCert) {
                 String cert = support.getCertificate (inst, el);
                 if (cert != null && cert.length () > 0) {
-                    certs += getBundle ("ValidationWarningPanel_ShowCertificateFormat", el.getDisplayName (), cert);
+                    certs.put(el.getDisplayName(), cert);
                 }
             }
         }
         if (signedVerified.size () > 0 || signedUnverified.size () > 0 || unsigned.size () > 0 || modified.size() > 0 && ! runInBackground ()) {
             int total = trustedCount + signedVerified.size() + signedUnverified.size() + unsigned.size();
-            ValidationWarningPanel p = new ValidationWarningPanel(signedVerified, signedUnverified, unsigned, modified, total);            
-            final boolean verifyCertificate = (!signedVerified.isEmpty() || !signedUnverified.isEmpty()) && certs.length() > 0;
+            final ValidationWarningPanel p = new ValidationWarningPanel(signedVerified, signedUnverified, unsigned, modified, total);            
+            final boolean verifyCertificate = (!signedVerified.isEmpty() || !signedUnverified.isEmpty()) && !certs.isEmpty();
             
             JButton[] options;
             JButton[] closeOptions;
@@ -550,23 +553,40 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             canContinue.setDefaultCapable(false);
             
             if (modified.isEmpty()) {                
-                final JButton showCertificate = new JButton();
-                Mnemonics.setLocalizedText (showCertificate, getBundle("ValidationWarningPanel_ShowCertificateButton"));
-                final String certificate = certs;
-                showCertificate.addActionListener (new ActionListener() {
+                final JButton showDetails = new JButton();               
+                Mnemonics.setLocalizedText (showDetails, getBundle("ValidationWarningPanel_ShowDetailsButton"));
+                final Map<Object, String> certsMap = certs;
+                
+                showDetails.setEnabled(false);
+                p.addSelectionListener(new TreeSelectionListener() {
+
+                    @Override
+                    public void valueChanged(TreeSelectionEvent e) {
+                        if (e.getNewLeadSelectionPath().getPathCount() == 3 && certsMap.containsKey(p.getSelectedNode())) {
+                            showDetails.setEnabled(true);
+                        } else {
+                            showDetails.setEnabled(false);
+                        }
+                    }
+                });
+                                
+                showDetails.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed (ActionEvent e) {
-                        if (showCertificate.equals(e.getSource())) {
-                            JTextArea ta = new JTextArea(certificate);
-                            ta.setEditable (false);
-                            DialogDisplayer.getDefault().notify (new NotifyDescriptor.Message(ta));
+                        if (showDetails.equals(e.getSource())) {
+                            Object node = p.getSelectedNode();
+                            if (certsMap.containsKey(node)) {
+                                JTextArea ta = new JTextArea(certsMap.get(node));
+                                ta.setEditable (false);
+                                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ta));
+                            }                            
                         }
                     }
                 });
                 
                 Mnemonics.setLocalizedText(canContinue, getBundle("ValidationWarningPanel_ContinueButton"));                               
                 if (verifyCertificate) {
-                    dd.setAdditionalOptions (new JButton[] {showCertificate});
+                    dd.setAdditionalOptions(new JButton[] {showDetails});
                 }
                 options = new JButton[] {canContinue, cancel};
                 closeOptions = new JButton[] {canContinue, cancel};
