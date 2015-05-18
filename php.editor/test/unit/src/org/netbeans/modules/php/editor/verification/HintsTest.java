@@ -335,4 +335,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
+    public void testIssue249306() throws Exception {
+        checkHints(new InitializeFieldSuggestion(), "testIssue249306.php", "function __construct(...$f^oo) {");
+    }
+
 }
