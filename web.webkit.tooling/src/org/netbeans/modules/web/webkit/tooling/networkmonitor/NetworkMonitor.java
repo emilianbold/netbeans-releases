@@ -55,18 +55,16 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     private static WeakReference<NetworkMonitor> lastNetworkMonitor = new WeakReference<>(null);
     
-    private final NetworkMonitorTopComponent.Model model;
-    private final BrowserFamilyId browserFamilyId;
+    private final Model model;
     private final Project project;
     private volatile NetworkMonitorTopComponent component;
     private volatile boolean debuggingSession;
 
     private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
-            NetworkMonitorTopComponent.Model mod, boolean debuggingSession) {
+            Model mod, boolean debuggingSession) {
         this.component = comp;
         this.model = mod;
         this.debuggingSession = debuggingSession;
-        browserFamilyId = projectContext.lookup(BrowserFamilyId.class);
         project = projectContext.lookup(Project.class);
         lastNetworkMonitor = new WeakReference<>(this);
     }
@@ -100,7 +98,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
         NetworkMonitorTopComponent component = findNetworkMonitorTC();
         // reuse TopComponent if it is open; but always create a new model for new monitoring session
-        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new NetworkMonitorTopComponent.Model(), true);
+        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new Model(projectContext), true);
         nm.open();
         return nm;
     }
@@ -116,7 +114,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
                 nm.component = null;
             } else {
                 // open blank NetworkMonitor:
-                nm = new NetworkMonitor(Lookup.EMPTY, null, new NetworkMonitorTopComponent.Model(), false);
+                nm = new NetworkMonitor(Lookup.EMPTY, null, new Model(Lookup.EMPTY), false);
             }
             nm.open();
         }
@@ -132,7 +130,6 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     }
 
     public void close() {
-        model.close(project);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -149,13 +146,13 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
 
     @Override
     public void networkRequest(Network.Request request) {
-        model.add(request, browserFamilyId, project);
+        model.add(request);
         DependentFileQueryImpl.DEFAULT.networkRequest(project, request);
     }
 
     @Override
     public void webSocketRequest(Network.WebSocketRequest request) {
-        model.add(request, browserFamilyId, project);
+        model.add(request);
     }
 
     @Override
