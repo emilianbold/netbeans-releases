@@ -85,7 +85,6 @@ public class TasksMenu extends JMenu {
 
     public TasksMenu(TasksMenuSupport support) {
         super(support.getTitle(TasksMenuSupport.Title.MENU));
-        assert support != null;
         this.support = support;
         advancedTasks = new AdvancedTasks(support.getProject(), support.getIdentifier());
     }
