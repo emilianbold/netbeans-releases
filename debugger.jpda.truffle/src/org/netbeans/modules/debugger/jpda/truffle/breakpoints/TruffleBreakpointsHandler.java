@@ -93,9 +93,9 @@ public class TruffleBreakpointsHandler {
     
     private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
-            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/debug/impl/LineBreakpoint;";   // NOI18N
+            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/debug/LineBreakpoint;";   // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
-    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/debug/impl/LineBreakpoint;)V";    // NOI18N
+    private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/debug/LineBreakpoint;)V";    // NOI18N
     
     private final JPDADebugger debugger;
     private ClassType accessorClass;

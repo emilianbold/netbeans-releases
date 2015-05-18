@@ -58,9 +58,9 @@ import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.LineLocation;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.Breakpoint;
-import com.oracle.truffle.debug.impl.AbstractDebugEngine;
-import com.oracle.truffle.debug.impl.DebugException;
-import com.oracle.truffle.debug.impl.LineBreakpoint;
+import com.oracle.truffle.debug.DebugEngine;
+import com.oracle.truffle.debug.DebugException;
+import com.oracle.truffle.debug.LineBreakpoint;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
 import java.io.File;
 import java.io.IOException;
@@ -155,7 +155,7 @@ public class JPDATruffleAccessor extends Object {
         setCommand();
     }
     
-    static void executionStepInto(Node astNode, String name,
+    static void executionStepInto(Node astNode, MaterializedFrame frame, String name,
                                   long srcId, String srcName, String srcPath, int line, String code,
                                   FrameSlot[] frameSlots, String[] slotNames, String[] slotTypes,
                                   FrameInstance[] stackTrace, String topFrame, Object thisObject) {
@@ -166,13 +166,13 @@ public class JPDATruffleAccessor extends Object {
     private static void setCommand() {
         stepIntoPrepared = false;
         switch (stepCmd) {
-            case 0: debugManager.prepareContinue();
+            case 0: debugManager.getDebugger().prepareContinue();
                     break;
-            case 1: debugManager.prepareStepInto(1);
+            case 1: debugManager.getDebugger().prepareStepInto(1);
                     break;
-            case 2: debugManager.prepareStepOver(1);
+            case 2: debugManager.getDebugger().prepareStepOver(1);
                     break;
-            case 3: debugManager.prepareStepOut();
+            case 3: debugManager.getDebugger().prepareStepOut();
                     //System.err.println("Successful step out = "+success);
                     break;
         }
@@ -342,11 +342,7 @@ public class JPDATruffleAccessor extends Object {
         LineLocation bpLineLocation = source.createLineLocation(line);
         LineBreakpoint lb;
         try {
-            if (oneShot) {
-                lb = debugManager.setOneShotLineBreakpoint(0, 0, bpLineLocation);
-            } else {
-                lb = debugManager.setLineBreakpoint(0, 0, bpLineLocation);
-            }
+            lb = debugManager.getDebugger().setLineBreakpoint(0, 0, bpLineLocation, oneShot);
         } catch (DebugException dex) {
             System.err.println("setLineBreakpoint("+source+", "+line+"): "+dex);
             return null;
@@ -356,7 +352,11 @@ public class JPDATruffleAccessor extends Object {
             lb.setIgnoreCount(ignoreCount);
         }
         if (condition != null) {
-            lb.setCondition(condition);
+            try {
+                lb.setCondition(condition);
+            } catch (DebugException dex) {
+                System.err.println("Wrong condition "+condition+" : "+dex);
+            }
         }
         return lb;
     }
@@ -398,7 +398,7 @@ public class JPDATruffleAccessor extends Object {
         FrameInstance fi = (FrameInstance) frameInstance;
         MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
         final Source source = Source.fromText(expression, "EVAL");
-        Object value = debugManager.eval(source, fi.getCallNode(), frame);
+        Object value = debugManager.getDebugger().eval(source, fi.getCallNode(), frame);
         if (value == null) {
             return null;
         }
@@ -455,7 +455,7 @@ public class JPDATruffleAccessor extends Object {
                     if (steppingIntoTruffle > 0) {
                         if (!stepIntoPrepared) {
                             try {
-                                debugManager.prepareStepInto(1);
+                                debugManager.getDebugger().prepareStepInto(1);
                             } catch (IllegalStateException isex) {
                                 forceStepInto();
                             }
@@ -480,24 +480,24 @@ public class JPDATruffleAccessor extends Object {
         /** Workaround for inability to prepare step into when continue is prepared. */
         private void forceStepInto() {
             try {
-                Field debugContextField = AbstractDebugEngine.class.getDeclaredField("debugContext");
+                Field debugContextField = DebugEngine.class.getDeclaredField("debugContext");
                 debugContextField.setAccessible(true);
-                Object debugContext = debugContextField.get(debugManager);
-                Class stepStrategyClass = Class.forName(AbstractDebugEngine.class.getName()+"$StepStrategy");
+                Object debugContext = debugContextField.get(debugManager.getDebugger());
+                Class stepStrategyClass = Class.forName(DebugEngine.class.getName()+"$StepStrategy");
                 Method replaceStrategyMethod = debugContext.getClass().getDeclaredMethod("replaceStrategy", stepStrategyClass);
                 replaceStrategyMethod.setAccessible(true);
-                Class stepIntoClass = Class.forName(AbstractDebugEngine.class.getName()+"$StepInto");
+                Class stepIntoClass = Class.forName(DebugEngine.class.getName()+"$StepInto");
                 Constructor[] declaredConstructors = stepIntoClass.getDeclaredConstructors();
                 //System.err.println("  declaredConstructors = "+Arrays.toString(declaredConstructors));
                 Constructor stepIntoConstructor = declaredConstructors[0];//stepIntoClass.getDeclaredConstructor(Integer.TYPE);
                 stepIntoConstructor.setAccessible(true);
-                Object stepInto = stepIntoConstructor.newInstance(debugManager, 1);
+                Object stepInto = stepIntoConstructor.newInstance(debugManager.getDebugger(), 1);
                 replaceStrategyMethod.invoke(debugContext, stepInto);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
-        
+
     }
     
 }
