@@ -62,34 +62,50 @@ public class OverloadedOperatorTestCase extends CompletionBaseTestCase {
     }
     
     public void testOverloadedArrowOnB() throws Exception {
+        performTest("file.cc", 7, 5, "b->");
+    }
+    
+    public void testOverloadedArrowOnPtrB() throws Exception {
         performTest("file.cc", 7, 5, "pB->");
     }
 
     public void testOverloadedArrowOnC() throws Exception {
+        performTest("file.cc", 7, 5, "c->");
+    }
+    
+    public void testOverloadedArrowOnPtrC() throws Exception {
         performTest("file.cc", 7, 5, "pC->");
     }
 
     public void testOverloadedArrayOnC() throws Exception {
-        performTest("file.cc", 5, 5, "c[1].");
+        performTest("file.cc", 7, 5, "c[1].");
     }
     
     public void testOverloadedArrowArrayOnC() throws Exception {
-        performTest("file.cc", 5, 5, "c[1]->");
+        performTest("file.cc", 7, 5, "c[1]->");
     }
     
     public void testInstantiationOverloadedArrowOnB() throws Exception {
-        performTest("file.cc", 7, 5, "pB->");
+        performTest("file.cc", 15, 5, "b->");
+    }
+    
+    public void testInstantiationOverloadedArrowOnPtrB() throws Exception {
+        performTest("file.cc", 15, 5, "pB->");
+    }
+    
+    public void testInstantiationOverloadedArrowOnC() throws Exception {
+        performTest("file.cc", 15, 5, "c->");
     }
 
-    public void testInstantiationOverloadedArrowOnC() throws Exception {
-        performTest("file.cc", 7, 5, "pC->");
+    public void testInstantiationOverloadedArrowOnPtrC() throws Exception {
+        performTest("file.cc", 15, 5, "pC->");
     }
 
     public void testInstantiationOverloadedArrayOnC() throws Exception {
-        performTest("file.cc", 5, 5, "c[1].");
+        performTest("file.cc", 15, 5, "c[1].");
     }   
     
     public void testInstantiationOverloadedArrowArrayOnC() throws Exception {
-        performTest("file.cc", 5, 5, "c[1]->");
+        performTest("file.cc", 15, 5, "c[1]->");
     }       
 }
