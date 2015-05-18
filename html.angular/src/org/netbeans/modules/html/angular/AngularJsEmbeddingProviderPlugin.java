@@ -189,6 +189,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             stack.peek().addFinishText("}\n"); //NOI18N
                             break;
                         case modelOptions:
+                        case link:
                             processed = processObject(value);
                             break;
                         case options:
