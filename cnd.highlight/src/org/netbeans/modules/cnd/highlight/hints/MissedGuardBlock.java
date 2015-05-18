@@ -200,11 +200,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         private List<? extends Fix> createFixes(MissedGuardBlock.MissedGuardBlockErrorInfoImpl info) {
             try {
                 List<Fix> fixes = new ArrayList<>();
-                if (info.getStartOffset() == info.getEndOffset()) {
-                    fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.getStartOffset()));
-                } else {
-                    fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset(), info.file.getText().length()-1));
-                }
+                fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset()));
                 fixes.add(new MissedGuardBlock.AddPragmaOnce(info.doc, info.file, info.getStartOffset()));
                 return fixes;
             } catch (BadLocationException ex) {
@@ -217,13 +213,11 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         private final BaseDocument doc;
         private final CsmFile file;
         private final int startOffset;
-        private final int endOffset;
         
-        public AddGuardBlock (BaseDocument doc, CsmFile file, int startOffset, int endOffset) throws BadLocationException {
+        public AddGuardBlock (BaseDocument doc, CsmFile file, int startOffset) throws BadLocationException {
             this.doc = doc;
             this.file = file;
             this.startOffset = startOffset;
-            this.endOffset = endOffset;
         }
         
         @Override
@@ -233,9 +227,6 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         
         @Override
         public ChangeInfo implement () throws Exception {
-            Position ifndefPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
-            Position endifPossition = NbDocument.createPosition(doc, endOffset, Position.Bias.Forward);
-            
             // Strings to build guard block
             final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";  // NOI18N
             final String ifndefMacro = "#ifndef ";  // NOI18N
@@ -249,8 +240,10 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             final int defStartPos = ifndefEndPos + defineMacro.length();
             final int defEndPos = defStartPos + defName.length();
             
+            Position ifndefPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
             doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null);
-            doc.insertString(endifPossition.getOffset(), "\n\n"+endifMacro, null); // NOI18N
+            Position endifPossition = NbDocument.createPosition(doc, file.getText().length(), Position.Bias.Backward);
+            doc.insertString(endifPossition.getOffset(), "\n"+endifMacro, null); // NOI18N
             
             Position ifndefStart = NbDocument.createPosition(doc, ifndefStartPos, Position.Bias.Forward);
             Position ifndefEnd = NbDocument.createPosition(doc, ifndefEndPos-1, Position.Bias.Backward); // substracts 1 because of new line symols
