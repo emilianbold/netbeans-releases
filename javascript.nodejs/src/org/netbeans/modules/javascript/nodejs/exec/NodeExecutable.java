@@ -537,7 +537,9 @@ public class NodeExecutable {
                     @Override
                     public void run() {
                         try {
-                            debuggerCountDownLatch.await(5, TimeUnit.SECONDS);
+                            assert debuggerCountDownLatch != null;
+                            boolean expected = debuggerCountDownLatch.await(5, TimeUnit.SECONDS);
+                            assert expected : "Count should be 0 but time elapsed";
                             connectDebugger();
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
@@ -567,13 +569,17 @@ public class NodeExecutable {
         }
 
         void connectDebugger() {
+            assert debugInfo != null;
             Connector.Properties props = createConnectorProperties("localhost", debugInfo.port, debugInfo.project); // NOI18N
             try {
                 Connector.connect(props, new Runnable() {
                     @Override
                     public void run() {
                         debugging = false;
-                        debugInfo.taskRef.get().cancel(true);
+                        assert debugInfo != null;
+                        Future<Integer> task = debugInfo.taskRef.get();
+                        assert task != null : debugInfo.project.getProjectDirectory();
+                        task.cancel(true);
                     }
                 });
                 debugging = true;

@@ -70,7 +70,7 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
             replaceAll.setSelected(false);
         } else {
             replaceAll.setEnabled(true);
-            replaceAll.setText(replaceAll.getText() + " (" + numDuplicates + ")"); // NOI18N
+            replaceAll.setText(replaceAll.getText() + " (" + (numDuplicates + 1) + ")"); // NOI18N
             replaceAll.setSelected(pref.getBoolean("replaceAll", true)); //NOI18N
         }
 
