@@ -223,7 +223,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                     for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
                                         final ElementHandle<TypeElement> owner = p.getKey();
                                         for (String symbol : p.getValue()) {
-                                            if (matchesRestrictions(owner.getQualifiedName(), symbol, restriction)) {
+                                            if (matchesRestrictions(owner.getQualifiedName(), symbol, restriction, caseSensitive)) {
                                                 result.addResult(new AsyncJavaSymbolDescriptor(
                                                         project,
                                                         root,
@@ -255,21 +255,25 @@ public class JavaSymbolProvider implements SymbolProvider {
     private static boolean matchesRestrictions(
             @NonNull final String fqn,
             @NonNull final String ident,
-            @NullAllowed Pair<NameMatcher,Boolean> restriction) {
-        return matchesRestrictionsImpl(fqn, ident, restriction, false);
+            @NullAllowed Pair<NameMatcher,Boolean> restriction,
+            final boolean caseSensitive) {
+        return matchesRestrictionsImpl(fqn, ident, restriction, caseSensitive, false);
     }
 
     private static boolean matchesRestrictionsImpl(
             @NonNull final String fqn,
             @NonNull final String ident,
             @NullAllowed Pair<NameMatcher,Boolean> restriction,
+            final boolean caseSensitive,
             final boolean enclosing) {
         if (restriction == null) {
             return true;
         }
         final String simpleName = getSimpleName(fqn);
         return restriction.first().accept(restriction.second() ? fqn : simpleName) ||
-               (!enclosing && ident.equals(simpleName) && matchesRestrictionsImpl(getOwner(fqn), ident, restriction, true));
+               (!enclosing &&
+                (caseSensitive ? ident.equals(simpleName) : ident.equalsIgnoreCase(simpleName)) &&
+                matchesRestrictionsImpl(getOwner(fqn), ident, restriction, caseSensitive, true));
     }
 
     @NonNull
