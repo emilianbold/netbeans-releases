@@ -44,7 +44,6 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.Console;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
@@ -147,7 +146,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     @Override
     public void networkRequest(Network.Request request) {
         model.add(request);
-        DependentFileQueryImpl.DEFAULT.networkRequest(project, request);
+        DependentFileQueryImpl.networkRequest(project, request);
     }
 
     @Override
