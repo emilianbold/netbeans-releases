@@ -43,6 +43,7 @@
 package org.netbeans.api.extexecution;
 
 import java.nio.charset.Charset;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -110,6 +111,8 @@ public final class ExecutionDescriptor {
 
     private final RerunCondition rerunCondition;
 
+    private final RerunCallback rerunCallback;
+
     private final String optionsPath;
 
     private final Charset charset;
@@ -141,6 +144,7 @@ public final class ExecutionDescriptor {
         this.errProcessorFactory2 = data.errProcessorFactory2;
         this.inputOutput = data.inputOutput;
         this.rerunCondition = data.rerunCondition;
+        this.rerunCallback = data.rerunCallback;
         this.optionsPath = data.optionsPath;
         this.charset = data.charset;
         this.noReset = data.noReset;
@@ -661,6 +665,7 @@ public final class ExecutionDescriptor {
      *
      * @param rerunCondition rerun condition, <code>null</code> allowed
      * @return new descriptor with configured rerun condition
+     * @see #rerunCallback(org.netbeans.api.extexecution.ExecutionDescriptor.RerunCallback)
      */
     @NonNull
     @CheckReturnValue
@@ -671,6 +676,31 @@ public final class ExecutionDescriptor {
 
     RerunCondition getRerunCondition() {
         return rerunCondition;
+    }
+
+    /**
+     * Returns a descriptor with configured rerun callback. The callback
+     * is invoked when the execution is triggered by the rerun action.
+     * <p>
+     * The default (not configured) value is <code>null</code>.
+     * <p>
+     * All other properties of the returned descriptor are inherited from
+     * <code>this</code>.
+     *
+     * @param rerunCallback rerun callback, <code>null</code> allowed
+     * @return new descriptor with configured rerun callback
+     * @see #rerunCondition(org.netbeans.api.extexecution.ExecutionDescriptor.RerunCondition) 
+     * @since 1.46
+     */
+    @NonNull
+    @CheckReturnValue
+    public ExecutionDescriptor rerunCallback(@NullAllowed ExecutionDescriptor.RerunCallback rerunCallback) {
+        DescriptorData data = new DescriptorData(this);
+        return new ExecutionDescriptor(data.rerunCallback(rerunCallback));
+    }
+
+    RerunCallback getRerunCallback() {
+        return rerunCallback;
     }
 
     /**
@@ -758,6 +788,22 @@ public final class ExecutionDescriptor {
          * @return <code>true</code> if it is possible to execute the action again
          */
         boolean isRerunPossible();
+
+    }
+
+    /**
+     * Provides a callback to be invoked when rerun action is invoked.
+     *
+     * @since 1.46
+     */
+    public interface RerunCallback {
+
+        /**
+         * Called when rerun action is invoked.
+         *
+         * @param task the task created by the rerun action
+         */
+        void performed(Future<Integer> task);
 
     }
 
@@ -851,6 +897,8 @@ public final class ExecutionDescriptor {
 
         private ExecutionDescriptor.RerunCondition rerunCondition;
 
+        private ExecutionDescriptor.RerunCallback rerunCallback;
+
         private String optionsPath;
 
         private Charset charset;
@@ -876,6 +924,7 @@ public final class ExecutionDescriptor {
             this.errProcessorFactory = descriptor.errProcessorFactory;
             this.inputOutput = descriptor.inputOutput;
             this.rerunCondition = descriptor.rerunCondition;
+            this.rerunCallback = descriptor.rerunCallback;
             this.optionsPath = descriptor.optionsPath;
             this.charset = descriptor.charset;
             this.noReset = descriptor.noReset;
@@ -973,6 +1022,11 @@ public final class ExecutionDescriptor {
 
         public DescriptorData rerunCondition(ExecutionDescriptor.RerunCondition rerunCondition) {
             this.rerunCondition = rerunCondition;
+            return this;
+        }
+
+        public DescriptorData rerunCallback(ExecutionDescriptor.RerunCallback rerunCallback) {
+            this.rerunCallback = rerunCallback;
             return this;
         }
 
