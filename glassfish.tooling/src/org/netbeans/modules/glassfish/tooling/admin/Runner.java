@@ -976,6 +976,10 @@ public abstract class Runner implements Callable<Result> {
                                 TaskEvent.EXCEPTION, stateChangeArgs(
                                 ex.getLocalizedMessage()));
                     }
+                } catch (RuntimeException ex) {
+                    return handleStateChange(TaskState.FAILED,
+                            TaskEvent.EXCEPTION, stateChangeArgs(
+                                    ex.getLocalizedMessage()));
                 } finally {
                     if (null != hconn) {
                         hconn.disconnect();
