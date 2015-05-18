@@ -59,10 +59,9 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     private volatile NetworkMonitorTopComponent component;
     private volatile boolean debuggingSession;
 
-    private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
-            Model mod, boolean debuggingSession) {
+    private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, boolean debuggingSession) {
         this.component = comp;
-        this.model = mod;
+        this.model = new Model(projectContext);
         this.debuggingSession = debuggingSession;
         project = projectContext.lookup(Project.class);
         lastNetworkMonitor = new WeakReference<>(this);
@@ -94,10 +93,14 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
         });
     }
 
+    private void resetComponent() {
+        this.component = null;
+    }
+
     public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
         NetworkMonitorTopComponent component = findNetworkMonitorTC();
         // reuse TopComponent if it is open; but always create a new model for new monitoring session
-        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new Model(projectContext), true);
+        NetworkMonitor nm = new NetworkMonitor(projectContext, component, true);
         nm.open();
         return nm;
     }
@@ -110,10 +113,10 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
             NetworkMonitor nm = lastNetworkMonitor.get();
             if (nm != null) {
                 // reuse model from last user NetworkMonitor but create a new UI:
-                nm.component = null;
+                nm.resetComponent();
             } else {
                 // open blank NetworkMonitor:
-                nm = new NetworkMonitor(Lookup.EMPTY, null, new Model(Lookup.EMPTY), false);
+                nm = new NetworkMonitor(Lookup.EMPTY, null, false);
             }
             nm.open();
         }
@@ -143,6 +146,8 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
         debuggingSession = false;
     }
 
+    // Implementation of Network.Listener
+
     @Override
     public void networkRequest(Network.Request request) {
         model.add(request);
@@ -153,6 +158,8 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     public void webSocketRequest(Network.WebSocketRequest request) {
         model.add(request);
     }
+
+    // Implementation of Console.Listener
 
     @Override
     public void messageAdded(ConsoleMessage message) {
