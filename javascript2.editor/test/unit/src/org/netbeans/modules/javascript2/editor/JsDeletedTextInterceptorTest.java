@@ -238,4 +238,8 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
         deleteChar("x = {^}", "x = ^}");
     }
 
+    public void testNoDeleteSlashInString() throws Exception {
+        deleteChar("'http://localhost/aa/src/^/todolists.php'", "'http://localhost/aa/src^/todolists.php'");
+    }
+
 }

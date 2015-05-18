@@ -69,6 +69,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Mutex.ExceptionAction;
@@ -121,6 +122,24 @@ public class AuxiliaryConfigBasedPreferencesProvider {
         });
     }
 
+    @OnStop
+    public static final class Down implements Runnable {
+        @Override
+        public void run() {
+            flush(projects2SharedPrefs);
+            flush(projects2PrivatePrefs);
+        }
+
+        private void flush(Map<Project, Reference<AuxiliaryConfigBasedPreferencesProvider>> m) {
+            for (Reference<AuxiliaryConfigBasedPreferencesProvider> rp : m.values()) {
+                AuxiliaryConfigBasedPreferencesProvider p = rp.get();
+                if(p != null) {
+                    p.flush();
+                }
+            }
+        }
+    }
+         
     private static String encodeString(String s) {
         StringBuilder result = new StringBuilder();
         

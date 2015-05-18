@@ -80,7 +80,7 @@ public class HistoryRegistry {
     }
     
     private final Map<VCSFileProxy, List<GitRevisionInfo>> logs = Collections.synchronizedMap(new HashMap<VCSFileProxy, List<GitRevisionInfo>>());
-    private final Map<VCSFileProxy, Map<String, List<GitFileInfo>>> changesets = new HashMap<VCSFileProxy, Map<String, List<GitFileInfo>>>();
+    private final Map<VCSFileProxy, Map<String, List<GitFileInfo>>> changesets = new HashMap<>();
     
     private HistoryRegistry() {}
     
@@ -114,7 +114,7 @@ public class HistoryRegistry {
             final String path = originalPath;
             Map<String, List<GitFileInfo>> fileChangesets = changesets.get(originalFile);
             if(fileChangesets == null) {
-                fileChangesets = new HashMap<String, List<GitFileInfo>>();
+                fileChangesets = new HashMap<>();
                 changesets.put(originalFile, fileChangesets);
             }
             final Map<String, List<GitFileInfo>> fcs = fileChangesets;
@@ -177,7 +177,7 @@ public class HistoryRegistry {
                 if (cps == null) {
                     changePaths = Collections.<GitFileInfo>emptyList();
                 } else {
-                    changePaths = new ArrayList<GitFileInfo>(cps.values());
+                    changePaths = new ArrayList<>(cps.values());
                 }
                 fileChangesets.put(historyRevision, changePaths);
                 if(LOG.isLoggable(Level.FINE)) {

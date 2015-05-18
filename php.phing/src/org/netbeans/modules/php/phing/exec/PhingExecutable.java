@@ -59,8 +59,9 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.print.ConvertedLine;
-import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.util.UiUtils;
@@ -81,8 +82,8 @@ public class PhingExecutable {
 
     static final Logger LOGGER = Logger.getLogger(PhingExecutable.class.getName());
 
-    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "No need to worry, noone will change it") // NOI18N
     public static final String PHING_NAME = "phing"; // NOI18N
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "MS_MUTABLE_ARRAY", justification = "No need to worry, noone will change it") // NOI18N
     public static final String[] PHING_NAMES;
 
     private static final String LOGGER_PARAM = "-logger"; // NOI18N
@@ -145,21 +146,19 @@ public class PhingExecutable {
     }
 
     public Future<List<String>> listTargets() {
-        final PhingTargetsLineConvertor phingTargetsLineConvertor = new PhingTargetsLineConvertor();
-        ExecutionDescriptor descriptor = getSilentDescriptor()
-                .outConvertorFactory(new ExecutionDescriptor.LineConvertorFactory() {
-                    @Override
-                    public LineConvertor newLineConvertor() {
-                        return phingTargetsLineConvertor;
-                    }
-                });
+        final PhingTargetsLineProcessor phingTargetsLineProcessor = new PhingTargetsLineProcessor();
         Future<Integer> task = getExecutable("list phing targets") // NOI18N
                 .noInfo(true)
                 .additionalParameters(Arrays.asList(QUIET_PARAM, LIST_PARAM))
                 .redirectErrorStream(false)
-                .run(descriptor);
+                .run(getSilentDescriptor(), new ExecutionDescriptor.InputProcessorFactory2() {
+                    @Override
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.bridge(phingTargetsLineProcessor);
+                    }
+                });
         assert task != null : phingPath;
-        return new TargetList(task, phingTargetsLineConvertor);
+        return new TargetList(task, phingTargetsLineProcessor);
     }
 
     private PhpExecutable getExecutable(String title) {
@@ -230,7 +229,7 @@ public class PhingExecutable {
 
     //~ Inner classes
 
-    private static final class PhingTargetsLineConvertor implements LineConvertor {
+    private static final class PhingTargetsLineProcessor implements LineProcessor {
 
         private static final String MAIN_TARGETS = "Main targets:"; // NOI18N
         private static final String SUBTARGETS = "Subtargets:"; // NOI18N
@@ -241,7 +240,7 @@ public class PhingExecutable {
 
 
         @Override
-        public List<ConvertedLine> convert(String line) {
+        public void processLine(String line) {
             String trimmed = line.trim();
             if (collecting) {
                 if (!SUBTARGETS.equals(trimmed)) {
@@ -253,7 +252,16 @@ public class PhingExecutable {
                 collecting = MAIN_TARGETS.equals(trimmed)
                         || SUBTARGETS.equals(trimmed);
             }
-            return Collections.emptyList();
+        }
+
+        @Override
+        public void reset() {
+            // noop
+        }
+
+        @Override
+        public void close() {
+            // noop
         }
 
         public List<String> getTargets() {
@@ -265,17 +273,17 @@ public class PhingExecutable {
     private static final class TargetList implements Future<List<String>> {
 
         private final Future<Integer> task;
-        private final PhingTargetsLineConvertor convertor;
+        private final PhingTargetsLineProcessor processor;
 
         // @GuardedBy("this")
         private List<String> phingTargets = null;
 
 
-        TargetList(Future<Integer> task, PhingTargetsLineConvertor convertor) {
+        TargetList(Future<Integer> task, PhingTargetsLineProcessor processor) {
             assert task != null;
-            assert convertor != null;
+            assert processor != null;
             this.task = task;
-            this.convertor = convertor;
+            this.processor = processor;
         }
 
         @Override
@@ -319,7 +327,7 @@ public class PhingExecutable {
             if (phingTargets != null) {
                 return Collections.unmodifiableList(phingTargets);
             }
-            List<String> targets = new ArrayList<>(convertor.getTargets());
+            List<String> targets = new ArrayList<>(processor.getTargets());
             Collections.sort(targets);
             phingTargets = new CopyOnWriteArrayList<>(targets);
             return Collections.unmodifiableList(phingTargets);

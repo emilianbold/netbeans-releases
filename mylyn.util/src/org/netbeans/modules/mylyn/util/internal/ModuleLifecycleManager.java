@@ -53,7 +53,7 @@ public class ModuleLifecycleManager extends ModuleInstall {
 
     @Override
     public boolean closing() {
-        if(Accessor.isInitialized()) {
+        if(!Accessor.isInitialized()) {
             // haven't been initialized -> don't bother
             return true;
         }    

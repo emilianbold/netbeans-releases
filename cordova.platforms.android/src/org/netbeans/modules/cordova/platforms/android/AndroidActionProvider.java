@@ -164,7 +164,7 @@ public class AndroidActionProvider implements ActionProvider {
                                 } : null,
                                 null);
                         Object value = DialogDisplayer.getDefault().notify(not);
-                        if (NotifyDescriptor.CANCEL_OPTION == value) {
+                        if (NotifyDescriptor.CANCEL_OPTION == value || checkDevices.equals(Bundle.ERR_AdbNotFound())) {
                             return;
                         } else if (Bundle.LBL_AvdManager().equals(value)) {
                             RequestProcessor.getDefault().post(new Runnable() {
@@ -216,8 +216,15 @@ public class AndroidActionProvider implements ActionProvider {
         + "\u2022 USB Debugging is enabled on your device\n"
         + "\u2022 Your computer and Android device are connected to the same WiFi network",
         "ERR_RunAndroidEmulator=Please run Android Emulator.",
-        "ERR_Unknown=Unknown Error."})
+        "ERR_Unknown=Unknown Error.",
+        "ERR_AdbNotFound=ADB not found. Please make sure that:\n"
+        + "\u2022 Android SDK has been installed correctly,\n"
+        + "\u2022 Close Android SDK Manager, if it's opened."
+    })
     static String checkDevices(Project p) {
+        if (!AndroidPlatform.getDefault().adbCommandExists()) {
+            return Bundle.ERR_AdbNotFound();
+        }
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         WebBrowser activeConfiguration = provider.getActiveBrowser();
         try {

@@ -1357,7 +1357,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                                 int shift = inOffset - i.getStart();
                                 List<Interval> params = lastMacro.getParamIntervals(k);
                                 Interval j = params.get(0);
-                                if (shift >= j.length() || shift >= j.length()) {
+                                if (shift >= j.length()) {
                                     return j.getEnd();
                                 } else {
                                     return j.getStart() + shift;

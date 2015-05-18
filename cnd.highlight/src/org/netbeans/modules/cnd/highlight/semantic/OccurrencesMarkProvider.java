@@ -67,14 +67,14 @@ import org.openide.util.Exceptions;
 
 public class OccurrencesMarkProvider extends MarkProvider {
     
-    private static final Map<Document, Reference<OccurrencesMarkProvider>> providers = new WeakHashMap<Document, Reference<OccurrencesMarkProvider>>();
+    private static final Map<Document, Reference<OccurrencesMarkProvider>> providers = new WeakHashMap<>();
     
     public static synchronized OccurrencesMarkProvider get(Document doc) {
         Reference<OccurrencesMarkProvider> ref = providers.get(doc);
         OccurrencesMarkProvider p = ref != null ? ref.get() : null;
         
         if (p == null) {
-            providers.put(doc, new WeakReference<OccurrencesMarkProvider>(p = new OccurrencesMarkProvider()));
+            providers.put(doc, new WeakReference<>(p = new OccurrencesMarkProvider()));
         }
         
         return p;
@@ -101,11 +101,11 @@ public class OccurrencesMarkProvider extends MarkProvider {
         List<Mark> nue;
         
         synchronized (this) {
-            semantic = new ArrayList<Mark>(s);
+            semantic = new ArrayList<>(s);
             
             old = joint;
             
-            nue = joint = new ArrayList<Mark>();
+            nue = joint = new ArrayList<>();
             
             joint.addAll(semantic);
             joint.addAll(occurrences);
@@ -119,11 +119,11 @@ public class OccurrencesMarkProvider extends MarkProvider {
         List<Mark> nue;
         
         synchronized (this) {
-            occurrences = new ArrayList<Mark>(s);
+            occurrences = new ArrayList<>(s);
             
             old = joint;
             
-            nue = joint = new ArrayList<Mark>();
+            nue = joint = new ArrayList<>();
             
             joint.addAll(semantic);
             joint.addAll(occurrences);
@@ -134,7 +134,7 @@ public class OccurrencesMarkProvider extends MarkProvider {
     }
     
     public static Collection<Mark> createMarks(final Document doc, final Collection<CsmReference> list, final Color color, final String tooltip) {
-        final List<Mark> result = new LinkedList<Mark>();
+        final List<Mark> result = new LinkedList<>();
         
         doc.render(new Runnable() {
             @Override
@@ -161,10 +161,10 @@ public class OccurrencesMarkProvider extends MarkProvider {
     
     private static final class MarkImpl implements Mark {
 
-        private Document doc;
-        private Position startOffset;
-        private Color color;
-        private String tooltip;
+        private final Document doc;
+        private final Position startOffset;
+        private final Color color;
+        private final String tooltip;
 
         public MarkImpl(Document doc, Position startOffset, Color color, String tooltip) {
             this.doc = doc;

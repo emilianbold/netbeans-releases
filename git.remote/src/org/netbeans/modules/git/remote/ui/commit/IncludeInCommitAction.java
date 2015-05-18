@@ -97,7 +97,7 @@ public class IncludeInCommitAction extends MultipleRepositoryAction {
     }
     
     private static List<String> filterRoots (VCSFileProxy[] roots) {
-        List<String> toInclude = new LinkedList<String>();
+        List<String> toInclude = new LinkedList<>();
         GitModuleConfig config = GitModuleConfig.getDefault();
         for (VCSFileProxy root : roots) {
             String path = root.getPath();

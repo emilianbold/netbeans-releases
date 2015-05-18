@@ -42,13 +42,11 @@
 package org.netbeans.modules.web.clientproject.spi;
 
 import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Parameters;
 
 /**
  * Site template interface. The workflow is:
@@ -125,12 +123,6 @@ public interface SiteTemplateImplementation {
      */
     void cleanup() throws IOException;
 
-    /**
-     * Get list of full relative paths of supported JavaScript libraries.
-     * @return list of full relative paths of supported JavaScript libraries.
-     */
-    Collection<String> supportedLibraries();
-
     //~ Inner classes
 
     /**
@@ -148,6 +140,7 @@ public interface SiteTemplateImplementation {
         private String sourceFolder;
         private String siteRootFolder;
         private String testFolder;
+        private String testSeleniumFolder;
         private String jsTestingProvider;
 
 
@@ -207,6 +200,27 @@ public interface SiteTemplateImplementation {
          */
         public ProjectProperties setTestFolder(@NullAllowed String testFolder) {
             this.testFolder = testFolder;
+            return this;
+        }
+
+        /**
+         * Get Test folder for Selenium tests, usually relative path.
+         * @return Test folder for Selenium tests, usually relative path; can be {@code null} if no Test folder is present
+         * @since 1.94
+         */
+        @CheckForNull
+        public String getTestSeleniumFolder() {
+            return testSeleniumFolder;
+        }
+
+        /**
+         * Set Test folder for Selenium tests, can be {@code null} if there are no tests available.
+         * @param testSeleniumFolder Test folder for Selenium tests, can be {@code null} if there are no tests available
+         * @return itself
+         * @since 1.94
+         */
+        public ProjectProperties setTestSeleniumFolder(@NullAllowed String testSeleniumFolder) {
+            this.testSeleniumFolder = testSeleniumFolder;
             return this;
         }
 

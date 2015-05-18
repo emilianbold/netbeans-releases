@@ -50,7 +50,6 @@ package org.netbeans.modules.jumpto.file;
 
 import java.awt.Image;
 import java.beans.BeanInfo;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -62,7 +61,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.openide.cookies.EditCookie;
 import org.openide.cookies.EditorCookie;
@@ -94,7 +92,6 @@ public class FileDescription extends FileDescriptor {
     private final FileObject fileObject;
     private final String ownerPath;
     private final Project project; // Project the file belongs to
-    private final int lineNr;
     private volatile Icon icon;
     private volatile String projectName;
     private volatile Icon projectIcon;
@@ -103,14 +100,12 @@ public class FileDescription extends FileDescriptor {
     public FileDescription(
             @NonNull final FileObject file,
             @NonNull final String ownerPath,
-            @NullAllowed final Project project,
-            final int lineNr) {
+            @NullAllowed final Project project) {
         Parameters.notNull("file", file);   //NOI18N
         Parameters.notNull("ownerPath", ownerPath); //NOI18N
         this.fileObject = file;
         this.ownerPath = ownerPath;
         this.project = project;
-        this.lineNr = lineNr;
     }
 
     @Override
@@ -166,48 +161,17 @@ public class FileDescription extends FileDescriptor {
 
     @Override
     public void open() {
-        DataObject od = getDataObject();
+        final DataObject od = getDataObject();
         if (od != null) {
-            // if linenumber is given then try to open file at this line
-            // code taken from org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link.show()
-            LineCookie lineCookie = od.getLookup().lookup(LineCookie.class);
-            if (lineCookie == null) {
-                //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
-                lineCookie = od.getLookup().lookup(EditorCookie.class);
-            }
-            if (lineCookie != null && lineNr != -1) {
-                try {
-                    Line l = lineCookie.getLineSet().getCurrent(lineNr - 1);
-                    if (l != null) {
-                        // open file at the given line
-                        l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, -1);
-                        return;
-                    }
-                } catch (IndexOutOfBoundsException oob) {
-                    LOG.log(Level.FINE, "Line no more exists.", oob);   //NOI18N
-                }
-            }
-            Editable editable = od.getLookup().lookup(Editable.class);
-            if (editable == null) {
-                //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
-                editable = od.getLookup().lookup(EditCookie.class);
-            }
-            if (editable != null) {
-                editable.edit();
-                return;
-            }
-            final Openable openable = od.getLookup().lookup(Openable.class);
-            if (openable != null) {
-                openable.open();
-            }
-            //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
-            final OpenCookie oc = od.getLookup().lookup(OpenCookie.class);
-            if (oc != null) {
-                oc.open();
+            final FileObject fo = getFileObject();
+            if (fo != od.getPrimaryFile()) {
+                open(od);
+            } else {
+                edit(od, getLineNumber());
             }
         }
     }
-    
+
     @Override
     public FileObject getFileObject() {
         return fileObject;
@@ -238,5 +202,49 @@ public class FileDescription extends FileDescriptor {
             res = projectInfo = project.getLookup().lookup(ProjectInformation.class);
         }
         return res;
+    }
+
+    private static void open(@NonNull final DataObject dobj) {
+        final Openable openable = dobj.getLookup().lookup(Openable.class);
+        if (openable != null) {
+            openable.open();
+        }
+        //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+        final OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+        if (oc != null) {
+            oc.open();
+        }
+    }
+
+    private static void edit(@NonNull final DataObject dobj, final int lineNo) {
+        // if linenumber is given then try to open file at this line
+        // code taken from org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link.show()
+        LineCookie lineCookie = dobj.getLookup().lookup(LineCookie.class);
+        if (lineCookie == null) {
+            //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+            lineCookie = dobj.getLookup().lookup(EditorCookie.class);
+        }
+        if (lineCookie != null && lineNo != -1) {
+            try {
+                final Line l = lineCookie.getLineSet().getCurrent(lineNo - 1);
+                if (l != null) {
+                    // open file at the given line
+                    l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, -1);
+                    return;
+                }
+            } catch (IndexOutOfBoundsException oob) {
+                LOG.log(Level.FINE, "Line no more exists.", oob);   //NOI18N
+            }
+        }
+        Editable editable = dobj.getLookup().lookup(Editable.class);
+        if (editable == null) {
+            //Workaround of non functional org.openide.util.Lookup class hierarchy cache.
+            editable = dobj.getLookup().lookup(EditCookie.class);
+        }
+        if (editable != null) {
+            editable.edit();
+            return;
+        }
+        open(dobj);
     }
 }

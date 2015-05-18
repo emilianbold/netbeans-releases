@@ -106,7 +106,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     }
 
     public List<CsmDeclaration> getTreeSelectedElements() {
-        ArrayList<CsmDeclaration> handles = new ArrayList<CsmDeclaration>();
+        ArrayList<CsmDeclaration> handles = new ArrayList<>();
 
         for (Node node : manager.getSelectedNodes()) {
             if (node instanceof ElementNode) {
@@ -119,7 +119,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
     }
 
     public List<CsmDeclaration> getSelectedElements() {
-        ArrayList<CsmDeclaration> handles = new ArrayList<CsmDeclaration>();
+        ArrayList<CsmDeclaration> handles = new ArrayList<>();
 
         Node n = manager.getRootContext();
         ElementNode.Description description = n.getLookup().lookup(ElementNode.Description.class);

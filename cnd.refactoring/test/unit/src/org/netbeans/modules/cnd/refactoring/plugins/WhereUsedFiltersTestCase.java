@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.refactoring.plugins;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 
 /**

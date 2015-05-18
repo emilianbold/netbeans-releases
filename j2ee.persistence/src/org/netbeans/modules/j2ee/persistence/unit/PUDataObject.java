@@ -119,6 +119,8 @@ public class PUDataObject extends XmlMultiViewDataObject {
      */ 
     static final String PERSISTENCE_UNIT_ADDED_OR_REMOVED = "persistence_unit_added_or_removed"; //NOI18N
 
+    protected boolean changedFromUI;
+    
     /**
      * Creates a new instance of PUDataObject.
      */
@@ -416,6 +418,14 @@ public class PUDataObject extends XmlMultiViewDataObject {
     public void modelUpdated() {
         setModified(true);
         modelSynchronizer.requestUpdateData();
+    }
+
+    public boolean isChangedFromUI() {
+        return changedFromUI;
+    }
+
+    public void setChangedFromUI(boolean changedFromUI) {
+        this.changedFromUI=changedFromUI;
     }
 
     /**

@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
@@ -358,6 +360,24 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return null;
+    }
+    
+    @Override
+    public boolean hasGuardBlock(CsmFile file) {
+        if (file instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) file;
+            try {
+                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+                if (apt.getGuardMacro().length() > 0) {
+                    return true;
+                }                    
+            } catch (FileNotFoundException ex) {
+                // file could be removed
+            } catch (IOException ex) {
+                System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+            } 
+        }
+        return false;
     }
 
     @Override

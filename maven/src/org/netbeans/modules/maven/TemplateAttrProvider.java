@@ -57,6 +57,7 @@ import org.apache.maven.model.Organization;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,6 +65,7 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -84,18 +86,18 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
     private static final Logger LOG = Logger.getLogger(TemplateAttrProvider.class.getName());
 
     private final Project project;
-    
+
     public TemplateAttrProvider(Project prj) {
         project = prj;
     }
-    
+
     public @Override Map<String,?> attributesFor(DataObject template, DataFolder target, String name) {
         Map<String,Object> values = new TreeMap<String,Object>();
         AuxiliaryProperties auxProps = project.getLookup().lookup(AuxiliaryProperties.class);
         String licensePath = auxProps.get(Constants.HINT_LICENSE_PATH, true); //NOI18N
         if (licensePath != null) {
             ExpressionEvaluator eval = PluginPropertyUtils.createEvaluator(project);
-            
+
             try {
                 Object no = eval.evaluate(licensePath);
                 if (no != null) {
@@ -113,9 +115,11 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
                LOG.log(Level.INFO, "project.licensePath value not accepted - " + licensePath);
             }
         }
-        
+
         String license = auxProps.get(Constants.HINT_LICENSE, true); //NOI18N
-        MavenProject mp = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        NbMavenProject nbMavenProject = project.getLookup().lookup(NbMavenProject.class);
+        assert nbMavenProject != null;
+        MavenProject mp = nbMavenProject.getMavenProject();
         if (license == null) {
             license = findLicenseByMavenProjectContent(mp);
         }
@@ -141,25 +145,38 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         ProjectInformation pi = ProjectUtils.getInformation(project);
         values.put("name", mp.getArtifactId()); // NOI18N
         values.put("displayName", pi.getDisplayName()); // NOI18N
-        
+
         //#206321
         if (mp.getProperties() != null) {
             Map<String, Object> props = new HashMap<String, Object>();
             for (String prop : mp.getProperties().stringPropertyNames()) {
                 String[] split = prop.split("\\.");
                 String value = mp.getProperties().getProperty(prop);
-                putProp(split, props, value);        
+                putProp(split, props, value);
             }
             if (props.size() > 0) {
                 values.put("property", props);
             }
         }
 
+        // #251780
+        if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(nbMavenProject.getPackagingType())) {
+            values.put("webRootPath", getWebRootPath(project)); // NOI18N
+        }
+
         if (values.size() > 0) {
-            return Collections.singletonMap("project", values); // NOI18N        
+            return Collections.singletonMap("project", values); // NOI18N
         } else {
             return null;
         }
+    }
+
+    @CheckForNull
+    private static String getWebRootPath(Project project) {
+        for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
+            return FileUtil.getRelativePath(project.getProjectDirectory(), webRoot);
+        }
+        return null;
     }
 
     private void putProp(String[] split, Map<String, Object> props, String value) {

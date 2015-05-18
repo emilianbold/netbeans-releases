@@ -163,21 +163,4 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     
-    <folder name="Debugger">
-        <folder name="javascript-debuggerengine">
-        <folder name="BreakpointsView">
-            <folder name="Toolbar">
-                <file name="org-netbeans-modules-web-javascript-debugger-breakpoints-BreakpointModelActiveSessionFilter-createActivateBreakpointsActionButton.instance">
-                    <!--attr name="serviceName" stringvalue="org.netbeans.modules.debugger.jpda.actions.ContinueActionProvider"/-->
-                    <attr name="serviceClass" stringvalue="java.awt.Component"/>
-                    <attr name="instanceOf" stringvalue="java.awt.Component"/>
-                    <attr
-                        methodvalue="org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointModelActiveSessionFilter.createActivateBreakpointsActionButton" name="instanceCreate"/>
-                    <attr intvalue="150" name="position"/>
-                </file>
-            </folder>
-        </folder>
-        </folder>
-    </folder>    
-    
 </filesystem>

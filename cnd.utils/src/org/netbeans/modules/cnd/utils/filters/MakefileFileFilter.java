@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 
 public class MakefileFileFilter extends FileAndFileObjectFilter {
 
-    private static String suffixes[] = {"mk", "Makefile", "makefile"}; // NOI18N
+    private static final String suffixes[] = {"mk", "Makefile", "makefile"}; // NOI18N
     private static MakefileFileFilter instance = null;
 
     public MakefileFileFilter() {

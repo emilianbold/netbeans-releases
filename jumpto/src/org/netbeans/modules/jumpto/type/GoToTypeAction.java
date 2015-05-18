@@ -50,14 +50,8 @@ import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import java.awt.Component;
-import java.awt.Color;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -82,40 +76,34 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
-import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
-import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.jumpto.file.LazyListModel;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.awt.HtmlRenderer;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -126,7 +114,7 @@ import org.openide.windows.TopComponent;
  * XXX Don't look for all projects (do it lazy in filter or renderer)
  * @author Petr Hrebejk
  */
-public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider, LazyListModel.Filter {
+public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentProvider {
 
     static final Logger LOGGER = Logger.getLogger(GoToTypeAction.class.getName()); // Used from the panel as well
 
@@ -144,7 +132,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     private final TypeBrowser.Filter typeFilter;
     private final String title;
     private final boolean multiSelection;
-    private final CurrentSearch currentSearch;
+    private final CurrentSearch<TypeDescriptor> currentSearch;
 
     /** Creates a new instance of OpenTypeAction */
     public GoToTypeAction() {
@@ -169,7 +157,15 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     @Override
                     @NonNull
                     protected String getItemValue(@NonNull final TypeDescriptor item) {
-                        return item.getTypeName();
+                        return item.getSimpleName();
+                    }
+                    @Override
+                    protected void update(@NonNull final TypeDescriptor item) {
+                        String searchText = getSearchText();
+                        if (searchText == null) {
+                            searchText = "";    //NOI18N
+                        }
+                        TypeProviderAccessor.DEFAULT.setHighlightText(item, searchText);
                     }
                 };
             }
@@ -235,16 +231,6 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         return OpenProjects.getDefault().getOpenProjects().length>0;
     }
 
-    @Override
-    public boolean accept(Object obj) {
-        return typeFilter == null ? true : typeFilter.accept((TypeDescriptor) obj);
-    }
-
-    @Override
-    public void scheduleUpdate(Runnable run) {
-        SwingUtilities.invokeLater(run);
-    }
-
     // Implementation of content provider --------------------------------------
 
 
@@ -254,7 +240,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, caseSensitive);
+        return ItemRenderer.Builder.create(
+                list,
+                caseSensitive,
+                new TypeDescriptorConvertor()).build();
     }
 
 
@@ -290,8 +279,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         }
 
-        boolean exact = text.endsWith(" "); // NOI18N
-
+        final boolean exact = text.endsWith(" "); // NOI18N
         text = text.trim();
 
         if ( text.length() == 0 || !Utils.isValidInput(text)) {
@@ -300,34 +288,28 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return false;
         }
 
-        int wildcard = Utils.containsWildCard(text);
-
-        if (exact) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.EXACT_NAME :
-                    SearchType.CASE_INSENSITIVE_EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.CAMEL_CASE:
-                    SearchType.CASE_INSENSITIVE_CAMEL_CASE;
-        } else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.REGEXP :
-                    SearchType.CASE_INSENSITIVE_REGEXP;
+        nameKind = Utils.getSearchType(text, exact, panel.isCaseSensitive(), null, null);
+        if (nameKind == SearchType.REGEXP || nameKind == SearchType.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
-        } else {
-            nameKind = panel.isCaseSensitive() ?
-                    SearchType.PREFIX :
-                    SearchType.CASE_INSENSITIVE_PREFIX;
+        }
+
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
+        final String name = nameAndScope.first();
+        final String scope = nameAndScope.second();
+        if (name.length() == 0) {
+            //Empty name, wait for next char
+            currentSearch.resetFilter();
+            panel.setModel(EMPTY_LIST_MODEL);
+            return false;
         }
 
         // Compute in other thread
-        if (currentSearch.isNarrowing(nameKind, text)) {
-            currentSearch.filter(nameKind, text);
+        if (currentSearch.isNarrowing(nameKind, name, scope)) {
+            currentSearch.filter(nameKind, name);
             enableOK(panel.revalidateModel());
             return false;
         } else {
-            running = new Worker( text , panel.isCaseSensitive());
+            running = new Worker(text, panel.isCaseSensitive());
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -456,6 +438,47 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     // Private classes ---------------------------------------------------------
 
 
+    private static final class TypeDescriptorConvertor implements ItemRenderer.Convertor<TypeDescriptor> {
+        @Override
+        public String getName(@NonNull final TypeDescriptor item) {
+            return item.getTypeName();
+        }
+
+        @Override
+        public String getHighlightText(@NonNull final TypeDescriptor item) {
+            return TypeProviderAccessor.DEFAULT.getHighlightText(item);
+        }
+
+        @Override
+        public String getOwnerName(@NonNull final TypeDescriptor item) {
+            return item.getContextName();
+        }
+
+        @Override
+        public String getProjectName(@NonNull final TypeDescriptor item) {
+            return item.getProjectName();
+        }
+
+        @Override
+        public String getFilePath(@NonNull final TypeDescriptor item) {
+            return item.getFileDisplayPath();
+        }
+
+        @Override
+        public Icon getItemIcon(@NonNull final TypeDescriptor item) {
+            return item.getIcon();
+        }
+
+        @Override
+        public Icon getProjectIcon(@NonNull final TypeDescriptor item) {
+            return item.getProjectIcon();
+        }
+
+        @Override
+        public boolean isFromCurrentProject(@NonNull final TypeDescriptor item) {
+            return false;
+        }
+    }
 
     private class Worker implements Runnable {
 
@@ -531,7 +554,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         if (resultChanged) {
                             ListModel model = Models.fromList(types, currentSearch.resetFilter());
                             if (typeFilter != null) {
-                                model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                                model = FilteredListModel.create(model, new FilterAdaptor(typeFilter), NbBundle.getMessage(GoToTypeAction.class, "LBL_Computing"));
                             }
                             fmodel = model;
                         } else {
@@ -544,7 +567,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             @Override
                             public void run() {
                                 if (done) {
-                                    currentSearch.searchCompleted(nameKind, text);
+                                    final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
                                 }
                                 if (fmodel != null && !isCanceled) {
                                     enableOK(panel.setModel(fmodel));
@@ -647,221 +671,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
     }
 
-    private static class MyPanel extends JPanel {
-
-	private TypeDescriptor td;
-
-	void setDescriptor(TypeDescriptor td) {
-	    this.td = td;
-	    // since the same component is reused for dirrerent list itens,
-	    // null the tool tip
-	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
-	}
-
-	@Override
-	public String getToolTipText() {
-	    // the tool tip is gotten from the descriptor
-	    // and cached in the standard TOOL_TIP_TEXT_KEY property
-	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
-	    if( text == null ) {
-                if( td != null ) {
-                    text = td.getFileDisplayPath();
-                }
-                putClientProperty(TOOL_TIP_TEXT_KEY, text);
-	    }
-	    return text;
-	}
-    }
-
     final void waitSearchFinished() {
         assert SwingUtilities.isEventDispatchThread();
         task.waitFinished();
     }
-
-    private static final class Renderer extends EntitiesListCellRenderer implements ActionListener {
-
-        private MyPanel rendererComponent;
-        private JLabel jlName = HtmlRenderer.createLabel();
-        private JLabel jlPkg = new JLabel();
-        private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 15;
-        private int LIGHTER_COLOR_COMPONENT = 80;
-        private Color fgColor;
-        private Color fgColorLighter;
-        private Color bgColor;
-        private Color bgColorDarker;
-        private Color bgSelectionColor;
-        private Color fgSelectionColor;
-
-        private JList jList;
-        private boolean caseSensitive;
-        private final HighlightingNameFormatter typeNameFormatter;
-
-        @SuppressWarnings("LeakingThisInConstructor")
-        public Renderer(
-                @NonNull final JList list,
-                @NonNull final ButtonModel caseSensitive) {
-
-            jList = list;
-            this.caseSensitive = caseSensitive.isSelected();
-            resetName();
-            Container container = list.getParent();
-            if ( container instanceof JViewport ) {
-                ((JViewport)container).addChangeListener(this);
-                stateChanged(new ChangeEvent(container));
-            }
-
-            rendererComponent = new MyPanel();
-            rendererComponent.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlName, c);
-
-            c = new GridBagConstraints();
-            c.gridx = 1;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlPkg, c);
-
-            c = new GridBagConstraints();
-            c.gridx = 2;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.EAST;
-            rendererComponent.add( jlPrj, c);
-
-
-            jlPkg.setOpaque(false);
-            jlPrj.setOpaque(false);
-
-            jlPkg.setFont(list.getFont());
-            jlPrj.setFont(list.getFont());
-
-
-            jlPrj.setHorizontalAlignment(RIGHT);
-            jlPrj.setHorizontalTextPosition(LEFT);
-
-            // setFont( list.getFont() );
-            fgColor = list.getForeground();
-            fgColorLighter = new Color(
-                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
-                                  );
-
-            bgColor = new Color( list.getBackground().getRGB() );
-            bgColorDarker = new Color(
-                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
-                            );
-            bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();
-            this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
-            caseSensitive.addActionListener(this);
-            jlName.setOpaque( true );
-        }
-
-        public @Override Component getListCellRendererComponent( JList list,
-                                                       Object value,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean hasFocus) {
-
-            // System.out.println("Renderer for index " + index );
-
-            int height = list.getFixedCellHeight();
-            int width = list.getFixedCellWidth() - 1;
-
-            width = width < 200 ? 200 : width;
-
-            // System.out.println("w, h " + width + ", " + height );
-
-            Dimension size = new Dimension( width, height );
-            rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-            resetName();
-            if ( isSelected ) {
-                jlName.setForeground(fgSelectionColor);
-                jlName.setBackground( bgSelectionColor );
-                jlPkg.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
-                rendererComponent.setBackground(bgSelectionColor);
-            }
-            else {
-                jlName.setForeground(fgColor);
-                jlPkg.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);
-                final Color bgc = index % 2 == 0 ? bgColor : bgColorDarker;
-                jlName.setBackground(bgc);    //Html does not support transparent bg
-                rendererComponent.setBackground(bgc);
-            }
-            if ( value instanceof TypeDescriptor ) {
-                long time = System.currentTimeMillis();
-                TypeDescriptor td = (TypeDescriptor)value;
-                jlName.setIcon(td.getIcon());
-                //highlight matching search text patterns in type
-                final String formattedTypeName = typeNameFormatter.formatName(
-                        td.getTypeName(),
-                        TypeProviderAccessor.DEFAULT.getHighlightText(td),
-                        caseSensitive,
-                        isSelected? fgSelectionColor : fgColor);
-                jlName.setText(formattedTypeName);
-                jlPkg.setText(td.getContextName());
-                setProjectName(jlPrj, td.getProjectName());
-                jlPrj.setIcon(td.getProjectIcon());
-		rendererComponent.setDescriptor(td);
-                LOGGER.log(Level.FINE, "  Time in paint {0} ms.", System.currentTimeMillis() - time);   //NOI18N
-            }
-            else {
-                jlName.setText( value.toString() );
-            }
-
-            return rendererComponent;
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent event) {
-
-            JViewport jv = (JViewport)event.getSource();
-
-            jlName.setText( "Sample" ); // NOI18N
-            //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false)); //NOI18N
-
-            jList.setFixedCellHeight(jlName.getPreferredSize().height);
-            jList.setFixedCellWidth(jv.getExtentSize().width);
-        }
-
-        @Override
-        public void actionPerformed(@NonNull final ActionEvent e) {
-            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
-        }
-
-        private void resetName() {
-            ((HtmlRenderer.Renderer)jlName).reset();
-            jlName.setFont(jList.getFont());
-            jlName.setOpaque(true);
-            ((HtmlRenderer.Renderer)jlName).setHtml(true);
-            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
-        }
-
-     } // Renderer
 
     private class DialogButtonListener implements ActionListener {
 
@@ -941,7 +754,27 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 Exceptions.printStackTrace(ex);
             }
         }
-
     }
 
+    private static final class FilterAdaptor implements Models.Filter<TypeDescriptor> {
+        private final TypeBrowser.Filter filter;
+
+        FilterAdaptor(@NonNull final TypeBrowser.Filter filter) {
+            Parameters.notNull("filter", filter);   //NOI18N
+            this.filter = filter;
+        }
+
+        @Override
+        public boolean accept(TypeDescriptor item) {
+            return filter.accept(item);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public void remmoveChangeListener(ChangeListener listener) {
+        }
+    }
 }

@@ -30,6 +30,9 @@
  */
 package org.netbeans.modules.javadoc;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,6 +57,10 @@ import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
 public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherFactory {
 
     private static final Logger LOG = Logger.getLogger(JavadocBracesMatcher.class.getName());
+    private static final Collection<String> VOID_TAGS = new HashSet<>(Arrays.asList(new String[]{
+        "<area>", "<base>", "<br>", "<col>", "<command>", "<embed>", "<hr>", "<img>", //NOI18N
+        "<input>", "<keygen>", "<link>", "<meta>", "<param>", "<source>", "<track>", "<wbr>" //NOI18N
+    }));
     
     private final MatcherContext context;
     
@@ -169,7 +176,7 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
             Token<? extends TokenId> tag = jdocSeq.token();
             assert tag.id() == JavadocTokenId.HTML_TAG : "Wrong token"; //NOI18N
 
-            if (isSingleTag(tag)) {
+            if (isSingleTag(tag) || isVoidTag(tag)) {
                 return new int [] { jdocSeq.offset(), jdocSeq.offset() + jdocSeq.token().length() };
             }
 
@@ -243,6 +250,10 @@ public final class JavadocBracesMatcher implements BracesMatcher, BracesMatcherF
     
     private static boolean isSingleTag(Token<? extends TokenId> tag) {
         return TokenUtilities.endsWith(tag.text(), "/>"); //NOI18N
+    }
+    
+    private static boolean isVoidTag(Token<? extends TokenId> tag) {
+        return VOID_TAGS.contains(tag.text().toString());
     }
     
     private static boolean isOpeningTag(Token<? extends TokenId> tag) {

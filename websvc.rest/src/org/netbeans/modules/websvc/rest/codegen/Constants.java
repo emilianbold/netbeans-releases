@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
+import com.sun.source.tree.ExpressionTree;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 
 /**
@@ -53,7 +55,7 @@ import org.netbeans.modules.websvc.rest.model.api.RestConstants;
  */
 public class Constants {
     
-    public static final String RESOURCE_SUFFIX = "Resource";
+    public static final String RESOURCE_SUFFIX = "Resource"; // NOI18N
         
     public static final String CONVERTER_SUFFIX = "Converter";      //NOI18N
     
@@ -131,18 +133,20 @@ public class Constants {
     public static final String JAVA_EXT = "java"; //NI18N
     
     public enum MimeType {
-        XML("application/xml", "Xml"),      //NOI18N
-        JSON("application/json", "Json"),   //NOI18N
-        TEXT("text/plain", "Text"),         //NOI18N
-        HTML("text/html", "Html"),          //NOI18N
-        IMAGE("image/png", "Image");          //NOI18N
+        XML("application/xml", "Xml", "APPLICATION_XML"), // NOI18N
+        JSON("application/json", "Json", "APPLICATION_JSON"), // NOI18N
+        TEXT("text/plain", "Text", "TEXT_PLAIN"), // NOI18N
+        HTML("text/html", "Html", "TEXT_HTML"), // NOI18N
+        IMAGE("image/png", "Image", null); // NOI18N
         
-        private String value;
-        private String suffix;
+        private final String value;
+        private final String suffix;
+        private final String mediaTypeField;
         
-        MimeType(String value, String suffix) {
+        MimeType(String value, String suffix, String mediaTypeField) {
             this.value = value;
             this.suffix = suffix;
+            this.mediaTypeField = mediaTypeField;
         }
         
         public String value() {
@@ -152,15 +156,29 @@ public class Constants {
         public String suffix() {
             return suffix;
         }
-        
+
+        public ExpressionTree expressionTree(TreeMaker maker) {
+            ExpressionTree tree;
+            if (mediaTypeField == null) {
+                tree = maker.Literal(value());
+            } else {
+                // Use a field of MediaType class if possible
+                ExpressionTree typeTree = maker.QualIdent("javax.ws.rs.core.MediaType"); // NOI18N
+                tree = maker.MemberSelect(typeTree, mediaTypeField);
+            }
+            return tree;
+        }
+
         public static MimeType find(String value) {
             for(MimeType m:values()) {
-                if(m.value().equals(value))
+                if(m.value().equals(value)) {
                     return m;
+                }
             }
             return null;
         }
         
+        @Override
         public String toString() {
             return value;
         }
@@ -172,8 +190,8 @@ public class Constants {
         POST("post", RestConstants.POST), //NOI18N
         DELETE("delete", RestConstants.DELETE); //NOI18N
         
-        private String prefix; 
-        private String annotationType;
+        private final String prefix; 
+        private final String annotationType;
         
         HttpMethodType(String prefix, String annotationType) {
             this.prefix = prefix;

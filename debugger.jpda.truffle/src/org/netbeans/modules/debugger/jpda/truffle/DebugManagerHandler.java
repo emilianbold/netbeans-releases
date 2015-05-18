@@ -321,13 +321,7 @@ class DebugManagerHandler implements JPDABreakpointListener {
             if (accessLoopRunning != null) {
                 ClassTypeWrapper.setValue(accessorClass, accessLoopRunning,
                                           VirtualMachineWrapper.mirrorOf(accessorClass.virtualMachine(), false));
-            }
-            Field accessThreadField = ReferenceTypeWrapper.fieldByName(accessorClass, "accessLoopThread");
-            if (accessThreadField != null) {
-                Value ret = ReferenceTypeWrapper.getValue(accessorClass, accessThreadField);
-                if (ret instanceof ThreadReference) {
-                    ThreadReferenceWrapper.interrupt((ThreadReference) ret);
-                }
+                RemoteServices.interruptServiceAccessThread(debugger);
             }
         } catch (VMDisconnectedExceptionWrapper vdex) {
             // Ignore

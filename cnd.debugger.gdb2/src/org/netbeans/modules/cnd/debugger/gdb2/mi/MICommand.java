@@ -227,7 +227,7 @@ public abstract class MICommand {
 	    return null;
 	StringBuilder sb = new StringBuilder();
 	for (String s : logStream)
-	    sb.append(String.format(s));
+	    sb.append(s);
 	return sb.toString();
     }
 
@@ -239,7 +239,7 @@ public abstract class MICommand {
 	    return null;
 	StringBuilder sb = new StringBuilder();
 	for (String s : consoleStream)
-	    sb.append(String.format(s));
+	    sb.append(s);
 	return sb.toString();
     }
    

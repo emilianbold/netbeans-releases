@@ -49,7 +49,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,13 +63,11 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
@@ -89,7 +86,6 @@ import org.openide.util.Exceptions;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
@@ -155,6 +151,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
      * @return
      * @throws java.io.IOException
      */
+    @Override
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if (pHandle != null) {
             initProgressReporting(pHandle);
@@ -276,11 +273,11 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         }
         
         // add @Produces annotation
-        modifiersTree = addMimeHandlerAnnotation(genUtils, maker, option,
+        modifiersTree = addMimeHandlerAnnotation(genUtils, maker,
                 modifiersTree, RestConstants.PRODUCE_MIME, option.getProduces());
         
         // add @Consumes annotation
-        modifiersTree = addMimeHandlerAnnotation(genUtils, maker, option,
+        modifiersTree = addMimeHandlerAnnotation(genUtils, maker,
                 modifiersTree, RestConstants.CONSUME_MIME, option.getConsumes());
         return modifiersTree;
     }
@@ -595,6 +592,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         JavaSource javaSource = JavaSource.forFileObject( fileObject );
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
             
+            @Override
             public void run(WorkingCopy workingCopy) throws Exception {
                 workingCopy.toPhase(Phase.RESOLVED);
                 CompilationUnitTree tree = workingCopy.getCompilationUnit();
@@ -649,31 +647,39 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         javaSource.runModificationTask(task).commit();
     }
     
-    private ModifiersTree addMimeHandlerAnnotation( GenerationUtils genUtils,
-            TreeMaker maker, RestGenerationOptions option,
-            ModifiersTree modifiersTree , String handlerAnnotation, String[] mimes )
-    {
-        if (mimes != null) {
-            ExpressionTree annArguments = null;
-            if (mimes.length == 1) {
-                annArguments = maker.Literal(mimes[0]);
-            } else {
-                List<LiteralTree> literals = new ArrayList<LiteralTree>();
-                for (int i=0; i< mimes.length; i++) {
-                    literals.add(maker.Literal(mimes[i]));
-                }
-                annArguments = maker.NewArray(null, 
-                        Collections.<ExpressionTree>emptyList(), 
-                        literals);
-            }
-            modifiersTree =
-                    maker.addModifiersAnnotation(modifiersTree,
-                    genUtils.createAnnotation(
-                            handlerAnnotation, 
-                            Collections.<ExpressionTree>singletonList(
-                                    annArguments)));
+    private ModifiersTree addMimeHandlerAnnotation(GenerationUtils genUtils,
+            TreeMaker maker, ModifiersTree modifiersTree, String handlerAnnotation, String[] mimes) {
+        if (mimes == null) {
+            return modifiersTree;
         }
-        return modifiersTree;
+        ExpressionTree annArguments;
+        if (mimes.length == 1) {
+            annArguments = mimeTypeTree(maker, mimes[0]);
+        } else {
+            List<ExpressionTree> mimeTypes = new ArrayList<ExpressionTree>();
+            for (int i=0; i< mimes.length; i++) {
+                mimeTypes.add(mimeTypeTree(maker, mimes[i]));
+            }
+            annArguments = maker.NewArray(null, 
+                    Collections.<ExpressionTree>emptyList(), 
+                    mimeTypes);
+        }
+        return maker.addModifiersAnnotation(modifiersTree,
+                genUtils.createAnnotation(
+                        handlerAnnotation, 
+                        Collections.<ExpressionTree>singletonList(
+                                annArguments)));
+    }
+
+    private ExpressionTree mimeTypeTree(TreeMaker maker, String mimeType) {
+        Constants.MimeType type = Constants.MimeType.find(mimeType);
+        ExpressionTree result;
+        if (type == null) {
+            result = maker.Literal(mimeType);
+        } else {
+            result = type.expressionTree(maker);
+        }
+        return result;
     }
     
     private String getGetterName(FieldInfo fieldInfo) {

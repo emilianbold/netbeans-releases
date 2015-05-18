@@ -203,6 +203,11 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
     }
 
     @Override
+    public void putCompositeComponentTag(String name, String resourceId) {
+        components.put(name, new CompositeComponentTag(name, resourceId));
+    }
+
+    @Override
     public void putFunction(String name, Method method) {
         components.put(name, new Function(name, method));
     }

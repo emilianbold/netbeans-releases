@@ -276,7 +276,7 @@ public abstract class ActionsProvider {
             }
             if (actionsDelegate == null) {
                 Boolean isEnabledMIME = isCurrentMIMETypeIn(enabledOnMIMETypes);
-                if (Boolean.FALSE.equals(isEnabledMIME)) {
+                if (!Boolean.TRUE.equals(isEnabledMIME)) {
                     //System.err.println("Delegate '"+serviceName+"' NOT enabled on "+currentMIMEType+", enabled MIME types = "+enabledOnMIMETypes);
                     return false;
                 }
@@ -430,7 +430,7 @@ public abstract class ActionsProvider {
             }
             return null;
         }
-        
+
         private PropertyChangeListener attachContextDispatcherListener() {
             // Call EditorContextDispatcher.getDefault().addPropertyChangeListener(String MIMEType, PropertyChangeListener l)
             // It's not in a dependent module, therefore we have to find it dynamically:

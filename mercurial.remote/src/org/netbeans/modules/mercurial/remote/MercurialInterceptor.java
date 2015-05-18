@@ -800,8 +800,8 @@ public class MercurialInterceptor extends VCSInterceptor {
                 newer = dirstateSize != other.dirstateSize;
                 for (Map.Entry<String, Long> e : interestingTimestamps.entrySet()) {
                     // has a newer (higher) ts or the file is deleted
-                    if (e.getValue() > other.interestingTimestamps.get(e.getKey())
-                            || e.getValue() == 0 && other.interestingTimestamps.get(e.getKey()) != e.getValue()) {
+                    if (e.getValue() > other.interestingTimestamps.get(e.getKey()) ||
+                        e.getValue() == 0 && other.interestingTimestamps.get(e.getKey()).longValue() != e.getValue().longValue()) {
                         newer = true;
                         break;
                     }

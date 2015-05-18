@@ -164,7 +164,6 @@ CLASS      UIEvent                         [PUBLIC]   JS Platform
 CLASS      UserDataHandler                 [PUBLIC]   JS Platform
 CLASS      ViewCSS                         [PUBLIC]   JS Platform
 CLASS      Window                          [PUBLIC]   JS Platform
-CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     Image                           [PUBLIC,   JS Platform
 METHOD     Option                          [PUBLIC,   JS Platform
 METHOD     SyntaxError                     [PUBLIC]   JS Platform
@@ -328,7 +327,7 @@ VARIABLE   Infinity: Number                [PUBLIC]   JS Platform
 VARIABLE   NaN: Number                     [PUBLIC]   JS Platform
 VARIABLE   Proxy                           [PUBLIC]   JS Platform
 VARIABLE   r: Requester1                   [PUBLIC]   callback01.js
-VARIABLE   undefined: undefined            [PUBLIC]   JS Platform
+VARIABLE   undefined                       [PUBLIC]   JS Platform
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

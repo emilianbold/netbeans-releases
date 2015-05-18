@@ -72,6 +72,8 @@ import org.openide.util.NbBundle;
  */
 public class JiraQuery {
 
+    public static final String JIRA_ADHOC_QUERY_PREFIX = "jira ad-hoc query nr. ";
+    
     private String name;
     private final JiraRepository repository;
     protected QueryController controller;
@@ -177,30 +179,27 @@ public class JiraQuery {
                     firstRun = false;
 
                     try {
-                        if (runningQuery == null) {
+                        if (iquery == null) {
                             String qName = getStoredQueryName();
                             if (qName == null || name == null) {
-                                qName = "bugzilla ad-hoc query nr. " + System.currentTimeMillis(); //NOI18N
+                                qName = JIRA_ADHOC_QUERY_PREFIX + System.currentTimeMillis(); //NOI18N
                             }
-                            runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
-                            if (runningQuery == null) {
-                                runningQuery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
-                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
-                            }
-                            if (isSaved()) {
-                                iquery = runningQuery;
+                            iquery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
+                            if (iquery == null) {
+                                iquery = MylynSupport.getInstance().createNewQuery(repository.getTaskRepository(), qName);
+                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), iquery);
                             }
                         }
-                        JiraConnectorSupport.getInstance().getConnector().setQuery(repository.getTaskRepository(), runningQuery, jiraFilter);
+                        JiraConnectorSupport.getInstance().getConnector().setQuery(repository.getTaskRepository(), iquery, jiraFilter);
                         SynchronizeQueryCommand queryCmd = MylynSupport.getInstance().getCommandFactory()
-                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), runningQuery);
+                                .createSynchronizeQueriesCommand(repository.getTaskRepository(), iquery);
                         QueryProgressListener list = new QueryProgressListener();
                         queryCmd.addCommandProgressListener(list);
                         repository.getExecutor().execute(queryCmd, !autoRefresh);
                         ret[0] = queryCmd.hasFailed();
                         if (ret[0]) {
                             if (isSaved()) {
-                                for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
+                                for (NbTask t : MylynSupport.getInstance().getTasks(iquery)) {
                                     // as a side effect creates a NbJiraIssue instance
                                     getRepository().getIssueForTask(t);
                                     issues.add(t.getTaskKey());
@@ -219,10 +218,6 @@ public class JiraQuery {
                     }
                 } finally {
                     queryCmd = null;
-                    if (iquery == null && runningQuery != null) {
-                        // ad-hoc queries cannot be saved in tasklist
-                        MylynSupport.getInstance().deleteQuery(runningQuery);
-                    }
                     JiraConfig.getInstance().putLastQueryRefresh(repository, getStoredQueryName(), System.currentTimeMillis());
                     logQueryEvent(issues.size(), autoRefresh);
                     Jira.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new String[] {name /* XXX , filterDefinition*/}); // NOI18N
@@ -253,6 +248,12 @@ public class JiraQuery {
 
     public boolean canRemove() {
         return isModifiable(jiraFilter);
+    }
+    
+    void delete() {
+        if(iquery != null) {
+            MylynSupport.getInstance().deleteQuery(iquery);
+        }
     }
         
     public void remove() {

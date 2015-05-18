@@ -62,7 +62,7 @@ public final class CoreFileFilter extends FileAndFileObjectFilter {
     // SORTED (as it is used in Arrays.binarySearch()) array of all suitable
     // mime types
     private static final String[] MIME_TYPES = new String[]{MIMENames.ELF_CORE_MIME_TYPE};
-    private static CoreFileFilter instance = new CoreFileFilter();
+    private static final CoreFileFilter instance = new CoreFileFilter();
 
     public static CoreFileFilter getInstance() {
         return instance;

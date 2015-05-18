@@ -43,6 +43,7 @@
 package org.netbeans.spi.jumpto.symbol;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -56,6 +57,7 @@ import org.openide.util.Parameters;
 public abstract class SymbolDescriptor {
 
     private String matchedSymbolName;
+    private SymbolProvider provider;
 
     /**
      * Return an icon that should be shown for this symbol descriptor. The icon
@@ -139,6 +141,17 @@ public abstract class SymbolDescriptor {
            FileUtil.getFileDisplayName(fo);
     }
 
+    /**
+     * Returns the simple symbol name.
+     * The simple symbol name is just a name without parameters or types.
+     * @return the simple name or null
+     * @since 1.48
+     */
+    @CheckForNull
+    public String getSimpleName() {
+        return null;
+    }
+
     final void setHighlightText(@NonNull final String matchedSymbolName) {
         Parameters.notNull("matchedSymbolName", matchedSymbolName); //NOI18N
         this.matchedSymbolName = matchedSymbolName;
@@ -149,4 +162,13 @@ public abstract class SymbolDescriptor {
         return this.matchedSymbolName;
     }
 
+    final void setSymbolProvider(@NonNull final SymbolProvider provider) {
+        Parameters.notNull("provider", provider);   //NOI18N
+        this.provider = provider;
+    }
+
+    @CheckForNull
+    final SymbolProvider getSymbolProvider() {
+        return this.provider;
+    }
 }

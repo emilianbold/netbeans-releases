@@ -118,7 +118,7 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                         serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassRef);
                         steppingField = ReferenceTypeWrapper.fieldByName(serviceClass, "steppingIntoTruffle");
                         serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(1));
-                        RemoteServices.getServiceAccessThread(debugger).interrupt();
+                        RemoteServices.interruptServiceAccessThread(debugger);
                         //Method setSteppingIntoMethod = serviceClass.concreteMethodByName("setSteppingInto", "()V");
                         //serviceClass.invokeMethod(RemoteServices.getServiceAccessThread(debugger), setSteppingIntoMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                         LOG.fine("StepIntoScriptHandler: isSteppingInto set to true.");
@@ -149,7 +149,7 @@ public class StepIntoScriptHandler extends LazyActionsManagerListener implements
                 try {
                     serviceClass.setValue(steppingField, serviceClass.virtualMachine().mirrorOf(-1));
                     steppingField = null;
-                    RemoteServices.getServiceAccessThread(debugger).interrupt();
+                    RemoteServices.interruptServiceAccessThread(debugger);
                     //Method unsetSteppingIntoMethod = serviceClass.concreteMethodByName("unsetSteppingInto", "()V");
                     //serviceClass.invokeMethod(RemoteServices.getServiceAccessThread(debugger), unsetSteppingIntoMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     LOG.fine("StepIntoScriptHandler: isSteppingInto set to false.");

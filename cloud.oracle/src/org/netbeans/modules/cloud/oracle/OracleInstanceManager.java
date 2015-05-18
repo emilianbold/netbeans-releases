@@ -145,12 +145,10 @@ public class OracleInstanceManager {
     
     public boolean exist(String adminURL, String identityDomain, String javaServiceName, String user) {
         for (OracleInstance oi : getInstances()) {
-            if (adminURL.equals(oi.getAdminURL()) &&
-                    identityDomain.equals(oi.getIdentityDomain()) &&
-                    // for now ignore java service name; one cloud account can 
-                    // have just one Java service, right??
-                    //javaServiceName.equals(oi.getJavaServiceName()) &&
-                    user.equals(oi.getUser())) {
+            if (adminURL.equals(oi.getAdminURL())
+                    && identityDomain.equals(oi.getIdentityDomain())
+                    && javaServiceName.equals(oi.getJavaServiceName())
+                    && user.equals(oi.getUser())) {
                 return true;
             }
         }

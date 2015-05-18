@@ -221,7 +221,7 @@ public class MavenSchemaCompiler implements SchemaCompiler {
         plugin = model.getFactory().createPlugin();
         plugin.setGroupId(JAXB_PLUGIN_GROUP_ID);
         plugin.setArtifactId(JAXB_PLUGIN_ARTIFACT_ID);
-        //plugin.setVersion("0.7.4"); //NOI18N
+        plugin.setVersion("0.12.0"); //NOI18N
         bld.addPlugin(plugin);
 
         // setup global configuration

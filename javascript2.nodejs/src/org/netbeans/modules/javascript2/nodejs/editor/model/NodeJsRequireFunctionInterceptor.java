@@ -59,6 +59,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.nodejs.editor.NodeJsUtils;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 
@@ -77,7 +78,8 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject,
+            DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FileObject fo = globalObject.getFileObject();
         if (fo == null) {
             // no action
@@ -144,7 +146,13 @@ public class NodeJsRequireFunctionInterceptor implements FunctionInterceptor {
                                     ts.movePrevious();
                                     token = LexUtilities.findNextIncluding(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.OPERATOR_SEMICOLON, JsTokenId.OPERATOR_DOT));
                                     if (token != null && token.id() != JsTokenId.OPERATOR_DOT) {
-                                        jsObject.clearAssignments();
+                                        Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
+                                        if (assignments.size() == 1) {
+                                            TypeUsage assignment = assignments.iterator().next();
+                                            if (assignment.getType().endsWith(NodeJsUtils.REQUIRE_METHOD_NAME)) {
+                                                jsObject.clearAssignments();
+                                            }
+                                        }
                                         jsObject.addAssignment( modelTypes.get(0), assignmentOffset);
                                         jsObject.addAssignment( modelTypes.get(1), assignmentOffset);
                                     }

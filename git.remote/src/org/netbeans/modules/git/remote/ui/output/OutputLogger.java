@@ -75,7 +75,7 @@ public class OutputLogger {
     private boolean writable;
     private static final RequestProcessor rp = new RequestProcessor("GitRemoteOutput", 1); //NOI18N
     private static final Logger LOG = Logger.getLogger(OutputLogger.class.getName());
-    private static final WeakSet<InputOutput> openWindows = new WeakSet<InputOutput>(5);
+    private static final WeakSet<InputOutput> openWindows = new WeakSet<>(5);
 
     public static OutputLogger getLogger (VCSFileProxy repositoryRoot) {
         if (repositoryRoot != null) {

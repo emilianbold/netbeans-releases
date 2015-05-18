@@ -48,7 +48,7 @@
 #include <termios.h>
 #endif
 
-#if !defined __APPLE__ && !defined __CYGWIN__
+#ifdef SOLARIS
 #include <stropts.h>
 #else
 #include <sys/select.h>

@@ -247,6 +247,10 @@ public class ModelTest extends ModelTestBase {
         checkModel("testfiles/structure/issue250392.js");
     }
     
+    public void testIssue251911() throws Exception {
+        checkModel("testfiles/model/issue251911.js");
+    }
+    
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream()));
@@ -274,5 +278,17 @@ public class ModelTest extends ModelTestBase {
 
     public void testIssue217679() throws Exception {
         checkModel("testfiles/model/testIssue217679.js");
+    }
+    
+    public void testIssue238685_01() throws Exception {
+        checkModel("testfiles/model/issue238685_01.js");
+    }
+    
+    public void testIssue252022() throws Exception {
+        checkModel("testfiles/hints/issue252022.js");
+    }
+    
+    public void testIssue252135() throws Exception {
+        checkModel("testfiles/markoccurences/issue252135.js");
     }
 }

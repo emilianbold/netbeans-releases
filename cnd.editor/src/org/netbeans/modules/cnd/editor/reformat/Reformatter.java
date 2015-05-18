@@ -54,10 +54,14 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -66,7 +70,7 @@ import org.openide.util.NbBundle;
  */
 public class Reformatter implements ReformatTask {
     private Context context;
-    private Document doc;
+    private final Document doc;
     private CodeStyle codeStyle;
     private int carret = -1;
     private JTextComponent currentComponent;
@@ -102,6 +106,21 @@ public class Reformatter implements ReformatTask {
         if (tabSize <= 1) {
             tabSize = 8;
         }
+        if (Boolean.TRUE.equals(doc.getProperty("code-template-insert-handler"))) { // NOI18N
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            if (dobj != null) {
+                FileObject fo = dobj.getPrimaryFile();
+                if (fo != null) {
+                    String lf = (String)fo.getAttribute(FileObject.DEFAULT_LINE_SEPARATOR_ATTR);
+                    if (lf != null) {
+                        doc.putProperty(FileObject.DEFAULT_LINE_SEPARATOR_ATTR, lf);
+                        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, lf);
+                    }
+                    doc.insertString(0, "", null); // NOI18N
+                }
+            }
+        }
+
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {
                 reformatImpl(region);

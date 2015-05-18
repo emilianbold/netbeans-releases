@@ -119,6 +119,20 @@ package org.netbeans.modules.css.lib;
 
 }
 
+@lexer::members {
+    protected boolean isLessSource() {
+        return false;
+    }
+
+    protected boolean isScssSource() {
+        return false;
+    }
+
+    private boolean isCssPreprocessorSource() {
+        return isLessSource() || isScssSource();
+    }
+}
+
 @members {
 
     protected boolean isLessSource() {
@@ -1942,7 +1956,7 @@ COMMENT
 LINE_COMMENT
     :
     '//'( options { greedy=false; } : ~('\r' | '\n')* ) {
-	$channel = HIDDEN;
+	if (isCssPreprocessorSource()) {$channel = HIDDEN;}
     }
     ;
 

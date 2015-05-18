@@ -58,6 +58,8 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -80,6 +82,7 @@ public class RepositoryFormPanel extends JPanel {
 
     private JComponent cardsPanel;
     private JLabel errorLabel;
+    private JTextArea errorText;
 
     private final FormDataListener formDataListener = new FormDataListener();
 
@@ -94,6 +97,7 @@ public class RepositoryFormPanel extends JPanel {
         }
         ERROR_COLOR = c;
     }
+    private JScrollPane errorScrollPane;
 
     public RepositoryFormPanel() {
         initComponents();
@@ -112,19 +116,44 @@ public class RepositoryFormPanel extends JPanel {
         errorLabel.setForeground(ERROR_COLOR);
         errorLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/bugtracking/ui/resources/error.gif")));   //NOI18N
+        errorText = new JTextArea();
+        errorText.setForeground(ERROR_COLOR);
+        errorText.setBackground(errorLabel.getBackground());
+        
+        errorScrollPane = new javax.swing.JScrollPane();
+        errorScrollPane.setBorder(null);
+        errorScrollPane.setViewportView(errorText);
+        
         updateErrorMessage(" ");                                        //NOI18N
-
+        
         GroupLayout layout = new GroupLayout(this);
         setLayout(layout);
+        
+        int height = errorText.getFont().getSize() * 3;
+        
         layout.setHorizontalGroup(
-                layout.createParallelGroup()
-                        .addComponent(cardsPanel)
-                        .addComponent(errorLabel));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(errorLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(errorScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
         layout.setVerticalGroup(
-                layout.createSequentialGroup()
-                        .addComponent(cardsPanel)
-                        .addGap(6, 14, 14)
-                        .addComponent(errorLabel));
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cardsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(6, 14, 14)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(errorScrollPane, height, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(errorLabel))
+                )
+        );
         layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 
@@ -174,11 +203,13 @@ public class RepositoryFormPanel extends JPanel {
             @Override
             public void run() {
                 if (msg != null && msg.length() != 0) {
-                    errorLabel.setText(msg);
                     errorLabel.setVisible(true);
+                    errorText.setText(msg);
+                    errorScrollPane.setVisible(true);
                 } else {
                     errorLabel.setVisible(false);
-                    errorLabel.setText(" ");                                    //NOI18N
+                    errorScrollPane.setVisible(false);
+                    errorText.setText(" ");                                    //NOI18N
                 }
             }
         };

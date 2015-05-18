@@ -42,6 +42,7 @@
  */
 package org.netbeans.modules.web.client.rest.wizard;
 
+import java.beans.Introspector;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -231,7 +232,7 @@ class ModelGenerator {
         for( HttpRequests request : set  ){
             overrideMethod(url, null, null, request, builder);
         }
-        return getModifierdSync( builder.toString() ).toString();
+        return getModifierdSync(builder.toString());
     }
     
     private String getModifierdSync( String body ){
@@ -246,7 +247,7 @@ class ModelGenerator {
         result.append(" // headers has to be set on the REST server side.\n");   // NOI18N
         result.append(" // Otherwise the JS client has to be copied into the\n");// NOI18N
         result.append(" // some (f.e. the same) Web project on the same domain\n");// NOI18N
-        result.append("alert('Unable to fulfil the request');\n}}\n\n");        // NOI18N
+        result.append("alert('Unable to fulfil the request');\n}\n};\n\n");        // NOI18N
         result.append( body );
         result.append("var result = Backbone.sync(method, model, ");            // NOI18N
         result.append("_.extend(options,errorHandler));\n");                    // NOI18N
@@ -409,8 +410,11 @@ class ModelGenerator {
             VariableElement param = parameters.get(0);
             TypeMirror type = param.asType();
             if ( isSimple(type, controller)){
-                return new Object[]{MethodType.SET, lowerFirstLetter(
-                        name.substring(3)), type};
+                return new Object[] {
+                    MethodType.SET,
+                    Introspector.decapitalize(name.substring(3)),
+                    type
+                };
             }
             else {
                 return null;
@@ -425,30 +429,22 @@ class ModelGenerator {
         }
         if ( start > 0){
             List<? extends VariableElement> parameters = method.getParameters();
-            if ( parameters.size() !=0 ){
+            if (!parameters.isEmpty()) {
                 return null;
             }
             TypeMirror returnType = method.getReturnType();
             if ( isSimple(returnType, controller)){
-                return new Object[]{ MethodType.GET, lowerFirstLetter(
-                        name.substring(start)), returnType};
+                return new Object[] {
+                    MethodType.GET,
+                    Introspector.decapitalize(name.substring(start)),
+                    returnType
+                };
             }
             else {
                 return null;
             }
         }
         return null;
-    }
-    
-    private String lowerFirstLetter( String name ){
-        if ( name.length() <=1){
-            return name;
-        }
-        char firstLetter = name.charAt(0);
-        if ( Character.isUpperCase(firstLetter)){
-            return Character.toLowerCase(firstLetter) +name.substring(1);
-        }
-        return name;
     }
     
     /*
@@ -487,7 +483,7 @@ class ModelGenerator {
             HttpRequests request, StringBuilder builder ) throws IOException
     {
         if ( path == null ){
-            builder.append("if(method=='");                              // NOI18N
+            builder.append("if(method==='");                              // NOI18N
             builder.append(request.toString());
             builder.append("'){\n");                                     // NOI18N
             builder.append("return false;\n}\n");                        // NOI18N
@@ -522,7 +518,7 @@ class ModelGenerator {
             if ( newUrlSnippet.length() == 0 ){
                 return;
             }
-            builder.append("if(method=='");                         // NOI18N
+            builder.append("if(method==='");                         // NOI18N
             builder.append(request.toString());
             builder.append("'){\n");                                // NOI18N
             builder.append(newUrlSnippet);
@@ -550,10 +546,10 @@ class ModelGenerator {
         return path;
     }
     
-    private StringBuilder myCommonModels;
-    private RestServiceDescription myDescription;
-    private Set<String> myEntities ;
-    private JsUi myUi;
+    private final StringBuilder myCommonModels;
+    private final RestServiceDescription myDescription;
+    private final Set<String> myEntities;
+    private final JsUi myUi;
     private Set<ModelAttribute> myAttributes;
     private String myDisplayNameAlias;
     private String myModelName;

@@ -590,7 +590,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 rowModel, false,NbBundle.getMessage(this.getClass(), 
                 "TYPE_COLUMN_NAME"));
         Outline returnOutline = new Outline(outlineModel);
-        ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
+        ResultCellEditor cellEditor = new ResultCellEditor();
         returnOutline.setDefaultEditor(Object.class,cellEditor);
         returnOutline.setRootVisible(false);
 
@@ -747,7 +747,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                      * Notify the listeners so the cursor will be reset;
                      */
                     notifyListeners(null);
-                    errorDialog.show();
+                    errorDialog.showDialog(btnSubmit);
                 }
                 return;
             }

@@ -165,19 +165,20 @@ public class ConfigBuilder {
     /** Source code search prefix. */
     private final File srcHome;
 
-    /** Stores information whether lassFish configuration was already read. */
-    private volatile boolean fetchDone;
-
     /** Libraries cache. */
+    /* GuarderBy(this)*/
     private List<GlassFishLibrary> libraryCache;
 
     /** GlassFish JavaEE configuration cache. */
+    /* GuarderBy(this)*/
     private GlassFishJavaEEConfig javaEEConfigCache;
 
     /** GlassFish JavaSE configuration cache. */
+    /* GuarderBy(this)*/
     private GlassFishJavaSEConfig javaSEConfigCache;
 
     /** Version check. */
+    /* GuarderBy(this)*/
     private GlassFishVersion version;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -201,7 +202,6 @@ public class ConfigBuilder {
         this.classpathHome = new File(classpathHome);
         this.javadocsHome = new File(javadocsHome);
         this.srcHome = new File(srcHome);
-        this.fetchDone = false;
     }
 
     /**
@@ -221,7 +221,6 @@ public class ConfigBuilder {
         this.classpathHome = classpathHome;
         this.javadocsHome = javadocsHome;
         this.srcHome = srcHome;
-        this.fetchDone = false;
     }
 
     /**
@@ -232,37 +231,18 @@ public class ConfigBuilder {
      * @throws ServerConfigException when builder is used with multiple
      *         GlassFish versions.
      */
-    private void versionCheck(final GlassFishVersion version)
+    private synchronized void versionCheck(final GlassFishVersion version)
             throws ServerConfigException {
-        if (this.version == null)
+        if (this.version == null) {
             this.version = version;
-        else if (this.version != version)
+        } else if (this.version != version) {
             throw new ServerConfigException(
                     "Library builder was already used for GlassFish "
                     + this.version + " use new instance for GlassFish"
                     + version);
-    }
-
-    private void fetch(final GlassFishVersion version) {
-        synchronized (this) {
-            if (!fetchDone) {
-                GlassFishConfig configAdapter
-                        = GlassFishConfigManager.getConfig(
-                        ConfigBuilderProvider.getBuilderConfig(version));
-                List<LibraryNode> libConfigs
-                        = configAdapter.getLibrary();
-                libraryCache = getLibraries(
-                        libConfigs, classpathHome, javadocsHome, srcHome);
-                javaEEConfigCache = new GlassFishJavaEEConfig(
-                        configAdapter.getJavaEE(), classpathHome);
-                javaSEConfigCache = new GlassFishJavaSEConfig(
-                        configAdapter.getJavaSE());
-                
-                fetchDone = true;
-            }
         }
-
     }
+
     /**
      * Get GlassFish libraries configured for provided GlassFish version.
      * <p/>
@@ -277,9 +257,19 @@ public class ConfigBuilder {
     public List<GlassFishLibrary> getLibraries(
             final GlassFishVersion version) throws ServerConfigException {
         versionCheck(version);
-        if (!fetchDone)
-            fetch(version);
-        return libraryCache;
+        synchronized (this) {
+            if (libraryCache != null) {
+                return libraryCache;
+            }
+            GlassFishConfig configAdapter
+                    = GlassFishConfigManager.getConfig(
+                            ConfigBuilderProvider.getBuilderConfig(version));
+            List<LibraryNode> libConfigs
+                    = configAdapter.getLibrary();
+            libraryCache = getLibraries(
+                    libConfigs, classpathHome, javadocsHome, srcHome);
+            return libraryCache;
+        }
     }
 
     /**
@@ -297,9 +287,17 @@ public class ConfigBuilder {
     public GlassFishJavaEEConfig getJavaEEConfig(
             final GlassFishVersion version) throws ServerConfigException {
         versionCheck(version);
-        if (!fetchDone)
-            fetch(version);
-        return javaEEConfigCache;
+        synchronized (this) {
+            if (javaEEConfigCache != null) {
+                return javaEEConfigCache;
+            }
+            GlassFishConfig configAdapter
+                    = GlassFishConfigManager.getConfig(
+                            ConfigBuilderProvider.getBuilderConfig(version));
+            javaEEConfigCache = new GlassFishJavaEEConfig(
+                    configAdapter.getJavaEE(), classpathHome);
+            return javaEEConfigCache;
+        }
     }
 
     /**
@@ -317,9 +315,17 @@ public class ConfigBuilder {
     public GlassFishJavaSEConfig getJavaSEConfig(
             final GlassFishVersion version) throws ServerConfigException {
         versionCheck(version);
-        if (!fetchDone)
-            fetch(version);
-        return javaSEConfigCache;
+        synchronized (this) {
+            if (javaSEConfigCache != null) {
+                return javaSEConfigCache;
+            }
+            GlassFishConfig configAdapter
+                    = GlassFishConfigManager.getConfig(
+                            ConfigBuilderProvider.getBuilderConfig(version));
+            javaSEConfigCache = new GlassFishJavaSEConfig(
+                    configAdapter.getJavaSE());
+            return javaSEConfigCache;
+        }
     }
 
 }

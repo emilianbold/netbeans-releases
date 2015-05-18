@@ -54,6 +54,7 @@ import javax.script.ScriptException;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.templates.CreateDescriptor;
 import org.netbeans.api.templates.CreateFromTemplateHandler;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -113,7 +114,8 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         }
         
         //Document doc = createDocument(template.getMIMEType());
-        try (Writer w = new OutputStreamWriter(output.getOutputStream(), targetEnc);
+        FileLock lock = output.lock();
+        try (Writer w = new OutputStreamWriter(output.getOutputStream(lock), targetEnc);
              Reader is = new InputStreamReader(template.getInputStream(), sourceEnc);
             /*IndentWriter w2 = new IndentWriter(doc, 0, w, false) */) {
             StringWriter sw = new StringWriter();
@@ -133,6 +135,8 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
         }catch (ScriptException ex) {
             IOException io = new IOException(ex.getMessage(), ex);
             throw io;
+        } finally {
+            lock.releaseLock();
         }
         return Collections.singletonList(output);
     }

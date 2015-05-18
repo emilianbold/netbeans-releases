@@ -42,6 +42,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/simple-test-c.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="c-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
         </folder> <!-- End cFiles folder -->
@@ -55,6 +56,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cnd/simpleunit/resources/simple-test-cc.html"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.cnd.editor.filecreation.CCFSrcFileIterator"/>
                 <attr name="templateCategory" stringvalue="cpp-types"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
         </folder> <!-- End cppFiles folder -->

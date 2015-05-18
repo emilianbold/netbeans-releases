@@ -48,7 +48,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -66,7 +65,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.ui.EditPathMapDialog;
 import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -74,8 +72,8 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -184,8 +182,8 @@ public abstract class RemotePathMap extends PathMap {
     // PathMap
     @Override
     public String getRemotePath(String lpath, boolean useDefault) {
-        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
+            CndUtils.assertUnconditional("local path should not be null"); // nOI18N
             return null;
         }
         String ulpath = unifySeparators(lpath); // NB: adds a trailing slash
@@ -215,8 +213,8 @@ public abstract class RemotePathMap extends PathMap {
 
     @Override
     public String getLocalPath(String rpath, boolean useDefault) {
-        CndUtils.assertNotNull(rpath, "remote path should not be null"); // nOI18N
         if (rpath == null) {
+            CndUtils.assertUnconditional("remote path should not be null"); // nOI18N
             return null;
         }
         String urpath = unifySeparators(rpath); // NB: adds a trailing slash
@@ -288,8 +286,8 @@ public abstract class RemotePathMap extends PathMap {
 
 
     private boolean checkRemotePath(String lpath) {
-        CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
         if (lpath == null) {
+            CndUtils.assertUnconditional("local path should not be null"); // nOI18N
             return false;
         }
         String ulpath = unifySeparators(lpath);
@@ -444,15 +442,15 @@ public abstract class RemotePathMap extends PathMap {
                     out.close();
                     out = null;
 
-                    RemoteCommandSupport rcs = new RemoteCommandSupport(
-                            execEnv, "grep", null, // NOI18N
+                    ProcessUtils.ExitStatus rcs = ProcessUtils.execute(
+                            execEnv, "grep", // NOI18N
                             validationLine,
                             rpath + "/" + validationFile.getName()); // NOI18N
 
-                    if (rcs.run() == 0) {
+                    if (rcs.isOK()) {
                         return true;
                     }
-                    if (rcs.isCancelled() || rcs.isInterrupted()) {
+                    if (rcs.exitCode== -100) { // there is no official way to check for cancelled
                         throw new InterruptedException();
                     }
                 }
@@ -555,8 +553,8 @@ public abstract class RemotePathMap extends PathMap {
 
         @Override
         public String getRemotePath(String lpath, boolean useDefault) {
-            CndUtils.assertNotNull(lpath, "local path should not be null"); // nOI18N
             if (lpath == null) {
+                CndUtils.assertUnconditional("local path should not be null"); // nOI18N
                 return null;
             }
             initRemoteBase(true);

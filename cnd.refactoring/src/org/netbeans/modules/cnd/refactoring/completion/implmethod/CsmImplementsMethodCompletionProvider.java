@@ -209,14 +209,14 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
         }
         
         private Collection<CsmImplementsMethodCompletionItem> getItems(final BaseDocument doc, final int caretOffset) {
-            Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<CsmImplementsMethodCompletionItem>();
+            Collection<CsmImplementsMethodCompletionItem> items = new ArrayList<>();
             CsmCacheManager.enter();
             try {
                 if (init(doc, caretOffset)) {
                     CsmFile csmFile = CsmUtilities.getCsmFile(doc, true, false);
                     if (csmFile != null) {
                         insertScope = csmFile;
-                        Set<CsmClass> classes = new HashSet<CsmClass>();
+                        Set<CsmClass> classes = new HashSet<>();
                         visitDeclarations(classes, csmFile.getDeclarations(), caretOffset);
                         if (isApplicable)  {
                             //if (classes.isEmpty()) {
@@ -324,7 +324,7 @@ public class CsmImplementsMethodCompletionProvider implements CompletionProvider
             if (prefix == null) {
                 out = data;
             } else {
-                List<CsmImplementsMethodCompletionItem> ret = new ArrayList<CsmImplementsMethodCompletionItem>(data.size());
+                List<CsmImplementsMethodCompletionItem> ret = new ArrayList<>(data.size());
                 for (CsmImplementsMethodCompletionItem itm : data) {
                     if (matchPrefix(itm, prefix)) {
                         ret.add(itm);

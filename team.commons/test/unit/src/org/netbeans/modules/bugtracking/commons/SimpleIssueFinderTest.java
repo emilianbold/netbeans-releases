@@ -202,6 +202,11 @@ public class SimpleIssueFinderTest extends NbTestCase {
         checkIssueSpans("issue bug #123456", "bug #123456");
         checkIssueSpans("issue issue #123456", "issue #123456");
 
+        checkIssueSpans("task-id: 123456", "task-id: 123456");
+        checkIssueSpans("Task-ID: 123456", "Task-ID: 123456");
+        checkIssueSpans("TaSk-Id: 123456", "TaSk-Id: 123456");
+        checkIssueSpans("Task-Id: 123456", "Task-Id: 123456");
+        checkIssueSpans("Task-Id 123456", "Task-Id 123456");
         
         /* -------- tests for special phrase "duplicate of" -------- */
 

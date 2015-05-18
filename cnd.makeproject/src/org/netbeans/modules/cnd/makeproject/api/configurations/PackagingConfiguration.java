@@ -343,7 +343,6 @@ public class PackagingConfiguration implements Cloneable {
             int i = PackagerManager.getDefault().getNameIndex(getType().getValue());
             return i;
         }
-
     }
 
     private class PackagerIntNodeProp extends IntNodeProp {

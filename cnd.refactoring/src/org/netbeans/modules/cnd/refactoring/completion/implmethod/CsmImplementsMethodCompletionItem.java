@@ -146,7 +146,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         String rightText = createRightName(item);
         String coloredItemText = createDisplayName(item, cls, NbBundle.getMessage(CsmImplementsMethodCompletionItem.class, "extract.txt")); //NOI18N
         CsmFile containingFile = item.getContainingFile();
-        CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
+        final CsmCompoundStatement body = ((CsmFunctionDefinition)item).getBody();
         if (item.getStartOffset() == body.getStartOffset()) {
             // Function definition iside macro expansion.
             // ignore
@@ -172,6 +172,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
             if (initializerList != null && initializerList.size() > 0) {
                 final int startOffset = initializerList.iterator().next().getStartOffset();
                 final AtomicInteger trueBodyStratOffset = new AtomicInteger(0);
+                final String[] res =  new String[1];
                 classDoc.render(new Runnable() {
                     @Override
                     public void run() {
@@ -198,18 +199,20 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                                 columnFound = true;
                             }
                         }
+                        if (trueBodyStratOffset.get() > 0) {
+                            try {
+                                res[0] = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                     }
                 });
                 if (trueBodyStratOffset.get() > 0) {
-                    String bodyText;
-                    try {
-                        bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
-                        String appendItemText = createAppendText(item, cls, bodyText, insertScope);
-                        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+                    String bodyText = res[0];
+                    String appendItemText = createAppendText(item, cls, bodyText, insertScope);
+                    return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
                                 true, trueBodyStratOffset.get(), bodyText.length());
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
                 }
                 return null;
             }
@@ -217,6 +220,7 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
         
         final int startOffset = body.getStartOffset();
         final AtomicInteger trueBodyStratOffset = new AtomicInteger(startOffset);
+        final String[] res =  new String[1];
         classDoc.render(new Runnable() {
             @Override
             public void run() {
@@ -235,18 +239,17 @@ public class CsmImplementsMethodCompletionItem implements CompletionItem {
                         break;
                     }
                 }
+                try {
+                    res[0] = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
         });
-        String bodyText;
-        try {
-            bodyText = classDoc.getText(trueBodyStratOffset.get(), body.getEndOffset()-trueBodyStratOffset.get()); //NOI18N
-            String appendItemText = createAppendText(item, cls, bodyText, insertScope);
-            return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
+        String bodyText = res[0];
+        String appendItemText = createAppendText(item, cls, bodyText, insertScope);
+        return new CsmImplementsMethodCompletionItem(item, substitutionOffset, PRIORITY, sortItemText, appendItemText, coloredItemText, true, rightText,
                     true, trueBodyStratOffset.get(), bodyText.length());
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
     }
 
     private static String createDisplayName(CsmFunction item,  CsmClass parent, String operation) {

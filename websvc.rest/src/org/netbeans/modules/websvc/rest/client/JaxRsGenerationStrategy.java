@@ -623,15 +623,17 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         }
         String ret = ""; 
 
+        StringBuilder commentBuffer = new StringBuilder();
         if (response != null && !response.isEmpty()) {
             VariableTree classParam = maker.Variable(paramModifier, 
                     "responseType", maker.Identifier("Class<T>"), null); //NOI18N
             responseTree = maker.Identifier("T");
-            bodyParam1 = "responseType"; //NOI18N
+            bodyParam1 = ", responseType"; // NOI18N
             typeParams =   Collections.<TypeParameterTree>singletonList(
                     maker.TypeParameter("T", Collections.<ExpressionTree>emptyList()));
             if (classParam != null) {
                 paramList.add(classParam);
+                commentBuffer.append("@param responseType Class representing the response\n"); // NOI18N
             }
             ret = "return "; //NOI18N
         } else {
@@ -641,7 +643,6 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
 
         StringBuilder queryP = new StringBuilder();
         StringBuilder queryParamPart = new StringBuilder();
-        StringBuilder commentBuffer = new StringBuilder("@param responseType Class representing the response\n"); //NOI18N
 
         if (httpParams.hasFormParams() || httpParams.hasQueryParams() ) 
         {
@@ -664,7 +665,7 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
                 VariableTree objectParam = maker.Variable(paramModifier, 
                         "requestEntity", maker.Identifier("Object"), null); //NOI18N
                 paramList.add(0, objectParam);
-                bodyParam="javax.ws.rs.client.Entity.entity(requestEntity)"; //NOI18N
+                bodyParam="javax.ws.rs.client.Entity.entity(requestEntity, "+requestMimeType.getMediaType()+")"; //NOI18N
                 commentBuffer.append("@param requestEntity request data");
             }
         }
@@ -694,10 +695,7 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
         if(httpParams.hasHeaderParams()){
             addHeaderParams(maker, httpParams, paramList, queryP, commentBuffer);
         }
-        
-        if ( bodyParam.length()>0 ){
-            bodyParam +=',';
-        }
+
         String body =
             "{"+queryParamPart + queryP+
                     "."+methodPrefix+"("+

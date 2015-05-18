@@ -444,7 +444,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 			final Gdb.Factory.Listener listener,
 			final boolean connectExisting) {
 
-	final String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
+	String gdbInitFile = DebuggerOption.GDB_INIT_FILE.getCurrValue(optionLayers());
+        boolean preventInitPathConvertion = gdbInitFile.startsWith("///"); // NOI18N
+        if (!preventInitPathConvertion) {
+            gdbInitFile = localToRemote("gdbInitFile", gdbInitFile); // NOI18N
+        }
 
 	// SHOULD process OPTION_EXEC32?
         String runDir = gdi.getRunDir();
@@ -455,6 +459,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
 
         final String finalRunDir = runDir;
+        final String finalGdbInitFile = gdbInitFile;
 
         NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
 
@@ -479,7 +484,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         }
                         factory = new Gdb.Factory(executor, additionalArgv,
                             listener, false, isShortName(),
-                            gdbInitFile,
+                            finalGdbInitFile,
                             getHost(),
                             connectExisting,
                             finalRunDir,
@@ -4231,7 +4236,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         outputFile = localToRemote("symbol-file", outputFile); //NOI18N
 
         String tmp_cmd;
-        if (isCore || pid != -1) {
+        if (peculiarity.isLldb()) {
+            tmp_cmd = "-file-exec-and-symbols"; // NOI18N
+        } else if (isCore || pid != -1) {
             tmp_cmd = "-file-symbol-file "; // NOI18N
         } else if (!CndPathUtilities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531

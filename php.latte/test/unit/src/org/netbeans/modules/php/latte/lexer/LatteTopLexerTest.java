@@ -158,6 +158,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("testIssue240146_02");
     }
 
+    public void testIssue246488() throws Exception {
+        performTest("testIssue246488");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));

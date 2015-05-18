@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=RemoteFileSystemConnectionManager.class)
 public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConnectionManager implements ConnectionListener {
-    private final Set<RemoteFileSystemConnectionListener> listeners = new HashSet<RemoteFileSystemConnectionListener>();
+    private final Set<RemoteFileSystemConnectionListener> listeners = new HashSet<>();
     
     public RemoteFileSystemConnectionManagerImpl() {
         ConnectionManager.getInstance().addConnectionListener(this);
@@ -89,7 +89,7 @@ public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConne
     public void connected(ExecutionEnvironment env) {
         final FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
         if (fileSystem != null) {
-            List<RemoteFileSystemConnectionListener> list = new ArrayList<RemoteFileSystemConnectionListener>();
+            List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
             synchronized(listeners) {
                 list.addAll(listeners);
             }
@@ -104,7 +104,7 @@ public class RemoteFileSystemConnectionManagerImpl extends RemoteFileSystemConne
     public void disconnected(ExecutionEnvironment env) {
         final FileSystem fileSystem = FileSystemProvider.getFileSystem(env);
         if (fileSystem != null) {
-            List<RemoteFileSystemConnectionListener> list = new ArrayList<RemoteFileSystemConnectionListener>();
+            List<RemoteFileSystemConnectionListener> list = new ArrayList<>();
             synchronized(listeners) {
                 list.addAll(listeners);
             }

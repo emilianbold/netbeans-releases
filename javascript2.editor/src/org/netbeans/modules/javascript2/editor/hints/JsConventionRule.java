@@ -269,9 +269,31 @@ public class JsConventionRule extends JsAstRule {
             if (condition instanceof BinaryNode) {
                 BinaryNode binaryNode = (BinaryNode)condition;
                 if (binaryNode.isAssignment()) {
-                    hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
-                            context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                            ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(context.parserResult.getSnapshot(), condition.getStart());
+                    if (ts == null) {
+                        return;
+                    }
+                    ts.move(condition.getStart());
+                    int parenBalance = 0;
+                    if (ts.moveNext()) {
+                        JsTokenId id = ts.token().id();
+                        
+                        while ( id != JsTokenId.KEYWORD_IF && id != JsTokenId.KEYWORD_FOR && id != JsTokenId.KEYWORD_WHILE && ts.movePrevious()) {
+                            id = ts.token().id();
+                            if (id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                parenBalance--;
+                            } else if (id == JsTokenId.BRACKET_LEFT_PAREN) {
+                                parenBalance++;
+                            }
+                        }
+                    }
+                    if (parenBalance == 1) {
+                        // 1 -> if ( a = b ) -> hint is valid
+                        // > 1 -> if ((a=b)) -> hint is not valid - see https://developer.mozilla.org/ru/docs/Web/JavaScript/Reference/Statements/if...else
+                        hints.add(new Hint(assignmentInCondition, Bundle.AssignmentCondition(),
+                                context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                ModelUtils.documentOffsetRange(context.getJsParserResult(), condition.getStart(), condition.getFinish()), null, 500));
+                    }
                 }
                 if (binaryNode.lhs() instanceof BinaryNode) {
                     checkAssignmentInCondition(binaryNode.lhs());

@@ -1887,6 +1887,36 @@ public class InlineTest extends RefactoringTestBase {
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
         performRefactoring(r, new Problem(true, "ERR_InlineMethodMultipleReturn"));
     }
+    
+    public void testCanInlineMethodMultipleReturn() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private String getGreeting(String name) {\n"
+                + "        if(name.length() > 3)\n"
+                + "            return name;\n"
+                + "        else\n"
+                + "            return name + \"...\";\n"
+                + "    }\n"
+                + "    public static String testMethod() {\n"
+                + "        return getGreeting(\"World\");\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static String testMethod() {\n"
+                + "        if (\"World\".length() > 3) {\n"
+                + "            return \"World\";\n"
+                + "        } else {\n"
+                + "            return \"World\" + \"...\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+    }
 
     public void testCannotInlineMethodNoLastReturn() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -1921,6 +1951,61 @@ public class InlineTest extends RefactoringTestBase {
         final InlineRefactoring[] r2 = new InlineRefactoring[1];
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r2);
         performRefactoring(r2, new Problem(true, "ERR_InlineMethodNoLastReturn"));
+    }
+    
+    public void testCanInlineMethodNoLastReturn() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private String getGreeting(String name) {\n"
+                + "        throw new UnsupportedOperationException(\"Not yet implemented\");\n"
+                + "    }\n"
+                + "    public static void testMethod() {\n"
+                + "        getGreeting(\"World\");\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                        + "public class A {\n"
+                        + "    public static void testMethod() {\n"
+                        + "        throw new UnsupportedOperationException(\"Not yet implemented\");\n"
+                        + "    }\n"
+                        + "}"));
+        
+        
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private String getGreeting(String name) {\n"
+                + "        try {\n"
+                + "            System.out.println(\"Hello World!\");\n"
+                + "        }\n"
+                + "        finally {\n"
+                + "            return \"Hello Finally\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "    public static void testMethod() {\n"
+                + "        getGreeting(\"World\");\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r2 = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r2);
+        performRefactoring(r2);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public static void testMethod() {\n"
+                + "        try {\n"
+                + "            System.out.println(\"Hello World!\");\n"
+                + "        }\n"
+                + "        finally {\n"
+                + "            return \"Hello Finally\";\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
     }
 
     public void testCannotInlineMethodNoAccessors() throws Exception {

@@ -671,6 +671,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 refreshTask.cancel();
             }
         }
+        if(!query.isSaved()) {
+            query.delete();
+        }  
     }
 
     @Override

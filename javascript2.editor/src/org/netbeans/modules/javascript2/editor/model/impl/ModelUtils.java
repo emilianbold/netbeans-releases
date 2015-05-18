@@ -126,6 +126,9 @@ public class ModelUtils {
                 DeclarationScope scope = builder.getCurrentDeclarationFunction();
                 while (scope != null && tmpObject == null && scope.getParentScope() != null) {
                     tmpObject = ((JsFunction)scope).getParameter(firstName);
+                    if (tmpObject == null) {
+                        tmpObject = ((JsObject)scope).getProperty(firstName);
+                    }
                     scope = scope.getParentScope();
                 }
                 if (tmpObject == null) {
@@ -1660,9 +1663,6 @@ public class ModelUtils {
                         if (scope instanceof DeclarationScopeImpl) {
                             ((DeclarationScopeImpl)scope).setParentScope(newScope);
                         }  
-                        for (JsObject property : where.getProperties().values()) {
-                            changeDeclarationScope(property, newScope, done);
-                        }
                     }
                     newScope.addDeclaredScope(scope);
                 }

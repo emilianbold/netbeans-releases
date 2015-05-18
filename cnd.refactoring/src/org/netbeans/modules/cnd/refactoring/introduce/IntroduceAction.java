@@ -31,27 +31,41 @@
 package org.netbeans.modules.cnd.refactoring.introduce;
 
 import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
+import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.HintAction;
+import org.netbeans.modules.refactoring.spi.ui.UI;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
+import org.openide.windows.TopComponent;
 
 /**
  * based on  org.netbeans.modules.java.hints.introduce.IntroduceAction
  * @author Vladimir Voskresensky
  */
-public final class IntroduceAction extends HintAction {
+public class IntroduceAction extends HintAction {
 
-    private IntroduceKind type;
-    private static String INTRODUCE_CONSTANT = "introduce-constant";//NOI18N
-    private static String INTRODUCE_VARIABLE = "introduce-variable";//NOI18N
-    private static String INTRODUCE_METHOD = "introduce-method";//NOI18N
-    private static String INTRODUCE_FIELD = "introduce-field";//NOI18N
+    private final IntroduceKind type;
+    private static final String INTRODUCE_CONSTANT = "introduce-constant";//NOI18N
+    private static final String INTRODUCE_VARIABLE = "introduce-variable";//NOI18N
+    private static final String INTRODUCE_METHOD = "introduce-method";//NOI18N
+    private static final String INTRODUCE_FIELD = "introduce-field";//NOI18N
 
     private IntroduceAction(IntroduceKind type) {
         this.type = type;
@@ -61,21 +75,6 @@ public final class IntroduceAction extends HintAction {
         putValue("PopupMenuText",displayText); // NOI18N
         putValue("menuText",displayText); // NOI18N
     }
-//    @Override
-//    public Object getValue(String key) {
-//        if (Action.ACCELERATOR_KEY.equals(key)) {
-//            JTextComponent target = EditorRegistry.focusedComponent();
-//            if (target != null) {
-//                Keymap km = target.getKeymap();
-//                if (km != null) {
-//                    KeyStroke[] keys = km.getKeyStrokesForAction(this);
-//                    System.err.println("strokes " + keys);
-//                }
-//            }
-//        }
-//        System.err.println("getValue " + key + ":" + super.getValue(key));
-//        return super.getValue(key);
-//    }
 
     @Override
     protected void perform(CsmContext context) {
@@ -90,11 +89,11 @@ public final class IntroduceAction extends HintAction {
     }
 
     private String doPerformAction(CsmContext context) {
-        final Map<IntroduceKind, Fix> fixes = new EnumMap<IntroduceKind, Fix>(IntroduceKind.class);
-        final Map<IntroduceKind, String> errorMessages = new EnumMap<IntroduceKind, String>(IntroduceKind.class);
+        final Map<IntroduceKind, Fix> fixes = new EnumMap<>(IntroduceKind.class);
+        final Map<IntroduceKind, String> errorMessages = new EnumMap<>(IntroduceKind.class);
 
         try {
-            IntroduceHint.computeError(context, fixes, errorMessages, new AtomicBoolean());
+            computeError(context, fixes, errorMessages, new AtomicBoolean());
             Fix fix = fixes.get(type);
 
             if (fix != null) {
@@ -129,7 +128,21 @@ public final class IntroduceAction extends HintAction {
     }
 
     public static IntroduceAction createMethod() {
-        return new IntroduceAction(IntroduceKind.CREATE_METHOD);
+        return new IntroduceAction(IntroduceKind.CREATE_METHOD) {
+
+            @Override
+            protected void perform(CsmContext context) {
+                final IntroduceMethodUI ui = IntroduceMethodUI.create(null, context);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TopComponent activetc = TopComponent.getRegistry().getActivated();
+                        UI.openRefactoringUI(ui, activetc);
+                    }
+                });
+            }
+        };
     }
 
     private static String getActionName(IntroduceKind type) {
@@ -159,6 +172,43 @@ public final class IntroduceAction extends HintAction {
                 return NbBundle.getMessage(IntroduceAction.class, "CTL_IntroduceMethodAction");
             default:
                 return null;
+        }
+    }
+
+    private List<ErrorDescription> computeError(CsmContext info, Map<IntroduceKind, Fix> fixesMap, Map<IntroduceKind, String> errorMessage, AtomicBoolean cancel) {
+        List<ErrorDescription> hints = new LinkedList<>();
+        if (type == IntroduceKind.CREATE_VARIABLE) {
+            detectIntroduceVariable(fixesMap, info.getFile(), info.getCaretOffset(), info.getStartOffset(), info.getEndOffset(), info.getDocument(), cancel, info.getFileObject(), info.getComponent());
+        }
+        return hints;
+    }
+
+    private void detectIntroduceVariable(Map<IntroduceKind, Fix> fixesMap, CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, final FileObject fileObject, JTextComponent comp) {
+        ExpressionFinder expressionFinder = new ExpressionFinder(doc, file, caretOffset, selectionStart, selectionEnd, canceled);
+        ExpressionFinder.StatementResult res = expressionFinder.findExpressionStatement();
+        if (res == null) {
+            return;
+        }
+        if (canceled.get()) {
+            return;
+        }
+        CsmExpressionStatement expression = res.getExpression();
+        if (expression != null) {
+            fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedAssignmentVariableFix(expression.getExpression(), doc, fileObject));
+        }
+        if (res.getContainer() != null && res.getStatementInBody() != null && comp != null && selectionStart < selectionEnd) {
+            if (/*CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionStart)[0] ==
+                  CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, selectionEnd)[0] &&
+                */expressionFinder.isExpressionSelection()) {
+                if (!(res.getContainer().getStartOffset() == selectionStart &&
+                        res.getContainer().getEndOffset() == selectionEnd)) {
+                    CsmOffsetable applicableTextExpression = expressionFinder.applicableTextExpression();
+                    if (applicableTextExpression != null) {
+                        List<Pair<Integer, Integer>> occurrences = res.getOccurrences(applicableTextExpression);
+                        fixesMap.put(IntroduceKind.CREATE_VARIABLE, new ExtendedIntroduceVariableFix(res.getStatementInBody(), applicableTextExpression, occurrences, doc, comp, fileObject));
+                    }
+                }
+            }
         }
     }
 }

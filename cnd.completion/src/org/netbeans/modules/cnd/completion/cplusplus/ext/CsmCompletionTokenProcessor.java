@@ -1179,11 +1179,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         String kwdType = CndLexerUtilities.isType(tokenID) ? curTokenText : null; // keyword constant type (used in conversions)
 
         // clear stack on absent token or prerpocessor token
-        if (tokenID == null) {
-            errorState = true;
-        } else { // valid token-id
-            if (true) {
-                switch (tokenID) { // test the token ID
+        switch (tokenID) { // test the token ID
 // XXX
 //                    case BOOLEAN:
 //                        kwdType = JavaCompletion.BOOLEAN_TYPE;
@@ -1210,97 +1206,97 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 //                        kwdType = JavaCompletion.SHORT_TYPE;
 //                        break;
 
-                    case PREPROCESSOR_START:
-                    case PREPROCESSOR_START_ALT:
-                        pushExp(createTokenExp(PREPROC_DIRECTIVE_OPEN));
-                        break;
+            case PREPROCESSOR_START:
+            case PREPROCESSOR_START_ALT:
+                pushExp(createTokenExp(PREPROC_DIRECTIVE_OPEN));
+                break;
 
-                    case PREPROCESSOR_DEFINE:
-                    case PREPROCESSOR_ELIF:
-                    case PREPROCESSOR_ELSE:
-                    case PREPROCESSOR_ENDIF:
-                    case PREPROCESSOR_ERROR:
-                    case PREPROCESSOR_IDENT:
-                    case PREPROCESSOR_IF:
-                    case PREPROCESSOR_IFDEF:
-                    case PREPROCESSOR_IFNDEF:
-                    case PREPROCESSOR_INCLUDE:
-                    case PREPROCESSOR_INCLUDE_NEXT:
-                    case PREPROCESSOR_LINE:
-                    case PREPROCESSOR_PRAGMA:
-                    case PREPROCESSOR_UNDEF:
-                    case PREPROCESSOR_WARNING:
-                        if (topID == PREPROC_DIRECTIVE_OPEN) {
-                            top.setExpID(PREPROC_DIRECTIVE);
-                            addTokenTo(top);
-                        } else {
-                            errorState = true;
-                        }
-                        break;
-                    case STATIC_CAST:
-                    case DYNAMIC_CAST:
-                    case CONST_CAST:
-                    case REINTERPRET_CAST:
-                        pushExp(createTokenExp(CONVERSION_OPEN));
-                        break;
-                    case TRUE:
-                    case FALSE:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType(CsmCompletion.BOOLEAN_CLASS.getName().toString()); // NOI18N
-                        break;
+            case PREPROCESSOR_DEFINE:
+            case PREPROCESSOR_ELIF:
+            case PREPROCESSOR_ELSE:
+            case PREPROCESSOR_ENDIF:
+            case PREPROCESSOR_ERROR:
+            case PREPROCESSOR_IDENT:
+            case PREPROCESSOR_IF:
+            case PREPROCESSOR_IFDEF:
+            case PREPROCESSOR_IFNDEF:
+            case PREPROCESSOR_INCLUDE:
+            case PREPROCESSOR_INCLUDE_NEXT:
+            case PREPROCESSOR_LINE:
+            case PREPROCESSOR_PRAGMA:
+            case PREPROCESSOR_UNDEF:
+            case PREPROCESSOR_WARNING:
+                if (topID == PREPROC_DIRECTIVE_OPEN) {
+                    top.setExpID(PREPROC_DIRECTIVE);
+                    addTokenTo(top);
+                } else {
+                    errorState = true;
+                }
+                break;
+            case STATIC_CAST:
+            case DYNAMIC_CAST:
+            case CONST_CAST:
+            case REINTERPRET_CAST:
+                pushExp(createTokenExp(CONVERSION_OPEN));
+                break;
+            case TRUE:
+            case FALSE:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType(CsmCompletion.BOOLEAN_CLASS.getName().toString()); // NOI18N
+                break;
 
-                    case NULL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("null"); // NOI18N
-                        break;
+            case NULL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("null"); // NOI18N
+                break;
 
-                    case CLASS:
-                        if (topID == DOT_OPEN || topID == ARROW_OPEN || topID == SCOPE_OPEN) {
-                            pushExp(createTokenExp(VARIABLE));
-                            break;
-                        }
-                    //nobreak
-                    case STRUCT:
-                    case UNION:
-                        pushExp(createTokenExp(CLASSIFIER));
-                        break;
-                    case GOTO:
-                        pushExp(createTokenExp(GOTO));
-                        break;
+            case CLASS:
+                if (topID == DOT_OPEN || topID == ARROW_OPEN || topID == SCOPE_OPEN) {
+                    pushExp(createTokenExp(VARIABLE));
+                    break;
+                }
+            //nobreak
+            case STRUCT:
+            case UNION:
+                pushExp(createTokenExp(CLASSIFIER));
+                break;
+            case GOTO:
+                pushExp(createTokenExp(GOTO));
+                break;
+            case NEW:
+                switch (topID) {
+                    case VARIABLE:
                     case NEW:
-                        switch (topID) {
-                            case VARIABLE:
-                            case NEW:
-                                errorState = true;
-                                break;
-
-                            default:
-                                pushExp(createTokenExp(NEW));
-                                break;
-                        }
+                        errorState = true;
                         break;
+
+                    default:
+                        pushExp(createTokenExp(NEW));
+                        break;
+                }
+                break;
 
 //                    case CPPINCLUDE:
 //                        pushExp(createTokenExp(CPPINCLUDE));
 //                        break;
 
-                    case STATIC:
-                        switch (topID) {
+            case STATIC:
+                switch (topID) {
 //                        case CPPINCLUDE:
 //                            top.addParameter(createTokenExp(CPPINCLUDE));
 //                            break;
-                            default:
-                                errorState = true;
-                                break;
-                        }
+                    default:
+                        errorState = true;
                         break;
+                }
+                break;
 
 //                    case SUPER:
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
-                    case THIS:
-                        pushExp(createTokenExp(VARIABLE));
-                        break;
+            case THIS:
+                pushExp(createTokenExp(VARIABLE));
+                break;
 
 //                    case ANNOTATION:
 //                        pushExp(createTokenExp(ANNOTATION));
@@ -1323,542 +1319,542 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 //                        }
 //                        break;
 
-                    case CASE:
-                        pushExp(createTokenExp(CASE));
-                        break;
+            case CASE:
+                pushExp(createTokenExp(CASE));
+                break;
 
-                    case FOR:
-                    case IF:
-                    case SWITCH:
-                    case WHILE:
-                        if (topID == NO_EXP) {
-                            pushExp(createTokenExp(tokenID2OpenExpID(tokenID)));
-                        } else {
-                            errorState = true;
-                        }
-                        break;
+            case FOR:
+            case IF:
+            case SWITCH:
+            case WHILE:
+                if (topID == NO_EXP) {
+                    pushExp(createTokenExp(tokenID2OpenExpID(tokenID)));
+                } else {
+                    errorState = true;
+                }
+                break;
 //                    case EXTENDS:
 //                        if (topID == GENERIC_WILD_CHAR)
 //                            break;
 
-                    case IDENTIFIER: // identifier found e.g. 'a'
-                         {
-                            switch (topID) {
-                                case AUTO:
-                                case OPERATOR:
-                                case DOT_OPEN:
-                                case ARROW_OPEN:
-                                case SCOPE_OPEN:
-                                case ARRAY_OPEN:
-                                case PARENTHESIS_OPEN:
-                                case SPECIAL_PARENTHESIS_OPEN:
-                                case METHOD_OPEN:
-                                case LAMBDA_CALL_OPEN:
-                                case MEMBER_POINTER_OPEN:
-                                case NEW:
-                                case GOTO:
+            case IDENTIFIER: // identifier found e.g. 'a'
+                 {
+                    switch (topID) {
+                        case AUTO:
+                        case OPERATOR:
+                        case DOT_OPEN:
+                        case ARROW_OPEN:
+                        case SCOPE_OPEN:
+                        case ARRAY_OPEN:
+                        case PARENTHESIS_OPEN:
+                        case SPECIAL_PARENTHESIS_OPEN:
+                        case METHOD_OPEN:
+                        case LAMBDA_CALL_OPEN:
+                        case MEMBER_POINTER_OPEN:
+                        case NEW:
+                        case GOTO:
 //                            case CPPINCLUDE:
-                                case CONVERSION:
-                                case UNARY_OPERATOR:
-                                case MEMBER_POINTER:
-                                case INSTANCEOF:
-                                case NO_EXP:
-                                case GENERIC_TYPE_OPEN:
-                                case ANNOTATION:
-                                case ANNOTATION_OPEN:
-                                case CASE:
-                                case CLASSIFIER:
-                                case CONVERSION_OPEN:
-                                case TYPE_PREFIX:
-                                    pushExp(createTokenExp(VARIABLE));
-                                    break;
-                                case TERNARY_OPERATOR:
-                                    popExp();
-                                    top = peekExp();
-                                    while (getValidExpID(top) == VARIABLE
-                                            || getValidExpID(top) == OPERATOR
-                                            || getValidExpID(top) == CONSTANT) {
-                                        popExp();
-                                        top = peekExp();
-                                    }
-                                    pushExp(createTokenExp(VARIABLE));
-                                    break;
-
-                                case GENERIC_WILD_CHAR:
-                                    top.setExpID(VARIABLE);
-                                    addTokenTo(top);
-                                    break;
-
-                                case TYPE:
-                                    if (getValidExpID(peekExp2()) != METHOD_OPEN) {
-                                        popExp();
-                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
-                                        for (int i = 0; i < top.getTokenCount(); i++) {
-                                            // qualifiers
-                                            var.addToken(top.getTokenID(i), top.getTokenOffset(i), top.getTokenText(i));
-                                        }
-                                        pushExp(var);
-                                        break;
-                                    } else {
-                                        popExp(); // top
-                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
-                                        var.addParameter(top);
-                                        pushExp(var);
-                                        break;
-                                    }
-                                // no break;
-                                case VARIABLE:
-                                    if (getValidExpID(peekExp2()) == METHOD_OPEN) {
-                                        //top.setExpID(VARIABLE);
-                                        addTokenTo(top);
-                                    //pushExp(createTokenExp(VARIABLE));
-                                    // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                        break;
-                                    }
-                                    int cnt = expStack.size();
-                                    CsmCompletionExpression gen = null;
-                                    for (int i = 0; i < cnt; i++) {
-                                        CsmCompletionExpression expr = peekExp(i + 1);
-                                        if (expr.getExpID() == GENERIC_TYPE_OPEN) {
-                                            gen = expr;
-                                            break;
-                                        }
-                                    }
-                                    if (gen != null) {
-                                        pushExp(createTokenExp(VARIABLE));
-                                        break;
-                                    }
-                                    errorState = true;
-                                    break;
-                                case TYPE_REFERENCE:
-                                    if (getValidExpID(peekExp2()) == METHOD_OPEN) {
-                                        //top.setExpID(VARIABLE);
-                                        //addTokenTo(top);
-                                        popExp(); // top
-                                        CsmCompletionExpression var = createTokenExp(VARIABLE);
-                                        var.addParameter(top);
-                                        pushExp(var);
-                                    // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
-                                    } else {
-                                        errorState = true;
-                                    }
-                                    break;
-                                case PREPROC_DIRECTIVE_OPEN:
-                                    top.setExpID(PREPROC_DIRECTIVE);
-                                    top.addParameter(createTokenExp(VARIABLE));
-                                    break;
-                                default:
-                                    errorState = true;
-                                    break;
-                            }
-                        }
-                        break;
-
-                    case QUESTION:
-                        nrQuestions++;
-                        CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
-                        switch (topID) {
-                            case CONSTANT:
-                            case VARIABLE:
-                            case METHOD:
-                            case CONSTRUCTOR:
-                            case ARRAY:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case PARENTHESIS:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case GENERIC_TYPE_OPEN:
-                            case METHOD_OPEN:
-                            case LAMBDA_CALL_OPEN:
-                            case ARRAY_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            case MEMBER_POINTER_OPEN:
-                            case OPERATOR:
+                        case CONVERSION:
+                        case UNARY_OPERATOR:
+                        case MEMBER_POINTER:
+                        case INSTANCEOF:
+                        case NO_EXP:
+                        case GENERIC_TYPE_OPEN:
+                        case ANNOTATION:
+                        case ANNOTATION_OPEN:
+                        case CASE:
+                        case CLASSIFIER:
+                        case CONVERSION_OPEN:
+                        case TYPE_PREFIX:
+                            pushExp(createTokenExp(VARIABLE));
+                            break;
+                        case TERNARY_OPERATOR:
+                            popExp();
+                            top = peekExp();
+                            while (getValidExpID(top) == VARIABLE
+                                    || getValidExpID(top) == OPERATOR
+                                    || getValidExpID(top) == CONSTANT) {
                                 popExp();
-                                ternary.addParameter(top);
-                                break;
-                            default:
-                                errorState = true;
-                                break;
-                        }
-                        pushExp(ternary);
-                        break;
-
-                    case STAR:
-                    case AMPAMP:
-                    case AMP: {
-                        if (tokenID != CppTokenId.AMPAMP || supportTemplates) {
-                            boolean pointer = false;
-                            // special handling of *, & and && because it can be not operator
-                            // while dereference and address-of expression
-                            // try to handle it the same ways as UNARY_OPERATOR
-                            switch (topID) {
-                                case GENERIC_TYPE_OPEN:
-                                case MEMBER_POINTER_OPEN: // next is operator as well
-                                case METHOD_OPEN:
-                                case LAMBDA_CALL_OPEN:
-                                case ARRAY_OPEN:
-                                case PARENTHESIS_OPEN:
-                                case SPECIAL_PARENTHESIS_OPEN:
-                                //case OPERATOR: ??? collision with usual operator behavior
-                                //case UNARY_OPERATOR:
-                                case NO_EXP:
-                                case CONVERSION:
-                                    // member pointer operator
-                                    CsmCompletionExpression opExp = createTokenExp(MEMBER_POINTER_OPEN);
-                                    pushExp(opExp); // add operator as new exp
-                                    pointer = true;
-                                    break;
-                                case TYPE:
-                                case TYPE_REFERENCE:
-                                case GENERIC_TYPE:
-                                case SCOPE_OPEN:
-                                    // we have type or type reference and then * or &,
-                                    // join into TYPE_REFERENCE
-                                    popExp();
-                                    CsmCompletionExpression exp = createTokenExp(TYPE_REFERENCE);
-                                    exp.addParameter(top);
-                                    pushExp(exp);
-                                    pointer = true;
-                                    break;
-                                case OPERATOR:
-                                    if ((top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) ||
-                                            (top.getTokenID(0) == CppTokenId.COLON)) {
-                                        // member pointer operator
-                                        CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
-                                        pushExp(memPtrExp); // add operator as new exp
-                                        pointer = true;
-                                    }
-                                    break;
+                                top = peekExp();
                             }
-                            if (pointer) {
-                                break;
-                            } else {
-                                // else "nobreak" to allow to be handled as normal operators
-                            }
-                        }
-                    }
-                    case EQ: // Assignment operators
-                    case PLUSEQ:
-                    case MINUSEQ:
-                    case STAREQ:
-                    case SLASHEQ:
-                    case AMPEQ:
-                    case BAREQ:
-                    case CARETEQ:
-                    case PERCENTEQ:
-                    case LTLTEQ:
-                    case GTGTEQ:
-//                    case RUSHIFTEQ:
+                            pushExp(createTokenExp(VARIABLE));
+                            break;
 
-                    case LTEQ:
-                    case GTEQ:
-                    case EQEQ:
-                    case NOTEQ:
-
-                    case BARBAR:// Binary, result is boolean
-
-                    case LTLT: // Always binary
-                    case SLASH:
-                    case BAR:
-                    case CARET:
-                    case PERCENT:
-
-                    case COLON:
-                        // Operator handling
-                        switch (topID) {
-                            case CONSTANT:
-                            case VARIABLE:
-                            case METHOD:
-                            case CONSTRUCTOR:
-                            case ARRAY:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case PARENTHESIS:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                                pushExp(createTokenExp(OPERATOR));
-                                break;
-
-                            case TYPE:
-                            case TYPE_REFERENCE:
-                                if (tokenID == CppTokenId.STAR || tokenID == CppTokenId.AMP) {// '*' or '&' as type reference
-                                    pushExp(createTokenExp(OPERATOR));
-                                    break;
-                                }
-                                if (tokenID == CppTokenId.EQ) {// function param = value
-                                    pushExp(createTokenExp(OPERATOR));
-                                    break;
-                                }
-                            // else flow to errorContextor
-                            default:
-                                errorState = true;
-                                break;
-                        }
-                        break;
-
-                    case LT: {
-                        boolean genericType = false;
-                        if (supportTemplates) { // special treatment of Java 1.5 features
-                            switch (topID) {
-                                case VARIABLE:
-                                case DOT:
-                                case ARROW:
-                                case SCOPE:
-                                case MEMBER_POINTER:
-                                    popExp(); // pop the top expression
-                                    CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
-                                    genExp.addParameter(top);
-                                    pushExp(genExp);
-                                    genericType = true; // handled successfully as generic type
-                                    break;
-
-                                default:
-                                    // could possibly still be acceptable as operator '<'
-                                    break;
-                            }
-                        }
-
-                        if (topID == CONVERSION_OPEN) {
+                        case GENERIC_WILD_CHAR:
+                            top.setExpID(VARIABLE);
                             addTokenTo(top);
                             break;
-                        }
 
-                        if (!errorState && !genericType) { // not generics -> handled compatibly
-                            // Operator handling
-                            switch (topID) {
-                                case CONSTANT:
-                                case VARIABLE:
-                                case METHOD:
-                                case CONSTRUCTOR:
-                                case ARRAY:
-                                case DOT:
-                                case ARROW:
-                                case SCOPE:
-                                case PARENTHESIS:
-                                case OPERATOR:
-                                case UNARY_OPERATOR:
-                                case MEMBER_POINTER:
-                                case CONVERSION:
-                                    pushExp(createTokenExp(OPERATOR));
-                                    break;
-
-                                default:
-                                    errorState = true;
-                                    break;
+                        case TYPE:
+                            if (getValidExpID(peekExp2()) != METHOD_OPEN) {
+                                popExp();
+                                CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                for (int i = 0; i < top.getTokenCount(); i++) {
+                                    // qualifiers
+                                    var.addToken(top.getTokenID(i), top.getTokenOffset(i), top.getTokenText(i));
+                                }
+                                pushExp(var);
+                                break;
+                            } else {
+                                popExp(); // top
+                                CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                var.addParameter(top);
+                                pushExp(var);
+                                break;
                             }
-                        }
-                        break;
+                        // no break;
+                        case VARIABLE:
+                            if (getValidExpID(peekExp2()) == METHOD_OPEN) {
+                                //top.setExpID(VARIABLE);
+                                addTokenTo(top);
+                            //pushExp(createTokenExp(VARIABLE));
+                            // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
+                                break;
+                            }
+                            int cnt = expStack.size();
+                            CsmCompletionExpression gen = null;
+                            for (int i = 0; i < cnt; i++) {
+                                CsmCompletionExpression expr = peekExp(i + 1);
+                                if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                    gen = expr;
+                                    break;
+                                }
+                            }
+                            if (gen != null) {
+                                pushExp(createTokenExp(VARIABLE));
+                                break;
+                            }
+                            errorState = true;
+                            break;
+                        case TYPE_REFERENCE:
+                            if (getValidExpID(peekExp2()) == METHOD_OPEN) {
+                                //top.setExpID(VARIABLE);
+                                //addTokenTo(top);
+                                popExp(); // top
+                                CsmCompletionExpression var = createTokenExp(VARIABLE);
+                                var.addParameter(top);
+                                pushExp(var);
+                            // TODO: need to create parameter, we know, that METHOD_OPEN is declaration/definition of method
+                            } else {
+                                errorState = true;
+                            }
+                            break;
+                        case PREPROC_DIRECTIVE_OPEN:
+                            top.setExpID(PREPROC_DIRECTIVE);
+                            top.addParameter(createTokenExp(VARIABLE));
+                            break;
+                        default:
+                            errorState = true;
+                            break;
                     }
+                }
+                break;
 
-                    case GT: // ">"
-                    {
-                        boolean genericType = false;
-                        if (supportTemplates) { // special treatment of Java 1.5 features
-                            switch (topID) {
-                                case CONSTANT: // check for "List<const" plus ">" case
-                                case VARIABLE: // check for "List<var" plus ">" case
-                                case TYPE: // check for "List<int" plus ">" case
-                                case TYPE_REFERENCE: // check for "List<int*" plus ">" case
-                                case DOT: // check for "List<var1.var2" plus ">" case
-                                case ARROW: // check for "List<var1.var2" plus ">" case
-                                case SCOPE: // check for "List<NS::Class" plus ">" case
-                                case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
-                                case GENERIC_TYPE_OPEN: // check for "List<" plus ">" case
-                                case GENERIC_WILD_CHAR: // check for "List<?" plus ">" case
-                                case ARRAY: // check for "List<String[]" plus ">" case
-                                case PARENTHESIS: // check for "T<(1+1)" plus ">" case
-                                case METHOD: // check for "T<func(param)" plus ">" case
-                                case UNARY_OPERATOR:
-                                    int cnt = expStack.size();
-                                    CsmCompletionExpression gen = null;
-                                    for (int i = 0; i < cnt; i++) {
-                                        CsmCompletionExpression expr = peekExp(i + 1);
-                                        if (expr.getExpID() == PARENTHESIS_OPEN) {
-                                            break;
-                                        }
-                                        if (expr.getExpID() == GENERIC_TYPE_OPEN) {
-                                            gen = expr;
-                                            break;
-                                        }
-                                    }
-                                    if (gen != null) {
-                                        while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
-                                            gen.addParameter(popExp());
-                                        }
-                                        gen.setExpID(GENERIC_TYPE);
+            case QUESTION:
+                nrQuestions++;
+                CsmCompletionExpression ternary = new CsmCompletionExpression(TERNARY_OPERATOR);
+                switch (topID) {
+                    case CONSTANT:
+                    case VARIABLE:
+                    case METHOD:
+                    case CONSTRUCTOR:
+                    case ARRAY:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case PARENTHESIS:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case GENERIC_TYPE_OPEN:
+                    case METHOD_OPEN:
+                    case LAMBDA_CALL_OPEN:
+                    case ARRAY_OPEN:
+                    case PARENTHESIS_OPEN:
+                    case SPECIAL_PARENTHESIS_OPEN:
+                    case MEMBER_POINTER_OPEN:
+                    case OPERATOR:
+                        popExp();
+                        ternary.addParameter(top);
+                        break;
+                    default:
+                        errorState = true;
+                        break;
+                }
+                pushExp(ternary);
+                break;
 
-                                        top = gen;
-                                        genericType = true;
+            case STAR:
+            case AMPAMP:
+            case AMP: {
+                if (tokenID != CppTokenId.AMPAMP || supportTemplates) {
+                    boolean pointer = false;
+                    // special handling of *, & and && because it can be not operator
+                    // while dereference and address-of expression
+                    // try to handle it the same ways as UNARY_OPERATOR
+                    switch (topID) {
+                        case GENERIC_TYPE_OPEN:
+                        case MEMBER_POINTER_OPEN: // next is operator as well
+                        case METHOD_OPEN:
+                        case LAMBDA_CALL_OPEN:
+                        case ARRAY_OPEN:
+                        case PARENTHESIS_OPEN:
+                        case SPECIAL_PARENTHESIS_OPEN:
+                        //case OPERATOR: ??? collision with usual operator behavior
+                        //case UNARY_OPERATOR:
+                        case NO_EXP:
+                        case CONVERSION:
+                            // member pointer operator
+                            CsmCompletionExpression opExp = createTokenExp(MEMBER_POINTER_OPEN);
+                            pushExp(opExp); // add operator as new exp
+                            pointer = true;
+                            break;
+                        case TYPE:
+                        case TYPE_REFERENCE:
+                        case GENERIC_TYPE:
+                        case SCOPE_OPEN:
+                            // we have type or type reference and then * or &,
+                            // join into TYPE_REFERENCE
+                            popExp();
+                            CsmCompletionExpression exp = createTokenExp(TYPE_REFERENCE);
+                            exp.addParameter(top);
+                            pushExp(exp);
+                            pointer = true;
+                            break;
+                        case OPERATOR:
+                            if ((top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) ||
+                                    (top.getTokenID(0) == CppTokenId.COLON)) {
+                                // member pointer operator
+                                CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                pushExp(memPtrExp); // add operator as new exp
+                                pointer = true;
+                            }
+                            break;
+                    }
+                    if (pointer) {
+                        break;
+                    } else {
+                        // else "nobreak" to allow to be handled as normal operators
+                    }
+                }
+            }
+            case EQ: // Assignment operators
+            case PLUSEQ:
+            case MINUSEQ:
+            case STAREQ:
+            case SLASHEQ:
+            case AMPEQ:
+            case BAREQ:
+            case CARETEQ:
+            case PERCENTEQ:
+            case LTLTEQ:
+            case GTGTEQ:
+//                    case RUSHIFTEQ:
 
-                                        // It seems that bugs 159068 and 159054 are now handled by other branches,
-                                        // so this fix is used for cases as in bug 230079
+            case LTEQ:
+            case GTEQ:
+            case EQEQ:
+            case NOTEQ:
 
-                                        // IZ#159068 : Unresolved ids in instantiations after &
-                                        // IZ#159054 : Unresolved id in case of reference to template as return type
-                                        if (gen.getParameterCount() > 0) {
-                                            CsmCompletionExpression param = gen.getParameter(0);
-                                            if (param.getParameterCount() > 0) {
-                                                switch (param.getExpID()) {
-                                                    case MEMBER_POINTER: // check for "&List<...>" case
-                                                        CsmCompletionExpression newGen = createTokenExp(GENERIC_TYPE);
-                                                        newGen.addParameter(param.getParameter(0));
-                                                        for (int i = 1; i < gen.getParameterCount(); i++) {
-                                                            newGen.addParameter(gen.getParameter(i));
-                                                        }
+            case BARBAR:// Binary, result is boolean
 
-                                                        top = newGen;
+            case LTLT: // Always binary
+            case SLASH:
+            case BAR:
+            case CARET:
+            case PERCENT:
 
-                                                        // pop generic type
-                                                        popExp();
+            case COLON:
+                // Operator handling
+                switch (topID) {
+                    case CONSTANT:
+                    case VARIABLE:
+                    case METHOD:
+                    case CONSTRUCTOR:
+                    case ARRAY:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case PARENTHESIS:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                        pushExp(createTokenExp(OPERATOR));
+                        break;
 
-                                                        // push MEMBER_POINTER_OPEN (it must be reduced to MEMBER_POINTER later)
-                                                        pushExp(createTokenExp(MEMBER_POINTER_OPEN, param));
+                    case TYPE:
+                    case TYPE_REFERENCE:
+                        if (tokenID == CppTokenId.STAR || tokenID == CppTokenId.AMP) {// '*' or '&' as type reference
+                            pushExp(createTokenExp(OPERATOR));
+                            break;
+                        }
+                        if (tokenID == CppTokenId.EQ) {// function param = value
+                            pushExp(createTokenExp(OPERATOR));
+                            break;
+                        }
+                    // else flow to errorContextor
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
 
-                                                        // push new GENERIC_TYPE (without MEMBER_POINTER)
-                                                        pushExp(newGen);
+            case LT: {
+                boolean genericType = false;
+                if (supportTemplates) { // special treatment of Java 1.5 features
+                    switch (topID) {
+                        case VARIABLE:
+                        case DOT:
+                        case ARROW:
+                        case SCOPE:
+                        case MEMBER_POINTER:
+                            popExp(); // pop the top expression
+                            CsmCompletionExpression genExp = createTokenExp(GENERIC_TYPE_OPEN);
+                            genExp.addParameter(top);
+                            pushExp(genExp);
+                            genericType = true; // handled successfully as generic type
+                            break;
 
-                                                    default:
+                        default:
+                            // could possibly still be acceptable as operator '<'
+                            break;
+                    }
+                }
+
+                if (topID == CONVERSION_OPEN) {
+                    addTokenTo(top);
+                    break;
+                }
+
+                if (!errorState && !genericType) { // not generics -> handled compatibly
+                    // Operator handling
+                    switch (topID) {
+                        case CONSTANT:
+                        case VARIABLE:
+                        case METHOD:
+                        case CONSTRUCTOR:
+                        case ARRAY:
+                        case DOT:
+                        case ARROW:
+                        case SCOPE:
+                        case PARENTHESIS:
+                        case OPERATOR:
+                        case UNARY_OPERATOR:
+                        case MEMBER_POINTER:
+                        case CONVERSION:
+                            pushExp(createTokenExp(OPERATOR));
+                            break;
+
+                        default:
+                            errorState = true;
+                            break;
+                    }
+                }
+                break;
+            }
+
+            case GT: // ">"
+            {
+                boolean genericType = false;
+                if (supportTemplates) { // special treatment of Java 1.5 features
+                    switch (topID) {
+                        case CONSTANT: // check for "List<const" plus ">" case
+                        case VARIABLE: // check for "List<var" plus ">" case
+                        case TYPE: // check for "List<int" plus ">" case
+                        case TYPE_REFERENCE: // check for "List<int*" plus ">" case
+                        case DOT: // check for "List<var1.var2" plus ">" case
+                        case ARROW: // check for "List<var1.var2" plus ">" case
+                        case SCOPE: // check for "List<NS::Class" plus ">" case
+                        case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
+                        case GENERIC_TYPE_OPEN: // check for "List<" plus ">" case
+                        case GENERIC_WILD_CHAR: // check for "List<?" plus ">" case
+                        case ARRAY: // check for "List<String[]" plus ">" case
+                        case PARENTHESIS: // check for "T<(1+1)" plus ">" case
+                        case METHOD: // check for "T<func(param)" plus ">" case
+                        case UNARY_OPERATOR:
+                            int cnt = expStack.size();
+                            CsmCompletionExpression gen = null;
+                            for (int i = 0; i < cnt; i++) {
+                                CsmCompletionExpression expr = peekExp(i + 1);
+                                if (expr.getExpID() == PARENTHESIS_OPEN) {
+                                    break;
+                                }
+                                if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                    gen = expr;
+                                    break;
+                                }
+                            }
+                            if (gen != null) {
+                                while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                    gen.addParameter(popExp());
+                                }
+                                gen.setExpID(GENERIC_TYPE);
+
+                                top = gen;
+                                genericType = true;
+
+                                // It seems that bugs 159068 and 159054 are now handled by other branches,
+                                // so this fix is used for cases as in bug 230079
+
+                                // IZ#159068 : Unresolved ids in instantiations after &
+                                // IZ#159054 : Unresolved id in case of reference to template as return type
+                                if (gen.getParameterCount() > 0) {
+                                    CsmCompletionExpression param = gen.getParameter(0);
+                                    if (param.getParameterCount() > 0) {
+                                        switch (param.getExpID()) {
+                                            case MEMBER_POINTER: // check for "&List<...>" case
+                                                CsmCompletionExpression newGen = createTokenExp(GENERIC_TYPE);
+                                                newGen.addParameter(param.getParameter(0));
+                                                for (int i = 1; i < gen.getParameterCount(); i++) {
+                                                    newGen.addParameter(gen.getParameter(i));
                                                 }
-                                            }
+
+                                                top = newGen;
+
+                                                // pop generic type
+                                                popExp();
+
+                                                // push MEMBER_POINTER_OPEN (it must be reduced to MEMBER_POINTER later)
+                                                pushExp(createTokenExp(MEMBER_POINTER_OPEN, param));
+
+                                                // push new GENERIC_TYPE (without MEMBER_POINTER)
+                                                pushExp(newGen);
+
+                                            default:
                                         }
                                     }
-                                    break;
-
-                                default:
-                                    // Will be handled as operator
-                                    break;
+                                }
                             }
-                        }
+                            break;
 
-                        boolean conversion = false;
-                        if (!errorState && !genericType) {
-                            CsmCompletionExpression top2 = peekExp2();
-                            switch (getValidExpID(top2)) {
-                                case CLASSIFIER:
-                                    CsmCompletionExpression top3 = peekExp(3);
-                                    if (getValidExpID(top3) == CONVERSION_OPEN && CsmCompletionExpression.isValidType(top)) {
-                                        popExp();
-                                        popExp();
-                                        top3.addParameter(top);
-                                        top3.addParameter(top2);
-                                        addTokenTo(top3);
-
-                                        conversion = true;
-                                    }
-                                    break;
-                                case CONVERSION_OPEN:
-                                    if (CsmCompletionExpression.isValidType(top)) {
-                                        popExp();
-                                        top2.addParameter(top);
-                                        addTokenTo(top2);
-
-                                        conversion = true;
-                                    }
-                                    break;
-                            }
-                        }
-
-                        if (!errorState && !genericType && !conversion) { // not generics - handled compatibly
-                            // Operator handling
-                            switch (topID) {
-                                case CONSTANT:
-                                case VARIABLE: // List<String
-                                case METHOD:
-                                case CONSTRUCTOR:
-                                case ARRAY:
-                                case DOT:
-                                case ARROW:
-                                case SCOPE:
-                                case PARENTHESIS:
-                                case OPERATOR:
-                                case UNARY_OPERATOR:
-                                case MEMBER_POINTER:
-                                    pushExp(createTokenExp(OPERATOR));
-                                    break;
-
-                                default:
-                                    errorState = true;
-                                    break;
-                            }
-                        }
-                        break;
+                        default:
+                            // Will be handled as operator
+                            break;
                     }
+                }
 
-                    case GTGT: // ">>"
-                    {
-                        boolean genericType = false;
-                        if (supportTemplates) { // special treatment of C++ template features
-                            switch (topID) {
-                                case CONSTANT: // check for "List<const" plus ">" case
-                                case VARIABLE: // check for "List<var" plus ">" case
-                                case TYPE: // check for "List<int" plus ">" case
-                                case DOT: // check for "List<var.var2" plus ">" case
-                                case ARROW: // check for "List<var.var2" plus ">" case
-                                case SCOPE: // check for "List<NS::Class" plus ">" case
-                                case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
-                                case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
-                                case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
-                                case ARRAY: // chack for "List<String[]" plus ">" case
-                                case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
-                                    int gtoIndex = findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN);
-                                    gtoIndex = (gtoIndex >= 0 ? findNextExpr(gtoIndex, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN) : -1);
-                                    if (gtoIndex >= 0) {
-                                        genericType = true;
-                                        for (int iterCount = 0; iterCount < 2; iterCount++) {
-                                            CsmCompletionExpression gen = peekExp(findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN));
-                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
-                                                gen.addParameter(popExp());
-                                            }
-                                            gen.setExpID(GENERIC_TYPE);
-                                            top = gen;
+                boolean conversion = false;
+                if (!errorState && !genericType) {
+                    CsmCompletionExpression top2 = peekExp2();
+                    switch (getValidExpID(top2)) {
+                        case CLASSIFIER:
+                            CsmCompletionExpression top3 = peekExp(3);
+                            if (getValidExpID(top3) == CONVERSION_OPEN && CsmCompletionExpression.isValidType(top)) {
+                                popExp();
+                                popExp();
+                                top3.addParameter(top);
+                                top3.addParameter(top2);
+                                addTokenTo(top3);
 
-                                            if (iterCount == 0) {
-                                                // TODO: think if this should be refactored
-                                                checkJoin(CppTokenId.GT);
-                                            }
-                                        }
-                                    }
-                                    break;
-
-                                default:
-                                    // Will be handled as operator
-                                    break;
+                                conversion = true;
                             }
-                        }
+                            break;
+                        case CONVERSION_OPEN:
+                            if (CsmCompletionExpression.isValidType(top)) {
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
 
-
-                        if (!errorState && !genericType) { // not generics - handled compatibly
-                            // Operator handling
-                            switch (topID) {
-                                case CONSTANT:
-                                case VARIABLE: // List<String
-                                case METHOD:
-                                case CONSTRUCTOR:
-                                case ARRAY:
-                                case DOT:
-                                case ARROW:
-                                case SCOPE:
-                                case PARENTHESIS:
-                                case OPERATOR:
-                                case UNARY_OPERATOR:
-                                case MEMBER_POINTER:
-                                case CONVERSION: // (a)>>1
-                                    pushExp(createTokenExp(OPERATOR));
-                                    break;
-
-                                default:
-                                    errorState = true;
-                                    break;
+                                conversion = true;
                             }
-                        }
-                        break;
+                            break;
                     }
+                }
+
+                if (!errorState && !genericType && !conversion) { // not generics - handled compatibly
+                    // Operator handling
+                    switch (topID) {
+                        case CONSTANT:
+                        case VARIABLE: // List<String
+                        case METHOD:
+                        case CONSTRUCTOR:
+                        case ARRAY:
+                        case DOT:
+                        case ARROW:
+                        case SCOPE:
+                        case PARENTHESIS:
+                        case OPERATOR:
+                        case UNARY_OPERATOR:
+                        case MEMBER_POINTER:
+                            pushExp(createTokenExp(OPERATOR));
+                            break;
+
+                        default:
+                            errorState = true;
+                            break;
+                    }
+                }
+                break;
+            }
+
+            case GTGT: // ">>"
+            {
+                boolean genericType = false;
+                if (supportTemplates) { // special treatment of C++ template features
+                    switch (topID) {
+                        case CONSTANT: // check for "List<const" plus ">" case
+                        case VARIABLE: // check for "List<var" plus ">" case
+                        case TYPE: // check for "List<int" plus ">" case
+                        case DOT: // check for "List<var.var2" plus ">" case
+                        case ARROW: // check for "List<var.var2" plus ">" case
+                        case SCOPE: // check for "List<NS::Class" plus ">" case
+                        case GENERIC_TYPE: // check for "List<HashMap<String, Integer>" plus ">" case
+                        case GENERIC_TYPE_OPEN: // chack for "List<" plus ">" case
+                        case GENERIC_WILD_CHAR: // chack for "List<?" plus ">" case
+                        case ARRAY: // chack for "List<String[]" plus ">" case
+                        case PARENTHESIS: // chack for "T<(1+1)" plus ">" case
+                            int gtoIndex = findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN);
+                            gtoIndex = (gtoIndex >= 0 ? findNextExpr(gtoIndex, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN) : -1);
+                            if (gtoIndex >= 0) {
+                                genericType = true;
+                                for (int iterCount = 0; iterCount < 2; iterCount++) {
+                                    CsmCompletionExpression gen = peekExp(findNextExpr(0, GENERIC_TYPE_OPEN, PARENTHESIS_OPEN));
+                                    while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                        gen.addParameter(popExp());
+                                    }
+                                    gen.setExpID(GENERIC_TYPE);
+                                    top = gen;
+
+                                    if (iterCount == 0) {
+                                        // TODO: think if this should be refactored
+                                        checkJoin(CppTokenId.GT);
+                                    }
+                                }
+                            }
+                            break;
+
+                        default:
+                            // Will be handled as operator
+                            break;
+                    }
+                }
+
+
+                if (!errorState && !genericType) { // not generics - handled compatibly
+                    // Operator handling
+                    switch (topID) {
+                        case CONSTANT:
+                        case VARIABLE: // List<String
+                        case METHOD:
+                        case CONSTRUCTOR:
+                        case ARRAY:
+                        case DOT:
+                        case ARROW:
+                        case SCOPE:
+                        case PARENTHESIS:
+                        case OPERATOR:
+                        case UNARY_OPERATOR:
+                        case MEMBER_POINTER:
+                        case CONVERSION: // (a)>>1
+                            pushExp(createTokenExp(OPERATOR));
+                            break;
+
+                        default:
+                            errorState = true;
+                            break;
+                    }
+                }
+                break;
+            }
 
 //                    case RUSHIFT: // ">>>"
 //                        {
@@ -1940,495 +1936,523 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
 
 
 
-                    case PLUSPLUS: // Prefix or postfix
-                    case MINUSMINUS:
-                        switch (topID) {
-                            case GENERIC_TYPE_OPEN:
-                            case METHOD_OPEN:
-                            case LAMBDA_CALL_OPEN:
-                            case ARRAY_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            case MEMBER_POINTER_OPEN:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case NO_EXP:
-                                // Prefix operator
-                                CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
-                                pushExp(opExp); // add operator as new exp
-                                break;
-
-                            case VARIABLE: // is it only one permitted?
-                                // Postfix operator
-                                opExp = createTokenExp(UNARY_OPERATOR);
-                                popExp(); // pop top
-                                opExp.addParameter(top);
-                                pushExp(opExp);
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-                        }
+            case PLUSPLUS: // Prefix or postfix
+            case MINUSMINUS:
+                switch (topID) {
+                    case GENERIC_TYPE_OPEN:
+                    case METHOD_OPEN:
+                    case LAMBDA_CALL_OPEN:
+                    case ARRAY_OPEN:
+                    case PARENTHESIS_OPEN:
+                    case SPECIAL_PARENTHESIS_OPEN:
+                    case MEMBER_POINTER_OPEN:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case NO_EXP:
+                        // Prefix operator
+                        CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
+                        pushExp(opExp); // add operator as new exp
                         break;
 
-                    case PLUS: // Can be unary or binary
-                    case MINUS:
-                        switch (topID) {
-                            case CONSTANT:
-                            case VARIABLE:
-                            case METHOD:
-                            case CONSTRUCTOR:
-                            case ARRAY:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case PARENTHESIS:
-                            case UNARY_OPERATOR:
-                            case TERNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                                CsmCompletionExpression opExp = createTokenExp(OPERATOR);
-                                pushExp(opExp);
-                                break;
-
-                            case GENERIC_TYPE_OPEN:
-                            case METHOD_OPEN:
-                            case LAMBDA_CALL_OPEN:
-                            case ARRAY_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            case MEMBER_POINTER_OPEN:
-                            case OPERATOR:
-                            case CONVERSION:
-                            case NO_EXP:
-                                // Unary operator
-                                opExp = createTokenExp(UNARY_OPERATOR);
-                                pushExp(opExp); // add operator as new exp
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-                        }
+                    case VARIABLE: // is it only one permitted?
+                        // Postfix operator
+                        opExp = createTokenExp(UNARY_OPERATOR);
+                        popExp(); // pop top
+                        opExp.addParameter(top);
+                        pushExp(opExp);
                         break;
 
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
 
-                    case TILDE: // Always unary
-                    case NOT:
-                        switch (topID) {
-                            case GENERIC_TYPE_OPEN:
-                            case METHOD_OPEN:
-                            case LAMBDA_CALL_OPEN:
-                            case ARRAY_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case MEMBER_POINTER_OPEN:
-                            case NO_EXP: {
-                                // Unary operator
-                                CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
-                                pushExp(opExp); // add operator as new exp
-                                break;
+            case PLUS: // Can be unary or binary
+            case MINUS:
+                switch (topID) {
+                    case CONSTANT:
+                    case VARIABLE:
+                    case METHOD:
+                    case CONSTRUCTOR:
+                    case ARRAY:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case PARENTHESIS:
+                    case UNARY_OPERATOR:
+                    case TERNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                        CsmCompletionExpression opExp = createTokenExp(OPERATOR);
+                        pushExp(opExp);
+                        break;
+
+                    case GENERIC_TYPE_OPEN:
+                    case METHOD_OPEN:
+                    case LAMBDA_CALL_OPEN:
+                    case ARRAY_OPEN:
+                    case PARENTHESIS_OPEN:
+                    case SPECIAL_PARENTHESIS_OPEN:
+                    case MEMBER_POINTER_OPEN:
+                    case OPERATOR:
+                    case CONVERSION:
+                    case NO_EXP:
+                        // Unary operator
+                        opExp = createTokenExp(UNARY_OPERATOR);
+                        pushExp(opExp); // add operator as new exp
+                        break;
+
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+
+            case TILDE: // Always unary
+            case NOT:
+                switch (topID) {
+                    case GENERIC_TYPE_OPEN:
+                    case METHOD_OPEN:
+                    case LAMBDA_CALL_OPEN:
+                    case ARRAY_OPEN:
+                    case PARENTHESIS_OPEN:
+                    case SPECIAL_PARENTHESIS_OPEN:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case MEMBER_POINTER_OPEN:
+                    case NO_EXP: {
+                        // Unary operator
+                        CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
+                        pushExp(opExp); // add operator as new exp
+                        break;
+                    }
+                    case DOT_OPEN:
+                    case ARROW_OPEN:
+                    case SCOPE_OPEN: {
+                        if (tokenID == CppTokenId.TILDE) {
+                            // this is ~ of destructor, will be handled later in checkJoin
+                            CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
+                            pushExp(opExp); // add operator as new exp
+                            break;
+                        } else {
+                            // flow down to errorContextor
+                        }
+                    }
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+            case DOT: // '.' found
+            case DOTMBR: // '.*' found
+            case ARROW: // '->' found
+            case ARROWMBR: // '->*' found
+            case SCOPE: // '::' found
+                switch (topID) {
+                    case CONSTANT:
+                    case VARIABLE:
+                    case ARRAY:
+                    case METHOD:
+                    case LAMBDA_CALL:
+                    case CONSTRUCTOR:
+                    case PARENTHESIS:
+                    case CONVERSION:
+                    case GENERIC_TYPE:
+                    case MEMBER_POINTER: {
+                        if (
+                            checkExpRow(AUTO, METHOD) || // C++11 function declaration
+                            checkExpRow(AUTO, PARENTHESIS, PARENTHESIS) // C++11 pointer to function declaration
+                        ) {
+                            // this is a new style C++11 function declaration
+                            pushExp(createTokenExp(ARROW_RETURN_TYPE));
+                        } else {
+                            popExp();
+                            // tokenID.getNumericID() is the parameter of the main switch
+                            // create correspondent *_OPEN expression ID
+                            int openExpID = tokenID2OpenExpID(tokenID);
+                            CsmCompletionExpression opExp = createTokenExp(openExpID);
+                            if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
+                                // Now we know that previous exp is PARENTHESIS, not CONVERSION.
+                                top.setExpID(PARENTHESIS);
                             }
-                            case DOT_OPEN:
-                            case ARROW_OPEN:
-                            case SCOPE_OPEN: {
-                                if (tokenID == CppTokenId.TILDE) {
-                                    // this is ~ of destructor, will be handled later in checkJoin
-                                    CsmCompletionExpression opExp = createTokenExp(UNARY_OPERATOR);
-                                    pushExp(opExp); // add operator as new exp
-                                    break;
-                                } else {
-                                    // flow down to errorContextor
-                                }
-                            }
-                            default:
-                                errorState = true;
-                                break;
+                            opExp.addParameter(top);
+                            pushExp(opExp);
                         }
                         break;
+                    }
+                    case DOT:
+                        addTokenTo(top);
+                        top.setExpID(tokenID2OpenExpID(tokenID));
+                        break;
 
-                    case DOT: // '.' found
-                    case DOTMBR: // '.*' found
-                    case ARROW: // '->' found
-                    case ARROWMBR: // '->*' found
-                    case SCOPE: // '::' found
-                        switch (topID) {
-                            case CONSTANT:
-                            case VARIABLE:
-                            case ARRAY:
-                            case METHOD:
-                            case LAMBDA_CALL:
-                            case CONSTRUCTOR:
-                            case PARENTHESIS:
-                            case CONVERSION:
-                            case GENERIC_TYPE:
-                            case MEMBER_POINTER: {
-                                if (
-                                    checkExpRow(AUTO, METHOD) || // C++11 function declaration
-                                    checkExpRow(AUTO, PARENTHESIS, PARENTHESIS) // C++11 pointer to function declaration
-                                ) {
-                                    // this is a new style C++11 function declaration
-                                    pushExp(createTokenExp(ARROW_RETURN_TYPE));
-                                } else {
-                                    popExp();
-                                    // tokenID.getNumericID() is the parameter of the main switch
-                                    // create correspondent *_OPEN expression ID
-                                    int openExpID = tokenID2OpenExpID(tokenID);
-                                    CsmCompletionExpression opExp = createTokenExp(openExpID);
-                                    if (topID == CONVERSION && tokenID != CppTokenId.SCOPE) {
-                                        // Now we know that previous exp is PARENTHESIS, not CONVERSION.
-                                        top.setExpID(PARENTHESIS);
+                    case ARROW:
+                        addTokenTo(top);
+                        top.setExpID(tokenID2OpenExpID(tokenID));
+                        break;
+
+                    case SCOPE:
+                        addTokenTo(top);
+                        top.setExpID(tokenID2OpenExpID(tokenID));
+                        break;
+
+                    case GENERIC_TYPE_OPEN:
+                    case METHOD_OPEN:
+                    case LAMBDA_CALL_OPEN:
+                    case PARENTHESIS_OPEN:
+                    case SPECIAL_PARENTHESIS_OPEN:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case TYPE_PREFIX:
+                    case NO_EXP: // alone :: is OK as access to global context
+                        CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
+                        int openExpID = tokenID2OpenExpID(tokenID);
+                        CsmCompletionExpression opExp = createTokenExp(openExpID);
+                        opExp.addParameter(emptyVar);
+                        pushExp(opExp);
+                        break;
+
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+            case COMMA: // ',' found
+                switch (topID) {
+                    case ARRAY:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case TYPE:
+                    case TYPE_REFERENCE:
+                    case CONSTANT:
+                    case VARIABLE: // can be "List<String" plus "," state
+                    case CONSTRUCTOR:
+                    case CONVERSION:
+                    case PARENTHESIS:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case INSTANCEOF:
+                    case METHOD:
+                    case LAMBDA_CALL:
+                    case LAMBDA_FUNCTION: // apart from call, lambda itself can be parameter
+                    case GENERIC_TYPE: // can be "HashMap<List<String>" plus "," state
+                    case GENERIC_WILD_CHAR: // chack for "HashMap<?" plus "," case
+                        CsmCompletionExpression top2 = peekExp2();
+                        switch (getValidExpID(top2)) {
+                            case METHOD_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+
+                            case ANNOTATION_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+
+                            case PARENTHESIS_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+
+                            case LAMBDA_CALL_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+
+                            default:
+                                int cnt = expStack.size();
+                                CsmCompletionExpression gen = null;
+                                for (int i = 0; i < cnt; i++) {
+                                    CsmCompletionExpression expr = peekExp(i + 1);
+                                    if (expr.getExpID() == GENERIC_TYPE_OPEN) {
+                                        gen = expr;
+                                        break;
                                     }
-                                    opExp.addParameter(top);
-                                    pushExp(opExp);
                                 }
-                                break;
-                            }
-                            case DOT:
-                                addTokenTo(top);
-                                top.setExpID(tokenID2OpenExpID(tokenID));
-                                break;
+                                if (gen != null) {
+                                    while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
+                                        gen.addParameter(popExp());
+                                    }
+                                    top = gen;
+                                    break;
+                                }
 
-                            case ARROW:
-                                addTokenTo(top);
-                                top.setExpID(tokenID2OpenExpID(tokenID));
-                                break;
-
-                            case SCOPE:
-                                addTokenTo(top);
-                                top.setExpID(tokenID2OpenExpID(tokenID));
-                                break;
-
-                            case GENERIC_TYPE_OPEN:
-                            case METHOD_OPEN:
-                            case LAMBDA_CALL_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case TYPE_PREFIX:
-                            case NO_EXP: // alone :: is OK as access to global context
-                                CsmCompletionExpression emptyVar = CsmCompletionExpression.createEmptyVariable(curTokenPosition);
-                                int openExpID = tokenID2OpenExpID(tokenID);
-                                CsmCompletionExpression opExp = createTokenExp(openExpID);
-                                opExp.addParameter(emptyVar);
-                                pushExp(opExp);
-                                break;
-
-                            default:
                                 errorState = true;
                                 break;
                         }
                         break;
 
-                    case COMMA: // ',' found
-                        switch (topID) {
-                            case ARRAY:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case TYPE:
-                            case TYPE_REFERENCE:
-                            case CONSTANT:
-                            case VARIABLE: // can be "List<String" plus "," state
-                            case CONSTRUCTOR:
-                            case CONVERSION:
-                            case PARENTHESIS:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case INSTANCEOF:
-                            case METHOD:
-                            case LAMBDA_CALL:
-                            case LAMBDA_FUNCTION: // apart from call, lambda itself can be parameter
-                            case GENERIC_TYPE: // can be "HashMap<List<String>" plus "," state
-                            case GENERIC_WILD_CHAR: // chack for "HashMap<?" plus "," case
-                                CsmCompletionExpression top2 = peekExp2();
-                                switch (getValidExpID(top2)) {
-                                    case METHOD_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        addTokenTo(top2);
-                                        top = top2;
-                                        break;
-
-                                    case ANNOTATION_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        addTokenTo(top2);
-                                        top = top2;
-                                        break;
-
-                                    case PARENTHESIS_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        addTokenTo(top2);
-                                        top = top2;
-                                        break;
-
-                                    case LAMBDA_CALL_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        addTokenTo(top2);
-                                        top = top2;
-                                        break;
-
-                                    default:
-                                        int cnt = expStack.size();
-                                        CsmCompletionExpression gen = null;
-                                        for (int i = 0; i < cnt; i++) {
-                                            CsmCompletionExpression expr = peekExp(i + 1);
-                                            if (expr.getExpID() == GENERIC_TYPE_OPEN) {
-                                                gen = expr;
-                                                break;
-                                            }
-                                        }
-                                        if (gen != null) {
-                                            while (peekExp().getExpID() != GENERIC_TYPE_OPEN) {
-                                                gen.addParameter(popExp());
-                                            }
-                                            top = gen;
-                                            break;
-                                        }
-
-                                        errorState = true;
-                                        break;
-                                }
-                                break;
-
-                            case METHOD_OPEN:
-                                addTokenTo(top);
-                                break;
-
-                            case LAMBDA_CALL_OPEN:
-                                addTokenTo(top);
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-
-                        }
+                    case METHOD_OPEN:
+                        addTokenTo(top);
                         break;
 
-                    case SEMICOLON:
+                    case LAMBDA_CALL_OPEN:
+                        addTokenTo(top);
+                        break;
+
+                    default:
                         errorState = true;
                         break;
 
-                    case LPAREN:
-                        switch (topID) {
-                            case VARIABLE:
-                            case GENERIC_TYPE:
-                                popExp();
-                                CsmCompletionExpression top2 = peekExp();
-                                int top2ID = getValidExpID(top2);
-                                switch (top2ID) {
-                                    case ANNOTATION:
-                                        top2.setExpID(ANNOTATION_OPEN);
-                                        top2.addParameter(top);
-                                        break;
-                                    case DOT_OPEN:
-                                    case ARROW_OPEN:
-                                    case SCOPE_OPEN:
-                                    {
-                                        CsmCompletionExpression top3 = peekExp2();
-                                        if (getValidExpID(top3) == ANNOTATION) {
-                                            top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
-                                            top2.addParameter(top);
-                                            top3.setExpID(ANNOTATION_OPEN);
-                                            top3.addParameter(top2);
-                                            popExp();
-                                            break;
-                                        }
-                                        // nobreak
-                                    }
-                                    default:
-                                        CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
-                                        mtdOpExp.addParameter(top);
-                                        pushExp(mtdOpExp);
+                }
+                break;
+
+            case SEMICOLON:
+                errorState = true;
+                break;
+
+            case LPAREN:
+                switch (topID) {
+                    case VARIABLE:
+                    case GENERIC_TYPE:
+                        popExp();
+                        CsmCompletionExpression top2 = peekExp();
+                        int top2ID = getValidExpID(top2);
+                        switch (top2ID) {
+                            case ANNOTATION:
+                                top2.setExpID(ANNOTATION_OPEN);
+                                top2.addParameter(top);
+                                break;
+                            case DOT_OPEN:
+                            case ARROW_OPEN:
+                            case SCOPE_OPEN:
+                            {
+                                CsmCompletionExpression top3 = peekExp2();
+                                if (getValidExpID(top3) == ANNOTATION) {
+                                    top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
+                                    top2.addParameter(top);
+                                    top3.setExpID(ANNOTATION_OPEN);
+                                    top3.addParameter(top2);
+                                    popExp();
+                                    break;
                                 }
-                                break;
-
-                            case ARRAY: // a[0](
-                                popExp();
-                                CsmCompletionExpression mtdExp = createTokenExp(METHOD);
-                                mtdExp.addParameter(top);
-                                pushExp(mtdExp);
-                                break;
-
-                            case TYPE: { // int(a)
-                                popExp();
-                                CsmCompletionExpression convOpExp = new CsmCompletionExpression(CONVERSION_OPEN);
-                                convOpExp.addParameter(top);
-                                pushExp(convOpExp);
-                                pushExp(createTokenExp(PARENTHESIS_OPEN));
-                                break;
+                                // nobreak
                             }
-
-                            case LAMBDA_FUNCTION: // [](){...}(
-                                popExp();
-                                CsmCompletionExpression lambdaExp = createTokenExp(LAMBDA_CALL_OPEN);
-                                lambdaExp.addParameter(top);
-                                pushExp(lambdaExp);
-                                break;
-
-                            case AUTO:   // auto(
-                            case DECLTYPE_OPEN:    // decltype(
-                            case ARRAY_OPEN:       // a[(
-                            case PARENTHESIS_OPEN: // ((
-                            case SPECIAL_PARENTHESIS_OPEN: // if((
-                            case METHOD_OPEN:      // a((
-                            case LAMBDA_CALL_OPEN: // [](){return 0;}((
-                            case NO_EXP:
-                            case OPERATOR:         // 3+(
-                            case CONVERSION:       // (int)(
-                            case CONVERSION_OPEN:  // static_cast<int>(
-                            case PARENTHESIS:      // if (a > b) (
-                            case GENERIC_TYPE_OPEN:// a < (
-                            case MEMBER_POINTER_OPEN:// *(
-                            case UNARY_OPERATOR: // !(
-                                pushExp(createTokenExp(PARENTHESIS_OPEN));
-                                break;
-
-                            case METHOD: // a()(
-                                popExp();
+                            default:
                                 CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
                                 mtdOpExp.addParameter(top);
                                 pushExp(mtdOpExp);
-                                break;
-
-                            case IF:
-                            case FOR:
-                            case SWITCH:
-                            case WHILE:
-                                popExp();
-                                pushExp(createTokenExp(SPECIAL_PARENTHESIS_OPEN));
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
                         }
                         break;
 
-                    case RPAREN:
-                        boolean mtd = false;
-                        switch (topID) {
-                            case CONSTANT:
-                            case VARIABLE:
-                            case ARRAY:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case TYPE:
-                            case CONSTRUCTOR:
-                            case CONVERSION:
-                            case PARENTHESIS:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case TERNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case TYPE_REFERENCE:
-                            case INSTANCEOF:
-                            case METHOD:
-                            case LAMBDA_CALL:
-                            case LAMBDA_FUNCTION:
-                            case GENERIC_TYPE:
-                                CsmCompletionExpression top2 = peekExp2();
-                                CsmCompletionExpression top3;
-                                switch (getValidExpID(top2)) {
-                                    case CLASSIFIER:
-                                        top3 = peekExp(3);
-                                        if (getValidExpID(top3) == PARENTHESIS_OPEN && CsmCompletionExpression.isValidType(top)) {
-                                            popExp();
-                                            popExp();
-                                            top3.addParameter(top);
-                                            top3.addParameter(top2);
-                                            top3.setExpID(CONVERSION);
-                                            addTokenTo(top3);
-                                        } else if(getValidExpID(top3) == METHOD_OPEN) {
-                                            popExp();
-                                            popExp();
-                                            top3.addParameter(top);
-                                            top = top3;
-                                            mtd = true;
-                                            break;
-                                        }
-                                        break;
-                                    case PARENTHESIS_OPEN:
-                                        top3 = peekExp(3);
-                                        if (getValidExpID(top3) == CONVERSION_OPEN) {
-                                            popExp();
-                                            popExp();
-                                            popExp();
+                    case ARRAY: // a[0](
+                        popExp();
+                        CsmCompletionExpression mtdExp = createTokenExp(METHOD);
+                        mtdExp.addParameter(top);
+                        pushExp(mtdExp);
+                        break;
 
-                                            for (int i = 0; i < top2.getParameterCount(); ++i) {
-                                                top3.addParameter(top2.getParameter(i));
-                                            }
-                                            for (int i = 0; i < top2.getTokenCount(); ++i) {
-                                                top3.addToken(top2.getTokenID(i), top2.getTokenOffset(i), top2.getTokenText(i));
-                                            }
-                                            addTokenTo(top3);
-                                            top3.addParameter(top);
-                                            top3.setExpID(CONVERSION);
+                    case TYPE: { // int(a)
+                        popExp();
+                        CsmCompletionExpression convOpExp = new CsmCompletionExpression(CONVERSION_OPEN);
+                        convOpExp.addParameter(top);
+                        pushExp(convOpExp);
+                        pushExp(createTokenExp(PARENTHESIS_OPEN));
+                        break;
+                    }
 
-                                            top2 = new CsmCompletionExpression(PARENTHESIS);
-                                            top2.addParameter(top3);
-                                            top = top2;
+                    case LAMBDA_FUNCTION: // [](){...}(
+                        popExp();
+                        CsmCompletionExpression lambdaExp = createTokenExp(LAMBDA_CALL_OPEN);
+                        lambdaExp.addParameter(top);
+                        pushExp(lambdaExp);
+                        break;
 
-                                            pushExp(top);
-                                        } else if (getValidExpID(top3) == DECLTYPE_OPEN) {
-                                            popExp();
-                                            popExp();
-                                            popExp();
+                    case AUTO:   // auto(
+                    case DECLTYPE_OPEN:    // decltype(
+                    case ARRAY_OPEN:       // a[(
+                    case PARENTHESIS_OPEN: // ((
+                    case SPECIAL_PARENTHESIS_OPEN: // if((
+                    case METHOD_OPEN:      // a((
+                    case LAMBDA_CALL_OPEN: // [](){return 0;}((
+                    case NO_EXP:
+                    case OPERATOR:         // 3+(
+                    case CONVERSION:       // (int)(
+                    case CONVERSION_OPEN:  // static_cast<int>(
+                    case PARENTHESIS:      // if (a > b) (
+                    case GENERIC_TYPE_OPEN:// a < (
+                    case MEMBER_POINTER_OPEN:// *(
+                    case UNARY_OPERATOR: // !(
+                        pushExp(createTokenExp(PARENTHESIS_OPEN));
+                        break;
 
-                                            top2.addParameter(top);
-                                            top2.setExpID(DECLTYPE);
+                    case METHOD: // a()(
+                        popExp();
+                        CsmCompletionExpression mtdOpExp = createTokenExp(METHOD_OPEN);
+                        mtdOpExp.addParameter(top);
+                        pushExp(mtdOpExp);
+                        break;
 
-                                            top3.addParameter(top2);
-                                            top3.setExpID(PARENTHESIS);
+                    case IF:
+                    case FOR:
+                    case SWITCH:
+                    case WHILE:
+                        popExp();
+                        pushExp(createTokenExp(SPECIAL_PARENTHESIS_OPEN));
+                        break;
 
-                                            top = top3;
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
 
-                                            pushExp(top);
-                                        } else {
-                                            popExp();
-                                            top2.addParameter(top);
-                                            if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)
-                                                    && getValidExpID(top3) != PARENTHESIS && getValidExpID(top3) != TYPE) {
-                                                top2.setExpID(CONVERSION);
-                                            } else {
-                                                top2.setExpID(PARENTHESIS);
-                                            }
-                                            addTokenTo(top2);
-                                        }
-                                        break;
+            case RPAREN:
+                boolean mtd = false;
+                switch (topID) {
+                    case CONSTANT:
+                    case VARIABLE:
+                    case ARRAY:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case TYPE:
+                    case CONSTRUCTOR:
+                    case CONVERSION:
+                    case PARENTHESIS:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case TERNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case TYPE_REFERENCE:
+                    case INSTANCEOF:
+                    case METHOD:
+                    case LAMBDA_CALL:
+                    case LAMBDA_FUNCTION:
+                    case GENERIC_TYPE:
+                        CsmCompletionExpression top2 = peekExp2();
+                        CsmCompletionExpression top3;
+                        switch (getValidExpID(top2)) {
+                            case CLASSIFIER:
+                                top3 = peekExp(3);
+                                if (getValidExpID(top3) == PARENTHESIS_OPEN && CsmCompletionExpression.isValidType(top)) {
+                                    popExp();
+                                    popExp();
+                                    top3.addParameter(top);
+                                    top3.addParameter(top2);
+                                    top3.setExpID(CONVERSION);
+                                    addTokenTo(top3);
+                                } else if(getValidExpID(top3) == METHOD_OPEN) {
+                                    popExp();
+                                    popExp();
+                                    top3.addParameter(top);
+                                    top = top3;
+                                    mtd = true;
+                                    break;
+                                }
+                                break;
+                            case PARENTHESIS_OPEN:
+                                top3 = peekExp(3);
+                                if (getValidExpID(top3) == CONVERSION_OPEN) {
+                                    popExp();
+                                    popExp();
+                                    popExp();
 
-                                    case SPECIAL_PARENTHESIS_OPEN:
-                                        popExp();
-                                        popExp();
-                                        break;
+                                    for (int i = 0; i < top2.getParameterCount(); ++i) {
+                                        top3.addParameter(top2.getParameter(i));
+                                    }
+                                    for (int i = 0; i < top2.getTokenCount(); ++i) {
+                                        top3.addToken(top2.getTokenID(i), top2.getTokenOffset(i), top2.getTokenText(i));
+                                    }
+                                    addTokenTo(top3);
+                                    top3.addParameter(top);
+                                    top3.setExpID(CONVERSION);
 
-                                    case GENERIC_TYPE_OPEN:
-                                        popExp();
-                                        top2.setExpID(OPERATOR);
-                                        top2.addParameter(top);
-                                        top = top2;
-                                        top2 = peekExp2();
-                                        // revert #223298 - Wrong recognition of function
+                                    top2 = new CsmCompletionExpression(PARENTHESIS);
+                                    top2.addParameter(top3);
+                                    top = top2;
+
+                                    pushExp(top);
+                                } else if (getValidExpID(top3) == DECLTYPE_OPEN) {
+                                    popExp();
+                                    popExp();
+                                    popExp();
+
+                                    top2.addParameter(top);
+                                    top2.setExpID(DECLTYPE);
+
+                                    top3.addParameter(top2);
+                                    top3.setExpID(PARENTHESIS);
+
+                                    top = top3;
+
+                                    pushExp(top);
+                                } else {
+                                    popExp();
+                                    top2.addParameter(top);
+                                    if (top2.getParameterCount() == 1 && CsmCompletionExpression.isValidType(top)
+                                            && getValidExpID(top3) != PARENTHESIS && getValidExpID(top3) != TYPE) {
+                                        top2.setExpID(CONVERSION);
+                                    } else {
+                                        top2.setExpID(PARENTHESIS);
+                                    }
+                                    addTokenTo(top2);
+                                }
+                                break;
+
+                            case SPECIAL_PARENTHESIS_OPEN:
+                                popExp();
+                                popExp();
+                                break;
+
+                            case GENERIC_TYPE_OPEN:
+                                popExp();
+                                top2.setExpID(OPERATOR);
+                                top2.addParameter(top);
+                                top = top2;
+                                top2 = peekExp2();
+                                // revert #223298 - Wrong recognition of function
 //                                        if (getValidExpID(top2) == DOT_OPEN) {
 //                                            popExp();
 //                                            top2.addParameter(top);
 //                                            top = top2;
 //                                        }
 //                                        top2 = peekExp2();
-                                        if (getValidExpID(top2) != METHOD_OPEN) {
-                                            break;
-                                        }
+                                if (getValidExpID(top2) != METHOD_OPEN) {
+                                    break;
+                                }
+
+                            case METHOD_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                top = top2;
+                                mtd = true;
+                                break;
+
+                            case LAMBDA_CALL_OPEN:
+                                popExp();
+                                top2.addParameter(top);
+                                top2.setExpID(LAMBDA_CALL);
+                                addTokenTo(top2);
+                                top = top2;
+                                break;
+
+                            case CONVERSION:
+                                popExp();
+                                top2.addParameter(top);
+                                top = top2;
+                                top2 = peekExp2();
+                                switch (getValidExpID(top2)) {
+                                    case PARENTHESIS_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top2.setExpID(PARENTHESIS);
+                                        top = top2;
+                                        break;
 
                                     case METHOD_OPEN:
                                         popExp();
@@ -2436,232 +2460,30 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         top = top2;
                                         mtd = true;
                                         break;
-
-                                    case LAMBDA_CALL_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        top2.setExpID(LAMBDA_CALL);
-                                        addTokenTo(top2);
-                                        top = top2;
-                                        break;
-
-                                    case CONVERSION:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        top = top2;
-                                        top2 = peekExp2();
-                                        switch (getValidExpID(top2)) {
-                                            case PARENTHESIS_OPEN:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                top2.setExpID(PARENTHESIS);
-                                                top = top2;
-                                                break;
-
-                                            case METHOD_OPEN:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                top = top2;
-                                                mtd = true;
-                                                break;
-                                        }
-                                        break;
-
-                                    case MEMBER_POINTER_OPEN:
-                                        popExp();
-                                        top2.addParameter(top);
-                                        top2.setExpID(MEMBER_POINTER);
-                                        top = top2;
-                                        top2 = peekExp2();
-                                        switch (getValidExpID(top2)) {
-                                            case PARENTHESIS_OPEN:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                top2.setExpID(PARENTHESIS);
-                                                top = top2;
-                                                break;
-
-                                            case METHOD_OPEN:
-                                                popExp();
-                                                top2.addParameter(top);
-                                                top = top2;
-                                                mtd = true;
-                                                break;
-                                        }
-                                        break;
-
-                                    default:
-                                        errorState = true;
-                                        break;
-                                }
-                                break;
-
-                            case METHOD_OPEN:
-                                mtd = true;
-                                break;
-
-                            case LAMBDA_CALL_OPEN: // empty param_list for lambda
-                                addTokenTo(top);
-                                top.setExpID(LAMBDA_CALL);
-                                break;
-
-                            case PARENTHESIS_OPEN: // empty parenthesis
-                                top2 = peekExp2();
-                                switch (getValidExpID(top2)) {
-                                    case CONVERSION_OPEN:
-                                        popExp();
-                                        popExp();
-                                        for (int i = 0; i < top.getParameterCount(); ++i) {
-                                            top2.addParameter(top.getParameter(i));
-                                        }
-                                        for (int i = 0; i < top.getTokenCount(); ++i) {
-                                            top2.addToken(top.getTokenID(i), top.getTokenOffset(i), top.getTokenText(i));
-                                        }
-                                        addTokenTo(top2);
-                                        top2.setExpID(CONVERSION);
-
-                                        top = new CsmCompletionExpression(PARENTHESIS);
-                                        top.addParameter(top2);
-                                        pushExp(top);
-                                        break;
-
-                                    default:
-                                        popExp();
                                 }
                                 break;
 
                             case MEMBER_POINTER_OPEN:
-                                if (shiftedCheckExpRow(1, AUTO, PARENTHESIS_OPEN)) {
-                                    popExp();
-                                    top.setExpID(MEMBER_POINTER);
-
-                                    CsmCompletionExpression newTopExp = peekExp();
-                                    newTopExp.addParameter(top);
-                                    newTopExp.setExpID(PARENTHESIS);
-                                } else {
-                                    errorState = true;
-                                }
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-                        }
-
-                        if (mtd) {
-                            addTokenTo(top);
-                            top.setExpID(METHOD);
-                            CsmCompletionExpression top2 = peekExp2();
-                            int top2ID = getValidExpID(top2);
-                            switch (top2ID) {
-                                case DOT_OPEN:
-                                case ARROW_OPEN:
-                                case SCOPE_OPEN: {
-                                    CsmCompletionExpression top3 = peekExp(3);
-                                    if (getValidExpID(top3) == NEW) {
-                                        popExp(); // pop top
-                                        top2.addParameter(top); // add METHOD to DOT
-                                        top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
-                                        popExp(); // pop top2
-                                        top3.setExpID(CONSTRUCTOR);
-                                        top3.addParameter(top2); // add DOT to CONSTRUCTOR
-                                    }
-                                    break;
-                                }
-                                case NEW:
-                                    top2.setExpID(CONSTRUCTOR);
-                                    top2.addParameter(top);
-                                    popExp(); // pop top
-                                    break;
-                            }
-                        }
-                        break;
-
-                    case LBRACKET:
-                        switch (topID) {
-                            case VARIABLE:
-                            case METHOD:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case ARRAY:
-                            case TYPE: // ... int[ ...
-                            case GENERIC_TYPE: // List<String> "["
-                            case PARENTHESIS: // ... ((String[]) obj)[ ...
-                                popExp(); // top popped
-                                CsmCompletionExpression arrExp = createTokenExp(ARRAY_OPEN);
-                                arrExp.addParameter(top);
-                                pushExp(arrExp);
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-                        }
-                        break;
-
-                    case ELLIPSIS:
-                        switch (topID) {
-                            case VARIABLE:
-                            case METHOD:
-                            case DOT:
-                            case ARRAY:
-                            case TYPE:
-                            case GENERIC_TYPE:
-                            case PARENTHESIS_OPEN:
-                                CsmCompletionExpression exp = createTokenExp(OPERATOR);
-                                addTokenTo(exp);
-                                top.addParameter(exp);
-                                break;
-
-                            default:
-                                errorState = true;
-                                break;
-                        }
-                        break;
-
-                    case RBRACKET:
-                        switch (topID) {
-                            case VARIABLE:
-                            case METHOD:
-                            case DOT:
-                            case ARROW:
-                            case SCOPE:
-                            case ARRAY:
-                            case PARENTHESIS:
-                            case CONSTANT:
-                            case OPERATOR:
-                            case UNARY_OPERATOR:
-                            case MEMBER_POINTER:
-                            case INSTANCEOF:
-                            case CONVERSION:
-                                CsmCompletionExpression top2 = peekExp2();
+                                popExp();
+                                top2.addParameter(top);
+                                top2.setExpID(MEMBER_POINTER);
+                                top = top2;
+                                top2 = peekExp2();
                                 switch (getValidExpID(top2)) {
-                                    case ARRAY_OPEN:
-                                        CsmCompletionExpression top3 = peekExp(3);
-                                        popExp(); // top popped
-                                        if (getValidExpID(top3) == NEW) {
-                                            popExp(); // top2 popped
-                                            top3.setExpID(ARRAY);
-                                            top3.addParameter(top2.getParameter(0));
-                                            top3.addToken(top2.getTokenID(0), top2.getTokenOffset(0), top2.getTokenText(0));
-                                            addTokenTo(top2);
-                                        } else {
-                                            top2.setExpID(ARRAY);
-                                            top2.addParameter(top);
-                                            addTokenTo(top2);
-                                        }
+                                    case PARENTHESIS_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top2.setExpID(PARENTHESIS);
+                                        top = top2;
                                         break;
 
-                                    default:
-                                        errorState = true;
+                                    case METHOD_OPEN:
+                                        popExp();
+                                        top2.addParameter(top);
+                                        top = top2;
+                                        mtd = true;
                                         break;
                                 }
-                                break;
-
-                            case ARRAY_OPEN:
-                                top.setExpID(ARRAY);
-                                addTokenTo(top);
                                 break;
 
                             default:
@@ -2670,97 +2492,269 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         }
                         break;
 
-                    case LBRACE:
-                        if (topID == ARRAY) {
-                            CsmCompletionExpression top2 = peekExp2();
-                            if (getValidExpID(top2) == NEW) {
-                                popExp(); // top popped
-                                top2.setExpID(ARRAY);
-                                top2.addParameter(top.getParameter(0));
-                                top2.addToken(top.getTokenID(0), top.getTokenOffset(0), top.getTokenText(0));
-                                top2.addToken(top.getTokenID(1), top.getTokenOffset(1), top.getTokenText(1));
-//                                stopped = true;
+                    case METHOD_OPEN:
+                        mtd = true;
+                        break;
+
+                    case LAMBDA_CALL_OPEN: // empty param_list for lambda
+                        addTokenTo(top);
+                        top.setExpID(LAMBDA_CALL);
+                        break;
+
+                    case PARENTHESIS_OPEN: // empty parenthesis
+                        top2 = peekExp2();
+                        switch (getValidExpID(top2)) {
+                            case CONVERSION_OPEN:
+                                popExp();
+                                popExp();
+                                for (int i = 0; i < top.getParameterCount(); ++i) {
+                                    top2.addParameter(top.getParameter(i));
+                                }
+                                for (int i = 0; i < top.getTokenCount(); ++i) {
+                                    top2.addToken(top.getTokenID(i), top.getTokenOffset(i), top.getTokenText(i));
+                                }
+                                addTokenTo(top2);
+                                top2.setExpID(CONVERSION);
+
+                                top = new CsmCompletionExpression(PARENTHESIS);
+                                top.addParameter(top2);
+                                pushExp(top);
                                 break;
-                            }
+
+                            default:
+                                popExp();
                         }
-                        errorState = true;
                         break;
 
-                    case RBRACE:
-                        errorState = true;
-                        break;
-
-                    case NEW_LINE:
-                        if (topID == PREPROC_DIRECTIVE) {
-                            // end line finishes preproc directive
+                    case MEMBER_POINTER_OPEN:
+                        if (shiftedCheckExpRow(1, AUTO, PARENTHESIS_OPEN)) {
                             popExp();
+                            top.setExpID(MEMBER_POINTER);
+
+                            CsmCompletionExpression newTopExp = peekExp();
+                            newTopExp.addParameter(top);
+                            newTopExp.setExpID(PARENTHESIS);
+                        } else {
+                            errorState = true;
                         }
-                        break;
-                    case WHITESPACE:
-                    case LINE_COMMENT:
-                    case DOXYGEN_LINE_COMMENT:
-                    case BLOCK_COMMENT:
-                    case DOXYGEN_COMMENT:
-                        // just skip them
-                        break;
-
-                    case CHAR_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("char"); // NOI18N
-                        break;
-
-                    case RAW_STRING_LITERAL:
-                    case STRING_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
-                        break;
-
-                    case NULLPTR:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("nullptr"); // NOI18N
-                        break;
-
-                    case INT_LITERAL:
-                    case UNSIGNED_LITERAL:
-//                    case HEX_LITERAL:
-//                    case OCTAL_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("int"); // NOI18N
-                        break;
-
-                    case LONG_LITERAL:
-                    case LONG_LONG_LITERAL:
-                    case UNSIGNED_LONG_LITERAL:
-                    case UNSIGNED_LONG_LONG_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("long"); // NOI18N
-                        break;
-
-                    case FLOAT_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("float"); // NOI18N
-                        break;
-
-                    case DOUBLE_LITERAL:
-                        constExp = createTokenExp(CONSTANT);
-                        constExp.setType("double"); // NOI18N
-                        break;
-
-                    case TEMPLATE:
-                    case TYPENAME:
-                    case CONST:
-                        // OK, just skip it
-                        break;
-
-                    case DECLTYPE:
-                        pushExp(createTokenExp(DECLTYPE_OPEN));
                         break;
 
                     default:
                         errorState = true;
-                } // end of testing keyword type
-            }
-        }
+                        break;
+                }
+
+                if (mtd) {
+                    addTokenTo(top);
+                    top.setExpID(METHOD);
+                    CsmCompletionExpression top2 = peekExp2();
+                    int top2ID = getValidExpID(top2);
+                    switch (top2ID) {
+                        case DOT_OPEN:
+                        case ARROW_OPEN:
+                        case SCOPE_OPEN: {
+                            CsmCompletionExpression top3 = peekExp(3);
+                            if (getValidExpID(top3) == NEW) {
+                                popExp(); // pop top
+                                top2.addParameter(top); // add METHOD to DOT
+                                top2.setExpID(openExpID2ExpID(top2ID)); // *_OPEN => *, use value of case
+                                popExp(); // pop top2
+                                top3.setExpID(CONSTRUCTOR);
+                                top3.addParameter(top2); // add DOT to CONSTRUCTOR
+                            }
+                            break;
+                        }
+                        case NEW:
+                            top2.setExpID(CONSTRUCTOR);
+                            top2.addParameter(top);
+                            popExp(); // pop top
+                            break;
+                    }
+                }
+                break;
+
+            case LBRACKET:
+                switch (topID) {
+                    case VARIABLE:
+                    case METHOD:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case ARRAY:
+                    case TYPE: // ... int[ ...
+                    case GENERIC_TYPE: // List<String> "["
+                    case PARENTHESIS: // ... ((String[]) obj)[ ...
+                        popExp(); // top popped
+                        CsmCompletionExpression arrExp = createTokenExp(ARRAY_OPEN);
+                        arrExp.addParameter(top);
+                        pushExp(arrExp);
+                        break;
+
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+            case ELLIPSIS:
+                switch (topID) {
+                    case VARIABLE:
+                    case METHOD:
+                    case DOT:
+                    case ARRAY:
+                    case TYPE:
+                    case GENERIC_TYPE:
+                    case PARENTHESIS_OPEN:
+                        CsmCompletionExpression exp = createTokenExp(OPERATOR);
+                        addTokenTo(exp);
+                        top.addParameter(exp);
+                        break;
+
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+            case RBRACKET:
+                switch (topID) {
+                    case VARIABLE:
+                    case METHOD:
+                    case DOT:
+                    case ARROW:
+                    case SCOPE:
+                    case ARRAY:
+                    case PARENTHESIS:
+                    case CONSTANT:
+                    case OPERATOR:
+                    case UNARY_OPERATOR:
+                    case MEMBER_POINTER:
+                    case INSTANCEOF:
+                    case CONVERSION:
+                        CsmCompletionExpression top2 = peekExp2();
+                        switch (getValidExpID(top2)) {
+                            case ARRAY_OPEN:
+                                CsmCompletionExpression top3 = peekExp(3);
+                                popExp(); // top popped
+                                if (getValidExpID(top3) == NEW) {
+                                    popExp(); // top2 popped
+                                    top3.setExpID(ARRAY);
+                                    top3.addParameter(top2.getParameter(0));
+                                    top3.addToken(top2.getTokenID(0), top2.getTokenOffset(0), top2.getTokenText(0));
+                                    addTokenTo(top2);
+                                } else {
+                                    top2.setExpID(ARRAY);
+                                    top2.addParameter(top);
+                                    addTokenTo(top2);
+                                }
+                                break;
+
+                            default:
+                                errorState = true;
+                                break;
+                        }
+                        break;
+
+                    case ARRAY_OPEN:
+                        top.setExpID(ARRAY);
+                        addTokenTo(top);
+                        break;
+
+                    default:
+                        errorState = true;
+                        break;
+                }
+                break;
+
+            case LBRACE:
+                if (topID == ARRAY) {
+                    CsmCompletionExpression top2 = peekExp2();
+                    if (getValidExpID(top2) == NEW) {
+                        popExp(); // top popped
+                        top2.setExpID(ARRAY);
+                        top2.addParameter(top.getParameter(0));
+                        top2.addToken(top.getTokenID(0), top.getTokenOffset(0), top.getTokenText(0));
+                        top2.addToken(top.getTokenID(1), top.getTokenOffset(1), top.getTokenText(1));
+//                                stopped = true;
+                        break;
+                    }
+                }
+                errorState = true;
+                break;
+
+            case RBRACE:
+                errorState = true;
+                break;
+
+            case NEW_LINE:
+                if (topID == PREPROC_DIRECTIVE) {
+                    // end line finishes preproc directive
+                    popExp();
+                }
+                break;
+            case WHITESPACE:
+            case LINE_COMMENT:
+            case DOXYGEN_LINE_COMMENT:
+            case BLOCK_COMMENT:
+            case DOXYGEN_COMMENT:
+                // just skip them
+                break;
+
+            case CHAR_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("char"); // NOI18N
+                break;
+
+            case RAW_STRING_LITERAL:
+            case STRING_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType(CsmCompletion.CONST_STRING_TYPE.format(true)); // NOI18N
+                break;
+
+            case NULLPTR:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("nullptr"); // NOI18N
+                break;
+
+            case INT_LITERAL:
+            case UNSIGNED_LITERAL:
+//                    case HEX_LITERAL:
+//                    case OCTAL_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("int"); // NOI18N
+                break;
+
+            case LONG_LITERAL:
+            case LONG_LONG_LITERAL:
+            case UNSIGNED_LONG_LITERAL:
+            case UNSIGNED_LONG_LONG_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("long"); // NOI18N
+                break;
+
+            case FLOAT_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("float"); // NOI18N
+                break;
+
+            case DOUBLE_LITERAL:
+                constExp = createTokenExp(CONSTANT);
+                constExp.setType("double"); // NOI18N
+                break;
+
+            case TEMPLATE:
+            case TYPENAME:
+            case CONST:
+                // OK, just skip it
+                break;
+
+            case DECLTYPE:
+                pushExp(createTokenExp(DECLTYPE_OPEN));
+                break;
+
+            default:
+                errorState = true;
+        } // end of testing keyword type
 
 
         // Check whether a constant or data type keyword was found

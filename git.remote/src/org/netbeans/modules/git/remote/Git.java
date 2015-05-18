@@ -96,7 +96,7 @@ public final class Git {
     private HistoryProvider historyProvider;
     private static final List<String> allowableFolders;
     static {
-        List<String> files = new ArrayList<String>();
+        List<String> files = new ArrayList<>();
         try {
             String allowable = System.getProperty("versioning.git.allowableFolders", "/"); //NOI18N
             files.addAll(Arrays.asList(allowable.split("\\;"))); //NOI18N
@@ -251,7 +251,7 @@ public final class Git {
      */
     public RequestProcessor getRequestProcessor (VCSFileProxy repositoryRoot) {
         if(processorsToUrl == null) {
-            processorsToUrl = new HashMap<VCSFileProxy, RequestProcessor>();
+            processorsToUrl = new HashMap<>();
         }
 
         RequestProcessor rp = processorsToUrl.get(repositoryRoot);
@@ -353,7 +353,7 @@ public final class Git {
                 }
             }
         }
-        Set<VCSFileProxy> done = new HashSet<VCSFileProxy>();
+        Set<VCSFileProxy> done = new HashSet<>();
         VCSFileProxy topmost = null;
         for (;file != null; file = file.getParentFile()) {
             if(unversionedParents.contains(file)) {
@@ -443,7 +443,7 @@ public final class Git {
             return Collections.<VCSHyperlinkProvider>emptyList();
         }
         Collection<? extends VCSHyperlinkProvider> providersCol = hpResult.allInstances();
-        List<VCSHyperlinkProvider> providersList = new ArrayList<VCSHyperlinkProvider>(providersCol.size());
+        List<VCSHyperlinkProvider> providersList = new ArrayList<>(providersCol.size());
         providersList.addAll(providersCol);
         return Collections.unmodifiableList(providersList);
     }

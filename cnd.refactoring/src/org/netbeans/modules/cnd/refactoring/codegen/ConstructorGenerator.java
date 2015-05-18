@@ -48,10 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -153,7 +151,7 @@ public class ConstructorGenerator implements CodeGenerator {
                             fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, true));
                             break;
                         case may:
-                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.equals(objectUnderOffset)));
+                            fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, true, variableElement.first().equals(objectUnderOffset)));
                             break;
                         case cannot:
                             fieldDescriptions.add(ElementNode.Description.create(variableElement.first(), null, false, false));

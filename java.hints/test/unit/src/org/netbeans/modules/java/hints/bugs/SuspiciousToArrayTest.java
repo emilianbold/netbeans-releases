@@ -200,4 +200,58 @@ public class SuspiciousToArrayTest extends NbTestCase {
                 findWarning("8:66-8:67:verifier:Suspicious Collection.toArray() call. The array type java.lang.String[][] is not the same as casted-to type java.lang.Integer[][]").
                 assertFixes();
     }
+    
+    /**
+     * Checks that the hint applies on the collection itself
+     * @throws Exception 
+     */
+    public void testExtendsCollection() throws Exception {
+        HintTest.create().
+                input(
+                "package test;\n"
+                + "import java.util.ArrayList;\n"
+                + "import java.util.Collection;\n"
+                + "public final class Test extends ArrayList {\n"
+                + "    public void main(String[] args) {\n"
+                + "        Collection col = new ArrayList();  \n"
+                + "        String[][] x = new String[1][];\n"
+                + "        Integer[][] arr = (Integer[][])toArray(/* comment */ x/* something */);\n"
+                + "    }\n"
+                + "}"
+                )
+                .run(SuspiciousToArray.class)
+                .findWarning("7:61-7:62:verifier:Suspicious Collection.toArray() call. The array type java.lang.String[][] is not the same as casted-to type java.lang.Integer[][]")
+                .applyFix()
+                .assertOutput(
+                "package test;\n"
+                + "import java.util.ArrayList;\n"
+                + "import java.util.Collection;\n"
+                + "public final class Test extends ArrayList {\n"
+                + "    public void main(String[] args) {\n"
+                + "        Collection col = new ArrayList();  \n"
+                + "        String[][] x = new String[1][];\n"
+                + "        Integer[][] arr = (Integer[][])toArray( /* comment */ new Integer[size()][] /* something */ );\n"
+                + "    }\n"
+                + "}");
+        
+    }
+    
+    public void testDoNotReportWildcards() throws Exception {
+        HintTest.create().
+                input(
+                "package test;\n"
+                + "import java.util.Collection;\n" +
+                    "\n" +
+                    "class Test {\n" +
+                    "    class Item {\n" +
+                    "    }\n" +
+                    "    static Item[] gen(Collection<? extends Item> col) {\n" +
+                    "        Item[] items = col.toArray(new Item[0]);  //<<<<<< hint\n" +
+                    "        return items;\n" +
+                    "    }\n" +
+                    "}"
+                )
+                .run(SuspiciousToArray.class)
+                .assertWarnings();
+    }
 }

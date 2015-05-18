@@ -94,10 +94,12 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
 
     @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
-        if (hierarchy.isActive()) {
-            return new HSImpl(getVersion(), hierarchy, startOffset, endOffset);
-        } else {
-            return HighlightsSequence.EMPTY;
+        synchronized(this) {
+            if (hierarchy.isActive()) {
+                return new HSImpl(version, hierarchy, startOffset, endOffset);
+            } else {
+                return HighlightsSequence.EMPTY;
+            }
         }
     }
 
@@ -170,10 +172,6 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
         return null;
     }
 
-    synchronized long getVersion() {
-        return version;
-    }
-    
     private static boolean isWhiteSpace(Token<? extends TokenId> token) {
         if (token == null || token.id() != JavadocTokenId.OTHER_TEXT) {
             return false;

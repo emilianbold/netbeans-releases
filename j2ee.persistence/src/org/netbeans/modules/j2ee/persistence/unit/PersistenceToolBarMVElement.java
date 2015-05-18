@@ -56,6 +56,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -96,7 +97,8 @@ import org.openide.windows.TopComponent;
     position=1300
 )
 public class PersistenceToolBarMVElement extends ToolBarMultiViewElement implements PropertyChangeListener {
-    
+
+    private final ModelListener modelListener = new ModelListener();
     private ToolBarDesignEditor comp;
     private PersistenceView view;
     private PUDataObject puDataObject;
@@ -140,12 +142,18 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     public void componentOpened() {
         super.componentOpened();
         dObj.addPropertyChangeListener(this);
+        if (puDataObject != null && puDataObject.getPersistence() != null) {
+            puDataObject.getPersistence().addPropertyChangeListener(modelListener);
+        }
     }
     
     @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.removePropertyChangeListener(this);
+        if (puDataObject != null && puDataObject.getPersistence() != null) {
+            puDataObject.getPersistence().removePropertyChangeListener(modelListener);
+        }
     }
     
     @Override
@@ -364,7 +372,24 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             return null;
         }
     }    
-    
+
+    private class ModelListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (!puDataObject.isChangedFromUI()) {
+                // repaint view if the wiew is active and something is changed with elements listed above
+                MultiViewPerspective selectedPerspective = dObj.getSelectedPerspective();
+                if (selectedPerspective != null && PUDataObject.PREFERRED_ID_DESIGN.equals(selectedPerspective.preferredID())) {
+                    repaintingTask.schedule(100);
+                } else {
+                    needInit = true;
+                }
+            }
+
+        }
+    }
+
     /**
      * Handles adding of a new Persistence Unit via multiview.
      */

@@ -63,4 +63,14 @@ public class ConnectionNotifierImpl implements ConnectionNotifierImplementation 
     public void removeTask(ExecutionEnvironment execEnv, ConnectionNotifier.NamedRunnable task) {
         ConnectionNotifierDelegate.getInstance(execEnv).removeTask(task);
     }
+
+    @Override
+    public void addExplicitConnectionListener(ExecutionEnvironment execEnv, ConnectionNotifier.ExplicitConnectionListener listener) {
+        ConnectionNotifierDelegate.getInstance(execEnv).addExplicitConnectionListener(listener);
+    }
+
+    @Override
+    public void removeExplicitConnectionListener(ExecutionEnvironment execEnv, ConnectionNotifier.ExplicitConnectionListener listener) {
+        ConnectionNotifierDelegate.getInstance(execEnv).removeExplicitConnectionListener(listener);
+    }
 }

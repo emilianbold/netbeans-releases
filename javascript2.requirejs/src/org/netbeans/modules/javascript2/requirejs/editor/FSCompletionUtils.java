@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -116,12 +117,18 @@ public class FSCompletionUtils {
             }
         } else {
             //relative path
-            for (FileObject f : relativeTo) {
+            for (Iterator<? extends FileObject> it = relativeTo.iterator(); it.hasNext();) {
+                FileObject f = it.next();
                 if (pathPrefix != null) {
                     File toFile = FileUtil.toFile(f);
                     if (toFile != null) {
-                        URI resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
-                        if (resolve.getScheme() == null || FILE.equals(resolve.getScheme())) {
+                        URI resolve = null;
+                        try {
+                            resolve = Utilities.toURI(toFile).resolve(pathPrefix).normalize();
+                        } catch (IllegalArgumentException ex) {
+                            resolve = null;
+                        }
+                        if (resolve != null && (resolve.getScheme() == null || FILE.equals(resolve.getScheme()))) {
                             File normalizedFile = FileUtil.normalizeFile(Utilities.toFile(resolve));
                             f = FileUtil.toFileObject(normalizedFile);
                         }
@@ -386,14 +393,16 @@ public class FSCompletionUtils {
             }
             for (String rootName : sourceRoots) {
                 final FileObject root = project.getProjectDirectory().getFileObject(rootName);
-                for (String mp : modulePaths) {
-                    FileObject targetFO = root.getFileObject(mp);
-                    if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
-                        result.add(targetFO);
-                    }
-                    targetFO = root.getFileObject(mp + ".js"); //NOI18N
-                    if (targetFO != null) {
-                        result.add(targetFO);
+                if (root != null) {
+                    for (String mp : modulePaths) {
+                        FileObject targetFO = root.getFileObject(mp);
+                        if (targetFO != null && (!filesOnly || (filesOnly && !targetFO.isFolder()))) {
+                            result.add(targetFO);
+                        }
+                        targetFO = root.getFileObject(mp + ".js"); //NOI18N
+                        if (targetFO != null) {
+                            result.add(targetFO);
+                        }
                     }
                 }
             }

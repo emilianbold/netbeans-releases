@@ -44,13 +44,13 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
@@ -76,25 +76,30 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
     }
     
     protected final void performTest(String testFileName, int offset) throws Exception {
-        FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
-        Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
-        assertNotNull(out);
-        List<CsmOffsetable> sorted = new ArrayList<CsmOffsetable>(out);
-        Collections.sort(sorted, new Comparator<CsmOffsetable>() {
+        CsmCacheManager.enter();
+        try {
+            FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
+            Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
+            assertNotNull(out);
+            List<CsmOffsetable> sorted = new ArrayList<>(out);
+            Collections.sort(sorted, new Comparator<CsmOffsetable>() {
 
-            @Override
-            public int compare(CsmOffsetable o1, CsmOffsetable o2) {
-                return o1.getStartOffset() - o2.getStartOffset();
+                @Override
+                public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });
+            int i = 1;
+            for (CsmOffsetable b : sorted) {
+                ref( "Block " + (i++) + ": Position: " +  // NOI18N
+                        file.getLineColumn(b.getStartOffset())[0] + ":" +file.getLineColumn(b.getStartOffset())[1] + "-" +
+                        file.getLineColumn(b.getEndOffset())[0] + ":" + file.getLineColumn(b.getEndOffset())[1]// NOI18N
+                );
             }
-        });
-        int i = 1;
-        for (CsmOffsetable b : sorted) {
-            ref( "Block " + (i++) + ": Position: " +  // NOI18N
-                    file.getLineColumn(b.getStartOffset())[0] + ":" +file.getLineColumn(b.getStartOffset())[1] + "-" + 
-                    file.getLineColumn(b.getEndOffset())[0] + ":" + file.getLineColumn(b.getEndOffset())[1]// NOI18N
-            );    
+            compareReferenceFiles();
+        } finally {
+            CsmCacheManager.leave();
         }
-        compareReferenceFiles();
     }
 
 }

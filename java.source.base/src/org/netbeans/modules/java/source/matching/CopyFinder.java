@@ -172,7 +172,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         f.nocheckOnAllowVariablesRemap = variablesWithAllowedRemap != null;
 
         if (preinitializedState != null) {
-            f.bindState = State.copyOf(f.preinitializeState = preinitializedState);
+            f.bindState = State.startFrom(f.preinitializeState = preinitializedState);
         }
 
         Map<TreePath, VariableAssignments> firstMapping;
@@ -400,7 +400,11 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
                         try {
                             options.remove(Options.ALLOW_VARIABLES_IN_PATTERN);
-                            return scan(node, original);
+                            Boolean success = scan(node, original);
+                            if (success) {
+                                bindState.variables.put(treeName + "$" + ++bindState.matchCount, currentPath);
+                            }
+                            return success;
                         } finally {
                             options.add(Options.ALLOW_VARIABLES_IN_PATTERN);
                             allowGoDeeper = oldAllowGoDeeper;
@@ -456,7 +460,11 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                     boolean oldAllowGoDeeper = allowGoDeeper;
 
                     try {
-                        return scan(node, original);
+                        Boolean success = scan(node, original);
+                        if (success) {
+                            bindState.variables.put(ident + "$" + ++bindState.matchCount, currentPath);
+                        }
+                        return success;
                     } finally {
                         allowGoDeeper = oldAllowGoDeeper;
                     }
@@ -471,7 +479,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             if (result) {
                 if (p == searchingFor && node != searchingFor && allowGoDeeper) {
                     this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(bindState));
-                    bindState = State.copyOf(preinitializeState);
+                    bindState = State.startFrom(preinitializeState);
                 }
 
                 return true;
@@ -487,7 +495,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                  || bindState.variables2Names.isEmpty()
                  || bindState.variablesRemapToElement.isEmpty()
                  || bindState.variablesRemapToTrees.isEmpty()) {
-                bindState = State.copyOf(preinitializeState);
+                bindState = State.startFrom(preinitializeState);
             }
             superScan(node, null);
             return false;
@@ -502,7 +510,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             if (result) {
                 if (node != searchingFor.getLeaf()) {
                     this.result.put(new TreePath(getCurrentPath(), node), new VariableAssignments(bindState));
-                    bindState = State.copyOf(preinitializeState);
+                    bindState = State.startFrom(preinitializeState);
                 }
 
                 return true;
@@ -704,6 +712,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                     return false;
                 }
             }
+            bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
 
             return true;
         }
@@ -857,6 +866,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                     if (!existingName.equals(currentName)) {
                         return false;
                     }
+                    bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
                 } else {
                     //XXX: putting the variable into both variables and variable2Names.
                     //variables is needed by the declarative hints to support conditions like
@@ -1116,6 +1126,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 if (!existingName.equals(currentName)) {
                     return false;
                 }
+                bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
             } else {
                 //XXX: putting the variable into both variables and variable2Names.
                 //variables is needed by the declarative hints to support conditions like
@@ -1210,6 +1221,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 return true;
             } else {
                 //XXX: not implemented yet...
+                bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
                 return false;
             }
         }
@@ -1480,6 +1492,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 if (!existingName.equals(currentName)) {
                     return false;
                 }
+                bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
             } else {
                 //XXX: putting the variable into both variables and variable2Names.
                 //variables is needed by the declarative hints to support conditions like
@@ -1544,6 +1557,7 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
                 if (!existingName.equals(currentName)) {
                     return false;
                 }
+                bindState.variables.put(name + "$" + ++bindState.matchCount, currentPath);
             } else {
                 //XXX: putting the variable into both variables and variable2Names.
                 //variables is needed by the declarative hints to support conditions like
@@ -1843,28 +1857,35 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
         final Map<String, String> variables2Names;
         final Map<Element, Element> variablesRemapToElement;
         final Map<Element, TreePath> variablesRemapToTrees;
+        int   matchCount;
 
-        private State(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
+        private State(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees, int matchCount) {
             this.variables = variables;
             this.multiVariables = multiVariables;
             this.variables2Names = variables2Names;
             this.variablesRemapToElement = variablesRemapToElement;
             this.variablesRemapToTrees = variablesRemapToTrees;
+            this.matchCount = matchCount;
         }
         public static State empty() {
-            return new State(new HashMap<String, TreePath>(), new HashMap<String, Collection<? extends TreePath>>(), new HashMap<String, String>(), new HashMap<Element, Element>(), new HashMap<Element, TreePath>());
+            return new State(new HashMap<String, TreePath>(), new HashMap<String, Collection<? extends TreePath>>(), new HashMap<String, String>(), new HashMap<Element, Element>(), new HashMap<Element, TreePath>(), 0);
+        }
+
+        static State startFrom(State original) {
+            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), new HashMap<Element, Element>(original.variablesRemapToElement), new HashMap<Element, TreePath>(original.variablesRemapToTrees), 0);
         }
 
         public static State copyOf(State original) {
-            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), new HashMap<Element, Element>(original.variablesRemapToElement), new HashMap<Element, TreePath>(original.variablesRemapToTrees));
+            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), new HashMap<Element, Element>(original.variablesRemapToElement), new HashMap<Element, TreePath>(original.variablesRemapToTrees), 
+            original.matchCount);
         }
 
         public static State from(State original, Map<Element, Element> variablesRemapToElement, Map<Element, TreePath> variablesRemapToTrees) {
-            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), variablesRemapToElement, variablesRemapToTrees);
+            return new State(new HashMap<String, TreePath>(original.variables), new HashMap<String, Collection<? extends TreePath>>(original.multiVariables), new HashMap<String, String>(original.variables2Names), variablesRemapToElement, variablesRemapToTrees, original.matchCount);
         }
 
         public static State from(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
-            return new State(variables, multiVariables, variables2Names, new HashMap<Element, Element>(), new HashMap<Element, TreePath>());
+            return new State(variables, multiVariables, variables2Names, new HashMap<Element, Element>(), new HashMap<Element, TreePath>(), 0);
         }
     }
 

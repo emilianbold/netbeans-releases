@@ -200,7 +200,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     /**
      * DIFF setups that we show in the DIFF view. Contents is changed when the user switches DIFF types or a file under the context changes.
      */
-    private final Map<VCSFileProxy, Setup> setups = new HashMap<VCSFileProxy, Setup>();
+    private final Map<VCSFileProxy, Setup> setups = new HashMap<>();
     /**
      * editor cookies belonging to the files being diffed.
      * The array may contain {@code null}s if {@code EditorCookie}s
@@ -208,7 +208,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
      *
      * @see  #nodes
      */
-    private final Map<VCSFileProxy, EditorCookie> editorCookies = new HashMap<VCSFileProxy, EditorCookie>();
+    private final Map<VCSFileProxy, EditorCookie> editorCookies = new HashMap<>();
     private JComponent diffView;
 
     private RequestProcessor.Task prepareTask;
@@ -529,7 +529,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private int lastDividerLoc;
     private void initFileComponent () {
-        fileListComponent = new DiffFileTable(new VCSStatusTableModel<DiffNode>(new DiffNode[0]), this);
+        fileListComponent = new DiffFileTable(new VCSStatusTableModel<>(new DiffNode[0]), this);
         fileListComponent.addPropertyChangeListener(this);
         fileTreeComponent = new DiffFileTreeImpl(this);
         int viewMode = GitModuleConfig.getDefault().getDiffViewMode(VIEW_MODE_TABLE);
@@ -1010,7 +1010,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                             return;
                         }
                         Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
-                        final List<Action> actions = new ArrayList<Action>();
+                        final List<Action> actions = new ArrayList<>();
                         actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
                         if (popupIndex != popupViewIndex) {
                             return;
@@ -1321,7 +1321,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     private static Map<VCSFileProxy, EditorCookie> getCookiesFromSetups(Map<VCSFileProxy, Setup> localSetups) {
         Setup[] retSetups = localSetups.values().toArray(new Setup[localSetups.values().size()]);
         EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(retSetups);
-        Map<VCSFileProxy, EditorCookie> map = new HashMap<VCSFileProxy, EditorCookie>();
+        Map<VCSFileProxy, EditorCookie> map = new HashMap<>();
         for (int i = 0; i < cookies.length; ++i) {
             if (cookies[i] != null) {
                 map.put(retSetups[i].getBaseFile(), cookies[i]);
@@ -1413,7 +1413,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             public void run() {
                 dividerSet = false;
                 setSetups(newSetups, cookies);
-                fileListComponent.setModel(nodeArray, new HashMap<VCSFileProxy, EditorCookie>(cookies), modelDataList);
+                fileListComponent.setModel(nodeArray, new HashMap<>(cookies), modelDataList);
                 fileTreeComponent.setModel(nodeArray, sort(cookies, nodeArray), modelDataTree);
                 updateView();
             }
@@ -1426,7 +1426,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         @Override
         public void run() {
             canceled = false;
-            final List<DiffNode> nodes = new LinkedList<DiffNode>();
+            final List<DiffNode> nodes = new LinkedList<>();
             final Map<VCSFileProxy, Setup> localSetups;
             if (isLocal()) {
                 if (revisionLeft == Revision.HEAD || mode == Mode.INDEX_VS_WORKING_TREE) {
@@ -1452,7 +1452,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         private Map<VCSFileProxy, Setup> getLocalToBaseSetups (final List<DiffNode> nodes) {
             Git git = Git.getInstance();
             VCSFileProxy[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
-            final Map<VCSFileProxy, Setup> localSetups = new HashMap<VCSFileProxy, Setup>(interestingFiles.length);
+            final Map<VCSFileProxy, Setup> localSetups = new HashMap<>(interestingFiles.length);
             for (VCSFileProxy f : interestingFiles) {
                 if (canceled) {
                     break;
@@ -1481,7 +1481,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 Map<VCSFileProxy, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]),
                         revisionLeft.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
                 statuses.keySet().retainAll(VCSFileProxySupport.flattenFiles(context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]), statuses.keySet()));
-                final Map<VCSFileProxy, Setup> localSetups = new HashMap<VCSFileProxy, Setup>(statuses.size());
+                final Map<VCSFileProxy, Setup> localSetups = new HashMap<>(statuses.size());
                 for (Map.Entry<VCSFileProxy, GitStatus> e : statuses.entrySet()) {
                     if (canceled) {
                         break;
@@ -1527,7 +1527,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 client = git.getClient(repository);
                 Map<VCSFileProxy, GitRevisionInfo.GitFileInfo> statuses = client.getStatus(context.getRootFiles().toArray(new VCSFileProxy[context.getRootFiles().size()]),
                         revisionLeft.getCommitId(), revisionRight.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
-                final Map<VCSFileProxy, Setup> historySetups = new HashMap<VCSFileProxy, Setup>();
+                final Map<VCSFileProxy, Setup> historySetups = new HashMap<>();
                 for (Map.Entry<VCSFileProxy, GitRevisionInfo.GitFileInfo> e : statuses.entrySet()) {
                     if (canceled) {
                         break;
@@ -1557,7 +1557,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         return revisionRight == Revision.LOCAL;
     }
 
-    private final Map<VCSFileProxy, FileStatusCache.ChangedEvent> changes = new HashMap<VCSFileProxy, FileStatusCache.ChangedEvent>();
+    private final Map<VCSFileProxy, FileStatusCache.ChangedEvent> changes = new HashMap<>();
     /**
      * Eliminates unnecessary cache.listFiles call as well as the whole node creation process ()
      */
@@ -1570,7 +1570,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             canceled = false;
             final Set<FileStatusCache.ChangedEvent> events;
             synchronized (changes) {
-                events = new HashSet<FileStatusCache.ChangedEvent>(changes.values());
+                events = new HashSet<>(changes.values());
                 changes.clear();
             }
             // remove irrelevant changes
@@ -1594,10 +1594,10 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             });
             // sort changes
-            final List<DiffNode> toRemove = new LinkedList<DiffNode>();
-            final List<DiffNode> toRefresh = new LinkedList<DiffNode>();
-            final List<DiffNode> toAdd = new LinkedList<DiffNode>();
-            final Map<VCSFileProxy, Setup> localSetups = new HashMap<VCSFileProxy, Setup>(nodes.size());
+            final List<DiffNode> toRemove = new LinkedList<>();
+            final List<DiffNode> toRefresh = new LinkedList<>();
+            final List<DiffNode> toAdd = new LinkedList<>();
+            final Map<VCSFileProxy, Setup> localSetups = new HashMap<>(nodes.size());
             for (FileStatusCache.ChangedEvent evt : events) {
                 if (canceled) {
                     break;
@@ -1665,7 +1665,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         setups.remove(node.getFile());
                         editorCookies.remove(node.getFile());
                     }
-                    fileListComponent.updateNodes(new HashMap<VCSFileProxy, EditorCookie>(MultiDiffPanelController.this.editorCookies), toRemove, toRefresh, toAdd);
+                    fileListComponent.updateNodes(new HashMap<>(MultiDiffPanelController.this.editorCookies), toRemove, toRefresh, toAdd);
                     fileTreeComponent.setModel(diffNodes, sort(editorCookies, diffNodes), modelDataTree);
                     updateView();
                 }
@@ -1684,8 +1684,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         @Override
         public void run () {
             VCSFileProxy repository = GitUtils.getRootFile(context);
-            final List<Object> modelRight = new ArrayList<Object>(10);
-            final List<Object> modelLeft = new ArrayList<Object>(10);
+            final List<Object> modelRight = new ArrayList<>(10);
+            final List<Object> modelLeft = new ArrayList<>(10);
             modelLeft.add(revisionOriginalLeft);
             if (revisionOriginalLeft != Revision.HEAD) {
                 modelLeft.add(Revision.HEAD);

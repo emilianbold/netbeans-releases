@@ -58,7 +58,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
@@ -195,13 +194,16 @@ public final class CndFileUtils {
         ConcurrentHashMap<CharSequence, FileObject> map = foCache.get(fs);
         if (map == null) {
             map = new ConcurrentHashMap<CharSequence, FileObject>();
-            foCache.putIfAbsent(fs, map);
+            ConcurrentHashMap<CharSequence, FileObject> old = foCache.putIfAbsent(fs, map);
+            if (old != null) {
+                map = old;
+            }
         }
         FileObject res = map.get(absolutePath);
         if (res == null || !res.isValid()) {
             res = toFileObjectImpl(fs, absolutePath);
-            if (res != null) {
-                map.putIfAbsent(absolutePath, res);
+            if (res != null && res.isValid()) {
+                map.put(absolutePath, res);
             }
         }
         return res;

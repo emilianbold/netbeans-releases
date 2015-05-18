@@ -569,6 +569,7 @@ public class CslJar extends JarWithModuleAttributes {
             Element file = createFile(doc, hyperlinkFolder, "GsfHyperlinkProvider.instance"); // NOI18N
             setFileAttribute(doc, file, "instanceClass", STRINGVALUE, "org.netbeans.modules.csl.editor.hyperlink.GsfHyperlinkProvider"); // NOI18N
             setFileAttribute(doc, file, "instanceOf", STRINGVALUE, "org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"); // NOI18N
+            setFileAttribute(doc, file, "position", INTVALUE, "1000"); // NOI18N
         }
         
         // Code Completion

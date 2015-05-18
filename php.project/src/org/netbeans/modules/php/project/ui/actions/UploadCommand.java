@@ -165,6 +165,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         TransferInfo transferInfo = null;
         try {
             if (forUpload.size() > 0) {
+                final boolean askSync = !remoteClient.listFiles(getRemoteRoot(remoteClient, sources)).isEmpty();
                 ProgressHandle progressHandle = ProgressHandle.createHandle(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName()), remoteClient);
                 DefaultOperationMonitor uploadOperationMonitor = new DefaultOperationMonitor(progressHandle, forUpload);
@@ -173,9 +174,12 @@ public class UploadCommand extends RemoteCommand implements Displayable {
                 remoteClient.setOperationMonitor(null);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
-                if (!remoteClient.isCancelled()
+                if (isSourcesSelected(sources, filesToUpload)
+                        && !remoteClient.isCancelled()
                         && transferInfo.hasAnyTransfered()) { // #153406
-                    rememberLastUpload(sources, filesToUpload);
+                    PhpProject project = getProject();
+                    storeLastUpload(project);
+                    storeLastSync(project, remoteClient, sources, askSync);
                 }
             }
         } catch (RemoteException ex) {
@@ -197,16 +201,8 @@ public class UploadCommand extends RemoteCommand implements Displayable {
         return DISPLAY_NAME;
     }
 
-    // #142955 - but remember only if one of the selected files is source directory
-    //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp
-    //  -> upload another file or the whole project [timestamp is irrelevant])
-    private void rememberLastUpload(FileObject sources, FileObject[] selectedFiles) {
-        for (FileObject fo : selectedFiles) {
-            if (sources.equals(fo)) {
-                ProjectSettings.setLastUpload(getProject(), TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
-                return;
-            }
-        }
+    private static void storeLastUpload(PhpProject project) {
+        ProjectSettings.setLastUpload(project, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
     }
 
 }

@@ -61,6 +61,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -248,4 +249,18 @@ public class SftpTransport extends RemoteFileSystemTransport {
             throw RemoteExceptions.createIOException("" + uploadStatus.getError() + " " + uploadStatus.getExitCode()); //NOI18N
         }
     }    
+
+    @Override
+    protected boolean canSetAccessCheckType() {
+        return false;
+    }
+
+    @Override
+    protected void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+    }
+
+    @Override
+    protected FileSystemProvider.AccessCheckType getAccessCheckType() {
+        return null;
+    }
 }

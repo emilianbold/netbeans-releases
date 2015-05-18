@@ -89,7 +89,6 @@ import org.netbeans.modules.remotefs.versioning.util.common.VCSCommitTable;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
-import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
 import org.openide.DialogDisplayer;
@@ -216,9 +215,9 @@ public class CommitAction extends SingleRepositoryAction {
         @Override
         public void perform() {
             try {
-                List<VCSFileProxy> addCandidates = new LinkedList<VCSFileProxy>();
-                List<VCSFileProxy> deleteCandidates = new LinkedList<VCSFileProxy>();
-                Set<VCSFileProxy> commitCandidates = new LinkedHashSet<VCSFileProxy>();
+                List<VCSFileProxy> addCandidates = new LinkedList<>();
+                List<VCSFileProxy> deleteCandidates = new LinkedList<>();
+                Set<VCSFileProxy> commitCandidates = new LinkedHashSet<>();
                 GitCommitParameters parameters = panel.getParameters();
                 GitClient client = getClient();
 
@@ -284,8 +283,8 @@ public class CommitAction extends SingleRepositoryAction {
         }
         
         private void populateCandidates (List<VCSFileProxy> addCandidates, List<VCSFileProxy> deleteCandidates, Collection<VCSFileProxy> commitCandidates) {
-            List<String> excPaths = new ArrayList<String>();
-            List<String> incPaths = new ArrayList<String>();
+            List<String> excPaths = new ArrayList<>();
+            List<String> incPaths = new ArrayList<>();
 
             Iterator<GitLocalFileNode> it = commitFiles.iterator();
             while (it.hasNext()) {
@@ -467,7 +466,7 @@ public class CommitAction extends SingleRepositoryAction {
 
         private void performAction (VCSContext context) {
             Set<VCSFileProxy> rootFiles = context.getRootFiles();
-            Set<Project> projects = new HashSet<Project>();
+            Set<Project> projects = new HashSet<>();
             for (VCSFileProxy root : rootFiles) {
                 FileObject fo = root.normalizeFile().toFileObject();
                 if (fo != null) {
@@ -480,7 +479,7 @@ public class CommitAction extends SingleRepositoryAction {
             if (projects.isEmpty()) {
                 LOG.log(Level.FINE, "CommitProjectAction: no projects found for {0}", rootFiles); //NOI18N
             } else {
-                List<Node> nodes = new ArrayList<Node>(projects.size());
+                List<Node> nodes = new ArrayList<>(projects.size());
                 for (final Project p : projects) {
                     nodes.add(new AbstractNode(Children.LEAF, Lookups.fixed(p)) {
 

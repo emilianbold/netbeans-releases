@@ -58,6 +58,34 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test238000() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    public class B {\n"
+                        + "        public class F {\n"
+                        + "        }\n"
+                        + "    }\n"
+                        + "    public class F {\n"
+                        + "    }\n"
+                        + "}"));
+        performInnerToOuterTest("outer", source.indexOf('F') + 1, new Problem(true, "ERR_InnerToOuter_ClassNameClash"));
+    }
+    
+    public void test238000a() throws Exception {
+        String source;
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", source = "package t; public class A {\n"
+                        + "    public class B {\n"
+                        + "    }\n"
+                        + "    public class F {\n"
+                        + "    }\n"
+                        + "}"),
+                new File("t/F.java", "package t; public class F {\n"
+                        + "}"));
+        performInnerToOuterTest("outer", source.indexOf('F') + 1, new Problem(true, "ERR_ClassClash"));
+    }
+
     public void test236189() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/F.java", "package t; public enum F {  A, B, C }\n"),
@@ -591,6 +619,32 @@ public class InnerToOutterTest extends RefactoringTestBase {
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        addAllProblems(problems, r[0].prepare(rs));
+        addAllProblems(problems, rs.doRefactoring(true));
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+    
+    private void performInnerToOuterTest(String generateOuter, final int position, Problem... expectedProblems) throws Exception {
+        final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
+
+        JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(JavaSource.Phase.RESOLVED);
+                TreePath tp = parameter.getTreeUtilities().pathFor(position);
+                r[0] = new InnerToOuterRefactoring(TreePathHandle.create(tp, parameter));
+            }
+        }, true);
+
+        r[0].setClassName("F");
+        r[0].setReferenceName(generateOuter);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<>();
 
         addAllProblems(problems, r[0].preCheck());
         addAllProblems(problems, r[0].prepare(rs));

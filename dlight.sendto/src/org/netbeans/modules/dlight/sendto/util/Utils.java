@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.dlight.sendto.util;
 
+import java.io.IOException;
 import java.net.URL;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,6 +55,8 @@ import org.openide.filesystems.FileObject;
  * @author ak119685
  */
 public final class Utils {
+    private static final String SHELL_MACRO = "${SHELL}"; //NOI18N
+    private static final String DEFAULT_SHELL = "/bin/sh"; //NOI18N
 
     private Utils() {
     }
@@ -75,5 +81,32 @@ public final class Utils {
         }
 
         return result == null ? ExecutionEnvironmentFactory.getLocal() : result;
+    }
+
+    public static String substituteShell(String scriptExecutor, ExecutionEnvironment env) {
+        if (scriptExecutor.indexOf(SHELL_MACRO) >= 0 || scriptExecutor.isEmpty()) {
+            String shell = DEFAULT_SHELL;
+
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                String hostShell = hostInfo.getShell();
+
+                if (hostShell != null) {
+                    shell = hostShell;
+                }
+
+                if (scriptExecutor.isEmpty()) {
+                    scriptExecutor = shell;
+                }
+            } catch (IOException ex) {
+            } catch (ConnectionManager.CancellationException ex) {
+            }
+            if (scriptExecutor.isEmpty()) {
+                scriptExecutor = shell;
+            } else {
+                scriptExecutor = scriptExecutor.replace(SHELL_MACRO, shell); //NOI18N
+            }
+        }
+        return scriptExecutor;
     }
 }

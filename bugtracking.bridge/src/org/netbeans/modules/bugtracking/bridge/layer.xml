@@ -7,6 +7,7 @@
            <file name="HyperlinkProviderImpl.instance">
                <attr name="instanceClass" stringvalue="org.netbeans.modules.bugtracking.hyperlink.EditorHyperlinkProviderImpl"/>
                <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
+               <attr name="position" intvalue="2000"/>
            </file>
        </folder>
     </folder>

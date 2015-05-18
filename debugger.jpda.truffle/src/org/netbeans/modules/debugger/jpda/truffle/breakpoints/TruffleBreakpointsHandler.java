@@ -53,6 +53,7 @@ import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.Value;
+import com.sun.jdi.VirtualMachine;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -92,7 +93,7 @@ public class TruffleBreakpointsHandler {
     
     private static final String ACCESSOR_SET_LINE_BREAKPOINT = "setLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_SET_LINE_BREAKPOINT_SIGNAT =
-            "(L"+String.class.getName().replace('.', '/')+";I)Lcom/oracle/truffle/debug/impl/LineBreakpoint;";   // NOI18N
+            "(Ljava/lang/String;IILjava/lang/String;)Lcom/oracle/truffle/debug/impl/LineBreakpoint;";   // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT = "removeLineBreakpoint"; // NOI18N
     private static final String ACCESSOR_REMOVE_LINE_BREAKPOINT_SIGNAT = "(Lcom/oracle/truffle/debug/impl/LineBreakpoint;)V";    // NOI18N
     
@@ -155,7 +156,8 @@ public class TruffleBreakpointsHandler {
             }
             ObjectReference bpImpl;
             if (bp.isEnabled()) {
-                bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber());
+                bpImpl = setLineBreakpoint(t, file.getAbsolutePath(), bp.getLineNumber(),
+                                           getIgnoreCount(bp), bp.getCondition());
             } else {
                 bpImpl = null;
             }
@@ -167,9 +169,19 @@ public class TruffleBreakpointsHandler {
         }
     }
     
-    private ObjectReference setLineBreakpoint(JPDAThreadImpl t, String path, int line) {
+    private static int getIgnoreCount(JSLineBreakpoint bp) {
+        int ignoreCount = 0;
+        if (Breakpoint.HIT_COUNT_FILTERING_STYLE.GREATER.equals(bp.getHitCountFilteringStyle())) {
+            ignoreCount = bp.getHitCountFilter();
+        }
+        return ignoreCount;
+    }
+    
+    private ObjectReference setLineBreakpoint(JPDAThreadImpl t, String path, int line,
+                                              int ignoreCount, String condition) {
         assert t.isMethodInvoking();
         ThreadReference tr = t.getThreadReference();
+        VirtualMachine vm = tr.virtualMachine();
         try {
             Method setLineBreakpointMethod = ClassTypeWrapper.concreteMethodByName(
                     accessorClass,
@@ -178,9 +190,11 @@ public class TruffleBreakpointsHandler {
             //if (path.indexOf("/src") > 0) {
             //    path = path.substring(path.indexOf("/src") + 1);
             //}
-            StringReference pathRef = tr.virtualMachine().mirrorOf(path);
-            IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
-            List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
+            StringReference pathRef = vm.mirrorOf(path);
+            IntegerValue lineRef = vm.mirrorOf(line);
+            IntegerValue icRef = vm.mirrorOf(ignoreCount);
+            StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
+            List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef, icRef, conditionRef });
             ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
                     accessorClass,
                     tr,
@@ -208,6 +222,8 @@ public class TruffleBreakpointsHandler {
         }
         final String path = file.getAbsolutePath();
         final int line = bp.getLineNumber();
+        final int ignoreCount = getIgnoreCount(bp);
+        final String condition = bp.getCondition();
         final ObjectReference[] bpRef = new ObjectReference[] { null };
         if (bp.isEnabled()) {
             try {
@@ -219,9 +235,12 @@ public class TruffleBreakpointsHandler {
                     @Override
                     public void callMethods(JPDAThread thread) {
                         ThreadReference tr = ((JPDAThreadImpl) thread).getThreadReference();
-                        StringReference pathRef = tr.virtualMachine().mirrorOf(path);
-                        IntegerValue lineRef = tr.virtualMachine().mirrorOf(line);
-                        List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef });
+                        VirtualMachine vm = tr.virtualMachine();
+                        StringReference pathRef = vm.mirrorOf(path);
+                        IntegerValue lineRef = vm.mirrorOf(line);
+                        IntegerValue icRef = vm.mirrorOf(ignoreCount);
+                        StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
+                        List<? extends Value> args = Arrays.asList(new Value[] { pathRef, lineRef, icRef, conditionRef });
                         try {
                             ObjectReference ret = (ObjectReference) ClassTypeWrapper.invokeMethod(
                                     accessorClass,
@@ -364,7 +383,9 @@ public class TruffleBreakpointsHandler {
     
     private static enum TruffleBPMethods {
         enable,
-        disable;
+        disable,
+        setIgnoreCount,
+        setCondition;
         
         public String getMethodName() {
             return name();
@@ -375,6 +396,10 @@ public class TruffleBreakpointsHandler {
                 case enable:
                 case disable:
                     return "()V";
+                case setIgnoreCount:
+                    return "(I)V";
+                case setCondition:
+                    return "(Ljava/lang/String;)V";
                 default:
                     throw new IllegalStateException(this.name());
             }
@@ -382,7 +407,7 @@ public class TruffleBreakpointsHandler {
     }
     
     private class JSBreakpointPropertyChangeListener implements PropertyChangeListener {
-
+        
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final JSLineBreakpoint jsbp = (JSLineBreakpoint) evt.getSource();
@@ -400,8 +425,23 @@ public class TruffleBreakpointsHandler {
                     }
                     break;
                 case JSLineBreakpoint.PROP_CONDITION:
-                    // TODO
-                    return ;
+                    method = TruffleBPMethods.setCondition;
+                    String condition = jsbp.getCondition();
+                    VirtualMachine vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+                    if (vm == null) {
+                        return ;
+                    }
+                    StringReference conditionRef = (condition != null) ? vm.mirrorOf(condition) : null;
+                    args = Collections.singletonList(conditionRef);
+                    break;
+                case Breakpoint.PROP_HIT_COUNT_FILTER:
+                    method = TruffleBPMethods.setIgnoreCount;
+                    vm = ((JPDADebuggerImpl) debugger).getVirtualMachine();
+                    if (vm == null) {
+                        return ;
+                    }
+                    args = Collections.singletonList(vm.mirrorOf(getIgnoreCount(jsbp)));
+                    break;
                 default:
                     return ;
             }

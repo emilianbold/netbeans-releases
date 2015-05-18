@@ -426,6 +426,10 @@ public class DeclarativeHintsParser {
         JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
             @SuppressWarnings("fallthrough")
             public void run(CompilationController parameter) throws Exception {
+                if (invocation == null || invocation.length() == 0) {
+                    //XXX: report an error
+                    return ;
+                }
                 SourcePositions[] positions = new SourcePositions[1];
                 ExpressionTree et = parameter.getTreeUtilities().parseExpression(invocation, positions);
 

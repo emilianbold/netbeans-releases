@@ -160,7 +160,7 @@ public class CodeEvaluatorUI extends TopComponent implements HelpCtx.Provider,
         codePane.addKeyListener(this);
         dbgManagerListener = new DbgManagerListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
-                DebuggerManager.PROP_CURRENT_SESSION,
+                DebuggerManager.PROP_CURRENT_ENGINE,
                 dbgManagerListener
         );
         checkDebuggerState();

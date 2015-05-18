@@ -84,7 +84,7 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     public PushBranchesStep (VCSFileProxy repository) {
         this.repository = repository;
-        this.localObjects = new ItemSelector<PushMapping>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
+        this.localObjects = new ItemSelector<>(NbBundle.getMessage(PushBranchesStep.class, "PushBranchesPanel.jLabel1.text")); //NOI18N
         this.localObjects.addChangeListener(this);
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -127,14 +127,14 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
-                final Map<String, GitBranch> localBranches = new HashMap<String, GitBranch>();
-                final Map<String, GitTag> localTags = new HashMap<String, GitTag>();
+                final Map<String, GitBranch> localBranches = new HashMap<>();
+                final Map<String, GitTag> localTags = new HashMap<>();
                 RepositoryInfo info = RepositoryInfo.getInstance(repository);
                 info.refresh();
                 localBranches.putAll(info.getBranches());
                 localTags.putAll(info.getTags());
                 
-                final List<PushMapping> l = new ArrayList<PushMapping>(branches.size());
+                final List<PushMapping> l = new ArrayList<>(branches.size());
                 GitClient client;
                 try {
                     client = getClient();
@@ -249,8 +249,8 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
 
     private boolean isDeleteUpdateConflict (List<PushMapping> selectedObjects) {
-        Set<String> toDelete = new HashSet<String>(selectedObjects.size());
-        Set<String> toUpdate = new HashSet<String>(selectedObjects.size());
+        Set<String> toDelete = new HashSet<>(selectedObjects.size());
+        Set<String> toUpdate = new HashSet<>(selectedObjects.size());
         for (PushMapping m : selectedObjects) {
             if (m.isDeletion()) {
                 toDelete.add(m.getRemoteName());

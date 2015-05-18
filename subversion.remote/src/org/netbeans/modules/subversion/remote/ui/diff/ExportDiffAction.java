@@ -326,6 +326,7 @@ public class ExportDiffAction extends ContextAction {
     }
 
     /** Writes contextual diff into given stream.*/
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE") // ignore warning in finally block
     private void exportDiff(Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources();
         DiffProvider diff = Lookup.getDefault().lookup(DiffProvider.class);
@@ -345,6 +346,8 @@ public class ExportDiffAction extends ContextAction {
             if (r2 != null) try { r2.close(); } catch (Exception e) {}
         }
 
+        r1 = null;
+        r2 = null;
         VCSFileProxy file = setup.getBaseFile();
         try {
             InputStream is;

@@ -330,7 +330,7 @@ FIELD      y: Number                       [PUBLIC]   with1.js
 VARIABLE   Infinity: Number                [PUBLIC]   JS Platform
 VARIABLE   NaN: Number                     [PUBLIC]   JS Platform
 VARIABLE   Proxy                           [PUBLIC]   JS Platform
-VARIABLE   undefined: undefined            [PUBLIC]   JS Platform
+VARIABLE   undefined                       [PUBLIC]   JS Platform
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

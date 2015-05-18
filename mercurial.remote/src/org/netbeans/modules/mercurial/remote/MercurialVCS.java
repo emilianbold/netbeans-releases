@@ -189,12 +189,21 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
     @Override
     public void connected(FileSystem fs) {
         Mercurial.getInstance().clearAncestorCaches();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
     }
 
     @Override
     public void disconnected(FileSystem fs) {
         Mercurial.getInstance().clearAncestorCaches();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
+    }
+    
+    private void postVersionedRootsChanged() {
+        Mercurial.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                VersioningSupport.versionedRootsChanged();
+            }
+        });
     }
 }

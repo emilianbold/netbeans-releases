@@ -321,7 +321,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
                 if(parentPath.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
                     Element newClass = info.getTrees().getElement(parentPath);
                     if(newClass != null) {
-                        handle = TreePathHandle.create(newClass, info);
+                        handle = TreePathHandle.create(parentPath, info);
                         el = newClass;
                     }
                 }

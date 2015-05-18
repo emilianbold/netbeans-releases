@@ -207,7 +207,11 @@ public class JsCompletionItem implements CompletionProposal {
         int order = 100;
         if (element != null) {
             if (((JsElement)element).isPlatform()) {
-                order = 0;
+                if (ModelUtils.PROTOTYPE.equals(element.getName())) { //NOI18N
+                    order = 1;
+                } else {
+                    order = 0;
+                }
             }
             if (OffsetRange.NONE.equals(element.getOffsetRange(request.result))) {
                 order = 120;
@@ -754,7 +758,9 @@ public class JsCompletionItem implements CompletionProposal {
                                 HashSet<TypeUsage> toResolve = new HashSet<TypeUsage>();
                                 for (TypeUsage type : assignment) {
                                     if (type.isResolved()) {
-                                        typesToDisplay.add(Utils.getDisplayName(type));
+                                        if (!Type.UNDEFINED.equals(type.getType())) {
+                                            typesToDisplay.add(Utils.getDisplayName(type));
+                                        }
                                     } else {
                                         Set<String> resolvedType = resolvedTypes.get(type.getType());
                                         if (resolvedType == null) {

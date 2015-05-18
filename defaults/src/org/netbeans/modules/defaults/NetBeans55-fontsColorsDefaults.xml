@@ -65,6 +65,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="markup-attribute" foreColor="ff007c00"/>
     <fontcolor name="markup-attribute-value" default="string"/>
     <fontcolor name="entity-reference" foreColor="ffb20000"/>
+    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
 
     <!-- semantic colorings -->
     

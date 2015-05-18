@@ -108,15 +108,12 @@ public class NodeJsDataProvider {
     private boolean loadingStarted;
     private ProgressHandle progress;
 
-    private static final String DOC_VERSION = "0.10.31";    //NOI18N
-    private static final String DOC_URL = "http://nodejs.org/docs/v" + DOC_VERSION + "/api/"; //NOI18N
-
     private static final String API_ALL_HTML_FILE = "all.html";
     private static final String CACHE_FOLDER_NAME = "nodejs-doc"; //NOI18N
     private static final String API_ALL_JSON_FILE = "all.json"; //NOI18N
 
-    protected static final String BACKUP_API_FILE = new StringBuilder().append(CACHE_FOLDER_NAME).append('/')
-                    .append(DOC_VERSION).append('/').append(API_ALL_JSON_FILE).toString();
+    protected static final String BACKUP_API_FILE = new StringBuilder().append(CACHE_FOLDER_NAME).append("/latest/") //NOI18N
+            .append(API_ALL_JSON_FILE).toString();
     private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
     private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
 
@@ -136,17 +133,19 @@ public class NodeJsDataProvider {
     private static final String PROPERTIES = "properties";  //NOI18N
     private static final String CLASSES = "classes";    //NOI18N
     private static final String EVENTS = "events";    //NOI18N
-    
+
     // name of the json fields in package.json
     private static final String MODULE_VERSION = "version"; //NOI18N
     private static final String MODULE_DESCRIPTION = "description"; //NOI18N
 
-    private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<Project, NodeJsDataProvider>();
+    private static final WeakHashMap<Project, NodeJsDataProvider> cache = new WeakHashMap<>();
     private static NodeJsDataProvider noProjectInstance = null;
-    
-    private boolean isSupportEnabled;
+
+    private static String docApiFilePath = BACKUP_API_FILE;
     private FileObject docFolder;
-    
+    private String docUrl = "https://nodejs.org/api/"; //NOI18N  
+    private boolean isSupportEnabled;
+
     private ProjectSupportChangeListener listener;
     
     /**
@@ -166,6 +165,13 @@ public class NodeJsDataProvider {
                 support.addChangeListener(WeakListeners.change(listener, support));
                 this.isSupportEnabled = support.isSupportEnabled();
                 this.docFolder = support.getDocumentationFolder();
+                if (support.getDocumentationUrl() != null) {
+                    this.docUrl = support.getDocumentationUrl();
+                }
+                if (support.getVersion() != null) {
+                    docApiFilePath = new StringBuilder().append(CACHE_FOLDER_NAME).append(File.separator)
+                            .append(support.getVersion().toString()).append(File.separator).append(API_ALL_JSON_FILE).toString();
+                }
             }
         }
     }
@@ -199,7 +205,7 @@ public class NodeJsDataProvider {
     private URL getDocumentationURL() {
         URL result = null;
         try {
-            result = new URL(DOC_URL);
+            result = new URL(docUrl);
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -527,7 +533,7 @@ public class NodeJsDataProvider {
 
     private URL getDocumentationURL(String name) {
         StringBuilder sb = new StringBuilder();
-        sb.append(DOC_URL).append(API_ALL_HTML_FILE).append("#all_");
+        sb.append(docUrl).append(API_ALL_HTML_FILE).append("#all_");
         String alteredName = name;
         while (alteredName.charAt(0) == '_') {
             alteredName = alteredName.substring(1);
@@ -607,7 +613,6 @@ public class NodeJsDataProvider {
     }
 
     private File getCachedAPIFile() {
-        String pathFile = null;
         if (apiFile != null) {
             return apiFile;
         }
@@ -620,10 +625,7 @@ public class NodeJsDataProvider {
                 }
             }
         }
-        if (pathFile == null) {
-            pathFile = BACKUP_API_FILE;
-        }
-        File cacheFile = Places.getCacheSubfile(pathFile);
+        File cacheFile = Places.getCacheSubfile(docApiFilePath);
         return cacheFile;
     }
 
@@ -631,7 +633,7 @@ public class NodeJsDataProvider {
         String result = null;
         try {
             File cacheFile = getCachedAPIFile();
-            if (!cacheFile.exists()) {
+            if (!cacheFile.exists() && isSupportEnabled()) {
 
                 //if any of the files is not loaded yet, start the loading process
                 if (!loadingStarted) {
@@ -643,7 +645,7 @@ public class NodeJsDataProvider {
 
                 LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
             }
-            result = getFileContent(cacheFile);
+            result = cacheFile.exists() ? getFileContent(cacheFile) : null;
         } catch (URISyntaxException | IOException ex) {
             stopLoading();
             LOG.log(Level.INFO, "Cannot load NodeJS documentation from \"{0}\".", new Object[]{getDocumentationURL()}); //NOI18N

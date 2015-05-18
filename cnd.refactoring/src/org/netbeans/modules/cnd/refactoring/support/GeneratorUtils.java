@@ -52,7 +52,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
@@ -82,10 +81,9 @@ import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
-import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator;
 import org.netbeans.modules.cnd.refactoring.codegen.ConstructorGenerator.Inited;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
-import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldPanel.InsertPoint;
+import org.netbeans.modules.cnd.refactoring.ui.InsertPoint;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
@@ -135,7 +133,7 @@ public class GeneratorUtils {
     public static Collection<CsmFunction> getAllOutOfClassMethodDefinitions(CsmClass clazz) {
         // get all method declarations
         Iterator<CsmMember> methods = CsmSelect.getClassMembers(clazz, CsmSelect.FUNCTION_KIND_FILTER);
-        List<CsmFunction> result = new ArrayList<CsmFunction>();
+        List<CsmFunction> result = new ArrayList<>();
         // find definitions of that declarations
         while (methods.hasNext()) {
             CsmMethod method = (CsmMethod) methods.next();
@@ -793,7 +791,7 @@ public class GeneratorUtils {
             RefactoringSession session = RefactoringSession.create(getGetterSetterDisplayName(type));
             EncapsulateFieldsRefactoring refactoring = new EncapsulateFieldsRefactoring(null, path);
 
-            Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<EncapsulateFieldsRefactoring.EncapsulateFieldInfo>();
+            Collection<EncapsulateFieldsRefactoring.EncapsulateFieldInfo> refFields = new ArrayList<>();
             for (CsmField field : fields) {
                 String gName = (type != Kind.SETTERS_ONLY) ? computeGetterName(field, isUpperCase) : null;
                 String sName = (type != Kind.GETTERS_ONLY) ? computeSetterName(field, isUpperCase) : null;

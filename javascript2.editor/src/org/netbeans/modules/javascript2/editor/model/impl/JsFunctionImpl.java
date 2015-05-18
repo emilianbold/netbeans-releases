@@ -125,8 +125,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         if (getName().startsWith("set ")) { //NOI18N
             return JsElement.Kind.PROPERTY_SETTER;
         }
-        if (getParent() != null && getParent() instanceof JsFunction) {
-            JsObject prototype = null;
+        if (getParent() != null /*&& getParent() instanceof JsFunction*/) {
+             JsObject prototype = null;
             for (JsObject property : getProperties().values()) {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
@@ -144,6 +144,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }
+//        if (getParent() != null && !getParent().isDeclared()) {
+//            
+//        }
 
         JsElement.Kind result = JsElement.Kind.FUNCTION;
 
@@ -279,7 +282,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     JsObject global = ModelUtils.getGlobalObject(this);
                     jsObject = ModelUtils.findJsObjectByName(global, type.getType());
                 }
-                if (jsObject != null) {
+                if (jsObject != null && containsOffset(type.getOffset()) && !getJSKind().equals(JsElement.Kind.FILE)) {
                     int index = type.getType().lastIndexOf('.');
                     int typeLength = (index > -1) ? type.getType().length() - index - 1 : type.getType().length();
                     ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), jsObject.isAnonymous() ? type.getOffset() : type.getOffset() + typeLength));

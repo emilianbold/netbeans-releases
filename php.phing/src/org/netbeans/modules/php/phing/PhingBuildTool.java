@@ -63,6 +63,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 
+@ProjectServiceProvider(
+        service = {
+            BuildToolImplementation.class,
+            PhingBuildTool.class,
+        }, projectType = "org-netbeans-modules-php-project" // NOI18N
+)
 public final class PhingBuildTool implements BuildToolImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(PhingBuildTool.class.getName());
@@ -75,7 +81,7 @@ public final class PhingBuildTool implements BuildToolImplementation {
     private final PhingPreferences phingPreferences;
 
 
-    private PhingBuildTool(Project project) {
+    public PhingBuildTool(Project project) {
         assert project != null;
         this.project = project;
         buildXml = new BuildXml(project.getProjectDirectory());
@@ -93,12 +99,7 @@ public final class PhingBuildTool implements BuildToolImplementation {
     @CheckForNull
     public static PhingBuildTool inProject(Project project) {
         assert project != null;
-        for (BuildToolImplementation buildTool : project.getLookup().lookupAll(BuildToolImplementation.class)) {
-            if (buildTool instanceof PhingBuildTool) {
-                return (PhingBuildTool) buildTool;
-            }
-        }
-        return null;
+        return project.getLookup().lookup(PhingBuildTool.class);
     }
 
     @Override
@@ -164,13 +165,6 @@ public final class PhingBuildTool implements BuildToolImplementation {
             }
         }
         return true;
-    }
-
-    //~ Factories
-
-    @ProjectServiceProvider(service = BuildToolImplementation.class, projectType = "org-netbeans-modules-php-project") // NOI18N
-    public static BuildToolImplementation forPhpProject(Project project) {
-        return new PhingBuildTool(project);
     }
 
 }

@@ -1266,7 +1266,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                         }
                         String value = getFieldValue(repositoryData, f);
                         String seenValue = getFieldValue(lastReadData, f);
-                        if(!value.trim().equals(seenValue)) {
+                        if(!value.trim().equals(seenValue.trim())) {
                             changedFields.add(f);
                         }
                     }

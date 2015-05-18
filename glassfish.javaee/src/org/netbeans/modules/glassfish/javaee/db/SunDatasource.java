@@ -51,24 +51,38 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
  */
 public class SunDatasource implements Datasource {
 
+    private final String displayName;
     private final String jndiName;
     private final String url;
     private final String username;
     private final String password;
     private final String driverClassName;
-    
-    public SunDatasource(String jndiName, String url, String username, 
+
+    public SunDatasource(String jndiName, String url, String username,
             String password, String driverClassName/*, File resourceDir*/) {
+        this(jndiName, url, username, password, driverClassName, false);
+    }
+
+    public SunDatasource(String jndiName, String url, String username,
+            String password, String driverClassName/*, File resourceDir*/, boolean scoped) {
         this.jndiName = jndiName;
         this.url = url;
         this.username = username;
         this.password = password;
         this.driverClassName = driverClassName;
+//        if (scoped && jndiName.startsWith("java:app/")) {
+//            this.displayName = jndiName + " [application scoped]";
+//        } else if (scoped && jndiName.startsWith("java:module/")) {
+//            this.displayName = jndiName + " [module scoped]";
+//        } else {
+//            this.displayName = jndiName;
+//        }
+        this.displayName = jndiName;
     }
-    
+
     @Override
     public String getDisplayName() {
-        return jndiName;
+        return displayName;
     }
 
     @Override

@@ -41,51 +41,42 @@
  */
 package org.netbeans.modules.jumpto.symbol;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
+import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
-import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
+import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
-import org.openide.awt.HtmlRenderer;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -93,7 +84,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-final class ContentProviderImpl implements GoToPanel.ContentProvider {
+final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
 
     private static final Logger LOG = Logger.getLogger(ContentProviderImpl.class.getName());
     private static final RequestProcessor rp = new RequestProcessor (ContentProviderImpl.class);
@@ -109,7 +100,23 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                     @NonNull
                     @Override
                     protected String getItemValue(@NonNull final SymbolDescriptor item) {
-                        return item.getSymbolName();
+                        String name = item.getSimpleName();
+                        if (name == null) {
+                            //The SymbolDescriptor does not provide simple name
+                            //the symbol name contains parameter names, so it's needed to strip them
+                            name = item.getSymbolName();
+                            final String[] nameParts = name.split("\\s+|\\(");  //NOI18N
+                            name = nameParts[0];
+                        }
+                        return name;
+                    }
+                    @Override
+                    protected void update(@NonNull final SymbolDescriptor item) {
+                        String searchText = getSearchText();
+                        if (searchText == null) {
+                            searchText = "";    //NOI18N
+                        }
+                        SymbolProviderAccessor.DEFAULT.setHighlightText(item, searchText);
                     }
                 };
             }
@@ -138,7 +145,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, caseSensitive);
+        return ItemRenderer.Builder.create(
+            list,
+            caseSensitive,
+            new SymbolDescriptorCovertor()).build();
     }
 
     @Override
@@ -172,21 +182,33 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             panel.setModel(new DefaultListModel());
             return false;
         }
-        final SearchType searchType = getSearchType(text, exact, isCaseSensitive);
+        final SearchType searchType = Utils.getSearchType(text, exact, isCaseSensitive, null, null);
+        if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
+            text = Utils.removeNonNeededWildCards(text);
+        }
+        final Pair<String,String> nameAndScope = Utils.splitNameAndScope(text.trim());
+        final String name = nameAndScope.first();
+        final String scope = nameAndScope.second();
+        if (name.length() == 0) {
+            //Empty name, wait for next char
+            currentSearch.resetFilter();
+            panel.setModel(new DefaultListModel());
+            return false;
+        }
         // Compute in other thread
         synchronized(this) {
-            if (currentSearch.isNarrowing(searchType, text)) {
-                currentSearch.filter(searchType, text);
+            if (currentSearch.isNarrowing(searchType, text, scope)) {
+                currentSearch.filter(searchType, name);
                 enableOK(panel.revalidateModel());
                 return false;
             } else {
                 running = new Worker(text, searchType, panel);
                 task = rp.post( running, 220);
-                if ( panel.time != -1 ) {
+                if ( panel.getStartTime() != -1 ) {
                     LOG.log(
                        Level.FINE,
                        "Worker posted after {0} ms.",   //NOI18N
-                       System.currentTimeMillis() - panel.time);
+                       System.currentTimeMillis() - panel.getStartTime());
                 }
                 return true;
             }
@@ -207,7 +229,16 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 
     @Override
     public boolean hasValidContent() {
-        return this.okButton.isEnabled();
+        return this.okButton != null && this.okButton.isEnabled();
+    }
+
+    /*test*/
+    @NonNull
+    Runnable createWorker(
+            @NonNull final String text,
+            @NonNull final SearchType searchType,
+            @NonNull final GoToPanel panel) {
+        return new Worker(text, searchType, panel);
     }
 
     private void enableOK(final boolean enabled) {
@@ -233,209 +264,47 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         return res;
     }
 
-    private static class MyPanel extends JPanel {
-
-	private SymbolDescriptor td;
-
-	void setDescriptor(SymbolDescriptor td) {
-	    this.td = td;
-	    // since the same component is reused for dirrerent list itens,
-	    // null the tool tip
-	    putClientProperty(TOOL_TIP_TEXT_KEY, null);
-	}
-
-	@Override
-	public String getToolTipText() {
-	    // the tool tip is gotten from the descriptor
-	    // and cached in the standard TOOL_TIP_TEXT_KEY property
-	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
-	    if( text == null ) {
-                if( td != null ) {
-                    text = td.getFileDisplayPath();
-                }
-                putClientProperty(TOOL_TIP_TEXT_KEY, text);
-	    }
-	    return text;
-	}
-    }
-
-    private static class Renderer extends EntitiesListCellRenderer implements ActionListener {
-
-        private final HighlightingNameFormatter symbolNameFormatter;
-
-        private MyPanel rendererComponent;
-        private JLabel jlName = HtmlRenderer.createLabel();
-        private JLabel jlOwner = new JLabel();
-        private JLabel jlPrj = new JLabel();
-        private int DARKER_COLOR_COMPONENT = 15;
-        private int LIGHTER_COLOR_COMPONENT = 80;
-        private Color fgColor;
-        private Color fgColorLighter;
-        private Color bgColor;
-        private Color bgColorDarker;
-        private Color bgSelectionColor;
-        private Color fgSelectionColor;
-
-        private JList jList;
-        private boolean caseSensitive;
-
-        public Renderer(
-                @NonNull final JList list,
-                @NonNull final ButtonModel caseSensitive) {
-
-            jList = list;
-            this.caseSensitive = caseSensitive.isSelected();
-            resetName();
-            Container container = list.getParent();
-            if ( container instanceof JViewport ) {
-                ((JViewport)container).addChangeListener(this);
-                stateChanged(new ChangeEvent(container));
-            }
-
-            rendererComponent = new MyPanel();
-            rendererComponent.setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
-            c.gridx = 0;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlName, c);
-            jlOwner.setOpaque(false);
-            jlOwner.setFont(list.getFont());
-            c = new GridBagConstraints();
-            c.gridx = 1;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 0.1;
-            c.anchor = GridBagConstraints.WEST;
-            c.insets = new Insets (0,0,0,7);
-            rendererComponent.add( jlOwner, c);
-
-            c = new GridBagConstraints();
-            c.gridx = 2;
-            c.gridy = 0;
-            c.gridwidth = 1;
-            c.gridheight = 1;
-            c.fill = GridBagConstraints.NONE;
-            c.weightx = 0;
-            c.anchor = GridBagConstraints.EAST;
-            rendererComponent.add( jlPrj, c);
-
-
-            jlPrj.setOpaque(false);
-            jlPrj.setFont(list.getFont());
-
-
-            jlPrj.setHorizontalAlignment(RIGHT);
-            jlPrj.setHorizontalTextPosition(LEFT);
-
-            // setFont( list.getFont() );
-            fgColor = list.getForeground();
-            fgColorLighter = new Color(
-                                   Math.min( 255, fgColor.getRed() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getGreen() + LIGHTER_COLOR_COMPONENT),
-                                   Math.min( 255, fgColor.getBlue() + LIGHTER_COLOR_COMPONENT)
-                                  );
-
-            bgColor = new Color( list.getBackground().getRGB() );
-            bgColorDarker = new Color(
-                                    Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
-                                    Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
-                            );
-            bgSelectionColor = list.getSelectionBackground();
-            fgSelectionColor = list.getSelectionForeground();
-            symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
-            caseSensitive.addActionListener(this);
-        }
-
-        public Component getListCellRendererComponent( JList list,
-                                                       Object value,
-                                                       int index,
-                                                       boolean isSelected,
-                                                       boolean hasFocus) {
-
-            // System.out.println("Renderer for index " + index );
-
-            int height = list.getFixedCellHeight();
-            int width = list.getFixedCellWidth() - 1;
-
-            width = width < 200 ? 200 : width;
-
-            // System.out.println("w, h " + width + ", " + height );
-
-            Dimension size = new Dimension( width, height );
-            rendererComponent.setMaximumSize(size);
-            rendererComponent.setPreferredSize(size);
-            resetName();
-            if ( isSelected ) {
-                jlName.setForeground(fgSelectionColor);
-                jlOwner.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
-                rendererComponent.setBackground(bgSelectionColor);
-            }
-            else {
-                jlName.setForeground(fgColor);
-                jlOwner.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);
-                rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
-            }
-
-            if ( value instanceof SymbolDescriptor ) {
-                long time = System.currentTimeMillis();
-                SymbolDescriptor td = (SymbolDescriptor)value;
-                jlName.setIcon(td.getIcon());
-                final String formattedSymbolName = symbolNameFormatter.formatName(
-                        td.getSymbolName(),
-                        SymbolProviderAccessor.DEFAULT.getHighlightText(td),
-                        caseSensitive,
-                        isSelected? fgSelectionColor : fgColor);
-                jlName.setText(formattedSymbolName);
-                jlOwner.setText(NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",td.getOwnerName()));
-                setProjectName(jlPrj, td.getProjectName());
-                jlPrj.setIcon(td.getProjectIcon());
-		rendererComponent.setDescriptor(td);
-                LOG.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
-            }
-            else {
-                jlName.setText( value.toString() );
-            }
-
-            return rendererComponent;
-        }
-
-        public void stateChanged(ChangeEvent event) {
-
-            JViewport jv = (JViewport)event.getSource();
-
-            jlName.setText( "Sample" ); // NOI18N
-            //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/type/sample.png", false));
-
-            jList.setFixedCellHeight(jlName.getPreferredSize().height);
-            jList.setFixedCellWidth(jv.getExtentSize().width);
+    private static final class SymbolDescriptorCovertor implements ItemRenderer.Convertor<SymbolDescriptor> {
+        @Override
+        public String getName(@NonNull final SymbolDescriptor item) {
+            return item.getSymbolName();
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            caseSensitive = ((ButtonModel)e.getSource()).isSelected();
+        public String getHighlightText(@NonNull final SymbolDescriptor item) {
+            return SymbolProviderAccessor.DEFAULT.getHighlightText(item);
         }
 
-        private void resetName() {
-            ((HtmlRenderer.Renderer)jlName).reset();
-            jlName.setFont(jList.getFont());
-            jlName.setOpaque(false);
-            ((HtmlRenderer.Renderer)jlName).setHtml(true);
-            ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
+        @Override
+        public String getOwnerName(@NonNull final SymbolDescriptor item) {
+            return NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn", item.getOwnerName());
         }
 
-     }
+        @Override
+        public String getProjectName(@NonNull final SymbolDescriptor item) {
+            return item.getProjectName();
+        }
+
+        @Override
+        public String getFilePath(@NonNull final SymbolDescriptor item) {
+            return item.getFileDisplayPath();
+        }
+
+        @Override
+        public Icon getItemIcon(@NonNull final SymbolDescriptor item) {
+            return item.getIcon();
+        }
+
+        @Override
+        public Icon getProjectIcon(@NonNull final SymbolDescriptor item) {
+            return item.getProjectIcon();
+        }
+
+        @Override
+        public boolean isFromCurrentProject(@NonNull final SymbolDescriptor item) {
+            return false;
+        }
+    }
 
     private class Worker implements Runnable {
 
@@ -447,7 +316,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private volatile boolean isCanceled = false;
         private volatile SymbolProvider current;
 
-        public Worker(
+        Worker(
                 @NonNull final String text,
                 @NonNull final SearchType searchType,
                 @NonNull final GoToPanel panel ) {
@@ -458,7 +327,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             LOG.log(
                 Level.FINE,
                 "Worker for {0} - created after {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - panel.time});
+                new Object[]{text, System.currentTimeMillis() - panel.getStartTime()});
        }
 
         @Override
@@ -467,41 +336,74 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
                 new Object[]{text, System.currentTimeMillis() - createTime});
-
-            final List<? extends SymbolDescriptor> types = getSymbolNames( text );
-            if ( isCanceled ) {
-                LOG.log(
-                    Level.FINE,
-                    "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});
-                return;
-            }
-            final ListModel fmodel = Models.fromList(types, currentSearch.resetFilter());
-            if ( isCanceled ) {
-                LOG.log(
-                    Level.FINE,
-                    "Worker for {0} exited after cancel {1} ms.", //NOI18N
-                    new Object[]{text, System.currentTimeMillis() - createTime});
-                return;
-            }
-
-            LOG.log(
-                Level.FINE,
-                "Worker for text {0} finished after {1} ms.", //NOI18N
-                new Object[]{text, System.currentTimeMillis() - createTime});
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    currentSearch.searchCompleted(searchType, text);
-                    if (!isCanceled) {
-                        enableOK(panel.setModel(fmodel));
+            final List<SymbolDescriptor> fixed = new ArrayList<>(512);
+            Collection<? extends SymbolProvider> providers = getTypeProviders();
+            int lastSize = -1, lastProvCount = providers.size();
+            final int[] newSize = new int[1];
+            while(true) {
+                final Result res = getSymbolNames(text, providers);
+                if (isCanceled) {
+                    LOG.log(
+                        Level.FINE,
+                        "Worker for {0} exited after cancel {1} ms.", //NOI18N
+                        new Object[]{text, System.currentTimeMillis() - createTime});
+                    return;
+                }
+                final List<SymbolDescriptor> mergedSymbols = mergeSymbols(
+                        fixed,
+                        res.symbols,
+                        providers,
+                        res.nonFinishedProviders,
+                        newSize);
+                final boolean done = res.retry <= 0;
+                final int newProvCount = res.nonFinishedProviders.size();
+                final boolean resultChanged = lastSize != newSize[0] || lastProvCount != newProvCount;
+                if (done || resultChanged) {
+                    lastSize = newSize[0];
+                    lastProvCount = newProvCount;
+                    Collections.sort(mergedSymbols, new SymbolComparator());
+                    final ListModel fmodel = Models.fromList(
+                            mergedSymbols,
+                            currentSearch.resetFilter());
+                    if ( isCanceled ) {
+                        LOG.log(
+                            Level.FINE,
+                            "Worker for {0} exited after cancel {1} ms.", //NOI18N
+                            new Object[]{text, System.currentTimeMillis() - createTime});
+                        return;
+                    }
+                    LOG.log(
+                        Level.FINE,
+                        "Worker for text {0} finished after {1} ms.", //NOI18N
+                        new Object[]{text, System.currentTimeMillis() - createTime});
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (done) {
+                                final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                currentSearch.searchCompleted(searchType, nameAndScope.first(), nameAndScope.second());
+                            }
+                            if (!isCanceled) {
+                                enableOK(panel.setModel(fmodel));
+                            }
+                        }
+                    });
+                }
+                if (done) {
+                    return;
+                } else {
+                    providers = res.nonFinishedProviders;
+                    try {
+                        Thread.sleep(res.retry);
+                    } catch (InterruptedException ex) {
+                        //pass
                     }
                 }
-            });
+            }
         }
 
         public void cancel() {
-            if ( panel.time != -1 ) {
+            if ( panel.getStartTime() != -1 ) {
                 LOG.log(
                     Level.FINE,
                     "Worker for text {0} canceled after {1} ms.", //NOI18N
@@ -518,55 +420,100 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         }
 
         @SuppressWarnings("unchecked")
-        private List<? extends SymbolDescriptor> getSymbolNames(String text) {
+        @CheckForNull
+        private Result getSymbolNames(
+                final String text,
+                final Collection<? extends SymbolProvider> providers) {
             // TODO: Search twice, first for current project, then for all projects
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
-            items = new ArrayList<SymbolDescriptor>(128);
+            items = new ArrayList<>(128);
             String[] message = new String[1];
-            for (SymbolProvider provider : getTypeProviders()) {
+            int retry = 0;
+            final Collection<SymbolProvider> nonFinishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider, Boolean>());
+            for (SymbolProvider provider : providers) {
                 current = provider;
-                if (isCanceled) {
-                    return null;
+                try {
+                    if (isCanceled) {
+                        return null;
+                    }
+                    LOG.log(
+                        Level.FINE,
+                        "Calling SymbolProvider: {0}", //NOI18N
+                        provider);
+                    final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
+                    final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context, provider);
+                    provider.computeSymbolNames(context, result);
+                    final int providerRetry = SymbolProviderAccessor.DEFAULT.getRetry(result);
+                    if (providerRetry > 0) {
+                        nonFinishedProviders.add(provider);
+                    }
+                    retry = mergeRetryTimeOut(retry, providerRetry);
+                } finally {
+                    current = null;
                 }
-                LOG.log(
-                    Level.FINE,
-                    "Calling SymbolProvider: {0}", //NOI18N
-                    provider);
-                if (searchType == SearchType.REGEXP || searchType == SearchType.CASE_INSENSITIVE_REGEXP) {
-                    text = Utils.removeNonNeededWildCards(text);
-                }
-                final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, searchType);
-                final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
-                provider.computeSymbolNames(context, result);
-                current = null;
             }
             if ( !isCanceled ) {
-                Collections.sort(items, new SymbolComparator());
                 panel.setWarning(message[0]);
-                return items;
-            }
-            else {
+                return new Result (items, nonFinishedProviders, retry);
+            } else {
                 return null;
             }
         }
+
+        private int mergeRetryTimeOut(
+            final int t1,
+            final int t2) {
+            if (t1 == 0) {
+                return t2;
+            }
+            if (t2 == 0) {
+                return t1;
+            }
+            return Math.min(t1,t2);
+        }
+
+        @NonNull
+        private List<SymbolDescriptor> mergeSymbols(
+            @NonNull final List<SymbolDescriptor> fixedSymbols,
+            @NonNull final List<? extends SymbolDescriptor> newSymbols,
+            @NonNull final Collection<? extends SymbolProvider> usedProviders,
+            @NonNull final Collection<? extends SymbolProvider> nonFinishedProviders,
+            @NonNull final int[] newSize) {
+            newSize[0] = 0;
+            final Set<SymbolProvider> finishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider,Boolean>());
+            finishedProviders.addAll(usedProviders);
+            finishedProviders.removeAll(nonFinishedProviders);
+            final List<SymbolDescriptor> merged = new ArrayList<>(fixedSymbols.size() + newSymbols.size());
+            for (SymbolDescriptor newSymbol : newSymbols) {
+                if (finishedProviders.contains(SymbolProviderAccessor.DEFAULT.getSymbolProvider(newSymbol))) {
+                    fixedSymbols.add(newSymbol);
+                } else {
+                    newSize[0]++;
+                    merged.add(newSymbol);
+                }
+            }
+            merged.addAll(fixedSymbols);
+            return merged;
+        }
     }
 
-    @NonNull
-    private static SearchType getSearchType(
-            @NonNull final String text,
-            final boolean exact,
-            final boolean isCaseSensitive) {
-        int wildcard = Utils.containsWildCard(text);
-        if (exact) {
-            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            return SearchType.EXACT_NAME;
-        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, null, null)) {
-            return isCaseSensitive ? SearchType.CAMEL_CASE : SearchType.CASE_INSENSITIVE_CAMEL_CASE;
-        } else if (wildcard != -1) {
-            return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
-        } else {
-            return isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
+    private static class Result {
+        final List<SymbolDescriptor> symbols;
+        final int retry;
+        final Collection<SymbolProvider> nonFinishedProviders;
+
+        Result (
+                @NonNull final List<SymbolDescriptor> symbols,
+                @NonNull final Collection<SymbolProvider> providers,
+                final int retry) {
+            assert symbols != null;
+            assert providers != null;
+            this.symbols = symbols;
+            this.nonFinishedProviders = providers;
+            this.retry = retry;
+            assert this.retry > 0 ? !this.nonFinishedProviders.isEmpty() :
+                    this.nonFinishedProviders.isEmpty();
         }
     }
 }

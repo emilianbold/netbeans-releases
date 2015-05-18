@@ -151,9 +151,14 @@ public final class TestRunner {
                 if (error
                         || caseVo.isFailure()) {
                     String[] stackTrace = caseVo.getStackTrace();
-                    assert stackTrace.length > 1 : "Stack trace lebgth: " + stackTrace.length;
-                    String[] tmp = new String[stackTrace.length - 1];
-                    System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
+                    // #251749
+                    String[] tmp;
+                    if (stackTrace.length == 1) {
+                        tmp = new String[0];
+                    } else {
+                        tmp = new String[stackTrace.length - 1];
+                        System.arraycopy(stackTrace, 1, tmp, 0, stackTrace.length - 1);
+                    }
                     testCase.setFailureInfo(stackTrace[0], tmp, error, caseVo.getDiff());
                 }
                 testCase.setTime(caseVo.getTime());

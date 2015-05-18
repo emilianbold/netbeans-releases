@@ -63,6 +63,7 @@ import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.requirejs.editor.EditorUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -74,7 +75,7 @@ import org.openide.filesystems.FileUtil;
 @FunctionInterceptor.Registration(priority = 351)
 public class ConfigInterceptor implements FunctionInterceptor {
 
-    private final static Pattern PATTERN = Pattern.compile("requirejs\\.config");  //NOI18N
+    private final static Pattern PATTERN = Pattern.compile("(require|requirejs)\\.config");  //NOI18N
     private static final String PROPERTY_NAME = "name"; //NOI18N
     private static final String PROPERTY_LOCATION = "location"; //NOI18N
 
@@ -84,7 +85,7 @@ public class ConfigInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!RequireJsIndexer.Factory.isScannerThread()) {
             return Collections.emptyList();
 

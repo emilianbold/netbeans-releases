@@ -880,24 +880,24 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         LifecycleManager.getDefault().saveAll();
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor();
         final boolean contactServer = currentType != Setup.DIFFTYPE_LOCAL;
+        final SVNUrl url;
+        try {
+            url = ContextAction.getSvnUrl(context);
+        } catch(SVNClientException ex)  {
+            SvnClientExceptionHandler.notifyException(context, ex, true, true);
+            return;
+        }
         SvnProgressSupport supp = new SvnProgressSupport(fileSystem) {
             @Override
             public void perform() {                                         
                 if (currentType != -1) {
-                    StatusAction.executeStatus(context, this, contactServer);
+                    StatusAction.executeStatus(context, url, this, contactServer);
                 }
                 if (!isCanceled()) {
                     refreshSetups();
                 }
             }
         };
-        SVNUrl url;
-        try {
-            url = ContextAction.getSvnUrl(context); 
-        } catch(SVNClientException ex)  {
-            SvnClientExceptionHandler.notifyException(context, ex, true, true);     
-            return;             
-        }
         supp.start(rp, url, NbBundle.getMessage(MultiDiffPanel.class, "MSG_Refresh_Progress"));
         executeStatusSupport = supp;
     }                    

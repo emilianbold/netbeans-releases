@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.jumpto.common;
 
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.util.Parameters;
 
@@ -59,6 +61,8 @@ public final class CurrentSearch<T> {
     //@GuardedBy("this")
     private SearchType currentType;
     //@GuardedBy("this")
+    private String currentScope;
+    //@GuardedBy("this")
     private AbstractModelFilter<T> filter;
 
     public CurrentSearch(@NonNull final Callable<AbstractModelFilter<T>> filterFactory) {
@@ -69,11 +73,13 @@ public final class CurrentSearch<T> {
 
     public synchronized boolean isNarrowing(
             @NonNull final SearchType searchType,
-            @NonNull final String searchText) {
+            @NonNull final String searchText,
+            @NullAllowed final String searchScope) {
         if (currentType == null || currentText == null) {
             return false;
         }
-        return Utils.isNarrowing(
+        return Objects.equals(currentScope, searchScope) &&
+            Utils.isNarrowing(
                 currentType,
                 searchType,
                 currentText,
@@ -102,8 +108,10 @@ public final class CurrentSearch<T> {
 
     public synchronized void searchCompleted(
             @NonNull final SearchType searchType,
-            @NonNull final String searchText) {
+            @NonNull final String searchText,
+            @NullAllowed final String searchScope) {
         this.currentType = searchType;
         this.currentText = searchText;
+        this.currentScope = searchScope;
     }
 }

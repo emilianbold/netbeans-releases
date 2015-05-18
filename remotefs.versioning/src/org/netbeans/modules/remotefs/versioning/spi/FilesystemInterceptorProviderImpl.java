@@ -62,7 +62,7 @@ import org.openide.filesystems.*;
  */
 @org.openide.util.lookup.ServiceProvider(service = FilesystemInterceptorProvider.class, position = 1000)
 public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProvider {
-    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<FileSystem, FilesystemInterceptor>();
+    private final Map<FileSystem, FilesystemInterceptor> map = new HashMap<>();
 
     @Override
     public synchronized FilesystemInterceptor getFilesystemInterceptor(FileSystem fs) {
@@ -253,7 +253,7 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public long listFiles(FileProxyI dir, long lastTimeStamp, List<? super FileProxyI> children) {
-            List<VCSFileProxy> res = new ArrayList<VCSFileProxy>();
+            List<VCSFileProxy> res = new ArrayList<>();
             for(Object f : children) {
                 res.add(toVCSFileProxy((FileProxyI)f));
             }

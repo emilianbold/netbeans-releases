@@ -145,6 +145,7 @@ public class VectorConfiguration<E> implements Cloneable {
     }
 
     @Override
+    @org.netbeans.api.annotations.common.SuppressWarnings("CN") // each subclass implemented Clonable must override this method
     public VectorConfiguration<E> clone() {
         VectorConfiguration<E> clone = new VectorConfiguration<>(master);
         clone.setValue(new ArrayList<>(getValue()));

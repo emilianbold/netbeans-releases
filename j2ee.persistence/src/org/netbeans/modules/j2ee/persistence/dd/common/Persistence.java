@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.j2ee.persistence.dd.common;
 
+import java.beans.PropertyChangeListener;
+
 /**
  *
  * @author sp153251
@@ -54,6 +56,8 @@ public interface Persistence {
         public static final String VERSION_2_0="2.0"; //NOI18N
         public static final String VERSION_1_0="1.0"; //NOI18N
 
+        public void addPropertyChangeListener(PropertyChangeListener l);
+        public void removePropertyChangeListener(PropertyChangeListener l);
         public void setVersion(java.lang.String value);
         public java.lang.String getVersion();
         public void setPersistenceUnit(int index, PersistenceUnit value);

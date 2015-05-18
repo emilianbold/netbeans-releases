@@ -45,8 +45,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.TemplateAttrProvider;
 import org.netbeans.modules.maven.api.Constants;
@@ -110,22 +113,28 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
                         return;
                     }
                     try {
-                        String eval = PluginPropertyUtils.createEvaluator(project).evaluate(licensePath).toString();
-                    
-                        File file = FileUtilities.resolveFilePath(handle.getProject().getBasedir(), eval);
-                        FileObject fo;
-                        if (!file.exists()) {
-                            fo = FileUtil.createData(file);
-                        } else {
-                            fo = FileUtil.toFileObject(file);
-                        }
-                        if (fo.isData()) {
-                            OutputStream out = fo.getOutputStream();
-                            try {
-                                FileUtil.copy(new ByteArrayInputStream(licenseContent.getBytes()), out);
-                            } finally {
-                                out.close();
+                        ExpressionEvaluator createEvaluator = PluginPropertyUtils.createEvaluator(project);
+                        Object evaluate = createEvaluator.evaluate(licensePath);
+                        if(evaluate != null) {
+                            String eval = evaluate.toString();
+
+                            File file = FileUtilities.resolveFilePath(handle.getProject().getBasedir(), eval);
+                            FileObject fo;
+                            if (!file.exists()) {
+                                fo = FileUtil.createData(file);
+                            } else {
+                                fo = FileUtil.toFileObject(file);
                             }
+                            if (fo.isData()) {
+                                OutputStream out = fo.getOutputStream();
+                                try {
+                                    FileUtil.copy(new ByteArrayInputStream(licenseContent.getBytes()), out);
+                                } finally {
+                                    out.close();
+                                }
+                            }
+                        } else {
+                            Logger.getLogger(LicenseHeaderPanelProvider.class.getName()).log(Level.WARNING, "Encountered problems evaluating license path: {0}", licensePath);
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);

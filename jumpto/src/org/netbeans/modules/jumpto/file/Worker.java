@@ -564,9 +564,9 @@ final class Worker implements Runnable {
                 FileIndexer.ID,
                 FileIndexer.VERSION,
                 roots.toArray(new FileObject[roots.size()]));
-            final QuerySupport.Query.Factory f = q.getQueryFactory();
-            f.setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR);
-            f.setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
+            final QuerySupport.Query.Factory f = q.getQueryFactory().
+                    setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR).
+                    setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
             if (isCancelled()) {
                 return false;
             }
@@ -585,12 +585,12 @@ final class Worker implements Runnable {
                 FileDescriptor fd = new FileDescription(
                         file,
                         r.getRelativePath(),
-                        project,
-                        request.getLine());
+                        project);
                 boolean preferred = project != null && request.getCurrentProject() != null ?
                         project.getProjectDirectory() == request.getCurrentProject().getProjectDirectory() :
                         false;
                 FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                 files.add(fd);
                 LOG.log(
                     Level.FINER,
@@ -703,9 +703,9 @@ final class Worker implements Runnable {
                             FileDescriptor fd = new FileDescription(
                                 file,
                                 relativePath,
-                                project,
-                                request.getLine());
+                                project);
                             FileProviderAccessor.getInstance().setFromCurrentProject(fd, preferred);
+                            FileProviderAccessor.getInstance().setLineNumber(fd, request.getLine());
                             files.add(fd);
                         }
                     }

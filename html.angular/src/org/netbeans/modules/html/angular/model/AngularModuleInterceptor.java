@@ -49,7 +49,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.angular.index.AngularJsController;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -58,6 +61,7 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionInterceptor;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,6 +77,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
             TypeUsage.ARRAY, TypeUsage.BOOLEAN, TypeUsage.FUNCTION, TypeUsage.NULL,
             TypeUsage.NUMBER, TypeUsage.OBJECT, TypeUsage.REGEXP, TypeUsage.STRING,
             TypeUsage.UNDEFINED, TypeUsage.UNRESOLVED);
+    private static final String ROUTECONFIG_PROP = "$routeConfig"; //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -80,7 +85,7 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         if (!AngularJsIndexer.isScannerThread()) {
             return Collections.emptyList();
         }
@@ -133,13 +138,15 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
                     List<String> fArgumentValue = ((List<String>) fArgument.getValue());
                     functionName = fArgumentValue.isEmpty() ? null : fArgumentValue.get(0);
                     if (functionName != null) {
-                        JsFunction func = (JsFunction) globalObject.getProperty(functionName);
+                        JsObject funcObj = globalObject.getProperty(functionName);
+                        JsFunction func = funcObj != null && (funcObj instanceof JsFunction) ? (JsFunction) funcObj : null;
                         if (func == null) {
                             // try to find it enclosed in IIFE
                             JsObject argumentObject = ModelUtils.findJsObject(globalObject, fArgument.getOffset());
                             if (argumentObject != null && argumentObject instanceof JsFunction) {
                                 JsFunction iife = (JsFunction) argumentObject;
-                                func = (JsFunction) iife.getProperty(functionName);
+                                funcObj = iife.getProperty(functionName);
+                                func = funcObj != null && (funcObj instanceof JsFunction) ? (JsFunction) iife.getProperty(functionName) : null;
                             }
                         }
                         if (func != null && !func.isAnonymous()) {
@@ -177,13 +184,25 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         if (controllerName != null && functionName != null) {
             // we need to find the function itself
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
+            if (controllerDecl != null
+                    && !functionName.equals(TypeUsage.FUNCTION)
+                    && !controllerDecl.getFullyQualifiedName().endsWith(functionName)) {
+                // Probably controller function is assigned to the variable in IIFE (issue #251909)
+                JsObject functProp = controllerDecl.getProperty(functionName);
+                if (functProp != null && functProp.getFullyQualifiedName().endsWith(functionName)) {
+                    controllerDecl = functProp;
+                }
+            }
             if (controllerDecl != null && controllerDecl instanceof JsFunction && controllerDecl.isDeclared()) {
                 fqnOfController = controllerDecl.getFullyQualifiedName();
                 FileObject fo = globalObject.getFileObject();
                 if (fo != null) {
                     AngularJsIndexer.addController(fo.toURI(), new AngularJsController(controllerName, fqnOfController, fo.toURL(), nameOffset));
                 }
-            }            
+
+                // index Angular "New Router" components in case of using "$routeConfig" property
+                indexComponents(snapshot, fo, controllerDecl);
+            }
         } else if (controllerName == null && controllersMap != null) {
             // we need to find an anonymous object, which contains the controller map
             JsObject controllerDecl = ModelUtils.findJsObject(globalObject, functionOffset);
@@ -199,5 +218,28 @@ public class AngularModuleInterceptor implements FunctionInterceptor{
         }
         return Collections.emptyList();
     }
-    
+
+    /**
+     * Indexes component if registered using $routeConfig property. E.g.:
+     * AppController.$routeConfig = [{ path: '/users/posts', components: {left:
+     * 'users', right: 'posts'} }];
+     *
+     * @param snapshot
+     * @param fo
+     * @param controllerDecl
+     */
+    private void indexComponents(Snapshot snapshot, FileObject fo, JsObject controllerDecl) {
+        JsObject routerConfig = controllerDecl.getProperty(ROUTECONFIG_PROP);
+        if (routerConfig != null && routerConfig instanceof JsArray) {
+            Collection<? extends TypeUsage> assignments = routerConfig.getAssignments();
+            if (assignments.size() == 1 && assignments.iterator().next().getType().equals(TypeUsage.ARRAY)) {
+                int routerConfigOffset = routerConfig.getOffset();
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot, routerConfigOffset);
+                if (ts != null && fo != null) {
+                    AngularConfigInterceptor.saveComponentsToIndex(fo, AngularConfigInterceptor.findComponents(ts, routerConfigOffset));
+                }
+            }
+        }
+    }
+
 }

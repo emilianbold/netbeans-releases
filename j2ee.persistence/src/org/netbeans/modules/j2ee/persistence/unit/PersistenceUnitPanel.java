@@ -713,10 +713,16 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
         
         return jndiName;
     }
-    
+
+    @Override
+    protected void startUIChange() {
+        dObj.setChangedFromUI(true);
+    }
+
     @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
+        dObj.setChangedFromUI(false);
     }
     
     public void linkButtonPressed(Object ddBean, String ddProperty) {

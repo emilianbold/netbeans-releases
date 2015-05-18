@@ -572,6 +572,22 @@ abstract class AbstractTestBase {
                     j += 3;
                     continue;
                 }
+                // There might be double values in a different format:
+                String sd1 = nextDoubleString(message.substring(i));
+                String sd2 = nextDoubleString(storedMessage.substring(j));
+                if (!sd1.isEmpty() && !sd2.isEmpty()) {
+                    try {
+                        double d1 = Double.parseDouble(sd1);
+                        double d2 = Double.parseDouble(sd2);
+                        if (d1 == d2) {
+                            i += sd1.length();
+                            j += sd2.length();
+                            continue;
+                        }
+                    } catch (NumberFormatException nfex) {
+                        // ignore, there are not double values.
+                    }
+                }
                 
                 i = Math.max(0, i - 20);
                 j = Math.max(0, j - 20);
@@ -582,5 +598,17 @@ abstract class AbstractTestBase {
             }
         }
         return true;
+    }
+    
+    private static String nextDoubleString(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '-' || c == '.' || Character.isDigit(c) || Character.toLowerCase(c) == 'e') {
+                // is a number character
+            } else {
+                return s.substring(0, i);
+            }
+        }
+        return s;
     }
 }

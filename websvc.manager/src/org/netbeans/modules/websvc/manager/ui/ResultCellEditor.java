@@ -60,7 +60,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 
 import java.awt.Dialog;
-import org.netbeans.swing.outline.OutlineModel;
 
 /**
  *
@@ -72,21 +71,21 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
     private DialogDescriptor dlg;
     private ResultViewerDialog viewerDialog;
     private Object saveValue;
-    private ClassLoader classLoader;
 
     /** Creates a new instance of TypeCellRenderer */
-    public ResultCellEditor(ClassLoader loader) {
+    public ResultCellEditor() {
         super(new JTextField());
         this.setClickCountToStart(1);
-        this.classLoader = loader;
     }
     /**
      * return the value of the last component.
      */
+    @Override
     public Object getCellEditorValue() {
         return saveValue;
     }
 
+    @Override
     public java.awt.Component getTableCellEditorComponent(javax.swing.JTable table, Object value, boolean isSelected, int row, int column) {
         saveValue = value;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode)table.getModel().
@@ -101,14 +100,7 @@ public class ResultCellEditor extends DefaultCellEditor implements TableCellEdit
 
         } else {
             TypeNodeData data = (TypeNodeData)node.getUserObject();
-            String type = data.getTypeClass();
-            if(null != value) {
-                if (ReflectionHelper.isSimpleType(type, classLoader)) {
-                    viewerDialog.setText(value.toString());
-                } else {
-                    return null;
-                }
-            }
+            viewerDialog.setText((value == null) ? "null" : value.toString()); // NOI18N
 
             dlg = new DialogDescriptor(viewerDialog, data.getRealTypeName(),
             true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION,

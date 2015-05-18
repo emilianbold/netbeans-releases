@@ -72,8 +72,6 @@ import java.util.Map.Entry;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.Iterator;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -179,7 +177,7 @@ public class Util {
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    public static void getAllComponents( Component[] components, Collection allComponents ) {
+    public static void getAllComponents(Component[] components, Collection<Component> allComponents) {
         for( int i = 0; i < components.length; i++ ) {
             if( components[i] != null ) {
                 allComponents.add( components[i] );
@@ -189,16 +187,14 @@ public class Util {
             }
         }
     }
-    
+
     /*
      *  Recursively finds a JLabel that has labelText in comp
      */
     public static JLabel findLabel(JComponent comp, String labelText) {
-        Vector allComponents = new Vector();
+        List<Component> allComponents = new ArrayList<Component>();
         getAllComponents(comp.getComponents(), allComponents);
-        Iterator iterator = allComponents.iterator();
-        while(iterator.hasNext()) {
-            Component c = (Component)iterator.next();
+        for (Component c : allComponents) {
             if(c instanceof JLabel) {
                 JLabel label = (JLabel)c;
                 if(label.getText().equals(labelText)) {
@@ -208,7 +204,7 @@ public class Util {
         }
         return null;
     }
-    
+
     /**
      * Returns the simple class for the passed fully-qualified class name.
      */
@@ -294,16 +290,20 @@ public class Util {
     }
     
     public static String lowerFirstChar(String name) {
-        if (name.length() == 0) return name;
-        
+        if (name.length() == 0) {
+            return name;
+        }
+
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toLowerCase(name.charAt(0)));
         return sb.toString();
     }
     
     public static String upperFirstChar(String name) {
-        if (name.length() == 0) return name;
-        
+        if (name.length() == 0) {
+            return name;
+        }
+
         StringBuilder sb = new StringBuilder(name);
         sb.setCharAt(0, Character.toUpperCase(name.charAt(0)));
         return sb.toString();
@@ -347,18 +347,7 @@ public class Util {
     public static String deriveContainerClassName(String resourceName) {
         return deriveResourceClassName(Inflector.getInstance().pluralize((resourceName)));
     }
-    
-//    public static String singularize(String name) {
-//        // get around inflector bug:  'address' -> 'addres'
-//        if (name.endsWith("ss")) {
-//            String plural = Inflector.getInstance().pluralize(name);
-//            if (! name.equals(plural)) {
-//                return name;
-//            }
-//        }
-//        return Inflector.getInstance().singularize(name);
-//    }
-//    
+
     public static String pluralize(String name) {
         String pluralName = Inflector.getInstance().pluralize(name);
         
@@ -741,12 +730,16 @@ public class Util {
         final Set<String> entities = new HashSet<String>();
         for (FileObject file : files) {
             final JavaSource source = JavaSource.forFileObject(file);
+            if (source == null) {
+                continue;
+            }
             final EntityCollector collector = new EntityCollector();
             source.runUserActionTask( collector, true);
             if ( collector.isIncomplete() && 
                     org.netbeans.api.java.source.SourceUtils.isScanInProgress())
             {
                 final Runnable runnable = new Runnable(){
+                    @Override
                     public void run() {
                         try {
                             source.runUserActionTask(collector, true);
@@ -766,6 +759,7 @@ public class Util {
                 }
                 else {
                     SwingUtilities.invokeLater( new Runnable(){
+                        @Override
                         public void run() {
                             ScanDialog.runWhenScanFinished(runnable, NbBundle.getMessage(
                                     Util.class, "LBL_AnalyzeEntities"));        // NOI18N
@@ -835,6 +829,7 @@ public class Util {
                     org.netbeans.api.java.source.SourceUtils.isScanInProgress())
             {
                 final Runnable runnable = new Runnable(){
+                    @Override
                     public void run() {
                         try {
                             javaSource.runUserActionTask(task, true);
@@ -852,6 +847,7 @@ public class Util {
                 else {
                     try {
                         SwingUtilities.invokeAndWait( new Runnable(){
+                            @Override
                             public void run() {
                                 ScanDialog.runWhenScanFinished( runnable, NbBundle.
                                    getMessage(Util.class, "LBL_EntityModification"));      // NOI18N
@@ -903,7 +899,7 @@ public class Util {
         AnnotationTree xmlTransientAn = genUtils.createAnnotation(XML_TRANSIENT);
         TypeElement jsonIgnore = workingCopy.getElements().getTypeElement(
             "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
-        List<AnnotationTree> annotationTrees = null;
+        List<AnnotationTree> annotationTrees;
         if ( jsonIgnore == null ){
             annotationTrees = Collections.singletonList(xmlTransientAn);
         }
@@ -1114,7 +1110,7 @@ public class Util {
     }    
     
     private static class Lazy {
-        private static Map<String,Class<?>> primitiveTypes = new HashMap<String,Class<?>>();
+        private static final Map<String,Class<?>> primitiveTypes = new HashMap<String,Class<?>>();
         
         static {
             primitiveTypes.put("int", Integer.class);

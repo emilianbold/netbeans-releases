@@ -76,6 +76,7 @@ import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.jumpto.SearchHistory;
@@ -92,6 +93,9 @@ import org.openide.util.NbCollections;
  */
 public class FileSearchPanel extends javax.swing.JPanel implements ActionListener {
 
+    @StaticResource
+    private static final String WAIT_ICON_RES = "org/netbeans/modules/jumpto/resources/wait.gif";    // NOI18N
+    private static Icon WAIT_ICON = ImageUtilities.loadImageIcon(WAIT_ICON_RES, false);
     public static final String SEARCH_IN_PROGRES = NbBundle.getMessage(FileSearchPanel.class, "TXT_SearchingOtherProjects"); // NOI18N
     private static Icon WARN_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/jumpto/resources/warning.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(FileSearchPanel.class.getName());
@@ -154,7 +158,8 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         resultList.setCellRenderer( contentProvider.getListCellRenderer(
                 resultList,
                 fileNameTextField.getDocument(),
-                caseSensitiveCheckBox.getModel()));
+                caseSensitiveCheckBox.getModel(),
+                mainProjectCheckBox.getModel()));
         resultList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -208,7 +213,6 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                     "Reset selected items");    //NOI18N
                 selectedItems = null;
                 resultList.setModel(model);
-                ((FileSearchAction.Renderer) resultList.getCellRenderer()).setColorPrefered(isPreferedProject());
                 if (done) {
                     setListPanelContent(null,false);
                 }
@@ -273,6 +277,8 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
                    msg = NbBundle.getMessage(FileSearchPanel.class, "TXT_SyntaxError", pse.getDescription(),pse.getIndex());
                }
                res = false;
+            } else if (resultList.getSelectedIndex() == -1) {
+                resultList.setSelectedIndex(0);
             }
             setListPanelContent(msg, false);
         } else {
@@ -292,7 +298,7 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
         else if ( message != null ) { 
            jTextFieldLocation.setText(""); 
            messageLabel.setText(message);
-           messageLabel.setIcon( waitIcon ? FileSearchAction.Renderer.WAIT_ICON : null);
+           messageLabel.setIcon( waitIcon ? WAIT_ICON : null);
            if ( containsScrollPane ) {
                listPanel.remove( resultScrollPane );
                listPanel.add( messageLabel );
@@ -649,7 +655,8 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
         public ListCellRenderer getListCellRenderer(
                 @NonNull JList list,
                 @NonNull Document nameDocument,
-                @NonNull ButtonModel caseSensitive);
+                @NonNull ButtonModel caseSensitive,
+                @NonNull ButtonModel colorPrefered);
 
         public boolean setListModel( FileSearchPanel panel, String text );
 

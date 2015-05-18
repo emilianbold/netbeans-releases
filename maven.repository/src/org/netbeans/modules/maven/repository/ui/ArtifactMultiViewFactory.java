@@ -45,16 +45,20 @@ package org.netbeans.modules.maven.repository.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
+import org.apache.maven.DefaultMaven;
+import org.apache.maven.Maven;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
-import org.apache.maven.model.Profile;
+import org.apache.maven.execution.MavenExecutionRequest;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
-import org.apache.maven.project.MavenProjectBuilder;
+import org.apache.maven.project.ProjectBuilder;
 import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.apache.maven.repository.RepositorySystem;
 import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -87,6 +91,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -224,11 +229,21 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
     }
 
     private static MavenProject readMavenProject(MavenEmbedder embedder, Artifact artifact, List<ArtifactRepository> remoteRepos) throws  ProjectBuildingException {
-        //TODO rewrite
-        MavenProjectBuilder bldr = embedder.lookupComponent(MavenProjectBuilder.class);
-        assert bldr !=null : "MavenProjectBuilder component not found in maven";
-        embedder.setUpLegacySupport();
-        return bldr.buildFromRepository(artifact, remoteRepos, embedder.getLocalRepository()) ;
+        ProjectBuilder bldr = embedder.lookupComponent(ProjectBuilder.class);
+        assert bldr !=null : "ProjectBuilder component not found in maven";
+        DefaultMaven maven = (DefaultMaven) embedder.lookupComponent(Maven.class);
+        assert bldr !=null : "DefaultMaven component not found in maven";
+        
+        MavenExecutionRequest req = embedder.createMavenExecutionRequest();
+        req.setLocalRepository(embedder.getLocalRepository());
+        req.setRemoteRepositories(remoteRepos);
+
+        ProjectBuildingRequest configuration = req.getProjectBuildingRequest();
+        configuration.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        configuration.setResolveDependencies(true);
+        configuration.setRepositorySession(maven.newRepositorySession(req));
+        ProjectBuildingResult projectBuildingResult = bldr.build(artifact, configuration);
+        return projectBuildingResult.getProject();    
     }
     
     private static final String MAVEN_TC_PROPERTY = "mvn_tc_id";

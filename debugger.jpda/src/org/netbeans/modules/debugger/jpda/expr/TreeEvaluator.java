@@ -355,11 +355,9 @@ public class TreeEvaluator {
                 }
             }
             InvalidExpressionException ieex = new InvalidExpressionException (ex);
-            ieex.initCause(ex);
             throw ieex;
         } catch (UnsupportedOperationException uoex) {
             InvalidExpressionException ieex = new InvalidExpressionException (uoex);
-            ieex.initCause(uoex);
             throw ieex;
         } catch (InternalExceptionWrapper iex) {
             throw new InvalidExpressionException(iex.getLocalizedMessage());

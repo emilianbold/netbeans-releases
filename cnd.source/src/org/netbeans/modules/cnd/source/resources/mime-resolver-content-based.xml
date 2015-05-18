@@ -47,12 +47,6 @@ made subject to such option by the copyright holder.
 		    "http://www.netbeans.org/dtds/mime-resolver-1_1.dtd">
 <MIME-resolver>
     <file>
-        <!-- Do not resolve FreeMaker templates with <#include directive. -->
-        <ext name=""/>
-        <pattern value="&lt;#include" range="128"/>
-        <exit/>
-    </file>
-    <file>
         <!-- Only files without extension. -->
         <ext name=""/>
         <!-- Pattern // in first 2 bytes and pattern -*- C++ -*- in first 80 bytes. -->
@@ -62,6 +56,17 @@ made subject to such option by the copyright holder.
         <pattern value="//" range="2">
             <pattern value="standard header" range="80"/>
         </pattern>
+        <resolver mime="text/x-h"/>
+    </file>
+    <file>
+        <!-- Do not resolve FreeMaker templates with <#include directive. -->
+        <ext name=""/>
+        <pattern value="&lt;#include" range="128"/>
+        <exit/>
+    </file>
+    <file>
+        <!-- Only files without extension. -->
+        <ext name=""/>
         <!-- preprocessor directives in the first 128 bytes. -->
         <pattern value="#include" range="128"/>
         <pattern value="#pragma" range="128"/>

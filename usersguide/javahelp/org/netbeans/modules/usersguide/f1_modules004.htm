@@ -2,50 +2,32 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Help Topic</title>
+<title>Add New Friend Module Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-04-09</p>
-<!-- infolevel="all" infotype="General" --><a id="sthref426" name="sthref426"></a>
-<h1>Help Topic</h1>
+<p>Beta Draft: 2015-05-13</p>
+<div id="NBCSH1793"><!-- infolevel="all" infotype="General" --><a id="sthref219" name="sthref219"></a>
+<h1>Add New Friend Module Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Text</p>
-<p>Text</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t5">Element</th>
-<th align="left" valign="bottom" id="r1c2-t5">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t5" headers="r1c1-t5"></td>
-<td align="left" headers="r2c1-t5 r1c2-t5"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t5" headers="r1c1-t5"></td>
-<td align="left" headers="r3c1-t5 r1c2-t5"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t5" headers="r1c1-t5"></td>
-<td align="left" headers="r4c1-t5 r1c2-t5"></td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="sthref427" name="sthref427"></a>
+<p>The Add New Friend Module dialog box lets a module with an API in public packages provide access only to certain "friend" modules. This is possible if the module declares public packages together with a list of code base names of "friend" modules that can access them. Type the code name base of the "friend" modules in the Add New Friend dialog box. When you click OK, the IDE adds entries to the Manifest file as follows:</p>
+<p><code dir="ltr">OpenIDE-Module-Friends: org.foo, org.boo</code></p>
+<p>Only enumerated modules can access the public packages; access from others is forbidden.</p>
+<a id="NBCSH1794" name="NBCSH1794"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8000&id=NBDAG">
-<param name="text" value="<html><u>&quot;Text&quot;</u></html>">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG3071">
+<param name="text" value="<html><u>&quot;About NetBeans Platform and Module Development&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://tahiti-stage.us.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG3059">
+<param name="text" value="<html><u>&quot;About the NetBeans Platform&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

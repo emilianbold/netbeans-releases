@@ -246,7 +246,7 @@ public final class RemoteInfoDialog extends javax.swing.JPanel {
 
             if (!portField.getText().isEmpty()) {
                 try {
-                    port = Integer.valueOf(portField.getText());
+                    port = Integer.parseInt(portField.getText());
                 } catch (NumberFormatException ex) {
                 }
             }

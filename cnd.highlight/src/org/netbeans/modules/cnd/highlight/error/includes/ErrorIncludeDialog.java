@@ -201,7 +201,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
     }
     
     private void computeList(Set<CsmUID<CsmFile>> set) {
-        Set<CsmFile> files = new HashSet<CsmFile>();
+        Set<CsmFile> files = new HashSet<>();
         if (set != null) {
             for (CsmUID<CsmFile> fileUID : set) {
                 CsmFile csmFile = fileUID.getObject();
@@ -212,8 +212,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
             }
         }
 
-        List<CsmInclude> includes = new ArrayList<CsmInclude>();
-        List<CsmErrorDirective> errors = new ArrayList<CsmErrorDirective>();
+        List<CsmInclude> includes = new ArrayList<>();
+        List<CsmErrorDirective> errors = new ArrayList<>();
         CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
         for(CsmFile file:files){
             Collection<CsmErrorDirective> fileErrors = file.getErrors();
@@ -853,7 +853,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
 
     private Map<String,List<FileObject>> search(CsmOffsetable ppDirective){
         CsmProject prj = ppDirective.getContainingFile().getProject();
-        HashSet<FileObject> set = new HashSet<FileObject>();
+        HashSet<FileObject> set = new HashSet<>();
         for (Iterator<CsmFile> it = prj.getSourceFiles().iterator(); it.hasNext();){
             CsmFile file = it.next();
             FileObject fo = file.getFileObject();
@@ -874,7 +874,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 }
             }
         }
-        HashMap<String,List<FileObject>> map = new HashMap<String,List<FileObject>>();
+        HashMap<String,List<FileObject>> map = new HashMap<>();
         for (Iterator<FileObject> it = set.iterator(); it.hasNext();){
             FileObject d = it.next();
             if (d.isValid() && d.isFolder() && d.canRead()){
@@ -884,7 +884,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         if (ff[i].isValid() && ff[i].isData()) {
                             List<FileObject> l = map.get(ff[i].getNameExt());
                             if (l == null){
-                                l = new ArrayList<FileObject>();
+                                l = new ArrayList<>();
                                 map.put(ff[i].getNameExt(),l);
                             }
                             l.add(ff[i]);

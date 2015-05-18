@@ -263,7 +263,7 @@ public abstract class CndFileSystemProvider {
     private static class DefaultProvider extends CndFileSystemProvider {
         private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
-        private CndFileSystemProvider[] cache;
+        private final CndFileSystemProvider[] cache;
 
         DefaultProvider() {
             Collection<? extends CndFileSystemProvider> instances =

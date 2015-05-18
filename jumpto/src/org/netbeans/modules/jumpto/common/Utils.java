@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.jumpto.common;
 
-import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.util.Pair;
 
 /**
  *
@@ -82,6 +84,26 @@ public class Utils {
     }
 
     @NonNull
+    public static SearchType getSearchType(
+            @NonNull final String text,
+            final boolean exact,
+            final boolean isCaseSensitive,
+            @NullAllowed final String camelCaseSeparator,
+            @NullAllowed final String camelCasePart) {
+        int wildcard = Utils.containsWildCard(text);
+        if (exact) {
+            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            return SearchType.EXACT_NAME;
+        } else if (wildcard != -1) {
+            return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
+        } else if ((Utils.isAllUpper(text) && text.length() > 1) || Queries.isCamelCase(text, camelCaseSeparator, camelCasePart)) {
+            return isCaseSensitive ? SearchType.CAMEL_CASE : SearchType.CASE_INSENSITIVE_CAMEL_CASE;
+        } else {
+            return isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
+        }
+    }
+
+    @NonNull
     public static SearchType toSearchType(@NonNull final QuerySupport.Kind searchType) {
         switch (searchType) {
             case CAMEL_CASE:
@@ -100,6 +122,29 @@ public class Utils {
                 return org.netbeans.spi.jumpto.type.SearchType.REGEXP;
             default:
                 throw new IllegalArgumentException(String.valueOf(searchType));
+        }
+    }
+
+    @NonNull
+    public static QuerySupport.Kind toQueryKind(@NonNull final SearchType searchType) {
+        switch (searchType) {
+            case CAMEL_CASE:
+                return QuerySupport.Kind.CAMEL_CASE;
+            case CASE_INSENSITIVE_CAMEL_CASE:
+                return QuerySupport.Kind.CASE_INSENSITIVE_CAMEL_CASE;
+            case CASE_INSENSITIVE_EXACT_NAME:
+            case EXACT_NAME:
+                return QuerySupport.Kind.EXACT;
+            case CASE_INSENSITIVE_PREFIX:
+                return QuerySupport.Kind.CASE_INSENSITIVE_PREFIX;
+            case CASE_INSENSITIVE_REGEXP:
+                return QuerySupport.Kind.CASE_INSENSITIVE_REGEXP;
+            case PREFIX:
+                return QuerySupport.Kind.PREFIX;
+            case REGEXP:
+                return QuerySupport.Kind.REGEXP;
+            default:
+                throw new IllegalThreadStateException(String.valueOf(searchType));
         }
     }
 
@@ -160,6 +205,38 @@ public class Utils {
         }
         //TODO: Regexp & CamelCase can add more rules
         return false;
+    }
+
+    /**
+     * Splits a searched text into name and scope.
+     * Todo: Create a SPI to allow Providers to do the splitting,
+     * currently the splitting is hard coded. The split character is '.'
+     * @param text to split
+     * @return the pair of searched name and scope. The scope may be null.
+     */
+    @NonNull
+    public static Pair<String,String> splitNameAndScope(@NonNull final String text) {
+        final String name, scope;
+        int index = text.lastIndexOf('.');    //NOI18N
+        if (index >= 0) {
+            if (index == text.length()-1) {
+                index = text.lastIndexOf('.', index-1);
+                if (index >= 0) {
+                    scope = text.substring(0, index);
+                    name = text.substring(index+1, text.length()-1);
+                } else {
+                    scope = null;
+                    name = text.substring(0,text.length()-1);
+                }
+            } else {
+                scope = text.substring(0, index);
+                name = text.substring(index+1);
+            }
+        } else {
+            scope = null;
+            name = text;
+        }
+        return Pair.of(name,scope);
     }
 
     private static boolean isCaseSensitive(@NonNull final SearchType searchType) {

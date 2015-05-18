@@ -98,7 +98,7 @@ public final class MacroMap implements Cloneable {
             }
         }
 
-        varsForExport.addAll(Arrays.asList(EnvWriter.wellKnownVars));
+        varsForExport.addAll(EnvWriter.wellKnownVars);
     }
 
     /**

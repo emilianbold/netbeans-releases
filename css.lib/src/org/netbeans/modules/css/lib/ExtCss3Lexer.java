@@ -60,13 +60,26 @@ import static org.netbeans.modules.css.lib.Bundle.*;
 public class ExtCss3Lexer extends Css3Lexer {
 
     private List<ProblemDescription> problems = new ArrayList<>();
-
+    static boolean isLessSource_unit_tests = false;
+    static boolean isScssSource_unit_tests = false;
+    
+    private boolean isLessSource = isLessSource_unit_tests;
+    private boolean isScssSource = isScssSource_unit_tests;
+    
     public ExtCss3Lexer(CharStream input, RecognizerSharedState state) {
         super(input, state);
     }
 
     public ExtCss3Lexer(CharStream input) {
         super(input);
+    }
+    
+    public ExtCss3Lexer(CharSequence charSequence, String mimeType) {
+        this(charSequence);
+        if(mimeType != null) {
+            this.isLessSource = mimeType.equals("text/less");
+            this.isScssSource = mimeType.equals("text/scss");
+        }
     }
 
     /**
@@ -171,5 +184,15 @@ public class ExtCss3Lexer extends Css3Lexer {
 
     public List<ProblemDescription> getProblems() {
         return problems;
+    }
+    
+    @Override
+    protected boolean isLessSource() {
+        return isLessSource;
+    }
+
+    @Override
+    protected boolean isScssSource() {
+        return isScssSource;
     }
 }

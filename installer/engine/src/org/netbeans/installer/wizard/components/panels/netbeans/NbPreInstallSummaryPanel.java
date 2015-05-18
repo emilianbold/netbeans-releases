@@ -332,15 +332,10 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             final List<Product> dependentOnGf = new LinkedList<Product>();
             final List<Product> dependentOnAs = new LinkedList<Product>();
             boolean nbBasePresent = false;
-            boolean junitPresent = false;
             
             for (Product product: registry.getProductsToInstall()) {
                 installationSize += product.getRequiredDiskSpace();
                 downloadSize += product.getDownloadSize();
-                if (product.getUid().equals(NB_JAVASE_UID)) {
-                    String jUnitAccepted = product.getProperty(JUNIT_ACCEPTED_PROPERTY);
-                    junitPresent = (jUnitAccepted != null  && jUnitAccepted.equals("true"));
-                }
                 try {
                     if (product.getLogic().registerInSystem() || product.getUid().equals("jdk")
 			    || product.getUid().equals("mysql") || product.getUid().equals("javafxsdk")) {
@@ -447,12 +442,6 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         panel.getProperty(AS_ADDONS_LOCATION_TEXT_PROPERTY),
                         StringUtils.asString(dependentOnAs)));
                 text.append(StringUtils.LF);
-            }
-            //temporary solution to include JUnit into panel
-            if (junitPresent) {
-                text.append(StringUtils.LF);                
-                text.append(panel.getProperty(JUNIT_PRESENT_TEXT_PROPERTY));
-                text.append(StringUtils.LF);                
             }
             locationsPane.setText(text);
 

@@ -168,7 +168,7 @@ public final class SPSRemoteImpl extends SPSCommonImpl {
             w.flush();
 
             String exitStatus = expect(in, "ExitStatus:%"); // NOI18N
-            status = Integer.valueOf(exitStatus).intValue();
+            status = Integer.parseInt(exitStatus);
 
             return status == 0;
         } catch (InterruptedIOException ex) {

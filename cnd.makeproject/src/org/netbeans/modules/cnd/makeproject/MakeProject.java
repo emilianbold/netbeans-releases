@@ -142,7 +142,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataLoaderPool;
 import org.openide.modules.Places;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
@@ -222,7 +221,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         synchronized(MakeProject.class) {
             if (templateListener == null) {
-                DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
+                templateListener = MakeTemplateListener.createInstance();
             }
         }
         LOGGER.log(Level.FINE, "End of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
@@ -275,6 +274,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         Info info = new Info(this);
         MakeProjectConfigurationProvider makeProjectConfigurationProvider = new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info);
         final RemoteProjectImpl remoteProject = new RemoteProjectImpl(this);
+        final MakeProjectEncodingQueryImpl encodingQuery = new MakeProjectEncodingQueryImpl(this);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -294,11 +294,13 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new MakeProjectOperations(this),
                     new MakeProjectSearchInfo(projectDescriptorProvider),
                     kind,
-                    new MakeProjectEncodingQueryImpl(this), remoteProject,
+                    encodingQuery,
+                    remoteProject,
                     new ToolchainProjectImpl(this),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     BrokenReferencesSupport.createPlatformVersionProblemProvider(this, helper, projectDescriptorProvider, makeProjectConfigurationProvider),
                     new CndDocumentCodeStyleProviderImpl(),
+                    new TemplateAttributesProviderImpl(this, encodingQuery),
                     this
                 };
         
@@ -367,6 +369,33 @@ public final class MakeProject implements Project, MakeProjectListener {
         newLookups.addAll(Arrays.asList(array));
             newLookups.add(value);            
         return (T[]) newLookups.toArray();
+    }
+
+    public Properties getProjectProperties(boolean shared) {
+        Properties props = new Properties();
+        FileObject propsFO;
+        if (shared) {
+            propsFO = helper.getProjectDirectory().getFileObject(MakeProjectHelper.PROJECT_PROPERTIES_PATH);
+        } else {
+            propsFO = helper.getProjectDirectory().getFileObject(MakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+        }
+        if (propsFO != null && propsFO.isValid()) {
+            InputStream is = null;
+            try {
+                is = propsFO.getInputStream();
+                props.load(is);
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (IOException ex) {
+                    }
+                }
+            }
+        }
+        return props;
     }
 
     /**

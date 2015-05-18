@@ -56,7 +56,7 @@ public class AllLibraryFileFilter extends AbstractFileAndFileObjectFilter {
 
     private static AllLibraryFileFilter instance = null;
 
-    private List<AbstractFileAndFileObjectFilter> filters = new ArrayList<AbstractFileAndFileObjectFilter>();
+    private final List<AbstractFileAndFileObjectFilter> filters = new ArrayList<AbstractFileAndFileObjectFilter>();
 
     public static AllLibraryFileFilter getInstance() {
         if (instance == null) {

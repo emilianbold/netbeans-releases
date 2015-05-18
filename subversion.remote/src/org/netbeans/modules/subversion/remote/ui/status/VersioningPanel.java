@@ -473,7 +473,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             svnProgressSupport = null;
         }
 
-        SVNUrl repository;
+        final SVNUrl repository;
         try {
             repository = CommitAction.getSvnUrl(context);
         } catch (SVNClientException ex) {
@@ -506,7 +506,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             @Override
             public void perform() {
                 try {
-                    StatusAction.executeStatus(context, this, contactServer);
+                    StatusAction.executeStatus(context, repository, this, contactServer);
                 } finally {
                     setFinished(true); // stops skipping versioning events
                 }

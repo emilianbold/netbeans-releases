@@ -105,4 +105,7 @@ public interface FileSystemProviderImplementation {
     boolean isLink(FileObject fo);
     String resolveLink(FileObject fo) throws IOException;
     InputStream getInputStream(FileObject fo, int maxSize) throws IOException;
+    boolean canSetAccessCheckType(ExecutionEnvironment execEnv);
+    void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType);
+    FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv);
 }

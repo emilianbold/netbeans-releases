@@ -218,7 +218,7 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
         if(handles.length < 1) {
             if(tar != null) {
                 assert files.length > 0;
-                return new CopyClassRefactoringUI(files[0], tar, true);
+                return new CopyClassRefactoringUI(files[0], tar, !files[0].getNameExt().equals("package-info.java"));
             } else {
                 return null;
             }

@@ -109,8 +109,7 @@ public abstract class SystemInfo {
 	    
 	    Process proc = rt.exec(args);
 	    InputStream procIn = proc.getInputStream();
-	    BufferedReader br = new BufferedReader(new InputStreamReader(
-									 procIn));
+	    BufferedReader br = new BufferedReader(new InputStreamReader(procIn, "UTF-8")); // NOI18N
 	    while (true) {
 		String moreoutput = br.readLine();
 		if (moreoutput == null) {

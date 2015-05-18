@@ -410,17 +410,18 @@ public class CommitAction extends ContextAction {
         SvnModuleConfig.getDefault(ctx.getFileSystem()).setLastCanceledCommitMessage(""); //NOI18N
         org.netbeans.modules.versioning.util.Utils.insert(SvnModuleConfig.getDefault(ctx.getFileSystem()).getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
 
-        SVNUrl repository = null;
+        SVNUrl url = null;
         try {
-            repository = ContextAction.getSvnUrl(ctx);
+            url = ContextAction.getSvnUrl(ctx);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true);
         }
+        final SVNUrl repository = url;
         RequestProcessor rp = Subversion.getInstance().getRequestProcessor(repository);
         SvnProgressSupport support = new SvnProgressSupport(ctx.getFileSystem()) {
             @Override
             public void perform() {
-                performCommit(message, commitFiles, ctx, rootFiles, this, hooks);
+                performCommit(message, commitFiles, ctx, rootFiles, repository, this, hooks);
             }
         };
         support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -662,16 +663,26 @@ public class CommitAction extends ContextAction {
         });
     }
 
-    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, VCSFileProxy[] rootFiles, SvnProgressSupport support, Collection<SvnHook> hooks) {
-        SvnClient client = getClient(ctx, support);
+    private static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, VCSFileProxy[] rootFiles, SVNUrl repository, SvnProgressSupport support, Collection<SvnHook> hooks) {
+        SvnClient client;
+        if (repository == null) {
+            client = getClient(ctx, support);
+        } else {
+            client = getClient(ctx, repository, support);
+        }
         if(client == null) {
             return;
         }
         performCommit(client, message, commitFiles, rootFiles, support, false, hooks);
     }
 
-    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SvnProgressSupport support, boolean rootUpdate) {
-        SvnClient client = getClient(ctx, support);
+    public static void performCommit(String message, Map<SvnFileNode, CommitOptions> commitFiles, Context ctx, SVNUrl repository, SvnProgressSupport support, boolean rootUpdate) {
+        SvnClient client;
+        if (repository == null) {
+            client = getClient(ctx, support);
+        } else {
+            client = getClient(ctx, repository, support);
+        }
         if(client == null) {
             return;
         }
@@ -1240,6 +1251,15 @@ public class CommitAction extends ContextAction {
     private static SvnClient getClient(Context ctx, SvnProgressSupport support) {
         try {
             return Subversion.getInstance().getClient(ctx, support);
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ctx, ex, true, true); // should not hapen
+            return null;
+        }
+    }
+
+    private static SvnClient getClient(Context ctx,SVNUrl url, SvnProgressSupport support) {
+        try {
+            return Subversion.getInstance().getClient(ctx, url, support);
         } catch (SVNClientException ex) {
             SvnClientExceptionHandler.notifyException(ctx, ex, true, true); // should not hapen
             return null;

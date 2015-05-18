@@ -207,19 +207,58 @@ public final class InstallSupport {
      * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
      */
     public boolean isTrusted(Installer validator, UpdateElement uElement) {
-        return impl.isTrusted (validator, uElement);
+        return impl.isTrusted(validator, uElement);
     }
 
     /** Returns if the <code>UpdateElement</code> is signed or not.
      * 
      * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
      * @param uElement <code>UpdateElement</code> 
-     * @return true for trusted <code>UpdateElement</code>
+     * @return true for signed <code>UpdateElement</code>
      * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
      * @see #doValidate
      */
     public boolean isSigned(Installer validator, UpdateElement uElement) {
-        return impl.isSigned (validator, uElement);
+        return impl.isSignedVerified(validator, uElement) || impl.isSignedUnverified(validator, uElement);
+    }
+    
+    /** Returns if the <code>UpdateElement</code> is signed and verified or not.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return true for signed and verified <code>UpdateElement</code>
+     * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
+     * @see #doValidate
+     * @since 1.50
+     */
+    public boolean isSignedVerified(Installer validator, UpdateElement uElement) {
+        return impl.isSignedVerified(validator, uElement);
+    }
+    
+    /** Returns if the <code>UpdateElement</code> is signed but not verified or not.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return true for signed but not verified <code>UpdateElement</code>
+     * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
+     * @see #doValidate
+     * @since 1.50
+     */
+    public boolean isSignedUnverified(Installer validator, UpdateElement uElement) {
+        return impl.isSignedUnverified(validator, uElement);
+    }
+    
+    /** Returns if the <code>UpdateElement</code> is modified or not.
+     * 
+     * @param validator  <code>Installer</code> an instance of Installer has been returned by {link @doValidate}
+     * @param uElement <code>UpdateElement</code> 
+     * @return true for modified <code>UpdateElement</code>
+     * @see <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/security/cert/Certificate.html">java.security.cert.Certificate</a>
+     * @see #doValidate
+     * @since 1.50
+     */
+    public boolean isContentModified(Installer validator, UpdateElement uElement) {
+        return impl.isContentModified(validator, uElement);
     }
 
     /** Returns the corresponing <code>OperationContainer</code>.

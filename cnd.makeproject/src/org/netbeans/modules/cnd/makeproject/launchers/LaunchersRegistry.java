@@ -192,7 +192,7 @@ public final class LaunchersRegistry {
                         .lookup(LaunchersProjectMetadataFactory.class);
                 factoryInstance.read(dir);
                 
-                CndUtils.assertNotNull(null, "Private launchers listener is null for " + dir);//NOI18N
+                CndUtils.assertUnconditional("Private launchers listener is null for " + dir);//NOI18N
             }
         }
         

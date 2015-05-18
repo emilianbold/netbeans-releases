@@ -82,6 +82,7 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.hints.errors.Utilities;
+import org.netbeans.modules.java.hints.introduce.TreeUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -104,7 +105,8 @@ import org.openide.util.NbBundle.Messages;
 })
 public class IteratorToFor {
 
-    @TriggerPattern("java.util.Iterator $it = $coll.iterator(); while ($it.hasNext()) {$type $elem = ($type) $it.next(); $rest$;}")
+    @TriggerPattern(value = "java.util.Iterator $it = $coll.iterator(); while ($it.hasNext()) {$type $elem = ($type) $it.next(); $rest$;}", 
+            constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable"))
     public static ErrorDescription whileIdiom(HintContext ctx) {
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
             return null;
@@ -115,18 +117,22 @@ public class IteratorToFor {
         if (!iterable(ctx, ctx.getVariables().get("$coll"), ctx.getVariables().get("$type"))) {
             return null;
         }
+        String colString = ctx.getVariables().containsKey("$coll") ? "$coll" : "this";
         Tree highlightTarget = ctx.getPath().getLeaf();
         TreePath elem = ctx.getVariables().get("$elem");
         if (elem.getParentPath() != null && elem.getParentPath().getLeaf().getKind() == Kind.BLOCK) elem = elem.getParentPath();
         if (elem.getParentPath() != null && elem.getParentPath().getLeaf().getKind() == Kind.WHILE_LOOP) highlightTarget = elem.getParentPath().getLeaf();
         return ErrorDescriptionFactory.forName(ctx, highlightTarget, Bundle.ERR_IteratorToFor(),
-                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : $coll) {$rest$;}"));
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : " + colString + ") {$rest$;}"));
     }
 
     @TriggerPatterns({
-        @TriggerPattern("for (java.util.Iterator $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = ($type) $it.next(); $rest$;}"),
-        @TriggerPattern("for (java.util.Iterator<$typaram> $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = ($type) $it.next(); $rest$;}"),
-        @TriggerPattern("for (java.util.Iterator<$typaram> $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = $it.next(); $rest$;}")
+        @TriggerPattern(value = "for (java.util.Iterator $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = ($type) $it.next(); $rest$;}",
+                constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable")),
+        @TriggerPattern(value = "for (java.util.Iterator<$typaram> $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = ($type) $it.next(); $rest$;}",
+                constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable")),
+        @TriggerPattern(value = "for (java.util.Iterator<$typaram> $it = $coll.iterator(); $it.hasNext(); ) {$type $elem = $it.next(); $rest$;}",
+                constraints = @ConstraintVariableType(variable = "$coll", type = "java.lang.Iterable"))
     })
     public static ErrorDescription forIdiom(HintContext ctx) {
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
@@ -138,8 +144,9 @@ public class IteratorToFor {
         if (!iterable(ctx, ctx.getVariables().get("$coll"), ctx.getVariables().get("$type"))) {
             return null;
         }
+        String colString = ctx.getVariables().containsKey("$coll") ? "$coll" : "this";
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToFor(),
-                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : $coll) {$rest$;}"));
+                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : " + colString + ") {$rest$;}"));
     }
     
     private static class AccessAndVarVisitor extends CancellableTreePathScanner<Void, Void> {
@@ -149,7 +156,7 @@ public class IteratorToFor {
         private boolean insideClass;
         protected boolean unsuitable;
         protected final List<TreePath> toReplace = new ArrayList<>();
-
+        
         public AccessAndVarVisitor(HintContext ctx) {
             this.ctx = ctx;
         }
@@ -209,25 +216,40 @@ public class IteratorToFor {
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_5) < 0) {
             return null;
         }
+        final boolean implicitThis = !ctx.getVariableNames().containsKey("$col"); // NOI18N
         AccessAndVarVisitor v = new AccessAndVarVisitor(ctx) {
             @Override public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
                 ExpressionTree select = node.getMethodSelect();
-                if (select.getKind() == Tree.Kind.MEMBER_SELECT) {
-                    MemberSelectTree msel = (MemberSelectTree)select;
-                    if (MatcherUtilities.matches(ctx, new TreePath(new TreePath(getCurrentPath(), select), msel.getExpression()), "$col")) { // NOI18N
-                        String name = msel.getIdentifier().toString();
-                        if ("get".equals(name)) {
-                            if (MatcherUtilities.matches(ctx, getCurrentPath(), "$col.get($index)")) { // NOI18N
-                                toReplace.add(getCurrentPath());
-                                // skip the super visitor
-                                return null;
-                            } else {
-                                unsuitable();
-                            }
+                String methodName = null;
+                if (implicitThis) {
+                    if (select.getKind() == Tree.Kind.IDENTIFIER) {
+                        methodName = ((IdentifierTree)select).getName().toString();
+                    } else if (select.getKind() == Tree.Kind.MEMBER_SELECT) {
+                        MemberSelectTree msel = (MemberSelectTree)select;
+                        if (msel.getExpression().getKind() == Tree.Kind.IDENTIFIER && 
+                            ((IdentifierTree)msel.getExpression()).getName().contentEquals("this")) { // NOI18N
+                            // this.get is used
+                            methodName = msel.getIdentifier().toString();
                         }
-                        if (!SAFE_COLLECTION_METHODS.contains(name)) {
+                    }
+                } else if (select.getKind() == Tree.Kind.MEMBER_SELECT) {
+                    MemberSelectTree msel = (MemberSelectTree)select;
+                    if (MatcherUtilities.matches(ctx, new TreePath(new TreePath(getCurrentPath(), select), msel.getExpression()), "$col", true)) { // NOI18N
+                        methodName = msel.getIdentifier().toString();
+                    }
+                }
+                if (methodName != null) {
+                    if ("get".equals(methodName)) {
+                        if (MatcherUtilities.matches(ctx, getCurrentPath(), "$col.get($index)", true)) { // NOI18N
+                            toReplace.add(getCurrentPath());
+                            // skip the super visitor
+                            return null;
+                        } else {
                             unsuitable();
                         }
+                    }
+                    if (!SAFE_COLLECTION_METHODS.contains(methodName)) {
+                        unsuitable();
                     }
                 }
                 return super.visitMethodInvocation(node, p);
@@ -311,7 +333,20 @@ public class IteratorToFor {
     }
 
     private static boolean iterable(HintContext ctx, TreePath collection, TreePath type) {
-        TypeMirror collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
+        TypeMirror collectionType = null;
+        
+        if (collection != null) {
+            collectionType = ctx.getInfo().getTrees().getTypeMirror(collection);
+        } else {
+            // the collection may be the implicit 'this'
+            TreePath enclClass = TreeUtils.findClass(type);
+            if (enclClass != null) {
+                collectionType = ctx.getInfo().getTrees().getTypeMirror(enclClass);
+            }
+        }
+        if (collectionType == null) {
+            return false;
+        }
         TypeElement iterable = ctx.getInfo().getElements().getTypeElement("java.lang.Iterable");
         if (!Utilities.isValidType(collectionType) || iterable == null) return false;
         TypeMirror typeMirror = ctx.getInfo().getTrees().getTypeMirror(type);
@@ -331,7 +366,7 @@ public class IteratorToFor {
         
         public ReplaceIndexedForEachLoop(CompilationInfo info, TreePath tp, TreePath arr, List<TreePath> toReplace, Set<String> definedVariables) {
             super(info, tp);
-            this.arrHandle = TreePathHandle.create(arr, info);
+            this.arrHandle = arr == null ? null : TreePathHandle.create(arr, info);
             this.toReplace = new ArrayList<>();
             
             for (TreePath tr : toReplace) {
@@ -371,23 +406,43 @@ public class IteratorToFor {
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
             Tree loop = GeneratorUtilities.get(ctx.getWorkingCopy()).importComments(ctx.getPath().getLeaf(), ctx.getPath().getCompilationUnit());
-            TreePath arr = arrHandle.resolve(ctx.getWorkingCopy());
+            TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
+            TypeMirror arrType = null;
+            TypeMirror variableType = null;
+            String treeName;
+            Tree colArrTree = null;
             
-            if (arr == null) {
-                //TODO: why? what can be done?
-                return;
+            if (arrHandle != null) {
+                TreePath arr = arrHandle.resolve(ctx.getWorkingCopy());
+                if (arr == null) {
+                    return;
+                }
+                colArrTree = arr.getLeaf();
+                treeName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(arr);
+                arrType = ctx.getWorkingCopy().getTrees().getTypeMirror(arr);
+                if (!Utilities.isValidType(arrType)) {
+                    // FIXME - report
+                    return;
+                }
+                if (arrType.getKind() == TypeKind.ARRAY) {
+                    variableType = ((ArrayType) arrType).getComponentType();
+                }
+            } else {
+                // this branch should be only valid for 'collection' case and only if the 
+                // collection is "this".
+                // take the nearest class enclosing the ctx.getPath();
+                TreePath enclClass = TreeUtils.findClass(ctx.getPath());
+                if (enclClass == null) {
+                    // FIXME - report
+                    return;
+                }
+                // type of the enclosing class == this
+                arrType = ctx.getWorkingCopy().getTrees().getTypeMirror(enclClass);
+                treeName = "my"; // FIXME - I18N
+                colArrTree = make.Identifier("this"); // NOI18N
             }
             
-            TypeMirror arrType = ctx.getWorkingCopy().getTrees().getTypeMirror(arr);
-            if (!Utilities.isValidType(arrType)) {
-                // FIXME - report
-                return;
-            }
-            TypeMirror variableType;
-            
-            if (arrType.getKind() == TypeKind.ARRAY) {
-                variableType = ((ArrayType) arrType).getComponentType();
-            } else if (arrType.getKind() != TypeKind.ARRAY) {
+            if (arrType.getKind() != TypeKind.ARRAY) {
                 //TODO: can happen?
                 TypeElement listEl = ctx.getWorkingCopy().getElements().getTypeElement("java.util.Collection"); // NOI18N
                 if (listEl == null) {
@@ -404,10 +459,10 @@ public class IteratorToFor {
                 assert addEl != null;
                 TypeMirror addType = ctx.getWorkingCopy().getTypes().asMemberOf(((DeclaredType)arrType), addEl);
                 variableType = ((ExecutableType)addType).getParameterTypes().get(0);
-            } else {
+            } else if (variableType == null) {
+                // should never happen
                 return;
             }
-
              
             StatementTree statement = ((ForLoopTree) ctx.getPath().getLeaf()).getStatement();
             List<TreePath> convertedToReplace = new ArrayList<>();
@@ -418,19 +473,17 @@ public class IteratorToFor {
                 convertedToReplace.add(tp);
             }
 
-            TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             String variableName = assignedToVariable(ctx, variableType, new TreePath(ctx.getPath(), statement), convertedToReplace);
             EnhancedForLoopTree newLoop;
 
             if (variableName != null) {
                 BlockTree block = (BlockTree) statement;
-                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) arr.getLeaf(), make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) colArrTree, make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
             } else {
-                String treeName = org.netbeans.modules.editor.java.Utilities.varNameSuggestion(arr);
                 variableName = treeName;
 
-                if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);
-                if (variableName == null || variableName.isEmpty()) variableName = "item";
+                if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);  // FIXME - I18N
+                if (variableName == null || variableName.isEmpty()) variableName = "item";  // FIXME - I18N
 
                 CodeStyle cs = CodeStyle.getDefault(ctx.getWorkingCopy().getFileObject());
 
@@ -438,14 +491,15 @@ public class IteratorToFor {
                     if(Character.isAlphabetic(variableName.charAt(0))) {
                         StringBuilder nameSb = new StringBuilder(variableName);
                         nameSb.setCharAt(0, Character.toUpperCase(nameSb.charAt(0)));
-                        nameSb.indexOf("a");
+                        nameSb.indexOf("a"); 
                         variableName = nameSb.toString();
                     }
                 }
 
                 variableName = Utilities.makeNameUnique(ctx.getWorkingCopy(), ctx.getWorkingCopy().getTrees().getScope(ctx.getPath()), variableName, definedVariables, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix());
 
-                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) arr.getLeaf(), statement);
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), 
+                        (ExpressionTree) colArrTree, statement);
             }
             
             ctx.getWorkingCopy().rewrite(loop, newLoop);

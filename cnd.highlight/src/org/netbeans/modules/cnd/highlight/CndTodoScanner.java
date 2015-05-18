@@ -71,7 +71,7 @@ public class CndTodoScanner extends PushTaskScanner {
     private final RequestProcessor RP = new RequestProcessor("CND todo scanner", 1); //NOI18N
     private final RequestProcessor.Task scanTask;
     private final FileTaskScanner todoScanner;
-    private final AtomicReference<ScanJob> jobRef = new AtomicReference<ScanJob>();
+    private final AtomicReference<ScanJob> jobRef = new AtomicReference<>();
         
     public CndTodoScanner() {
         super(
@@ -128,7 +128,7 @@ public class CndTodoScanner extends PushTaskScanner {
             return;
         }
         
-        Set<FileObject> files = new WeakSet<FileObject>();
+        Set<FileObject> files = new WeakSet<>();
         for (FileObject file : scope.getLookup().lookupAll(FileObject.class)) {
             Project prj = FileOwnerQuery.getOwner(file);
             if (prj != null && prj.getLookup().lookup(NativeProject.class) != null) {

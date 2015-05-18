@@ -160,6 +160,11 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
     }
 
     @Override
+    protected String getTitle(JComponent component, boolean isSelected, boolean hasFocus, int rowWidth) {
+        return DashboardUtils.getTaskDisplayText(task, component, rowWidth - 18, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus);
+    }
+    
+    @Override
     protected List<TreeListNode> createChildren() {
 //        if(!task.hasSubtasks()){
 //            return Collections.emptyList();

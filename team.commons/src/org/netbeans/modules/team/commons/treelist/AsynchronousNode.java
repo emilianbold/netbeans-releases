@@ -127,11 +127,19 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
                     lblError.setForeground(ColorManager.getDefault().getErrorColor());
                 }
                 lblTitle.setForeground(foreground);
+                String renderedTitle = getTitle(lblTitle, isSelected, hasFocus, rowWidth);
+                if(renderedTitle != null) {
+                    lblTitle.setText(renderedTitle);
+                }
             }
         }
         return panel;
     }
 
+    protected String getTitle(JComponent component, boolean isSelected, boolean hasFocus, int rowWidth) {
+        return null;
+    }
+        
     /**
      * Configure renderer component's colors.
      *

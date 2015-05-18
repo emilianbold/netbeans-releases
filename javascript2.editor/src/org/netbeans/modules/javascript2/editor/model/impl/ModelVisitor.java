@@ -75,7 +75,6 @@ import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Documentation;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
@@ -193,6 +192,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (fqName != null && "this".equals(fqName.get(0).getName())) { //NOI18N
                     // a usage of field
                     fieldName = aNode.getProperty().getName();
+                    if (binaryNode.rhs() instanceof IdentNode) {
+                        // resolve occurrence of the indent node sooner, then is created the field. 
+                        addOccurrence((IdentNode)binaryNode.rhs(), fieldName);
+                    }
                     property = (JsObjectImpl)createJsObject(aNode, parserResult, modelBuilder);
 //                    parent = (JsObjectImpl)property.getParent();
 //                    if(property == null) {
@@ -298,12 +301,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-            if (binaryNode.rhs() instanceof IdentNode) {
-                if (fieldName == null) {
-                    addOccurence((IdentNode)binaryNode.rhs(), false);
-                } else {
-                    addOccurrence((IdentNode)binaryNode.rhs(), fieldName);
-                }
+            if (fieldName == null && binaryNode.rhs() instanceof IdentNode) {
+                addOccurence((IdentNode)binaryNode.rhs(), false);
             }
         } else if(binaryNode.tokenType() != TokenType.ASSIGN
                 || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
@@ -575,6 +574,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             if (pathSize > 3) {
                 Node node = getPath().get(pathSize - 3);
+                boolean singletoneConstruction = false;
                 if (node instanceof PropertyNode) {
                     name = getName((PropertyNode)node);
                 } else if (node instanceof BinaryNode) {
@@ -607,6 +607,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     // private method
                     // It can be only if it's in a function
                     isPrivate = functionStack.size() > 1;
+                } else if (!functionNode.isAnonymous() && node instanceof CallNode) {
+                    // try to handle case like: var MyLib = new function MyLib () {}
+                    if (pathSize > 5) {
+                        Node node4 = getPreviousFromPath(4);
+                        Node node5 = getPreviousFromPath(5);
+                        if (node4 instanceof UnaryNode && node5 instanceof VarNode) {
+                            name = getName((VarNode)node5, parserResult);
+                            isPrivate = functionStack.size() > 1;
+                            singletoneConstruction = true;
+                        }
+                    }
+                    
                 }
                 if (name != null && !name.isEmpty() && !functionNode.isAnonymous()) {
                     // we need to create just referenci to non anonymous function
@@ -627,10 +639,16 @@ public class ModelVisitor extends PathNodeVisitor {
                             removeFromPathTheLast();
                             return null;
                         }
-                        JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
-                        jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
-                        removeFromPathTheLast();
-                        return null; 
+                        if (singletoneConstruction) {
+                            jsObject.addAssignment(new TypeUsageImpl(originalFunction.getFullyQualifiedName(), -1, true), -1);
+                            removeFromPathTheLast();
+                            return null; 
+                        } else {
+                            JsFunctionReference jsFunctionReference = new JsFunctionReference(jsObject.getParent(), jsObject.getDeclarationName(), (JsFunction)originalFunction, true, jsObject.getModifiers());
+                            jsObject.getParent().addProperty(jsObject.getName(), jsFunctionReference);
+                            removeFromPathTheLast();
+                            return null; 
+                        }
                 }
             }
         }
@@ -851,6 +869,16 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             
             List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);
+            for (FunctionNode fn : copy) {
+                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    if (modelBuilder.getCurrentDeclarationFunction().getProperty(fn.getIdent().getName()) == null
+                            && !(fn.getIdent().getName().startsWith("get ") || fn.getIdent().getName().startsWith("set "))) {
+                        IdentifierImpl fakeObjectName = ModelElementFactory.create(parserResult, fn.getIdent());
+                        JsObjectImpl newObject = new JsObjectImpl(fncScope, fakeObjectName, fakeObjectName.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                        fncScope.addProperty(newObject.getName(), newObject);
+                    }
+                }
+            }
             for (FunctionNode fn : copy) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
                     // go through all functions defined via reference
@@ -1295,7 +1323,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         FunctionNode setter = ((FunctionNode)((ReferenceNode)propertyNode.getSetter()).getReference());
                         property.addOccurrence(new OffsetRange(setter.getIdent().getStart(), setter.getIdent().getFinish()));
                     }
-                    scope.addProperty(name.getName(), property);
+                    property.getParent().addProperty(name.getName(), property);
                     property.setDeclared(true);
                     Node value = propertyNode.getValue();
                     if(value instanceof CallNode) {
@@ -1560,13 +1588,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (!fnode.isAnonymous()) {
                     // we expect case like: var prom = function name () {}
                     JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
-                    JsObject origFunction = function.getProperty(fnode.getName());
+                    JsObject origFunction = function.getProperty(fnode.getIdent().getName());
                     Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
                     if (name != null && origFunction != null && origFunction instanceof JsFunction) {
                         JsObjectImpl oldVariable = (JsObjectImpl)function.getProperty(name.getName());
                         JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
                                 oldVariable != null ? oldVariable.getModifiers() : null );
                         function.addProperty(variable.getName(), variable);
+                        for(Occurrence occurrence : oldVariable.getOccurrences()) {
+                           variable.addOccurrence(occurrence.getOffsetRange());
+                        }
                     }
                 }
             }
@@ -1852,6 +1883,21 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
+            if (object != null && fqn.size() == 2) {
+                // try to handle case
+                // function MyF() {
+                //      this.f1 = f1;
+                //      function f1() {};
+                // }
+                // in such case the name after this has to be equal to the declared function. 
+                // -> in the model, just change  the f1 from private to privilaged. 
+                String lastName = fqn.get(1).getName();
+                JsObjectImpl property = (JsObjectImpl)object.getProperty(lastName);
+                if (property != null && lastName.equals(property.getName()) && property.getModifiers().contains(Modifier.PRIVATE)) {
+                    property.getModifiers().remove(Modifier.PRIVATE);
+                    property.getModifiers().add(Modifier.PROTECTED);
+                }
+            }
         }
         
         if (object != null) {
@@ -2087,12 +2133,18 @@ public class ModelVisitor extends PathNodeVisitor {
                 parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
             } else {
                 boolean found = false;
-                Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
-                for (JsObject jsObject : variables) {
-                    if (valueName.equals(jsObject.getName())) {
-                        jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                        found = true;
-                        break;
+                JsObject jsProperty = ((JsObject)scope).getProperty(valueName);
+                if (jsProperty != null && jsProperty.isDeclared()) {
+                    found = true;
+                    jsProperty.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                } else {
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
+                    for (JsObject jsObject : variables) {
+                        if (valueName.equals(jsObject.getName())) {
+                            jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                            found = true;
+                            break;
+                        }
                     }
                 }
                 if (!found) {
@@ -2228,7 +2280,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     return parent;
                 }
             } else {
-                return parent;
+                if (parent.isDeclared() || modelBuilder.getCurrentWith() != null) {
+                    return parent;
+                } else {
+                    return where;
+                }
             }
         }
         if (isInPropertyNode()) {

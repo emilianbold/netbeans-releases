@@ -121,7 +121,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         if (objs == null || objs.isEmpty()) {
             return Collections.emptySet();
         }
-        Collection<CsmFile> files = new HashSet<CsmFile>();
+        Collection<CsmFile> files = new HashSet<>();
         CsmFile startFile = getStartCsmFile();
         for (CsmObject obj : objs) {
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(obj, null);
@@ -240,12 +240,12 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
     private void initReferencedObjects(CsmObject directReferencedObject) {
         CsmObject primaryObject = CsmRefactoringUtils.getReferencedElement(directReferencedObject);
         if (primaryObject != null) {
-            Collection<CsmObject> allObjects = new HashSet<CsmObject>();
+            Collection<CsmObject> allObjects = new HashSet<>();
             allObjects.add(primaryObject);
             for (CsmChangeParametersExtraObjectsProvider provider : Lookup.getDefault().lookupAll(CsmChangeParametersExtraObjectsProvider.class)) {
                 allObjects.addAll(provider.getExtraObjects(primaryObject));
             }
-            this.referencedObjects = new LinkedHashSet<CsmObject>();
+            this.referencedObjects = new LinkedHashSet<>();
             for (CsmObject referencedObject : allObjects) {
                 if (CsmKindUtilities.isMethod(referencedObject) && !CsmKindUtilities.isConstructor(referencedObject)) {
                     CsmMethod method = (CsmMethod) CsmBaseUtilities.getFunctionDeclaration((CsmFunction) referencedObject);
@@ -266,14 +266,14 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         Collection<? extends CsmObject> refObjects = getRefactoredObjects();
         assert refObjects != null && refObjects.size() > 0 : "method must be called for resolved element";
         FileObject fo = CsmUtilities.getFileObject(csmFile);
-        Collection<CsmReference> refs = new LinkedHashSet<CsmReference>();
+        Collection<CsmReference> refs = new LinkedHashSet<>();
         for (CsmObject obj : refObjects) {
             // do not interrupt refactoring
             Collection<CsmReference> curRefs = CsmReferenceRepository.getDefault().getReferences(obj, csmFile, CsmReferenceKind.ALL, Interrupter.DUMMY);
             refs.addAll(curRefs);
         }
         if (refs.size() > 0) {
-            List<CsmReference> sortedRefs = new ArrayList<CsmReference>(refs);
+            List<CsmReference> sortedRefs = new ArrayList<>(refs);
             Collections.sort(sortedRefs, new Comparator<CsmReference>() {
 
                 @Override
@@ -435,7 +435,7 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
         private int startOffset = -1;
         private int endOffset = -1;
         private CharSequence origParamsText = "";
-        private List<CharSequence> paramText = new ArrayList<CharSequence>();
+        private List<CharSequence> paramText = new ArrayList<>();
 
         public CharSequence getOriginalParamsText() {
             return origParamsText;

@@ -72,7 +72,6 @@ import org.netbeans.modules.javascript2.requirejs.editor.FSCompletionUtils;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndex;
 import org.netbeans.modules.javascript2.requirejs.editor.index.RequireJsIndexer;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -92,7 +91,8 @@ public class DefineInterceptor implements FunctionInterceptor {
     }
 
     @Override
-    public Collection<TypeUsage> intercept(String name, JsObject globalObject, DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
+    public Collection<TypeUsage> intercept(Snapshot snapshot, String name, JsObject globalObject,
+            DeclarationScope scope, ModelElementFactory factory, Collection<FunctionArgument> args) {
         FunctionArgument fArg = null;
         FunctionArgument modules = null;
 
@@ -134,11 +134,9 @@ public class DefineInterceptor implements FunctionInterceptor {
 
                 if (posibleFunc != null && posibleFunc instanceof JsFunction) {
                     JsFunction defFunc = (JsFunction) posibleFunc;
-                    Source source = Source.create(fo);
-                    Snapshot snapshot = source.createSnapshot();
-                    List<String> paths = new ArrayList<String>();
+                    List<String> paths = new ArrayList<>();
                     if (modules != null && snapshot != null) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), modules.getOffset());
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(snapshot.getTokenHierarchy(), snapshot.getOriginalOffset(modules.getOffset()));
                         if (ts == null) {
                             return Collections.emptyList();
                         } 
@@ -215,18 +213,14 @@ public class DefineInterceptor implements FunctionInterceptor {
                 }
             }
         } else if (modules != null && modules.getValue() instanceof String) {
-            Source source = Source.create(fo);
             Project project = FileOwnerQuery.getOwner(fo);
             if (project == null || !RequireJsPreferences.getBoolean(project, RequireJsPreferences.ENABLED)) {
                 return Collections.emptyList();
             }
-            TokenHierarchy<?> th = null;
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
             TokenSequence<? extends JsTokenId> ts = null;
-            if (source != null) {
-                th = source.createSnapshot().getTokenHierarchy();
-                if (th != null) {
-                    ts = LexUtilities.getJsTokenSequence(th, modules.getOffset());
-                }
+            if (th != null) {
+                ts = LexUtilities.getJsTokenSequence(th, modules.getOffset());
             }
             if (ts == null) {
                 return Collections.emptyList();
@@ -236,18 +230,20 @@ public class DefineInterceptor implements FunctionInterceptor {
                 Token<? extends JsTokenId> token = ts.token();
                 token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT,
                         JsTokenId.STRING_BEGIN, JsTokenId.BRACKET_LEFT_PAREN));
-                if (token.id() == JsTokenId.IDENTIFIER && EditorUtils.REQUIRE.equals(token.text().toString()) && ts.movePrevious()) {
+                if (token.id() == JsTokenId.IDENTIFIER
+                        && (EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))
+                        && ts.movePrevious()) {
+                    RequireJsIndex rIndex = null;
+                    try {
+                        rIndex = RequireJsIndex.get(project);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     if (token.id() == JsTokenId.OPERATOR_ASSIGNMENT && ts.movePrevious()) {
                         token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                         if (token.id() == JsTokenId.IDENTIFIER) {
-                            // now we have the name of the object, that contains the expoert from module
-                            RequireJsIndex rIndex = null;
-                            try {
-                                rIndex = RequireJsIndex.get(project);
-                            } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
+                            // now we have the name of the object, that contains the export from module
                             if (rIndex != null) {
                                 FileObject fileObject = FSCompletionUtils.findMappedFileObject(modules.getValue().toString(), fo);
                                 if (fileObject != null) {
@@ -270,6 +266,38 @@ public class DefineInterceptor implements FunctionInterceptor {
                                         }
                                         for (TypeUsage typeUsage : exposedTypes) {
                                             object.addAssignment(typeUsage, nearOccurrenceEnd > -1 ? nearOccurrenceEnd : modules.getOffset());                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // there is no assignment, we should add return type for require/requirejs function to enable CC
+                        // even for case: require('app/myModule').| 
+                        ts.moveNext();
+                        token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        String requireFunctionName = null;
+                        if (token.id() == JsTokenId.IDENTIFIER
+                                && (EditorUtils.REQUIRE.equals(token.text().toString()) || EditorUtils.REQUIREJS.equals(token.text().toString()))) {
+                            // find out whether require or requirejs has been used
+                            requireFunctionName = token.text().toString();
+                        }
+                        if (rIndex != null && requireFunctionName != null) {
+                            FileObject fileObject = FSCompletionUtils.findMappedFileObject(modules.getValue().toString(), fo);
+                            if (fileObject != null) {
+                                Collection<? extends TypeUsage> exposedTypes = rIndex.getExposedTypes(fileObject.getName(), factory);
+                                JsObject requireObj = globalObject.getProperty(requireFunctionName);
+                                if (requireObj != null) {
+                                    if (!(requireObj instanceof JsFunction)) {
+                                        JsObject parent = requireObj.getParent();
+                                        requireObj = factory.newFunction(scope, requireObj.getParent(), requireObj.getName(), new ArrayList<String>());
+                                        parent.addProperty(requireObj.getName(), requireObj);
+                                    }
+                                    if (requireObj instanceof JsFunction) {
+                                        JsFunction requireFun = (JsFunction) globalObject.getProperty(requireFunctionName);
+                                        // now add all typeUsages found in index as return types
+                                        for (TypeUsage typeUsage : exposedTypes) {
+                                            requireFun.addReturnType(typeUsage);
+                                        }
                                     }
                                 }
                             }

@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -197,7 +198,7 @@ public class FetchAction extends SingleRepositoryAction {
                     for (ListIterator<String> it = fetchRefSpecsList.listIterator(); it.hasNext(); ) {
                         String refSpec = it.next();
                         String remoteHead = GitUtils.parseRemoteHeadFromFetch(refSpec);
-                        if (refSpec != null && ex.getMessage().toLowerCase().matches(
+                        if (refSpec != null && ex.getMessage().toLowerCase(Locale.ENGLISH).matches(
                                 MessageFormat.format(".*remote does not have {0} available for fetch.*", remoteHead))) { //NOI18N
                             it.remove();
                             found = true;

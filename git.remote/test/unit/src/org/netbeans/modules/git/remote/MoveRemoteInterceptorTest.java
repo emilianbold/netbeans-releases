@@ -104,7 +104,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
 
     @Override
     protected boolean isFailed() {
-        return Arrays.asList().contains(testName);
+        return Arrays.asList("testMoveFileToIgnoredFolder_DO","testMoveFileToIgnoredFolder_FO").contains(testName);
     }
 
     @Override
@@ -448,7 +448,7 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -476,11 +476,11 @@ public class MoveRemoteInterceptorTest extends AbstractRemoteGitTestCase {
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile)));
         moveDO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 if(false);
-else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fromFile, toFile)));
 
         // test
         assertFalse(fromFile.exists());
@@ -505,7 +505,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folder, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -537,7 +537,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileC);
         moveDO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -571,7 +571,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileC);
         moveFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -604,7 +604,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveDO(fileA, fileB);
         moveDO(fileB, fileC);
         moveDO(fileC, fileA);
@@ -619,13 +619,13 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileB).getStatus());
         assertEquals(EnumSet.of(Status.UPTODATE), getCache().getStatus(fileC).getStatus());
 
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileB, fileC)));
         moveDO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileC)));
         moveDO(fileC, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -654,14 +654,14 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fromF
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveDO(fileA, fileB);
 
         // create from file
         fileA.getParentFile().toFileObject().createData(fileA.getName());
         assertTrue(refreshHandler.waitForFilesToRefresh());
 if(false);
-else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+else    getCache().refreshAllRoots(new HashSet<>(Arrays.asList(fileA)));
 
         // test
         assertTrue(fileB.exists());
@@ -690,7 +690,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, file.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -733,7 +733,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveDO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -789,7 +789,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -817,7 +817,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -844,7 +844,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -872,7 +872,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         add(fromFile);
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -901,7 +901,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         add(fromFile);
 
         // rename
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFile, toFile)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFile, toFile)));
         moveFO(fromFile, toFile);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -931,7 +931,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         assertFalse(fileB.exists());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileA);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -962,7 +962,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
         assertTrue(refreshHandler.waitForFilesToRefresh());
@@ -998,7 +998,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy fileC = VCSFileProxy.createFileProxy(folderC, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB, fileC)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB, fileC)));
         moveFO(fileA, fileB);
         moveFO(fileB, fileC);
         moveFO(fileC, fileA);
@@ -1029,12 +1029,12 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy fileB = VCSFileProxy.createFileProxy(folderB, fileA.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         moveFO(fileA, fileB);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
         // create from file
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA)));
         fileA.getParentFile().toFileObject().createData(fileA.getName());
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -1068,7 +1068,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFile = VCSFileProxy.createFileProxy(toFolder, fromFile.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 
@@ -1111,7 +1111,7 @@ else    getCache().refreshAllRoots(new HashSet<VCSFileProxy>(Arrays.asList(fileA
         VCSFileProxy toFolder = VCSFileProxy.createFileProxy(toFolderParent, fromFolder.getName());
 
         // move
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fromFolder, toFolder)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fromFolder, toFolder)));
         moveFO(fromFolder, toFolder);
         assertTrue(refreshHandler.waitForFilesToRefresh());
 

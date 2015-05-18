@@ -76,6 +76,13 @@ public abstract class ProfileCategory {
 
     @Override
     public abstract boolean equals(Object o);
+
+    @Override
+    public int hashCode() {
+        assert false : "hashCode not designed"; // NOI18N
+        return 5;
+    }
+
     @Override
     public abstract Object clone();
     public abstract void assign(Object that);

@@ -358,7 +358,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
      * <p>
      * The problem of this method lays exactly in the definition of <em>sporadic</em>.
      * Often one needs to process something at some <em>sporadic</em> moment,
-     * but, for examle
+     * but, for example
      * due to <em>storm of events</em>, one needs to execute more than one tasks
      * at the same <em>sporadic</em> moment. In this situation
      * using {@link #getDefault()} is horribly inefficient. All such tasks
@@ -570,7 +570,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     /** Creates request that can be later started by setting its delay.
-     * The request is not immediatelly put into the queue. It is planned after
+     * The request is not immediately put into the queue. It is planned after
      * setting its delay by setDelay method.
      * @param run action to run in the process
      * @return the task to control execution of given action
@@ -594,7 +594,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     //------------------------------------------------------------------------------
 
     /** Place the Task to the queue of pending tasks for immediate processing.
-     * If there is no other Task planned, this task is immediatelly processed
+     * If there is no other Task planned, this task is immediately processed
      * in the Processor.
      */
     void enqueue(Item item) {
@@ -610,6 +610,24 @@ public final class RequestProcessor implements ScheduledExecutorService {
                 if (processors.size() < throughput) {
                     Processor proc = Processor.get();
                     processors.add(proc);
+                    if (proc.getContextClassLoader() != item.ctxLoader) {
+                        if (loggable) {
+                            // item classloader may be null, if the item was posted from the Finalizer thread
+                            ClassLoader itemLoader = item.ctxLoader;
+                            ClassLoader procLoader = proc.getContextClassLoader();
+                            em.log(Level.FINE, "Setting ctxLoader for old:{0} loader:{1}#{2} new:{3} loader:{4}#{5}",
+                                new Object[] {
+                                 proc.getName(),
+                                 procLoader == null ? "<none>" : procLoader.getClass().getName(),
+                                 procLoader == null ? "-" : Integer.toHexString(System.identityHashCode(proc.getContextClassLoader())),
+                                 name,
+                                 itemLoader == null ? "<none>" : item.ctxLoader.getClass().getName(),
+                                 itemLoader == null ? "-" : Integer.toHexString(System.identityHashCode(item.ctxLoader))
+                                }
+                            );
+                        }
+                        proc.setContextClassLoader(item.ctxLoader);
+                    }
                     proc.setName(name);
                     proc.attachTo(this);
                 }
@@ -1731,6 +1749,7 @@ outer:  do {
         private final RequestProcessor owner;
         private final int cnt;
         final Lookup current;
+        final ClassLoader ctxLoader;
         Object action;
         boolean enqueued;
         String message;
@@ -1742,6 +1761,7 @@ outer:  do {
             owner = rp;
             cnt = counter++;
             current = Lookup.getDefault();
+            ctxLoader = Thread.currentThread().getContextClassLoader();
         }
 
         final Task getTask() {

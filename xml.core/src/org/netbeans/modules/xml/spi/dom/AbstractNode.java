@@ -306,7 +306,7 @@ public abstract class AbstractNode implements Node {
     }
 
     public int getLength() {
-        throw new UOException();
+        return -1; // will likely cause exception if not properly implemented
     }    
 
     //

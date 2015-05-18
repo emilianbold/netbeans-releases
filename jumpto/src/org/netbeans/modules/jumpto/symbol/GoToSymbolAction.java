@@ -96,7 +96,7 @@ public class GoToSymbolAction extends AbstractAction {
         try {
             final JButton okButton = new JButton (NbBundle.getMessage(GoToSymbolAction.class, "CTL_OK"));
             final ContentProviderImpl cp = new ContentProviderImpl(okButton);
-            final GoToPanel panel = new GoToPanel(cp);
+            final GoToPanelImpl panel = new GoToPanelImpl(cp);
             final Dialog dialog = DialogFactory.createDialog(title, panel, cp, okButton);
             cp.setDialog(dialog);
             

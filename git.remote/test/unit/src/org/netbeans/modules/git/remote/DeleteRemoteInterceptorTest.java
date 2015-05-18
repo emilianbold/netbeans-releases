@@ -459,7 +459,7 @@ else    getCache().refreshAllRoots(fileA);
         commit();
 
         // delete A
-        refreshHandler.setFilesToRefresh(new HashSet<VCSFileProxy>(Arrays.asList(fileA, fileB)));
+        refreshHandler.setFilesToRefresh(new HashSet<>(Arrays.asList(fileA, fileB)));
         delete(fileA);
         // rename B to A
         renameDO(fileB, fileA);

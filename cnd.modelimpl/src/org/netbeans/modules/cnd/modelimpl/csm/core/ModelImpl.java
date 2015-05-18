@@ -838,6 +838,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ParserQueue.instance().clearParseWatch();
         ClankDriver.invalidateAll();
         APTFileCacheManager.invalidateAll();
+        APTSystemStorage.dispose();
         Collection<LibProjectImpl> libs = new HashSet<>();
         Collection<ProjectBase> toReparse = new HashSet<>();
         for (CsmProject csmProject : projects) {

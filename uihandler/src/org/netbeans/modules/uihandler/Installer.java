@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.uihandler;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
@@ -56,6 +57,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.*;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
@@ -1535,6 +1537,13 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.INFO, "heap dump was not created at {0}", heapDumpPath);
         LOG.log(Level.INFO, "heapdump file: exists():{0}, canRead():{1}, length:{2}",new Object[] 
                 {heapDumpFile.exists(), heapDumpFile.canRead(), heapDumpFile.length()});
+        // no heap dump file found - this can happen in case of OOME: unable to create new native thread
+        // try to create heap dump 
+        dumpHeap(heapDumpFile.getAbsolutePath());
+        if (heapDumpFile.exists() && heapDumpFile.canRead() && heapDumpFile.length() > 0) {
+            return heapDumpFile;
+        }        
+        LOG.log(Level.INFO, "heap dump failed for {0}", heapDumpPath);
         return null;
     }
     
@@ -1566,6 +1575,45 @@ public class Installer extends ModuleInstall implements Runnable {
         System.err.flush();
     }
     
+    private static void dumpHeap(String path) {
+        LOG.log(Level.INFO, "DUMPING HEAP"); // NOI18N
+        Method m = null;
+        Class c = null;
+        HotSpotDiagnosticMXBean hdmxb = null;
+        try {
+            c = Class.forName("sun.management.ManagementFactoryHelper");    //NOI18N
+        } catch (ClassNotFoundException exc) {
+            Exceptions.printStackTrace(exc);
+        }
+        if (c != null) {
+            try {
+                m = c.getMethod("getDiagnosticMXBean");  //NOI18N
+            } catch (NoSuchMethodException exc) {
+                Exceptions.printStackTrace(exc);
+            } catch (SecurityException exc) {
+                Exceptions.printStackTrace(exc);
+            }
+        }
+        if (m != null) {
+            try {
+                hdmxb = (HotSpotDiagnosticMXBean)m.invoke(null);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            LOG.log(Level.INFO, "Creating heap dump to "+path); // NOI18N
+            try {
+                hdmxb.dumpHeap(path, true);
+                LOG.log(Level.INFO, "Heap dump successfully created in: "+path);    // NOI18N
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+    }
+        
     public static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
         String id = p.get("qualifiedId", null);

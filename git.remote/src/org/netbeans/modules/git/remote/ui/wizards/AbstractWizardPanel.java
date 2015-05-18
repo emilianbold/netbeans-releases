@@ -59,7 +59,7 @@ import org.openide.util.HelpCtx;
  */
 public abstract class AbstractWizardPanel implements ValidatingPanel<WizardDescriptor> {
     
-    private final List<ChangeListener> listeners = new LinkedList<ChangeListener>();
+    private final List<ChangeListener> listeners = new LinkedList<>();
     private boolean valid;
     private Message errMessage;
 

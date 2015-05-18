@@ -105,7 +105,7 @@ public class StatusAction extends GitAction {
         if (repositories.isEmpty()) {
             return null;
         } else {
-            final Map<VCSFileProxy, Collection<VCSFileProxy>> toRefresh = new HashMap<VCSFileProxy, Collection<VCSFileProxy>>(repositories.size());
+            final Map<VCSFileProxy, Collection<VCSFileProxy>> toRefresh = new HashMap<>(repositories.size());
             for (VCSFileProxy repository : repositories) {
                 GitUtils.logRemoteRepositoryAccess(repository);
                 toRefresh.put(repository, Arrays.asList(GitUtils.filterForRepository(context, repository)));

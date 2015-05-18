@@ -88,6 +88,7 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
                                             CommitTableModel.COLUMN_NAME_PATH
                                         };
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("MS")
     public static final String [] IMPORT_COLUMNS = new String [] {
                                             CommitTableModel.COLUMN_NAME_COMMIT,
                                             CommitTableModel.COLUMN_NAME_NAME,

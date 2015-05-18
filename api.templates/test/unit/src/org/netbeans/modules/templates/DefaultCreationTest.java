@@ -73,27 +73,6 @@ public class DefaultCreationTest extends NbTestCase {
     }
     
     /**
-     * Checks that a file without CreateFromTemplate handler creates OK as copy of the template
-     * @throws Exception 
-     */
-    public void testCreateNoHandler() throws Exception {
-        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-        FileObject templ = FileUtil.createData(root, "simpleTemplate.txt");
-        String txt = "{a}";
-        OutputStream os = templ.getOutputStream();
-        os.write(txt.getBytes());
-        os.close();
-        
-        DataObject obj = DataObject.find(templ);
-        DataFolder folder = DataFolder.findFolder(FileUtil.createFolder(root, "target"));
-        Map m = new HashMap();
-        m.put("a", "eeee");
-        DataObject x = obj.createFromTemplate(folder, "nue", m);
-        
-        assertEquals(txt + "\n", x.getPrimaryFile().asText());
-    }
-    
-    /**
      * Checks that FileEntry.Format properly formats the template. Part of parameters is provided
      * by the DataLoader while part is provided by the API caller.
      * 
