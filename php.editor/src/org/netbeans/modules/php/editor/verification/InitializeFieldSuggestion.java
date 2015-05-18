@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.Hint;
@@ -61,6 +62,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.Variadic;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -165,15 +167,17 @@ public class InitializeFieldSuggestion extends SuggestionRule {
             List<ParameterToInit> result = new ArrayList<>();
             for (FormalParameter formalParameter : formalParameters) {
                 String parameterName = extractParameterName(formalParameter.getParameterName());
-                List<Initializer> initializers = new ArrayList<>();
-                if (!usedVariables.contains(parameterName)) {
-                    initializers.add(new FieldAssignmentInitializer(constructorBodyEndOffset, formalParameter));
-                }
-                if (!declaredFields.contains(parameterName)) {
-                    initializers.add(new FieldDeclarationInitializer(typeBodyStartOffset, formalParameter));
-                }
-                if (!initializers.isEmpty()) {
-                    result.add(new ParameterToInit(formalParameter, initializers));
+                if (parameterName != null && !parameterName.isEmpty()) {
+                    List<Initializer> initializers = new ArrayList<>();
+                    if (!usedVariables.contains(parameterName)) {
+                        initializers.add(new FieldAssignmentInitializer(constructorBodyEndOffset, parameterName));
+                    }
+                    if (!declaredFields.contains(parameterName)) {
+                        initializers.add(new FieldDeclarationInitializer(typeBodyStartOffset, formalParameter));
+                    }
+                    if (!initializers.isEmpty()) {
+                        result.add(new ParameterToInit(formalParameter, initializers));
+                    }
                 }
             }
             return result;
@@ -274,9 +278,8 @@ public class InitializeFieldSuggestion extends SuggestionRule {
     private static class FieldAssignmentInitializer extends InitializerImpl {
         private final String initString;
 
-        public FieldAssignmentInitializer(int offset, FormalParameter node) {
+        public FieldAssignmentInitializer(int offset, String parameterName) {
             super(offset);
-            String parameterName = extractParameterName(node.getParameterName());
             initString = "$this->" + parameterName.substring(1) + " = " + parameterName + ";\n"; //NOI18N
         }
 
@@ -324,6 +327,7 @@ public class InitializeFieldSuggestion extends SuggestionRule {
 
     }
 
+    @CheckForNull
     private static String extractParameterName(Expression parameterNameExpression) {
         String result = null;
         if (parameterNameExpression instanceof Variable) {
@@ -331,6 +335,12 @@ public class InitializeFieldSuggestion extends SuggestionRule {
         } else if (parameterNameExpression instanceof Reference) {
             Reference reference = (Reference) parameterNameExpression;
             Expression expression = reference.getExpression();
+            if (expression instanceof Variable) {
+                result = CodeUtils.extractVariableName((Variable) expression);
+            }
+        } else if(parameterNameExpression instanceof Variadic) { // #249306
+            Variadic variadic = (Variadic) parameterNameExpression;
+            Expression expression = variadic.getExpression();
             if (expression instanceof Variable) {
                 result = CodeUtils.extractVariableName((Variable) expression);
             }

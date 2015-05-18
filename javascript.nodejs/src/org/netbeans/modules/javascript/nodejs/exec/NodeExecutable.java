@@ -539,7 +539,10 @@ public class NodeExecutable {
                         try {
                             assert debuggerCountDownLatch != null;
                             boolean expected = debuggerCountDownLatch.await(5, TimeUnit.SECONDS);
-                            assert expected : "Count should be 0 but time elapsed";
+                            // #252451
+                            if (!expected) {
+                                LOGGER.log(Level.INFO, "Connect node.js debugger timeout elapsed");
+                            }
                             connectDebugger();
                         } catch (InterruptedException ex) {
                             Thread.currentThread().interrupt();
