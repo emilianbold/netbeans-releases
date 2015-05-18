@@ -183,22 +183,22 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
                 initTableData();
                 DialogBinding.bindComponentToFile(fileObject, res.getSelectionFrom(), res.getSelectionTo() - res.getSelectionFrom(), previewEditorPane);
                 previewEditorPane.setBackground(getBackground());
-                previewEditorPane.setText(genDeclarationString());
+                updateSignaturePreview();
                 DocumentListener documentListener = new DocumentListener() {
 
                     @Override
                     public void insertUpdate(DocumentEvent e) {
-                        previewEditorPane.setText(genDeclarationString());
+                        updateSignaturePreview();
                     }
 
                     @Override
                     public void removeUpdate(DocumentEvent e) {
-                        previewEditorPane.setText(genDeclarationString());
+                        updateSignaturePreview();
                     }
 
                     @Override
                     public void changedUpdate(DocumentEvent e) {
-                        previewEditorPane.setText(genDeclarationString());
+                        updateSignaturePreview();
                     }
                 };
                 returnTypeTextField.getDocument().addDocumentListener(documentListener);
@@ -315,7 +315,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
                     .addComponent(lblName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                    .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                     .addComponent(returnTypeTextField)))
         );
         jPanel1Layout.setVerticalGroup(
@@ -470,7 +470,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(previewChange, gridBagConstraints);
 
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(110, 40));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(110, 70));
 
         previewEditorPane.setEditable(false);
         jScrollPane1.setViewportView(previewEditorPane);
@@ -480,6 +480,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 0.3;
         add(jScrollPane1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -490,7 +491,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
     }// </editor-fold>//GEN-END:initComponents
 
     private void insertPointComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertPointComboActionPerformed
-        previewEditorPane.setText(genDeclarationString());
+        updateSignaturePreview();
     }//GEN-LAST:event_insertPointComboActionPerformed
 
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
@@ -561,7 +562,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
                 }
 
                 // update preview
-                previewEditorPane.setText(genDeclarationString());
+                updateSignaturePreview();
             }
         };
     }
@@ -748,6 +749,28 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
         buf.append(')'); //NOI18N
         buf.append(';'); //NOI18N
         
+        return buf.toString();
+    }
+
+    private void updateSignaturePreview() {
+        previewEditorPane.setText(genWrapDeclarationString());
+        previewEditorPane.setCaretPosition(0);
+    }
+
+    private String genWrapDeclarationString() {
+        String decl = genDeclarationString();
+        StringBuilder buf = new StringBuilder();
+        int col = 0;
+        for(int i = 0; i < decl.length(); i++) {
+            buf.append(decl.charAt(i));
+            col++;
+            if (col > 50) {
+                if (decl.charAt(i) == ',') {
+                    buf.append('\n');
+                    col = 0;
+                }
+            }
+        }
         return buf.toString();
     }
 

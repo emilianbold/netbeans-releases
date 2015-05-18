@@ -1219,14 +1219,23 @@ public class CsmUtilities {
 
             boolean resolveTypeChain = false;
             for (int i = 0; i < 2; i++) {
+                boolean classifiersWereResolved = false;
+                
                 CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
                 if (tbsp1Cls != null) {
                     CsmClassifier tbsp2Cls = getClassifier(type2, contextFile2, resolveTypeChain);
                     if (tbsp2Cls != null) {
-                        if (tbsp1Cls.getQualifiedName().toString().equals(tbsp2Cls.getQualifiedName().toString())) {
+                        classifiersWereResolved = true;
+                        if (CharSequenceUtilities.textEquals(tbsp1Cls.getQualifiedName(), tbsp2Cls.getQualifiedName())) {
                             return true;
                         }
                     }
+                }
+                
+                if (!classifiersWereResolved) {
+                    // This is a fallback if at least one of classifiers was not resolved.
+                    // There is no need to check again with resolveTypeChain = true, so return immediately
+                    return CharSequenceUtilities.textEquals(type1.getText(), type2.getText());
                 }
 
                 resolveTypeChain = true;
