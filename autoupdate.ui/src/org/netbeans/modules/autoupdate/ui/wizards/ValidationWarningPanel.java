@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Color;
 import java.util.List;
 import javax.swing.BorderFactory;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeSelectionModel;
@@ -102,6 +103,15 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
             taHead.setText(org.openide.util.NbBundle.getMessage(ValidationWarningPanel.class, "ValidationWarningPanel_taHead_NotTrustedTextSg", 
                     requiresAttention, total));
         }
+    }
+    
+    public String getSelectedNode() {
+        Object o = tPlugins.getLastSelectedPathComponent();
+        return o == null ? "" : o.toString();
+    }
+    
+    public void addSelectionListener(TreeSelectionListener tsl) {
+        tPlugins.getSelectionModel().addTreeSelectionListener(tsl);
     }
     
     /** This method is called from within the constructor to
