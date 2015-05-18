@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.spi.jumpto.support;
 
-package org.netbeans.modules.jumpto.symbol;
-
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EventObject;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
-import org.netbeans.spi.jumpto.symbol.SymbolProvider;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.openide.util.Exceptions;
-import static org.netbeans.spi.jumpto.symbol.SymbolProvider.*;
+import org.openide.util.Parameters;
 
 /**
- *
+ * A change of {@link AsyncDescriptor}.
+ * The information that the {@link AsyncDescriptor} was resolved into a new one(s).
+ * @since 1.49
  * @author Tomas Zezula
  */
-public abstract class SymbolProviderAccessor {
+public final class DescriptorChangeEvent<T> extends EventObject {
 
-    public static SymbolProviderAccessor DEFAULT;
+    private final Collection<? extends T> replacement;
 
-    static {
-        try {
-            Class.forName(SymbolProvider.Context.class.getName(), true, SymbolProviderAccessor.class.getClassLoader());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    /**
+     * Creates a new event.
+     * @param source the originating descriptor
+     * @param replacement the descriptor replacement(s). In case of an empty {@link Collection}
+     * the originating descriptor is removed.
+     */
+    public DescriptorChangeEvent(
+            @NonNull final T source,
+            @NonNull final Collection<? extends T> replacement) {
+        super(source);
+        Parameters.notNull("descriptors", replacement); //NOI18N
+        this.replacement = Collections.unmodifiableCollection(replacement);
     }
 
-    public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
-
+    /**
+     * Returns the replacement.
+     * @return the replacement
+     */
     @NonNull
-    public abstract SymbolProvider.Result createResult(
-            @NonNull List<? super SymbolDescriptor> result,
-            @NonNull String[] message,
-            @NonNull Context context,
-            @NonNull SymbolProvider provider);
-
-    public abstract int getRetry(Result result);
-
-    @NonNull
-    public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
-
-    public abstract void setHighlightText(@NonNull SymbolDescriptor desc, @NonNull String text);
-
-    @CheckForNull
-    public abstract SymbolProvider getSymbolProvider(@NonNull SymbolDescriptor desc);
-
-    public abstract void setSymbolProvider(@NonNull SymbolDescriptor desc, @NonNull SymbolProvider provider);
+    public Collection<? extends T> getReplacement() {
+        return replacement;
+    }
 }

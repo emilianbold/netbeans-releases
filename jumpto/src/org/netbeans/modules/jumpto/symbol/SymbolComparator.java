@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.jumpto.symbol;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntityComparator;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 
@@ -89,7 +90,7 @@ public class SymbolComparator extends EntityComparator<SymbolDescriptor> {
             return result; // e1projectName NOT equals to e2projectName
         }
         // here: e1projectName equals to e2projectName
-        result = compare(e1.getSymbolName(), e2.getSymbolName());
+        result = compare(getSortName(e1), getSortName(e2));
         if ( result != 0 ) {
            return result;
         }
@@ -97,4 +98,12 @@ public class SymbolComparator extends EntityComparator<SymbolDescriptor> {
         return compare(e1.getOwnerName(), e2.getOwnerName());
     }
 
+    @NonNull
+    private static String getSortName(@NonNull final SymbolDescriptor d) {
+        String res = d.getSimpleName();
+        if (res == null) {
+            res = d.getSymbolName();
+        }
+        return res;
+    }
 }

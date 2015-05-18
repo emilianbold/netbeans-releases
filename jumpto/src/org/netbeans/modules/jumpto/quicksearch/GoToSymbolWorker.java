@@ -93,7 +93,7 @@ public class GoToSymbolWorker implements Runnable {
             LOGGER.fine("Worker for " + text + " exited after cancel " + (System.currentTimeMillis() - createTime) + " ms.");
             return;
         }
-        final ListModel fmodel = Models.fromList(types, null);
+        final ListModel fmodel = Models.fromList(types, null, null);
         if (isCanceled) {
             LOGGER.fine("Worker for " + text + " exited after cancel " + (System.currentTimeMillis() - createTime) + " ms.");
             return;

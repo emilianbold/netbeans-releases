@@ -168,6 +168,11 @@ public interface SymbolProvider {
                 public SymbolProvider getSymbolProvider(SymbolDescriptor desc) {
                     return desc.getSymbolProvider();
                 }
+
+                @Override
+                public void setSymbolProvider(SymbolDescriptor desc, SymbolProvider provider) {
+                    desc.setSymbolProvider(provider);
+                }
             };
         }
 
