@@ -56,7 +56,7 @@ public enum Directive {
     //      requir.|attr |class |element
     app     (false, true, true,  false, angularModule), 
     bind    (true,  true, true,  false, expression),
-    bindHtml(true,  true, false,  false, expression),
+    bindHtml(true,  true, false, false, expression),
     bindHtmlUnsafe
             (true,  true, true,  false, expression), 
     bindTemplate
@@ -81,17 +81,18 @@ public enum Directive {
     form    (true,  true, true,  true,  string),
     hide    (true,  true, true,  false, expression),
     href    (true,  true, false, false, template),
-    _if      (true,  true, true,  true,  expression), // real name is "if"
+    _if     (true,  true, true,  true,  expression), // real name is "if"
     include (true,  true, true,  true,  expression),
     init    (true,  true, true,  false, expression),
-    jq      (false,  true, false,  false, string),
+    jq      (false, true, false, false, string),
     keydown (true,  true, true,  false, expression),
     keypress(true,  true, true,  false, expression),
     keyup   (true,  true, true,  false, expression),
+    link    (true,  true, false, false, object),
     list    (true,  true, true,  false, string),
     model   (true,  true, true,  false, expression),
     modelOptions
-            (true,  true, false,  false, object),
+            (true,  true, false, false, object),
     mousedown
             (true,  true, true,  false, expression),
     mouseenter
@@ -107,26 +108,26 @@ public enum Directive {
     nonBindable
             (true,  true, true,  false, noValue),
     open    (true,  true, true,  false, expression),
-    options (true,  true, false,  false, comprehensionExpression),
+    options (true,  true, false, false, comprehensionExpression),
     paste   (true,  true, true,  false, expression),
     //TODO add sub directives
     pluralize
-            (true,  true, false, true,  noValue),    
-    
+            (true,  true, false, true,  noValue),
+
     //TODO add sub directives
     readonly(false, true, false, false, expression),
     repeat  (true,  true, true,  false, repeatExpression),
     repeatStart
-            (true,  true, false,  false, repeatExpression),
+            (true,  true, false, false, repeatExpression),
     repeatEnd
-            (false,  true, false,  false, noValue),
+            (false, true, false, false, noValue),
     selected(false, true, false, false, expression),
     show    (true,  true, true,  false, expression),
     src     (true,  true, false, false, template),
     srcset  (true,  true, false, false, template),
     style   (true,  true, true,  false, expression),
     submit  (true,  true, true,  false, expression),
-    
+
     _switch (true,  true, false, true,  expression), //??? //real name is "switch"
     _switch_when
             (true,  true, false, true,  string),
@@ -135,6 +136,7 @@ public enum Directive {
     transclude
             (true,  true, true,  false, noValue),
     value   (true,  true, false, false, string),
+    viewport(true,  true, true,  true,  string),
     view    (false, true, true,  true,  noValue);
     
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js

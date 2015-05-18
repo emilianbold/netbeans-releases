@@ -60,7 +60,9 @@ import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 
 /**
- *
+ * Java wrapper of the Network domain of WebKit Remote Debugging Protocol.
+ * 
+ * @author David Konecny, Jan Stola
  */
 public class Network {
     private final TransportHelper transport;
@@ -69,9 +71,9 @@ public class Network {
     private final WebKitDebugging webKit;
     private int numberOfClients = 0;
     private boolean inLiveHTMLMode = false;
-    private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
-    private final Map<String, Request> activeRequests = new HashMap<String, Request>();
-    private final Map<String, WebSocketRequest> activeWebSocketRequests = new HashMap<String, WebSocketRequest>();
+    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    private final Map<String, Request> activeRequests = new HashMap<>();
+    private final Map<String, WebSocketRequest> activeWebSocketRequests = new HashMap<>();
     
     public Network(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
@@ -84,7 +86,7 @@ public class Network {
         numberOfClients++;
         if (!enabled) {
             enabled = true;
-            transport.sendBlockingCommand(new Command("Network.enable"));
+            transport.sendBlockingCommand(new Command("Network.enable")); // NOI18N
         }
         inLiveHTMLMode = webKit.getDebugger().isInLiveHTMLMode();
     }
@@ -93,7 +95,7 @@ public class Network {
         assert numberOfClients > 0;
         numberOfClients--;
         if (numberOfClients == 0) {
-            transport.sendCommand(new Command("Network.disable"));
+            transport.sendCommand(new Command("Network.disable")); // NOI18N
             enabled = false;
         }
     }
@@ -130,7 +132,7 @@ public class Network {
     }
 
     private void responseReceived(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         Request req = activeRequests.get(requestId);
         if (req == null) {
@@ -147,7 +149,7 @@ public class Network {
     }
 
     private void requestFailed(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         Request req = activeRequests.remove(requestId);
         if (req == null) {
@@ -158,7 +160,7 @@ public class Network {
     }
 
     private void dataReceived(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         Request req = activeRequests.get(requestId);
         if (req == null) {
@@ -169,7 +171,7 @@ public class Network {
     }
 
     private void responseFinished(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         Request req = activeRequests.remove(requestId);
         if (req == null) {
@@ -200,7 +202,7 @@ public class Network {
     }
 
     private void webSocketHandshakeRequest(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
         if (req == null) {
@@ -210,7 +212,7 @@ public class Network {
     }
 
     private void webSocketHandshakeResponse(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
         if (req == null) {
@@ -220,7 +222,7 @@ public class Network {
     }
 
     private void webSocketFrameSent(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
         if (req == null) {
@@ -230,7 +232,7 @@ public class Network {
     }
 
     private void webSocketFrameReceived(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
         if (req == null) {
@@ -240,7 +242,7 @@ public class Network {
     }
 
     private void webSocketFrameError(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.get(requestId);
         if (req == null) {
@@ -250,7 +252,7 @@ public class Network {
     }
 
     private void webSocketClosed(JSONObject params) {
-        String requestId = String.valueOf(params.get("requestId"));
+        String requestId = String.valueOf(params.get("requestId")); // NOI18N
         assert requestId != null;
         WebSocketRequest req = activeWebSocketRequests.remove(requestId);
         if (req == null) {
@@ -272,11 +274,15 @@ public class Network {
 
         /**
          * New network request was created.
+         * 
+         * @param request new network request.
          */
         void networkRequest(Request request);
 
         /**
          * New WebSocket request was created.
+         * 
+         * @param request new web-socket request.
          */
         void webSocketRequest(WebSocketRequest request);
 
@@ -284,8 +290,8 @@ public class Network {
 
     public final static class Request {
 
-        public static final String PROP_RESPONSE = "Network.Request.Response";
-        public static final String PROP_RESPONSE_DATA = "Network.Request.Response.Data";
+        public static final String PROP_RESPONSE = "Network.Request.Response"; // NOI18N
+        public static final String PROP_RESPONSE_DATA = "Network.Request.Response.Data"; // NOI18N
 
         private final JSONObject request;
         private final JSONObject initiator;
@@ -300,15 +306,15 @@ public class Network {
         private final String documentUrl;
 
         private Request(Network network, JSONObject params) {
-            this.request = (JSONObject)params.get("request");
-            this.initiator = (JSONObject)params.get("initiator");
-            this.requestId = String.valueOf(params.get("requestId"));
+            this.request = (JSONObject)params.get("request"); // NOI18N
+            this.initiator = (JSONObject)params.get("initiator"); // NOI18N
+            this.requestId = String.valueOf(params.get("requestId")); // NOI18N
             this.network = network;
-            this.documentUrl = (String)params.get("documentURL");
+            this.documentUrl = (String)params.get("documentURL"); // NOI18N
         }
 
         public String getInitiatorType() {
-            return (String)getInitiator().get("type");
+            return (String)getInitiator().get("type"); // NOI18N
         }
 
         public String getDocumentUrl() {
@@ -337,7 +343,7 @@ public class Network {
 
         public int getResponseCode() {
             if (response != null) {
-                Number statusCode = (Number)response.get("status");
+                Number statusCode = (Number)response.get("status"); // NOI18N
                 if (statusCode != null) {
                     return statusCode.intValue();
                 }
@@ -346,8 +352,8 @@ public class Network {
         }
 
         private void setResponse(JSONObject response) {
-            this.response = (JSONObject)response.get("response");
-            this.responseType = String.valueOf(response.get("type"));
+            this.response = (JSONObject)response.get("response"); // NOI18N
+            this.responseType = String.valueOf(response.get("type")); // NOI18N
             support.firePropertyChange(PROP_RESPONSE, null, null);
         }
 
@@ -374,9 +380,9 @@ public class Network {
         }
 
         public List<ConsoleMessage.StackFrame> getInitiatorCallStack() {
-            JSONArray stack = (JSONArray)getInitiator().get("stackTrace");
+            JSONArray stack = (JSONArray)getInitiator().get("stackTrace"); // NOI18N
             if (stack != null && stack.size() > 0) {
-                List<ConsoleMessage.StackFrame> stackTrace = new ArrayList<ConsoleMessage.StackFrame>();
+                List<ConsoleMessage.StackFrame> stackTrace = new ArrayList<>();
                 for (Object o : stack) {
                     JSONObject json = (JSONObject)o;
                     stackTrace.add(new ConsoleMessage.StackFrame(json));
@@ -408,23 +414,23 @@ public class Network {
 
     public final static class WebSocketRequest {
 
-        public static final String PROP_HANDSHAKE_REQUEST = "Network.WebSocketRequest.Handshake.Request";
-        public static final String PROP_HANDSHAKE_RESPONSE = "Network.WebSocketRequest.Handshake.Response";
-        public static final String PROP_FRAMES = "Network.WebSocketRequest.Frame";
-        public static final String PROP_CLOSED = "Network.WebSocketRequest.Closed";
+        public static final String PROP_HANDSHAKE_REQUEST = "Network.WebSocketRequest.Handshake.Request"; // NOI18N
+        public static final String PROP_HANDSHAKE_RESPONSE = "Network.WebSocketRequest.Handshake.Response"; // NOI18N
+        public static final String PROP_FRAMES = "Network.WebSocketRequest.Frame"; // NOI18N
+        public static final String PROP_CLOSED = "Network.WebSocketRequest.Closed"; // NOI18N
 
         private final String requestId;
         private final String url;
         private JSONObject handshakeRequest;
         private JSONObject handshakeResponse;
         private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-        private final List<WebSocketFrame> frames = new ArrayList<WebSocketFrame>();
+        private final List<WebSocketFrame> frames = new ArrayList<>();
         private boolean closed = false;
         private String errorMessage = null;
 
         private WebSocketRequest(JSONObject params) {
-            this.requestId = String.valueOf(params.get("requestId"));
-            this.url = String.valueOf(params.get("url"));
+            this.requestId = String.valueOf(params.get("requestId")); // NOI18N
+            this.url = String.valueOf(params.get("url")); // NOI18N
         }
 
         private String getRequestId() {
@@ -440,7 +446,7 @@ public class Network {
         }
 
         private void setHandshakeRequest(JSONObject params) {
-            this.handshakeRequest = (JSONObject)params.get("request");
+            this.handshakeRequest = (JSONObject)params.get("request"); // NOI18N
             support.firePropertyChange(PROP_HANDSHAKE_REQUEST, null, null);
         }
         public JSONObject getHandshakeResponse() {
@@ -448,12 +454,12 @@ public class Network {
         }
 
         private void setHandshakeResponse(JSONObject params) {
-            this.handshakeResponse = (JSONObject)params.get("response");
+            this.handshakeResponse = (JSONObject)params.get("response"); // NOI18N
             support.firePropertyChange(PROP_HANDSHAKE_RESPONSE, null, null);
         }
 
         private void setFrameError(JSONObject params) {
-            this.errorMessage = (String)params.get("errorMessage");
+            this.errorMessage = (String)params.get("errorMessage"); // NOI18N
             support.firePropertyChange(PROP_FRAMES, null, null);
         }
 
@@ -462,9 +468,9 @@ public class Network {
         }
 
         private void addFrame(Direction direction, JSONObject params) {
-            JSONObject response = (JSONObject)params.get("response");
-            Number timestamp = (Number)params.get("timestamp");
-            Number opcode = (Number)response.get("opcode");
+            JSONObject response = (JSONObject)params.get("response"); // NOI18N
+            Number timestamp = (Number)params.get("timestamp"); // NOI18N
+            Number opcode = (Number)response.get("opcode"); // NOI18N
             WebSocketFrame frame = new WebSocketFrame(new Date(
                     timestamp.longValue()), direction, response, opcode.intValue());
             frames.add(frame);
@@ -472,7 +478,7 @@ public class Network {
         }
 
         public List<WebSocketFrame> getFrames() {
-            return new ArrayList<WebSocketFrame>(frames);
+            return new ArrayList<>(frames);
         }
 
         public boolean isClosed() {
@@ -513,7 +519,7 @@ public class Network {
         }
 
         public String getPayload() {
-            return String.valueOf(data.get("payloadData"));
+            return String.valueOf(data.get("payloadData")); // NOI18N
         }
 
         public Direction getDirection() {
@@ -534,18 +540,20 @@ public class Network {
 
         @Override
         public void handleResponse(Response response) {
-            if ("Network.requestWillBeSent".equals(response.getMethod())) {
-                requestReceived(response.getParams());
-            } else if ("Network.responseReceived".equals(response.getMethod())) {
-                responseReceived(response.getParams());
+            String method = response.getMethod();
+            JSONObject params = response.getParams();
+            if ("Network.requestWillBeSent".equals(method)) { // NOI18N
+                requestReceived(params);
+            } else if ("Network.responseReceived".equals(method)) { // NOI18N
+                responseReceived(params);
 
                 // LiveHTML support:
                 if (inLiveHTMLMode && 
-                        "XHR".equals(response.getParams().get("type"))) {
+                        "XHR".equals(params.get("type"))) { // NOI18N
                     final long timeStamp = System.currentTimeMillis();
-                    final String id = (String)response.getParams().get("requestId");
-                    final String request = (String)((JSONObject)response.getParams().get("response")).get("url");
-                    final String mime = (String)((JSONObject)response.getParams().get("response")).get("mimeType");
+                    final String id = (String)params.get("requestId"); // NOI18N
+                    final String request = (String)((JSONObject)params.get("response")).get("url"); // NOI18N
+                    final String mime = (String)((JSONObject)params.get("response")).get("mimeType"); // NOI18N
                     transport.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
@@ -553,31 +561,31 @@ public class Network {
                         }
                     });
                 }
-            } else if ("Network.loadingFailed".equals(response.getMethod())) {
-                requestFailed(response.getParams());
+            } else if ("Network.loadingFailed".equals(method)) { // NOI18N
+                requestFailed(params);
                 
 
 // TODO: XXX: handle requestServedFromMemoryCache here as well
 
 
-            } else if ("Network.dataReceived".equals(response.getMethod())) {
-                dataReceived(response.getParams());
-            } else if ("Network.loadingFinished".equals(response.getMethod())) {
-                responseFinished(response.getParams());
-            } else if ("Network.webSocketCreated".equals(response.getMethod())) {
-                webSocketCreated(response.getParams());
-            } else if ("Network.webSocketWillSendHandshakeRequest".equals(response.getMethod())) {
-                webSocketHandshakeRequest(response.getParams());
-            } else if ("Network.webSocketHandshakeResponseReceived".equals(response.getMethod())) {
-                webSocketHandshakeResponse(response.getParams());
-            } else if ("Network.webSocketFrameSent".equals(response.getMethod())) {
-                webSocketFrameSent(response.getParams());
-            } else if ("Network.webSocketFrameReceived".equals(response.getMethod())) {
-                webSocketFrameReceived(response.getParams());
-            } else if ("Network.webSocketFrameError".equals(response.getMethod())) {
-                webSocketFrameError(response.getParams());
-            } else if ("Network.webSocketClosed".equals(response.getMethod())) {
-                webSocketClosed(response.getParams());
+            } else if ("Network.dataReceived".equals(method)) { // NOI18N
+                dataReceived(params);
+            } else if ("Network.loadingFinished".equals(method)) { // NOI18N
+                responseFinished(params);
+            } else if ("Network.webSocketCreated".equals(method)) { // NOI18N
+                webSocketCreated(params);
+            } else if ("Network.webSocketWillSendHandshakeRequest".equals(method)) { // NOI18N
+                webSocketHandshakeRequest(params);
+            } else if ("Network.webSocketHandshakeResponseReceived".equals(method)) { // NOI18N
+                webSocketHandshakeResponse(params);
+            } else if ("Network.webSocketFrameSent".equals(method)) { // NOI18N
+                webSocketFrameSent(params);
+            } else if ("Network.webSocketFrameReceived".equals(method)) { // NOI18N
+                webSocketFrameReceived(params);
+            } else if ("Network.webSocketFrameError".equals(method)) { // NOI18N
+                webSocketFrameError(params);
+            } else if ("Network.webSocketClosed".equals(method)) { // NOI18N
+                webSocketClosed(params);
             }
         }
 
