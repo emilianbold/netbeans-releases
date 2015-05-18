@@ -576,6 +576,7 @@ public class NodeExecutable {
                     @Override
                     public void run() {
                         debugging = false;
+                        assert debugInfo != null;
                         Future<Integer> task = debugInfo.taskRef.get();
                         assert task != null : debugInfo.project.getProjectDirectory();
                         task.cancel(true);
