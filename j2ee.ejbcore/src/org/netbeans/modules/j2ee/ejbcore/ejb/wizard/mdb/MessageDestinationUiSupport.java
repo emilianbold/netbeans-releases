@@ -73,6 +73,7 @@ import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefini
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.javaee.resources.api.JmsDestination;
+import org.netbeans.modules.javaee.resources.api.JndiNamespacesDefinition;
 import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModel;
 import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModelSupport;
 import org.openide.DialogDescriptor;
@@ -183,8 +184,10 @@ public abstract class MessageDestinationUiSupport {
         for (MessageDestination md : serverDestinations) {
             destinations.put(md.getName(), md.getType());
         }
-        
-        MessageDestinationPanel messageDestination = MessageDestinationPanel.newInstance(destinations);
+
+        J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
+        MessageDestinationPanel messageDestination = MessageDestinationPanel.newInstance(
+                destinations, capabilities.isEjb32Supported(), JndiNamespacesDefinition.APPLICATION_NAMESPACE);
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 messageDestination,
                 NbBundle.getMessage(MessageDestinationPanel.class, "LBL_AddMessageDestination"),
@@ -213,7 +216,6 @@ public abstract class MessageDestinationUiSupport {
         Object option = DialogDisplayer.getDefault().notify(dialogDescriptor);
         MessageDestination md = null;
         if (option == DialogDescriptor.OK_OPTION) {
-            J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(project);
             if (capabilities.isEjb32Supported()) {
                 md = new JmsDestinationDefinition(
                         messageDestination.getDestinationName(),
