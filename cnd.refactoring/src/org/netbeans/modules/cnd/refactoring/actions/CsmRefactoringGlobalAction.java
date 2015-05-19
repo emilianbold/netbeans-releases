@@ -73,6 +73,11 @@ import org.openide.windows.TopComponent;
  */
 public abstract class CsmRefactoringGlobalAction extends NodeAction {
 
+    /** Property identifier for menu text, neccessary for display in menu */
+    protected static final String MENU_TEXT = "menuText"; //NOI18N
+    /** Property identifier for popup textm, neccessary for display popup */
+    protected static final String POPUP_TEXT = "popupText"; //NOI18N
+
     /** Creates a new JavaRefactoringGlobalActiongGlobalAction */
     public CsmRefactoringGlobalAction(String name, Icon icon) {
         setName(name);
@@ -84,7 +89,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
         return (String) getValue(Action.NAME);
     }
 
-    protected void setName(String name) {
+    protected final void setName(String name) {
         putValue(Action.NAME, name);
     }
 
@@ -118,9 +123,9 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
     }
 
     protected static EditorCookie getTextComponent(Node n) {
-        DataObject dobj = n.getCookie(DataObject.class);
+        DataObject dobj = n.getLookup().lookup(DataObject.class);
         if (dobj != null) {
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
                 TopComponent activetc = TopComponent.getRegistry().getActivated();
                 if (activetc instanceof Pane) {
@@ -226,7 +231,7 @@ public abstract class CsmRefactoringGlobalAction extends NodeAction {
 
                 return m.getDeclaringClass() != CallableSystemAction.class;
             } catch (java.lang.NoSuchMethodException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
                 throw new IllegalStateException("Error searching for method " + name + " in " + d); // NOI18N
             }
         }

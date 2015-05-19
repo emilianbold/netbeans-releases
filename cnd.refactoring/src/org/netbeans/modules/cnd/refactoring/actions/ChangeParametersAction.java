@@ -56,12 +56,17 @@ import org.openide.util.NbBundle;
  * @author Vladimir Voskresensky
  */
 public class ChangeParametersAction extends CsmRefactoringGlobalAction {
-    
+
     /** Creates a new instance of ChangeParametersAction
      */
     public ChangeParametersAction() {
-        super(NbBundle.getMessage(ChangeParametersAction.class, "LBL_ChangeMethodSignatureAction"), null); // NOI18N
+        super(RefactoringKind.CHANGE_FUNCTION_PARAMETERS.getKey(), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        putValue(NAME, RefactoringKind.CHANGE_FUNCTION_PARAMETERS.getKey());
+        String displayText = NbBundle.getMessage(ChangeParametersAction.class, "LBL_ChangeMethodSignatureAction"); // NOI18N
+        putValue(SHORT_DESCRIPTION,displayText);
+        putValue(POPUP_TEXT,displayText);
+        putValue(MENU_TEXT,displayText);
     }
     
     @Override
