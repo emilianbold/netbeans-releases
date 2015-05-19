@@ -205,6 +205,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         });
 
+        requestTable.setAutoCreateRowSorter(true);
         requestTableScrollPane.setViewportView(requestTable);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -499,7 +500,11 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     private void selectedItemChanged() {
         assert SwingUtilities.isEventDispatchThread();
-        final ModelItem mi = model.getItem(requestTable.getSelectedRow());
+        int index = requestTable.getSelectedRow();
+        if (index != -1) {
+            index = requestTable.convertRowIndexToModel(index);
+        }
+        final ModelItem mi = model.getItem(index);
         if (lastSelectedItem == mi) {
             return;
         } else {
