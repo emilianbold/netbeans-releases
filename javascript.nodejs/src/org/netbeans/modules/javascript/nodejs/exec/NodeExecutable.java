@@ -55,6 +55,7 @@ import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -64,7 +65,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
@@ -313,7 +313,6 @@ public class NodeExecutable {
     private ExecutionDescriptor getDescriptor(final AtomicReference<Future<Integer>> taskRef, @NullAllowed final DebugInfo debugInfo) {
         assert project != null;
         assert taskRef != null;
-        final boolean rerunPossible = debugInfo == null;
         List<URL> sourceRoots = NodeJsSupport.forProject(project).getSourceRoots();
         return ExternalExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .frontWindowOnError(false)
@@ -322,26 +321,12 @@ public class NodeExecutable {
                 .outLineBased(true)
                 .errLineBased(true)
                 .outConvertorFactory(new LineConvertorFactoryImpl(sourceRoots, debugInfo))
-                .rerunCondition(new ExecutionDescriptor.RerunCondition() {
-                    @Override
-                    public void addChangeListener(ChangeListener listener) {
-                        // noop
-                    }
-                    @Override
-                    public void removeChangeListener(ChangeListener listener) {
-                        // noop
-                    }
-                    @Override
-                    public boolean isRerunPossible() {
-                        return rerunPossible;
-                    }
-                })
-                /*.rerunCallback(new ExecutionDescriptor.RerunCallback() {
+                .rerunCallback(new ExecutionDescriptor.RerunCallback() {
                     @Override
                     public void performed(Future<Integer> task) {
                         taskRef.set(task);
                     }
-                })*/;
+                });
     }
 
     private static ExecutionDescriptor getSilentDescriptor() {
@@ -486,27 +471,31 @@ public class NodeExecutable {
 
     private static final class LineConvertorFactoryImpl implements ExecutionDescriptor.LineConvertorFactory {
 
-        private final List<URL> sourceRoots;
+        private final List<File> files;
         private final DebugInfo debugInfo;
 
 
         public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed DebugInfo debugInfo) {
             assert sourceRoots != null;
-            this.sourceRoots = sourceRoots;
+            files = new CopyOnWriteArrayList<>(toFiles(sourceRoots));
             this.debugInfo = debugInfo;
         }
 
         @Override
         public LineConvertor newLineConvertor() {
-            List<File> files = new ArrayList<>(sourceRoots.size());
+            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
+        }
+
+        private List<File> toFiles(List<URL> sourceRoots) {
+            List<File> result = new ArrayList<>(sourceRoots.size());
             for (URL sourceRoot : sourceRoots) {
                 try {
-                    files.add(Utilities.toFile(sourceRoot.toURI()));
+                    result.add(Utilities.toFile(sourceRoot.toURI()));
                 } catch (URISyntaxException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
-            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
+            return result;
         }
 
     }
