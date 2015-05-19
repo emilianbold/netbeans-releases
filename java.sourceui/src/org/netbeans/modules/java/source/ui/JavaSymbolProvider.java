@@ -101,7 +101,6 @@ public class JavaSymbolProvider implements SymbolProvider {
 
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
-    private static final String INIT = "<init>"; //NOI18N
 
     private volatile boolean canceled;
 
@@ -109,10 +108,12 @@ public class JavaSymbolProvider implements SymbolProvider {
         return "java symbols";  //NOI18N
     }
 
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(JavaTypeProvider.class, "MSG_JavaSymbols");
     }
 
+    @Override
     public void computeSymbolNames(final Context context, final Result result) {
         try {
             final SearchType st = context.getSearchType();
