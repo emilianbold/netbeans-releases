@@ -624,7 +624,7 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
                                     Collection<IncludeInfo> inclStack,
                                     ClankDriver.APTTokenStreamCache cachedTokens) {
         StringBuilder retValue = new StringBuilder();
-        retValue.append(cachedTokens.toString()).append("\n");
+        retValue.append(cachedTokens.toString()).append("\n"); // NOI18N
         if (!userIncludeFilePaths.isEmpty()) {
             retValue.append("User File Includes:\n"); // NOI18N
             retValue.append(APTUtils.includes2String(userIncludeFilePaths));

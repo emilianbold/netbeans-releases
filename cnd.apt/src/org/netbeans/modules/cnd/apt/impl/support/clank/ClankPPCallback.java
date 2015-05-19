@@ -213,7 +213,7 @@ public final class ClankPPCallback extends FileInfoCallback {
     @Override
     protected void onEnter(FileInfo enteredFrom, FileInfo enteredTo) {
         if (ClankDriverImpl.TRACE) {
-            traceOS.$out("Enter: " + enteredTo).$out("\n").flush();
+            traceOS.$out("Enter: " + enteredTo).$out("\n").flush(); // NOI18N
         }
         // sometimes we enter and leave some built-in buffers
         // usually it is predefines or cmd line options seen by main file
@@ -248,21 +248,21 @@ public final class ClankPPCallback extends FileInfoCallback {
     @Override
     protected void onExit(FileInfo exitedFrom, FileInfo exitedTo) {
         if (ClankDriverImpl.TRACE) {
-            traceOS.$out("Exit from ");
+            traceOS.$out("Exit from "); // NOI18N
             if (exitedFrom.isFile()) {
                 traceOS.$out(exitedFrom.getName());
             } else {
                 traceOS.$out(exitedFrom.getFileID());
             }
-            traceOS.$out(" with #Token: ").$out(exitedFrom.getNrTokens()).$out("\n");
+            traceOS.$out(" with #Token: ").$out(exitedFrom.getNrTokens()).$out("\n"); // NOI18N
             int[] offs = exitedFrom.getSkippedRanges();
             if (offs.length > 0) {
                 for (int i = 0; i < offs.length; i += 2) {
                     int st = offs[i];
                     int end = offs[i + 1];
-                    traceOS.$out("[").$out(st).$out("-").$out(end).$out("] ");
+                    traceOS.$out("[").$out(st).$out("-").$out(end).$out("] "); // NOI18N
                 }
-                traceOS.$out("\n");
+                traceOS.$out("\n"); // NOI18N
             }
             traceOS.flush();
         }
@@ -346,7 +346,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public String toString() {
-          return "[" + startOffset + "-" + endOffset + "] " + "annotation="+externalAnnotation;
+          return "[" + startOffset + "-" + endOffset + "] " + "annotation="+externalAnnotation; // NOI18N
         }
     }
 
@@ -405,8 +405,8 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public String toString() {
-          return "ClankErrorDirectiveWrapper{" + super.toString() + ",\n"
-                  + " msg=" + msg + '}';
+          return "ClankErrorDirectiveWrapper{" + super.toString() + ",\n" // NOI18N
+                  + " msg=" + msg + '}'; // NOI18N
         }
     }
 
@@ -589,8 +589,9 @@ public final class ClankPPCallback extends FileInfoCallback {
       
       @Override
       public String toString() {
-        return "ClankFileInfoImpl{" + "convertedToAPT=" + convertedToAPT + "; hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"
-                + "currentInclude=" + includeDirective + '}';
+        return "ClankFileInfoImpl{" + "convertedToAPT=" + convertedToAPT + ";"// NOI18N
+                + " hasTokenStream=" + hasTokenStream + ", current=" + current + ",\n"// NOI18N
+                + "currentInclude=" + includeDirective + '}';// NOI18N
       }
 
       private ResolvedPath getResolvedPath() {

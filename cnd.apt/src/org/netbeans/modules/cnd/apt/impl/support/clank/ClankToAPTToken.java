@@ -231,7 +231,7 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
 
     @Override
     public String toString() {
-        return "ClankToAPTToken{offset=" + offset + "; aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + '}';
+        return "ClankToAPTToken{offset=" + offset + "; aptType=" + APTUtils.getAPTTokenName(aptTokenType) + ":" + textID + '}'; // NOI18N
     }
 
     @Override

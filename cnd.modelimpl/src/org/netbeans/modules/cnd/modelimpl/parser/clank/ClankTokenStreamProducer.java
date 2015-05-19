@@ -199,7 +199,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
         boolean isTrace() {
-          if (false && stopFileImpl.getName().toString().endsWith(".h")) {
+          if (false && stopFileImpl.getName().toString().endsWith(".h")) {// NOI18N
             return true;
           }
           return false;
@@ -271,7 +271,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
               assert alreadySeenInterestedFileEnter == State.INITIAL;
               alreadySeenInterestedFileEnter = State.SEEN;
               CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath()),
-                      enteredTo + "\n vs. \n", stopFileImpl);
+                      enteredTo + "\n vs. \n", stopFileImpl);// NOI18N
               if (triggerParsingActivity) {
                 // we entered target file and after that we can
                 // handle inclusive #includes
@@ -321,7 +321,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             insideInterestedFile = (exitedTo != null) && (exitedTo.getFileIndex() == stopAtIndex);
             if (stopAtIndex == exitedFrom.getFileIndex()) {
               CndUtils.assertTrueInConsole(CharSequenceUtilities.textEquals(exitedFrom.getFilePath(), stopFileImpl.getAbsolutePath()) ,
-                      "expected " + stopFileImpl.getAbsolutePath(), exitedFrom);
+                      "expected " + stopFileImpl.getAbsolutePath(), exitedFrom);// NOI18N
               foundTokens = ClankDriver.extractPreparedCachedTokenStream(ppHandler);
               assert foundTokens.hasTokenStream();
               // stop all activity

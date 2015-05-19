@@ -142,7 +142,7 @@ public class ClankFileMacroMap extends ClankMacroMap {
             if (System.getProperty("cnd.apt.macro.trace") != null) {
                 retValue.append(sysMacros);
             } else if (sysMacros == null) {
-                retValue.append("null");
+                retValue.append("null"); // NOI18N
             } else {
                 retValue.append(System.identityHashCode(sysMacros));
             }

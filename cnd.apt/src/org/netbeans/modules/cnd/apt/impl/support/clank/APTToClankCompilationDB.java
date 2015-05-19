@@ -62,7 +62,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     private final String name;
 
     private APTToClankCompilationDB(Collection<ClankCompilationDataBase.Entry> compilations) {
-        this("APTToClankDB with [" + compilations.size() + "] entries", compilations);
+        this("APTToClankDB with [" + compilations.size() + "] entries", compilations);// NOI18N
     }
 
     private APTToClankCompilationDB(CharSequence dbName, Collection<Entry> compilations) {
@@ -242,7 +242,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
             case OTHER:
                 // REVIEW:
                 out = InputKind.IK_CXX;
-                if (filePath.endsWith(".c")) {
+                if (filePath.endsWith(".c")) {// NOI18N
                     out = InputKind.IK_C;
                 }
                 break;
