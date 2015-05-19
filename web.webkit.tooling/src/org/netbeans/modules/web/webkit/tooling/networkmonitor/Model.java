@@ -47,15 +47,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.AbstractListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-class Model extends AbstractListModel {
+class Model extends AbstractTableModel {
 
     private static final int MAX_NUMBER_OF_REQUESTS = 1000;
 
@@ -98,16 +99,6 @@ class Model extends AbstractListModel {
         addVisibleItem(new ModelItem(null, r, browserFamilyId, project));
     }
 
-    @Override
-    public int getSize() {
-        return visibleRequests.size();
-    }
-
-    @Override
-    public Object getElementAt(int index) {
-        return visibleRequests.get(index);
-    }
-
     void addVisibleItem(final ModelItem modelItem) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -115,7 +106,7 @@ class Model extends AbstractListModel {
                 visibleRequests.add(modelItem);
                 assert modelItem.canBeShownToUser() : modelItem.toString();
                 int index = visibleRequests.size() - 1;
-                fireIntervalAdded(this, index, index);
+                fireTableRowsInserted(index, index);
                 cleanUp();
             }
         });
@@ -123,9 +114,8 @@ class Model extends AbstractListModel {
 
     void reset() {
         assert SwingUtilities.isEventDispatchThread();
-        int size = visibleRequests.size();
         visibleRequests.clear();
-        fireIntervalRemoved(this, 0, size);
+        fireTableDataChanged();
     }
 
     void console(ConsoleMessage message) {
@@ -160,8 +150,56 @@ class Model extends AbstractListModel {
             removed++;
         }
         if (removed > 0) {
-            fireIntervalRemoved(this, 0, removed);
+            fireTableRowsDeleted(0, removed);
         }
+    }
+
+    /**
+     * Returns model item at the specified position.
+     * 
+     * @param index position of the requested model item.
+     * @return model item at the specified position or {@code null}
+     * (when there is no such item).
+     */
+    ModelItem getItem(int index) {
+        return (index == -1) ? null : visibleRequests.get(index);
+    }
+
+    @Override
+    public int getRowCount() {
+        return visibleRequests.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return 2;
+    }
+
+    @Override
+    @NbBundle.Messages({
+        "RequestTable.ColumnName.URL=URL",
+        "RequestTable.ColumnName.Type=Type",
+    })
+    public String getColumnName(int column) {
+        String name;
+        switch (column) {
+            case 0: name = Bundle.RequestTable_ColumnName_URL(); break;
+            case 1: name = Bundle.RequestTable_ColumnName_Type(); break;
+            default: throw new IllegalArgumentException();
+        }
+        return name;
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        ModelItem item = getItem(rowIndex);
+        Object value;
+        switch (columnIndex) {
+            case 0: value = item.getURL(); break;
+            case 1: value = item.getType(); break;
+            default: throw new IllegalArgumentException();
+        }
+        return value;
     }
 
     //~ Inner classes
