@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import org.clang.basic.tok;
+import org.clank.support.Native;
 import org.junit.Assert;
 import org.junit.Test;
 import org.netbeans.modules.cnd.apt.impl.support.APTLiteConstTextToken;
@@ -67,7 +68,7 @@ public class ClankToAPTTest {
     }
     
     static void assertSpellings(int aptTokenType, int clankKind) {
-        CharSequence tokenSimpleSpelling = tok.getTokenSimpleSpelling(clankKind);
+        CharSequence tokenSimpleSpelling = Native.$toString(tok.getPunctuatorSpelling((short)clankKind));
         boolean lwToken = APTLiteConstTextToken.isLiteConstTextType(aptTokenType); 
         assert (tokenSimpleSpelling != null) == lwToken : aptTokenType + " vs. " + tokenSimpleSpelling + ":" + clankKind;
         if (lwToken) {

@@ -46,6 +46,7 @@ import org.clang.basic.tok;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.Token;
 import org.clank.support.Casts;
+import org.clank.support.Native;
 import org.clank.support.aliases.char$ptr;
 import org.clank.support.aliases.char$ptr$array;
 import org.llvm.adt.StringMapEntryBase;
@@ -75,8 +76,8 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.eod: // End of preprocessing directive (end of line inside a
                 // directive).
             case tok.TokenKind.code_completion: // Code completion marker
-            case tok.TokenKind.cxx_defaultarg_end: // C++ default argument end marker
-                assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+/*REMOVED in 3.6            case tok.TokenKind.cxx_defaultarg_end: // C++ default argument end marker*/
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 // C99 6.4.9: Comments.
             case tok.TokenKind.comment: // Comment (only in -E -C[C] mode)
                 return APTTokenTypes.COMMENT;
@@ -91,6 +92,8 @@ public final class ClankToAPTUtils {
                 // C99 6.4.4: Character Constants
             case tok.TokenKind.char_constant: // 'a'
             case tok.TokenKind.wide_char_constant: // L'b'
+                // C++1z Character Constants
+/*3.6 NEW*/ case tok.TokenKind.utf8_char_constant: // u8'a'
                 // C++11 Character Constants
             case tok.TokenKind.utf16_char_constant: // u'a'
             case tok.TokenKind.utf32_char_constant: // U'a'
@@ -204,7 +207,7 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.hashhash:
                 return APTTokenTypes.DBL_SHARP;
             case tok.TokenKind.hashat:
-                assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 // C++ Support
             case tok.TokenKind.periodstar:
                 return APTTokenTypes.DOTMBR;
@@ -218,9 +221,9 @@ public final class ClankToAPTUtils {
                 return APTTokenTypes.AT;
                 // CUDA support.
             case tok.TokenKind.lesslessless:
-                assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
             case tok.TokenKind.greatergreatergreater:
-                assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 // C99 6.4.1: Keywords.  These turn into kw_* tokens.
                 // Flags allowed:
                 //   KEYALL   - This is a keyword in all variants of C and C++, or it
@@ -466,12 +469,22 @@ public final class ClankToAPTUtils {
                 // MS Extensions
             case tok.TokenKind.kw___FUNCDNAME__:
               return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCDNAME__;
+/*3.6 NEW*/ case tok.TokenKind.kw___FUNCSIG__:
+              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCSIG__;
             case tok.TokenKind.kw_L__FUNCTION__:
               return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_L__FUNCTION__;
             case tok.TokenKind.kw___is_interface_class:
               return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_interface_class;
             case tok.TokenKind.kw___is_sealed:
               return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_sealed;
+
+                // MSVC12.0 / VS2013 Type Traits
+/*3.6 NEW*/ case tok.TokenKind.kw___is_destructible:
+/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_destructible:
+/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_assignable:
+/*3.6 NEW*/ case tok.TokenKind.kw___is_constructible:
+/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_constructible:
+              return APTTokenTypes.IDENT;
 
                 // GNU and MS Type Traits
             case tok.TokenKind.kw___has_nothrow_assign:
@@ -496,7 +509,7 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___is_literal:
                 // Name for GCC 4.6 compatibility - people have already written libraries using
                 // this name unfortunately.
-            case tok.TokenKind.kw___is_literal_type:
+/*REMOVED in 3.6            case tok.TokenKind.kw___is_literal_type: */
             case tok.TokenKind.kw___is_pod:
             case tok.TokenKind.kw___is_polymorphic:
             case tok.TokenKind.kw___is_trivial:
@@ -559,22 +572,28 @@ public final class ClankToAPTUtils {
               return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___fastcall;
             case tok.TokenKind.kw___thiscall:
               return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___thiscall;
+/*3.6 NEW*/ case tok.TokenKind.kw___vectorcall:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___vectorcall;
             case tok.TokenKind.kw___forceinline:
               return APTTokenTypes.LITERAL___forceinline;
             case tok.TokenKind.kw___unaligned:
               return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___unaligned;
+/*3.6 NEW*/ case tok.TokenKind.kw___super:
+              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___super;
 
                 // OpenCL-specific keywords
-            case tok.TokenKind.kw___kernel:
-            case tok.TokenKind.kw_vec_step:
-            case tok.TokenKind.kw___private:
             case tok.TokenKind.kw___global:
             case tok.TokenKind.kw___local:
             case tok.TokenKind.kw___constant:
+            case tok.TokenKind.kw___private:
+/*3.6 NEW*/ case tok.TokenKind.kw___generic:
+            case tok.TokenKind.kw___kernel:
             case tok.TokenKind.kw___read_only:
             case tok.TokenKind.kw___write_only:
             case tok.TokenKind.kw___read_write:
             case tok.TokenKind.kw___builtin_astype:
+            case tok.TokenKind.kw_vec_step:
+/* REMOVED in 3.6
             case tok.TokenKind.kw_image1d_t:
             case tok.TokenKind.kw_image1d_array_t:
             case tok.TokenKind.kw_image1d_buffer_t:
@@ -583,13 +602,14 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw_image3d_t:
             case tok.TokenKind.kw_sampler_t:
             case tok.TokenKind.kw_event_t:
-
+*/
                 // Borland Extensions.
             case tok.TokenKind.kw___pascal:
 
                 // Altivec Extension.
             case tok.TokenKind.kw___vector:
             case tok.TokenKind.kw___pixel:
+/*3.6 NEW*/ case tok.TokenKind.kw___bool:
 
                 // OpenCL Extension.
             case tok.TokenKind.kw_half:
@@ -694,6 +714,21 @@ public final class ClankToAPTUtils {
                 // handles them.
             case tok.TokenKind.annot_pragma_fp_contract:
 
+                // Annotation for #pragma pointers_to_members...
+                // The lexer produces these so that they only take effect when the parser
+                // handles them.
+/*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_pointers_to_members:
+
+                // Annotation for #pragma vtordisp...
+                // The lexer produces these so that they only take effect when the parser
+                // handles them.
+/*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_vtordisp:
+
+                // Annotation for all microsoft #pragmas...
+                // The lexer produces these so that they only take effect when the parser
+                // handles them.
+/*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_pragma:
+
                 // Annotation for #pragma OPENCL EXTENSION...
                 // The lexer produces these so that they only take effect when the parser
                 // handles them.
@@ -705,13 +740,20 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.annot_pragma_openmp:
             case tok.TokenKind.annot_pragma_openmp_end:
 
+                // Annotations for loop pragma directives #pragma clang loop ...
+                // The lexer produces these so that they only take effect when the parser
+                // handles #pragma loop ... directives.
+/*3.6 NEW*/ case tok.TokenKind.annot_pragma_loop_hint:
+  
                 // Annotation for module import translated from #include etc.
             case tok.TokenKind.annot_module_include:
+/*3.6 NEW*/ case tok.TokenKind.annot_module_begin:
+/*3.6 NEW*/ case tok.TokenKind.annot_module_end:
             case tok.TokenKind.NUM_TOKENS:
-                assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+                assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
             //</editor-fold>
         }
-        assert false : tok.getTokenName(clankTokenKind) + " [" + tok.getTokenSimpleSpelling(clankTokenKind) + "]";
+        assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
         return APTTokenTypes.EOF;
     }
 
