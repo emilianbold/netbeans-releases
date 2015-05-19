@@ -55,6 +55,7 @@ import java.util.Locale;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -470,27 +471,31 @@ public class NodeExecutable {
 
     private static final class LineConvertorFactoryImpl implements ExecutionDescriptor.LineConvertorFactory {
 
-        private final List<URL> sourceRoots;
+        private final List<File> files;
         private final DebugInfo debugInfo;
 
 
         public LineConvertorFactoryImpl(List<URL> sourceRoots, @NullAllowed DebugInfo debugInfo) {
             assert sourceRoots != null;
-            this.sourceRoots = sourceRoots;
+            files = new CopyOnWriteArrayList<>(toFiles(sourceRoots));
             this.debugInfo = debugInfo;
         }
 
         @Override
         public LineConvertor newLineConvertor() {
-            List<File> files = new ArrayList<>(sourceRoots.size());
+            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
+        }
+
+        private List<File> toFiles(List<URL> sourceRoots) {
+            List<File> result = new ArrayList<>(sourceRoots.size());
             for (URL sourceRoot : sourceRoots) {
                 try {
-                    files.add(Utilities.toFile(sourceRoot.toURI()));
+                    result.add(Utilities.toFile(sourceRoot.toURI()));
                 } catch (URISyntaxException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
             }
-            return new LineConvertorImpl(new FileLineParser(files), debugInfo);
+            return result;
         }
 
     }
