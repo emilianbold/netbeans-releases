@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.refactoring.introduce;
 import javax.swing.JButton;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.refactoring.actions.RefactoringKind;
 import org.netbeans.modules.cnd.refactoring.hints.AssignmentVariableFix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -56,12 +57,12 @@ import org.openide.util.NbBundle;
  */
 public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
     private int numDuplicates;
-    private final IntroduceKind kind;
+    private final RefactoringKind kind;
     private String type;
 
     public ExtendedAssignmentVariableFix(CsmExpression expression, Document doc, FileObject fo) {
         super(expression, doc, fo);
-        kind = IntroduceKind.CREATE_VARIABLE;
+        kind = RefactoringKind.CREATE_VARIABLE;
     }
 
     public String getKeyExt() {
@@ -96,7 +97,7 @@ public class ExtendedAssignmentVariableFix extends AssignmentVariableFix {
         String guessedName = super.suggestName();
         JButton btnOk = new JButton(NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "LBL_Ok"));
         JButton btnCancel = new JButton(NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "LBL_Cancel"));
-        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, type, guessedName, kind == IntroduceKind.CREATE_CONSTANT, btnOk);
+        IntroduceVariablePanel panel = new IntroduceVariablePanel(numDuplicates, type, guessedName, kind == RefactoringKind.CREATE_CONSTANT, btnOk);
         String caption = NbBundle.getMessage(ExtendedAssignmentVariableFix.class, "CAP_" + getKeyExt()); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[]{btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) != btnOk) {

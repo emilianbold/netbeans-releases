@@ -6,19 +6,41 @@
             <folder name="x-c">
                 <file name="org-netbeans-modules-cnd-refactoring-editor-HighlightsLayerFactoryImpl.instance"/>
 
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
+                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
+                    </file>
+
+                    <file name="ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                    </file>
+
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                    </file>
+                    <!--file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file-->
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                    </file>                      
+                </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
-                </folder>
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
-                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
-                    </file>
-                </folder>
+                </folder>                
                 <folder name="Popup">
                     <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
@@ -38,12 +60,12 @@
                     </file>
                 </folder>
                 <folder name="RefactoringActions">
-                    <file name="ChangeParametersAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                    <file name="ChangeParametersAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c/Actions/ChangeParametersAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="EncapsulateFieldsAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                    <file name="EncapsulateFieldsAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c/Actions/EncapsulateFieldsAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
                     <file name="IntroduceSeparator.instance">
@@ -51,7 +73,7 @@
                         <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="IntroduceVariableAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariableGlobal"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
                     <!--file name="IntroduceConstantAction.instance">
@@ -63,7 +85,7 @@
                         <attr name="position" intvalue="1700"/>
                     </file-->
                     <file name="IntroduceMethodAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
                 </folder>
@@ -89,19 +111,42 @@
             </folder>
             <folder name="x-c++">
                 <file name="org-netbeans-modules-cnd-refactoring-editor-HighlightsLayerFactoryImpl.instance"/>
+
+                <folder name="Actions">
+                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
+                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
+                    </file>
+
+                    <file name="ChangeParametersAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                    </file>
+
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                    </file>
+                    <!--file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file-->
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                    </file>                    
+                </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
-                </folder>
-                <folder name="Actions">
-                    <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
-                        <attr name="instanceOf" stringvalue="javax.swing.Action"/>
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
-                    </file>
-                </folder>
+                </folder>                
                 <folder name="Popup">                  
                     <!--
                     <attr name="goto/org-netbeans-modules-cnd-refactoring-actions-FindReferencesAction.shadow" boolvalue="true"/>
@@ -121,12 +166,12 @@
                     </file>
                 </folder>
                 <folder name="RefactoringActions">
-                    <file name="ChangeParametersAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
+                    <file name="ChangeParametersAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c++/Actions/ChangeParametersAction.instance"/>
                         <attr name="position" intvalue="1200"/>
                     </file>
-                    <file name="EncapsulateFieldsAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
+                    <file name="EncapsulateFieldsAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c++/Actions/EncapsulateFieldsAction.instance"/>
                         <attr name="position" intvalue="1300"/>
                     </file>
                     <file name="IntroduceSeparator.instance">
@@ -134,7 +179,7 @@
                         <attr name="position" intvalue="1500"/>
                     </file>
                     <file name="IntroduceVariableAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariableGlobal"/>
                         <attr name="position" intvalue="1600"/>
                     </file>
                     <!--file name="IntroduceConstantAction.instance">
@@ -146,7 +191,7 @@
                         <attr name="position" intvalue="1700"/>
                     </file-->
                     <file name="IntroduceMethodAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
                 </folder>
@@ -190,45 +235,22 @@
             </folder>            
             <folder name="x-h">
                 <file name="org-netbeans-modules-cnd-refactoring-editor-HighlightsLayerFactoryImpl.instance"/>
-                <folder name="Keybindings">
-                    <folder name="NetBeans">
-                        <folder name="Defaults">
-                            <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
-                        </folder>
-                    </folder>
-                </folder>
+
                 <folder name="Actions">
                     <file name="org-netbeans-modules-cnd-refactoring-actions-InstantRenameAction.instance">
                         <attr name="instanceOf" stringvalue="javax.swing.Action"/>
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.refactoring.actions.InstantRenameAction"/>
                     </file>
-                </folder>
-                <folder name="Popup">
-                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-                        <attr name="position" intvalue="1250"/>
-                    </file>
-                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                </folder>
-                <folder name="RefactoringActions">
+
                     <file name="ChangeParametersAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.changeParametersAction"/>
-                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="EncapsulateFieldsAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.encapsulateFieldsAction"/>
-                        <attr name="position" intvalue="1300"/>
                     </file>
-                    <file name="IntroduceSeparator.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
+                    
                     <file name="IntroduceVariableAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariable"/>
-                        <attr name="position" intvalue="1600"/>
                     </file>
                     <!--file name="IntroduceConstantAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
@@ -240,6 +262,52 @@
                     </file-->
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
+                    </file>                      
+                </folder>
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="refactoring-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>                
+                <folder name="Popup">
+                    <file name="org-netbeans-modules-refactoring-api-ui-RSMEditorAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
+                        <attr name="position" intvalue="1250"/>
+                    </file>
+                    <file name="org-netbeans-modules-refactoring-api-ui-WhereUsedAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                </folder>
+                <folder name="RefactoringActions">
+                    <file name="ChangeParametersAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-h/Actions/ChangeParametersAction.instance"/>
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="EncapsulateFieldsAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-h/Actions/EncapsulateFieldsAction.instance"/>
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                    <file name="IntroduceSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1500"/>
+                    </file>
+                    <file name="IntroduceVariableAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createVariableGlobal"/>
+                        <attr name="position" intvalue="1600"/>
+                    </file>
+                    <!--file name="IntroduceConstantAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createConstant"/>
+                        <attr name="position" intvalue="1650"/>
+                    </file>
+                    <file name="IntroduceFieldAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createField"/>
+                        <attr name="position" intvalue="1700"/>
+                    </file-->
+                    <file name="IntroduceMethodAction.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
                 </folder>

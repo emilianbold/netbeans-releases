@@ -56,8 +56,14 @@ import org.openide.util.NbBundle;
 public final class EncapsulateFieldsAction extends CsmRefactoringGlobalAction {
 
     public EncapsulateFieldsAction() {
-        super(NbBundle.getMessage(EncapsulateFieldsAction.class, "LBL_EncapsulateFieldsAction"), null); // NOI18N
+        super(RefactoringKind.ENCAPSULATE_FIELDS.getKey(), null);
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        putValue(NAME, RefactoringKind.ENCAPSULATE_FIELDS.getKey());
+        String displayText = NbBundle.getMessage(ChangeParametersAction.class, "LBL_EncapsulateFieldsAction"); // NOI18N
+        putValue(SHORT_DESCRIPTION,displayText);
+        putValue(POPUP_TEXT,displayText);
+        putValue(MENU_TEXT,displayText);
+
     }
     
     @Override
