@@ -70,13 +70,6 @@ public class SunDatasource implements Datasource {
         this.username = username;
         this.password = password;
         this.driverClassName = driverClassName;
-//        if (scoped && jndiName.startsWith("java:app/")) {
-//            this.displayName = jndiName + " [application scoped]";
-//        } else if (scoped && jndiName.startsWith("java:module/")) {
-//            this.displayName = jndiName + " [module scoped]";
-//        } else {
-//            this.displayName = jndiName;
-//        }
         this.displayName = jndiName;
     }
 

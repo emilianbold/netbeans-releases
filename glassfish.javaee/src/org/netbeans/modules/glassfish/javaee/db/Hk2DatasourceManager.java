@@ -404,7 +404,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         if (!applicationScoped) {
             return jndiName;
         }
-        if (jndiName.startsWith("java:app/") || jndiName.startsWith("java:module")) { // NOI18N
+        if (jndiName.startsWith("java:global/") // NOI18N
+                || jndiName.startsWith("java:app/") // NOI18N
+                || jndiName.startsWith("java:module/") // NOI18N
+                || jndiName.startsWith("java:comp/")) { // NOI18N
             return jndiName;
         }
         return "java:app/" + jndiName; // NOI18N
