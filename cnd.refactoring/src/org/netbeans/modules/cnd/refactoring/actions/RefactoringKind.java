@@ -28,12 +28,27 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.refactoring.introduce;
+package org.netbeans.modules.cnd.refactoring.actions;
 
 /**
  *
  * @author Jan Lahoda
  */
-public enum IntroduceKind {
-    CREATE_VARIABLE, CREATE_CONSTANT, CREATE_FIELD, CREATE_METHOD;
+public enum RefactoringKind {
+    CHANGE_FUNCTION_PARAMETERS("change-function-parameters"), //NOI18N
+    ENCAPSULATE_FIELDS("encapsulate-fields"), //NOI18N
+
+    CREATE_VARIABLE("introduce-variable"), //NOI18N
+    CREATE_CONSTANT("introduce-constant"), //NOI18N
+    CREATE_FIELD("introduce-field"), //NOI18N
+    CREATE_METHOD("introduce-method"), //NOI18N
+    CREATE_PARAMETER("introduce-parameter"); //NOI18N
+
+    private final String key; //Action ID
+    private RefactoringKind(String key) {
+        this.key = key;
+    }
+    public String getKey() {
+        return key;
+    }
 }
