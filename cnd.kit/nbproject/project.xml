@@ -38,13 +38,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.api.codemodel</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.cnd.api.model</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -95,27 +88,6 @@
                     <code-name-base>org.netbeans.modules.cnd.cncppunit</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.codemodel.bridge</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.codemodel.impl.jclank</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.1</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.cnd.codemodel.utils</code-name-base>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

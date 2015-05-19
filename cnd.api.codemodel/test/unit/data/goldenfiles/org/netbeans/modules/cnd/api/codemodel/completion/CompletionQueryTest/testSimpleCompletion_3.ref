@@ -1,3 +1,0 @@
-ResultType=void Text=foo LeftParen=( CurrentParameter=MyClass c RightParen=)  [cursorKind=NotImplemented]
-ResultType=MyClass TypedText=clazz  [cursorKind=VarDecl]
-TypedText=class  [cursorKind=NotImplemented]
