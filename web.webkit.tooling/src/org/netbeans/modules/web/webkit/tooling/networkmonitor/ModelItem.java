@@ -157,6 +157,37 @@ class ModelItem implements PropertyChangeListener {
         return (String)request.getRequest().get("postData");
     }
 
+    /**
+     * Returns URL of the request represented by this model item.
+     * 
+     * @return URL of the request represented by this model item.
+     */
+    String getURL() {
+        String url;
+        if (request != null) {
+            url = (String)request.getRequest().get("url");
+        } else {
+            url = wsRequest.getURL();
+        }
+        return url;
+    }
+
+    /**
+     * Returns type/method of the request represented by this model item.
+     * 
+     * @return returns {@code WebSocket} for WebSocket connections,
+     * returns HTTP method of the request otherwise.
+     */
+    String getType() {
+        String method;
+        if (request != null) {
+            method = (String)request.getRequest().get("method");
+        } else {
+            method = "WebSocket"; // NOI18N
+        }
+        return method;
+    }
+
     @Override
     public String toString() {
         if (request != null) {
