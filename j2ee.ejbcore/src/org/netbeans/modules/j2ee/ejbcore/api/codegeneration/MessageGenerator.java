@@ -94,12 +94,15 @@ public final class MessageGenerator {
 
     private static final String DESTINATION_LOOKUP = "destinationLookup"; //NOI18N
 
+    private static final String QUEUE_INTERFACE = "javax.jms.Queue"; // NOI18N
+
+    private static final String TOPIC_INTERFACE = "javax.jms.Topic"; // NOI18N
+
     // informations collected in wizard
     private final FileObject pkg;
     private final MessageDestination messageDestination;
     private final boolean isSimplified;
     private final boolean isXmlBased;
-    private final Map<String, String> properties;
     private final Profile profile;
     private final JmsSupport jmsSupport;
 
@@ -123,7 +126,6 @@ public final class MessageGenerator {
         this.messageDestination = messageDestination;
         this.isSimplified = isSimplified;
         this.isXmlBased = !isSimplified;
-        this.properties = properties;
         this.ejbNameOptions = new EJBNameOptions();
         this.ejbName = ejbNameOptions.getMessageDrivenEjbNamePrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbNameSuffix();
         this.ejbClassName = ejbNameOptions.getMessageDrivenEjbClassPrefix() + wizardTargetName + ejbNameOptions.getMessageDrivenEjbClassSuffix();
@@ -207,12 +209,12 @@ public final class MessageGenerator {
         FileObject mdb = GenerationUtils.createClass(EJB30_MESSAGE_DRIVEN_BEAN,  pkg, ejbClassName, null, templateParameters);
         if (messageDestination instanceof JmsDestinationDefinition
                 && ((JmsDestinationDefinition) messageDestination).isToGenerate()) {
-            generateJMSDestinationDefinition(mdb);
+            generateJMSDestinationDefinition(mdb, (JmsDestinationDefinition) messageDestination);
         }
         return mdb;
     }
 
-    private void generateJMSDestinationDefinition(FileObject classFile) throws IOException {
+    private void generateJMSDestinationDefinition(FileObject classFile, final JmsDestinationDefinition def) throws IOException {
         JavaSource js = JavaSource.forFileObject(classFile);
         js.runModificationTask(new Task<WorkingCopy>() {
             @Override
@@ -226,13 +228,13 @@ public final class MessageGenerator {
                 TreeMaker tm = parameter.getTreeMaker();
                 List<ExpressionTree> values = new ArrayList<ExpressionTree>(2);
                 ExpressionTree nameQualIdent = tm.QualIdent("name"); //NOI18N
-                values.add(tm.Assignment(nameQualIdent, tm.Literal(properties.get("destinationLookup")))); //NOI18N
+                values.add(tm.Assignment(nameQualIdent, tm.Literal(def.getName())));
                 ExpressionTree classnameQualIdent = tm.QualIdent("interfaceName"); //NOI18N
-                values.add(tm.Assignment(classnameQualIdent, tm.Literal(properties.get("destinationType")))); //NOI18N
+                values.add(tm.Assignment(classnameQualIdent, tm.Literal(getInterfaceName(def))));
                 ExpressionTree resourceAdapterQualIdent = tm.QualIdent("resourceAdapter"); //NOI18N
                 values.add(tm.Assignment(resourceAdapterQualIdent, tm.Literal("jmsra"))); //NOI18N
                 ExpressionTree destinationNameQualIdent = tm.QualIdent("destinationName"); //NOI18N
-                values.add(tm.Assignment(destinationNameQualIdent, tm.Literal(getPhysicalName(properties.get("destinationLookup"))))); //NOI18N
+                values.add(tm.Assignment(destinationNameQualIdent, tm.Literal(getPhysicalName(def.getName())))); //NOI18N
 
                 List<AnnotationTree> annotations = new ArrayList<AnnotationTree>(modifiers.getAnnotations());
                 annotations.add(0, tm.Annotation(tm.QualIdent(el), values));
@@ -249,6 +251,21 @@ public final class MessageGenerator {
         } else {
             return jndiName.substring(lastSlashIndex + 1);
         }
+    }
+
+    private static String getInterfaceName(JmsDestinationDefinition def) {
+        String interfaceName = null;
+        switch (def.getType()) {
+            case QUEUE:
+                interfaceName = QUEUE_INTERFACE;
+                break;
+            case TOPIC:
+                interfaceName = TOPIC_INTERFACE;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        return interfaceName;
     }
     
     @SuppressWarnings("deprecation") //NOI18N
