@@ -178,14 +178,27 @@ class ModelItem implements PropertyChangeListener {
      * @return returns {@code WebSocket} for WebSocket connections,
      * returns HTTP method of the request otherwise.
      */
-    String getType() {
+    String getHTTPMethod() {
         String method;
         if (request != null) {
-            method = (String)request.getRequest().get("method");
+            method = (String)request.getRequest().get("method"); // NOI18N
         } else {
             method = "WebSocket"; // NOI18N
         }
         return method;
+    }
+
+    /**
+     * Returns the content type of the request represented by this model item.
+     * 
+     * @return content type of the request represented by this model item.
+     */
+    String getContentType() {
+        String contentType = null;
+        if (hasResponseData()) {
+            contentType = stripDownContentType((JSONObject)request.getResponse().get("headers")); // NOI18N
+        }
+        return contentType;
     }
 
     @Override
@@ -425,7 +438,7 @@ class ModelItem implements PropertyChangeListener {
             pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
             pane.setText(data);
         } else {
-            String contentType = stripDownContentType((JSONObject)request.getResponse().get("headers"));
+            String contentType = getContentType();
             reformatAndUseRightEditor(pane, data, contentType);
         }
         pane.setCaretPosition(0);

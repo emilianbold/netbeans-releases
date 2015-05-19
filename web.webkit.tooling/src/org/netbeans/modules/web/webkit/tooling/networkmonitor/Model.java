@@ -172,19 +172,21 @@ class Model extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 2;
+        return 3;
     }
 
     @Override
     @NbBundle.Messages({
         "RequestTable.ColumnName.URL=URL",
-        "RequestTable.ColumnName.Type=Type",
+        "RequestTable.ColumnName.HTTPMethod=Method",
+        "RequestTable.ColumnName.ContentType=Content Type"
     })
     public String getColumnName(int column) {
         String name;
         switch (column) {
             case 0: name = Bundle.RequestTable_ColumnName_URL(); break;
-            case 1: name = Bundle.RequestTable_ColumnName_Type(); break;
+            case 1: name = Bundle.RequestTable_ColumnName_HTTPMethod(); break;
+            case 2: name = Bundle.RequestTable_ColumnName_ContentType(); break;
             default: throw new IllegalArgumentException();
         }
         return name;
@@ -196,7 +198,11 @@ class Model extends AbstractTableModel {
         Object value;
         switch (columnIndex) {
             case 0: value = item.getURL(); break;
-            case 1: value = item.getType(); break;
+            case 1: value = item.getHTTPMethod(); break;
+            case 2: 
+                value = item.getContentType();
+                value = (value == null) ? "-" : value; // NOI18N
+                break;
             default: throw new IllegalArgumentException();
         }
         return value;
