@@ -46,14 +46,15 @@ made subject to such option by the copyright holder.
 <project name="libs.clank" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
     <!--load env variables-->
-    <property environment="env"/>
-    <property name="env.SPUTNIK" value=""/>
-    
-    <property name="clank.suite.dir" value="${env.SPUTNIK}/clank.suite"/>
-    <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
-    <property name="clank.dest.dir" value="${basedir}/external"/>
-    
-    <target name="-check-clank-paths"> 
+
+    <target name="-check-clank-paths" if="copy.clank.jars"> 
+
+      <property environment="env"/>
+      <property name="env.SPUTNIK" value=""/>
+
+      <property name="clank.suite.dir" value="${env.SPUTNIK}/clank.suite"/>
+      <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
+
       <condition property="SPUTNIK.found">
           <not>
               <equals arg1="${env.SPUTNIK}" arg2=""/>
@@ -71,10 +72,19 @@ made subject to such option by the copyright holder.
       <fail unless="clank.suite.contains-files" message="${clank.suite.jars.dir} doesn't contain jar files. ${clank.suite.dir} was not built?"/>        
     </target>
     
-    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep">
-      <echo message="copy ${clank.suite.jars.dir}/*.jar into ${clank.dest.dir}" />
-      <copy todir="${clank.dest.dir}" overwrite="true">
-        <fileset refid="clank.jars.fileset"/>
-      </copy>
+    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep" if="copy.clank.jars">
+      <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
+      <echo message="Zipping .jar files from ${clank.suite.jars.dir}/*.jar into ${clank.dest.zip}" />
+      <zip basedir="${clank.suite.jars.dir}" destfile="${clank.dest.zip}">
+          <fileset dir="${clank.suite.jars.dir}" includes="*.jar"/>
+      </zip>
+    </target>
+
+    <target name="netbeans" depends="projectized-common.netbeans" if="copy.clank.jars">
+        <!-- The only purpose of this target is to print warning below in the very end, rather than in the middle -->
+        <echo level="warning" message="################################################################################"></echo>
+        <echo level="warning" message="# Attention: clank was not downloaded, but copied from here:"></echo>
+        <echo level="warning" message="# ${clank.suite.jars.dir}"></echo>
+        <echo level="warning" message="################################################################################"></echo>
     </target>
 </project>
