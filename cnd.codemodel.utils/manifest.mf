@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+OpenIDE-Module: org.netbeans.modules.cnd.codemodel.utils/1
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/cnd/codemodel/utils/Bundle.properties
+OpenIDE-Module-Specification-Version: 0.1
+

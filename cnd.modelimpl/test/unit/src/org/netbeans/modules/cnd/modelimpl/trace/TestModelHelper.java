@@ -68,7 +68,7 @@ public final class TestModelHelper {
         }
     }
     
-    /*package-local*/ TraceModel getTraceModel() {
+    public TraceModel getTraceModel() {
         return traceModel;
     }
     

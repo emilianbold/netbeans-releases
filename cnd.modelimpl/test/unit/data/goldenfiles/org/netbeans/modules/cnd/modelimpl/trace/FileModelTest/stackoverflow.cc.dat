@@ -6,7 +6,7 @@ MACROS (sorted 148):
 <U>#define '["ALGEBRA_PHASE",<ID>,line=15,col=9],offset=643,file=null'='["(",<LPAREN>,line=15,col=29],offset=663,file=null ["BUFFERING_PHASE",<ID>,line=15,col=30],offset=664,file=null ["+",<PLUS>,line=15,col=45],offset=679,file=null ["1",<DECIMALINT>,line=15,col=46],offset=680,file=null [")",<RPAREN>,line=15,col=47],offset=681,file=null'
 <U>#define '["ALIAS_PHASE",<ID>,line=105,col=9],offset=4674,file=null'='["(",<LPAREN>,line=105,col=29],offset=4694,file=null ["CLONE_PHASE",<ID>,line=105,col=30],offset=4695,file=null ["+",<PLUS>,line=105,col=42],offset=4707,file=null ["1",<DECIMALINT>,line=105,col=44],offset=4709,file=null [")",<RPAREN>,line=105,col=45],offset=4710,file=null'
 <U>#define '["ANSI_ALIAS",<ID>,line=54,col=9],offset=2387,file=null'='["(",<LPAREN>,line=54,col=29],offset=2407,file=null ["HEIGHT_REASSOC_PHASE",<ID>,line=54,col=30],offset=2408,file=null ["+",<PLUS>,line=54,col=50],offset=2428,file=null ["1",<DECIMALINT>,line=54,col=51],offset=2429,file=null [")",<RPAREN>,line=54,col=52],offset=2430,file=null'
-<U>#define '["AUTO_INLINING_PHASE",<ID>,line=11,col=9],offset=451,file=null'='["(",<LPAREN>,line=11,col=29],offset=471,file=null ["BB_MERGE_PHASE",<ID>,line=11,col=30],offset=472,file=null ["+",<PLUS>,line=11,col=44],offset=486,file=null ["1",<DECIMALINT>,line=11,col=45],offset=487,file=null [")",<RPAREN>,line=11,col=46],offset=488,file=null'
+<U>#define '["AUTO_INLINING_PHASE",<ID>,line=11,col=9],offset=451,file=null'='["(",<LPAREN>,line=11,col=29],offset=471,file=null ["BB_MERGE_PHASE",<ID>,line=11,col=30],offset=472,file=null ["+",<PLUS>,line=11,col=44],offset=486,file=null ["1",<DECIMALINT>,line=11,col=45],offset=487,file=null [")",<RPAREN>,line=11,col=47],offset=489,file=null'
 <U>#define '["BACK_PHASE",<ID>,line=46,col=9],offset=2026,file=null'='["(",<LPAREN>,line=46,col=29],offset=2046,file=null ["RESTRICT_G",<ID>,line=46,col=30],offset=2047,file=null ["+",<PLUS>,line=46,col=40],offset=2057,file=null ["1",<DECIMALINT>,line=46,col=41],offset=2058,file=null [")",<RPAREN>,line=46,col=42],offset=2059,file=null'
 <U>#define '["BB_MERGE_PHASE",<ID>,line=10,col=9],offset=406,file=null'='["(",<LPAREN>,line=10,col=29],offset=426,file=null ["UNROLL_PHASE",<ID>,line=10,col=30],offset=427,file=null ["+",<PLUS>,line=10,col=42],offset=439,file=null ["1",<DECIMALINT>,line=10,col=43],offset=440,file=null [")",<RPAREN>,line=10,col=44],offset=441,file=null'
 <U>#define '["BCOPY_PHASE",<ID>,line=71,col=9],offset=3137,file=null'='["(",<LPAREN>,line=71,col=29],offset=3153,file=null ["BMERGE_PHASE",<ID>,line=71,col=30],offset=3154,file=null ["+",<PLUS>,line=71,col=42],offset=3166,file=null ["1",<DECIMALINT>,line=71,col=43],offset=3167,file=null [")",<RPAREN>,line=71,col=44],offset=3168,file=null'
@@ -36,7 +36,7 @@ MACROS (sorted 148):
 <U>#define '["DDREFS_PHASE",<ID>,line=40,col=9],offset=1774,file=null'='["(",<LPAREN>,line=40,col=29],offset=1794,file=null ["UJAM_PHASE",<ID>,line=40,col=30],offset=1795,file=null ["+",<PLUS>,line=40,col=40],offset=1805,file=null ["1",<DECIMALINT>,line=40,col=41],offset=1806,file=null [")",<RPAREN>,line=40,col=42],offset=1807,file=null'
 <U>#define '["DEAD_PHASE",<ID>,line=49,col=9],offset=2157,file=null'='["(",<LPAREN>,line=49,col=29],offset=2177,file=null ["REDUCE_PHASE",<ID>,line=49,col=30],offset=2178,file=null ["+",<PLUS>,line=49,col=42],offset=2190,file=null ["1",<DECIMALINT>,line=49,col=43],offset=2191,file=null [")",<RPAREN>,line=49,col=44],offset=2192,file=null'
 <U>#define '["DEBUG_COMPOSITE_BREAK",<ID>,line=20,col=9],offset=876,file=null'='["(",<LPAREN>,line=20,col=31],offset=898,file=null ["REASSOC_PHASE",<ID>,line=20,col=32],offset=899,file=null ["+",<PLUS>,line=20,col=45],offset=912,file=null ["1",<DECIMALINT>,line=20,col=46],offset=913,file=null [")",<RPAREN>,line=20,col=47],offset=914,file=null'
-<U>#define '["DEBUG_REFERENCES",<ID>,line=16,col=9],offset=691,file=null'='["(",<LPAREN>,line=16,col=29],offset=711,file=null ["ALGEBRA_PHASE",<ID>,line=16,col=30],offset=712,file=null ["+",<PLUS>,line=16,col=43],offset=725,file=null ["1",<DECIMALINT>,line=16,col=44],offset=726,file=null [")",<RPAREN>,line=16,col=45],offset=727,file=null'
+<U>#define '["DEBUG_REFERENCES",<ID>,line=16,col=9],offset=691,file=null'='["(",<LPAREN>,line=16,col=29],offset=711,file=null ["ALGEBRA_PHASE",<ID>,line=16,col=30],offset=712,file=null ["+",<PLUS>,line=16,col=43],offset=725,file=null ["1",<DECIMALINT>,line=16,col=44],offset=726,file=null [")",<RPAREN>,line=16,col=46],offset=728,file=null'
 <U>#define '["DEBUG_TYPE_CHECK",<ID>,line=17,col=9],offset=738,file=null'='["(",<LPAREN>,line=17,col=29],offset=758,file=null ["DEBUG_REFERENCES",<ID>,line=17,col=30],offset=759,file=null ["+",<PLUS>,line=17,col=46],offset=775,file=null ["1",<DECIMALINT>,line=17,col=47],offset=776,file=null [")",<RPAREN>,line=17,col=48],offset=777,file=null'
 <U>#define '["DISTR_REASSOC_PHASE",<ID>,line=52,col=9],offset=2287,file=null'='["(",<LPAREN>,line=52,col=29],offset=2307,file=null ["REASSOC2_PHASE",<ID>,line=52,col=30],offset=2308,file=null ["+",<PLUS>,line=52,col=44],offset=2322,file=null ["1",<DECIMALINT>,line=52,col=45],offset=2323,file=null [")",<RPAREN>,line=52,col=46],offset=2324,file=null'
 <U>#define '["ELIMINATE_PHASE",<ID>,line=33,col=9],offset=1459,file=null'='["(",<LPAREN>,line=33,col=29],offset=1479,file=null ["FUSION_PHASE",<ID>,line=33,col=30],offset=1480,file=null ["+",<PLUS>,line=33,col=42],offset=1492,file=null ["1",<DECIMALINT>,line=33,col=43],offset=1493,file=null [")",<RPAREN>,line=33,col=44],offset=1494,file=null'
@@ -84,7 +84,7 @@ MACROS (sorted 148):
 <U>#define '["LOOP_REFORM_PHASE",<ID>,line=95,col=9],offset=4187,file=null'='["(",<LPAREN>,line=95,col=29],offset=4207,file=null ["LOOP_PEELING_PHASE",<ID>,line=95,col=30],offset=4208,file=null ["+",<PLUS>,line=95,col=48],offset=4226,file=null ["1",<DECIMALINT>,line=95,col=49],offset=4227,file=null [")",<RPAREN>,line=95,col=50],offset=4228,file=null'
 <U>#define '["LOOP_SHIFTING_PHASE",<ID>,line=96,col=9],offset=4238,file=null'='["(",<LPAREN>,line=96,col=29],offset=4258,file=null ["LOOP_REFORM_PHASE",<ID>,line=96,col=30],offset=4259,file=null ["+",<PLUS>,line=96,col=47],offset=4276,file=null ["1",<DECIMALINT>,line=96,col=48],offset=4277,file=null [")",<RPAREN>,line=96,col=49],offset=4278,file=null'
 <U>#define '["LOOP_UNIMODULAR_PHASE",<ID>,line=127,col=9],offset=5746,file=null'='["(",<LPAREN>,line=127,col=35],offset=5772,file=null ["LOOP_NORM_PHASE",<ID>,line=127,col=36],offset=5773,file=null ["+",<PLUS>,line=127,col=51],offset=5788,file=null ["1",<DECIMALINT>,line=127,col=52],offset=5789,file=null [")",<RPAREN>,line=127,col=53],offset=5790,file=null'
-<U>#define '["MAX_PHASES",<ID>,line=148,col=9],offset=6952,file=null'='["BUILTIN_OPT_PHASE",<ID>,line=148,col=35],offset=6978,file=null'
+<U>#define '["MAX_PHASES",<ID>,line=148,col=9],offset=6952,file=null'='["BUILTIN_OPT_PHASE",<ID>,line=148,col=36],offset=6979,file=null'
 <U>#define '["MEASUREMENT_PHASE",<ID>,line=133,col=9],offset=6084,file=null'='["(",<LPAREN>,line=133,col=35],offset=6110,file=null ["LOOP_CONDITION_PHASE",<ID>,line=133,col=36],offset=6111,file=null ["+",<PLUS>,line=133,col=57],offset=6132,file=null ["1",<DECIMALINT>,line=133,col=59],offset=6134,file=null [")",<RPAREN>,line=133,col=60],offset=6135,file=null'
 <U>#define '["MEM_INSTRUMENT_PHASE",<ID>,line=129,col=9],offset=5856,file=null'='["(",<LPAREN>,line=129,col=30],offset=5877,file=null ["OMP_SCOPT_PHASE",<ID>,line=129,col=31],offset=5878,file=null ["+",<PLUS>,line=129,col=47],offset=5894,file=null ["1",<DECIMALINT>,line=129,col=49],offset=5896,file=null [")",<RPAREN>,line=129,col=50],offset=5897,file=null'
 <U>#define '["MEM_MERGE_PATTERN_PHASE",<ID>,line=134,col=9],offset=6145,file=null'='["(",<LPAREN>,line=134,col=35],offset=6171,file=null ["MEASUREMENT_PHASE",<ID>,line=134,col=36],offset=6172,file=null ["+",<PLUS>,line=134,col=54],offset=6190,file=null ["1",<DECIMALINT>,line=134,col=56],offset=6192,file=null [")",<RPAREN>,line=134,col=57],offset=6193,file=null'
@@ -162,7 +162,7 @@ Macros:
 #define 'ALGEBRA_PHASE' [15:1/635-15:48/682]
 #define 'ALIAS_PHASE' [105:1/4666-105:46/4711]
 #define 'ANSI_ALIAS' [54:1/2379-54:53/2431]
-#define 'AUTO_INLINING_PHASE' [11:1/443-11:47/489]
+#define 'AUTO_INLINING_PHASE' [11:1/443-11:48/490]
 #define 'BACK_PHASE' [46:1/2018-46:43/2060]
 #define 'BB_MERGE_PHASE' [10:1/398-10:45/442]
 #define 'BCOPY_PHASE' [71:1/3129-71:45/3169]
@@ -192,7 +192,7 @@ Macros:
 #define 'DDREFS_PHASE' [40:1/1766-40:43/1808]
 #define 'DEAD_PHASE' [49:1/2149-49:45/2193]
 #define 'DEBUG_COMPOSITE_BREAK' [20:1/868-20:48/915]
-#define 'DEBUG_REFERENCES' [16:1/683-16:46/728]
+#define 'DEBUG_REFERENCES' [16:1/683-16:47/729]
 #define 'DEBUG_TYPE_CHECK' [17:1/730-17:49/778]
 #define 'DISTR_REASSOC_PHASE' [52:1/2279-52:47/2325]
 #define 'ELIMINATE_PHASE' [33:1/1451-33:45/1495]
@@ -240,7 +240,7 @@ Macros:
 #define 'LOOP_REFORM_PHASE' [95:1/4179-95:51/4229]
 #define 'LOOP_SHIFTING_PHASE' [96:1/4230-96:50/4279]
 #define 'LOOP_UNIMODULAR_PHASE' [127:1/5738-127:54/5791]
-#define 'MAX_PHASES' [148:1/6944-148:52/6995]
+#define 'MAX_PHASES' [148:1/6944-148:53/6996]
 #define 'MEASUREMENT_PHASE' [133:1/6076-133:61/6136]
 #define 'MEM_INSTRUMENT_PHASE' [129:1/5848-129:51/5898]
 #define 'MEM_MERGE_PATTERN_PHASE' [134:1/6137-134:58/6194]

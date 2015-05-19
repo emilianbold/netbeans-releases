@@ -1,0 +1,2 @@
+ResultType=int TypedText=public_method_1 LeftParen=( RightParen=)  [cursorKind=CXXMethod]
+ResultType=int TypedText=public_field_1  [cursorKind=FieldDecl]

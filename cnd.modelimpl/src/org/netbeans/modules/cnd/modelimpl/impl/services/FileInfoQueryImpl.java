@@ -30,18 +30,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -55,29 +50,26 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFileInfoQuerySupport;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankFileInfoQuerySupport;
 import org.netbeans.modules.cnd.modelimpl.platform.CndParserResult;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -335,44 +327,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                     try {
                         long lastParsedTime = fileImpl.getLastParsedTime();
-                        APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
-                        if (apt != null) {
-                            Collection<APTPreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
-                            if (interrupter.cancelled()) {
-                                return out;
-                            }
-                            if (handlers.isEmpty()) {
-                                DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + file.getAbsolutePath())); //NOI18N
-                                return Collections.<CsmReference>emptyList();
-                            } else if (handlers.size() == 1) {
-                                APTPreprocHandler handler = handlers.iterator().next();
-                                State state = handler.getState();
-                                // ask for concurrent entry if absent
-                                APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
-                                APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry) {
-
-                                    @Override
-                                    protected boolean isStopped() {
-                                        return super.isStopped() || interrupter.cancelled();
-                                    }
-                                };
-                                out = walker.collectMacros();
-                                // remember walk info
-                                fileImpl.setAPTCacheEntry(state, cacheEntry, false);
-                            } else {
-                                Comparator<CsmReference> comparator = new OffsetableComparator<>();
-                                TreeSet<CsmReference> result = new TreeSet<>(comparator);
-                                for (APTPreprocHandler handler : handlers) {
-                                    // ask for concurrent entry if absent
-                                    State state = handler.getState();
-                                    APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
-                                    APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry);
-                                    result.addAll(walker.collectMacros());
-                                    // remember walk info
-                                    fileImpl.setAPTCacheEntry(state, cacheEntry, false);
-                                }
-                                out = new ArrayList<>(result);
-                            }
+                        if (APTTraceFlags.USE_CLANK) {
+                          out = ClankFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
+                        } else {
+                          out = APTFileInfoQuerySupport.getMacroUsages(fileImpl, interrupter);
                         }
                         if (lastParsedTime == fileImpl.getLastParsedTime()) {
                             fileImpl.setLastMacroUsages(out);
@@ -395,35 +353,10 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public CsmOffsetable getGuardOffset(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            try {
-                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
-
-                GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
-                TokenStream ts = guardWalker.getTokenStream();
-                try {
-                    Token token = ts.nextToken();
-                    while (!APTUtils.isEOF(token)) {
-                        if (!APTUtils.isCommentToken(token)) {
-                            guardWalker.clearGuard();
-                            break;
-                        }
-                        token = ts.nextToken();
-                    }
-                } catch (TokenStreamException ex) {
-                    guardWalker.clearGuard();
-                }
-
-                Token guard = guardWalker.getGuard();
-                if (guard != null) {
-                    if (guard instanceof APTToken) {
-                        APTToken aptGuard = ((APTToken) guard);
-                        return new Offsetable(file, aptGuard.getOffset(), aptGuard.getEndOffset());
-                    }
-                }
-            } catch (FileNotFoundException ex) {
-                // file could be removed
-            } catch (IOException ex) {
-                System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+            if (APTTraceFlags.USE_CLANK) {
+              return ClankFileInfoQuerySupport.getGuardOffset(fileImpl);
+            } else {
+              return APTFileInfoQuerySupport.getGuardOffset(fileImpl);
             }
         }
         return null;
@@ -610,7 +543,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
 
     @Override
     public List<CsmInclude> getIncludeStack(CsmErrorDirective err) {
-        APTPreprocHandler.State state = null;
+        PreprocHandler.State state = null;
         if (err instanceof ErrorDirectiveImpl) {
             state = ((ErrorDirectiveImpl)err).getState();
         }
@@ -624,7 +557,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     
     @Override
     public List<CsmInclude> getIncludeStack(CsmFile file) {
-        APTPreprocHandler.State state = null;
+        PreprocHandler.State state = null;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             // use stack from one of states (i.e. first)
@@ -634,7 +567,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         return getIncludeStackImpl(state);
     }
     
-    private List<CsmInclude> getIncludeStackImpl(APTPreprocHandler.State state) {
+    private List<CsmInclude> getIncludeStackImpl(PreprocHandler.State state) {
         if (state == null) {
             return Collections.<CsmInclude>emptyList();
         }
@@ -689,18 +622,6 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             }
         }
         return Collections.<CsmInclude>emptyList();
-    }
-
-    private static class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
-        @Override
-        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
-            int diff = o1.getStartOffset() - o2.getStartOffset();
-            if (diff == 0) {
-                return o1.getEndOffset() - o2.getEndOffset();
-            } else {
-                return diff;
-            }
-        }
     }
 
     @Override

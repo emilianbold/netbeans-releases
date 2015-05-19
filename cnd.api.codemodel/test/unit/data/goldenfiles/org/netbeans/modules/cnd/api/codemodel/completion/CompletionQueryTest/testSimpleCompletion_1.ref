@@ -1,0 +1,5 @@
+ResultType=MyClass & TypedText=operator= LeftParen=( Placeholder=const MyClass & RightParen=)  [cursorKind=CXXMethod]
+ResultType=int TypedText=public_method_1 LeftParen=( RightParen=)  [cursorKind=CXXMethod]
+ResultType=void TypedText=~MyClass LeftParen=( RightParen=)  [cursorKind=Destructor]
+ResultType=int TypedText=public_field_1  [cursorKind=FieldDecl]
+TypedText=MyClass Text=::  [cursorKind=ClassDecl]

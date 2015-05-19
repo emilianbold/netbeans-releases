@@ -1,0 +1,8 @@
+Declarations:
+Decl of CXXClass name=MyClass usr=c:@C@MyClass loc=1:7(6)
+Decl of CXXClass name=MyClass usr=c:@C@MyClass loc=6:7(51)
+References:
+kind=Direct loc=11:9(109) refEntity=CXXClass name=MyClass usr=c:@C@MyClass
+kind=Direct loc=27:5(330) refEntity=CXXClass name=MyClass usr=c:@C@MyClass
+kind=Direct loc=28:5(346) refEntity=CXXClass name=MyClass usr=c:@C@MyClass
+kind=Direct loc=35:5(460) refEntity=CXXClass name=MyClass usr=c:@C@MyClass

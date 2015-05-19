@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -110,10 +110,10 @@ public final class ParserThread implements Runnable {
                     String parseCase = ": Parsing "; // NOI18N
                     ProjectBase project = null;
                     try {
-                        Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
-                        Collection<APTPreprocHandler> preprocHandlers = new ArrayList<>(states.size());
+                        Collection<PreprocHandler.State> states = entry.getPreprocStates();
+                        Collection<PreprocHandler> preprocHandlers = new ArrayList<>(states.size());
                         project = file.getProjectImpl(true);
-                        for (APTPreprocHandler.State state : states) {
+                        for (PreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
                                     CndUtils.assertTrueInConsole(states.size() == 1, "Dummy state sould never be mixed with normal states \n", states); //NOI18N
@@ -126,7 +126,7 @@ public final class ParserThread implements Runnable {
                                     parseCase = ": PARTIAL Reparsing "; // NOI18N
                                     break;
                                 }
-                                APTPreprocHandler preprocHandler = project.createPreprocHandlerFromState(file.getAbsolutePath(), state);
+                                PreprocHandler preprocHandler = project.createPreprocHandlerFromState(file.getAbsolutePath(), state);
                                 if (TraceFlags.TRACE_PARSER_QUEUE) {
                                     System.err.println("before ensureParse on " + file.getAbsolutePath() +
                                             ParserQueue.tracePreprocState(state));

@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
@@ -70,11 +69,6 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     ////////////////////////////////////////////////////////////////////////////
     //  access to FileImpl methods
     ////////////////////////////////////////////////////////////////////////////
-    
-    @Override
-    public APTFile getFileAPT(FileImpl file, boolean full) {
-        return file.getFileAPT(full);
-    }
 
     @Override
     public int getErrorCount(FileImpl fileImpl) {
@@ -101,12 +95,12 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     }
 
     @Override
-    public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState) {
+    public PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, PreprocHandler.State newState) {
         return csmFile.getCachedVisitedState(newState);
     }
 
     @Override
-    public void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState) {
+    public void cacheVisitedState(FileImpl csmFile, PreprocHandler.State newState, PreprocHandler preprocHandler, FilePreprocessorConditionState pcState) {
         csmFile.cacheVisitedState(newState, preprocHandler, pcState);
     }
         
@@ -150,12 +144,12 @@ final class AccessorImpl extends CsmCorePackageAccessor {
     
     @Override
     public FilePreprocessorConditionState createPCState(CharSequence file, int[] deadBlocks) {
-        return FilePreprocessorConditionState.Builder.build(file, deadBlocks);
+        return FilePreprocessorConditionState.build(file, deadBlocks);
     }
         
     @Override
     public int[] getPCStateDeadBlocks(FilePreprocessorConditionState pcState) {
-        return FilePreprocessorConditionState.Builder.getDeadBlocks(pcState);
+        return FilePreprocessorConditionState.getDeadBlocks(pcState);
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -44,49 +44,18 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+
 /**
  * composition of include handler and macro map for parsing file phase
  * @author Vladimir Voskresensky
  */
-public interface APTPreprocHandler {
-    /*
-     * save/restore state of handler
-     */
-    public State getState();
-    public void setState(State state);
-    
-    // key which can be used in caches 
-    public interface StateKey {};
+public interface APTPreprocHandler extends PreprocHandler {
 
-    /** immutable state object of preprocessor handler */
-    public interface State {
-        /**
-         * check whether state correspond to compile phase or not;
-         * the flag is "true" when state was created for source file or 
-         * for header included from source file
-         */ 
-        public boolean isCompileContext();
-        
-        /**
-         * check whether state has cached information or cleaned
-         */
-        public boolean isCleaned();       
-        
-        /**
-         * check whether state is valid
-         */
-        public boolean isValid();
-        
-        public CharSequence getLanguage();
-
-        public CharSequence getLanguageFlavor();
-    };   
-    
-    public APTMacroMap getMacroMap();
-    public APTIncludeHandler getIncludeHandler();
-    
-    public boolean isCompileContext();
-    public boolean isValid();
-    public CharSequence getLanguage();
-    public CharSequence getLanguageFlavor();
+    @Override
+    public PPMacroMap getMacroMap();
+    @Override
+    public PPIncludeHandler getIncludeHandler();
 }

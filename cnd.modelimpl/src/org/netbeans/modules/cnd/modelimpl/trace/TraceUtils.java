@@ -49,8 +49,9 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.Collection;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
@@ -77,22 +78,22 @@ public class TraceUtils {
         }
     }
 
-    public static final String getMacroString(APTPreprocHandler preprocHandler, Collection<String> logMacros) {
+    public static final String getMacroString(PreprocHandler preprocHandler, Collection<String> logMacros) {
         StringBuilder sb = new StringBuilder();
         if (logMacros != null) {
             for (String macro : logMacros) {
                 sb.append(String.format(" #defined(%s)=%b", //NOI18N
-                        macro, preprocHandler.getMacroMap().isDefined(macro)));
+                        macro, ((APTMacroCallback)preprocHandler.getMacroMap()).isDefined(macro)));
             }
         }        
         return sb.toString();
     }
 
-    public static final String getPreprocStateString(APTPreprocHandler.State preprocState) {
+    public static final String getPreprocStateString(PreprocHandler.State preprocState) {
         return String.format("valid=%b, compile-context=%b, cleaned=%b", preprocState.isValid(), preprocState.isCompileContext(), preprocState.isCleaned());//NOI18N
     }   
 
-    public static final String getPreprocStartEntryString(APTPreprocHandler.State preprocState) {
+    public static final String getPreprocStartEntryString(PreprocHandler.State preprocState) {
         StartEntry startEntry = APTHandlersSupport.extractStartEntry(preprocState);
         if (startEntry == null) {
             return "no start entry info"; // NOI18N
