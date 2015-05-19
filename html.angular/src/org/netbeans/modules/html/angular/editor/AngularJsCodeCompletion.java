@@ -81,6 +81,7 @@ public class AngularJsCodeCompletion implements CompletionProvider {
 
     private enum AngularContext {
         CONTROLLER, // controller name
+        LINK, // component name
         UNKNOWN
     };
     
@@ -104,6 +105,11 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                 case CONTROLLER:
                     if (jsCompletionContext == CompletionContext.GLOBAL) {
                         result.addAll(findControllerNames(ccContext));
+                    }
+                    break;
+                case LINK:
+                    if (jsCompletionContext == CompletionContext.GLOBAL) {
+                        result.addAll(findComponentNames(ccContext));
                     }
                     break;
                 default:
@@ -152,6 +158,8 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                     switch (directive) {
                         case controller :
                             return AngularContext.CONTROLLER;
+                        case link:
+                            return AngularContext.LINK;
                     }
                 }
         }
@@ -199,6 +207,33 @@ public class AngularJsCodeCompletion implements CompletionProvider {
                         result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, function.getFileObject()));
                     }
                 }
+            }
+        }
+        return result;
+    }
+
+    private Collection<? extends CompletionProposal> findComponentNames(CodeCompletionContext ccContext) {
+        FileObject fo = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
+        if (fo == null) {
+            return Collections.emptyList();
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return Collections.emptyList();
+        }
+        Collection<CompletionProposal> result = new ArrayList<>();
+        AngularJsIndex angularIndex = null;
+        try {
+            angularIndex = AngularJsIndex.get(project);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (angularIndex != null) {
+            Collection<String> components = angularIndex.getComponents(ccContext.getPrefix(), false);
+            for (String component : components) {
+                int anchor = ccContext.getCaretOffset() - ccContext.getPrefix().length();
+                AngularJsElement element = new AngularJsElement(component, ElementKind.METHOD);
+                result.add(new AngularJsCompletionItem.AngularFOCompletionItem(element, anchor, null));
             }
         }
         return result;

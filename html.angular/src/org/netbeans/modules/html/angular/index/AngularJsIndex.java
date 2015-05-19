@@ -162,6 +162,28 @@ public class AngularJsIndex {
         return Collections.EMPTY_LIST;
     }
 
+    public Collection<String> getComponents(final String name, final boolean exact) {
+        Collection<? extends IndexResult> result = null;
+        try {
+            result = querySupport.query(AngularJsIndexer.FIELD_COMPONENT, name, QuerySupport.Kind.PREFIX, AngularJsIndexer.FIELD_COMPONENT);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (result != null && !result.isEmpty()) {
+            Collection<String> components = new ArrayList<>();
+            for (IndexResult indexResult : result) {
+                String[] possibleComponents = indexResult.getValues(AngularJsIndexer.FIELD_COMPONENT);
+                for (String component : possibleComponents) {
+                    if (exact && (component.equals(name)) || (!exact && component.startsWith(name))) {
+                        components.add(component);
+                    }
+                }
+            }
+            return components;
+        }
+        return Collections.emptyList();
+    }
+
     private Collection<AngularJsController> createControllers(final IndexResult indexResult) {
         String[] values = indexResult.getValues(AngularJsIndexer.FIELD_CONTROLLER);
         Collection<AngularJsController> result = new ArrayList<>(values.length);
