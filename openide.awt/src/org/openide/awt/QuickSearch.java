@@ -85,6 +85,7 @@ public class QuickSearch {
     private static enum QS_FIRE { UPDATE, NEXT, MAX }
     private AnimationTimer animationTimer;
     private boolean alwaysShown = false;
+    private volatile boolean hasSearchText = false;
     
     private QuickSearch(JComponent component, Object constraints,
                         Callback callback, boolean asynchronous, JMenu popupMenu) {
@@ -300,6 +301,7 @@ public class QuickSearch {
             rp.post(new LazyFire(QS_FIRE.UPDATE, searchText));
         } else {
             callback.quickSearchUpdate(searchText);
+            hasSearchText = true;
         }
     }
     
@@ -600,6 +602,7 @@ public class QuickSearch {
             try {
             switch (fire) {
                 case UPDATE:    callback.quickSearchUpdate(searchText);//fireQuickSearchUpdate(qsls, searchText);
+                                hasSearchText = true;
                                 break;
                 case NEXT:      callback.showNextSelection(forward);//fireShowNextSelection(qsls, forward);
                                 break;
@@ -711,7 +714,17 @@ public class QuickSearch {
                 requestOriginalFocusOwner();
                 //fireQuickSearchCanceled();
                 callback.quickSearchCanceled();
+                hasSearchText = false;
             } else {
+                if (!hasSearchText) {
+                    int keyCode = ke.getKeyCode();
+                    if (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP ||
+                        keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT ||
+                        keyCode == KeyEvent.VK_TAB || keyCode == KeyEvent.VK_F3) {
+                        // Ignore movement events when search text was not set
+                        return ;
+                    }
+                }
                 super.processKeyEvent(ke);
             }
         }
@@ -758,6 +771,7 @@ public class QuickSearch {
                 }
                 //fireQuickSearchCanceled();
                 callback.quickSearchCanceled();
+                hasSearchText = false;
                 e.consume();
             } else if (keyCode == KeyEvent.VK_UP || (keyCode == KeyEvent.VK_F3 && e.isShiftDown())) {
                 fireShowNextSelection(false);
@@ -807,7 +821,12 @@ public class QuickSearch {
         /** Searches for a node in the tree. */
         private void searchForNode() {
             String text = searchTextField.getText();
-            fireQuickSearchUpdate(text);
+            if (text.isEmpty() && isAlwaysShown()) {
+                callback.quickSearchCanceled();
+                hasSearchText = false;
+            } else {
+                fireQuickSearchUpdate(text);
+            }
         }
 
         @Override
@@ -839,6 +858,7 @@ public class QuickSearch {
                 removeSearchField();
                 //fireQuickSearchConfirmed();
                 callback.quickSearchCanceled();
+                hasSearchText = false;
             }
         }
     }
