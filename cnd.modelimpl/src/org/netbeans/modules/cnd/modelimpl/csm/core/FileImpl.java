@@ -1373,7 +1373,6 @@ public final class FileImpl implements CsmFile,
             }
         }
         PreprocHandler preprocHandler = parseParams.getCurrentPreprocHandler();
-        assert preprocHandler != null;
         if (preprocHandler == null) {
             CndUtils.assertUnconditional("Null preprocessor handler"); //NOI18N
             return null;
