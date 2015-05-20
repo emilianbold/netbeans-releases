@@ -215,7 +215,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
-            assert cleanState == true;
+            CndUtils.assertTrueInConsole(cleanState == true, "This constructor is only for creating clean states");
             assert !APTTraceFlags.USE_CLANK;
             // shared information
             this.startFile = other.startFile;

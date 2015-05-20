@@ -78,6 +78,7 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.code_completion: // Code completion marker
 /*REMOVED in 3.6            case tok.TokenKind.cxx_defaultarg_end: // C++ default argument end marker*/
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+                return APTTokenTypes.COMMENT;
                 // C99 6.4.9: Comments.
             case tok.TokenKind.comment: // Comment (only in -E -C[C] mode)
                 return APTTokenTypes.COMMENT;
@@ -208,6 +209,7 @@ public final class ClankToAPTUtils {
                 return APTTokenTypes.DBL_SHARP;
             case tok.TokenKind.hashat:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+                return APTTokenTypes.COMMENT;
                 // C++ Support
             case tok.TokenKind.periodstar:
                 return APTTokenTypes.DOTMBR;
@@ -222,8 +224,10 @@ public final class ClankToAPTUtils {
                 // CUDA support.
             case tok.TokenKind.lesslessless:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+                return APTTokenTypes.COMMENT;
             case tok.TokenKind.greatergreatergreater:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
+                return APTTokenTypes.COMMENT;
                 // C99 6.4.1: Keywords.  These turn into kw_* tokens.
                 // Flags allowed:
                 //   KEYALL   - This is a keyword in all variants of C and C++, or it
