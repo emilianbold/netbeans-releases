@@ -68,8 +68,9 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
  *
  * @author Vladimir Voskresensky
  */
-/*package*/class ClankToAPTToken implements APTToken {
-    
+/*package*/
+class ClankToAPTToken implements APTToken {
+
     static APTToken[] convertToAPT(Preprocessor PP, SmallVectorToken toks, boolean needLineColumns) {
         int nrTokens = toks.size();
         Token[] tokens = toks.$array();
@@ -81,7 +82,7 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
         int lastExpandedStartOffset = 0;
         APTCommentToken lastEndOffsetToken = null;
         ///////
-        
+
         for (int i = 0; i < nrTokens; i++) {
             assert PP != null;
             SourceManager SM = PP.getSourceManager();
@@ -95,27 +96,27 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
                 // reuse start/end if was already calculated for this range
                 long/*<SourceLocation, SourceLocation>*/ curExpansionRange = SM.getExpansionRange(rawLocation);
                 if (lastExpansionRange != curExpansionRange) {
-                  long/*<FileID, uint>*/ decomposedRangeStart = SM.getDecomposedLoc($first_int(curExpansionRange));
-                  long/*<FileID, uint>*/ decomposedRangeEnd = SM.getDecomposedLoc($second_int(curExpansionRange));
-                  lastExpandedStartOffset = Unsigned.long2uint($second_uint(decomposedRangeStart));
-                  // end offset is start of the last token in expRange, so add TokSize
-                  int TokSize = Unsigned.long2uint(Lexer.MeasureTokenLength($second_int(curExpansionRange), SM, PP.getLangOpts()));
-                  int expandedEndOffset = Unsigned.long2uint($second_uint(decomposedRangeEnd));
-                  expandedEndOffset += TokSize;
+                    long/*<FileID, uint>*/ decomposedRangeStart = SM.getDecomposedLoc($first_int(curExpansionRange));
+                    long/*<FileID, uint>*/ decomposedRangeEnd = SM.getDecomposedLoc($second_int(curExpansionRange));
+                    lastExpandedStartOffset = Unsigned.long2uint($second_uint(decomposedRangeStart));
+                    // end offset is start of the last token in expRange, so add TokSize
+                    int TokSize = Unsigned.long2uint(Lexer.MeasureTokenLength($second_int(curExpansionRange), SM, PP.getLangOpts()));
+                    int expandedEndOffset = Unsigned.long2uint($second_uint(decomposedRangeEnd));
+                    expandedEndOffset += TokSize;
 
-                  int tokenEndLine = FAKE_LINE;
-                  int tokenEndColumn = FAKE_COLUMN;
-                  if (needLineColumns) {
-                    tokenEndLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
-                    tokenEndColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
-                  }
-                  lastEndOffsetToken = new APTCommentToken();
-                  lastEndOffsetToken.setOffset(expandedEndOffset);
-                  lastEndOffsetToken.setTextLength(0);
-                  lastEndOffsetToken.setColumn(tokenEndColumn);
-                  lastEndOffsetToken.setLine(tokenEndLine);
-                  // remember range marker
-                  lastExpansionRange = curExpansionRange;
+                    int tokenEndLine = FAKE_LINE;
+                    int tokenEndColumn = FAKE_COLUMN;
+                    if (needLineColumns) {
+                        tokenEndLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
+                        tokenEndColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
+                    }
+                    lastEndOffsetToken = new APTCommentToken();
+                    lastEndOffsetToken.setOffset(expandedEndOffset);
+                    lastEndOffsetToken.setTextLength(0);
+                    lastEndOffsetToken.setColumn(tokenEndColumn);
+                    lastEndOffsetToken.setLine(tokenEndLine);
+                    // remember range marker
+                    lastExpansionRange = curExpansionRange;
                 }
                 endOffsetToken = lastEndOffsetToken;
                 offset = lastExpandedStartOffset;
@@ -134,17 +135,17 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
         return out;
     }
 
-    static APTToken convert(Preprocessor PP, Token token, /*uint*/int offset, SmallVectorChar spell, boolean needLineColumns) {
+    static APTToken convert(Preprocessor PP, Token token, /*uint*/ int offset, SmallVectorChar spell, boolean needLineColumns) {
         if (token.is(tok.TokenKind.eof)) {
             return APTUtils.EOF_TOKEN;
         } else {
             int tokenLine = FAKE_LINE;
             int tokenColumn = FAKE_COLUMN;
             if (needLineColumns) {
-              SourceManager SM = PP.getSourceManager();
-              long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
-              tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
-              tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+                SourceManager SM = PP.getSourceManager();
+                long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
+                tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+                tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
             }
             int aptTokenType = ClankToAPTUtils.convertClankToAPTTokenKind(token.getKind());
             if (APTLiteConstTextToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)) {
@@ -165,27 +166,27 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
                     // to keyword by language filter
                     aptTokenType = APTTokenTypes.IDENT;
                 } else if (aptTokenType == APTTokenTypes.DECIMALINT) {
-                  // TODO: adjust numeric token kind by text
-                  // parser wants '0' to be OCTALINT for i.e. pure virtual methods
-                  if (textID.length() > 0 && textID.charAt(0) == '0') {
-                    aptTokenType = APTTokenTypes.OCTALINT;
-                  }
+                    // TODO: adjust numeric token kind by text
+                    // parser wants '0' to be OCTALINT for i.e. pure virtual methods
+                    if (textID.length() > 0 && textID.charAt(0) == '0') {
+                        aptTokenType = APTTokenTypes.OCTALINT;
+                    }
                 }
                 if (APTLiteLiteralToken.isApplicable(APTTokenTypes.IDENT, offset, tokenColumn, tokenLine, literalType)) {
-                  CharSequence LiteText = APTConstTextToken.getConstTextID(literalType);
-                  // check if spelling in clang the same as our token, then reuse
-                  // APTLiteLiteralToken otherwise create fallback to APTLiteIdToken with known textID
-                  if (CharSequences.comparator().compare(textID, LiteText) == 0) {
-                      return new APTLiteLiteralToken(offset, tokenColumn, tokenLine, literalType);
-                  }
+                    CharSequence LiteText = APTConstTextToken.getConstTextID(literalType);
+                    // check if spelling in clang the same as our token, then reuse
+                    // APTLiteLiteralToken otherwise create fallback to APTLiteIdToken with known textID
+                    if (CharSequences.comparator().compare(textID, LiteText) == 0) {
+                        return new APTLiteLiteralToken(offset, tokenColumn, tokenLine, literalType);
+                    }
                 }
-                if (APTLiteIdToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)){
-                  return new APTLiteIdToken(offset, tokenColumn, tokenLine, textID);
+                if (APTLiteIdToken.isApplicable(aptTokenType, offset, tokenColumn, tokenLine)) {
+                    return new APTLiteIdToken(offset, tokenColumn, tokenLine, textID);
                 } else {
-                  if (needLineColumns) {
-                    return new ClankToAPTTokenWithLineAndColumn(token, aptTokenType, offset, tokenColumn, tokenLine, textID);
-                  }
-                  return new ClankToAPTToken(token, aptTokenType, offset, textID);
+                    if (needLineColumns) {
+                        return new ClankToAPTTokenWithLineAndColumn(token, aptTokenType, offset, tokenColumn, tokenLine, textID);
+                    }
+                    return new ClankToAPTToken(token, aptTokenType, offset, textID);
                 }
             }
         }
@@ -198,7 +199,7 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
     private final int aptTokenType;
     private final int offset;
     private final CharSequence textID;
-    
+
     private ClankToAPTToken(Token token, int tokenType, int offset, CharSequence text) {
         this.offset = offset;
         assert offset >= 0 : "negative " + offset + " for " + token;
@@ -211,7 +212,7 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
         assert CharSequences.isCompact(text);
         assert (token.isNot(tok.TokenKind.comment));
         textID = TextCache.getManager().getString(text);
-        assert textID.length() <= token.getLength(): textID + "\n vs. \n" + token;
+        assert textID.length() <= token.getLength() : textID + "\n vs. \n" + token;
     }
 
     @Override
@@ -325,35 +326,36 @@ import org.netbeans.modules.cnd.apt.impl.support.MacroExpandedToken;
     }
 
     private static final class ClankToAPTTokenWithLineAndColumn extends ClankToAPTToken {
-      private final int line;
-      private final int column;
-      private final int endColumn;
 
-      public ClankToAPTTokenWithLineAndColumn(Token token, int tokenType, int offset, int column, int line, CharSequence text) {
-        super(token, tokenType, offset, text);
-        this.line = line;
-        this.column = column;
-        this.endColumn = column + token.getLength();
-      }
+        private final int line;
+        private final int column;
+        private final int endColumn;
 
-      @Override
-      public int getLine() {
-        return this.line;
-      }
+        public ClankToAPTTokenWithLineAndColumn(Token token, int tokenType, int offset, int column, int line, CharSequence text) {
+            super(token, tokenType, offset, text);
+            this.line = line;
+            this.column = column;
+            this.endColumn = column + token.getLength();
+        }
 
-      @Override
-      public int getEndLine() {
-        return this.line;
-      }
+        @Override
+        public int getLine() {
+            return this.line;
+        }
 
-      @Override
-      public int getColumn() {
-        return column;
-      }
+        @Override
+        public int getEndLine() {
+            return this.line;
+        }
 
-      @Override
-      public int getEndColumn() {
-        return this.endColumn;
-      }
+        @Override
+        public int getColumn() {
+            return column;
+        }
+
+        @Override
+        public int getEndColumn() {
+            return this.endColumn;
+        }
     }
 }

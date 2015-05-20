@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public final class APTToClankCompilationDB implements ClankCompilationDataBase {
+
     private final Collection<ClankCompilationDataBase.Entry> compilations;
     private final String name;
 
@@ -78,8 +79,8 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     @Override
     public String getName() {
         return name;
-    }  
-    
+    }
+
     public static ClankCompilationDataBase convertPPHandler(PreprocHandler ppHandler, CharSequence dbName) {
         Entry entry = createEntry(ppHandler);
         assert entry != null;
@@ -87,23 +88,23 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     }
 
     public static boolean isFortran(PreprocHandler ppHandler) {
-      try {
-        Language language = Language.valueOf(ppHandler.getLanguage().toString());
-        return language == Language.FORTRAN;
-      } catch (Throwable e) {
-        return false;
-      }
+        try {
+            Language language = Language.valueOf(ppHandler.getLanguage().toString());
+            return language == Language.FORTRAN;
+        } catch (Throwable e) {
+            return false;
+        }
     }
 
     public static ClankCompilationDataBase.Entry createEntry(PreprocHandler ppHandler) {
-        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
         FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startPath.getFileObject().toURI(), null);
 
         builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));
         builder.setLangStd(getLangStd(ppHandler.getLanguageFlavor()));
-        
+
         // -I
         for (IncludeDirEntry incDir : includeHandler.getUserIncludePaths()) {
             if (incDir.isExistingDirectory()) {
@@ -123,15 +124,15 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                     builder.addPredefinedSystemIncludePath(fileObject.toURI());
                 }
             }
-        }    
-        
+        }
+
         // handle -include
         for (IncludeDirEntry incFile : includeHandler.getUserIncludeFilePaths()) {
             // FIXME: relative path can be passed to builder
             builder.addIncFile(incFile.getPath());
         }
-        
-        ClankFileMacroMap macroMap = (ClankFileMacroMap) ppHandler.getMacroMap();
+
+        ClankFileMacroMap macroMap = (ClankFileMacroMap)ppHandler.getMacroMap();
         // -D
         for (String macro : macroMap.getSystemMacroDefinitions()) {
             builder.addPredefinedSystemMacroDef(macro);
@@ -139,46 +140,61 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         for (String macro : macroMap.getUserMacroDefinitions()) {
             builder.addUserMacroDef(macro);
         }
-        
+
         return builder.createDataBaseEntry();
-    }    
-    
+    }
+
     private enum LanguageFlavor {
-    	UNKNOWN(0),
+        UNKNOWN(0),
         C(1), C89(2), C99(3),
         CPP(4), CPP11(8),
         F77(5), F90(6), F95(7),
         DEFAULT(9),
         C11(10), CPP14(11);
         private final int flavor;
-        
+
         private LanguageFlavor(int flavor) {
             this.flavor = flavor;
         }
-        public int toExternal(){
+
+        public int toExternal() {
             return flavor;
         }
+
         public static LanguageFlavor fromExternal(int i) {
             switch (i) {
-                case 0: return UNKNOWN;
-                case 1: return C;
-                case 2: return C89;
-                case 3: return C99;
-                case 4: return CPP;
-                case 5: return F77;
-                case 6: return F90;
-                case 7: return F95;
-                case 8: return CPP11;
-                case 9: return DEFAULT;
-                case 10: return C11;
-                case 11: return CPP14;
-                default: return UNKNOWN;
+                case 0:
+                    return UNKNOWN;
+                case 1:
+                    return C;
+                case 2:
+                    return C89;
+                case 3:
+                    return C99;
+                case 4:
+                    return CPP;
+                case 5:
+                    return F77;
+                case 6:
+                    return F90;
+                case 7:
+                    return F95;
+                case 8:
+                    return CPP11;
+                case 9:
+                    return DEFAULT;
+                case 10:
+                    return C11;
+                case 11:
+                    return CPP14;
+                default:
+                    return UNKNOWN;
             }
         }
     }
-    
+
     private static LangStandard.Kind getLangStd(CharSequence langFlavor) throws AssertionError {
-        LangStandard.Kind out_lang_std = LangStandard.Kind.lang_unspecified;        
+        LangStandard.Kind out_lang_std = LangStandard.Kind.lang_unspecified;
         LanguageFlavor flavor = LanguageFlavor.valueOf(langFlavor.toString());
         switch (flavor) {
             case DEFAULT:
@@ -218,9 +234,9 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
     }
 
     private enum Language {
-	C, CPP, FORTRAN, C_HEADER, OTHER
+        C, CPP, FORTRAN, C_HEADER, OTHER
     }
-    
+
     private static InputKind getLang(CharSequence langStr, String filePath) throws AssertionError {
         InputKind out = InputKind.IK_None;
         Language language = Language.valueOf(langStr.toString());
@@ -250,5 +266,5 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
                 throw new AssertionError(language + " from " + langStr);
         }
         return out;
-    }  
+    }
 }

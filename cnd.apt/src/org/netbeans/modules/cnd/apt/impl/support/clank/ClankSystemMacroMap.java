@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.List;
@@ -51,11 +50,11 @@ import java.util.List;
  * @author Vladimir Voskresensky
  */
 public class ClankSystemMacroMap extends ClankMacroMap {
-    
+
     protected ClankSystemMacroMap(long crc) {
         super(crc);
     }
-    
+
     public ClankSystemMacroMap(List<String> macros) {
         super(macros);
     }

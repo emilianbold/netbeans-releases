@@ -64,7 +64,9 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public class ClankDriverImpl {
+
     public interface APTTokenStreamCacheImplementation extends ClankDriver.APTTokenStreamCache {
+
         APTTokenStreamCacheImplementation prepareCachesIfPossible();
     }
 
@@ -83,7 +85,7 @@ public class ClankDriverImpl {
         // TODO: split by file system?
         ClankPreprocessorServices.invalidateAll();
     }
-    
+
     public static boolean preprocessImpl(APTFileBuffer buffer,
             PreprocHandler ppHandler,
             final ClankDriver.ClankPreprocessorCallback callback,
@@ -92,8 +94,8 @@ public class ClankDriverImpl {
             // TODO: prepare buffers mapping
             CharSequence path = buffer.getAbsolutePath();
             if (CndUtils.isDebugMode()) {
-              byte[] bytes = toBytes(path, buffer.getCharBuffer());
-              assert bytes != null;
+                byte[] bytes = toBytes(path, buffer.getCharBuffer());
+                assert bytes != null;
             }
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
@@ -122,9 +124,9 @@ public class ClankDriverImpl {
         for (int i = 0; i < asciis.length; i++) {
             char c = chars[i];
             if (c >= 256) {
-              CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
+                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
             } else if (c >= 128) {
-              CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic non-ANSII " + c);
+                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic non-ANSII " + c);
             }
             asciis[i] = (byte)(c);
         }
@@ -132,13 +134,13 @@ public class ClankDriverImpl {
     }
 
     public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {
-        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         ClankDriverImpl.APTTokenStreamCacheImplementation cached = includeHandler.getCachedTokens();
         return cached;
     }
 
     public static int extractFileIndex(PreprocHandler ppHandler) {
-        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl) ppHandler.getIncludeHandler();
+        ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         return includeHandler.getInclStackIndex();
     }
 

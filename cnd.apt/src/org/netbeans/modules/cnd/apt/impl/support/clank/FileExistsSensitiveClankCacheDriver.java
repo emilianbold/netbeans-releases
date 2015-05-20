@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
@@ -49,7 +48,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Vladimir Voskresensky
  */
-@ServiceProvider(service=CndFileExistSensitiveCache.class)
+@ServiceProvider(service = CndFileExistSensitiveCache.class)
 public class FileExistsSensitiveClankCacheDriver implements CndFileExistSensitiveCache {
 
     @Override

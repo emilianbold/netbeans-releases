@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
@@ -56,13 +55,13 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author Vladimir Voskresensky
  */
 public class ClankFileMacroMap extends ClankMacroMap {
-    
+
     private ClankSystemMacroMap sysMacros;
 
     public ClankFileMacroMap() {
         super(0);
     }
-    
+
     public ClankFileMacroMap(ClankSystemMacroMap sysMacroMap, List<String> userMacros) {
         super(userMacros);
         this.sysMacros = sysMacroMap;
@@ -95,6 +94,7 @@ public class ClankFileMacroMap extends ClankMacroMap {
     }
 
     public static final class FileStateImpl extends StateImpl {
+
         private final ClankSystemMacroMap sysMacros;
 
         private FileStateImpl(ClankFileMacroMap macroMap) {
@@ -118,7 +118,7 @@ public class ClankFileMacroMap extends ClankMacroMap {
             super(input);
             // TODO
             this.sysMacros = null;
-        }        
+        }
 
         protected void restoreTo(ClankFileMacroMap macroMap) {
             super.restoreTo(macroMap);

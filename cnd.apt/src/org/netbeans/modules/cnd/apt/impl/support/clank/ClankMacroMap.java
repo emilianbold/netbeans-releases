@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
@@ -61,16 +60,16 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * @author Vladimir Voskresensky
  */
 public class ClankMacroMap implements PPMacroMap {
-    
+
     private long startCRC;
     private List<String> macros;
-    
+
 //    /** Creates a new instance of ClankSystemMacroMap */
-    protected ClankMacroMap(long crc) {           
+    protected ClankMacroMap(long crc) {
         startCRC = crc;
         this.macros = Collections.emptyList();
     }
-    
+
     public ClankMacroMap(List<String> sysMacros) {
         startCRC = calculateCRC(sysMacros);
         this.macros = Collections.unmodifiableList(sysMacros);
@@ -84,13 +83,13 @@ public class ClankMacroMap implements PPMacroMap {
     protected Collection<String> getMacros() {
         return this.macros;
     }
-    
+
     protected static long calculateCRC(List<String> sysMacros) {
-	Checksum checksum = new Adler32();
-	for( String s : sysMacros ) {
-             checksum.update(s.getBytes(SupportAPIAccessor.INTERNAL_CHARSET), 0, s.length());
-	}
-	return checksum.getValue();
+        Checksum checksum = new Adler32();
+        for (String s : sysMacros) {
+            checksum.update(s.getBytes(SupportAPIAccessor.INTERNAL_CHARSET), 0, s.length());
+        }
+        return checksum.getValue();
     }
 
     @Override
@@ -102,8 +101,9 @@ public class ClankMacroMap implements PPMacroMap {
     public void setState(State state) {
         ((StateImpl)state).restoreTo(this);
     }
-    
+
     public static class StateImpl implements State {
+
         private final List<String> macros;
         private long startCRC;
         protected final boolean cleaned;
@@ -119,10 +119,9 @@ public class ClankMacroMap implements PPMacroMap {
             this.startCRC = other.startCRC;
             this.cleaned = cleaned;
         }
-        
+
         ////////////////////////////////////////////////////////////////////////
         // persistence support
-
         public void write(RepositoryDataOutput output) throws IOException {
             // TODO
             output.writeLong(this.startCRC);
@@ -133,11 +132,11 @@ public class ClankMacroMap implements PPMacroMap {
             this.startCRC = input.readLong();
             this.macros = Collections.emptyList();
             this.cleaned = true;
-        }        
+        }
 
         protected void restoreTo(ClankMacroMap macroMap) {
             if (!cleaned) {
-              macroMap.macros = this.macros;
+                macroMap.macros = this.macros;
             }
             macroMap.startCRC = this.startCRC;
         }

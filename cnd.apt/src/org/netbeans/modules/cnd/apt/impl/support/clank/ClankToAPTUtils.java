@@ -63,54 +63,54 @@ public final class ClankToAPTUtils {
 
     private ClankToAPTUtils() {
     }
-    
+
     static int convertClankToAPTTokenKind(short clankTokenKind) {
         switch (clankTokenKind) {
             //<editor-fold defaultstate="collapsed" desc="long cases">
             // These define members of the tok::* namespace.
             case tok.TokenKind.unknown: // Not a token.
-              // FIXME: consider broken token as comment to have better parser recovery
-              return APTTokenTypes.COMMENT;
+                // FIXME: consider broken token as comment to have better parser recovery
+                return APTTokenTypes.COMMENT;
             case tok.TokenKind.eof: // End of file.
                 return APTTokenTypes.EOF;
             case tok.TokenKind.eod: // End of preprocessing directive (end of line inside a
-                // directive).
+            // directive).
             case tok.TokenKind.code_completion: // Code completion marker
 /*REMOVED in 3.6            case tok.TokenKind.cxx_defaultarg_end: // C++ default argument end marker*/
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 return APTTokenTypes.COMMENT;
-                // C99 6.4.9: Comments.
+            // C99 6.4.9: Comments.
             case tok.TokenKind.comment: // Comment (only in -E -C[C] mode)
                 return APTTokenTypes.COMMENT;
-                // C99 6.4.2: Identifiers.
+            // C99 6.4.2: Identifiers.
             case tok.TokenKind.identifier: // abcde123
             case tok.TokenKind.raw_identifier: // Used only in raw lexing mode.
                 return APTTokenTypes.IDENT;
-                // C99 6.4.4.1: Integer Constants
-                // C99 6.4.4.2: Floating Constants
+            // C99 6.4.4.1: Integer Constants
+            // C99 6.4.4.2: Floating Constants
             case tok.TokenKind.numeric_constant: // 0x123
                 return APTTokenTypes.DECIMALINT;
-                // C99 6.4.4: Character Constants
+            // C99 6.4.4: Character Constants
             case tok.TokenKind.char_constant: // 'a'
             case tok.TokenKind.wide_char_constant: // L'b'
-                // C++1z Character Constants
+            // C++1z Character Constants
 /*3.6 NEW*/ case tok.TokenKind.utf8_char_constant: // u8'a'
-                // C++11 Character Constants
+            // C++11 Character Constants
             case tok.TokenKind.utf16_char_constant: // u'a'
             case tok.TokenKind.utf32_char_constant: // U'a'
                 return APTTokenTypes.CHAR_LITERAL;
 
-                // C99 6.4.5: String Literals.
+            // C99 6.4.5: String Literals.
             case tok.TokenKind.string_literal: // "foo"
             case tok.TokenKind.wide_string_literal: // L"foo"
             case tok.TokenKind.angle_string_literal: // <foo>
 
-                // C++11 String Literals.
+            // C++11 String Literals.
             case tok.TokenKind.utf8_string_literal: // u8"foo"
             case tok.TokenKind.utf16_string_literal: // u"foo"
             case tok.TokenKind.utf32_string_literal: // U"foo"
                 return APTTokenTypes.STRING_LITERAL;
-                // C99 6.4.6: Punctuators.
+            // C99 6.4.6: Punctuators.
             case tok.TokenKind.l_square:
                 return APTTokenTypes.LSQUARE;
             case tok.TokenKind.r_square:
@@ -210,7 +210,7 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.hashat:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 return APTTokenTypes.COMMENT;
-                // C++ Support
+            // C++ Support
             case tok.TokenKind.periodstar:
                 return APTTokenTypes.DOTMBR;
             case tok.TokenKind.arrowstar:
@@ -218,279 +218,279 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.coloncolon:
                 return APTTokenTypes.SCOPE;
 
-                // Objective C support.
+            // Objective C support.
             case tok.TokenKind.at:
                 return APTTokenTypes.AT;
-                // CUDA support.
+            // CUDA support.
             case tok.TokenKind.lesslessless:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 return APTTokenTypes.COMMENT;
             case tok.TokenKind.greatergreatergreater:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
                 return APTTokenTypes.COMMENT;
-                // C99 6.4.1: Keywords.  These turn into kw_* tokens.
-                // Flags allowed:
-                //   KEYALL   - This is a keyword in all variants of C and C++, or it
-                //              is a keyword in the implementation namespace that should
-                //              always be treated as a keyword
-                //   KEYC99   - This is a keyword introduced to C in C99
-                //   KEYC11   - This is a keyword introduced to C in C11
-                //   KEYCXX   - This is a C++ keyword, or a C++-specific keyword in the
-                //              implementation namespace
-                //   KEYNOCXX - This is a keyword in every non-C++ dialect.
-                //   KEYCXX11 - This is a C++ keyword introduced to C++ in C++11
-                //   KEYGNU   - This is a keyword if GNU extensions are enabled
-                //   KEYMS    - This is a keyword if Microsoft extensions are enabled
-                //   KEYNOMS  - This is a keyword that must never be enabled under
-                //              Microsoft mode
-                //   KEYOPENCL  - This is a keyword in OpenCL
-                //   KEYALTIVEC - This is a keyword in AltiVec
-                //   KEYBORLAND - This is a keyword if Borland extensions are enabled
-                //   BOOLSUPPORT - This is a keyword if 'bool' is a built-in type
-                //   WCHARSUPPORT - This is a keyword if 'wchar_t' is a built-in type
-                //
+            // C99 6.4.1: Keywords.  These turn into kw_* tokens.
+            // Flags allowed:
+            //   KEYALL   - This is a keyword in all variants of C and C++, or it
+            //              is a keyword in the implementation namespace that should
+            //              always be treated as a keyword
+            //   KEYC99   - This is a keyword introduced to C in C99
+            //   KEYC11   - This is a keyword introduced to C in C11
+            //   KEYCXX   - This is a C++ keyword, or a C++-specific keyword in the
+            //              implementation namespace
+            //   KEYNOCXX - This is a keyword in every non-C++ dialect.
+            //   KEYCXX11 - This is a C++ keyword introduced to C++ in C++11
+            //   KEYGNU   - This is a keyword if GNU extensions are enabled
+            //   KEYMS    - This is a keyword if Microsoft extensions are enabled
+            //   KEYNOMS  - This is a keyword that must never be enabled under
+            //              Microsoft mode
+            //   KEYOPENCL  - This is a keyword in OpenCL
+            //   KEYALTIVEC - This is a keyword in AltiVec
+            //   KEYBORLAND - This is a keyword if Borland extensions are enabled
+            //   BOOLSUPPORT - This is a keyword if 'bool' is a built-in type
+            //   WCHARSUPPORT - This is a keyword if 'wchar_t' is a built-in type
+            //
             case tok.TokenKind.kw_auto:
-              return APTTokenTypes.LITERAL_auto;
+                return APTTokenTypes.LITERAL_auto;
             case tok.TokenKind.kw_break:
-              return APTTokenTypes.LITERAL_break;
+                return APTTokenTypes.LITERAL_break;
             case tok.TokenKind.kw_case:
-              return APTTokenTypes.LITERAL_case;
+                return APTTokenTypes.LITERAL_case;
             case tok.TokenKind.kw_char:
-              return APTTokenTypes.LITERAL_char;
+                return APTTokenTypes.LITERAL_char;
             case tok.TokenKind.kw_const:
-              return APTTokenTypes.LITERAL_const;
+                return APTTokenTypes.LITERAL_const;
             case tok.TokenKind.kw_continue:
-              return APTTokenTypes.LITERAL_continue;
+                return APTTokenTypes.LITERAL_continue;
             case tok.TokenKind.kw_default:
-              return APTTokenTypes.LITERAL_default;
+                return APTTokenTypes.LITERAL_default;
             case tok.TokenKind.kw_do:
-              return APTTokenTypes.LITERAL_do;
+                return APTTokenTypes.LITERAL_do;
             case tok.TokenKind.kw_double:
-              return APTTokenTypes.LITERAL_double;
+                return APTTokenTypes.LITERAL_double;
             case tok.TokenKind.kw_else:
-              return APTTokenTypes.LITERAL_else;
+                return APTTokenTypes.LITERAL_else;
             case tok.TokenKind.kw_enum:
-              return APTTokenTypes.LITERAL_enum;
+                return APTTokenTypes.LITERAL_enum;
             case tok.TokenKind.kw_extern:
-              return APTTokenTypes.LITERAL_extern;
+                return APTTokenTypes.LITERAL_extern;
             case tok.TokenKind.kw_float:
-              return APTTokenTypes.LITERAL_float;
+                return APTTokenTypes.LITERAL_float;
             case tok.TokenKind.kw_for:
-              return APTTokenTypes.LITERAL_for;
+                return APTTokenTypes.LITERAL_for;
             case tok.TokenKind.kw_goto:
-              return APTTokenTypes.LITERAL_goto;
+                return APTTokenTypes.LITERAL_goto;
             case tok.TokenKind.kw_if:
-              return APTTokenTypes.LITERAL_if;
+                return APTTokenTypes.LITERAL_if;
             case tok.TokenKind.kw_inline:
-              return APTTokenTypes.LITERAL_inline;
+                return APTTokenTypes.LITERAL_inline;
             case tok.TokenKind.kw_int:
-              return APTTokenTypes.LITERAL_int;
+                return APTTokenTypes.LITERAL_int;
             case tok.TokenKind.kw_long:
-              return APTTokenTypes.LITERAL_long;
+                return APTTokenTypes.LITERAL_long;
             case tok.TokenKind.kw_register:
-              return APTTokenTypes.LITERAL_register;
+                return APTTokenTypes.LITERAL_register;
             case tok.TokenKind.kw_restrict:
-              return APTTokenTypes.LITERAL_restrict;
+                return APTTokenTypes.LITERAL_restrict;
             case tok.TokenKind.kw_return:
-              return APTTokenTypes.LITERAL_return;
+                return APTTokenTypes.LITERAL_return;
             case tok.TokenKind.kw_short:
-              return APTTokenTypes.LITERAL_short;
+                return APTTokenTypes.LITERAL_short;
             case tok.TokenKind.kw_signed:
-              return APTTokenTypes.LITERAL_signed;
+                return APTTokenTypes.LITERAL_signed;
             case tok.TokenKind.kw_sizeof:
-              return APTTokenTypes.LITERAL_sizeof;
+                return APTTokenTypes.LITERAL_sizeof;
             case tok.TokenKind.kw_static:
-              return APTTokenTypes.LITERAL_static;
+                return APTTokenTypes.LITERAL_static;
             case tok.TokenKind.kw_struct:
-              return APTTokenTypes.LITERAL_struct;
+                return APTTokenTypes.LITERAL_struct;
             case tok.TokenKind.kw_switch:
-              return APTTokenTypes.LITERAL_switch;
+                return APTTokenTypes.LITERAL_switch;
             case tok.TokenKind.kw_typedef:
-              return APTTokenTypes.LITERAL_typedef;
+                return APTTokenTypes.LITERAL_typedef;
             case tok.TokenKind.kw_union:
-              return APTTokenTypes.LITERAL_union;
+                return APTTokenTypes.LITERAL_union;
             case tok.TokenKind.kw_unsigned:
-              return APTTokenTypes.LITERAL_unsigned;
+                return APTTokenTypes.LITERAL_unsigned;
             case tok.TokenKind.kw_void:
-              return APTTokenTypes.LITERAL_void;
+                return APTTokenTypes.LITERAL_void;
             case tok.TokenKind.kw_volatile:
-              return APTTokenTypes.LITERAL_volatile;
+                return APTTokenTypes.LITERAL_volatile;
             case tok.TokenKind.kw_while:
-              return APTTokenTypes.LITERAL_while;
+                return APTTokenTypes.LITERAL_while;
             case tok.TokenKind.kw__Alignas:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignas;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignas;
             case tok.TokenKind.kw__Alignof:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignof;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Alignof;
             case tok.TokenKind.kw__Atomic:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Atomic;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Atomic;
             case tok.TokenKind.kw__Bool:
-              return APTTokenTypes.LITERAL__Bool;
+                return APTTokenTypes.LITERAL__Bool;
             case tok.TokenKind.kw__Complex:
-              return APTTokenTypes.LITERAL__Complex;
+                return APTTokenTypes.LITERAL__Complex;
             case tok.TokenKind.kw__Generic:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Generic;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Generic;
             case tok.TokenKind.kw__Imaginary:
-              return APTTokenTypes.LITERAL__Imaginary;
+                return APTTokenTypes.LITERAL__Imaginary;
             case tok.TokenKind.kw__Noreturn:
-              return APTTokenTypes.LITERAL__Noreturn;
+                return APTTokenTypes.LITERAL__Noreturn;
             case tok.TokenKind.kw__Static_assert:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Static_assert;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Static_assert;
             case tok.TokenKind.kw__Thread_local:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Thread_local;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL__Thread_local;
             case tok.TokenKind.kw___func__:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___func__;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___func__;
             case tok.TokenKind.kw___objc_yes:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_yes;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_yes;
             case tok.TokenKind.kw___objc_no:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_no;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___objc_no;
 
-                // C++ 2.11p1: Keywords.
+            // C++ 2.11p1: Keywords.
             case tok.TokenKind.kw_asm:
-              return APTTokenTypes.LITERAL_asm;
+                return APTTokenTypes.LITERAL_asm;
             case tok.TokenKind.kw_bool:
-              return APTTokenTypes.LITERAL_bool;
+                return APTTokenTypes.LITERAL_bool;
             case tok.TokenKind.kw_catch:
-              return APTTokenTypes.LITERAL_catch;
+                return APTTokenTypes.LITERAL_catch;
             case tok.TokenKind.kw_class:
-              return APTTokenTypes.LITERAL_class;
+                return APTTokenTypes.LITERAL_class;
             case tok.TokenKind.kw_const_cast:
-              return APTTokenTypes.LITERAL_const_cast;
+                return APTTokenTypes.LITERAL_const_cast;
             case tok.TokenKind.kw_delete:
-              return APTTokenTypes.LITERAL_delete;
+                return APTTokenTypes.LITERAL_delete;
             case tok.TokenKind.kw_dynamic_cast:
-              return APTTokenTypes.LITERAL_dynamic_cast;
+                return APTTokenTypes.LITERAL_dynamic_cast;
             case tok.TokenKind.kw_explicit:
-              return APTTokenTypes.LITERAL_explicit;
+                return APTTokenTypes.LITERAL_explicit;
             case tok.TokenKind.kw_export:
-              return APTTokenTypes.LITERAL_export;
+                return APTTokenTypes.LITERAL_export;
             case tok.TokenKind.kw_false:
-              return APTTokenTypes.LITERAL_false;
+                return APTTokenTypes.LITERAL_false;
             case tok.TokenKind.kw_friend:
-              return APTTokenTypes.LITERAL_friend;
+                return APTTokenTypes.LITERAL_friend;
             case tok.TokenKind.kw_mutable:
-              return APTTokenTypes.LITERAL_mutable;
+                return APTTokenTypes.LITERAL_mutable;
             case tok.TokenKind.kw_namespace:
-              return APTTokenTypes.LITERAL_namespace;
+                return APTTokenTypes.LITERAL_namespace;
             case tok.TokenKind.kw_new:
-              return APTTokenTypes.LITERAL_new;
+                return APTTokenTypes.LITERAL_new;
             case tok.TokenKind.kw_operator:
-              return APTTokenTypes.LITERAL_OPERATOR;
+                return APTTokenTypes.LITERAL_OPERATOR;
             case tok.TokenKind.kw_private:
-              return APTTokenTypes.LITERAL_private;
+                return APTTokenTypes.LITERAL_private;
             case tok.TokenKind.kw_protected:
-              return APTTokenTypes.LITERAL_protected;
+                return APTTokenTypes.LITERAL_protected;
             case tok.TokenKind.kw_public:
-              return APTTokenTypes.LITERAL_public;
+                return APTTokenTypes.LITERAL_public;
             case tok.TokenKind.kw_reinterpret_cast:
-              return APTTokenTypes.LITERAL_reinterpret_cast;
+                return APTTokenTypes.LITERAL_reinterpret_cast;
             case tok.TokenKind.kw_static_cast:
-              return APTTokenTypes.LITERAL_static_cast;
+                return APTTokenTypes.LITERAL_static_cast;
             case tok.TokenKind.kw_template:
-              return APTTokenTypes.LITERAL_template;
+                return APTTokenTypes.LITERAL_template;
             case tok.TokenKind.kw_this:
-              return APTTokenTypes.LITERAL_this;
+                return APTTokenTypes.LITERAL_this;
             case tok.TokenKind.kw_throw:
-              return APTTokenTypes.LITERAL_throw;
+                return APTTokenTypes.LITERAL_throw;
             case tok.TokenKind.kw_true:
-              return APTTokenTypes.LITERAL_true;
+                return APTTokenTypes.LITERAL_true;
             case tok.TokenKind.kw_try:
-              return APTTokenTypes.LITERAL_try;
+                return APTTokenTypes.LITERAL_try;
             case tok.TokenKind.kw_typename:
-              return APTTokenTypes.LITERAL_typename;
+                return APTTokenTypes.LITERAL_typename;
             case tok.TokenKind.kw_typeid:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_typeid;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_typeid;
             case tok.TokenKind.kw_using:
-              return APTTokenTypes.LITERAL_using;
+                return APTTokenTypes.LITERAL_using;
             case tok.TokenKind.kw_virtual:
-              return APTTokenTypes.LITERAL_virtual;
+                return APTTokenTypes.LITERAL_virtual;
             case tok.TokenKind.kw_wchar_t:
-              return APTTokenTypes.LITERAL_wchar_t;
+                return APTTokenTypes.LITERAL_wchar_t;
 
-                // C++11 keywords
+            // C++11 keywords
             case tok.TokenKind.kw_alignas:
-              return APTTokenTypes.LITERAL_alignas;
+                return APTTokenTypes.LITERAL_alignas;
             case tok.TokenKind.kw_alignof:
-              return APTTokenTypes.LITERAL_alignof;
+                return APTTokenTypes.LITERAL_alignof;
             case tok.TokenKind.kw_char16_t:
-              return APTTokenTypes.LITERAL_char16_t;
+                return APTTokenTypes.LITERAL_char16_t;
             case tok.TokenKind.kw_char32_t:
-              return APTTokenTypes.LITERAL_char32_t;
+                return APTTokenTypes.LITERAL_char32_t;
             case tok.TokenKind.kw_constexpr:
-              return APTTokenTypes.LITERAL_constexpr;
+                return APTTokenTypes.LITERAL_constexpr;
             case tok.TokenKind.kw_decltype:
-              return APTTokenTypes.LITERAL_decltype;
+                return APTTokenTypes.LITERAL_decltype;
             case tok.TokenKind.kw_noexcept:
-              return APTTokenTypes.LITERAL_noexcept;
+                return APTTokenTypes.LITERAL_noexcept;
             case tok.TokenKind.kw_nullptr:
-              return APTTokenTypes.LITERAL_nullptr;
+                return APTTokenTypes.LITERAL_nullptr;
             case tok.TokenKind.kw_static_assert:
-              return APTTokenTypes.LITERAL_static_assert;
+                return APTTokenTypes.LITERAL_static_assert;
             case tok.TokenKind.kw_thread_local:
-              return APTTokenTypes.LITERAL_thread_local;
+                return APTTokenTypes.LITERAL_thread_local;
 
-                // GNU Extensions (in impl-reserved namespace)
+            // GNU Extensions (in impl-reserved namespace)
             case tok.TokenKind.kw__Decimal32:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal32;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal32;
             case tok.TokenKind.kw__Decimal64:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal64;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal64;
             case tok.TokenKind.kw__Decimal128:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal128;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL__Decimal128;
             case tok.TokenKind.kw___null:
-              return APTTokenTypes.LITERAL___null;
+                return APTTokenTypes.LITERAL___null;
             case tok.TokenKind.kw___alignof:
-              return APTTokenTypes.LITERAL___alignof;
+                return APTTokenTypes.LITERAL___alignof;
             case tok.TokenKind.kw___attribute:
-              return APTTokenTypes.LITERAL___attribute;
+                return APTTokenTypes.LITERAL___attribute;
             case tok.TokenKind.kw___builtin_choose_expr:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_choose_expr;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_choose_expr;
             case tok.TokenKind.kw___builtin_offsetof:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_offsetof;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_offsetof;
             case tok.TokenKind.kw___builtin_types_compatible_p:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_types_compatible_p;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_types_compatible_p;
             case tok.TokenKind.kw___builtin_va_arg:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_va_arg;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___builtin_va_arg;
             case tok.TokenKind.kw___extension__:
-              return APTTokenTypes.LITERAL___extension__;
+                return APTTokenTypes.LITERAL___extension__;
             case tok.TokenKind.kw___imag:
-              return APTTokenTypes.LITERAL___imag;
+                return APTTokenTypes.LITERAL___imag;
             case tok.TokenKind.kw___int128:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___int128;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___int128;
             case tok.TokenKind.kw___label__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___label__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___label__;
             case tok.TokenKind.kw___real:
-              return APTTokenTypes.LITERAL___real;
+                return APTTokenTypes.LITERAL___real;
             case tok.TokenKind.kw___thread:
-              return APTTokenTypes.LITERAL___thread;
+                return APTTokenTypes.LITERAL___thread;
             case tok.TokenKind.kw___FUNCTION__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCTION__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCTION__;
             case tok.TokenKind.kw___PRETTY_FUNCTION__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___PRETTY_FUNCTION__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___PRETTY_FUNCTION__;
 
-                // GNU Extensions (outside impl-reserved namespace)
+            // GNU Extensions (outside impl-reserved namespace)
             case tok.TokenKind.kw_typeof:
-              return APTTokenTypes.LITERAL_typeof;
+                return APTTokenTypes.LITERAL_typeof;
 
-                // MS Extensions
+            // MS Extensions
             case tok.TokenKind.kw___FUNCDNAME__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCDNAME__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCDNAME__;
 /*3.6 NEW*/ case tok.TokenKind.kw___FUNCSIG__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCSIG__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___FUNCSIG__;
             case tok.TokenKind.kw_L__FUNCTION__:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_L__FUNCTION__;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL_L__FUNCTION__;
             case tok.TokenKind.kw___is_interface_class:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_interface_class;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_interface_class;
             case tok.TokenKind.kw___is_sealed:
-              return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_sealed;
+                return APTTokenTypes.IDENT; //APTTokenTypes.LITERAL___is_sealed;
 
-                // MSVC12.0 / VS2013 Type Traits
+            // MSVC12.0 / VS2013 Type Traits
 /*3.6 NEW*/ case tok.TokenKind.kw___is_destructible:
-/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_destructible:
-/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_assignable:
-/*3.6 NEW*/ case tok.TokenKind.kw___is_constructible:
-/*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_constructible:
-              return APTTokenTypes.IDENT;
+            /*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_destructible:
+            /*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_assignable:
+            /*3.6 NEW*/ case tok.TokenKind.kw___is_constructible:
+            /*3.6 NEW*/ case tok.TokenKind.kw___is_nothrow_constructible:
+                return APTTokenTypes.IDENT;
 
-                // GNU and MS Type Traits
+            // GNU and MS Type Traits
             case tok.TokenKind.kw___has_nothrow_assign:
             case tok.TokenKind.kw___has_nothrow_move_assign:
             case tok.TokenKind.kw___has_nothrow_copy:
@@ -509,27 +509,27 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___is_empty:
             case tok.TokenKind.kw___is_enum:
             case tok.TokenKind.kw___is_final:
-                // Tentative name - there's no implementation of std::is_literal_type yet.
+            // Tentative name - there's no implementation of std::is_literal_type yet.
             case tok.TokenKind.kw___is_literal:
-                // Name for GCC 4.6 compatibility - people have already written libraries using
-                // this name unfortunately.
+            // Name for GCC 4.6 compatibility - people have already written libraries using
+            // this name unfortunately.
 /*REMOVED in 3.6            case tok.TokenKind.kw___is_literal_type: */
             case tok.TokenKind.kw___is_pod:
             case tok.TokenKind.kw___is_polymorphic:
             case tok.TokenKind.kw___is_trivial:
             case tok.TokenKind.kw___is_union:
 
-                // Clang-only C++ Type Traits
+            // Clang-only C++ Type Traits
             case tok.TokenKind.kw___is_trivially_constructible:
             case tok.TokenKind.kw___is_trivially_copyable:
             case tok.TokenKind.kw___is_trivially_assignable:
             case tok.TokenKind.kw___underlying_type:
 
-                // Embarcadero Expression Traits
+            // Embarcadero Expression Traits
             case tok.TokenKind.kw___is_lvalue_expr:
             case tok.TokenKind.kw___is_rvalue_expr:
 
-                // Embarcadero Unary Type Traits
+            // Embarcadero Unary Type Traits
             case tok.TokenKind.kw___is_arithmetic:
             case tok.TokenKind.kw___is_floating_point:
             case tok.TokenKind.kw___is_integral:
@@ -554,50 +554,50 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___is_signed:
             case tok.TokenKind.kw___is_unsigned:
 
-                // Embarcadero Binary Type Traits
+            // Embarcadero Binary Type Traits
             case tok.TokenKind.kw___is_same:
             case tok.TokenKind.kw___is_convertible:
             case tok.TokenKind.kw___array_rank:
             case tok.TokenKind.kw___array_extent:
 
-                // Apple Extension.
+            // Apple Extension.
             case tok.TokenKind.kw___private_extern__:
             case tok.TokenKind.kw___module_private__:
-              return APTTokenTypes.IDENT;
+                return APTTokenTypes.IDENT;
 
-                // Microsoft Extension.
+            // Microsoft Extension.
             case tok.TokenKind.kw___declspec:
-              return APTTokenTypes.LITERAL___declspec;
+                return APTTokenTypes.LITERAL___declspec;
             case tok.TokenKind.kw___cdecl:
-              return APTTokenTypes.LITERAL___cdecl;
+                return APTTokenTypes.LITERAL___cdecl;
             case tok.TokenKind.kw___stdcall:
-              return APTTokenTypes.LITERAL___stdcall;
+                return APTTokenTypes.LITERAL___stdcall;
             case tok.TokenKind.kw___fastcall:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___fastcall;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___fastcall;
             case tok.TokenKind.kw___thiscall:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___thiscall;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___thiscall;
 /*3.6 NEW*/ case tok.TokenKind.kw___vectorcall:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___vectorcall;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___vectorcall;
             case tok.TokenKind.kw___forceinline:
-              return APTTokenTypes.LITERAL___forceinline;
+                return APTTokenTypes.LITERAL___forceinline;
             case tok.TokenKind.kw___unaligned:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___unaligned;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___unaligned;
 /*3.6 NEW*/ case tok.TokenKind.kw___super:
-              return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___super;
+                return APTTokenTypes.IDENT;//APTTokenTypes.LITERAL___super;
 
-                // OpenCL-specific keywords
+            // OpenCL-specific keywords
             case tok.TokenKind.kw___global:
             case tok.TokenKind.kw___local:
             case tok.TokenKind.kw___constant:
             case tok.TokenKind.kw___private:
-/*3.6 NEW*/ case tok.TokenKind.kw___generic:
+            /*3.6 NEW*/ case tok.TokenKind.kw___generic:
             case tok.TokenKind.kw___kernel:
             case tok.TokenKind.kw___read_only:
             case tok.TokenKind.kw___write_only:
             case tok.TokenKind.kw___read_write:
             case tok.TokenKind.kw___builtin_astype:
             case tok.TokenKind.kw_vec_step:
-/* REMOVED in 3.6
+            /* REMOVED in 3.6
             case tok.TokenKind.kw_image1d_t:
             case tok.TokenKind.kw_image1d_array_t:
             case tok.TokenKind.kw_image1d_buffer_t:
@@ -606,25 +606,25 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw_image3d_t:
             case tok.TokenKind.kw_sampler_t:
             case tok.TokenKind.kw_event_t:
-*/
-                // Borland Extensions.
+             */
+            // Borland Extensions.
             case tok.TokenKind.kw___pascal:
 
-                // Altivec Extension.
+            // Altivec Extension.
             case tok.TokenKind.kw___vector:
             case tok.TokenKind.kw___pixel:
-/*3.6 NEW*/ case tok.TokenKind.kw___bool:
+            /*3.6 NEW*/ case tok.TokenKind.kw___bool:
 
-                // OpenCL Extension.
+            // OpenCL Extension.
             case tok.TokenKind.kw_half:
 
-                // Objective-C ARC keywords.
+            // Objective-C ARC keywords.
             case tok.TokenKind.kw___bridge:
             case tok.TokenKind.kw___bridge_transfer:
             case tok.TokenKind.kw___bridge_retained:
             case tok.TokenKind.kw___bridge_retain:
 
-                // Microsoft extensions which should be disabled in strict conformance mode
+            // Microsoft extensions which should be disabled in strict conformance mode
             case tok.TokenKind.kw___ptr64:
             case tok.TokenKind.kw___ptr32:
             case tok.TokenKind.kw___sptr:
@@ -642,117 +642,117 @@ public final class ClankToAPTUtils {
             case tok.TokenKind.kw___virtual_inheritance:
             case tok.TokenKind.kw___interface:
                 return APTTokenTypes.IDENT;
-              
-                // Clang Extensions.
+
+            // Clang Extensions.
             case tok.TokenKind.kw___builtin_convertvector:
 
-                // Clang-specific keywords enabled only in testing.
+            // Clang-specific keywords enabled only in testing.
             case tok.TokenKind.kw___unknown_anytype:
                 return APTTokenTypes.IDENT;
 
-                // TODO: What to do about context-sensitive keywords like:
-                //       bycopy/byref/in/inout/oneway/out?
+            // TODO: What to do about context-sensitive keywords like:
+            //       bycopy/byref/in/inout/oneway/out?
             case tok.TokenKind.annot_cxxscope: // annotation for a C++ scope spec, e.g. "::foo::bar::"
             case tok.TokenKind.annot_typename: // annotation for a C typedef name, a C++ (possibly
-                // qualified) typename, e.g. "foo::MyClass", or
-                // template-id that names a type ("std::vector<int>")
+            // qualified) typename, e.g. "foo::MyClass", or
+            // template-id that names a type ("std::vector<int>")
             case tok.TokenKind.annot_template_id: // annotation for a C++ template-id that names a
-                // function template specialization (not a type),
-                // e.g., "std::swap<int>"
+            // function template specialization (not a type),
+            // e.g., "std::swap<int>"
             case tok.TokenKind.annot_primary_expr: // annotation for a primary expression
             case tok.TokenKind.annot_decltype: // annotation for a decltype expression,
-                // e.g., "decltype(foo.bar())"
+            // e.g., "decltype(foo.bar())"
 
-                // Annotation for #pragma unused(...)
-                // For each argument inside the parentheses the pragma handler will produce
-                // one 'pragma_unused' annotation token followed by the argument token.
+            // Annotation for #pragma unused(...)
+            // For each argument inside the parentheses the pragma handler will produce
+            // one 'pragma_unused' annotation token followed by the argument token.
             case tok.TokenKind.annot_pragma_unused:
 
-                // Annotation for #pragma GCC visibility...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma GCC visibility...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_vis:
 
-                // Annotation for #pragma pack...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma pack...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_pack:
 
-                // Annotation for #pragma clang __debug parser_crash...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma clang __debug parser_crash...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_parser_crash:
 
-                // Annotation for #pragma clang __debug captured...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma clang __debug captured...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_captured:
 
-                // Annotation for #pragma ms_struct...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma ms_struct...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_msstruct:
 
-                // Annotation for #pragma align...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma align...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_align:
 
-                // Annotation for #pragma weak id
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma weak id
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_weak:
 
-                // Annotation for #pragma weak id = id
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma weak id = id
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_weakalias:
 
-                // Annotation for #pragma redefine_extname...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma redefine_extname...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_redefine_extname:
 
-                // Annotation for #pragma STDC FP_CONTRACT...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma STDC FP_CONTRACT...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_fp_contract:
 
-                // Annotation for #pragma pointers_to_members...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma pointers_to_members...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
 /*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_pointers_to_members:
 
-                // Annotation for #pragma vtordisp...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma vtordisp...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
 /*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_vtordisp:
 
-                // Annotation for all microsoft #pragmas...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for all microsoft #pragmas...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
 /*3.6 NEW*/ case tok.TokenKind.annot_pragma_ms_pragma:
 
-                // Annotation for #pragma OPENCL EXTENSION...
-                // The lexer produces these so that they only take effect when the parser
-                // handles them.
+            // Annotation for #pragma OPENCL EXTENSION...
+            // The lexer produces these so that they only take effect when the parser
+            // handles them.
             case tok.TokenKind.annot_pragma_opencl_extension:
 
-                // Annotations for OpenMP pragma directives - #pragma omp ...
-                // The lexer produces these so that they only take effect when the parser
-                // handles #pragma omp ... directives.
+            // Annotations for OpenMP pragma directives - #pragma omp ...
+            // The lexer produces these so that they only take effect when the parser
+            // handles #pragma omp ... directives.
             case tok.TokenKind.annot_pragma_openmp:
             case tok.TokenKind.annot_pragma_openmp_end:
 
-                // Annotations for loop pragma directives #pragma clang loop ...
-                // The lexer produces these so that they only take effect when the parser
-                // handles #pragma loop ... directives.
+            // Annotations for loop pragma directives #pragma clang loop ...
+            // The lexer produces these so that they only take effect when the parser
+            // handles #pragma loop ... directives.
 /*3.6 NEW*/ case tok.TokenKind.annot_pragma_loop_hint:
-  
-                // Annotation for module import translated from #include etc.
+
+            // Annotation for module import translated from #include etc.
             case tok.TokenKind.annot_module_include:
-/*3.6 NEW*/ case tok.TokenKind.annot_module_begin:
-/*3.6 NEW*/ case tok.TokenKind.annot_module_end:
+            /*3.6 NEW*/ case tok.TokenKind.annot_module_begin:
+            /*3.6 NEW*/ case tok.TokenKind.annot_module_end:
             case tok.TokenKind.NUM_TOKENS:
                 assert false : tok.getTokenName(clankTokenKind) + " [" + Native.$toString(tok.getPunctuatorSpelling(clankTokenKind)) + "]";
             //</editor-fold>
@@ -762,61 +762,59 @@ public final class ClankToAPTUtils {
     }
 
     public static CharSequence getIdentifierText(IdentifierInfo II) {
-      assert II != null;
-      StringMapEntryBase entry = II.getEntry();
-      assert entry != null;
-      return CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+        assert II != null;
+        StringMapEntryBase entry = II.getEntry();
+        assert entry != null;
+        return CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
     }
 
     public static CharSequence getTokenText(Token token, Preprocessor PP, SmallVectorChar spell) {
-      // all remainings
-      CharSequence textID;
-      IdentifierInfo II = token.getIdentifierInfo();
-      if (II != null) {
-        textID = getIdentifierText(II);
-      } else {
-        textID = null;
-        char$ptr SpellingData = null;
-        int SpellingLen = 0;
-        if (token.isLiteral()) {
-          char$ptr literalData = token.getLiteralData();
-          if (literalData == null) {
-            // i.e. the case of lazy calculated DATE and TIME based strings
-            StringRef spelling = PP.getSpelling(token, spell);
-            SpellingData = spelling.begin();
-            SpellingLen = spelling.size();
-            spell.set_size(0);
-          } else {
-            SpellingData = literalData;
-            SpellingLen = token.getLength();
-          }
+        // all remainings
+        CharSequence textID;
+        IdentifierInfo II = token.getIdentifierInfo();
+        if (II != null) {
+            textID = getIdentifierText(II);
         } else {
-          if (token.is(tok.TokenKind.raw_identifier)) {
-            byte[] $CharPtrData = token.$CharPtrData();
-            if ($CharPtrData != null) {
-              textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
-            } else {
-              SpellingData = token.getRawIdentifierData();
-              SpellingLen = token.getLength();
+            textID = null;
+            char$ptr SpellingData = null;
+            int SpellingLen = 0;
+            if (token.isLiteral()) {
+                char$ptr literalData = token.getLiteralData();
+                if (literalData == null) {
+                    // i.e. the case of lazy calculated DATE and TIME based strings
+                    StringRef spelling = PP.getSpelling(token, spell);
+                    SpellingData = spelling.begin();
+                    SpellingLen = spelling.size();
+                    spell.set_size(0);
+                } else {
+                    SpellingData = literalData;
+                    SpellingLen = token.getLength();
+                }
+            } else if (token.is(tok.TokenKind.raw_identifier)) {
+                byte[] $CharPtrData = token.$CharPtrData();
+                if ($CharPtrData != null) {
+                    textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
+                } else {
+                    SpellingData = token.getRawIdentifierData();
+                    SpellingLen = token.getLength();
+                }
             }
-          }
+            if (textID == null) {
+                if (SpellingData == null) {
+                    StringRef spelling = PP.getSpelling(token, spell);
+                    SpellingData = spelling.begin();
+                    SpellingLen = spelling.size();
+                    spell.set_size(0);
+                }
+                assert SpellingData != null : "" + token;
+                if (SpellingData instanceof char$ptr$array) {
+                    textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
+                } else {
+                    textID = Casts.toCharSequence(SpellingData, SpellingLen);
+                }
+            }
         }
-        if (textID == null) {
-          if (SpellingData == null) {
-            StringRef spelling = PP.getSpelling(token, spell);
-            SpellingData = spelling.begin();
-            SpellingLen = spelling.size();
-            spell.set_size(0);
-          }
-          assert SpellingData != null : "" + token;
-          if (SpellingData instanceof char$ptr$array) {
-            textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
-          } else {
-            textID = Casts.toCharSequence(SpellingData, SpellingLen);
-          }
-        }
-      }
-      assert textID != null : "" + token;
-      return textID;
+        assert textID != null : "" + token;
+        return textID;
     }
 }
