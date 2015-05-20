@@ -45,13 +45,13 @@ made subject to such option by the copyright holder.
 -->
 <project name="libs.clank" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <!--load env variables-->
+
+    <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
 
     <target name="-check-clank-paths" if="copy.clank.jars"> 
 
       <property name="clank.suite.dir" value="${sputnik}/clank.suite"/>
       <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
-      <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
 
       <condition property="SPUTNIK.found">
           <isset property="sputnik"/>
@@ -75,12 +75,9 @@ made subject to such option by the copyright holder.
       </zip>
     </target>
 
-    <target name="release" depends="projectized-common.release">
-        <unzip src="${clank.dest.zip}" dest="${basedir}/external">            
-        </unzip>            
-    </target>
-
     <target name="netbeans" depends="projectized-common.netbeans" if="copy.clank.jars">
+        <unzip src="${clank.dest.zip}" dest="${basedir}/external">
+        </unzip>            
         <!-- The only purpose of this target is to print warning below in the very end, rather than in the middle -->
         <echo level="warning" message="################################################################################"></echo>
         <echo level="warning" message="# Attention: clank was not downloaded, but copied from here:"></echo>
