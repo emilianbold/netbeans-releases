@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -64,7 +63,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 public class ClankFileInfoQuerySupport {
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
-        FileBuffer buffer = fileImpl.getBuffer();
+        //FileBuffer buffer = fileImpl.getBuffer();
         Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
         if (interrupter.cancelled()) {
           return out;
@@ -75,12 +74,12 @@ public class ClankFileInfoQuerySupport {
           return Collections.<CsmReference>emptyList();
         } else if (handlers.size() == 1) {
           PreprocHandler handler = handlers.iterator().next();
-          PreprocHandler.State state = handler.getState();
+          /*PreprocHandler.State state =*/ handler.getState();
         } else {
           TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
           for (PreprocHandler handler : handlers) {
             // ask for concurrent entry if absent
-            PreprocHandler.State state = handler.getState();
+            /*PreprocHandler.State state =*/ handler.getState();
           }
           out = new ArrayList<>(result);
         }
