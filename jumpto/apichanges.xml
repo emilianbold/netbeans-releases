@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="AsyncDescriptor">
+            <api name="general"/>
+            <summary>Added <code>AsyncDescriptor</code> which allows descriptor to be fully calculated on background</summary>
+            <version major="1" minor="49"/>
+            <date day="18" month="5" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added <code>AsyncDescriptor</code> which allows descriptor to be fully calculated on background.
+                The <code>AsyncDescriptor</code> allows intformation to be computed on demand just for visible items.
+            </description>
+            <class package="org.netbeans.spi.jumpto.support" name="AsyncDescriptor"/>
+            <class package="org.netbeans.spi.jumpto.support" name="DescriptorChangeListener"/>
+            <class package="org.netbeans.spi.jumpto.support" name="DescriptorChangeEvent"/>
+        </change>
         <change id="SymbolDescriptor-simpleName">
             <api name="general"/>
             <summary>Added method <code>getSimpleName</code> to <code>SymbolDescriptor</code></summary>
@@ -280,7 +296,7 @@ is the proper place.
             <issue number="138345"/>
         </change>
 
-        <change id="(Provider.Result.pendingResult">
+        <change id="Provider.Result.pendingResult">
             <api name="general"/>
             <summary>Added method (Type|Symbol)Provider.Result.pendingResult()</summary>
             <version major="1" minor="14"/>

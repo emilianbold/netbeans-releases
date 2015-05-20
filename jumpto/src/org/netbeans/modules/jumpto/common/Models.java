@@ -65,6 +65,10 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
+import org.netbeans.spi.jumpto.support.AsyncDescriptor;
+import org.netbeans.spi.jumpto.support.DescriptorChangeEvent;
+import org.netbeans.spi.jumpto.support.DescriptorChangeListener;
+import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Pair;
 
@@ -80,8 +84,9 @@ public final class Models {
 
     public static <T> ListModel fromList(
             @NonNull final List<? extends T> list,
-            @NullAllowed final Filter<? super T> filter) {
-        return new ListListModel<>(list, filter);
+            @NullAllowed final Filter<? super T> filter,
+            @NullAllowed final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier) {
+        return new ListListModel<>(list, filter, attrCopier);
     }
 
     /** Creates list model which translates the objects using a factory.
@@ -121,21 +126,32 @@ public final class Models {
 
     // Private innerclasses ----------------------------------------------------
 
-    private static final class ListListModel<T> extends AbstractListModel implements ChangeListener {
+    private static final class ListListModel<T> extends AbstractListModel implements ChangeListener, DescriptorChangeListener<T> {
 
-        private final List<? extends T> list;
+        private final List<T> list;
         private final Filter<? super T> filter;
-        private List<? extends T> included;
+        private final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier;
+        private List<T> included;
 
         /** Creates a new instance of IteratorList */
         public ListListModel(
                 @NonNull final List<? extends T> list,
-                @NullAllowed final Filter<? super T> filter) {
-            this.list = this.included = list;
+                @NullAllowed final Filter<? super T> filter,
+                @NullAllowed final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier) {
+            //Defensive copy and add listenener
+            this.list = new ArrayList<>(list.size());
+            for (T item : list) {
+                if (item instanceof AsyncDescriptor) {
+                    ((AsyncDescriptor)item).addDescriptorChangeListener(this);
+                }
+                this.list.add(item);
+            }
+            this.included = this.list;
             this.filter = filter;
             if (this.filter != null) {
                 this.filter.addChangeListener(this);
             }
+            this.attrCopier = attrCopier;
         }
 
         // List implementataion ------------------------------------------------
@@ -155,6 +171,61 @@ public final class Models {
         @Override
         public void stateChanged(ChangeEvent e) {
             filterData();
+        }
+
+        @Override
+        public void descriptorChanged(@NonNull final DescriptorChangeEvent<T> event) {
+            final T source  = (T) event.getSource();
+            final Collection<? extends T> items = copyAttrs(source, filter(event.getReplacement()));
+            ((AsyncDescriptor<T>)source).removeDescriptorChangeListener(this);
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    int listIndex = list.indexOf(source);
+                    int includedIndex = included.indexOf(source);
+                    if (listIndex >= 0) {
+                        switch (items.size()) {
+                            case 0:
+                            {
+                                list.remove(listIndex);
+                                if (includedIndex >= 0) {
+                                    included.remove(includedIndex);
+                                    fireIntervalRemoved(ListListModel.this, includedIndex, includedIndex);
+                                }
+                                break;
+                            }
+                            case 1:
+                            {
+                                final T item = head(items);
+                                list.set(listIndex, item);
+                                if (includedIndex >= 0) {
+                                    included.set(includedIndex, item);
+                                    fireContentsChanged(ListListModel.this, includedIndex, includedIndex);
+                                }
+                                break;
+                            }
+                            default:
+                            {
+                                final T head = head(items);
+                                final Collection<? extends T> tail = tail(items);
+                                list.set(listIndex, head);
+                                list.addAll(listIndex+1, tail);
+                                if (includedIndex >= 0) {
+                                    included.set(includedIndex, head);
+                                    included.addAll(includedIndex+1, tail);
+                                    fireContentsChanged(ListListModel.this, includedIndex, includedIndex);
+                                    fireIntervalAdded(ListListModel.this, includedIndex+1, includedIndex+tail.size());
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                SwingUtilities.invokeLater(r);
+            }
         }
 
         private void filterData() {
@@ -182,6 +253,62 @@ public final class Models {
                     }
                 });
             }
+        }
+
+        @SuppressWarnings("unchecked")
+        @NullUnknown
+        private T head(@NonNull final Collection<? extends T> c) {
+            if (c instanceof List<?>) {
+                return ((List<? extends T>) c).get(0);
+            } else {
+                return c.iterator().next();
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        @NonNull
+        private Collection<? extends T> tail(@NonNull final Collection<? extends T> c) {
+            if (c instanceof List<?>) {
+                return ((List<? extends T>)c).subList(1, c.size());
+            } else {
+                final List<T> res = new ArrayList<>(c.size()-1);
+                boolean add = false;
+                for (T item : c) {
+                    if (add) {
+                        res.add(item);
+                    } else {
+                        add = true;
+                    }
+                }
+                return res;
+            }
+        }
+
+        @NonNull
+        private Collection<? extends T> copyAttrs(
+                @NonNull final T source,
+                @NonNull final Collection<? extends T> c) {
+            if (attrCopier != null) {
+                for (T item : c) {
+                    final T res = attrCopier.create(Pair.of(source, item));
+                    assert res == item;
+                }
+            }
+            return c;
+        }
+
+        @NonNull
+        private Collection<? extends T> filter(@NonNull final Collection<? extends T> c) {
+            if (filter == null) {
+                return c;
+            }
+            final Collection<T> res = new ArrayList<>(c.size());
+            for (T item : c) {
+                if (filter.accept(item)) {
+                    res.add(item);
+                }
+            }
+            return res;
         }
     }
 

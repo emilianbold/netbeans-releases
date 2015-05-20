@@ -40,52 +40,75 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jumpto.symbol;
+package org.netbeans.modules.java.source.ui;
 
-import java.util.List;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.Set;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
-import org.netbeans.spi.jumpto.symbol.SymbolProvider;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.openide.util.Exceptions;
-import static org.netbeans.spi.jumpto.symbol.SymbolProvider.*;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.java.ui.Icons;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class SymbolProviderAccessor {
+final class ResolvedJavaSymbolDescriptor extends JavaSymbolDescriptorBase {
 
-    public static SymbolProviderAccessor DEFAULT;
+    private final String simpleName;
+    private final String simpleNameSuffix;
+    private final ElementHandle<?> me;
+    private final ElementKind kind;
+    private final Set<Modifier> modifiers;
 
-    static {
-        try {
-            Class.forName(SymbolProvider.Context.class.getName(), true, SymbolProviderAccessor.class.getClassLoader());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    ResolvedJavaSymbolDescriptor (
+            @NonNull final JavaSymbolDescriptorBase base,
+            @NonNull final String simpleName,
+            @NullAllowed final String simpleNameSuffix,
+            @NonNull final ElementKind kind,
+            @NonNull final Set<Modifier> modifiers,
+            @NonNull final ElementHandle<?> me) {
+        super(base);
+        assert simpleName != null;
+        assert kind != null;
+        assert modifiers != null;
+        assert me != null;
+        this.simpleName = simpleName;
+        this.simpleNameSuffix = simpleNameSuffix;
+        this.kind = kind;
+        this.modifiers = modifiers;
+        this.me = me;
     }
 
-    public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
+    @Override
+    public Icon getIcon() {
+        return Icons.getElementIcon(kind, modifiers);
+    }
 
-    @NonNull
-    public abstract SymbolProvider.Result createResult(
-            @NonNull List<? super SymbolDescriptor> result,
-            @NonNull String[] message,
-            @NonNull Context context,
-            @NonNull SymbolProvider provider);
+    @Override
+    public String getSymbolName() {
+        return simpleNameSuffix == null ?
+                simpleName :
+                simpleName + simpleNameSuffix;
+    }
 
-    public abstract int getRetry(Result result);
+    @Override
+    public String getSimpleName() {
+        return simpleName;
+    }
 
-    @NonNull
-    public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
+    @Override
+    public void open() {
+        FileObject file = getFileObject();
+        if (file != null) {
+	    ClasspathInfo cpInfo = ClasspathInfo.create(file);
 
-    public abstract void setHighlightText(@NonNull SymbolDescriptor desc, @NonNull String text);
-
-    @CheckForNull
-    public abstract SymbolProvider getSymbolProvider(@NonNull SymbolDescriptor desc);
-
-    public abstract void setSymbolProvider(@NonNull SymbolDescriptor desc, @NonNull SymbolProvider provider);
+	    ElementOpen.open(cpInfo, me);
+        }
+    }
 }
