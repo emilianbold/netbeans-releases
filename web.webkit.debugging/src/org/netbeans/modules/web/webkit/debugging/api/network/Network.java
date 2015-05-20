@@ -397,7 +397,7 @@ public class Network {
         }
 
         public void removePropertyChangeListener(PropertyChangeListener l) {
-            support.addPropertyChangeListener(l);
+            support.removePropertyChangeListener(l);
         }
 
         private void setFailed(JSONObject params) {
