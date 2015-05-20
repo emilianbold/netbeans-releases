@@ -49,18 +49,13 @@ made subject to such option by the copyright holder.
 
     <target name="-check-clank-paths" if="copy.clank.jars"> 
 
-      <property environment="env"/>
-      <property name="env.SPUTNIK" value=""/>
-
-      <property name="clank.suite.dir" value="${env.SPUTNIK}/clank.suite"/>
+      <property name="clank.suite.dir" value="${sputnik}/clank.suite"/>
       <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
 
       <condition property="SPUTNIK.found">
-          <not>
-              <equals arg1="${env.SPUTNIK}" arg2=""/>
-          </not>
+          <isset property="sputnik"/>
       </condition>
-      <fail unless="SPUTNIK.found" message="${SPUTNIK} is not set."/>      
+      <fail unless="SPUTNIK.found" message="${sputnik} property is not set."/>      
       
       <condition property="clank.suite.built">
         <available file="${clank.suite.jars.dir}" type="dir"/>
