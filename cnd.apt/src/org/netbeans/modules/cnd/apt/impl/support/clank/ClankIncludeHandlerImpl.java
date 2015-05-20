@@ -646,15 +646,15 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         } else {
             retValue.append("from inclStackIndex=").append(inclStackIndex); // NOI18N
             if (inclStack != null && !inclStack.isEmpty()) {
-              retValue.append("\n"); // NOI18N
-            }
-            for (Iterator<IncludeInfo>  it = inclStack.iterator(); it.hasNext();) {
-                IncludeInfo info = it.next();
-                retValue.append(info);
-                if (it.hasNext()) {
-                    retValue.append("->\n"); // NOI18N
+                retValue.append("\n"); // NOI18N
+                for (Iterator<IncludeInfo>  it = inclStack.iterator(); it.hasNext();) {
+                    IncludeInfo info = it.next();
+                    retValue.append(info);
+                    if (it.hasNext()) {
+                        retValue.append("->\n"); // NOI18N
+                    }
                 }
-            }            
+            }
         }
         return retValue.toString();
     }
