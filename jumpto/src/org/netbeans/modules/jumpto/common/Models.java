@@ -68,7 +68,6 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.spi.jumpto.support.AsyncDescriptor;
 import org.netbeans.spi.jumpto.support.DescriptorChangeEvent;
 import org.netbeans.spi.jumpto.support.DescriptorChangeListener;
-import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Pair;
 
