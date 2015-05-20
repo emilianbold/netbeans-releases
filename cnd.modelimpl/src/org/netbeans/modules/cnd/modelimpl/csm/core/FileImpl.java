@@ -1403,7 +1403,7 @@ public final class FileImpl implements CsmFile,
             TokenStream filteredTokenStream = parseParams.tsp.getTokenStream(parseParams.triggerParsingActivity, true, true, interrupter);
             if (filteredTokenStream == null) {
                 System.err.println(" null token stream for " + APTHandlersSupport.extractStartEntry(ppState) + // NOI18N
-                        "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
+                        "%n while parsing file " + getAbsolutePath() + "%n of project " + getProject()); // NOI18N
                 return null;
             }
             CsmParser parser = CsmParserProvider.createParser(parseParams);
@@ -2212,11 +2212,11 @@ public final class FileImpl implements CsmFile,
             printOut.printf("pc=%s%nstate=%s%n", pair.pcState, pair.state);// NOI18N
         }
         Collection<PreprocHandler> preprocHandlers = this.getFileContainerOwnPreprocHandlersToDump();
-        printOut.printf("Converted into %d Handlers:\n", preprocHandlers.size());// NOI18N 
+        printOut.printf("Converted into %d Handlers:%n", preprocHandlers.size());// NOI18N
         i = 0;
         for (PreprocHandler ppHandler : preprocHandlers) {
-            printOut.printf("----------------Handler[%d]------------------------\n", ++i);// NOI18N 
-            printOut.printf("handler=%s\n", ppHandler);// NOI18N 
+            printOut.printf("----------------Handler[%d]------------------------%n", ++i);// NOI18N
+            printOut.printf("handler=%s%n", ppHandler);// NOI18N
         }
     }
 
