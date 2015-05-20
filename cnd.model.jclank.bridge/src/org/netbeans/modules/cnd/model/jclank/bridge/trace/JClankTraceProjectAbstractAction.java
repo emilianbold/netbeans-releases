@@ -65,10 +65,11 @@ import org.openide.windows.OutputWriter;
  * @author Vladimir Voskresensky
  */
 public abstract class JClankTraceProjectAbstractAction extends NodeAction {
+
     protected final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
-    private static final RequestProcessor RP = new RequestProcessor("JClank Preprocessor", 1);
+    private static final RequestProcessor RP = new RequestProcessor("JClank Preprocessor", 1); // NOI18N
     private final JMenuItem presenter;
-    
+
     public JClankTraceProjectAbstractAction() {
         presenter = new JMenuItem(getName());
         presenter.addActionListener(new ActionListener() {
@@ -78,41 +79,43 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
             }
         });
     }
-    
+
     @Override
     public abstract String getName();
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     @Override
     public JMenuItem getMenuPresenter() {
         return getPresenter();
-    }    
-    
+    }
+
     @Override
     public JMenuItem getPopupPresenter() {
         return getPresenter();
     }
-    
+
     private JMenuItem getPresenter() {
         presenter.setEnabled(true);
         presenter.setVisible(JClankTraceProjectAbstractAction.TEST_XREF);
         return presenter;
     }
-    
+
     @Override
-    protected boolean enable(Node[] activatedNodes)  {
+    protected boolean enable(Node[] activatedNodes) {
         return true;
     }
 
     private void onActionPerformed() {
         performAction(getActivatedNodes());
     }
-    
-    /** Actually nobody but us call this since we have a presenter. */
+
+    /**
+     * Actually nobody but us call this since we have a presenter.
+     */
     @Override
     public final void performAction(final Node[] activatedNodes) {
         final Collection<NativeProject> projects = getNativeProjects(activatedNodes);
@@ -155,8 +158,8 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
         } finally {
             handle.finish();
             if (printTiming()) {
-              out.printf("%s\n", cancelled.get() ? "Cancelled" : "Done"); //NOI18N
-              out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
+                out.printf("%s\n", cancelled.get() ? "Cancelled" : "Done"); //NOI18N
+                out.printf("%s took %d ms\n", taskName, System.currentTimeMillis() - time); // NOI18N
             }
             err.flush();
             out.flush();
@@ -166,14 +169,14 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
     }
 
     protected boolean printTiming() {
-      return true;
+        return true;
     }
-    
+
     @Override
-    protected boolean asynchronous () {
+    protected boolean asynchronous() {
         return false;
     }
-    
+
     /**
      * Gets the collection of native projects that correspond the given nodes.
      *
@@ -189,7 +192,7 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
                 if (prj == null) {
                     Object o = node.getValue("Project"); // NOI18N
                     if (o instanceof Project) {
-                        prj = (Project) o;
+                        prj = (Project)o;
                     }
                 }
                 if (prj != null) {
@@ -197,12 +200,12 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
                 }
             }
             if (np != null) {
-              projects.add(np);
+                projects.add(np);
             }
         }
         return projects;
     }
-   
+
 //    private static class OpenLink implements OutputListener {
 //        private final CMSourceLocation loc;
 //
@@ -248,6 +251,5 @@ public abstract class JClankTraceProjectAbstractAction extends NodeAction {
 //        public void outputLineCleared(OutputEvent ev) {
 //        }
 //    }    
-
     protected abstract void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, ProgressHandle handle, AtomicBoolean canceled);
 }

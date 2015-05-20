@@ -56,7 +56,7 @@ import org.openide.util.Lookup;
  * @author Vladimir Voskresensky
  */
 abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider {
-    
+
     @Override
     public void dumpInfo(Lookup context, PrintWriter printOut) {
         Collection<? extends DataObject> allFiles = context.lookupAll(DataObject.class);
@@ -64,11 +64,11 @@ abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider
         for (DataObject dob : allFiles) {
             NativeFileItemSet nfs = dob.getLookup().lookup(NativeFileItemSet.class);
             if (nfs == null) {
-                printOut.printf("NO NativeFileItemSet in %s %n", dob);
+                printOut.printf("NO NativeFileItemSet in %s %n", dob); // NOI18N
                 continue;
             }
             if (nfs.isEmpty()) {
-                printOut.printf("EMPTY NativeFileItemSet in %s %n", dob);
+                printOut.printf("EMPTY NativeFileItemSet in %s %n", dob); // NOI18N
                 continue;
             }
             for (NativeFileItem nfi : nfs.getItems()) {
@@ -79,5 +79,5 @@ abstract class JClankDiagnosticAbstractProvider implements CndDiagnosticProvider
     }
 
     protected abstract void doNativeFileItemDiagnostic(Set<NativeFileItem> nfis, PrintWriter printOut);
-    
+
 }

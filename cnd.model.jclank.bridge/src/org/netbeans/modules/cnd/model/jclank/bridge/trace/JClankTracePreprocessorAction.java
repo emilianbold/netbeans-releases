@@ -61,21 +61,21 @@ import org.openide.windows.OutputWriter;
 @ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 31)
 @NbBundle.Messages("CTL_JClankTracePreprocessorAction=Preprocess with JClank")
 public class JClankTracePreprocessorAction extends JClankTraceProjectAbstractAction {
-    
-    @Override
-    public final String getName() {
-      return NbBundle.getMessage(getClass(), ("CTL_JClankTracePreprocessorAction")); // NOI18N
-    }    
 
     @Override
-    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, 
+    public final String getName() {
+        return NbBundle.getMessage(getClass(), ("CTL_JClankTracePreprocessorAction")); // NOI18N
+    }
+
+    @Override
+    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err,
             ProgressHandle progress, final AtomicBoolean cancelled) {
         raw_ostream llvm_out = new PrintWriter_ostream(out);
         raw_ostream llvm_err = new PrintWriter_ostream(err);
         ClankProgressHandler handle = new JClankProgressHandler(progress);
         try {
             for (NativeProject project : projects) {
-                CsmJClankSerivicesImpl.preprocess(Collections.singleton(project), 
+                CsmJClankSerivicesImpl.preprocess(Collections.singleton(project),
                         llvm_out, llvm_err, handle, cancelled);
             }
         } finally {

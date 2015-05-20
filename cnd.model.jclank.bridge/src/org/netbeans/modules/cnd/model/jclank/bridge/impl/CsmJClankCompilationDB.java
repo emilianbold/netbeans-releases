@@ -61,11 +61,12 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Voskresensky
  */
 public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
+
     private final Collection<ClankCompilationDataBase.Entry> compilations;
     private final String name;
 
     private CsmJClankCompilationDB(Collection<ClankCompilationDataBase.Entry> compilations) {
-        this("JClankDB with [" + compilations.size() + "] entries", compilations);
+        this("JClankDB with [" + compilations.size() + "] entries", compilations); // NOI18N
     }
 
     private CsmJClankCompilationDB(String dbName, Collection<Entry> compilations) {
@@ -99,8 +100,8 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
             }
         }
         return srcFiles;
-    }    
-    
+    }
+
     public static ClankCompilationDataBase convertNativeFileItems(Collection<NativeFileItem> nfis, String dbName) {
         Collection<ClankCompilationDataBase.Entry> compilations = new ArrayList<>();
         for (NativeFileItem nfi : nfis) {
@@ -110,11 +111,11 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         }
         return new CsmJClankCompilationDB(dbName, compilations);
     }
-    
+
     public static ClankCompilationDataBase convertProject(NativeProject prj) {
         return convertNativeFileItems(getSources(prj), prj.getProjectDisplayName());
     }
-    
+
     public static Collection<ClankCompilationDataBase> convertProjects(Collection<NativeProject> prjs) {
         Collection<ClankCompilationDataBase> out = new ArrayList<>();
         for (NativeProject prj : prjs) {
@@ -127,8 +128,7 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(nfi.getFileObject().toURI(), null);
 
         builder.setLang(getLang(nfi)).setLangStd(getLangStd(nfi));
-        
-        
+
         for (FSPath fSPath : nfi.getUserIncludePaths()) {
             FileObject fileObject = fSPath.getFileObject();
             if (fileObject != null && fileObject.isFolder()) {
@@ -141,24 +141,24 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
             if (fileObject != null && fileObject.isFolder()) {
                 builder.addPredefinedSystemIncludePath(fileObject.toURI());
             }
-        }    
-        
+        }
+
         // handle -include
         for (String path : nfi.getIncludeFiles()) {
             builder.addIncFile(path);
         }
-        
+
         // -D
         for (String macro : nfi.getSystemMacroDefinitions()) {
             builder.addPredefinedSystemMacroDef(macro);
         }
         for (String macro : nfi.getUserMacroDefinitions()) {
             builder.addUserMacroDef(macro);
-        }        
-        
+        }
+
         return builder.createDataBaseEntry();
-    }    
-    
+    }
+
     private static LangStandard.Kind getLangStd(NativeFileItem startEntry) throws AssertionError {
         LangStandard.Kind lang_std = LangStandard.Kind.lang_unspecified;
         switch (startEntry.getLanguageFlavor()) {
@@ -222,5 +222,5 @@ public final class CsmJClankCompilationDB implements ClankCompilationDataBase {
         public int compare(NativeFileItem o1, NativeFileItem o2) {
             return o1.getAbsolutePath().compareTo(o2.getAbsolutePath());
         }
-    }    
+    }
 }

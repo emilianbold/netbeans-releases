@@ -59,14 +59,15 @@ import org.openide.windows.OutputWriter;
  * @author Vladimir Voskresensky
  */
 public final class CsmJClankSerivicesImpl {
+
     public static final boolean TRACE = false;
-    
+
     public static APTTokenStream getAPTTokenStream(NativeFileItem nfi) {
         throw new UnsupportedOperationException();
     }
 
-    public static void traceCompilationDB(Set<NativeProject> projects, 
-            raw_ostream out, raw_ostream err, 
+    public static void traceCompilationDB(Set<NativeProject> projects,
+            raw_ostream out, raw_ostream err,
             ClankProgressHandler handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
@@ -83,9 +84,9 @@ public final class CsmJClankSerivicesImpl {
         };
         ClankPreprocessorServices.dumpCompilations(dbs, settings);
     }
-    
-    public static void preprocess(Collection<NativeProject> projects, 
-            raw_ostream out, raw_ostream err, 
+
+    public static void preprocess(Collection<NativeProject> projects,
+            raw_ostream out, raw_ostream err,
             ClankProgressHandler handle, final AtomicBoolean cancelled) {
         assert out != null;
         assert err != null;
@@ -104,7 +105,7 @@ public final class CsmJClankSerivicesImpl {
         settings.IncludeInfoCallbacks = new CollectIncludeInfoCallback(err);
         ClankPreprocessorServices.preprocess(dbs, settings);
     }
-    
+
     public static void dumpTokens(NativeFileItem nfi) {
 //        raw_ostream llvm_err = llvm.errs();
 //        Preprocessor /*&*/ PP = ClankPreprocessorServices.getPreprocessor(CsmJClankCompilationDB.createEntry(nfi), llvm_err);
@@ -120,8 +121,8 @@ public final class CsmJClankSerivicesImpl {
 //        }
     }
 
-    public static void dumpPreprocessed(NativeFileItem nfi, 
-            PrintWriter out, OutputWriter err, 
+    public static void dumpPreprocessed(NativeFileItem nfi,
+            PrintWriter out, OutputWriter err,
             boolean printTokens,
             boolean printStatistics) {
         raw_ostream llvm_out = new PrintWriter_ostream(out);
@@ -135,7 +136,7 @@ public final class CsmJClankSerivicesImpl {
         settings.IncludeInfoCallbacks = new CollectIncludeInfoCallback(llvm_err);
         ClankCompilationDataBase db = CsmJClankCompilationDB.convertNativeFileItems(Collections.singletonList(nfi), nfi.getName());
         ClankPreprocessorServices.preprocess(Collections.singletonList(db), settings);
-    }    
+    }
 
     private static class CollectIncludeInfoCallback extends FileInfoCallback {
 

@@ -55,61 +55,63 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Vladimir Voskresensky
  */
 public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvider {
-    
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 108)
     public static final class JClankOnlyExpandTokensWOStatistics extends JClankPreprocessFile {
 
         public JClankOnlyExpandTokensWOStatistics() {
             super(false, false);
         }
-        
+
         @NbBundle.Messages({"JClankOnlyExpandTokensWOStatistics.displayName=Expand Only"})
         @Override
         public String getDisplayName() {
             return JClankOnlyExpandTokensWOStatistics_displayName();
-        }        
-    } 
-    
+        }
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 106)
     public static final class JClankOnlyExpandTokensWithStatistics extends JClankPreprocessFile {
 
         public JClankOnlyExpandTokensWithStatistics() {
             super(false, true);
         }
-        
+
         @NbBundle.Messages({"JClankOnlyExpandTokensWithStatistics.displayName=Expand Only + Statistics"})
         @Override
         public String getDisplayName() {
             return JClankOnlyExpandTokensWithStatistics_displayName();
-        }        
-    }     
+        }
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 102)
     public static final class JClankPrintTokensWithStatistics extends JClankPreprocessFile {
 
         public JClankPrintTokensWithStatistics() {
             super(true, true);
         }
-        
+
         @NbBundle.Messages({"JClankPrintTokensWithStatistics.displayName=Print Expanded + Statistics"})
         @Override
         public String getDisplayName() {
             return JClankPrintTokensWithStatistics_displayName();
-        }        
-    }    
+        }
+    }
+
     @ServiceProvider(service = CndDiagnosticProvider.class, position = 104)
     public static final class JClankPrintTokensWOStatistics extends JClankPreprocessFile {
 
         public JClankPrintTokensWOStatistics() {
             super(true, false);
         }
-        
+
         @NbBundle.Messages({"JClankPrintTokensWOStatistics.displayName=Print Expanded"})
         @Override
         public String getDisplayName() {
             return JClankPrintTokensWOStatistics_displayName();
-        }        
-    }    
-    
+        }
+    }
+
     final boolean printTokens;
     final boolean printStatistics;
 
@@ -125,18 +127,18 @@ public abstract class JClankPreprocessFile extends JClankDiagnosticAbstractProvi
         int numFiles = 0;
         for (NativeFileItem nfi : nfis) {
             try {
-                printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath());
+                printOut.printf("dumpFileTokens %s...%n", nfi.getAbsolutePath()); // NOI18N
                 long time = System.currentTimeMillis();
                 CsmJClankSerivicesImpl.dumpPreprocessed(nfi, printOut, null, printTokens, printStatistics);
                 numFiles++;
                 time = System.currentTimeMillis() - time;
                 totalTime += time;
-                printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time);
+                printOut.printf("dumpFileTokens %s took %,dms %n", nfi.getAbsolutePath(), time); // NOI18N
             } catch (Throwable e) {
                 new Exception(nfi.getAbsolutePath(), e).printStackTrace(printOut);
             }
         }
         printOut.printf("====%s for %d files took %,dms\n", getDisplayName(), numFiles, totalTime); // NOI18N
     }
-    
+
 }

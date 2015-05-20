@@ -49,13 +49,13 @@ import org.netbeans.api.progress.ProgressHandle;
  * @author Vladimir Voskresensky
  */
 public class JClankProgressHandler implements ClankProgressHandler {
+
     private final ProgressHandle delegate;
 
     public JClankProgressHandler(ProgressHandle handle) {
         this.delegate = handle;
     }
 
-    
     @Override
     public void setDisplayName(String newDisplayName) {
         delegate.setDisplayName(newDisplayName);
@@ -80,5 +80,5 @@ public class JClankProgressHandler implements ClankProgressHandler {
     public void progress(String message, int workunit) {
         delegate.progress(message, workunit);
     }
-    
+
 }

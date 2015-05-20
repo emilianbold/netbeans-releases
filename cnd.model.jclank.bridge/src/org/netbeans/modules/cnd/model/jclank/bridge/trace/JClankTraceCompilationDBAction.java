@@ -61,26 +61,26 @@ import org.openide.windows.OutputWriter;
 @ActionReference(path = "NativeProjects/CodeAssistanceActions", position = 35)
 @NbBundle.Messages("CTL_JClankTraceCompilationDBAction=Trace Compilation DB for JClank")
 public class JClankTraceCompilationDBAction extends JClankTraceProjectAbstractAction {
-    
-    @Override
-    public final String getName() {
-      return NbBundle.getMessage(getClass(), ("CTL_JClankTraceCompilationDBAction")); // NOI18N
-    }    
 
     @Override
-    protected boolean printTiming() {
-      return false;
+    public final String getName() {
+        return NbBundle.getMessage(getClass(), ("CTL_JClankTraceCompilationDBAction")); // NOI18N
     }
 
     @Override
-    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err, 
+    protected boolean printTiming() {
+        return false;
+    }
+
+    @Override
+    protected void traceProjects(Collection<NativeProject> projects, OutputWriter out, OutputWriter err,
             ProgressHandle progress, final AtomicBoolean cancelled) {
         raw_ostream llvm_out = new PrintWriter_ostream(out);
         raw_ostream llvm_err = new PrintWriter_ostream(err);
         ClankProgressHandler handle = new JClankProgressHandler(progress);
         try {
             for (NativeProject project : projects) {
-                CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project), 
+                CsmJClankSerivicesImpl.traceCompilationDB(Collections.singleton(project),
                         llvm_out, llvm_err, handle, cancelled);
             }
         } finally {
