@@ -102,24 +102,21 @@ final class StopOnOffsetParseFileWalker extends APTParseFileWalker {
       // we do not remember cache entry because it is stopped before end of file
       // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
       TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
-      if (ts != null) {
-        ts = new APTMacroExpandedStream(ts, (APTMacroCallback)handler.getMacroMap(), true);
+      ts = new APTMacroExpandedStream(ts, (APTMacroCallback)handler.getMacroMap(), true);
 
-        // skip comments, see IZ 207378
-        ts = new APTCommentsFilter(ts);
+      // skip comments, see IZ 207378
+      ts = new APTCommentsFilter(ts);
 
-        StringBuilder sb = new StringBuilder(""); // NOI18N
-        try {
-          APTToken t = (APTToken) ts.nextToken();
-          while (t != null && !APTUtils.isEOF(t)) {
-            sb.append(t.getTextID());
-            t = (APTToken) ts.nextToken();
-          }
-        } catch (TokenStreamException ex) {
-          Exceptions.printStackTrace(ex);
+      StringBuilder sb = new StringBuilder(""); // NOI18N
+      try {
+        APTToken t = (APTToken) ts.nextToken();
+        while (t != null && !APTUtils.isEOF(t)) {
+          sb.append(t.getTextID());
+          t = (APTToken) ts.nextToken();
         }
-        return sb.toString();
+      } catch (TokenStreamException ex) {
+        Exceptions.printStackTrace(ex);
       }
-      return code;
+      return sb.toString();
     }    
 }
