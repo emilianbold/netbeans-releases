@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.spi.jumpto.support.AsyncDescriptor;
 import org.netbeans.spi.jumpto.support.DescriptorChangeEvent;
 import org.netbeans.spi.jumpto.support.DescriptorChangeListener;
+import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Pair;
 
@@ -175,11 +176,11 @@ public final class Models {
         @Override
         public void descriptorChanged(@NonNull final DescriptorChangeEvent<T> event) {
             final T source  = (T) event.getSource();
-            final Collection<? extends T> items = copyAttrs(source, event.getReplacement());
+            final Collection<? extends T> items = copyAttrs(source, filter(event.getReplacement()));
             ((AsyncDescriptor<T>)source).removeDescriptorChangeListener(this);
-            invokeInEDT(new Callable<Void>() {
+            final Runnable r = new Runnable() {
                 @Override
-                public Void call() throws Exception {
+                public void run() {
                     int listIndex = list.indexOf(source);
                     int includedIndex = included.indexOf(source);
                     if (listIndex >= 0) {
@@ -218,9 +219,13 @@ public final class Models {
                             }
                         }
                     }
-                    return null;
                 }
-            });
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                SwingUtilities.invokeLater(r);
+            }
         }
 
         private void filterData() {
@@ -290,6 +295,20 @@ public final class Models {
                 }
             }
             return c;
+        }
+
+        @NonNull
+        private Collection<? extends T> filter(@NonNull final Collection<? extends T> c) {
+            if (filter == null) {
+                return c;
+            }
+            final Collection<T> res = new ArrayList<>(c.size());
+            for (T item : c) {
+                if (filter.accept(item)) {
+                    res.add(item);
+                }
+            }
+            return res;
         }
     }
 
