@@ -189,6 +189,21 @@ class ModelItem implements PropertyChangeListener {
     }
 
     /**
+     * Returns the status (response code) of the request represented by this
+     * model item.
+     * 
+     * @return status (response code) of the request represented by this
+     * model item.
+     */
+    int getStatus() {
+        int status = 0;
+        if (request != null) {
+            status = request.getResponseCode();
+        }
+        return status;
+    }
+
+    /**
      * Returns the content type of the request represented by this model item.
      * 
      * @return content type of the request represented by this model item.
