@@ -124,7 +124,6 @@ public final class MacroImpl extends OffsetableIdentifiableBase<CsmMacro> implem
     
     @Override
     public CharSequence getBody() {
-        // see APTParseFileWalker.createMacro() for details.
         return body;
     }
     

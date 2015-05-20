@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.api.model;
 
+import java.util.Comparator;
+
 /**
  * An object, which has correspondent file and a pair of offsets (start and end)
  * @author Vladimir Kvashin
@@ -73,4 +75,19 @@ public interface CsmOffsetable extends CsmObject {
     
     /** gets this object's text */
     CharSequence getText();
+
+    public static final Comparator<? super CsmOffsetable> OFFSET_COMPARATOR = new OffsetableComparator<>();
+
+    static final class OffsetableComparator<T extends CsmOffsetable> implements Comparator<T> {
+
+        @Override
+        public int compare(CsmOffsetable o1, CsmOffsetable o2) {
+            int diff = o1.getStartOffset() - o2.getStartOffset();
+            if (diff == 0) {
+                return o1.getEndOffset() - o2.getEndOffset();
+            } else {
+                return diff;
+            }
+        }
+    };
 }

@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -378,6 +379,19 @@ public class APTUtils {
         return retValue;
     }
     
+    public static String macros2String(Collection<? extends CharSequence> macros) {
+        StringBuilder retValue = new StringBuilder();
+        retValue.append("MACROS (sorted ").append(macros.size()).append("):\n"); // NOI18N
+        List<CharSequence> macrosSorted = new ArrayList<CharSequence>(macros);
+        Collections.sort(macrosSorted, CharSequences.comparator());
+        for (CharSequence macro : macrosSorted) {
+            assert(macro != null);
+            retValue.append(macro);
+            retValue.append("'\n"); // NOI18N
+        }
+        return retValue.toString();
+    }
+
     public static String macros2String(Map<CharSequence/*getTokenTextKey(token)*/, APTMacro> macros) {
         StringBuilder retValue = new StringBuilder();
         retValue.append("MACROS (sorted ").append(macros.size()).append("):\n"); // NOI18N

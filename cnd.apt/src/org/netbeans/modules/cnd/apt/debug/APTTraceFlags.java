@@ -50,7 +50,9 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
  * A common place for APT tracing flags that are used by several classes
  * @author Vladimir Voskresensky
  */
-public interface APTTraceFlags {
+public interface APTTraceFlags {    
+    public static final boolean USE_CLANK = DebugUtils.getBoolean("apt.use.clank", false); // NOI18N
+    
     public static final boolean INCLUDE_TOKENS_IN_TOKEN_STREAM = DebugUtils.getBoolean("apt.include.tokens", false); // NOI18N
     public static final boolean APT_SHARE_MACROS = DebugUtils.getBoolean("apt.share.macros", true); // NOI18N
 

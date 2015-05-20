@@ -57,11 +57,25 @@ public final class APTLiteConstTextToken  extends APTTokenAbstact implements APT
     private static final int MAX_LINE  = (1<<LINE_BITS) - 1;
     private static final int TYPE_BITS = 6;
     private static final int MAX_TYPE  = (1<<TYPE_BITS) - 1;
+
     private final int offset;
     private final int columnLineType;
 
+    public static String toText(int type) {
+        assert isLiteConstTextType(type);
+        return APTConstTextToken.constText[type];
+    }
+
+    public static CharSequence toTextID(int type) {
+        assert isLiteConstTextType(type);
+        return APTConstTextToken.constTextID[type];
+    }
+
+    public static boolean isLiteConstTextType(int type) {
+        return type > APTTokenTypes.NULL_TREE_LOOKAHEAD && type < APTTokenTypes.LAST_CONST_TEXT_TOKEN;
+    }
     public static boolean isApplicable(int type, int offset, int column, int line) {
-        if (type > APTTokenTypes.NULL_TREE_LOOKAHEAD && type < APTTokenTypes.LAST_CONST_TEXT_TOKEN && type <= APTLiteConstTextToken.MAX_TYPE) {
+        if (isLiteConstTextType(type) && type <= APTLiteConstTextToken.MAX_TYPE) {
             if (line <= APTLiteConstTextToken.MAX_LINE && column <= APTLiteConstTextToken.MAX_COL) {
                 return true;
             }
