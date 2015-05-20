@@ -240,6 +240,11 @@ class ModelElementFactory {
             for (Occurrence occurence: result.getOccurrences()) {
                 newObject.addOccurrence(occurence.getOffsetRange());
             }
+            if (result.isDeclared()) {
+                newObject.getModifiers().clear();
+                newObject.getModifiers().addAll(result.getModifiers());
+                newObject.setDeclarationName(result.getDeclarationName());
+            }
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         if (docHolder != null) {
