@@ -193,9 +193,17 @@ public enum JsTokenId implements TokenId {
     KEYWORD_FALSE("false", "keyword"), // NOI18N
     KEYWORD_NULL("null", "keyword"); // NOI18N
 
+    // JavaScript mimetypes
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
+    public static final String GULP_MIME_TYPE = "text/gulp-javascript"; // NOI18N
+    public static final String GRUNT_MIME_TYPE = "text/grunt-javascript"; // NOI18N
 
+    // JSON mimetypes
     public static final String JSON_MIME_TYPE = "text/x-json"; // NOI18N
+    public static final String PACKAGE_JSON_MIME_TYPE = "text/package+x-json"; // NOI18N
+    public static final String BOWER_JSON_MIME_TYPE = "text/bower+x-json"; // NOI18N
+    public static final String BOWERRC_JSON_MIME_TYPE = "text/bowerrc+x-json"; // NOI18N
+    public static final String JSHINTRC_JSON_MIME_TYPE = "text/jshintrc+x-json"; // NOI18N
 
     private final String fixedText;
 

@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
@@ -79,8 +80,18 @@ public class JsParserResult extends ParserResult {
     }
 
     public static boolean isEmbedded(@NonNull Snapshot snapshot) {
-        return !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimePath().getPath())
-                && !JsTokenId.JSON_MIME_TYPE.equals(snapshot.getMimePath().getPath());
+        List<String> mimeTypes = Arrays.asList(
+                JsTokenId.JAVASCRIPT_MIME_TYPE,
+                JsTokenId.GULP_MIME_TYPE,
+                JsTokenId.GRUNT_MIME_TYPE,
+                JsTokenId.JSON_MIME_TYPE,
+                JsTokenId.PACKAGE_JSON_MIME_TYPE,
+                JsTokenId.BOWER_JSON_MIME_TYPE,
+                JsTokenId.BOWERRC_JSON_MIME_TYPE,
+                JsTokenId.JSHINTRC_JSON_MIME_TYPE
+        );
+
+        return !mimeTypes.contains(snapshot.getMimePath().getPath());
     }
 
     public List<? extends FilterableError> getErrors(boolean includeFiltered) {
