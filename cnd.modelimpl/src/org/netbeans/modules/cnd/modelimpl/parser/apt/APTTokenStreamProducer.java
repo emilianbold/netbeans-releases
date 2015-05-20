@@ -312,16 +312,16 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
 
     public static APTFile getFileAPT(FileImpl file, boolean full) {
         APTFile fileAPT = null;
-        FileBufferDoc.ChangedSegment changedSegment = null;
+        //FileBufferDoc.ChangedSegment changedSegment = null;
         try {
             if (full) {
                 fileAPT = APTDriver.findAPT(file.getBuffer(), file.getFileLanguage(), file.getFileLanguageFlavor());
             } else {
                 fileAPT = APTDriver.findAPTLight(file.getBuffer());
             }
-            if (file.getBuffer() instanceof FileBufferDoc) {
-                changedSegment = ((FileBufferDoc) file.getBuffer()).getLastChangedSegment();
-            }
+            //if (file.getBuffer() instanceof FileBufferDoc) {
+            //    changedSegment = ((FileBufferDoc) file.getBuffer()).getLastChangedSegment();
+            //}
         } catch (FileNotFoundException ex) {
             APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{file.getBuffer().getAbsolutePath()});// NOI18N
         } catch (IOException ex) {
