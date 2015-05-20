@@ -340,7 +340,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   ProjectBase aStartProject = getStartProject();
                   if (inclFileOwner.isDisposing() || aStartProject.isDisposing()) {
                     if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
-                      System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project\n", inclPath, inclFileOwner.getName());
+                      System.err.printf("onFileIncluded: %s file [%s] is interrupted on disposing project%n", inclPath, inclFileOwner.getName());
                     }
                   } else {
                     if (CLEAN_STATE) {
@@ -354,7 +354,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   }
                 }
               } catch (Exception ex) {
-                APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:\n{1}", new Object[]{exitedFrom.getFilePath(), ex});
+                APTUtils.LOG.log(Level.SEVERE, "MyClankPreprocessorCallback: error on including {0}:%n{1}", new Object[]{exitedFrom.getFilePath(), ex});
                 DiagnosticExceptoins.register(ex);
               }
             }
