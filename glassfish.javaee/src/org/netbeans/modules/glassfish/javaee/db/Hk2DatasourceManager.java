@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -404,13 +405,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
         if (!applicationScoped) {
             return jndiName;
         }
-        if (jndiName.startsWith("java:global/") // NOI18N
-                || jndiName.startsWith("java:app/") // NOI18N
-                || jndiName.startsWith("java:module/") // NOI18N
-                || jndiName.startsWith("java:comp/")) { // NOI18N
-            return jndiName;
-        }
-        return "java:app/" + jndiName; // NOI18N
+        return JndiNamespacesDefinition.normalize(jndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
     }
 
     private static class JdbcResource {

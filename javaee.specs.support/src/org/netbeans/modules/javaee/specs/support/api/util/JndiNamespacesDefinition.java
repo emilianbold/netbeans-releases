@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.resources.api;
+package org.netbeans.modules.javaee.specs.support.api.util;
 
 import java.util.Collections;
 import java.util.HashSet;
