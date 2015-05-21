@@ -73,7 +73,7 @@ import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefini
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.javaee.resources.api.JmsDestination;
-import org.netbeans.modules.javaee.resources.api.JndiNamespacesDefinition;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModel;
 import org.netbeans.modules.javaee.resources.api.model.JndiResourcesModelSupport;
 import org.openide.DialogDescriptor;

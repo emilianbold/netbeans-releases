@@ -84,7 +84,6 @@ class ModelItem implements PropertyChangeListener {
     private final Network.WebSocketRequest wsRequest;
     private ChangeListener changeListener;
     private String data = "";
-    private String failureCause = null;
     private final BrowserFamilyId browserFamilyId;
     private final Project project;
     private final AtomicBoolean dataLoaded = new AtomicBoolean(false);
@@ -300,10 +299,9 @@ class ModelItem implements PropertyChangeListener {
         StyleConstants.setBold(boldStyle, true);
         Style errorStyle = doc.addStyle("error", defaultStyle);
         StyleConstants.setBold(errorStyle, true);
-        StyleConstants.setFontSize(errorStyle, StyleConstants.getFontSize(errorStyle)+6);
         StyleConstants.setForeground(errorStyle, Color.red);
         Style paragraphStyle = doc.addStyle("paragraph", defaultStyle);
-        StyleConstants.setFontSize(paragraphStyle, StyleConstants.getFontSize(paragraphStyle)+8);
+        StyleConstants.setFontSize(paragraphStyle, StyleConstants.getFontSize(paragraphStyle)+5);
         StyleConstants.setForeground(paragraphStyle, Color.gray);
         pane.setText("");
 
@@ -330,16 +328,7 @@ class ModelItem implements PropertyChangeListener {
                 }
             } else if (request.isFailed()) {
                 doc.insertString(doc.getLength(), "Status: ", boldStyle);
-                if (failureCause != null) {
-                    doc.insertString(doc.getLength(), "Request was cancelled. "+failureCause+"\n", errorStyle);
-                    doc.insertString(doc.getLength(), "This type of failure is usually caused by the browser's Same Origin Security Policy. "
-                            + "There are two ways to comply with the policy:\n"
-                            + " - the REST server enables cross-origin requests. This is a preferred solution.\n"
-                            + "   (in NetBeans see 'Jersey Cross-Origin Resource Sharing' new file wizard in Web Services category)\n"
-                            + " - use 'JSONP' workaround to call REST endpoint\n", defaultStyle);
-                } else {
-                    doc.insertString(doc.getLength(), "Request was cancelled.\n", errorStyle);
-                }
+                doc.insertString(doc.getLength(), "Request was cancelled.\n", errorStyle);
             }
         } else {
             doc.insertString(doc.getLength(), "Request URL: ", boldStyle);
@@ -398,11 +387,6 @@ class ModelItem implements PropertyChangeListener {
                 }
             }
         });
-    }
-
-    void setFailureCause(String cause) {
-        this.failureCause = cause;
-        fireChange();
     }
 
     private void loadRequestData() {
