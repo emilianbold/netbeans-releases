@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 
     <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
 
-    <target name="-check-clank-paths" if="copy.clank.jars"> 
+    <target name="-check-clank-paths" if="${copy.clank.jars}"> 
 
       <property name="clank.suite.dir" value="${sputnik}/clank.suite"/>
       <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
@@ -66,18 +66,21 @@ made subject to such option by the copyright holder.
       <fileset dir="${clank.suite.jars.dir}" id="clank.jars.fileset" includes="*.jar"/>
       <pathconvert refid="clank.jars.fileset" property="clank.suite.contains-files" setonempty="false"/>  
       <fail unless="clank.suite.contains-files" message="${clank.suite.jars.dir} doesn't contain jar files. ${clank.suite.dir} was not built?"/>        
-    </target>
-    
-    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep" if="copy.clank.jars">      
+      <echo level="warning" message="################################################################################"></echo>
       <echo message="Zipping .jar files from ${clank.suite.jars.dir}/*.jar into ${clank.dest.zip}" />
+      <echo message="${clank.dest.zip} is overwritten" />
+      <echo level="warning" message="################################################################################"></echo>
       <zip basedir="${clank.suite.jars.dir}" destfile="${clank.dest.zip}">
           <fileset dir="${clank.suite.jars.dir}" includes="*.jar"/>
       </zip>
     </target>
+    
+    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep">
+      <unzip src="${clank.dest.zip}" dest="${basedir}/external" overwrite="true">
+      </unzip>
+    </target>
 
-    <target name="netbeans" depends="projectized-common.netbeans" if="copy.clank.jars">
-        <unzip src="${clank.dest.zip}" dest="${basedir}/external">
-        </unzip>            
+    <target name="netbeans" depends="projectized-common.netbeans" if="${copy.clank.jars}">
         <!-- The only purpose of this target is to print warning below in the very end, rather than in the middle -->
         <echo level="warning" message="################################################################################"></echo>
         <echo level="warning" message="# Attention: clank was not downloaded, but copied from here:"></echo>
