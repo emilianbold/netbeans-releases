@@ -195,8 +195,8 @@ public enum JsTokenId implements TokenId {
 
     // JavaScript mimetypes
     public static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; // NOI18N
-    public static final String GULP_MIME_TYPE = "text/gulp-javascript"; // NOI18N
-    public static final String GRUNT_MIME_TYPE = "text/grunt-javascript"; // NOI18N
+    public static final String GULP_MIME_TYPE = "text/gulp+javascript"; // NOI18N
+    public static final String GRUNT_MIME_TYPE = "text/grunt+javascript"; // NOI18N
 
     // JSON mimetypes
     public static final String JSON_MIME_TYPE = "text/x-json"; // NOI18N
