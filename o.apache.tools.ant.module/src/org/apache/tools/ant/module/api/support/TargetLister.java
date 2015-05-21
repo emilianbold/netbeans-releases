@@ -57,6 +57,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import org.apache.tools.ant.module.AntSettings;
@@ -302,7 +303,7 @@ public class TargetLister {
             if (prjFile != null) {
                 alreadyImported.add(prjFile);
             }
-            String _defaultTarget = prj.getAttribute("default"); // NOI18N
+            String _defaultTarget = prj.getAttribute("default"); // NOI18N            
             defaultTarget = _defaultTarget.length() > 0 ? _defaultTarget : null;
             String _name = prj.getAttribute("name"); // NOI18N
             name = _name.length() > 0 ? _name : null;
@@ -442,6 +443,11 @@ public class TargetLister {
                         String valueSubst = replaceAntProperties(value, propertyDefs);
                         propertyDefs.put(propertyName, valueSubst);
                         continue;
+                    } else if (el.hasAttribute("environment")) { // NOI18N
+                        String envPrefix = el.getAttribute("environment") + "."; // NOI18N
+                        for(Entry<String, String> e : System.getenv().entrySet()) {
+                            propertyDefs.put(envPrefix + e.getKey(), e.getValue());
+                        }
                     }
                     String file = replaceMacroParams(el.getAttribute("file"), macroParams); // NOI18N
                     if (file.length() > 0) {

@@ -43,6 +43,7 @@ import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.commons.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
@@ -172,6 +173,19 @@ public final class BugtrackingSupport<R, Q, I> {
                 }
             }
         });
+    }
+    
+    /**
+     * Determines default auto-refresh for a given query.
+     * 
+     * @param r a implementation specific Repository instance
+     * @param q a implementation specific Query instance
+     * @param autoRefresh determines the auto-refresh setting for a given query
+     * @since 1.107
+     */
+    public void setQueryAutoRefresh(R r, Q q, boolean autoRefresh) {
+        QueryImpl queryImpl = getQueryImpl(r, q);
+        DashboardUtils.setQueryAutoRefresh(queryImpl, autoRefresh);
     }
     
     /**

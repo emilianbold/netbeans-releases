@@ -14,7 +14,7 @@ import com.oracle.truffle.api.instrument.QuitException;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.debug.DebugException;
-import com.oracle.truffle.debug.SourceExecution;
+import com.oracle.truffle.debug.SourceExecutionProvider;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
 import com.oracle.truffle.js.nodes.JavaScriptNode;
 import com.oracle.truffle.js.parser.env.Environment;
@@ -27,33 +27,21 @@ import javax.script.ScriptException;
  *
  * @author Martin Entlicher
  */
-public class JPDAJSSourceExecution extends SourceExecution {
+public class JPDAJSSourceExecution extends SourceExecutionProvider {
     
     private final TruffleJSEngine engine;
-    private final AtomicBoolean dummyExecLock = new AtomicBoolean(false);
     
     public JPDAJSSourceExecution(TruffleJSEngine engine) {
         this.engine = engine;
     }
 
     @Override
-    protected void languageRun(Source source) throws DebugException {
-        if (source == null) {
-            synchronized (dummyExecLock) {
-                dummyExecLock.notifyAll();
-                dummyExecLock.set(true);
-                try {
-                    dummyExecLock.wait();
-                } catch (InterruptedException ex) {
-                }
-            }
-        } else {
-            runSource(source);
-        }
+    public void languageRun(Source source) throws DebugException {
+        runSource(source);
     }
 
     @Override
-    protected Object languageEval(Source source, Node node, MaterializedFrame mFrame) {
+    public Object languageEval(Source source, Node node, MaterializedFrame mFrame) {
         try {
             if (mFrame == null) {
                 return engine.eval(source.getCode());
@@ -94,31 +82,8 @@ public class JPDAJSSourceExecution extends SourceExecution {
     }
     
     @Override
-    protected AdvancedInstrumentRootFactory languageAdvancedInstrumentRootFactory(String expr, AdvancedInstrumentResultListener resultListener) throws DebugException {
+    public AdvancedInstrumentRootFactory languageAdvancedInstrumentRootFactory(String expr, AdvancedInstrumentResultListener resultListener) throws DebugException {
         return engine.createAdvancedInstrumentRootFactory(engine.getJSContext(), expr);
     }
 
-    public void startDummyExecution() {
-        synchronized (dummyExecLock) {
-            if (!dummyExecLock.get()) {
-                try {
-                    dummyExecLock.wait();
-                } catch (InterruptedException ex) {}
-            }
-        }
-    }
-
-    public void endDummyExecution() {
-        synchronized (dummyExecLock) {
-            if (!dummyExecLock.get()) {
-                try {
-                    dummyExecLock.wait();
-                } catch (InterruptedException ex) {}
-            }
-            try {
-                dummyExecLock.wait();
-            } catch (InterruptedException ex) {}
-        }
-    }
-    
 }
