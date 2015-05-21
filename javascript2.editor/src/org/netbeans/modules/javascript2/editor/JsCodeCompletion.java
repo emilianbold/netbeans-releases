@@ -133,6 +133,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             request.result = jsParserResult;
             request.info = info;
             request.prefix = pref;
+            request.completionContext = context;
         
         jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
