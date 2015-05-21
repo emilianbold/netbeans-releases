@@ -39,8 +39,8 @@ import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
  */
 public class APTSelfWalker extends APTAbstractWalker {
 
-    protected APTSelfWalker(APTFile apt, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+    protected APTSelfWalker(APTFile apt, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
         super(apt, preprocHandler, cacheEntry);
     }
     
@@ -73,7 +73,7 @@ public class APTSelfWalker extends APTAbstractWalker {
             if (fileObject != null) {
                 try {
                     APTFile apt = APTDriver.findAPTLight(ModelSupport.createFileBuffer(fileObject));
-                    APTPreprocHandler preprocHandler = getPreprocHandler();
+                    PreprocHandler preprocHandler = getPreprocHandler();
                     APTFileCacheEntry cache = APTFileCacheManager.getInstance(resolvedPath.getFileSystem()).getEntry(path, preprocHandler.getState(), null);
                     createIncludeWalker(apt, this, path, cache).visit();
                     // does not remember walk to safe memory
