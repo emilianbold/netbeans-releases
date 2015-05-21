@@ -188,7 +188,9 @@ public final class Models {
                             {
                                 list.remove(listIndex);
                                 if (includedIndex >= 0) {
-                                    included.remove(includedIndex);
+                                    if (included != list) {
+                                        included.remove(includedIndex);
+                                    }
                                     fireIntervalRemoved(ListListModel.this, includedIndex, includedIndex);
                                 }
                                 break;
@@ -198,7 +200,9 @@ public final class Models {
                                 final T item = head(items);
                                 list.set(listIndex, item);
                                 if (includedIndex >= 0) {
-                                    included.set(includedIndex, item);
+                                    if (included != list) {
+                                        included.set(includedIndex, item);
+                                    }
                                     fireContentsChanged(ListListModel.this, includedIndex, includedIndex);
                                 }
                                 break;
@@ -210,8 +214,10 @@ public final class Models {
                                 list.set(listIndex, head);
                                 list.addAll(listIndex+1, tail);
                                 if (includedIndex >= 0) {
-                                    included.set(includedIndex, head);
-                                    included.addAll(includedIndex+1, tail);
+                                    if (included != list) {
+                                        included.set(includedIndex, head);
+                                        included.addAll(includedIndex+1, tail);
+                                    }
                                     fireContentsChanged(ListListModel.this, includedIndex, includedIndex);
                                     fireIntervalAdded(ListListModel.this, includedIndex+1, includedIndex+tail.size());
                                 }
