@@ -42,11 +42,20 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clank.support.NativePointer;
+import org.clank.support.aliases.char$ptr;
+import org.llvm.adt.StringRef;
+import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -55,9 +64,11 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.spi.APTUnsavedBuffersProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -111,12 +122,103 @@ public class ClankDriverImpl {
             ClankPPCallback fileTokensCallback = new ClankPPCallback(ppHandler, traceOS, callback, canceller);
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
-            ClankPreprocessorServices.preprocess(Collections.singleton(db), settings);
+            Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
+            ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
             return true;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             return false;
         }
+    }
+
+    private static class MemoryBufferImpl extends MemoryBuffer {
+    
+        
+        public static MemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
+            char[] chars = aptBuf.getCharBuffer();
+//            String s = new String(chars); // TODO: should it be optimized?
+//            char$ptr start = NativePointer.create_char$ptr(s);
+//            char$ptr end = start.$add(s.length());
+
+            CharBuffer cb = CharBuffer.wrap(chars);
+            ByteBuffer bb = getUTF8Charset().encode(cb);
+            // we need to add a trailing zero
+            byte[] array;
+            if (bb.limit() < bb.capacity()) {
+                int pos = bb.limit();
+                bb.limit(bb.limit() + 1);
+                bb.position(pos);
+                bb.put((byte) 0);
+                array = bb.array();
+            } else {
+                array = new byte[bb.limit() + 1];
+                System.arraycopy(bb.array(), bb.position(), array, 0, bb.limit());
+                array[bb.limit()] = 0;
+            }
+            // NB: the above adds a treailing zero. If you don't want this, use Arrays.copyOfRange instead
+            //byte[] res = copyOfRange(bb.array(), bb.position(), bb.limit());
+            //return res;    
+            char$ptr start = NativePointer.create_char$ptr(array);
+            char$ptr end = start.$add(bb.limit());
+            return new MemoryBufferImpl(start, end, true);
+        }
+
+        private MemoryBufferImpl(char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
+            super();
+            init(start, end, RequiresNullTerminator);
+        }
+
+        @Override
+        public BufferKind getBufferKind() {        
+            return BufferKind.MemoryBuffer_Malloc;
+        }        
+        
+        private static volatile Charset UTF8Charset = null;
+
+        private static Charset getUTF8Charset() {
+            if (UTF8Charset == null) {
+                UTF8Charset = Charset.forName("UTF-8"); //NOI18N
+            }
+            return UTF8Charset;
+        }
+
+//        /**
+//         * The same as Arrays.copyOfRange, but adds a trailing zero
+//         */
+//        public static byte[] copyOfRange(byte[] original, int from, int to) {
+//            int newLength = to - from;
+//            if (newLength < 0) {
+//                throw new IllegalArgumentException(from + " > " + to);
+//            }
+//            newLength++; // reserve space for '\0'
+//            byte[] copy = new byte[newLength];
+//            System.arraycopy(original, from, copy, 0,
+//                    Math.min(original.length - from, newLength));
+//            copy[newLength - 1] = 0;
+//            return copy;
+//        }        
+    }
+    
+    private static Map<StringRef, MemoryBuffer> getRemappedBuffers() {
+        Map<StringRef, MemoryBuffer> result = Collections.<StringRef, MemoryBuffer>emptyMap();
+        APTUnsavedBuffersProvider provider = Lookup.getDefault().lookup(APTUnsavedBuffersProvider.class);
+        if (provider != null) {
+            Collection<APTFileBuffer> buffers = provider.getUnsavedBuffers();
+            if (buffers != null && !buffers.isEmpty()) {
+                result = new HashMap<StringRef, MemoryBuffer>();
+                for (APTFileBuffer buf : buffers) {
+                    StringRef path = new StringRef(buf.getAbsolutePath());
+                    MemoryBufferImpl mb;
+                    try {
+                        mb = MemoryBufferImpl.create(buf);
+                        result.put(path, mb);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex); //TODO: error processing!!!!
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     private static byte[] toBytes(CharSequence path, char[] chars) {

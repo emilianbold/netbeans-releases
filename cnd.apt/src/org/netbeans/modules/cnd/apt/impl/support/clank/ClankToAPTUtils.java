@@ -49,6 +49,7 @@ import org.clank.support.Casts;
 import org.clank.support.Native;
 import org.clank.support.aliases.char$ptr;
 import org.clank.support.aliases.char$ptr$array;
+import org.clank.support.char$ptr$CharSequence;
 import org.llvm.adt.StringMapEntryBase;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVectorChar;
@@ -809,6 +810,11 @@ public final class ClankToAPTUtils {
                 assert SpellingData != null : "" + token;
                 if (SpellingData instanceof char$ptr$array) {
                     textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
+                } else if (SpellingData instanceof char$ptr$CharSequence) {
+                    char$ptr$CharSequence cssd = (char$ptr$CharSequence) SpellingData;
+                    int idx = cssd.$index();
+                    CharSequence subseq = cssd.getCharSequence().subSequence(idx, idx + SpellingLen);
+                    textID = CharSequences.create(subseq);                    
                 } else {
                     textID = Casts.toCharSequence(SpellingData, SpellingLen);
                 }
