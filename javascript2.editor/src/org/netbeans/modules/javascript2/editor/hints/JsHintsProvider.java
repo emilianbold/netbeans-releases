@@ -245,10 +245,14 @@ public class JsHintsProvider implements HintsProvider {
 
                 int astFrom = e.getStartPosition();
                 int astTo = e.getEndPosition();
-
-                int docFrom = context.parserResult.getSnapshot().getOriginalOffset(astFrom);
-                int docTo = context.parserResult.getSnapshot().getOriginalOffset(astTo);
-
+                
+                Snapshot snapshot = context.parserResult.getSnapshot();
+                int docFrom = snapshot.getOriginalOffset(astFrom);
+                int docTo = snapshot.getOriginalOffset(astTo);
+                if (docTo == -1 && astTo > snapshot.getText().length() && ((docFrom + 1) == astTo)) {
+                    docTo = snapshot.getText().length();
+                    docFrom = docTo - 1; 
+                }
                 if (docFrom == -1 || docTo == -1) {
                     //One of the error offsets falls to virtual source.
                     //The situation very likely means that the css parsing error

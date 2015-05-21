@@ -1475,6 +1475,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue252469.js", "_events[evtId] = hand^lers = [];", true);
     }
     
+    public void testIssue252019_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252019.js", "var f^n = function FnName(){", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

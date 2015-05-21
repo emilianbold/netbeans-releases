@@ -52,7 +52,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
-import org.netbeans.modules.javaee.resources.api.JndiNamespacesDefinition;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 

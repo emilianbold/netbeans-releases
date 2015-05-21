@@ -39,21 +39,30 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.resources.api;
+package org.netbeans.modules.javaee.specs.support.api.util;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
+ * Provides the utilities to deal with JNDI namespace as defined in
+ * the Java EE 6 spec.
  *
  * @author Petr Hejl
+ * @since 1.23
  */
 public final class JndiNamespacesDefinition {
 
-    public static String APPLICATION_NAMESPACE = "java:app"; // NOI18N
+    /**
+     * The java:app namespace as defined by the Java EE spec.
+     */
+    public static final String APPLICATION_NAMESPACE = "java:app"; // NOI18N
 
-    public static String GLOBAL_NAMESPACE = "java:global"; // NOI18N
+    /**
+     * The java:global namespace as defined by the Java EE spec.
+     */
+    public static final String GLOBAL_NAMESPACE = "java:global"; // NOI18N
 
     private static final Set<String> PREFIXES = new HashSet<String>();
 
@@ -67,6 +76,16 @@ public final class JndiNamespacesDefinition {
         super();
     }
 
+    /**
+     * Normalizes the JNDI name. If the JNDI name starts with a spec defined
+     * prefix it is returned. Otherwise if the defaultNamespace is defined
+     * it is prefixed with it. As fallback it is prefixed with spec default
+     * <code>java:comp/env/</code>
+     *
+     * @param jndi the JNDI name to normalize
+     * @param defaultNamespace the default namespace; may be <code>null</code>
+     * @return the normalized JNDI name
+     */
     public static String normalize(String jndi, String defaultNamespace) {
         for (String p : PREFIXES) {
             if (jndi.startsWith(p)) {
