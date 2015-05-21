@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,17 +37,12 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.ui;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -57,13 +52,10 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
-import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
@@ -74,84 +66,60 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class JavaSymbolDescriptor extends SymbolDescriptor {
+abstract class JavaSymbolDescriptorBase extends SymbolDescriptor {
 
-    private final String simpleName;
-    private final String simpleNameSuffix;
     private final ElementHandle<TypeElement> owner;
-    private final ElementHandle<?> me;
-    private final ElementKind kind;
-    private final Set<Modifier> modifiers;
-    private final FileObject root;
     private final Project project;
+    private final FileObject root;
     private final ClassIndexImpl ci;
-    private FileObject cachedFo;
+    private volatile FileObject cachedFo;
     private volatile String cachedPath;
 
-    public JavaSymbolDescriptor (
-            @NonNull final String simpleName,
-            @NullAllowed final String simpleNameSuffix,
-            @NonNull final ElementKind kind,
-            @NonNull final Set<Modifier> modifiers,
-            @NonNull final ElementHandle<TypeElement> owner,
-            @NonNull final ElementHandle<?> me,
-            @NullAllowed final Project project,
-            @NonNull final FileObject root,
-            @NonNull final ClassIndexImpl ci) {
-        assert simpleName != null;
-        assert kind != null;
-        assert modifiers != null;
+    JavaSymbolDescriptorBase(
+        @NonNull final ElementHandle<TypeElement> owner,
+        @NullAllowed final Project project,
+        @NonNull final FileObject root,
+        @NonNull final ClassIndexImpl ci) {
         assert owner != null;
-        assert me != null;
         assert root != null;
         assert ci != null;
-        this.simpleName = simpleName;
-        this.simpleNameSuffix = simpleNameSuffix;
-        this.kind = kind;
-        this.modifiers = modifiers;
         this.owner = owner;
-        this.me = me;
-        this.root = root;
         this.project = project;
+        this.root = root;
         this.ci = ci;
     }
 
-    @Override
-    public Icon getIcon() {
-        return Icons.getElementIcon(kind, modifiers);
-    }
-
-    @Override
-    public String getSymbolName() {
-        return simpleNameSuffix == null ?
-                simpleName :
-                simpleName + simpleNameSuffix;
-    }
-
-    @Override
-    public String getSimpleName() {
-        return simpleName;
-    }
-
-    @Override
-    public String getOwnerName() {
-        return owner.getQualifiedName();
-    }
-
-
-    @Override
-    public FileObject getFileObject() {
-        if (cachedFo == null) {
-            final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPath.EMPTY,
-                    ClassPath.EMPTY, ClassPathSupport.createClassPath(root));
-            cachedFo = SourceUtils.getFile(owner, cpInfo);
-        }
-        return cachedFo;
+    JavaSymbolDescriptorBase(
+        @NonNull final JavaSymbolDescriptorBase other) {
+        this.owner = other.owner;
+        this.project = other.project;
+        this.root = other.root;
+        this.ci = other.ci;
+        this.cachedFo = other.cachedFo;
+        this.cachedPath = other.cachedPath;
     }
 
     @Override
     @NonNull
-    public String getFileDisplayPath() {
+    public final String getOwnerName() {
+        return owner.getQualifiedName();
+    }
+
+    @Override
+    @CheckForNull
+    public final FileObject getFileObject() {
+        FileObject res = cachedFo;
+        if (res == null) {
+            final ClasspathInfo cpInfo = ClasspathInfo.create(ClassPath.EMPTY,
+                    ClassPath.EMPTY, ClassPathSupport.createClassPath(root));
+            res = cachedFo = SourceUtils.getFile(owner, cpInfo);
+        }
+        return res;
+    }
+
+    @Override
+    @NonNull
+    public final String getFileDisplayPath() {
         String res = cachedPath;
         if (res == null) {
             final File rootFile = FileUtil.toFile(root);
@@ -187,20 +155,9 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         return res;
     }
 
-
-
     @Override
-    public void open() {
-        FileObject file = getFileObject();
-        if (file != null) {
-	    ClasspathInfo cpInfo = ClasspathInfo.create(file);
-
-	    ElementOpen.open(cpInfo, me);
-        }
-    }
-
-    @Override
-    public String getProjectName() {
+    @NonNull
+    public final String getProjectName() {
         final ProjectInformation info = getProjectInfo();
         return info == null ?
             "" :    //NOI18N
@@ -208,7 +165,8 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     }
 
     @Override
-    public Icon getProjectIcon() {
+    @CheckForNull
+    public final Icon getProjectIcon() {
         final ProjectInformation info = getProjectInfo();
         return info == null ?
             null :
@@ -216,19 +174,19 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
     }
 
     @Override
-    public int getOffset() {
+    public final int getOffset() {
         //todo: fixme
         return -1;
     }
 
     @NonNull
-    public ElementKind getElementKind() {
-        return kind;
+    final FileObject getRoot() {
+        return root;
     }
 
     @NonNull
-    public Set<? extends Modifier> getModifiers() {
-        return modifiers;
+    final ElementHandle<TypeElement> getOwner() {
+        return owner;
     }
 
     @CheckForNull
@@ -237,5 +195,4 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
             null :
             project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
     }
-
 }

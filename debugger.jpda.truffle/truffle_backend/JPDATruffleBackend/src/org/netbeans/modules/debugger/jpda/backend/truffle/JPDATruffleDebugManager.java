@@ -94,8 +94,6 @@ class JPDATruffleDebugManager {
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
         this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
         this.debugger = DebugEngine.create(dbgClient, sourceExecution);
-        new DummyExecution().start();   // starts a dummy execution so that debugContext is initialized in DebugEngine.
-        sourceExecution.startDummyExecution();  // wait till the dummy execution starts up.
         /*
         startExecution(null);
         prepareContinue();
@@ -229,7 +227,6 @@ class JPDATruffleDebugManager {
     }
 
     void dispose() {
-        sourceExecution.endDummyExecution();
         /*
         endExecution();
         */
@@ -539,21 +536,4 @@ class JPDATruffleDebugManager {
     }
     */
     
-    private class DummyExecution extends Thread {
-
-        public DummyExecution() {
-            setDaemon(true);
-            setPriority(MIN_PRIORITY);
-        }
-        
-        @Override
-        public void run() {
-            try {
-                debugger.run(null, false);
-            } catch (DebugException ex) {
-                ex.printStackTrace();
-            }
-        }
-
-    }
 }
