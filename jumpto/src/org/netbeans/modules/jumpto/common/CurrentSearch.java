@@ -63,6 +63,8 @@ public final class CurrentSearch<T> {
     //@GuardedBy("this")
     private String currentScope;
     //@GuardedBy("this")
+    private boolean correctCase;
+    //@GuardedBy("this")
     private AbstractModelFilter<T> filter;
 
     public CurrentSearch(@NonNull final Callable<AbstractModelFilter<T>> filterFactory) {
@@ -79,6 +81,7 @@ public final class CurrentSearch<T> {
             return false;
         }
         return Objects.equals(currentScope, searchScope) &&
+            (correctCase || Utils.isCaseSensitive(currentType) == Utils.isCaseSensitive(searchType)) &&
             Utils.isNarrowing(
                 currentType,
                 searchType,
@@ -109,9 +112,11 @@ public final class CurrentSearch<T> {
     public synchronized void searchCompleted(
             @NonNull final SearchType searchType,
             @NonNull final String searchText,
-            @NullAllowed final String searchScope) {
+            @NullAllowed final String searchScope,
+            final boolean correctCase) {
         this.currentType = searchType;
         this.currentText = searchText;
         this.currentScope = searchScope;
+        this.correctCase = correctCase;
     }
 }
