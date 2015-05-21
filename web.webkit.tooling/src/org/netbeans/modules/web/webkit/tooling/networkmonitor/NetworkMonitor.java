@@ -44,13 +44,11 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.webkit.debugging.api.console.Console;
-import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-public class NetworkMonitor implements Network.Listener, Console.Listener {
+public class NetworkMonitor implements Network.Listener {
 
     private static WeakReference<NetworkMonitor> lastNetworkMonitor = new WeakReference<>(null);
     
@@ -157,21 +155,6 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     @Override
     public void webSocketRequest(Network.WebSocketRequest request) {
         model.add(request);
-    }
-
-    // Implementation of Console.Listener
-
-    @Override
-    public void messageAdded(ConsoleMessage message) {
-        model.console(message);
-    }
-
-    @Override
-    public void messagesCleared() {
-    }
-
-    @Override
-    public void messageRepeatCountUpdated(int count) {
     }
 
 }
