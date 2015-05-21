@@ -568,7 +568,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             public void run() {
                                 if (done) {
                                     final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
+                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second(), true);
                                 }
                                 if (fmodel != null && !isCanceled) {
                                     enableOK(panel.setModel(fmodel));

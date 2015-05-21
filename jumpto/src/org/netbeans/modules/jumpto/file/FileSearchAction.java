@@ -274,7 +274,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     new Runnable () {
                         @Override
                         public void run() {
-                            currentSearch.searchCompleted(searchType, searchText, null);
+                            currentSearch.searchCompleted(searchType, searchText, null, true);
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
