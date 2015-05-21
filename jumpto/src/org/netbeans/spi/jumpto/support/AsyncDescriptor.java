@@ -59,4 +59,11 @@ public interface AsyncDescriptor<T> {
      * @param listener the listener to be removed
      */
     void removeDescriptorChangeListener(@NonNull DescriptorChangeListener<T> listener);
+    /**
+     * Returns true if the transient (not fully computed) descriptor has correct name casing.
+     * The transient descriptor may differ from the resolved descriptor in case. This happens when it's created
+     * from the index in case insensitive query and the additional resolution is needed to compute correct name.
+     * @return true if the descriptor's name has correct case.
+     */
+    boolean hasCorrectCase();
 }

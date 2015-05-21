@@ -362,6 +362,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                     lastSize = newSize[0];
                     lastProvCount = newProvCount;
                     Collections.sort(mergedSymbols, new SymbolComparator());
+                    final boolean correctCase = done ? hasCorrectCase(mergedSymbols) : true;
                     final ListModel fmodel = Models.<SymbolDescriptor>fromList(
                             mergedSymbols,
                             currentSearch.resetFilter(),
@@ -382,7 +383,11 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         public void run() {
                             if (done) {
                                 final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                                currentSearch.searchCompleted(searchType, nameAndScope.first(), nameAndScope.second());
+                                currentSearch.searchCompleted(
+                                        searchType,
+                                        nameAndScope.first(),
+                                        nameAndScope.second(),
+                                        correctCase);
                             }
                             if (!isCanceled) {
                                 enableOK(panel.setModel(fmodel));
@@ -496,6 +501,16 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             }
             merged.addAll(fixedSymbols);
             return merged;
+        }
+
+        private boolean hasCorrectCase(final Collection<? extends SymbolDescriptor> descs) {
+            boolean res = true;
+            for (SymbolDescriptor desc : descs) {
+                if (desc instanceof AsyncDescriptor) {
+                    res &= ((AsyncDescriptor)desc).hasCorrectCase();
+                }
+            }
+            return res;
         }
     }
 
