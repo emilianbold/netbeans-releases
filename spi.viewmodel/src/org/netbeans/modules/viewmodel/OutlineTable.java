@@ -1031,7 +1031,10 @@ ExplorerManager.Provider, PropertyChangeListener {
                 continue;
             }
             int visibleOrder = columnVisibleMap[i];
-            logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
+            logger.log(Level.FINE, "  visibleOrder[{0}] = {1}, ", new Object[]{i, visibleOrder});
+            if (visibleOrder >= tcm.getColumnCount()) {
+                continue;
+            }
             ETableColumn tc;
             try {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
