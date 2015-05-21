@@ -45,8 +45,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -63,8 +61,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -83,7 +79,7 @@ import org.openide.windows.RetainLocation;
     "HINT_NetworkMonitorTopComponent=This is a Network Monitor window"
 })
 public final class NetworkMonitorTopComponent extends TopComponent
-    implements TableModelListener, ChangeListener, PropertyChangeListener {
+    implements TableModelListener, ChangeListener {
 
     private Model model;
     private final InputOutput io;
@@ -107,7 +103,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
         ioProvider = new MyProvider(jIOContainerPlaceholder);
         IOContainer container = IOContainer.create(ioProvider);
         io = IOProvider.getDefault().getIO("callstack", new Action[0], container);
-        OpenProjects.getDefault().addPropertyChangeListener(this);
     }
 
     /**
@@ -484,7 +479,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
         // avoid memory leaks
         requestTable.setModel(new DefaultTableModel());
         ioProvider.close();
-        OpenProjects.getDefault().removePropertyChangeListener(this);
         NbPreferences.forModule(NetworkMonitorTopComponent.class).putInt("separator", jSplitPane.getDividerLocation());
     }
 
@@ -602,29 +596,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
              }
         }
         return index;
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        // NetworkMonitor stays open after debugging session was closed so
-        // that user can evaluate the results; when project is closed it is
-        // necessary to close NetworkMonitor TC as it holds a reference to Project
-        // and that reference would prevent closed project from being garbage
-        // collected
-        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-            Project p = model.getProject();
-            if (p != null && !OpenProjects.getDefault().isProjectOpen(p)) {
-                OpenProjects.getDefault().removePropertyChangeListener(this);
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        close();
-                        // reopen automatically NetworkMonitor next time:
-                        setReopenNetworkComponent(true);
-                    }
-                });
-            }
-        }
     }
 
     public static class JTextPaneNonWrapping extends JTextPane {

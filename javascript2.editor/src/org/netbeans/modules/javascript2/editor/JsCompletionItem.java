@@ -69,6 +69,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -243,6 +244,7 @@ public class JsCompletionItem implements CompletionProposal {
         public JsParserResult result;
         public ParserResult info;
         public String prefix;
+        public CompletionContext completionContext;
     }
     
     private static  ImageIcon priviligedIcon = null;
@@ -662,6 +664,15 @@ public class JsCompletionItem implements CompletionProposal {
             }
             return formatter.getText();
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            if (request.completionContext == CompletionContext.OBJECT_PROPERTY_NAME) {
+                return getName() + ": ${cursor}"; // NOI18N
+            }
+            return super.getCustomInsertTemplate(); //To change body of generated methods, choose Tools | Templates.
+        }
+        
     }
 
     public static class Factory {

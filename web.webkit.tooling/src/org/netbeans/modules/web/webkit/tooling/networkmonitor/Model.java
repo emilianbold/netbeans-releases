@@ -51,7 +51,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -116,30 +115,6 @@ class Model extends AbstractTableModel {
         assert SwingUtilities.isEventDispatchThread();
         visibleRequests.clear();
         fireTableDataChanged();
-    }
-
-    void console(ConsoleMessage message) {
-        if (passive) {
-            return;
-        }
-        // handle case of following message:
-        //
-        // event {"method":"Console.messageAdded","params":{"message":{"text":
-        //   "XMLHttpRequest cannot load http:\/\/localhost:8080\/SampleDBrest
-        //   \/resources\/aaa.manXXXufacturer\/. Origin http:\/\/localhost:8383
-        //   is not allowed by Access-Control-Allow-Origin.","level":"error",
-        //   "source":"javascript","line":0,"repeatCount":1,"type":"log","url"
-        //   :"http:\/\/localhost:8383\/nb-rest-test\/knockout-approach\/index-ko.html"}}}
-
-        // #247672
-        List<ModelItem> visibleRequestsCopy = new ArrayList<>(visibleRequests);
-        if (message.getText().contains("Access-Control-Allow-Origin") && !visibleRequestsCopy.isEmpty()) {
-            ModelItem mi = visibleRequestsCopy.get(visibleRequestsCopy.size()-1);
-            // XXX: perhaps I should match requests here with a timestamp???
-            if (mi.getRequest() != null) {
-                mi.setFailureCause(message.getText());
-            }
-        }
     }
 
     void cleanUp() {

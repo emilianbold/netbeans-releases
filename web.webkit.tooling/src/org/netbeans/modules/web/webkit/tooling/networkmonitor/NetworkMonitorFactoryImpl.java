@@ -57,7 +57,6 @@ public class NetworkMonitorFactoryImpl implements NetworkMonitorFactory {
     public Lookup createNetworkMonitor(WebKitDebugging webkit, Lookup projectContext) {
         NetworkMonitor monitor = NetworkMonitor.createNetworkMonitor(projectContext);
         webkit.getNetwork().addListener(monitor);
-        webkit.getConsole().addListener(monitor);
         return Lookups.fixed(webkit, monitor);
     }
 
@@ -71,7 +70,6 @@ public class NetworkMonitorFactoryImpl implements NetworkMonitorFactory {
             return;
         }
         webkit.getNetwork().removeListener(monitor);
-        webkit.getConsole().removeListener(monitor);
         monitor.close();
     }
 
