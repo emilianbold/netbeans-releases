@@ -172,12 +172,13 @@ class Model extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 3;
+        return 4;
     }
 
     @Override
     @NbBundle.Messages({
         "RequestTable.ColumnName.URL=URL",
+        "RequestTable.ColumnName.Status=Status",
         "RequestTable.ColumnName.HTTPMethod=Method",
         "RequestTable.ColumnName.ContentType=Content Type"
     })
@@ -185,8 +186,9 @@ class Model extends AbstractTableModel {
         String name;
         switch (column) {
             case 0: name = Bundle.RequestTable_ColumnName_URL(); break;
-            case 1: name = Bundle.RequestTable_ColumnName_HTTPMethod(); break;
-            case 2: name = Bundle.RequestTable_ColumnName_ContentType(); break;
+            case 1: name = Bundle.RequestTable_ColumnName_Status(); break;
+            case 2: name = Bundle.RequestTable_ColumnName_HTTPMethod(); break;
+            case 3: name = Bundle.RequestTable_ColumnName_ContentType(); break;
             default: throw new IllegalArgumentException();
         }
         return name;
@@ -198,14 +200,49 @@ class Model extends AbstractTableModel {
         Object value;
         switch (columnIndex) {
             case 0: value = item.getURL(); break;
-            case 1: value = item.getHTTPMethod(); break;
-            case 2: 
+            case 1: value = statusHTML(item); break;
+            case 2: value = item.getHTTPMethod(); break;
+            case 3: 
                 value = item.getContentType();
                 value = (value == null) ? "-" : value; // NOI18N
                 break;
             default: throw new IllegalArgumentException();
         }
         return value;
+    }
+
+    /**
+     * Returns HTML representation of the status of the given model item.
+     * 
+     * @param item model item whose status should be returned.
+     * @return HTML representation of the status of the given model item.
+     */
+    @NbBundle.Messages({
+        "RequestTable.Status.Pending=(pending)",
+        "RequestTable.Status.Failed=(failed)"
+    })
+    private static String statusHTML(ModelItem item) {
+        String text;
+        int status = item.getStatus();
+        if (status > 0) {
+            text = Integer.toString(status);
+        } else {
+            text = null;
+        }
+        // Hack: The comment at the beginning of the HTML ensures that
+        // the statuses with different colors are sorted correctly
+        if (item.isError()) {
+            if (text == null) {
+                text = Bundle.RequestTable_Status_Failed();
+            }
+            text = "<html><!--"+text+"--><font color='red'>"+text; // NOI18N
+        } else {
+            if (text == null) {
+                text = Bundle.RequestTable_Status_Pending();
+            }
+            text = "<html><!--"+text+"-->"+text; // NOI18N
+        }
+        return text;
     }
 
     //~ Inner classes
