@@ -91,7 +91,8 @@ public final class Queries {
     public static final String OPTION_CAMEL_CASE_PART = "camelCasePart";    //NOI18N
 
     private static final String DEFAULT_CAMEL_CASE_SEPARATOR = "\\p{javaUpperCase}";                    //NOI18N
-    private static final String DEFAULT_CAMEL_CASE_PART = "\\p{javaLowerCase}|\\p{Digit}|_|\\.|\\$";    //NOI18N
+    private static final String DEFAULT_CAMEL_CASE_PART_CASE_SENSITIVE = "\\p{javaLowerCase}|\\p{Digit}|_|\\.|\\$";    //NOI18N
+    private static final String DEFAULT_CAMEL_CASE_PART_CASE_INSENSITIVE = "\\p{javaLowerCase}|\\p{Digit}|\\p{javaUpperCase}|_|\\.|\\$";    //NOI18N
     private static final String CAMEL_CASE_FORMAT =
             //Anything followowed by part suffix - once
             "(.(?:%s)*)"+        //NOI18N
@@ -100,9 +101,9 @@ public final class Queries {
     private static final Pattern DEFAULT_CAMEL_CASE_PATTERN = Pattern.compile(
             String.format(
                 CAMEL_CASE_FORMAT,
-                DEFAULT_CAMEL_CASE_PART,
+                DEFAULT_CAMEL_CASE_PART_CASE_SENSITIVE,
                 DEFAULT_CAMEL_CASE_SEPARATOR,
-                DEFAULT_CAMEL_CASE_PART
+                DEFAULT_CAMEL_CASE_PART_CASE_SENSITIVE
                 ));  //NOI18N
 
     private static volatile Pair<Pair<String,String>,Pattern> cache;
@@ -276,7 +277,7 @@ public final class Queries {
                     separatorRegExp = DEFAULT_CAMEL_CASE_SEPARATOR;
                 }
                 if (partRegExp == null) {
-                    partRegExp = DEFAULT_CAMEL_CASE_PART;
+                    partRegExp = DEFAULT_CAMEL_CASE_PART_CASE_SENSITIVE;
                 }
                 p = Pattern.compile(String.format(
                         CAMEL_CASE_FORMAT,
@@ -311,7 +312,7 @@ public final class Queries {
         final String part = String.format(
                 "(%s)*",    //NOI18N
                 partRegExp == null ?
-                    DEFAULT_CAMEL_CASE_PART :
+                    (caseSensitive ? DEFAULT_CAMEL_CASE_PART_CASE_SENSITIVE : DEFAULT_CAMEL_CASE_PART_CASE_INSENSITIVE) :
                     partRegExp);
         int lastIndex = 0;
         int index;

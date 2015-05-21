@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -65,12 +64,13 @@ import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
 import org.netbeans.modules.jumpto.common.CurrentSearch;
+import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.modules.jumpto.common.Utils;
+import org.netbeans.spi.jumpto.support.AsyncDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -362,9 +362,10 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                     lastSize = newSize[0];
                     lastProvCount = newProvCount;
                     Collections.sort(mergedSymbols, new SymbolComparator());
-                    final ListModel fmodel = Models.fromList(
+                    final ListModel fmodel = Models.<SymbolDescriptor>fromList(
                             mergedSymbols,
-                            currentSearch.resetFilter());
+                            currentSearch.resetFilter(),
+                            SymbolDescriptorAttrCopier.INSTANCE);
                     if ( isCanceled ) {
                         LOG.log(
                             Level.FINE,
@@ -498,7 +499,28 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         }
     }
 
-    private static class Result {
+    private static final class SymbolDescriptorAttrCopier implements Factory<SymbolDescriptor, Pair<? extends SymbolDescriptor,? extends SymbolDescriptor>> {
+
+        static final SymbolDescriptorAttrCopier INSTANCE = new SymbolDescriptorAttrCopier();
+
+        private SymbolDescriptorAttrCopier() {}
+
+        @Override
+        @NonNull
+        public SymbolDescriptor create(@NonNull final Pair<? extends SymbolDescriptor, ? extends SymbolDescriptor> p) {
+            final SymbolDescriptor source = p.first();
+            final SymbolDescriptor target = p.second();
+            SymbolProviderAccessor.DEFAULT.setHighlightText(
+                    target,
+                    SymbolProviderAccessor.DEFAULT.getHighlightText(source));
+            SymbolProviderAccessor.DEFAULT.setSymbolProvider(
+                    target,
+                    SymbolProviderAccessor.DEFAULT.getSymbolProvider(source));
+            return target;
+        }
+    }
+
+    private static final class Result {
         final List<SymbolDescriptor> symbols;
         final int retry;
         final Collection<SymbolProvider> nonFinishedProviders;
