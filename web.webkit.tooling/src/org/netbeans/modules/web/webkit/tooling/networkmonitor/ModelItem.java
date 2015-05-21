@@ -299,10 +299,9 @@ class ModelItem implements PropertyChangeListener {
         StyleConstants.setBold(boldStyle, true);
         Style errorStyle = doc.addStyle("error", defaultStyle);
         StyleConstants.setBold(errorStyle, true);
-        StyleConstants.setFontSize(errorStyle, StyleConstants.getFontSize(errorStyle)+6);
         StyleConstants.setForeground(errorStyle, Color.red);
         Style paragraphStyle = doc.addStyle("paragraph", defaultStyle);
-        StyleConstants.setFontSize(paragraphStyle, StyleConstants.getFontSize(paragraphStyle)+8);
+        StyleConstants.setFontSize(paragraphStyle, StyleConstants.getFontSize(paragraphStyle)+5);
         StyleConstants.setForeground(paragraphStyle, Color.gray);
         pane.setText("");
 
