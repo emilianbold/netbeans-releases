@@ -344,7 +344,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         Level level = Level.valueOf(levelS);
                         String text = match.group(2);
                         updateFoldForException(text);
-                        processLine(text, stdOut, level);
+                        processLine(MavenSettings.getDefault().isShowLoggingLevel() ? line : text, stdOut, level);
                         if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
                             checkProgress(text);
                         }

@@ -173,6 +173,11 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         listeners.remove(listener);
     }
 
+    @Override
+    public boolean hasCorrectCase() {
+        return caseSensitive;
+    }
+
     private void fireDescriptorChange(Collection<? extends SymbolDescriptor> replacement) {
         final DescriptorChangeEvent<SymbolDescriptor> event = new DescriptorChangeEvent<>(
             this,
