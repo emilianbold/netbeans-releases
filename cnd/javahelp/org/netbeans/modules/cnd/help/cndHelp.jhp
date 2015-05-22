@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/net/sdt-m8k-d0/scratch/semorgan/repos/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/home/semorgan/1help/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -104,6 +104,7 @@
 				<file title="Icons.html"/>
 				<file title="IncludeView.html"/>
 				<file title="MacroExpansionWindow.html"/>
+				<file title="NavigateToBuildLog.html"/>
 				<file title="Refactoring.html"/>
 				<file title="RefactoringWindow.html"/>
 				<file title="SourceHeaderSwitch.html"/>
