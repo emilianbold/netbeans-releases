@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
+import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -295,6 +296,7 @@ public class ThrowableNotThrown {
                         process = true;
                         break;
                     }
+                    case AND_ASSIGNMENT: case OR_ASSIGNMENT: case XOR_ASSIGNMENT:
                     case ASSIGNMENT: {
                         // might be OK, exception assigned to a variable
                         AssignmentTree as = (AssignmentTree)leaf;
@@ -341,7 +343,9 @@ public class ThrowableNotThrown {
                         NewClassTree nct = (NewClassTree)leaf;
                         return nct.getArguments().contains(prevLeaf);
                     }
-                        
+                    
+                    case LOGICAL_COMPLEMENT: 
+                    case CONDITIONAL_AND: case CONDITIONAL_OR:
                     case EQUAL_TO: case NOT_EQUAL_TO: case INSTANCE_OF:
                     case PARENTHESIZED:
                     case TYPE_CAST: 
