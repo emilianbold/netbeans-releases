@@ -463,6 +463,9 @@ public class Utils {
     public static boolean isLibraryDirectoryBased(ClassPathSupport.Item item) {
         assert item.getType() == ClassPathSupport.Item.TYPE_LIBRARY : item;
         Library l = item.getLibrary();
+        if (l == null) {
+            return false;
+        }
         List<URL> cp = l.getContent("classpath"); // NOI18N
         if (cp.size() > 0 && cp.get(0).toString().startsWith("file:")) { // NOI18N
             return true;
