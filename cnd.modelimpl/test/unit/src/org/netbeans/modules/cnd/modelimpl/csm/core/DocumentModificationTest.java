@@ -53,14 +53,16 @@ import org.netbeans.modules.cnd.test.CndBaseTestSuite;
 public class DocumentModificationTest extends CndBaseTestSuite {
     public DocumentModificationTest() {
         super("C/C++ Document modifications test");
-//        this.addTest(ModifyUndo191307TestCase.class);
-//        this.addTest(ModifyUndoRedo190950TestCase.class);
-//        this.addTestSuite(InsertDeadBlockTestCase.class);
-//        this.addTestSuite(RemoveDeadBlockTestCase.class);
-//        this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
-//        this.addTestSuite(ModifyMultiIncludedHeaderTestCase.class);
-//        this.addTestSuite(ModifyIncludedHeaderTestCase.class);
-//        this.addTestSuite(ModifyMultiIncludedLibraryHeaderTestCase.class);
+        if (Boolean.getBoolean("cnd.document.modification.test")) { //NOI18N
+            this.addTest(ModifyUndo191307TestCase.class);
+            this.addTest(ModifyUndoRedo190950TestCase.class);
+            this.addTestSuite(InsertDeadBlockTestCase.class);
+            this.addTestSuite(RemoveDeadBlockTestCase.class);
+            this.addTestSuite(RemoveAndInsertDeadBlockTestCase.class);
+            this.addTestSuite(ModifyMultiIncludedHeaderTestCase.class);
+            this.addTestSuite(ModifyIncludedHeaderTestCase.class);
+            this.addTestSuite(ModifyMultiIncludedLibraryHeaderTestCase.class);
+        }
     }
 
     public static Test suite() {

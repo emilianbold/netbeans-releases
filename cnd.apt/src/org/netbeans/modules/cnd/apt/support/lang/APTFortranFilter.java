@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 
 /**
  * Filter for Fortran language.
@@ -69,7 +70,7 @@ final class APTFortranFilter extends APTBaseLanguageFilter {
 
     @Override
     public TokenStream getFilteredStream(TokenStream origStream) {
-        return new APTFortranFilterEx(flavor).getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream)));
+        return new APTCommentsFilter(new APTFortranFilterEx(flavor).getFilteredStream(new APTFortranEOSFilter().getFilteredStream(super.getFilteredStream(origStream))));
     }
 
     private void initialize() {
