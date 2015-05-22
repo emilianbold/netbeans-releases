@@ -55,6 +55,11 @@ import java.util.Set;
 public final class JndiNamespacesDefinition {
 
     /**
+     * The java:module namespace as defined by the Java EE spec.
+     */
+    public static final String MODULE_NAMESPACE = "java:module"; // NOI18N
+
+    /**
      * The java:app namespace as defined by the Java EE spec.
      */
     public static final String APPLICATION_NAMESPACE = "java:app"; // NOI18N
@@ -69,7 +74,7 @@ public final class JndiNamespacesDefinition {
     private static final String DEFAULT_PREFIX = "java:comp/env/"; // NOI18N
 
     static {
-        Collections.addAll(PREFIXES, "java:comp/", "java:module/", APPLICATION_NAMESPACE + "/", GLOBAL_NAMESPACE + "/"); // NOI18N
+        Collections.addAll(PREFIXES, "java:comp/", MODULE_NAMESPACE + "/", APPLICATION_NAMESPACE + "/", GLOBAL_NAMESPACE + "/"); // NOI18N
     }
 
     private JndiNamespacesDefinition() {
@@ -92,6 +97,10 @@ public final class JndiNamespacesDefinition {
                 return jndi;
             }
         }
-        return defaultNamespace == null ? DEFAULT_PREFIX + jndi : defaultNamespace + "/" + jndi;
+        // FIXME ugly hack for additional JBoss namespaces
+        if (jndi.startsWith("java:/") || jndi.startsWith("java:jboss/")) { // NOI18N
+            return jndi;
+        }
+        return defaultNamespace == null ? DEFAULT_PREFIX + jndi : defaultNamespace + "/" + jndi; // NOI18N
     }
 }
