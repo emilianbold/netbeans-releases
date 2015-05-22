@@ -52,7 +52,11 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,6 +70,8 @@ import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -410,18 +416,82 @@ public class DeclarativeHintsParser {
 
         return new Result(i.options, i.importsBlockSpan, i.hints, i.blocksSpan, i.errors);
     }
+    
+    // never null, just cleared by GC.
+    private static volatile Reference<ClassPath> javacApiClasspath = new WeakReference<>(null);
 
-    private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new FileObject[0]);
+    /**
+     * Marker that javac api is not available.
+     */
+    private static final Reference<ClassPath> NONE = new WeakReference(null);
+    
+    private static ClassPath getJavacApiJarClasspath() {
+        Reference<ClassPath> r = javacApiClasspath;
+        ClassPath res = r.get();
+        if (res != null) {
+            return res;
+        }
+        if (r == NONE) {
+            return null;
+        }
+        CodeSource codeSource = Modifier.class.getProtectionDomain().getCodeSource();
+        URL javacApiJar = codeSource != null ? codeSource.getLocation() : null;
+        if (javacApiJar != null) {
+            Logger.getLogger(DeclarativeHintsParser.class.getName()).log(Level.FINE, "javacApiJar={0}", javacApiJar);
+            File aj = FileUtil.archiveOrDirForURL(javacApiJar);
+            res = ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(aj));
+            javacApiClasspath = new WeakReference<>(res);
+            return res;
+        } else {
+            javacApiClasspath = NONE;
+            return null;
+        }
+    }
+    
+    /**
+     * As long as the cachedInfo lives, Holder provides the original universalPath
+     * instance. As cachedInfo hardrefs univesalPath already, the universalPath member does not prevent
+     * GC. Keeps itself alive as long as the cachedInfo is alive.
+     */
+    private static class Holder implements ChangeListener {
+        final Reference<ClasspathInfo>   cachedInfo;
+        final ClasspathInfo   universalPath;
+
+        public Holder(ClasspathInfo cachedInfo, ClasspathInfo universalPath) {
+            this.cachedInfo = new WeakReference<>(cachedInfo);
+            this.universalPath = universalPath;
+            cachedInfo.addChangeListener(this);
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            // NO-op
+        }
+    }
+    
+    private static volatile Reference<Holder>  cache = new WeakReference<>(null);
+
     private static @NonNull Condition resolve(MethodInvocationContext mic, final String invocation, final boolean not, final int offset, final FileObject file, final List<ErrorDescription> errors) throws IOException {
         final String[] methodName = new String[1];
         final Map<String, ParameterKind> params = new LinkedHashMap<String, ParameterKind>();
-        CodeSource codeSource = Modifier.class.getProtectionDomain().getCodeSource();
-        URL javacApiJar = codeSource != null ? codeSource.getLocation() : null;
         ClasspathInfo cpInfo = Hacks.createUniversalCPInfo();
-         if (javacApiJar != null) {
-            Logger.getLogger(DeclarativeHintsParser.class.getName()).log(Level.FINE, "javacApiJar={0}", javacApiJar);
-            File aj = FileUtil.archiveOrDirForURL(javacApiJar);
-            cpInfo = ClasspathInfo.create(ClassPathSupport.createProxyClassPath(ClassPathSupport.createClassPath(FileUtil.urlForArchiveOrDir(aj)), cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT)), ClassPath.EMPTY, ClassPath.EMPTY);
+        
+        ClassPath javacPath = getJavacApiJarClasspath();
+         if (javacPath != null) {
+             ClasspathInfo result = null;
+             Reference<Holder> h = cache;
+             Holder holder;
+             if (h != null && (holder = h.get()) != null) {
+                 if (holder.universalPath == cpInfo) {
+                     result = holder.cachedInfo.get();
+                 }
+             }
+             if (result == null) {
+                 result = ClasspathInfo.create(ClassPathSupport.createProxyClassPath(
+                         javacPath, cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT)), ClassPath.EMPTY, ClassPath.EMPTY);
+                 cache = new WeakReference<>(new Holder(result, cpInfo));
+             }
+             cpInfo = result;
          }
         JavaSource.create(cpInfo).runUserActionTask(new Task<CompilationController>() {
             @SuppressWarnings("fallthrough")
