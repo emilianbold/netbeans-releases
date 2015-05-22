@@ -84,7 +84,7 @@ public class OrigCreateMethodTest extends HintsTestBase {
     }
     
     public void testCreateConstructor1() throws Exception {
-        performTest("org.netbeans.test.java.hints.CreateConstructor1", "Constructor", 9, 16);
+        performTest("org.netbeans.test.java.hints.CreateConstructor1", "Create Constructor", 9, 16);
     }
 
     @Override
