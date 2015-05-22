@@ -114,6 +114,7 @@ public final class CreateElement implements ErrorRule<Void> {
     private static final Logger LOG = Logger.getLogger(CreateElement.class.getName());
     private static final int PRIO_TESTSOURCEGROUP = 500;
     private static final int PRIO_MAINSOURCEGROUP = 1000;
+    private static final int PRIO_INNER = 2000;
     
     /** Creates a new instance of CreateElement */
     public CreateElement() {
@@ -622,10 +623,11 @@ public final class CreateElement implements ErrorRule<Void> {
                 return Collections.emptyList();
             }
             PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
-            fixes.add(new CreateOuterClassFix(
-                    info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, 
-                    root.getPath())
-            );
+            final CreateOuterClassFix fix = new CreateOuterClassFix(
+                    info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters,
+                    root.getName());
+            fix.setPriority(PRIO_MAINSOURCEGROUP);
+            fixes.add(fix);
         }
         return fixes;
     }
@@ -645,8 +647,9 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (targetFile == null)
             return Collections.<Fix>emptyList();
-
-        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, targetFile));
+        final CreateInnerClassFix fix = new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, targetFile);
+        fix.setPriority(PRIO_INNER);
+        return Collections.<Fix>singletonList(fix);
     }
 
     private static ElementKind getClassType(Set<ElementKind> types) {
