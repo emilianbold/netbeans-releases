@@ -111,7 +111,7 @@ public class ClankDriverImpl {
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
-            settings.KeepCommentsTokens = false;
+            settings.KeepCommentsTokens = APTToClankCompilationDB.isFortran(ppHandler);
             settings.GenerateDiagnostics = true;
             settings.PrettyPrintDiagnostics = false;
             settings.PrintDiagnosticsOS = llvm.nulls();
