@@ -105,8 +105,12 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javadoc.Messager;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.nio.CharBuffer;
 import java.util.Arrays;
@@ -174,6 +178,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -1036,11 +1041,26 @@ public class Utilities {
     }
 
     @ServiceProvider(service=SPI.class)
-    public static final class NbSPIImpl implements SPI {
+    public static final class NbSPIImpl implements SPI, PropertyChangeListener {
+        
+        /**
+         * Cached reference to the ClasspathInfo created from the platform.
+         */
+        private volatile Reference<ClasspathInfo>    cached = new WeakReference<>(null);
+        
+        // @GuardedBy(this)
+        private PropertyChangeListener weakL;
 
-        public ClasspathInfo createUniversalCPInfo() {
+        public synchronized ClasspathInfo createUniversalCPInfo() {
+            Reference<ClasspathInfo> r = cached;
+            if (r != null) {
+                ClasspathInfo c = r.get();
+                if (c != null) {
+                    return c;
+                }
+            }
             JavaPlatform select = JavaPlatform.getDefault();
-
+            final JavaPlatformManager man = JavaPlatformManager.getDefault();
             if (select.getSpecification().getVersion() != null) {
                 for (JavaPlatform p : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
                     if (!"j2se".equals(p.getSpecification().getName()) || p.getSpecification().getVersion() == null) continue;
@@ -1049,10 +1069,20 @@ public class Utilities {
                     }
                 }
             }
-
-            return ClasspathInfo.create(select.getBootstrapLibraries(), ClassPath.EMPTY, ClassPath.EMPTY);
+            final ClasspathInfo result = ClasspathInfo.create(select.getBootstrapLibraries(), ClassPath.EMPTY, ClassPath.EMPTY);
+            if (cached != null) {
+                    this.cached = new WeakReference<>(result);
+            }
+            if (weakL == null) {
+                man.addPropertyChangeListener(weakL = WeakListeners.propertyChange(this, man));
+            }
+            return result;
         }
 
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            cached = null;
+        }
     }
     
     private static final class GeneralizePattern extends TreePathScanner<Void, Void> {

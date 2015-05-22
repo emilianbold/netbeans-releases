@@ -124,10 +124,12 @@ public class ShortcutListener implements KeyListener {
     public void keyPressed(KeyEvent e) {
         assert (e.getSource() instanceof JTextField);
 
-        if(e.getKeyCode() == KeyEvent.VK_DOWN || 
+        if(((e.getModifiers() & (KeyEvent.ALT_MASK | KeyEvent.SHIFT_MASK | KeyEvent.CTRL_MASK | KeyEvent.META_MASK)) == 0) &&
+                (e.getKeyCode() == KeyEvent.VK_DOWN || 
                 e.getKeyCode() == KeyEvent.VK_UP ||
-                e.getKeyCode() == KeyEvent.VK_ESCAPE)
+                e.getKeyCode() == KeyEvent.VK_ESCAPE)) {
             return ;
+        }
         
         textField = (JTextField) e.getSource();
         KeyStroke keyStroke = createKeyStroke(e);
