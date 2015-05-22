@@ -45,9 +45,11 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.structure.APTBuilderImpl;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -60,10 +62,12 @@ public final class APTBuilder {
     }
 
     public static APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts) {
+        CndUtils.assertTrueInConsole(!APTTraceFlags.USE_CLANK, "Not For Clank Mode");
         return new APTBuilderImpl().buildAPT(fileSystem, path, ts);
     }
     
     public static APT buildAPTLight(APT apt) {
+        CndUtils.assertTrueInConsole(!APTTraceFlags.USE_CLANK, "Not For Clank Mode");
         return APTBuilderImpl.buildAPTLight(apt);
     }
 }

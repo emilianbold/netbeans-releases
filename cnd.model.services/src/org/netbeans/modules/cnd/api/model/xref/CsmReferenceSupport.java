@@ -55,12 +55,15 @@
 
 package org.netbeans.modules.cnd.api.model.xref;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
+import org.netbeans.modules.cnd.spi.utils.FileObjectRedirector;
 import org.netbeans.modules.cnd.xref.impl.ReferenceSupportImpl;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * some help methods to support CsmReference objects
@@ -102,7 +105,43 @@ public final class CsmReferenceSupport {
         }
         return out;
     }
-    
+
+    public static boolean sameFile(CsmFile checkFile, CsmFile targetFile) {
+        if (checkFile != null && targetFile != null && checkFile.getName().equals(targetFile.getName())) {
+            if (checkFile.equals(targetFile)) {
+                return true;
+            }
+            final CharSequence checkAbsolutePath = checkFile.getAbsolutePath();
+            final CharSequence targetAbsolutePath = targetFile.getAbsolutePath();
+            if (checkAbsolutePath.equals(targetAbsolutePath)) {
+                FileObject checkDeclFO = checkFile.getFileObject();
+                FileObject targetDeclFO = targetFile.getFileObject();
+                if (checkDeclFO != null && targetDeclFO != null) {
+                    return checkDeclFO.equals(targetDeclFO);
+                }
+                return true;
+            } else {
+                FileObject checkDeclFO = checkFile.getFileObject();
+                FileObject targetDeclFO = targetFile.getFileObject();
+                if (checkDeclFO != null && targetDeclFO != null) {
+                    Collection<? extends FileObjectRedirector> redirectors = Lookup.getDefault().lookupAll(FileObjectRedirector.class);
+                    for (FileObjectRedirector redirector : redirectors) {
+                        FileObject fo1 = redirector.redirect(checkDeclFO);
+                        FileObject fo2 = redirector.redirect(targetDeclFO);
+                        if (fo1 != null && fo2 != null) {
+                            return fo1.equals(fo2);
+                        } else if (fo1 != null && fo2 == null) {
+                            return fo1.equals(targetDeclFO);
+                        } else if (fo1 == null && fo2 != null) {
+                            return checkDeclFO.equals(fo2);
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
         // objects have to be the same or (if from different projects) should 
         // have same file:offset positions
@@ -166,19 +205,7 @@ public final class CsmReferenceSupport {
             if (offsCheckDecl.getStartOffset() == offsTargetDecl.getStartOffset()) {
                 CsmFile checkDeclFile = offsCheckDecl.getContainingFile();
                 CsmFile targetDeclFile = offsTargetDecl.getContainingFile();
-                if (checkDeclFile != null && targetDeclFile != null) {
-                    if (checkDeclFile.equals(targetDeclFile)) {
-                        return true;
-                    }
-                    if (checkDeclFile.getAbsolutePath().equals(targetDeclFile.getAbsolutePath())) {
-                        FileObject checkDeclFO = checkDeclFile.getFileObject();
-                        FileObject targetDeclFO = targetDeclFile.getFileObject();
-                        if (checkDeclFO != null && targetDeclFO != null) {
-                            return checkDeclFO.equals(targetDeclFO);
-                        }
-                        return true;
-                    }
-                }
+                return sameFile(checkDeclFile, targetDeclFile);
             }
         }
         return false;

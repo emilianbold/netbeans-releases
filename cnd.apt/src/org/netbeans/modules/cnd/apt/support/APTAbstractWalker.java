@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -60,8 +61,9 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
@@ -78,11 +80,11 @@ public abstract class APTAbstractWalker extends APTWalker {
     private final FileSystem startFileSystem;
     private final APTFileCacheEntry cacheEntry;
     
-    protected APTAbstractWalker(APTFile apt, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-        super(apt, preprocHandler == null ? null: preprocHandler.getMacroMap());
+    protected APTAbstractWalker(APTFile apt, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+        super(apt, preprocHandler == null ? null: (APTMacroMap)preprocHandler.getMacroMap());
         this.startPath = apt.getPath();
         this.startFileSystem = apt.getFileSystem();
-        this.preprocHandler = preprocHandler;
+        this.preprocHandler = (APTPreprocHandler)preprocHandler;
         this.cacheEntry = cacheEntry;
     }
 
@@ -90,7 +92,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     protected void preInit() {
         super.preInit();
         if (preprocHandler != null) {
-            APTIncludeHandler includeHandler = preprocHandler.getIncludeHandler();
+            APTIncludeHandler includeHandler = (APTIncludeHandler)preprocHandler.getIncludeHandler();
             if (APTHandlersSupportImpl.isFirstLevel(includeHandler)) {
                 // special handling of "-include file" feature of preprocessor
                 final Collection<IncludeDirEntry> extractIncludeFileEntries = APTHandlersSupportImpl.extractIncludeFileEntries(includeHandler);
@@ -256,7 +258,7 @@ public abstract class APTAbstractWalker extends APTWalker {
     }
     
     protected APTIncludeHandler getIncludeHandler() {
-        return getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler();
+        return (APTIncludeHandler)(getPreprocHandler() == null ? null: getPreprocHandler().getIncludeHandler());
     }   
 
     protected boolean needPPTokens() {
@@ -313,7 +315,7 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
 
-    private APTIncludeHandler.IncludeState beforeIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
+    private PPIncludeHandler.IncludeState beforeIncludeImpl(APTInclude aptInclude, ResolvedPath resolvedPath) {
         IncludeState inclState = pushInclude(aptInclude, resolvedPath);
         if (isTokenProducer() && needPPTokens()) {
             // put pre-include marker into token stream
@@ -333,12 +335,13 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
-    protected APTIncludeHandler.IncludeState pushInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
-        APTIncludeHandler.IncludeState pushIncludeState = APTIncludeHandler.IncludeState.Fail;
+    protected PPIncludeHandler.IncludeState pushInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        PPIncludeHandler.IncludeState pushIncludeState = PPIncludeHandler.IncludeState.Fail;
         if (resolvedPath != null) {
             APTIncludeHandler includeHandler = getIncludeHandler();
             if (includeHandler != null) {
-                pushIncludeState = includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), aptInclude, resolvedPath.getIndex());
+                pushIncludeState = includeHandler.pushInclude(resolvedPath.getFileSystem(), resolvedPath.getPath(), 
+                        aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedPath.getIndex());
             }
         }
 //        System.out.println("\nPUSH from " + getCurFile() + " at Line " + aptInclude.getToken().getLine() + " " + pushIncludeState + ":" + resolvedPath);
