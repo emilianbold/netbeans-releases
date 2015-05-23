@@ -55,6 +55,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.basic</package>
                 <package>org.clang.basic.spi</package>
                 <package>org.clang.basic.target</package>
+                <package>org.clang.basic.vfs</package>
                 <package>org.clang.codegen</package>
                 <package>org.clang.driver</package>
                 <package>org.clang.frontend</package>
