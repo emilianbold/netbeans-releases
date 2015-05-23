@@ -54,7 +54,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -79,20 +78,15 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
-import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFileInfoQuerySupport;
+import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankFileInfoQuerySupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionDocProvider;
 import org.openide.text.NbDocument;
@@ -440,17 +434,8 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         FileImpl fileImpl = (FileImpl) file;
-        APTPreprocHandler handler = ((FileImpl) file).getPreprocHandler(offset);
+        PreprocHandler handler = ((FileImpl) file).getPreprocHandler(offset);
         if (handler == null) {
-            return code;
-        }
-        APTFile aptLight = null;
-        try {
-            aptLight = APTDriver.findAPTLight(fileImpl.getBuffer());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (aptLight == null) {
             return code;
         }
         CsmProject project = file.getProject();
@@ -458,33 +443,11 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             return code;
         }
         ProjectBase base = (ProjectBase) project;
-
-        // create concurrent entry if absent
-        APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(handler.getState(), Boolean.FALSE);
-        StopOnOffsetParseFileWalker walker = new StopOnOffsetParseFileWalker(base, aptLight, fileImpl, offset, handler,cacheEntry);
-        walker.visit();
-        // we do not remember cache entry because it is stopped before end of file
-        // fileImpl.setAPTCacheEntry(handler, cacheEntry, false);
-        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(code, fileImpl.getFileLanguage());
-        if (ts != null) {
-            ts = new APTMacroExpandedStream(ts, handler.getMacroMap(), true);
-            
-            // skip comments, see IZ 207378
-            ts = new APTCommentsFilter(ts);
-            
-            StringBuilder sb = new StringBuilder(""); // NOI18N
-            try {
-                APTToken t = (APTToken) ts.nextToken();
-                while (t != null && !APTUtils.isEOF(t)) {
-                    sb.append(t.getTextID());
-                    t = (APTToken) ts.nextToken();
-                }
-            } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return sb.toString();
+        if (APTTraceFlags.USE_CLANK) {
+          return ClankFileInfoQuerySupport.expand(fileImpl, code, handler, base, offset);
+        } else {
+          return APTFileInfoQuerySupport.expand(fileImpl, code, handler, base, offset);
         }
-        return code;
     }
 
     private String expandInterval(Document doc, TransformationTable tt, int startOffset, int endOffset) {
@@ -1559,24 +1522,6 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
             }
         }
         return tt;
-    }
-
-    private static class StopOnOffsetParseFileWalker extends APTParseFileWalker {
-
-        private final int stopOffset;
-        public StopOnOffsetParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, int offset, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
-            super(base, apt, file, preprocHandler, false, null, cacheEntry);
-            stopOffset = offset;
-        }
-
-        @Override
-        protected boolean onAPT(APT node, boolean wasInBranch) {
-            if(node.getEndOffset() >= stopOffset) {
-                stop();
-                return false;
-            }
-            return super.onAPT(node, wasInBranch);
-        }
     }
     
     private static final class UndoIndent implements CharSequence {

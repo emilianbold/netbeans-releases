@@ -55,18 +55,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.structure.APTInclude;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeInfo;
 import org.netbeans.modules.cnd.apt.support.APTIncludeResolver;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
@@ -104,6 +104,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
                                     List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
+        assert !APTTraceFlags.USE_CLANK;
         Parameters.notNull("startFile", startFile);
         this.startFile = startFile;
         this.systemIncludePaths = systemIncludePaths;
@@ -113,8 +114,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     }
 
     @Override
-    public IncludeState pushInclude(FileSystem fs, CharSequence path, APTInclude aptInclude, int resolvedDirIndex) {
-        return pushIncludeImpl(fs, path, aptInclude.getToken().getLine(), aptInclude.getToken().getOffset(), resolvedDirIndex);
+    public IncludeState pushInclude(FileSystem fs, CharSequence path, int line, int offset, int resolvedDirIndex) {
+        return pushIncludeImpl(fs, path, line, offset, resolvedDirIndex);
     }
 
     @Override
@@ -158,8 +159,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     @Override
     public void setState(State state) {
         if (state instanceof StateImpl) {
-	    StateImpl stateImpl = ((StateImpl)state);
-	    assert ! stateImpl.isCleaned();
+            StateImpl stateImpl = ((StateImpl)state);
+            assert ! stateImpl.isCleaned();
             stateImpl.restoreTo(this);
         }
     }
@@ -200,6 +201,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         private int hashCode = 0;
         
         protected StateImpl(APTIncludeHandlerImpl handler) {
+            assert !APTTraceFlags.USE_CLANK;
             this.systemIncludePaths = handler.systemIncludePaths;
             this.userIncludePaths = handler.userIncludePaths;
             this.userIncludeFilePaths = handler.userIncludeFilePaths;
@@ -213,6 +215,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         }
         
         private StateImpl(StateImpl other, boolean cleanState) {
+            CndUtils.assertTrueInConsole(cleanState == true, "This constructor is only for creating clean states");
+            assert !APTTraceFlags.USE_CLANK;
             // shared information
             this.startFile = other.startFile;
             
@@ -265,36 +269,12 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         
         public void write(RepositoryDataOutput output) throws IOException {
             assert output != null;
+            CndUtils.assertTrueInConsole(isCleaned(), "we expect only clean states to be written in storage");
             startFile.write(output);
             
-            assert systemIncludePaths != null;
-            assert userIncludePaths != null;
-            
-            int size = systemIncludePaths.size();
-            output.writeInt(size);
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = systemIncludePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
-            
-            size = userIncludePaths.size();
-            output.writeInt(size);
-            
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = userIncludePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
-            
-            size = userIncludeFilePaths.size();
-            output.writeInt(size);
-            
-            for (int i = 0; i < size; i++) {
-                IncludeDirEntry inc = userIncludeFilePaths.get(i);
-                output.writeFileSystem(inc.getFileSystem());
-                output.writeFilePathForFileSystem(inc.getFileSystem(), inc.getAsSharedCharSequence());
-            }
+            assert systemIncludePaths == CLEANED_MARKER;
+            assert userIncludePaths == CLEANED_MARKER;
+            assert userIncludeFilePaths == CLEANED_MARKER;
 
             output.writeInt(inclStack.length);
             for (IncludeInfo inclInfo : inclStack) {
@@ -319,32 +299,11 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             assert input != null;
             
             startFile = new StartEntry(input);
-            
-            int size = input.readInt();
-            systemIncludePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                systemIncludePaths.add(i, path);
-            }
-            
-            size = input.readInt();
-            userIncludePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                userIncludePaths.add(i, path);
-            }
+            systemIncludePaths = CLEANED_MARKER;
+            userIncludePaths = CLEANED_MARKER;
+            userIncludeFilePaths = CLEANED_MARKER;
 
-            size = input.readInt();
-            userIncludeFilePaths = new ArrayList<IncludeDirEntry>(size);
-            for (int i = 0; i < size; i++) {
-                FileSystem fs = input.readFileSystem();
-                IncludeDirEntry path = IncludeDirEntry.get(fs, input.readFilePathForFileSystem(fs).toString());
-                userIncludeFilePaths.add(i, path);
-            }
-            
-            size = input.readInt();
+            int size = input.readInt();
             
             if (size == 0) {
                 inclStack = EMPTY_STACK;
@@ -409,8 +368,13 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             return this.userIncludeFilePaths == CLEANED_MARKER; // was created as clean state
         }
         
-        /*package*/ APTIncludeHandler.State copy(boolean cleanState) {
-            return new StateImpl(this, cleanState);
+        /*package*/ APTIncludeHandler.State copyCleaned() {
+            return new StateImpl(this, true);
+        }
+
+        /*package*/ APTIncludeHandler.State prepareCachesIfPossible() {
+            // this state is already cache-ready
+            return this;
         }
         
         /*package*/ List<IncludeDirEntry> getSysIncludePaths() {
