@@ -63,6 +63,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -160,6 +161,7 @@ public final class ProjectImpl extends ProjectBase {
         final FileImpl impl = getFile(buf.getAbsolutePath(), false);
         if (impl != null) {
             APTDriver.invalidateAPT(buf);
+            ClankDriver.invalidate(buf);
             APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
             // listener will be triggered immediately, because editor based buffer
             // will be notifies about editing event exactly after onFileEditStart

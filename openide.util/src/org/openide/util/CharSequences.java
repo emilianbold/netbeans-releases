@@ -235,11 +235,16 @@ public final class CharSequences {
         }
         return new ByteBasedSequence(b);
     }
-    
+
     /**
-     * Provides compact char sequence object like {@link String#String(char[], int, int)}
+     * Provides compact char sequence object like {@link String#String(byte[], int, int)}
+     * @param buf
+     * @param start
+     * @param count
+     * @return
+     * @since 9.4
      */
-    private static CharSequence create(byte buf[], int start, int count) {
+    public static CharSequence create(byte buf[], int start, int count) {
         if (start < 0) {
             throw new StringIndexOutOfBoundsException(start);
         }

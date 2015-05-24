@@ -52,8 +52,8 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -72,7 +72,7 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final ProjectBase startProject;
     private int mode;
     
-    public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+    public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, PreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
         super(apt, preprocHandler, cacheEntry);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
@@ -104,12 +104,12 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                         CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                     }
                     try {
-                        APTPreprocHandler.State stateBefore = getPreprocHandler().getState();
+                        PreprocHandler.State stateBefore = getPreprocHandler().getState();
                         assert !stateBefore.isCleaned();
                         included = includeAction(inclFileOwner, path, mode, aptInclude, postIncludeState);
                         if (/*true?*/TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
                             if (included != null) {
-                                putNodeProperty(aptInclude, APTPreprocHandler.State.class, stateBefore);
+                                putNodeProperty(aptInclude, PreprocHandler.State.class, stateBefore);
                                 putNodeProperty(aptInclude, CsmFile.class, included);
                             }
                         }
