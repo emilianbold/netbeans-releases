@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.jumpto.common;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
@@ -91,8 +92,9 @@ public final class CurrentSearch<T> {
 
     public synchronized void filter(
             @NonNull final SearchType searchType,
-            @NonNull final String searchText) {
-        this.filter.configure(searchType, searchText);
+            @NonNull final String searchText,
+            @NullAllowed Map<String,Object> options) {
+        this.filter.configure(searchType, searchText, options);
     }
 
     @NonNull

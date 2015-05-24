@@ -60,19 +60,12 @@ import org.openide.util.Parameters;
 public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
 
     private final ChangeSupport changeSupport;
-    private final Map<String,Object> options;
     //GuardedBy("this")
     private NameMatcher matcher;
     //GuardedBy("this")
     private String searchText;
 
     protected AbstractModelFilter() {
-        this(Collections.<String,Object>emptyMap());
-    }
-
-    protected AbstractModelFilter(@NonNull final Map<String,Object> options) {
-        Parameters.notNull("options", options); //NOI18N
-        this.options = options;
         this.changeSupport = new ChangeSupport(this);
     }
 
@@ -92,7 +85,8 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
 
     public final void configure(
             @NullAllowed final SearchType searchType,
-            @NullAllowed final String searchText) {
+            @NullAllowed final String searchText,
+            @NullAllowed final Map<String, Object> options) {
         synchronized (this) {
             this.searchText = searchText;
             this.matcher = createNameMatcher(searchType, searchText, options);
@@ -130,9 +124,12 @@ public abstract class AbstractModelFilter<T> implements Models.Filter<T> {
     private static NameMatcher createNameMatcher (
             @NullAllowed final SearchType searchType,
             @NullAllowed final String searchText,
-            @NonNull final Map<String,Object> options) {
+            @NullAllowed final Map<String,Object> options) {
         return (searchText != null && searchType != null) ?
-            NameMatcherFactory.createNameMatcher(searchText, searchType, options) :
+            NameMatcherFactory.createNameMatcher(
+                    searchText,
+                    searchType,
+                    options == null ? Collections.<String,Object>emptyMap() : options) :
             null;
     }
 }

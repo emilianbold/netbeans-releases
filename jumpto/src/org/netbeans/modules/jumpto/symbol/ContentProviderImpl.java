@@ -198,7 +198,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         // Compute in other thread
         synchronized(this) {
             if (currentSearch.isNarrowing(searchType, text, scope)) {
-                currentSearch.filter(searchType, name);
+                currentSearch.filter(searchType, name, null);
                 enableOK(panel.revalidateModel());
                 return false;
             } else {
