@@ -305,7 +305,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         // Compute in other thread
         if (currentSearch.isNarrowing(nameKind, name, scope)) {
-            currentSearch.filter(nameKind, name);
+            currentSearch.filter(nameKind, name, null);
             enableOK(panel.revalidateModel());
             return false;
         } else {
