@@ -589,13 +589,13 @@ public final class NetworkMonitorTopComponent extends TopComponent
              if (jPanel != comp) {
                  jTabbedPane1.add(jPanel, index);
              }
-            index++;
+            return index+1;
         } else {
              if (jPanel == comp) {
                  jTabbedPane1.remove(index);
              }
+            return index;
         }
-        return index;
     }
 
     public static class JTextPaneNonWrapping extends JTextPane {
