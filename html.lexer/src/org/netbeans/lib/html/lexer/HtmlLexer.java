@@ -1295,6 +1295,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                     if(input.readLength() > 1) { //lexer restart check, token already returned before last EOF
                         if( actChar != ';' ) {
                             input.backup(1);
+                            return token(HTMLTokenId.TEXT);
                         }
                         return token(HTMLTokenId.CHARACTER);
                     }
@@ -1440,7 +1441,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
             case ISI_REF_DEC:
             case ISA_REF_X:
             case ISI_REF_HEX:
-                return token(HTMLTokenId.CHARACTER);
+                return token(HTMLTokenId.TEXT);
             case ISI_SCRIPT_CONTENT:
             case ISI_SCRIPT_CONTENT_ENDTAG:
             case ISI_SCRIPT_CONTENT_AFTER_LT:
