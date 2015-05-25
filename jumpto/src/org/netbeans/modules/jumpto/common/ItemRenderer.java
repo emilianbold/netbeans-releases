@@ -72,6 +72,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.jumpto.EntityComparator;
+import org.netbeans.modules.jumpto.settings.HighlightingSettings;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Parameters;
@@ -144,10 +145,6 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
     private static final String SAMPLE_ITEM_ICON = "org/netbeans/modules/jumpto/type/sample.png";
     private static final int DARKER_COLOR_COMPONENT = 15;
     private static final int LIGHTER_COLOR_COMPONENT = 80;
-    private static final String PROP_HIGHLIGHT="jumpto.highlight";  //NOI18N
-    private static final String PROP_ITEMS="jumpto.highlight.all";  //NOI18N
-    private static final String STRATEGY_BOLD="bold";       //NOI18N
-    private static final String STRATEGY_COLOR="color";     //NOI18N
     private final HighlightStrategy highlightStrategy;
 
     private final String mainProjectName = EntityComparator.getMainProjectName();
@@ -309,7 +306,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
             if (item != null) {
                 jlName.setIcon(convertor.getItemIcon(item));
                 final String formatedName;
-                if (isSelected || highlightStrategy.isHighlightAll()) {
+                if (highlightStrategy.shouldHighlight(isSelected)) {
                     formatedName = highlightStrategy.highlight(
                             convertor.getName(item),
                             convertor.getHighlightText(item),
@@ -416,37 +413,59 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
 
     @NonNull
     private HighlightStrategy createHighlightStrategy(@NullAllowed final String separatorPattern) {
-        final String strategyName = System.getProperty(PROP_HIGHLIGHT);
-        if (STRATEGY_COLOR.equals(strategyName)) {
-            return new Background(separatorPattern);
-        } else {
-            return new Bold(separatorPattern);
+        final HighlightingSettings hs = HighlightingSettings.getDefault();
+        final HighlightingSettings.Mode mode = hs.getMode();
+        final HighlightingSettings.Type type = hs.getType();
+        switch (type) {
+            case BACKGROUND:
+                return new Background(mode, separatorPattern);
+            case BOLD:
+                return new Bold(mode, separatorPattern);
+            default:
+                throw new IllegalStateException(String.valueOf(type));
         }
     }
 
-    private static interface HighlightStrategy {
-        boolean isHighlightAll();
+    private static abstract class HighlightStrategy {
+        private final HighlightingSettings.Mode mode;
+
+        HighlightStrategy(@NonNull final HighlightingSettings.Mode mode) {
+            assert mode != null;
+            this.mode = mode;
+        }
+
+        final boolean shouldHighlight(boolean selectedItem) {
+            switch (mode) {
+                case NONE:
+                    return false;
+                case ACTIVE:
+                    return selectedItem;
+                case ALL:
+                    return true;
+                default:
+                    throw new IllegalArgumentException(String.valueOf(selectedItem));
+            }
+        }
+
         @NonNull
-        JLabel createNameLabel();
+        abstract  JLabel createNameLabel();
         @NonNull
-        void resetNameLabel(@NonNull JLabel nameLabel, @NonNull Font font);
+        abstract void resetNameLabel(@NonNull JLabel nameLabel, @NonNull Font font);
         @NonNull
-        String highlight(@NonNull String name, @NonNull String highlightText, boolean caseSensitive, Color color);
+        abstract String highlight(@NonNull String name, @NonNull String highlightText, boolean caseSensitive, Color color);
     }
 
-    private static class Bold implements HighlightStrategy {
+    private static class Bold extends HighlightStrategy {
 
         private final HighlightingNameFormatter nameFormater;
 
-        Bold(@NullAllowed String separatorPattern) {
+        Bold(
+                @NonNull final HighlightingSettings.Mode mode,
+                @NullAllowed final String separatorPattern) {
+            super(mode);
             nameFormater = HighlightingNameFormatter.Builder.create().
                     setCamelCaseSeparator(separatorPattern).
                     buildBoldFormatter();
-        }
-
-        @Override
-        public boolean isHighlightAll() {
-            return true;
         }
 
         @NonNull
@@ -481,11 +500,14 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
 
     }
 
-    private static class Background implements HighlightStrategy {
+    private static class Background extends HighlightStrategy {
 
         private final HighlightingNameFormatter nameFormater;
 
-        Background(@NullAllowed final String separatorPattern) {
+        Background(
+                @NonNull final HighlightingSettings.Mode mode,
+                @NullAllowed final String separatorPattern) {
+            super(mode);
             Color back = new Color(236,235,163);
             Color front = Color.BLACK;
             final FontColorSettings colors = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
@@ -505,11 +527,6 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
             nameFormater = HighlightingNameFormatter.Builder.create().
                     setCamelCaseSeparator(separatorPattern).
                     buildColorFormatter(back, front);
-        }
-
-        @Override
-        public boolean isHighlightAll() {
-            return Boolean.getBoolean(PROP_ITEMS);
         }
 
         @NonNull
