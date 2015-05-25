@@ -6,7 +6,7 @@ var MyLib = new function |>METHOD:MyLib<|() {};
 MyLib.|>METHOD:ObjA<| = function (|>UNUSED:arg<|) {
     /** JsDoc for MyLib.ObjA.aproperty
      * @type {number|string} */
-    this.|>FIELD:aproperty<| = undefined;
+    this.|>FIELD:aproperty<| = |>GLOBAL:undefined<|;
 };
    
 /**

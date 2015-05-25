@@ -87,7 +87,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    private static final List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
+    private static final List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER);
     private Collection<OffsetRange> globalJsHintInlines = new ArrayList<OffsetRange>();
     
     public JsSemanticAnalyzer() {
