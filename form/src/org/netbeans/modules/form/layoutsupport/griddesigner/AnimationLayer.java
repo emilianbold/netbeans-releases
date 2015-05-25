@@ -61,6 +61,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.RepaintManager;
 import javax.swing.Timer;
+import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
  * Support for animation of layout changes.
@@ -344,7 +345,7 @@ public class AnimationLayer implements ActionListener {
         if (comp instanceof JComponent) {
             comp.print(gg);
         } else {
-            java.awt.peer.ComponentPeer peer = comp.getPeer();
+            java.awt.peer.ComponentPeer peer = FakePeerSupport.getPeer(comp);
             if (peer != null) {
                 peer.paint(gg);
             }

@@ -100,17 +100,14 @@ public class FakePeerContainer extends Container
         Rectangle clip = g.getClipBounds();
         for (int i = 0; i < ncomponents; i++) {
             Component comp = components[i];
-            if (comp != null &&
-                comp.getPeer() instanceof FakePeer &&
-                comp.isVisible()) {
+            if (comp != null && FakePeerSupport.getPeer(comp) instanceof FakePeer
+                    && comp.isVisible()) {
                 Rectangle cr = comp.getBounds();
                 if ((clip == null) || cr.intersects(clip)) {
                     Graphics cg = g.create(cr.x, cr.y, cr.width, cr.height);
                     cg.setFont(comp.getFont());
                     try {
-//                        System.err.println("** painting " + comp.getPeer());
-//                        System.err.println("**   bounds = " + cr);
-                        comp.getPeer().paint(cg);
+                        FakePeerSupport.getPeer(comp).paint(cg);
                     }
                     finally {
                         cg.dispose();
