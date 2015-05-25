@@ -289,12 +289,12 @@ public class DefaultOutlineModel implements OutlineModel {
     public final Object getValueAt(int rowIndex, int columnIndex) {
         Object result;
         if (columnIndex == 0) { //XXX need a column ID - columnIndex = 0 depends on the column model
-        TreePath path = getLayout().getPathForRow(rowIndex);
-        if (path != null) {
-            result = path.getLastPathComponent();
+            TreePath path = getLayout().getPathForRow(rowIndex);
+            if (path != null) {
+                result = path.getLastPathComponent();
             } else {
                 result = null;
-        }
+            }
         } else {
             result = (tableModel.getValueAt(rowIndex, columnIndex -1));
         }
