@@ -134,6 +134,22 @@ public class FakePeerSupport
         }
         return null;
     }
+
+    public static ComponentPeer getPeer(Component comp) {
+        ComponentPeer peer = null;
+        try {
+            Field f = Component.class.getDeclaredField("peer"); // NOI18N
+            f.setAccessible(true);
+            peer = (ComponentPeer)f.get(comp);
+        } catch (IllegalAccessException iaex) {
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, iaex);
+        } catch (NoSuchFieldException nsfex) {
+            org.openide.ErrorManager.getDefault().notify(
+                org.openide.ErrorManager.INFORMATIONAL, nsfex);
+        }
+        return peer;
+    }
     
     public static void attachFakePeer(Component comp, ComponentPeer peer) {
         try {
