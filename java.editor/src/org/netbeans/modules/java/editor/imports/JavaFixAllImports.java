@@ -289,7 +289,8 @@ public class JavaFixAllImports {
     }
 
     private static ImportData computeImports(CompilationInfo info) {
-        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = new ComputeImports().computeCandidates(info);
+        ComputeImports imps = new ComputeImports();
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = imps.computeCandidates(info);
 
         Map<String, List<Element>> filteredCandidates = candidates.a;
         Map<String, List<Element>> notFilteredCandidates = candidates.b;
@@ -327,7 +328,7 @@ public class JavaFixAllImports {
                 int minImportanceLevel = Integer.MAX_VALUE;
 
                 for (Element e : filteredVars) {
-                    String displayName = ComputeImports.displayNameForImport(info, e);
+                    String displayName = imps.displayNameForImport(info, e);
                     Icon icon = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
                     data.variants[index][++i] = new CandidateDescription(displayName, icon, ElementHandle.create(e));
                     int level = Utilities.getImportanceLevel(info, referencesCount, e);
@@ -344,7 +345,7 @@ public class JavaFixAllImports {
                     if (filteredVars.contains(e))
                         continue;
 
-                    String displayName = NOT_VALID_IMPORT_HTML + ComputeImports.displayNameForImport(info, e);
+                    String displayName = NOT_VALID_IMPORT_HTML + imps.displayNameForImport(info, e);
                     Icon icon = ElementIcons.getElementIcon(e.getKind(), e.getModifiers());
                     data.variants[index][++i] = new CandidateDescription(displayName, icon, ElementHandle.create(e));
                     int level = Utilities.getImportanceLevel(info, referencesCount, e);

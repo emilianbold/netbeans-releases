@@ -64,6 +64,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
@@ -156,22 +157,23 @@ public final class ImportClass implements ErrorRule<Void> {
         
         FileObject file = info.getFileObject();
         String simpleName = ident.text().toString();
-        Pair<List<Element>, List<Element>> candidates = getCandidateFQNs(info, file, simpleName, data);
+        ComputeImports imps = getCandidateFQNs(info, file, simpleName, data);
+        List<Element> cands = imps.getCandidates(simpleName);
 
         //workaround for #118714 -- neverending import
         List<? extends ImportTree> imports = info.getCompilationUnit().getImports();
         for (ImportTree it : imports) {
             Element el = info.getTrees().getElement(new TreePath(new TreePath(new TreePath(info.getCompilationUnit()), it), it.getQualifiedIdentifier()));
 
-            if (candidates != null && el != null) {
-                List<Element> a = candidates.first();
+            if (el != null && cands != null) {
+                List<Element> a = cands;
                 if (a != null && a.contains(el)) {
                     return Collections.<Fix>emptyList();
                 }
             }
         }
 
-        if (isCancelled() || candidates == null) {
+        if (isCancelled()) {
             ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.cancelled."); //NOI18N
             
             return CreatorBasedLazyFixList.CANCELLED;
@@ -211,15 +213,19 @@ public final class ImportClass implements ErrorRule<Void> {
                 ErrorFixesFakeHint.FixKind.IMPORT_CLASS);
         boolean doOrganize = ErrorFixesFakeHint.isOrganizeAfterImportClass(prefs);
 
-        List<Element> filtered = candidates.first();
-        List<Element> unfiltered = candidates.second();
+        List<Element> filtered = cands;
+        List<Element> unfiltered = imps.getRawCandidates(simpleName);
         List<Fix> fixes = new ArrayList<>();
         
         if (unfiltered != null && filtered != null) {
             ReferencesCount referencesCount = ReferencesCount.get(info.getClasspathInfo());
-        
+            Set<String> uniq = new HashSet<>();
+            
             for (Element element : unfiltered) {
-                String fqn = ComputeImports.displayNameForImport(info, element);
+                String fqn = imps.displayNameForImport(info, element);
+                if (!uniq.add(fqn)) {
+                    continue;
+                }
                 StringBuilder sort = new StringBuilder();
                 
                 sort.append("0001#");
@@ -291,50 +297,22 @@ public final class ImportClass implements ErrorRule<Void> {
         this.compImports = compImports;
     }
     
-    public Pair<List<Element>, List<Element>> getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<Void> data) {
+    public ComputeImports getCandidateFQNs(CompilationInfo info, FileObject file, String simpleName, Data<Void> data) {
             //compute imports:
-            Map<String, List<String>> candidates = new HashMap<>();
             ComputeImports imp = new ComputeImports();
-            
             setComputeImports(imp);
             
-            ComputeImports.Pair<Map<String, List<Element>>, Map<String, List<Element>>> rawCandidates = imp.computeCandidates(info);
-            
-            setComputeImports(null);
-            
-            if (isCancelled() || rawCandidates == null) {
+            ComputeImports.Pair<Map<String, List<Element>>, Map<String, List<Element>>> rawCandidates;
+            try {
+                imp = imp.computeCandidatesEx(info);
+            } finally {
+                setComputeImports(null);
+            }
+            if (isCancelled()) {
                 ErrorHintsProvider.LOG.log(Level.FINE, "ImportClassEnabler.getCandidateFQNs cancelled, returning."); //NOI18N
-                
                 return null;
             }
-            
-            ElementUtilities eu = info.getElementUtilities();
-            for (String sn : rawCandidates.a.keySet()) {
-                List<String> c = new ArrayList<>();
-                
-                for (Element te : rawCandidates.a.get(sn)) {
-                    c.add(eu.getElementName(te, true).toString());
-                }
-                
-                candidates.put(sn, c);
-            }
-            
-            Map<String, List<String>> notFilteredCandidates = new HashMap<>();
-            
-            for (String sn : rawCandidates.b.keySet()) {
-                List<String> c = new ArrayList<>();
-                
-                for (Element te : rawCandidates.b.get(sn)) {
-                    c.add(eu.getElementName(te, true).toString());
-                }
-                
-                notFilteredCandidates.put(sn, c);
-            }
-            
-        List<Element> candList = rawCandidates.a.get(simpleName);
-        List<Element> notFilteredCandList = rawCandidates.b.get(simpleName);
-        
-        return Pair.<List<Element>, List<Element>>of(candList, notFilteredCandList);
+            return imp;
     }
     
     static final class FixImport implements EnhancedFix {
