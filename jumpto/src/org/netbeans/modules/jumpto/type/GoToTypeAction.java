@@ -304,7 +304,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         // Compute in other thread
-        if (currentSearch.isNarrowing(nameKind, name, scope)) {
+        if (currentSearch.isNarrowing(nameKind, name, scope, true)) {
             currentSearch.filter(nameKind, name, null);
             enableOK(panel.revalidateModel());
             return false;
@@ -568,7 +568,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             public void run() {
                                 if (done) {
                                     final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
-                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second(), true);
+                                    currentSearch.searchCompleted(nameKind, nameAndScope.first(), nameAndScope.second());
                                 }
                                 if (fmodel != null && !isCanceled) {
                                     enableOK(panel.setModel(fmodel));
