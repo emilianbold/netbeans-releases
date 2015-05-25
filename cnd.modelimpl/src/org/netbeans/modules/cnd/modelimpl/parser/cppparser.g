@@ -2294,16 +2294,25 @@ fix_fake_enum_members
         { #fix_fake_enum_members = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #fix_fake_enum_members); }
     ;
 
+strongly_typed_enum_type_specifier
+{int ts = 0;}
+    :
+        COLON
+        (options {greedy=true;} : cv_qualifier_seq)?
+        (LITERAL_typename)?
+        ts = simple_type_specifier[false]
+        (options {greedy=true;} : cv_qualifier_seq)?
+    ;
+
 enum_specifier
-{int ts = 0;
- String qid;}
+{String qid;}
 :   LITERAL_enum
     (options {greedy=true;} : type_attribute_specification)?
     (
         (LITERAL_class | LITERAL_struct)
         {action.enum_strongly_typed(LT(1));}
     )?
-    (   (COLON ts = builtin_cv_type_specifier[ts])?
+    (   (strongly_typed_enum_type_specifier)?
         (type_attribute_specification)?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
@@ -2311,9 +2320,7 @@ enum_specifier
     |   
         qid = enum_qualified_id
         // elaborated_type_specifier        
-        (   (options {greedy=true;} : 
-                COLON ts = type_specifier[dsInvalid, false]
-            )?
+        (   (options {greedy=true;} : strongly_typed_enum_type_specifier)?
             (options {greedy=true;} :
                 {action.enum_body(LT(1));}
                         (type_attribute_specification)?
@@ -2561,13 +2568,13 @@ class_head
 
 // for predicates
 enum_head
-    { String s; int ts; }
+    { String s; }
     :
         LITERAL_enum 
         (options {greedy=true;} : type_attribute_specification)?
         (LITERAL_class | LITERAL_struct)? 
         (s = enum_qualified_id)? 
-        (COLON ts = type_specifier[dsInvalid, false])?
+        (strongly_typed_enum_type_specifier)?
     ;
 
 // for predicates
