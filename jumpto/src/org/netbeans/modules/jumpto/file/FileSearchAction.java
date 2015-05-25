@@ -235,7 +235,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         // Compute in other thread
         synchronized(this) {
             final SearchType searchType = Utils.toSearchType(nameKind);
-            if (currentSearch.isNarrowing(searchType, text, null)) {
+            if (currentSearch.isNarrowing(searchType, text, null, true)) {
                 itemsComparator.setUsePreferred(panel.isPreferedProject());
                 filterFactory.setLineNumber(lineNr);
                 currentSearch.filter(
@@ -283,7 +283,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     new Runnable () {
                         @Override
                         public void run() {
-                            currentSearch.searchCompleted(searchType, searchText, null, true);
+                            currentSearch.searchCompleted(searchType, searchText, null);
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
