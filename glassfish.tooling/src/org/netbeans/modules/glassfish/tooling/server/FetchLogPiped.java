@@ -92,7 +92,7 @@ public abstract class FetchLogPiped
      */
     public static FetchLogPiped create(final GlassFishServer server,
             final boolean skip) {
-        boolean isLocal = NetUtils.isLocahost(server.getHost());
+        boolean isLocal = server.getDomainsFolder() != null;
         FetchLogPiped fetchLog = isLocal
                 ? new FetchLogLocal(server, skip)
                 : new FetchLogRemote(server, skip);
@@ -129,7 +129,7 @@ public abstract class FetchLogPiped
      */
     public static FetchLogPiped create(final ExecutorService executor,
             final GlassFishServer server, final boolean skip) {
-        boolean isLocal = NetUtils.isLocahost(server.getHost());
+        boolean isLocal = server.getDomainsFolder() != null;
         FetchLogPiped fetchLog = isLocal
                 ? new FetchLogLocal(executor, server, skip)
                 : new FetchLogRemote(executor, server, skip);
