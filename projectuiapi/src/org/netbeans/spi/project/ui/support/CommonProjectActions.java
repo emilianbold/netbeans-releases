@@ -45,6 +45,7 @@
 package org.netbeans.spi.project.ui.support;
 
 import java.util.List;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.project.uiapi.Utilities;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -70,6 +71,23 @@ public class CommonProjectActions {
      * @since 1.67
      */
     public static final String PROJECT_PARENT_FOLDER = "projdir";
+    
+    /**
+     * {@link String}-valued action property honored by {@link #newProjectAction} 
+     * that defines the project category (subfolder code name) to be selected.
+     * 
+     * @since 1.81
+     */
+    public static final String PRESELECT_CATEGORY = "PRESELECT_CATEGORY";
+
+    /**
+     * {@link String}[]-valued action property honored by {@link #newProjectAction} 
+     * for propagating custom properties to the new project wizard's 
+     * {@link org.openide.WizardDescriptor}
+     * 
+     * @since 1.81
+     */
+    public static final String INITIAL_VALUE_PROPERTIES = "initialValueProperties";    
     
     private CommonProjectActions() {}
         
@@ -206,6 +224,18 @@ public class CommonProjectActions {
      * expectations about initial value for wizard
      * choosers that refers to existing sources location.
      * 
+     * <p>{@link #PRESELECT_CATEGORY} keyed action value can carry a {@link String}
+     * that presents a category path to be selected in the new project wizard.
+     * 
+     * <p>{@link #INITIAL_VALUE_PROPERTIES} keyed action value can carry a 
+     * {@link String} array of custom property names which are to be propagated 
+     * to the new project wizard's {@link org.openide.WizardDescriptor} <br>
+     * <pre>
+     * Action a = newProjectAction();
+     * a.putValue(INITIAL_VALUE_PROPERTIES, new String[] {key1, key2});
+     * a.putValue(key1, value1);
+     * a.putValue(key2, value2);
+     * </pre>
      * @return an action
      *
      * @since org.netbeans.modules.projectuiapi/1 1.3
@@ -213,6 +243,29 @@ public class CommonProjectActions {
     public static Action newProjectAction() {
         return Utilities.getActionsFactory().newProjectAction();
     }    
+
+    /**
+     * Creates action that invokes the <b>New Project</b> wizard, preselects the 
+     * given category path and propagates a set of custom properties the wizard's 
+     * {@link org.openide.WizardDescriptor}.
+     * 
+     * @param categoryPath the category path to be selected
+     * @param initialProperties a map of custom properties which are propagated 
+     * to the new project wizard's {@link org.openide.WizardDescriptor}
+     *
+     * @since 1.81
+     * @return an action
+     */
+    public static Action newProjectAction(String categoryPath, Map<String, Object> initialProperties) {
+        Action a = newProjectAction();
+        a.putValue(PRESELECT_CATEGORY, categoryPath );
+        String[] keys = initialProperties.keySet().toArray(new String[initialProperties.size()]);
+        a.putValue(INITIAL_VALUE_PROPERTIES, keys);
+        for (String key : keys) {
+            a.putValue(key, initialProperties.get(key));
+        }
+        return a;
+    }
 
     /**
      * Creates an action that sets the configuration of the selected project.

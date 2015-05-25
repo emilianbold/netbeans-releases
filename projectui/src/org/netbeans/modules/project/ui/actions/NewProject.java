@@ -126,8 +126,9 @@ public class NewProject extends AbstractAction {
         if (f != null) {
             wizard.putProperty(CommonProjectActions.PROJECT_PARENT_FOLDER, f);
         }
-        //#217087 semi-private contract for maven support that carries over properties like groupId and version when creating new submodule.
-        String[] moreProps = (String[]) getValue("initialValueProperties");
+        // carry over properties like e.g. groupId and version from maven when creating new submodule.
+        // see aso issue #217087 and #250190
+        String[] moreProps = (String[]) getValue(CommonProjectActions.INITIAL_VALUE_PROPERTIES);
         if (moreProps != null) {
             for (String key : moreProps) {
                 Object obj = getValue(key);
