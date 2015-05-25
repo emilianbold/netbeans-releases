@@ -234,42 +234,6 @@ public class NetUtils {
         }
     }
 
-	 /**
-     * Checks whether the host points to local machine.
-     * <p/>
-     * Dealing only with simple cases.
-     * <p/>
-     * @param host Host name to be checked.
-     */
-    public static boolean isLocahost(String host) {
-        if (host == null || host.equals("")) {
-            return false;
-        }
-
-        host = host.toLowerCase();
-        if ("localhost".equals(host) || "127.0.0.1".equals(host) || "::1".
-                equals(host)) {
-            return true;
-        }
-
-        InetAddress localHostaddr;
-        try {
-            // Check simple cases.
-            localHostaddr = InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            java.util.logging.Logger.getLogger(ServerUtils.class.getName()).
-                    log(Level.SEVERE, null, ex);
-            // TODO add proper exception handling -
-            // propagate checked exception to client code.
-            return true;
-        }
-        if (host.equals(localHostaddr.getHostName().toLowerCase())
-                || host.equals(localHostaddr.getHostAddress().toLowerCase())) {
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Determine whether an HTTP listener is secure or not..
      * <p/>
