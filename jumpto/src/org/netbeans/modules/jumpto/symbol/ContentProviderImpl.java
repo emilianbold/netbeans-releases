@@ -62,6 +62,8 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.common.AbstractModelFilter;
@@ -96,7 +98,20 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             @NonNull
             @Override
             public AbstractModelFilter<SymbolDescriptor> call() throws Exception {
-                return new AbstractModelFilter<SymbolDescriptor>() {
+                class Filter extends AbstractModelFilter<SymbolDescriptor> implements ChangeListener {
+
+                    Filter() {
+                        addChangeListener(this);
+                    }
+
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
+                        if (copier != null) {
+                            copier.clearWrongCase();
+                        }
+                    }
+
                     @NonNull
                     @Override
                     protected String getItemValue(@NonNull final SymbolDescriptor item) {
@@ -110,6 +125,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         }
                         return name;
                     }
+
                     @Override
                     protected void update(@NonNull final SymbolDescriptor item) {
                         String searchText = getSearchText();
@@ -117,8 +133,15 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                             searchText = "";    //NOI18N
                         }
                         SymbolProviderAccessor.DEFAULT.setHighlightText(item, searchText);
+                        final SymbolDescriptorAttrCopier copier = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
+                        if (copier != null) {
+                            if (item instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)item).hasCorrectCase()) {
+                                copier.reportWrongCase((AsyncDescriptor<SymbolDescriptor>)item);
+                            }
+                        }
                     }
                 };
+                return new Filter();
             }
         });
     //@GuardedBy("this")
@@ -197,7 +220,9 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         }
         // Compute in other thread
         synchronized(this) {
-            if (currentSearch.isNarrowing(searchType, text, scope)) {
+            final SymbolDescriptorAttrCopier acp = currentSearch.getAttribute(SymbolDescriptorAttrCopier.class);
+            final boolean correctCase = acp == null || acp.hasCorrectCase();
+            if (currentSearch.isNarrowing(searchType, text, scope, correctCase)) {
                 currentSearch.filter(searchType, name, null);
                 enableOK(panel.revalidateModel());
                 return false;
@@ -250,6 +275,10 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
     private void cleanUp() {
         for (SymbolProvider provider : getTypeProviders()) {
             provider.cleanup();
+        }
+        final SymbolDescriptorAttrCopier attrCopier = currentSearch.setAttribute(SymbolDescriptorAttrCopier.class, null);
+        if (attrCopier != null) {
+            attrCopier.clearWrongCase();
         }
     }
 
@@ -362,11 +391,11 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                     lastSize = newSize[0];
                     lastProvCount = newProvCount;
                     Collections.sort(mergedSymbols, new SymbolComparator());
-                    final boolean correctCase = done ? hasCorrectCase(mergedSymbols) : true;
+                    final SymbolDescriptorAttrCopier attrCopier = new SymbolDescriptorAttrCopier(done ? mergedSymbols : Collections.<SymbolDescriptor>emptyList());
                     final ListModel fmodel = Models.<SymbolDescriptor>fromList(
                             mergedSymbols,
                             currentSearch.resetFilter(),
-                            SymbolDescriptorAttrCopier.INSTANCE);
+                            attrCopier);
                     if ( isCanceled ) {
                         LOG.log(
                             Level.FINE,
@@ -383,11 +412,14 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         public void run() {
                             if (done) {
                                 final Pair<String, String> nameAndScope = Utils.splitNameAndScope(text);
+                                final SymbolDescriptorAttrCopier oldAttrCopier = currentSearch.setAttribute(SymbolDescriptorAttrCopier.class, attrCopier);
+                                if (oldAttrCopier != null) {
+                                    oldAttrCopier.clearWrongCase();
+                                }
                                 currentSearch.searchCompleted(
                                         searchType,
                                         nameAndScope.first(),
-                                        nameAndScope.second(),
-                                        correctCase);
+                                        nameAndScope.second());
                             }
                             if (!isCanceled) {
                                 enableOK(panel.setModel(fmodel));
@@ -502,29 +534,42 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
             merged.addAll(fixedSymbols);
             return merged;
         }
-
-        private boolean hasCorrectCase(final Collection<? extends SymbolDescriptor> descs) {
-            boolean res = true;
-            for (SymbolDescriptor desc : descs) {
-                if (desc instanceof AsyncDescriptor) {
-                    res &= ((AsyncDescriptor)desc).hasCorrectCase();
-                }
-            }
-            return res;
-        }
     }
 
     private static final class SymbolDescriptorAttrCopier implements Factory<SymbolDescriptor, Pair<? extends SymbolDescriptor,? extends SymbolDescriptor>> {
 
-        static final SymbolDescriptorAttrCopier INSTANCE = new SymbolDescriptorAttrCopier();
+        private final Set</*@GuardedBy("hasWrongCase")*/AsyncDescriptor<SymbolDescriptor>> hasWrongCase;
 
-        private SymbolDescriptorAttrCopier() {}
+        SymbolDescriptorAttrCopier(Collection<? extends SymbolDescriptor> desc) {
+            final Set<AsyncDescriptor<SymbolDescriptor>> hwc = Collections.newSetFromMap(new IdentityHashMap<AsyncDescriptor<SymbolDescriptor>, Boolean>());
+            for (SymbolDescriptor d : desc) {
+                if (d instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)d).hasCorrectCase()) {
+                    hwc.add((AsyncDescriptor<SymbolDescriptor>)d);
+                }
+            }
+            hasWrongCase = Collections.synchronizedSet(hwc);
+        }
+
+        void clearWrongCase() {
+            hasWrongCase.clear();
+        }
+
+        void reportWrongCase(@NonNull final AsyncDescriptor<SymbolDescriptor> d) {
+            hasWrongCase.add(d);
+        }
+
+        boolean hasCorrectCase() {
+            return hasWrongCase.isEmpty();
+        }
 
         @Override
         @NonNull
         public SymbolDescriptor create(@NonNull final Pair<? extends SymbolDescriptor, ? extends SymbolDescriptor> p) {
             final SymbolDescriptor source = p.first();
             final SymbolDescriptor target = p.second();
+            if (source instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)source).hasCorrectCase()) {
+                hasWrongCase.remove(source);
+            }
             SymbolProviderAccessor.DEFAULT.setHighlightText(
                     target,
                     SymbolProviderAccessor.DEFAULT.getHighlightText(source));

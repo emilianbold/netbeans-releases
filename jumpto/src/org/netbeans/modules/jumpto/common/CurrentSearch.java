@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.jumpto.common;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -64,20 +66,22 @@ public final class CurrentSearch<T> {
     //@GuardedBy("this")
     private String currentScope;
     //@GuardedBy("this")
-    private boolean correctCase;
-    //@GuardedBy("this")
     private AbstractModelFilter<T> filter;
+
+    private final Map</*@GuardedBy("this")*/Class<?>,Object> attrs;
 
     public CurrentSearch(@NonNull final Callable<AbstractModelFilter<T>> filterFactory) {
         Parameters.notNull("filterFactory", filterFactory); //NOI18N
         this.filterFactory = filterFactory;
+        this.attrs = new HashMap<>();
         resetFilter();
     }
 
     public synchronized boolean isNarrowing(
             @NonNull final SearchType searchType,
             @NonNull final String searchText,
-            @NullAllowed final String searchScope) {
+            @NullAllowed final String searchScope,
+            final boolean correctCase) {
         if (currentType == null || currentText == null) {
             return false;
         }
@@ -114,11 +118,24 @@ public final class CurrentSearch<T> {
     public synchronized void searchCompleted(
             @NonNull final SearchType searchType,
             @NonNull final String searchText,
-            @NullAllowed final String searchScope,
-            final boolean correctCase) {
+            @NullAllowed final String searchScope) {
         this.currentType = searchType;
         this.currentText = searchText;
         this.currentScope = searchScope;
-        this.correctCase = correctCase;
+    }
+
+    @CheckForNull
+    public synchronized <T> T setAttribute(@NonNull final Class<T> clz, @NullAllowed final T instance) {
+        Parameters.notNull("cls", clz); //NOI18N
+        if (instance == null) {
+            return clz.cast(attrs.remove(clz));
+        }
+        return clz.cast(attrs.put(clz, instance));
+    }
+
+    @CheckForNull
+    public synchronized <T> T getAttribute(@NonNull final Class<T> clz) {
+        Parameters.notNull("clz", clz); //NOI18N
+        return clz.cast(attrs.get(clz));
     }
 }
