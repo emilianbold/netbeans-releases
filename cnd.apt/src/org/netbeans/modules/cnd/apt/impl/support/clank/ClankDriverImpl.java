@@ -111,7 +111,8 @@ public class ClankDriverImpl {
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
-            settings.KeepCommentsTokens = APTToClankCompilationDB.isFortran(ppHandler);
+            boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
+            settings.KeepCommentsTokens = fortranFlavor;
             settings.GenerateDiagnostics = true;
             settings.PrettyPrintDiagnostics = false;
             settings.PrintDiagnosticsOS = llvm.nulls();
@@ -123,6 +124,13 @@ public class ClankDriverImpl {
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
             Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
+            if (fortranFlavor) {
+                StringRef file = new StringRef(path);
+                char[] chars = fixFortranTokens(buffer);
+                MemoryBuffer fileContent = MemoryBufferImpl.create(chars);
+                remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
+                remappedBuffers.put(file, fileContent);
+            }
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
             return true;
         } catch (IOException ex) {
@@ -131,11 +139,147 @@ public class ClankDriverImpl {
         }
     }
 
+    private static char[] fixFortranTokens(APTFileBuffer buffer) throws IOException {
+        // Fortran has special string concatenation (//)
+        // and a logical operators (.and.) which produces bad token stream.
+        // The method replaces:
+        // //     -> ~~
+        // .not.  -> ^
+        // .ne.   -> /=
+        // .neqv. -> <>
+        // .eq.   -> ==
+        // .eqv.  -> ==
+        // .gt.   -> >
+        // .ge.   -> >=
+        // .lt.   -> <
+        // .le.   -> <=
+        // .and.  -> &&
+        // .or.   -> ||
+        // The class APTFortranFilterEx converts tokens ~~, ^ and <> back to right Fortran tokens.
+        char[] chars = buffer.getCharBuffer();
+        int i = 0;
+        while (true) {
+            if (i >= chars.length - 1) {
+                break;
+            }
+            if (i < chars.length - 1) {
+                if (chars[i] == '/' && chars[i+1] == '/') {
+                    chars[i] = '~';
+                    chars[i+1] = '~';
+                }
+            }
+            if (chars[i] == '.') {
+                if (i < chars.length - 3) {
+                    if ((chars[i+1] == 'n' || chars[i+1] == 'N') &&
+                        (chars[i+2] == 'e' || chars[i+2] == 'E') &&
+                         chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '/';
+                        chars[i+2] = '=';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'e' || chars[i+1] == 'E') &&
+                               (chars[i+2] == 'q' || chars[i+2] == 'Q') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '=';
+                        chars[i+2] = '=';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'g' || chars[i+1] == 'G') &&
+                               (chars[i+2] == 't' || chars[i+2] == 'T') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '>';
+                        chars[i+2] = ' ';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'g' || chars[i+1] == 'G') &&
+                               (chars[i+2] == 'e' || chars[i+2] == 'E') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '>';
+                        chars[i+2] = '=';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'l' || chars[i+1] == 'L') &&
+                               (chars[i+2] == 't' || chars[i+2] == 'T') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '<';
+                        chars[i+2] = ' ';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'l' || chars[i+1] == 'L') &&
+                               (chars[i+2] == 'e' || chars[i+2] == 'E') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '<';
+                        chars[i+2] = '=';
+                        chars[i+3] = ' ';
+                    } else if ((chars[i+1] == 'o' || chars[i+1] == 'O') &&
+                               (chars[i+2] == 'r' || chars[i+2] == 'R') &&
+                                chars[i+3] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '|';
+                        chars[i+2] = '|';
+                        chars[i+3] = ' ';
+                    }
+                }
+                if (i < chars.length - 4) {
+                    if ((chars[i+1] == 'a' || chars[i+1] == 'A') &&
+                        (chars[i+2] == 'n' || chars[i+2] == 'N') &&
+                        (chars[i+3] == 'd' || chars[i+3] == 'D') &&
+                         chars[i+4] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '&';
+                        chars[i+2] = '&';
+                        chars[i+3] = ' ';
+                        chars[i+4] = ' ';
+                    } else if ((chars[i+1] == 'e' || chars[i+1] == 'E') &&
+                        (chars[i+2] == 'q' || chars[i+2] == 'Q') &&
+                        (chars[i+3] == 'v' || chars[i+3] == 'V') &&
+                         chars[i+4] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '=';
+                        chars[i+2] = '=';
+                        chars[i+3] = ' ';
+                        chars[i+4] = ' ';
+                    } else if ((chars[i+1] == 'n' || chars[i+1] == 'N') &&
+                               (chars[i+2] == 'o' || chars[i+2] == 'O') &&
+                               (chars[i+3] == 't' || chars[i+3] == 'T') &&
+                                chars[i+4] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '^';
+                        chars[i+2] = ' ';
+                        chars[i+3] = ' ';
+                        chars[i+4] = ' ';
+                    }
+                }
+                if (i < chars.length - 5) {
+                    if ((chars[i+1] == 'n' || chars[i+1] == 'N') &&
+                        (chars[i+2] == 'e' || chars[i+2] == 'E') &&
+                        (chars[i+3] == 'q' || chars[i+3] == 'Q') &&
+                        (chars[i+4] == 'v' || chars[i+3] == 'V') &&
+                         chars[i+5] == '.') {
+                        chars[i] = ' ';
+                        chars[i+1] = '<';
+                        chars[i+2] = '>';
+                        chars[i+3] = ' ';
+                        chars[i+4] = ' ';
+                        chars[i+5] = ' ';
+                    }
+                }
+            }
+            i++;
+        }
+        return chars;
+    }
+
     private static class MemoryBufferImpl extends MemoryBuffer {
     
         
         public static MemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
             char[] chars = aptBuf.getCharBuffer();
+            return create(chars);
+        }
+
+        public static MemoryBufferImpl create(char[] chars) throws IOException {
 //            String s = new String(chars); // TODO: should it be optimized?
 //            char$ptr start = NativePointer.create_char$ptr(s);
 //            char$ptr end = start.$add(s.length());
