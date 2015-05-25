@@ -420,6 +420,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
+    public CsmInstantiation getInstantiatedTypeInstantiation(CsmType type) {
+        return Instantiation.getInstantiatedTypeInstantiation(type);
+    }
+
+    @Override
     public List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
         return Instantiation.getInstantiatedTypeInstantiations(type);
     }
