@@ -128,7 +128,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         String name = iterator.next().getMethod().getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.super.class", name); // NOI18N
                     } else {
-                        List<String> list = new ArrayList<String>();
+                        List<String> list = new ArrayList<>();
                         while(iterator.hasNext()) {
                             list.add(iterator.next().getMethod().getContainingClass().getName().toString());
                         }
@@ -148,7 +148,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
                         String name = iterator.next().getMethod().getContainingClass().getName().toString();
                         message = NbBundle.getMessage(NonVirtualMethod.class, "NonVirtualMethod.message.sub.class", name); // NOI18N
                     } else {
-                        List<String> list = new ArrayList<String>();
+                        List<String> list = new ArrayList<>();
                         while(iterator.hasNext()) {
                             list.add(iterator.next().getMethod().getContainingClass().getName().toString());
                         }

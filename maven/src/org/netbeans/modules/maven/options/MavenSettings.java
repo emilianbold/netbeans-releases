@@ -80,6 +80,7 @@ public final class MavenSettings  {
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
     public static final String PROP_PROJECTNODE_NAME_PATTERN = "project.displayName"; //NOI18N
     private static final String PROP_ALWAYS_OUTPUT = "alwaysShowOutput";
+    private static final String PROP_SHOW_LOGGING_LEVEL = "showLoggingLevel"; //NOI18N
     private static final String PROP_REUSE_OUTPUT = "reuseOutputTabs";
     private static final String PROP_COLLAPSE_FOLDS = "collapseSuccessFolds";
     private static final String PROP_OUTPUT_TAB_CONFIG = "showConfigInOutputTab";
@@ -263,9 +264,17 @@ public final class MavenSettings  {
     public boolean isAlwaysShowOutput() {
         return getPreferences().getBoolean(PROP_ALWAYS_OUTPUT, true);
     }
-
+    
     public void setAlwaysShowOutput(boolean show) {
         getPreferences().putBoolean(PROP_ALWAYS_OUTPUT, show);
+    }
+    
+    public boolean isShowLoggingLevel() {
+        return getPreferences().getBoolean(PROP_SHOW_LOGGING_LEVEL, false);
+    }
+    
+    public void setShowLoggingLevel(boolean show) {
+        getPreferences().putBoolean(PROP_SHOW_LOGGING_LEVEL, show);
     }
     
     public boolean isReuseOutputTabs() {

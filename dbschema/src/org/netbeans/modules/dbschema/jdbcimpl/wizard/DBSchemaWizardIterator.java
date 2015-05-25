@@ -46,6 +46,8 @@ package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -56,16 +58,18 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 
 /** Iterator implementation which can iterate through two
  * panels which forms dbschema template wizard
  */
 public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
+    private static final Logger LOG = Logger.getLogger(DBSchemaWizardIterator.class.getName());
     
     static final long serialVersionUID = 9197272899287477324L;
     
-    ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
+    private final ResourceBundle bundle = NbBundle.getBundle("org.netbeans.modules.dbschema.jdbcimpl.resources.Bundle"); //NOI18N
     
     private WizardDescriptor.Panel panels[];
     private static String panelNames[];
@@ -82,12 +86,14 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
     }
     
     public static synchronized DBSchemaWizardIterator singleton() {
-        if(instance == null)
+        if(instance == null) {
             instance = new DBSchemaWizardIterator();
+        }
         
         return instance;
     }
     
+    @Override
     public Set instantiate(TemplateWizard wiz) throws IOException {
 //        System.out.println(wiz.getTargetFolder());
         myData.setName(wiz.getTargetName());
@@ -99,42 +105,52 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
         return null;///Collections.singleton(null);
     }
     
+    @Override
     public org.openide.WizardDescriptor.Panel current() {
         return panels[panelIndex];
     }
     
+    @Override
     public String name() {
         return panelNames[panelIndex];
     }
     
+    @Override
     public boolean hasNext() {
         return panelIndex < PANEL_COUNT - 1;
     }
     
+    @Override
     public boolean hasPrevious() {
         return panelIndex > 0;
     }
     
+    @Override
     public void nextPanel() {
         if (panelIndex == 1) {//== connection panel
             ((DBSchemaConnectionPanel) panels[1].getComponent()).initData();
-            if (! (((DBSchemaTablesPanel) panels[2].getComponent()).init()))
+            if (! (((DBSchemaTablesPanel) panels[2].getComponent()).init())) {
                 return;
+            }
         }
         
         panelIndex++;
     }
     
+    @Override
     public void previousPanel() {
         panelIndex--;
     }
     
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
     
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
     
+    @Override
     public void initialize(TemplateWizard wizard) {
         wizardInstance = wizard;
         setDefaultTarget();
@@ -178,7 +194,7 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
             java.awt.Component panel = targetPanel.getComponent();
             if (panel instanceof javax.swing.JComponent) {
                 ((javax.swing.JComponent) panel).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, stepsNames); //NOI18N
-                ((javax.swing.JComponent) panel).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); //NOI18N
+                ((javax.swing.JComponent) panel).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 0); //NOI18N
             }
             
             panels[0] = targetPanel.getPanel();
@@ -189,9 +205,11 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
         panelIndex = 0;
     }
     
+    @Override
     public void uninitialize(TemplateWizard wiz) {
-        if (wiz.getValue() == NotifyDescriptor.CANCEL_OPTION)
+        if (wiz.getValue() == NotifyDescriptor.CANCEL_OPTION) {
             ((DBSchemaTablesPanel) panels[2].getComponent()).uninit();
+        }
         
         panels = null;
         myData = null;
@@ -227,10 +245,22 @@ public class DBSchemaWizardIterator implements TemplateWizard.Iterator {
                 FileObject newTargetFO = projectDir.getFileObject("src/conf"); // NOI18N
                 if (newTargetFO == null || !newTargetFO.isValid()) {
                     newTargetFO = projectDir.getFileObject("src/META-INF"); // NOI18N
-                    if (newTargetFO == null || !newTargetFO.isValid()) {
-                        newTargetFO = projectDir.getFileObject("src"); // NOI18N
+                    // take existence of <projectdir>/src/main as indication
+                    // of maven style project layout
+                    FileObject tempFo = projectDir.getFileObject("src/main"); // NOI18N
+                    if (tempFo != null) {
+                        try {
+                            newTargetFO = FileUtil.createFolder(tempFo, "resources/META-INF");
+                        } catch (IOException ex) {
+                            LOG.log(Level.INFO, "Failed to create META-INF folder", ex);
+                        }
+                    }
+                    if (newTargetFO == null) {
                         if (newTargetFO == null || !newTargetFO.isValid()) {
-                            return;
+                            newTargetFO = projectDir.getFileObject("src"); // NOI18N
+                            if (newTargetFO == null || !newTargetFO.isValid()) {
+                                return;
+                            }
                         }
                     }
                 }

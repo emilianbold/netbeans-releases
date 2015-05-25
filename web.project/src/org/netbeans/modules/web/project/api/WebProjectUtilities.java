@@ -97,6 +97,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
 import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
@@ -686,7 +687,12 @@ public class WebProjectUtilities {
         }
         if (libraryName != null) {
             if (rh.getProjectLibraryManager().getLibrary(libraryName) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(libraryName)); // NOI18N
+                Library library = LibraryManager.getDefault().getLibrary(libraryName);
+                if (library != null) {
+                    rh.copyLibrary(library);
+                } else {
+                    LOGGER.log(Level.INFO, "Library not found for {0}", libraryName);
+                }
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);

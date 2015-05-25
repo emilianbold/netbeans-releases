@@ -1,7 +1,7 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,16 +24,44 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.refactoring.introduce;
 
-/**
- *
- * @author Jan Lahoda
- */
-public enum IntroduceKind {
-    CREATE_VARIABLE, CREATE_CONSTANT, CREATE_FIELD, CREATE_METHOD;
+var n = 10;
+
+var i, d;
+
+d = 1;
+
+for (i = 1; i <= n; i++) {
+    d *= i;     // breakpoint when "d > 700";
+                // Expecting d = 720, i = 7, hit count = 1
+}
+
+n = 15;
+
+for (i = 1; i <= n; i++) {
+    d /= i;     // breakpoint when "d < 1", with ignore count = 2
+                // Expecting d < 1, i = 11+2+1, hit count = 3
+    //print ("i = "+i+", d = "+d);
+}
+
+d = 1;
+n = 100;
+
+for (i = 1; i <= n; i++) {
+    d += i/n;
 }

@@ -44,8 +44,6 @@ package org.netbeans.modules.cordova.wizard;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -111,11 +109,6 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException(Bundle.ERR_NO_Cordova(), null);
         }
-    }
-
-    @Override
-    public Collection<String> supportedLibraries() {
-        return Collections.emptyList();//NOI18N
     }
 
     @Override

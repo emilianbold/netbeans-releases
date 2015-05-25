@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -170,14 +171,26 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                 return node;
             } else if (FileUtil.isParentOf(kid, fo)) {
                 Node found = findNode(node, kid, fo);
-                if (found != null && hasObject(found, target)) {
+                if (found == null) {
+                    return null;
+                }
+                if (hasObject(found, target)) {
                     return found;
+                }
+                // #252446 ?
+                Node[] nodes = found.getParentNode().getChildren().getNodes(true);
+                for (Node child : nodes) {
+                    if (child.getName().equals(fo.getName())
+                            && hasObject(child, fo)) {
+                        return child;
+                    }
                 }
             }
         }
         return null;
     }
 
+    @CheckForNull
     private static Node findNode(Node node, FileObject root, FileObject fo) {
         String relPath = FileUtil.getRelativePath(root, fo);
 

@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.spi.remote.HostInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 
 /**
  *
@@ -66,9 +67,11 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
 
         @Override
         public boolean fileExists(String path) {
-            RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment,
-                    "test -d \"" + path + "\" -o -f \"" + path + "\""); // NOI18N
-            return support.run() == 0;
+            try {
+                return HostInfoUtils.fileExists(executionEnvironment, path);
+            } catch (IOException | InterruptedException ex) {
+                return false; // so it was before - see RemoteCommandSupport
+            }
         }
 
         @Override
@@ -96,9 +99,9 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
         public synchronized Map<String, String> getEnv() {
             if (envCache == null) {
                 envCache = new HashMap<>();
-                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "env"); // NOI18N
-                if (support.run() == 0) {
-                    String val = support.getOutput();
+                ProcessUtils.ExitStatus rc = ProcessUtils.execute(executionEnvironment, "env"); // NOI18N
+                if (rc.isOK()) {
+                    String val = rc.output;
                     String[] lines = val.split("\n"); // NOI18N
                     for (int i = 0; i < lines.length; i++) {
                         int pos = lines[i].indexOf('=');
@@ -109,17 +112,6 @@ public class RemoteHostInfoProviderFactory implements HostInfoProviderFactory {
                 }
             }
             return envCache;
-        }
-
-        //TODO (execution): do we still need this?
-        public boolean isCshShell() {
-            if (isCshShell == null) {
-                //N.B.: this is only place where RemoteCommandSupport should take PATH= !!
-                RemoteCommandSupport support = new RemoteCommandSupport(executionEnvironment, "PATH=/bin:/usr/bin export"); // NOI18N
-//                support.setPreserveCommand(true); // to avoid endless loop
-                isCshShell = Boolean.valueOf(support.run() != 0);
-            }
-            return isCshShell.booleanValue();
         }
     }
 

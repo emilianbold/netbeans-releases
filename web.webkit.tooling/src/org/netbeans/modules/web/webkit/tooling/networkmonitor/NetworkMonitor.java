@@ -44,29 +44,23 @@ package org.netbeans.modules.web.webkit.tooling.networkmonitor;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.BrowserFamilyId;
-import org.netbeans.modules.web.webkit.debugging.api.console.Console;
-import org.netbeans.modules.web.webkit.debugging.api.console.ConsoleMessage;
 import org.netbeans.modules.web.webkit.debugging.api.network.Network;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
-public class NetworkMonitor implements Network.Listener, Console.Listener {
+public class NetworkMonitor implements Network.Listener {
 
     private static WeakReference<NetworkMonitor> lastNetworkMonitor = new WeakReference<>(null);
     
-    private final NetworkMonitorTopComponent.Model model;
-    private final BrowserFamilyId browserFamilyId;
+    private final Model model;
     private final Project project;
     private volatile NetworkMonitorTopComponent component;
     private volatile boolean debuggingSession;
 
-    private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
-            NetworkMonitorTopComponent.Model mod, boolean debuggingSession) {
+    private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, boolean debuggingSession) {
         this.component = comp;
-        this.model = mod;
+        this.model = new Model(projectContext);
         this.debuggingSession = debuggingSession;
-        browserFamilyId = projectContext.lookup(BrowserFamilyId.class);
         project = projectContext.lookup(Project.class);
         lastNetworkMonitor = new WeakReference<>(this);
     }
@@ -97,10 +91,14 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
         });
     }
 
+    private void resetComponent() {
+        this.component = null;
+    }
+
     public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
         NetworkMonitorTopComponent component = findNetworkMonitorTC();
         // reuse TopComponent if it is open; but always create a new model for new monitoring session
-        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new NetworkMonitorTopComponent.Model(), true);
+        NetworkMonitor nm = new NetworkMonitor(projectContext, component, true);
         nm.open();
         return nm;
     }
@@ -113,10 +111,10 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
             NetworkMonitor nm = lastNetworkMonitor.get();
             if (nm != null) {
                 // reuse model from last user NetworkMonitor but create a new UI:
-                nm.component = null;
+                nm.resetComponent();
             } else {
                 // open blank NetworkMonitor:
-                nm = new NetworkMonitor(Lookup.EMPTY, null, new NetworkMonitorTopComponent.Model(), false);
+                nm = new NetworkMonitor(Lookup.EMPTY, null, false);
             }
             nm.open();
         }
@@ -132,7 +130,6 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     }
 
     public void close() {
-        model.close(project);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -147,28 +144,17 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
         debuggingSession = false;
     }
 
+    // Implementation of Network.Listener
+
     @Override
     public void networkRequest(Network.Request request) {
-        model.add(request, browserFamilyId, project);
-        DependentFileQueryImpl.DEFAULT.networkRequest(project, request);
+        model.add(request);
+        DependentFileQueryImpl.networkRequest(project, request);
     }
 
     @Override
     public void webSocketRequest(Network.WebSocketRequest request) {
-        model.add(request, browserFamilyId, project);
-    }
-
-    @Override
-    public void messageAdded(ConsoleMessage message) {
-        model.console(message);
-    }
-
-    @Override
-    public void messagesCleared() {
-    }
-
-    @Override
-    public void messageRepeatCountUpdated(int count) {
+        model.add(request);
     }
 
 }

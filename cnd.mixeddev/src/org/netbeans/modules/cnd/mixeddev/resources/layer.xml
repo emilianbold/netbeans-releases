@@ -9,7 +9,7 @@
                     <file name="JavaToCppHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.mixeddev.java.JavaToCppHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
-                        <!--<attr name="position" intvalue="900"/>-->
+                        <attr name="position" intvalue="900"/>
                     </file>                           
                 </folder>                
             </folder>    

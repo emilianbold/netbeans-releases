@@ -177,10 +177,18 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static File instanceFile(LayerBuilder b, String folder, String name, Class implClass, String factoryMethod, Class... instanceOf) {
-        return instanceFile(b, folder, name, implClass == null ? null : implClass.getName(), factoryMethod, instanceOf);
+        return instanceFile(b, folder, name, implClass, factoryMethod, null, instanceOf);
+    }
+    
+    private static File instanceFile(LayerBuilder b, String folder, String name, Class implClass, String factoryMethod, Integer position, Class... instanceOf) {
+        return instanceFile(b, folder, name, implClass == null ? null : implClass.getName(), factoryMethod, position, instanceOf);
     }
     
     private static File instanceFile(LayerBuilder b, String folder, String name, String implClass, String factoryMethod, Class... instanceOf) {
+        return instanceFile(b, folder, name, implClass, factoryMethod, null, instanceOf);
+    }
+    
+    private static File instanceFile(LayerBuilder b, String folder, String name, String implClass, String factoryMethod, Integer position, Class... instanceOf) {
         String basename;
         if (name == null) {
             basename = implClass.replace('.', '-'); //NOI18N
@@ -202,6 +210,10 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
         
         for(Class c : instanceOf) {
             f.stringvalue("instanceOf", c.getName()); //NOI18N
+        }
+        
+        if (position != null) {
+            f.intvalue("position", position); //NOI18N
         }
 
         return f;
@@ -304,7 +316,7 @@ public class LanguageRegistrationProcessor extends LayerGeneratingProcessor {
     }
 
     private static void registerHyperlinks(LayerBuilder b, String mimeType) {
-        instanceFile(b, "Editors/" + mimeType + "/HyperlinkProviders", null, GsfHyperlinkProvider.class, null, HyperlinkProviderExt.class).write(); //NOI18N
+        instanceFile(b, "Editors/" + mimeType + "/HyperlinkProviders", null, GsfHyperlinkProvider.class, null, 1000, HyperlinkProviderExt.class).write(); //NOI18N
 //
 //        // Hyperlinks
 //        if (hasDeclarationFinder) {

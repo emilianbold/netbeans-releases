@@ -239,7 +239,7 @@ public class Utils {
         return Pair.of(name,scope);
     }
 
-    private static boolean isCaseSensitive(@NonNull final SearchType searchType) {
+    public static boolean isCaseSensitive(@NonNull final SearchType searchType) {
         switch (searchType) {
             case CAMEL_CASE:
             case EXACT_NAME:

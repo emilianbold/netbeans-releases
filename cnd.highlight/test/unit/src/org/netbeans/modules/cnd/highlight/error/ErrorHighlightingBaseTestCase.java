@@ -77,7 +77,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
     }
 
     protected Collection<CsmErrorInfo> getErrors(BaseDocument doc, CsmFile csmFile) {
-        final List<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
+        final List<CsmErrorInfo> result = new ArrayList<>();
         CsmErrorProvider.Request request = new HighlightProvider.RequestImpl(csmFile, doc, CsmErrorProvider.EditorEvent.FileBased, Interrupter.DUMMY);
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             @Override
@@ -201,7 +201,7 @@ public class ErrorHighlightingBaseTestCase extends ProjectBasedTestCase {
     private static class Undoer implements DocumentListener {
 
         BaseDocument document;
-        Stack<DocumentEvent> events = new Stack<DocumentEvent>();
+        Stack<DocumentEvent> events = new Stack<>();
 
         public Undoer(BaseDocument document) {
             this.document = document;

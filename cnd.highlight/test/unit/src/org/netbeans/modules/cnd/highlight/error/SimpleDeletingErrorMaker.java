@@ -57,7 +57,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
  */
 public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
 
-    private String textToDelete;
+    private final String textToDelete;
     private int searchFrom;
 
     public SimpleDeletingErrorMaker(String textToDelete) {
@@ -90,7 +90,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
      */
     private static class Stat {
         
-        private String file;
+        private final String file;
         public int triesCount;
         public int hitCount;
         public int inducedCount;
@@ -114,7 +114,7 @@ public abstract class SimpleDeletingErrorMaker extends BaseErrorMaker {
         }
     }
     
-    private Map<String, Stat> stats = new HashMap<String, Stat>();
+    private final Map<String, Stat> stats = new HashMap<>();
     
     private Stat getCurrentStat() {
         String absPath = getCsmFile().getAbsolutePath().toString();

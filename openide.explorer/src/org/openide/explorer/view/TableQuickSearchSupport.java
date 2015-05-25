@@ -43,6 +43,7 @@ package org.openide.explorer.view;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -78,6 +79,7 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
     private int quickSearchInitialColumn = -1;  // The search was initiated here
     private int quickSearchLastRow = -1;        // Last search position
     private int quickSearchLastColumn = -1;     // Last search position
+    private Point  quickSearchLastPos = null;   // Last searched position
     private String lastSearchText;
     
     private JTable table;
@@ -166,6 +168,9 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
 
     @Override
     public void quickSearchConfirmed() {
+        if (quickSearchLastPos != null) {
+            displaySearchResult(quickSearchLastPos.x, quickSearchLastPos.y);
+        }
         quickSearchInitialRow = -1;
         quickSearchInitialColumn = -1;
     }
@@ -181,6 +186,7 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
         }
         quickSearchInitialRow = -1;
         quickSearchInitialColumn = -1;
+        quickSearchLastPos = null;
     }
 
     private void doSearch(String searchText, boolean forward) {
@@ -225,6 +231,7 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
             }
             lineStartSearch = !lineStartSearch;
         } while (!lineStartSearch);
+        quickSearchLastPos = null;
         // nothing found, remove the selection:
         table.getSelectionModel().clearSelection();
         table.getColumnModel().getSelectionModel().clearSelection();
@@ -234,6 +241,7 @@ class TableQuickSearchSupport implements QuickSearch.Callback {
     private void displaySearchResult(int row, int column) {
         quickSearchLastRow = row;
         quickSearchLastColumn = column;
+        quickSearchLastPos = new Point(row, column);
         table.getSelectionModel().setSelectionInterval(row, row);
         table.getColumnModel().getSelectionModel().setSelectionInterval(column, column);
         table.scrollRectToVisible(table.getCellRect(row, column, true));

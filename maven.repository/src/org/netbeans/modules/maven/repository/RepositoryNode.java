@@ -129,6 +129,9 @@ public class RepositoryNode extends AbstractNode {
         "LBL_REPO_Name=Repository Name: <b> {0} </b><p>",
         "#{0} - repository url",
         "LBL_REPO_Url=Repository URL:<b> {0} </b><p>",
+        "LBL_ORIGIN=Repository Origin:<b> {0} </b><p>",
+        "LBL_ORIGIN_PERSISTENT=User defined",
+        "LBL_ORIGIN_TRANSIENT=Added by the IDE",
         "LBL_Mirrors=Mirrors repositories: <b> {0} </b><p>"
     })
     @Override public String getShortDescription() {
@@ -144,6 +147,10 @@ public class RepositoryNode extends AbstractNode {
         if (info.getRepositoryUrl() != null) {
             buffer.append(LBL_REPO_Url(info.getRepositoryUrl()));
         }
+        buffer.append(LBL_ORIGIN(
+                RepositoryPreferences.getInstance().isPersistent(info.getId()) ? 
+                LBL_ORIGIN_PERSISTENT() : 
+                LBL_ORIGIN_TRANSIENT()));
         if (info.isMirror()) {
             StringBuilder s = new StringBuilder();
             for (RepositoryInfo nf : info.getMirroredRepositories()) {

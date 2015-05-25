@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.BrokenIncludes.class)
 public class BrokenProjectService implements BrokenIncludes {
-    private static WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<ChangeListener,Boolean>();
+    private static final WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<>();
     private final static Object lock = new Object();
     
     public BrokenProjectService() {
@@ -86,7 +86,7 @@ public class BrokenProjectService implements BrokenIncludes {
     /*package*/static void fireChanges(ChangeEvent e) {
         List<ChangeListener> list = null;
         synchronized (lock) {
-            list = new ArrayList<ChangeListener>(listeners.keySet());
+            list = new ArrayList<>(listeners.keySet());
         }
         for (ChangeListener provider : list) {
             provider.stateChanged(e);

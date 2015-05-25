@@ -98,7 +98,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     private SourceGroupSupport supportFXML;
     private SourceGroupSupport supportController;
     private SourceGroupSupport supportCSS;
-    private boolean isMaven = false;
+    private boolean isMavenOrGradle = false;
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
 
@@ -132,8 +132,8 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                     NbBundle.getMessage(FXMLTemplateWizardIterator.class,
                     "MSG_ConfigureFXMLPanel_Project_Null_Error")); // NOI18N
         }
-        isMaven = JFXProjectUtils.isMavenProject(project);
-        
+        isMavenOrGradle = JFXProjectUtils.isMavenProject(project) || JFXProjectUtils.isGradleProject(project);
+
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroupsJava = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         SourceGroup[] sourceGroupsResources = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
@@ -142,7 +142,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                     NbBundle.getMessage(FXMLTemplateWizardIterator.class,
                     "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
         }
-        if(isMaven) {
+        if(isMavenOrGradle) {
             supportFXML = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
             supportCSS = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
             if(sourceGroupsResources != null && sourceGroupsResources.length > 0) {
@@ -196,9 +196,9 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
 
     private WizardDescriptor.Panel[] createPanels(Project project, SourceGroupSupport supportFXML, SourceGroupSupport supportController, SourceGroupSupport supportCSS) {
         return new WizardDescriptor.Panel[]{
-                    new ConfigureFXMLPanelVisual.Panel(project, supportFXML, isMaven),
-                    new ConfigureFXMLControllerPanelVisual.Panel(supportController, isMaven),
-                    new ConfigureFXMLCSSPanelVisual.Panel(supportCSS, isMaven)
+                    new ConfigureFXMLPanelVisual.Panel(project, supportFXML, isMavenOrGradle),
+                    new ConfigureFXMLControllerPanelVisual.Panel(supportController, isMavenOrGradle),
+                    new ConfigureFXMLCSSPanelVisual.Panel(supportCSS, isMavenOrGradle)
                 };
     }
 

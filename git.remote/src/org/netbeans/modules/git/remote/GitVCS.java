@@ -176,12 +176,21 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener, 
     @Override
     public void connected(FileSystem fs) {
         Git.getInstance().clearAncestorCaches();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
     }
 
     @Override
     public void disconnected(FileSystem fs) {
         Git.getInstance().clearAncestorCaches();
-        VersioningSupport.versionedRootsChanged();        
+        postVersionedRootsChanged();
     }
+    
+    private void postVersionedRootsChanged() {
+        Git.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run() {
+                VersioningSupport.versionedRootsChanged();
+            }
+        });
+    }    
 }

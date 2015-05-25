@@ -47,6 +47,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 
 /**
@@ -64,10 +65,9 @@ public class TransportTestCase extends RemoteTestBase {
     @ForAllEnvironments
     public void testRun() throws Exception {
         final String randomString = "i am just a random string, it does not matter that I mean";
-        RemoteCommandSupport rcs = new RemoteCommandSupport(getTestExecutionEnvironment(), "echo " + randomString);
-        rcs.run();
-        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.getExitStatus();
-        assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.getOutput();
+        ProcessUtils.ExitStatus rcs = ProcessUtils.execute(getTestExecutionEnvironment(), "echo", randomString);
+        assert rcs.exitCode == 0 : "echo command on remote server '" + getTestExecutionEnvironment() + "' returned " + rcs.exitCode;
+        assert randomString.equals( rcs.output.trim()) : "echo command on remote server '" + getTestExecutionEnvironment() + "' produced unexpected output: " + rcs.output;
     }
 
     @ForAllEnvironments

@@ -304,8 +304,8 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         // Compute in other thread
-        if (currentSearch.isNarrowing(nameKind, name, scope)) {
-            currentSearch.filter(nameKind, name);
+        if (currentSearch.isNarrowing(nameKind, name, scope, true)) {
+            currentSearch.filter(nameKind, name, null);
             enableOK(panel.revalidateModel());
             return false;
         } else {
@@ -552,7 +552,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         lastSize = newSize;
                         final ListModel fmodel;
                         if (resultChanged) {
-                            ListModel model = Models.fromList(types, currentSearch.resetFilter());
+                            ListModel model = Models.fromList(types, currentSearch.resetFilter(), null);
                             if (typeFilter != null) {
                                 model = FilteredListModel.create(model, new FilterAdaptor(typeFilter), NbBundle.getMessage(GoToTypeAction.class, "LBL_Computing"));
                             }

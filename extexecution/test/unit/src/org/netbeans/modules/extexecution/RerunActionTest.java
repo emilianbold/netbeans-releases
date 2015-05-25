@@ -42,9 +42,20 @@
 
 package org.netbeans.modules.extexecution;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCallback;
 import org.netbeans.api.extexecution.ExecutionDescriptor.RerunCondition;
+import org.netbeans.api.extexecution.ExecutionService;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -94,6 +105,25 @@ public class RerunActionTest extends NbTestCase {
         assertFalse(action.isEnabled());
     }
 
+    public void testCallback() throws InterruptedException {
+        ExecutionDescriptor desc = new ExecutionDescriptor();
+        ExecutionService service = ExecutionService.newService(new Callable<Process>() {
+
+            @Override
+            public Process call() throws Exception {
+                return new TestProcess();
+            }
+        }, desc, "Test"); // NOI18N
+
+        CountDownLatch latch = new CountDownLatch(1);
+        TestCallback callback = new TestCallback(latch);
+        RerunAction action = new RerunAction();
+        action.setExecutionService(service);
+        action.setRerunCallback(callback);
+        action.actionPerformed(null);
+        assertTrue(latch.await(5, TimeUnit.SECONDS));
+    }
+
     private static class TestCondition implements RerunCondition {
 
         private boolean rerunPossible;
@@ -119,6 +149,62 @@ public class RerunActionTest extends NbTestCase {
 
         public void removeChangeListener(ChangeListener listener) {
             changeSupport.removeChangeListener(listener);
+        }
+    }
+
+    private static class TestProcess extends Process {
+
+        private final InputStream is = new ByteArrayInputStream(new byte[]{});
+
+        @Override
+        public OutputStream getOutputStream() {
+            return new OutputStream() {
+
+                @Override
+                public void write(int b) throws IOException {
+                }
+            };
+        }
+
+        @Override
+        public InputStream getInputStream() {
+            return is;
+        }
+
+        @Override
+        public InputStream getErrorStream() {
+            return is;
+        }
+
+        @Override
+        public int waitFor() throws InterruptedException {
+            return 0;
+        }
+
+        @Override
+        public int exitValue() {
+            return 0;
+        }
+
+        @Override
+        public void destroy() {
+        }
+
+    }
+
+    private static class TestCallback implements RerunCallback {
+
+        private final CountDownLatch latch;
+
+        public TestCallback(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void performed(Future<Integer> task) {
+            if (task != null) {
+                latch.countDown();
+            }
         }
     }
 }

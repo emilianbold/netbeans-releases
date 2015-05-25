@@ -76,7 +76,7 @@ public final class SemanticHighlightingOptions {
 
     public static final boolean SEMANTIC_ADVANCED = Boolean.getBoolean("cnd.semantic.advanced"); // NOI18N
 
-    private final Set<PropertyChangeListener> listeners = new WeakSet<PropertyChangeListener>();
+    private final Set<PropertyChangeListener> listeners = new WeakSet<>();
     private final Object lock = new Object();
 
     public void addPropertyChangeListener(PropertyChangeListener listener){

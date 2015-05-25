@@ -202,6 +202,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
         cbProjectNodeNameMode.addActionListener(listener);
         cbAlwaysShow.addActionListener(listener);
+        cbShowInfoLevel.addActionListener(listener);
         cbCollapseSuccessFolds.addActionListener(listener);
         cbReuse.addActionListener(listener);
         cbSkipTests.addActionListener(listener);
@@ -378,6 +379,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         rbOutputTabName = new javax.swing.JRadioButton();
         rbOutputTabId = new javax.swing.JRadioButton();
         cbOutputTabShowConfig = new javax.swing.JCheckBox();
+        cbShowInfoLevel = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -448,6 +450,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbOutputTabShowConfig, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbOutputTabShowConfig.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbShowInfoLevel, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbShowInfoLevel.text")); // NOI18N
+        cbShowInfoLevel.setToolTipText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbShowInfoLevel.toolTipText")); // NOI18N
+
         javax.swing.GroupLayout pnlExecutionLayout = new javax.swing.GroupLayout(pnlExecution);
         pnlExecution.setLayout(pnlExecutionLayout);
         pnlExecutionLayout.setHorizontalGroup(
@@ -482,8 +487,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                                     .addGroup(pnlExecutionLayout.createSequentialGroup()
                                         .addComponent(rbOutputTabName)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rbOutputTabId)))))
-                        .addGap(0, 120, Short.MAX_VALUE)))
+                                        .addComponent(rbOutputTabId))))
+                            .addComponent(cbShowInfoLevel))
+                        .addGap(0, 161, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         pnlExecutionLayout.setVerticalGroup(
@@ -507,6 +513,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(cbReuse)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbShowInfoLevel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbAlwaysShow)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -517,7 +525,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(cbOutputTabShowConfig)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(cbCollapseSuccessFolds)
-                .addContainerGap(32, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlExecution, "execution");
@@ -569,7 +577,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(246, Short.MAX_VALUE))
+                .addContainerGap(295, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlAppearance, "appearance");
@@ -635,7 +643,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(163, Short.MAX_VALUE))
+                .addContainerGap(213, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlDependencies, "dependencies");
@@ -685,7 +693,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(btnIndex))
                 .addGap(18, 18, 18)
                 .addComponent(cbDisableIndex)
-                .addContainerGap(259, Short.MAX_VALUE))
+                .addContainerGap(308, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -746,7 +754,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblDirectory)
                     .addComponent(txtDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnDirectory))
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(164, Short.MAX_VALUE))
         );
 
         pnlCards.add(plnExperimental, "experimental");
@@ -895,6 +903,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox cbOutputTabShowConfig;
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
+    private javax.swing.JCheckBox cbShowInfoLevel;
     private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JCheckBox cbUseBestMaven;
     private javax.swing.JComboBox comBinaries;
@@ -1053,6 +1062,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         comSource.setSelectedItem(MavenSettings.getDefault().getSourceDownloadStrategy());
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
         cbAlwaysShow.setSelected(MavenSettings.getDefault().isAlwaysShowOutput());
+        cbShowInfoLevel.setSelected(MavenSettings.getDefault().isShowLoggingLevel());
         cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
         cbCollapseSuccessFolds.setSelected(MavenSettings.getDefault().isCollapseSuccessFolds());
         cbOutputTabShowConfig.setSelected(MavenSettings.getDefault().isOutputTabShowConfig());
@@ -1127,6 +1137,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setSourceDownloadStrategy((MavenSettings.DownloadStrategy) comSource.getSelectedItem());
         MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
         MavenSettings.getDefault().setAlwaysShowOutput(cbAlwaysShow.isSelected());
+        MavenSettings.getDefault().setShowLoggingLevel(cbShowInfoLevel.isSelected());
         MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
         MavenSettings.getDefault().setCollapseSuccessFolds(cbCollapseSuccessFolds.isSelected());
         MavenSettings.getDefault().setOutputTabShowConfig(cbOutputTabShowConfig.isSelected());
@@ -1193,6 +1204,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         isChanged |= MavenSettings.getDefault().getSourceDownloadStrategy().compareTo((MavenSettings.DownloadStrategy) comSource.getSelectedItem()) != 0;
         isChanged |= MavenSettings.getDefault().isSkipTests() != cbSkipTests.isSelected();
         isChanged |= MavenSettings.getDefault().isAlwaysShowOutput() != cbAlwaysShow.isSelected();
+        isChanged |= MavenSettings.getDefault().isShowLoggingLevel() != cbShowInfoLevel.isSelected();
         isChanged |= MavenSettings.getDefault().isReuseOutputTabs() != cbReuse.isSelected();
         isChanged |= MavenSettings.getDefault().isCollapseSuccessFolds() != cbCollapseSuccessFolds.isSelected();
         isChanged |= MavenSettings.getDefault().isOutputTabShowConfig() != cbOutputTabShowConfig.isSelected();

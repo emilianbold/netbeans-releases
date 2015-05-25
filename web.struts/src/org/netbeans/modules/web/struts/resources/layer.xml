@@ -63,6 +63,7 @@ made subject to such option by the copyright holder.
                     <file name="StrutsConfigHyperlinkProvider.instance">
                         <attr name="instanceClass" stringvalue="org.netbeans.modules.web.struts.editor.StrutsConfigHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="position" intvalue="1000"/>
                     </file>
                 </folder>
                 <folder name="Popup">

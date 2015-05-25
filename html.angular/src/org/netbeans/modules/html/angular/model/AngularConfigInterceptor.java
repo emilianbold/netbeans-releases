@@ -115,7 +115,10 @@ public class AngularConfigInterceptor implements FunctionInterceptor {
                 String templateName = COMPONENTS_BASEDIR + "/" + componentDashName + "/" + componentDashName + ".html"; //NOI18N
                 String controllerName = String.valueOf(component.charAt(0)).toUpperCase()
                         .concat(component.substring(1)).concat(CONTROLLER_SUFFIX);
+                // index components as "controller as" - for CC in partials
                 AngularJsIndexer.addTemplateController(fo.toURI(), templateName, controllerName, component);
+                // index the list of the components - for CC in ng-link directive
+                AngularJsIndexer.addComponent(fo.toURI(), component);
             }
         }
     }

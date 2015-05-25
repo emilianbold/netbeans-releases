@@ -49,7 +49,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -546,11 +545,6 @@ public class SiteTemplateWizard extends JPanel {
         @Override
         public void cleanup() {
             // noop
-        }
-
-        @Override
-        public Collection<String> supportedLibraries() {
-            return Collections.emptyList();
         }
 
     }

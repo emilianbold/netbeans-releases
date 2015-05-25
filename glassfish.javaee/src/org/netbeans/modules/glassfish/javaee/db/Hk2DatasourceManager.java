@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -319,10 +320,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 createConnectionPool(xmlFile, poolName, url, username, password, driver);
             }
             
-            // create jdbc resource
-            createJdbcResource(xmlFile, jndiName, poolName);
+            // FIXME we generate the DS with the java:module namespace as
+            // it is close to the current behavior and it will work in both EAR
+            // and standalone module setup
+            String realJndi = getJndiName(jndiName, pair.second(), JndiNamespacesDefinition.MODULE_NAMESPACE);
 
-            String realJndi = getJndiName(jndiName, pair.second());
+            // create jdbc resource
+            createJdbcResource(xmlFile, realJndi, poolName);
+            
             ds = new SunDatasource(realJndi, url, username, password, driver, pair.second());
         } catch(IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
@@ -378,7 +383,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         final String username = pool.getProperty("User"); //NOI18N
                         final String password = pool.getProperty("Password"); //NOI18N
                         final String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                        String jndi = getJndiName(jdbc.getJndiName(), applicationScoped);
+                        // FIXME for existing unprefixed JNDI names we assume it
+                        // is java:app in most cases (except module inside war) :(
+                        String jndi = getJndiName(jdbc.getJndiName(), applicationScoped,
+                                JndiNamespacesDefinition.APPLICATION_NAMESPACE);
                         final SunDatasource dataSource = new SunDatasource(
                                 jndi, url, username, password, driverClassName, applicationScoped);
                         dataSources.add(dataSource);
@@ -400,14 +408,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
         return dataSources;
     }
 
-    private static String getJndiName(String jndiName, boolean applicationScoped) {
+    private static String getJndiName(String jndiName, boolean applicationScoped, String namespace) {
         if (!applicationScoped) {
             return jndiName;
         }
-        if (jndiName.startsWith("java:app/") || jndiName.startsWith("java:module")) { // NOI18N
-            return jndiName;
-        }
-        return "java:app/" + jndiName; // NOI18N
+        return JndiNamespacesDefinition.normalize(jndiName, namespace);
     }
 
     private static class JdbcResource {

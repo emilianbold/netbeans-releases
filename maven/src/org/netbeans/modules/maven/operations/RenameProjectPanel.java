@@ -120,6 +120,15 @@ public class RenameProjectPanel extends javax.swing.JPanel {
                 });
             }
         });
+        FileObject pomFO = project.getProjectDirectory().getFileObject("pom.xml");
+        if(pomFO == null) {
+            cbArtifactId.setEnabled(false);
+            cbDisplayName.setEnabled(false);
+            cbFolder.setEnabled(false);
+            txtArtifactId.setEnabled(false);
+            txtDisplayName.setEnabled(false);
+            txtFolder.setEnabled(false);
+        }
     }
 
     void createValidations(DialogDescriptor dd) {

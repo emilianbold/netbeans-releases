@@ -76,11 +76,13 @@ public class AngularJsIndexer extends EmbeddingIndexer{
     
     public static final String FIELD_CONTROLLER = "cont"; //NOI18N
     public static final String FIELD_TEMPLATE_CONTROLLER = "tc"; //NOI18N
+    public static final String FIELD_COMPONENT = "comp"; //NOI18N
     
     private static final Logger LOG = Logger.getLogger(AngularJsIndexer.class.getName());
     
     private static final ThreadLocal<Map<URI, Collection<AngularJsController>>> controllers = new ThreadLocal<>();
     private static final ThreadLocal<Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>>>templateControllers = new ThreadLocal<>();
+    private static final ThreadLocal<Map<URI, Collection<String>>> components = new ThreadLocal<>();
     private static final ThreadLocal<Boolean> addedToJsIndexPost = new ThreadLocal<>();
     
     public static void addController(@NonNull final URI uri, @NonNull final AngularJsController controller) {
@@ -115,6 +117,23 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         } else {
             templates.put(template, new AngularJsController.ModuleConfigRegistration(controller, controllerAs));
         }
+    }
+
+    public static void addComponent(@NonNull final URI uri, @NonNull final String component) {
+        final Map<URI, Collection<String>> map = components.get();
+
+        if (map == null) {
+            throw new IllegalStateException("AngularJsIndexer.addComponent can be called only from scanner thread.");  //NOI18N
+        }
+        Collection<String> cons = map.get(uri);
+        if (cons == null) {
+            cons = new ArrayList<>();
+            cons.add(component);
+            map.put(uri, cons);
+        } else {
+            cons.add(component);
+        }
+
     }
 
     private static void removeControllers(@NonNull final URI uri) {
@@ -263,6 +282,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
             postScanTasks.set(new LinkedList<Runnable>());
             controllers.set(new HashMap<URI, Collection<AngularJsController>>());
             templateControllers.set(new HashMap<URI, Map<String, AngularJsController.ModuleConfigRegistration>>());
+            components.set(new HashMap<URI, Collection<String>>());
             addedToJsIndexPost.set(Boolean.FALSE);
             return super.scanStarted(context);
         }
@@ -312,6 +332,7 @@ public class AngularJsIndexer extends EmbeddingIndexer{
         public void run() {
             Map<URI, Map<String, AngularJsController.ModuleConfigRegistration>> templates = templateControllers.get();
             Map<URI, Collection<AngularJsController>> controls = controllers.get();
+            Map<URI, Collection<String>> comps = components.get();
             if ((templates != null && !templates.isEmpty()) || (controls != null && !controls.isEmpty())) {
                 IndexingSupport support;
                 try {
@@ -371,6 +392,23 @@ public class AngularJsIndexer extends EmbeddingIndexer{
                                 sb.append(controller.getFqn()).append(":");     //NOI18N
                                 sb.append(controller.getOffset());
                                 elementDocument.addPair(FIELD_CONTROLLER, sb.toString(), true, true);
+                            }
+                            support.addDocument(elementDocument);
+                        }
+                    }
+                }
+                if (comps != null && !comps.isEmpty()) {
+                    for (Map.Entry<URI, Collection<String>> entry : comps.entrySet()) {
+                        URI uri = entry.getKey();
+                        Collection<String> collection = entry.getValue();
+
+                        File file = Utilities.toFile(uri);
+                        FileObject fo = FileUtil.toFileObject(file);
+
+                        if (fo != null) {
+                            IndexDocument elementDocument = support.createDocument(fo);
+                            for (String componentName : collection) {
+                                elementDocument.addPair(FIELD_COMPONENT, componentName, true, true);
                             }
                             support.addDocument(elementDocument);
                         }

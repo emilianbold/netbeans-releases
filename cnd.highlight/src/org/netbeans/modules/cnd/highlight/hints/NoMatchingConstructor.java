@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.highlight.error.CodeAssistanceHintProvider;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.NbBundle;
@@ -125,13 +126,14 @@ class NoMatchingConstructor extends AbstractCodeAudit {
         boolean willProduceError = false;
         for (CsmInheritance parent : csmClass.getBaseClasses()) {
             CsmClass parentClass = CsmInheritanceUtilities.getCsmClass(parent);
-            boolean flag = false;
+            if (parentClass != null) {
+                boolean flag = false;
                 for (CsmMember member : parentClass.getMembers()) {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
                         if (testedCtor.getParameters().isEmpty()) {
-                                flag = false;
-                                break;
+                            flag = false;
+                            break;
                         } else {
                             flag = true;
                         }
@@ -141,6 +143,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     willProduceError = flag;
                 }
                 break;
+            }
         }
         
         if (willProduceError) {
@@ -148,20 +151,20 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
             if (response instanceof AnalyzerResponse) {
                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, csmClass.getContainingFile().getFileObject(),
-                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getEndOffset()));  // NOI18N
+                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
             } else {
-                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getEndOffset()));
+                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
             }
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
             String id = NbBundle.getMessage(NoMatchingConstructor.class, "NoMatchingConstructor.name");  // NOI18N
             String description = NbBundle.getMessage(NoMatchingConstructor.class, "NoMatchingConstructor.description");  // NOI18N
-            return new NoMatchingConstructor(id, id, description, "hint", true, preferences);  // NOI18N
+            return new NoMatchingConstructor(id, id, description, "error", true, preferences);  // NOI18N
         }
     }
     

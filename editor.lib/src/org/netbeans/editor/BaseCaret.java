@@ -947,6 +947,11 @@ AtomicLockListener, FoldHierarchyListener {
     protected void fireStateChanged() {
         Runnable runnable = new Runnable() {
             public @Override void run() {
+                // #252441: uninstallUI might detached the caret from component while this
+                // event was queued.
+                if (component == null || component.getCaret() != BaseCaret.this) {
+                    return;
+                }
                 Object listeners[] = listenerList.getListenerList();
                 for (int i = listeners.length - 2; i >= 0 ; i -= 2) {
                     if (listeners[i] == ChangeListener.class) {

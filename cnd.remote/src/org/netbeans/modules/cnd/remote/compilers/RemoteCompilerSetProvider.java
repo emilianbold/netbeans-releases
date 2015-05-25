@@ -131,12 +131,6 @@ public class RemoteCompilerSetProvider implements CompilerSetProvider {
 
     @Override
     public String[] getCompilerSetData(String path) {
-        //RemoteCommandSupport rcs = new RemoteCommandSupport(env,
-        //        CompilerSetManager.getRemoteScriptFile() + " " + path); //NOI18N
-        //if (rcs.run() == 0) {
-        //    return rcs.getOutput().split("\n"); // NOI18N
-        //}
-        //return null;
         try {
             NativeProcessBuilder pb = NativeProcessBuilder.newProcessBuilder(env);
             HostInfo hinfo = HostInfoUtils.getHostInfo(env);

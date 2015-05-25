@@ -1723,7 +1723,7 @@ abstract public class CsmCompletionQuery {
             if (ok && lastDot) {
                 kind = extractKind(exp, tokCount + 1, startIdx, true, true);
                 /*resolve arrows*/
-                if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && findType && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                if ((kind == ExprKind.ARROW && !derefOfTHIS.get()) && (lastType != null) && (lastType.getArrayDepth() == 0)) {
                     CsmType opType = getOverloadedOperatorReturnType(lastType, contextFile, endOffset, CsmFunction.OperatorKind.ARROW, MAX_DEPTH);
                     if (opType != null) {
                         lastType = opType;
