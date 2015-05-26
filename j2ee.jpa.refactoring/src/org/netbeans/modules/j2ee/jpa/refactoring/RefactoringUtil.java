@@ -154,36 +154,6 @@ public abstract class RefactoringUtil {
         return JAVA_MIME_TYPE.equals(f.getMIMEType()); //NOI18N
     }
     
-    
-    public static CompilationInfo getCompilationInfo(TreePathHandle handle, final AbstractRefactoring refactoring){
-        
-        CompilationInfo existing = refactoring.getRefactoringSource().lookup(CompilationInfo.class);
-        if (existing != null){
-            return existing;
-        }
-        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
-        final CompilationInfo[] ci = {null};
-        try{
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-                
-                @Override
-                public void run(CompilationController co) throws Exception {
-                    co.toPhase(JavaSource.Phase.RESOLVED);
-                    ci[0]=co;
-                }
-                
-                @Override
-                public void cancel() {
-                }
-                
-            }, false);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return ci[0];
-    }
-    
     /**
      * Gets the name of the property associated with the given accessor.
      *

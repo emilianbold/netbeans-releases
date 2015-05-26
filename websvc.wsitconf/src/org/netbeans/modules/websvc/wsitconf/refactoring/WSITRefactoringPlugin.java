@@ -62,6 +62,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
@@ -82,7 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula
  */
-abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends ProgressProviderAdapter implements RefactoringPlugin {
+abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends JavaRefactoringPlugin {
     protected static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.websvc.wsitconf.refactoring");
 
     protected static final String WS_ANNOTATION = "javax.xml.ws.WebService";
@@ -94,30 +95,35 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
     public WSITRefactoringPlugin(T refactoring) {
         this.refactoring = refactoring;
         this.treePathHandle = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class).toArray(new TreePathHandle[0]);
-        LOGGER.log(Level.FINE, "refactoring: " + refactoring.getClass().getName() + "; refactoring sources: " + Arrays.asList(treePathHandle));
+        LOGGER.log(Level.FINE, "refactoring: {0}; refactoring sources: {1}", new Object[]{refactoring.getClass().getName(), Arrays.asList(treePathHandle)});
     }
 
-    public void cancelRequest() {
-        // do nothing - WSIT refactoring operations are fast - no need to cancel
-    }
-
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
 
+    @Override
     public Problem checkParameters() {
         return null;
     }
 
+    @Override
     public Problem preCheck() {
         return null;
     }
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
+    }
     
+    @Override
     public Problem prepare(final RefactoringElementsBag refactoringElements) {
         LOGGER.log(Level.FINE, "prepare()");
 
         Problem result = null;
-        ClasspathInfo cpInfo = getClasspathInfo();
+        ClasspathInfo cpInfo = getClasspathInfo(refactoring);
         JavaSource source = JavaSource.create(cpInfo, treePathHandle[0].getFileObject());
                 fireProgressListenerStart(AbstractRefactoring.PREPARE, 5);
                 try {
@@ -217,10 +223,6 @@ abstract class WSITRefactoringPlugin<T extends AbstractRefactoring> extends Prog
     protected abstract RefactoringElementImplementation createMethodRE(String methodName, WSDLModel model);
     protected abstract RefactoringElementImplementation createClassRE(WSDLModel model);
 
-    protected final ClasspathInfo getClasspathInfo() {
-        return refactoring.getContext().lookup(ClasspathInfo.class);
-    }
-    
     protected static boolean isWebSvcFromWsdl(Element element){
         for (AnnotationMirror ann : element.getAnnotationMirrors()) {
             if (WS_ANNOTATION.equals(((TypeElement) ann.getAnnotationType().asElement()).getQualifiedName())) {

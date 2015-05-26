@@ -158,8 +158,7 @@ public class JSFRefactoringUtils {
         return JAVA_MIME_TYPE.equals(f.getMIMEType()); 
     }
     
-    public static Element resolveElement(final AbstractRefactoring refactoring, final TreePathHandle treePathHandle) {
-        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
+    public static Element resolveElement(final ClasspathInfo cpInfo, final AbstractRefactoring refactoring, final TreePathHandle treePathHandle) {
         final Element[] element = new Element[1];
         JavaSource source = JavaSource.create(cpInfo, new FileObject[]{treePathHandle.getFileObject()});
         try {

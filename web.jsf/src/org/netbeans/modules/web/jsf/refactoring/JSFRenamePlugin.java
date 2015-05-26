@@ -64,6 +64,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ import org.openide.text.PositionBounds;
  * @author Petr Pisl
  */
 
-public class JSFRenamePlugin implements RefactoringPlugin {
+public class JSFRenamePlugin extends JavaRefactoringPlugin {
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
@@ -90,25 +91,31 @@ public class JSFRenamePlugin implements RefactoringPlugin {
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         LOGGER.fine("preCheck() called.");                                      //NOI18N
         return null;
     }
     
+    @Override
     public Problem checkParameters() {
         LOGGER.fine("checkParameters() called.");                               //NOI18N
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         LOGGER.fine("fastCheckParameters() called.");                           //NOI18N
         return null;
     }
-    
-    public void cancelRequest() {
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
     
     @SuppressWarnings("unchecked")
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         if (semafor.get() == null) {
             semafor.set(new Object());
@@ -173,7 +180,7 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                 //renaming a class
                 Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                 if (project != null){
-                    Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                    Element resElement = JSFRefactoringUtils.resolveElement(getClasspathInfo(refactoring), refactoring, treePathHandle);
                     // issue #242249
                     if (resElement == null) {
                         return null;
