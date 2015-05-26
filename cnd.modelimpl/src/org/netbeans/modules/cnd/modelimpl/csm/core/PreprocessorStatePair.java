@@ -44,7 +44,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 
 /**
  * pair to represent preprocessor states information
@@ -52,10 +52,10 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
  */
 public final class PreprocessorStatePair {
 
-    public final APTPreprocHandler.State state;
+    public final PreprocHandler.State state;
     public final FilePreprocessorConditionState pcState;
 
-    public PreprocessorStatePair(APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
+    public PreprocessorStatePair(PreprocHandler.State ppState, FilePreprocessorConditionState pcState) {
         assert ppState != null;
         assert pcState != null;
         this.state = ppState;

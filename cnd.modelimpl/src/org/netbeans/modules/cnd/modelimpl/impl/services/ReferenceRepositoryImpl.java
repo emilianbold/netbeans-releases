@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
@@ -438,7 +438,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
          // use start file from one of states (i.e. first)
         CharSequence fileKey = FileContainer.getFileKey(file.getAbsolutePath(), false);
-        APTPreprocHandler.State ppState = file.getProjectImpl(false).getFirstValidPreprocState(fileKey);
+        PreprocHandler.State ppState = file.getProjectImpl(false).getFirstValidPreprocState(fileKey);
         return file.getLanguageFilter(ppState).getFilteredStream( new APTCommentsFilter(ts));
     }
 

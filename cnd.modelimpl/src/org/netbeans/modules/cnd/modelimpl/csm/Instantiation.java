@@ -1565,6 +1565,13 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
     public static boolean isInstantiatedType(CsmType type) {
         return type instanceof Type;
     }
+    
+    public static CsmInstantiation getInstantiatedTypeInstantiation(CsmType type) {
+        if (isInstantiatedType(type)) {
+            return ((Type) type).getInstantiation();
+        }
+        return null;
+    }
 
     public static List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
         if (isInstantiatedType(type)) {

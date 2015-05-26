@@ -40,8 +40,9 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.test.CndBaseTestCase;
 
 /**
@@ -55,28 +56,28 @@ public class FilePreprocessorDeadConditionStateTest extends CndBaseTestCase {
     }
 
     public void testDeadBlocksComparision() throws Exception {
-        FilePreprocessorConditionState.Builder stateBuilder1 = new FilePreprocessorConditionState.Builder("state1");
+        APTBasedPCStateBuilder stateBuilder1 = new APTBasedPCStateBuilder("state1");
         stateBuilder1.addBlockImpl(30, 60);
         stateBuilder1.addBlockImpl(10, 20);
         stateBuilder1.addBlockImpl(70, 80);
         FilePreprocessorConditionState state1 = stateBuilder1.build();
 
-        FilePreprocessorConditionState.Builder stateBuilder2 = new FilePreprocessorConditionState.Builder("state2");
+        APTBasedPCStateBuilder stateBuilder2 = new APTBasedPCStateBuilder("state2");
         stateBuilder2.addBlockImpl(10, 20);
         stateBuilder2.addBlockImpl(70, 80);
         FilePreprocessorConditionState state2 = stateBuilder2.build();
 
-        FilePreprocessorConditionState biggest = new FilePreprocessorConditionState.Builder("biggest").addBlockImpl(5, 90).build();
+        FilePreprocessorConditionState biggest = new APTBasedPCStateBuilder("biggest").addBlockImpl(5, 90).build();
 
-        FilePreprocessorConditionState state4 = new FilePreprocessorConditionState.Builder("state4").addBlockImpl(40, 50).build();
+        FilePreprocessorConditionState state4 = new APTBasedPCStateBuilder("state4").addBlockImpl(40, 50).build();
 
-        FilePreprocessorConditionState state5 = new FilePreprocessorConditionState.Builder("state5").addBlockImpl(10, 20).addBlockImpl(40, 50).build();
+        FilePreprocessorConditionState state5 = new APTBasedPCStateBuilder("state5").addBlockImpl(10, 20).addBlockImpl(40, 50).build();
 
-        FilePreprocessorConditionState state6 = new FilePreprocessorConditionState.Builder("state6").addBlockImpl(30, 40).addBlockImpl(50, 60).build();
+        FilePreprocessorConditionState state6 = new APTBasedPCStateBuilder("state6").addBlockImpl(30, 40).addBlockImpl(50, 60).build();
 
-        FilePreprocessorConditionState state7 = new FilePreprocessorConditionState.Builder("state7").addBlockImpl(50, 60).addBlockImpl(70, 80).build();
+        FilePreprocessorConditionState state7 = new APTBasedPCStateBuilder("state7").addBlockImpl(50, 60).addBlockImpl(70, 80).build();
 
-        FilePreprocessorConditionState empty = new FilePreprocessorConditionState.Builder("empty").build();
+        FilePreprocessorConditionState empty = new APTBasedPCStateBuilder("empty").build();
 
         assertTrue("state can replace itself " + state1, state1.isBetterOrEqual(state1));
         assertTrue("state can replace itself " + state2, state2.isBetterOrEqual(state2));

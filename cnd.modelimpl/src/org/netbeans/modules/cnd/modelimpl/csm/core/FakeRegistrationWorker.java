@@ -140,8 +140,13 @@ public class FakeRegistrationWorker {
                     if (impl == null) {
                         return;
                     }
-                    Thread.currentThread().setName("Fix registration "+file); // NOI18N
-                    impl.onProjectParseFinished(libsAlreadyParsed);
+                    String oldName = Thread.currentThread().getName();
+                    try {
+                      Thread.currentThread().setName("Fix registration "+file); // NOI18N
+                      impl.onProjectParseFinished(libsAlreadyParsed);
+                    } finally {
+                      Thread.currentThread().setName(oldName);
+                    }
                 }
             } finally {
                 countDownLatch.countDown();

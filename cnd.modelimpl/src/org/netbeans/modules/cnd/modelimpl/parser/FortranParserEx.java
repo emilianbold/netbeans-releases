@@ -162,8 +162,18 @@ public class FortranParserEx {
             t.printStackTrace(System.out);
         }
 
+//        StringBuilder b = new StringBuilder();
+//        for(Object t : tokens.getTokens()) {
+//            Token token = (Token)t;
+//            b.append(token.getType());
+//            b.append(' ');
+//            b.append(token.getText());
+//            b.append(' ');
+//            b.append(token.getLine());
+//            b.append('\n');
+//        }
+        
         parser.inputStreams = new Stack<>();
-
         parser.action = new IFortranParserAction() {
 
             // Proogram

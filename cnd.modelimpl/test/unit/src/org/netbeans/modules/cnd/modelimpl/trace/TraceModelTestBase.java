@@ -70,6 +70,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         super(testName);
     }
 
+    protected boolean isDumpingPPState() {
+        return getTraceModel().isDumpingPPState();
+    }
+
     protected TraceModel getTraceModel() {
         assert helper != null;
         return helper.getTraceModel();
@@ -261,13 +265,13 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         if (goldenErrFileName != null && !Boolean.getBoolean("cnd.skip.err.check")) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
             if (goldenErrFile.exists()) {
-                if (CndCoreTestUtils.diff(error, goldenErrFile, null)) {
+                if (diffErrorFiles(error, goldenErrFile, null)) {
                     errTheSame = false;
                     // copy golden
                     goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
                     CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
                     diffErrorFile = new File(workDir, goldenErrFileName + ".diff");
-                    CndCoreTestUtils.diff(error, goldenErrFile, diffErrorFile);
+                    diffErrorFiles(error, goldenErrFile, diffErrorFile);
                 }
             } else {
                 // golden err.file doesn't exist => err.file should be empty
@@ -279,13 +283,13 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File goldenDataFile = getGoldenFile(goldenDataFileName);
         File goldenDataFileCopy = null;
         File diffOutputFile = null;
-        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
+        if (diffGoldenFiles(isDumpingPPState(), output, goldenDataFile, null)) {
             outTheSame = false;
             // copy golden
             goldenDataFileCopy = new File(workDir, goldenDataFileName + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenDataFileCopy); // NOI18N
             diffOutputFile = new File(workDir, goldenDataFileName + ".diff");
-            CndCoreTestUtils.diff(output, goldenDataFile, diffOutputFile);
+            diffGoldenFiles(isDumpingPPState(), output, goldenDataFile, diffOutputFile);
         }
         if (outTheSame) {
             if (!errTheSame) {
