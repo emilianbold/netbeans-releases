@@ -114,6 +114,7 @@ public class ApplePopupFactory extends PopupFactory {
     public ApplePopupFactory() {
     }
     
+    @Override
     public Popup getPopup(Component owner, Component contents,
                           int x, int y) throws IllegalArgumentException {
         assert owner instanceof JComponent;
@@ -138,7 +139,9 @@ public class ApplePopupFactory extends PopupFactory {
     }
     
     private static final class NullPopup extends Popup {
+        @Override
         public void show() {}
+        @Override
         public void hide() {}
     }
     
@@ -163,11 +166,13 @@ public class ApplePopupFactory extends PopupFactory {
         public abstract boolean isShowing();
         protected abstract void doHide();
         
+        @Override
         public final void show() {
             prepareResources();
             doShow();
         }
         
+        @Override
         public final void hide() {
             doHide();
         }
@@ -196,6 +201,7 @@ public class ApplePopupFactory extends PopupFactory {
         }
 
         private Rectangle bounds = null;
+        @Override
         protected void prepareResources() {
             JComponent jc = (JComponent) owner;
             Container w = jc.getTopLevelAncestor();
@@ -224,14 +230,17 @@ public class ApplePopupFactory extends PopupFactory {
             contents.setBounds (p.x, p.y, d.width, d.height);
         }
         
+        @Override
         protected void doShow() {
             contents.setVisible (true);
         }
         
+        @Override
         public boolean isShowing() {
             return contents != null && contents.isShowing();
         }
         
+        @Override
         protected void doHide() {
             Container parent = contents.getParent();
             if (parent != null) {
@@ -251,10 +260,12 @@ public class ApplePopupFactory extends PopupFactory {
             super (owner, contents, x, y);
         }
         
+        @Override
         public boolean isShowing() {
             return window != null && window.isShowing();
         }
         
+        @Override
         void dispose() {
             if (window != null) {
                 checkInWindow (window);
@@ -263,6 +274,7 @@ public class ApplePopupFactory extends PopupFactory {
             super.dispose();
         }
         
+        @Override
         protected void prepareResources() {
             window = checkOutWindow();
             window.getContentPane().add (contents);
@@ -271,10 +283,12 @@ public class ApplePopupFactory extends PopupFactory {
             window.setBackground (new java.awt.Color (255, 255, 255, 0));
         }
         
+        @Override
         protected void doShow() {
             window.setVisible(true);
         }
         
+        @Override
         protected void doHide() {
             if (window != null) {
                 window.setVisible(false);
@@ -343,6 +357,7 @@ public class ApplePopupFactory extends PopupFactory {
         private String title = "none";
         HackedJWindow() {}
         
+        @Override
         public void addNotify() {
             super.addNotify();
             hackTitle();
