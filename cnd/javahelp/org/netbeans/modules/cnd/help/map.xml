@@ -405,5 +405,6 @@
 	<mapID target="stop_script" url="images/stop_script.gif"/>
 	<mapID target="sendto-vscript" url="SendTo/sendto-vscript.html"/>
 	<mapID target="RemoteVCS" url="WorkingWithCandC++Projects/RemoteVCS.html"/>
-        <mapID target="SavingTerminalSettings" url="WorkingWithCandC++Projects/SavingTerminalSettings.html"/>
+	<mapID target="SavingTerminalSettings" url="WorkingWithCandC++Projects/SavingTerminalSettings.html"/>
+	<mapID target="NavigateToBuildLog" url="EditingSourceFiles/NavigateToBuildLog.html"/>
 </map>

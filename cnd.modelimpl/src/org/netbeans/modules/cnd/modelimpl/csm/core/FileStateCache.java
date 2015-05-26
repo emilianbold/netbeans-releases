@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     private static final int CACHE_SIZE = 10;
     private static int stateCacheAttempt = 0;
     private static int stateCacheSuccessAttempt = 0;
-    private final Map<APTPreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<>();
+    private final Map<PreprocHandler.StateKey, Value> stateCache = new LinkedHashMap<>();
     private final ReadWriteLock stateCacheLock = new ReentrantReadWriteLock();
     private final FileImpl file;
 
@@ -72,15 +72,15 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
     /*package-local*/ FileStateCache(FileImpl file){
         this.file = file;
     }
-    void cacheVisitedState(APTPreprocHandler.State inputState, APTPreprocHandler outputHandler, FilePreprocessorConditionState pcState) {
+    void cacheVisitedState(PreprocHandler.State inputState, PreprocHandler outputHandler, FilePreprocessorConditionState pcState) {
         if (cacheStates && inputState.isCompileContext()) {
             stateCacheLock.writeLock().lock();
             try {
                 if ((stateCache.isEmpty() || APTHandlersSupport.getIncludeStackDepth(inputState) == 1) && isCacheableState(inputState)) {
                     if (stateCache.size() == CACHE_SIZE) {
                         int min = Integer.MAX_VALUE;
-                        APTPreprocHandler.StateKey key = null;
-                        for (Map.Entry<APTPreprocHandler.StateKey, Value> entry : stateCache.entrySet()){
+                        PreprocHandler.StateKey key = null;
+                        for (Map.Entry<PreprocHandler.StateKey, Value> entry : stateCache.entrySet()){
                             if (entry.getValue().value.get() == null) {
                                 key = entry.getKey();
                                 break;
@@ -100,13 +100,13 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         }
     }
 
-    /*package-local*/ PreprocessorStatePair getCachedVisitedState(APTPreprocHandler.State inputState) {
+    /*package-local*/ PreprocessorStatePair getCachedVisitedState(PreprocHandler.State inputState) {
         PreprocessorStatePair res = null;
         if (cacheStates && inputState.isCompileContext()) {
             if (TRACE) {stateCacheAttempt++;}
             int count = 0;
             stateCacheLock.readLock().lock();
-            APTPreprocHandler.StateKey key = null;
+            PreprocHandler.StateKey key = null;
             try {
                 if (isCacheableState(inputState)) {
                     key = createKey(inputState);
@@ -144,11 +144,11 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
         }
     }
 
-    private static APTPreprocHandler.StateKey createKey(APTPreprocHandler.State inputState){
+    private static PreprocHandler.StateKey createKey(PreprocHandler.State inputState){
         return APTHandlersSupport.getStateKey(inputState);
     }
 
-    private boolean isCacheableState(APTPreprocHandler.State inputState) {
+    private boolean isCacheableState(PreprocHandler.State inputState) {
         //return !APTHandlersSupport.isEmptyActiveMacroMap(inputState);
         return true;//APTHandlersSupport.getMacroSize(inputState) < MAX_KEY_SIZE;
     }

@@ -44,21 +44,30 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
@@ -70,18 +79,22 @@ import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTIncludeNext;
 import org.netbeans.modules.cnd.apt.structure.APTUndefine;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Unresolved;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileSystem;
 
@@ -92,12 +105,15 @@ import org.openide.filesystems.FileSystem;
  * @author Sergey Grinev
  * @author Vladimir Voskresensky
  */
-public class APTFindMacrosWalker extends APTSelfWalker {
+/*package*/ final class APTFindMacrosWalker extends APTSelfWalker {
     private final List<CsmReference> references = new ArrayList<>();
     private final CsmFile csmFile;
-    public APTFindMacrosWalker(APTFile apt, CsmFile csmFile, APTPreprocHandler preprocHandler, APTFileCacheEntry cacheEntry) {
+    private final Interrupter interrupter;
+    private APTFindMacrosWalker(APTFile apt, CsmFile csmFile, PreprocHandler preprocHandler, 
+            APTFileCacheEntry cacheEntry, Interrupter interrupter) {
         super(apt, preprocHandler, cacheEntry);
         this.csmFile = csmFile;
+        this.interrupter = interrupter;
     }
 
     @Override
@@ -162,7 +178,12 @@ public class APTFindMacrosWalker extends APTSelfWalker {
         super.onIncludeNext(apt);
     }
 
-    public List<CsmReference> collectMacros() {
+    @Override
+    protected boolean isStopped() {
+      return super.isStopped() || interrupter.cancelled();
+    }
+
+    private List<CsmReference> collectMacros() {
         TokenStream ts = super.getTokenStream();
         analyzeStream(ts, true);
         return references;
@@ -398,5 +419,77 @@ public class APTFindMacrosWalker extends APTSelfWalker {
         public CsmObject getClosestTopLevelObject() {
             return (kind == CsmReferenceKind.DECLARATION) ? getContainingFile() : getReferencedObject();
         }
+    }
+    
+    /*package*/ static List<CsmReference> getAPTMacroUsagesImpl(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
+      List<CsmReference> out = Collections.<CsmReference>emptyList();
+      APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+      if (apt != null) {
+        Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
+        if (interrupter.cancelled()) {
+          return out;
+        }
+        if (handlers.isEmpty()) {
+          DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
+          return Collections.<CsmReference>emptyList();
+        } else if (handlers.size() == 1) {
+          PreprocHandler handler = handlers.iterator().next();
+          PreprocHandler.State state = handler.getState();
+          // ask for concurrent entry if absent
+          APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
+          APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry, interrupter);
+          out = walker.collectMacros();
+          // remember walk info
+          fileImpl.setAPTCacheEntry(state, cacheEntry, false);
+        } else {
+          TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
+          for (PreprocHandler handler : handlers) {
+            // ask for concurrent entry if absent
+            PreprocHandler.State state = handler.getState();
+            APTFileCacheEntry cacheEntry = fileImpl.getAPTCacheEntry(state, Boolean.FALSE);
+            APTFindMacrosWalker walker = new APTFindMacrosWalker(apt, fileImpl, handler, cacheEntry, interrupter);
+            result.addAll(walker.collectMacros());
+            // remember walk info
+            fileImpl.setAPTCacheEntry(state, cacheEntry, false);
+          }
+          out = new ArrayList<>(result);
+        }
+      }
+      return out;
+    }
+    
+    /*package*/ static CsmOffsetable getGuardOffsetImpl(FileImpl fileImpl) {
+      assert !APTTraceFlags.USE_CLANK;
+        try {
+            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+
+            GuardBlockWalker guardWalker = new GuardBlockWalker(apt);
+            TokenStream ts = guardWalker.getTokenStream();
+            try {
+                Token token = ts.nextToken();
+                while (!APTUtils.isEOF(token)) {
+                    if (!APTUtils.isCommentToken(token)) {
+                        guardWalker.clearGuard();
+                        break;
+                    }
+                    token = ts.nextToken();
+                }
+            } catch (TokenStreamException ex) {
+                guardWalker.clearGuard();
+            }
+
+            Token guard = guardWalker.getGuard();
+            if (guard != null) {
+                if (guard instanceof APTToken) {
+                    APTToken aptGuard = ((APTToken) guard);
+                    return new Offsetable(fileImpl, aptGuard.getOffset(), aptGuard.getEndOffset());
+                }
+            }
+        } catch (FileNotFoundException ex) {
+            // file could be removed
+        } catch (IOException ex) {
+            System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+        }
+        return null;
     }
 }

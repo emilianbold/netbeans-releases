@@ -45,7 +45,9 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.Collection;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**
@@ -261,15 +263,19 @@ public class FileModel2Test extends TraceModelTestBase {
     }
 
     public void testIZ147284isDefined() throws Exception {
+        if (APTTraceFlags.USE_CLANK) {
+          // this is the test for non-clank mode only
+          return;
+        }
         // IZ#147284 APTMacroCallback.isDefined(CharSequence) ignores #undef
         String base = "iz147284_is_defined";
         performTest(base + ".cc");
         FileImpl fileImpl = findFile(base + ".h");
         assertNotNull(fileImpl);
-        Collection<APTPreprocHandler> handlers = fileImpl.getFileContainerOwnPreprocHandlersToDump();
+        Collection<PreprocHandler> handlers = fileImpl.getFileContainerOwnPreprocHandlersToDump();
         assertEquals(handlers.size(), 1);
         String macro = "MAC";
-        assertFalse(macro + " should be undefined!", handlers.iterator().next().getMacroMap().isDefined(macro));
+        assertFalse(macro + " should be undefined!", ((APTMacroCallback)handlers.iterator().next().getMacroMap()).isDefined(macro));
     }
 
     public void testIZ147574() throws Exception {

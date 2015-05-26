@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -73,6 +74,15 @@ public final class APTLiteIdToken extends APTTokenAbstact {
     public APTLiteIdToken(int offset, int column, int line) {
         this.offset = offset;
         columnLineType = ((column & MAX_COL)<<LINE_BITS) + (line & MAX_LINE);
+        assert column == getColumn();
+        assert line == getLine();
+    }
+    public APTLiteIdToken(int offset, int column, int line, CharSequence text) {
+        this.offset = offset;
+        columnLineType = ((column & MAX_COL)<<LINE_BITS) + (line & MAX_LINE);
+        assert text != null;
+        assert CharSequences.isCompact(text);
+        this.text = TextCache.getManager().getString(text);
         assert column == getColumn();
         assert line == getLine();
     }

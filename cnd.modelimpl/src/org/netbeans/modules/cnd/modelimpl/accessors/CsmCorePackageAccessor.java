@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.accessors;
 
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -102,14 +101,13 @@ public abstract class CsmCorePackageAccessor {
     //  access to FileImpl methods
     ////////////////////////////////////////////////////////////////////////////
 
-    public abstract APTFile getFileAPT(FileImpl file, boolean full);
     public abstract int getErrorCount(FileImpl fileImpl);
     public abstract FileContent getFileContent(CsmParserProvider.CsmParserParameters descr);
     public abstract FileContent prepareLazyStatementParsingContent(FileImpl fileImpl);
     public abstract void releaseLazyStatementParsingContent(FileImpl fileImpl, FileContent tmpFileContent);
 
-    public abstract PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, APTPreprocHandler.State newState);
-    public abstract void cacheVisitedState(FileImpl csmFile, APTPreprocHandler.State newState, APTPreprocHandler preprocHandler, FilePreprocessorConditionState pcState);
+    public abstract PreprocessorStatePair getCachedVisitedState(FileImpl csmFile, PreprocHandler.State newState);
+    public abstract void cacheVisitedState(FileImpl csmFile, PreprocHandler.State newState, PreprocHandler preprocHandler, FilePreprocessorConditionState pcState);
     
     // access for tests
     public abstract void setFileImplTestHook(TraceModel.TestHook hook);
