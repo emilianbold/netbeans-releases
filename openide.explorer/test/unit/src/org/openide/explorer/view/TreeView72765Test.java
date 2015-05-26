@@ -120,7 +120,7 @@ public final class TreeView72765Test extends NbTestCase {
 
         ttv.addNotify();
 
-        assertNotNull("Initialize peer", ttv.getPeer());
+        assertTrue("Initialize peer", ttv.isDisplayable());
 
         ttv.invalidate();
         ttv.validate();
