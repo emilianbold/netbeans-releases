@@ -217,4 +217,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
         // Bug 251329 - Unexpected token if final occurs after trailing type specifier
         performTest("bug251329.cpp");
     }
+    
+    public void testBug252513() throws Exception {
+        // Bug 252513 - Broken parsing for lambdas with explicit capture list
+        performTest("bug252513.cpp");
+    }
 }
