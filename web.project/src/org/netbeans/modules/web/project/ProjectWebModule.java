@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -219,19 +218,8 @@ public final class ProjectWebModule extends J2eeModuleProvider
                 return;
             }
         }
-        // DialogDisplayer waits for the AWT thread, blocking the calling
-        // thread -- deadlock-prone, see issue #64888. therefore invoking
-        // only in the AWT thread
-        Runnable r = new Runnable() {
-            public void run() {
-                if (!SwingUtilities.isEventDispatchThread()) {
-                    SwingUtilities.invokeLater(this);
-                } else {
-                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-                }
-            }
-        };
-        r.run();
+        // #240818
+        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
     
     public FileObject getDocumentBase () {
