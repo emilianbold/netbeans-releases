@@ -75,6 +75,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.jpa.refactoring.util.PositionBoundsResolver;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.loaders.DataObject;
@@ -88,12 +89,27 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Erno Mononen
  */
-public abstract class PersistenceXmlRefactoring implements JPARefactoring{
+public abstract class PersistenceXmlRefactoring extends JavaRefactoringPlugin {
     
     /**
      * The file objects representing the refactoring sources.
      */ 
     private Collection<? extends FileObject> refactoringSources;
+    
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+    
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    protected JavaSource getJavaSource(JavaRefactoringPlugin.Phase p) {
+        return null;
+    }
     
     /**
      * Gets the refactoring sources for this refactoring. Move class and safe delete
@@ -216,6 +232,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         return result[0];
     }
     
+    @Override
     public final Problem preCheck() {
         
         if (!shouldHandle()){
@@ -238,6 +255,7 @@ public abstract class PersistenceXmlRefactoring implements JPARefactoring{
         
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
         
         if (!shouldHandle()){

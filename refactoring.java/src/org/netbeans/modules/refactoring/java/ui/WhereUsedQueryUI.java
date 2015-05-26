@@ -66,7 +66,6 @@ import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
@@ -98,10 +97,6 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
 
     private WhereUsedQueryUI(TreePathHandle handle, Element el, List<Pair<Pair<String, Icon>, TreePathHandle>> classes) {
         this.query = new WhereUsedQuery(Lookups.singleton(handle));
-        // ClasspathInfo needs to be in context until all other modules change there
-        // implementation to use scopes #199779. This is used by at least JPA refactoring and
-        // API support.
-        this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(handle));
         this.element = handle;
         if (UIUtilities.allowedElementKinds.contains(el.getKind())) {
             elementHandle = ElementHandle.create(el);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,70 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.modules.j2ee.jpa.refactoring.moveclass.PersistenceXmlMoveClass;
-import org.netbeans.modules.j2ee.jpa.refactoring.rename.EntityRename;
-import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
-import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
-import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
-import org.netbeans.modules.j2ee.jpa.refactoring.whereused.PersistenceXmlWhereUsed;
+import org.netbeans.modules.j2ee.jpa.refactoring.rename.RelationshipMappingRename;
+import org.netbeans.modules.j2ee.jpa.refactoring.whereused.RelationshipMappingWhereUsed;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.openide.filesystems.FileObject;
 
 /**
- * A refactoring factory for creating JPA refactoring plugins.
  *
- * @author Erno Mononen
+ * @author ralph
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
-public class JPARefactoringFactory implements RefactoringPluginFactory{
-    
-    public JPARefactoringFactory() {
+@org.openide.util.lookup.ServiceProvider(service = RefactoringPluginFactory.class)
+public class RelationshipMappingRefactoringFactory implements RefactoringPluginFactory {
+
+    public RelationshipMappingRefactoringFactory() {
     }
-    
+
+    @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        
+
         FileObject targetFile = refactoring.getRefactoringSource().lookup(FileObject.class);
         NonRecursiveFolder pkg = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
         TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        
+
         boolean folder = targetFile != null && targetFile.isFolder();
         boolean javaPackage = pkg != null && RefactoringUtil.isOnSourceClasspath(pkg.getFolder());
         boolean javaFile = targetFile != null && RefactoringUtil.isJavaFile(targetFile);
         boolean javaMember = handle != null;
-        
+
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring rename = (RenameRefactoring) refactoring;
-            if (javaFile){
-                return new PersistenceXmlRename(rename);
-            } else if (javaPackage || folder){
-                return new PersistenceXmlPackageRename(rename);
-            } else if (javaMember){
-                return new EntityRename(rename);
+            if (!javaFile && !(javaPackage || folder) && javaMember) {
+                return new RelationshipMappingRename(rename);
             }
-        } else if (refactoring instanceof MoveRefactoring) {
-            MoveRefactoring move = (MoveRefactoring) refactoring;
-            return new PersistenceXmlMoveClass(move);
-        } else if (refactoring instanceof SafeDeleteRefactoring) {
-            SafeDeleteRefactoring safeDeleteRefactoring = (SafeDeleteRefactoring) refactoring;
-            return new PersistenceXmlSafeDelete(safeDeleteRefactoring);
         } else if (refactoring instanceof WhereUsedQuery) {
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            return new PersistenceXmlWhereUsed(whereUsedQuery);
+            return new RelationshipMappingWhereUsed(whereUsedQuery);
         }
-        
         return null;
     }
-    
 }
