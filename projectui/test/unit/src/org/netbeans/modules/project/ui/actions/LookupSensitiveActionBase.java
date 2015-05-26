@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.project.ui.actions;
 
-import java.awt.Component;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -153,9 +152,9 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
         JMenuItem item = item(instance, menu);
         JMenu jmenu = new JMenu();
         jmenu.addNotify();
-        assertNotNull("Peer created", peer(jmenu));
+        assertTrue("Peer created", jmenu.isDisplayable());
         jmenu.getPopupMenu().addNotify();
-        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+        assertTrue("Peer for popup", jmenu.getPopupMenu().isDisplayable());
         
         item.addPropertyChangeListener(this);
         jmenu.add(item);
@@ -269,11 +268,6 @@ public abstract class LookupSensitiveActionBase extends NbTestCase implements Pr
             change++;
             return;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    private Object peer(Component menu) {
-        return menu.getPeer();
     }
 
 }
