@@ -51,6 +51,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -356,8 +357,9 @@ public class ApplePopupFactory extends PopupFactory {
                     //Later we will use it to identify the right window in
                     //the array of windows owned by the application.
                     //This ain't pretty.
-                    @SuppressWarnings("deprecation")
-                    Object o = getPeer();
+                    Field f = Component.class.getDeclaredField("peer"); // NOI18N
+                    f.setAccessible(true);
+                    Object o = f.get(this);
                     if (o != null) {
                         Method m = o.getClass().getDeclaredMethod ("setTitle", 
                                 new Class[] { String.class });
