@@ -169,7 +169,7 @@ public final class GoToJavaSourceProvider extends GoToSourceProvider {
     })
     public boolean openSource(final Lookup.Provider project, final String className, final String methodName, final String signature, final int line) {        
         
-        String normalizedClassName = className.replace("[", "").replace("]", "").replace("/", "."); // NOI18N // TODO: handle $?
+        String normalizedClassName = className.replace("[", "").replace("]", "").replace('/', '.'); // NOI18N // TODO: handle $?
         if (VMUtils.isPrimitiveType(normalizedClassName)) {
             ProfilerDialogs.displayWarning(Bundle.MSG_CannotShowPrimitive());
             return true;
