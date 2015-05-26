@@ -1614,12 +1614,18 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 if (instantiationHappened() && isNestedType(instantiatedType)) { // paranoia
-                    instantiatedType = createType(instantiatedType, instantiation, templateParamResolver);
+                    CsmInstantiation alteredInstantiation = templateParamResolver.alterInstantiation(instantiation);
+                    if (alteredInstantiation != null) {
+                        instantiatedType = createType(instantiatedType, alteredInstantiation, templateParamResolver);
+                    }
                 }                
             } else if (type instanceof NestedTemplateParameterType) {
                 NestedTemplateParameterType prev = (NestedTemplateParameterType) type;
                 if (!instantiationHappened() && isNestedType(prev.instantiatedType)) { // paranoia
-                    instantiatedType = createType(prev.instantiatedType, instantiation, templateParamResolver);
+                    CsmInstantiation alteredInstantiation = templateParamResolver.alterInstantiation(instantiation);
+                    if (alteredInstantiation != null) {
+                        instantiatedType = createType(prev.instantiatedType, alteredInstantiation, templateParamResolver);
+                    }
                 }
             }
         }        
@@ -1633,12 +1639,18 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             
             if (CsmKindUtilities.isTemplateParameterType(type)) {
                 if (instantiationHappened() && CsmKindUtilities.isFunctionPointerType(instantiatedType)) {
-                    instantiatedType = createType(instantiatedType, instantiation, templateParamResolver);
+                    CsmInstantiation alteredInstantiation = templateParamResolver.alterInstantiation(instantiation);
+                    if (alteredInstantiation != null) {
+                        instantiatedType = createType(instantiatedType, alteredInstantiation, templateParamResolver);
+                    }
                 }                
             } else if (type instanceof FunPtrTemplateParameterType) {
                 FunPtrTemplateParameterType prev = (FunPtrTemplateParameterType) type;
                 if (!instantiationHappened() && CsmKindUtilities.isFunctionPointerType(prev.instantiatedType)) {
-                    instantiatedType = createType(prev.instantiatedType, instantiation, templateParamResolver);
+                    CsmInstantiation alteredInstantiation = templateParamResolver.alterInstantiation(instantiation);
+                    if (alteredInstantiation != null) {
+                        instantiatedType = createType(prev.instantiatedType, alteredInstantiation, templateParamResolver);
+                    }
                 }
             }
         }        
@@ -2724,6 +2736,51 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
             }
             return null;  
         }       
+        
+        // TODO: here is the only place where instantiations are created with incomplete mappings! 
+        // Think if it can affect something!
+        //
+        // Method creates new instantiation with altered mapping. New mapping do not contain
+        // already resolved template parameters and parameters after them.
+        public CsmInstantiation alterInstantiation(CsmInstantiation instantiation)  {
+            if (!lastResolvedParameters.isEmpty() && CsmKindUtilities.isTemplate(instantiation.getTemplateDeclaration())) {
+                CsmTemplateParameter firstResolved = null;
+                CsmTemplateParameter firstParam = null;
+                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = instantiation.getMapping();
+                for (CsmTemplateParameter templateParam : mapping.keySet()) {
+                    if (lastResolvedParameters.contains(templateParam)) {
+                        if (firstResolved == null) {
+                            firstResolved = templateParam;
+                        } else if (templateParam.getStartOffset() <= firstResolved.getStartOffset()) {
+                            firstResolved = templateParam;
+                        }
+                    }
+                    if (firstParam == null) {
+                        firstParam = templateParam;
+                    } else if (templateParam.getStartOffset() <= firstParam.getStartOffset()) {
+                        firstParam = templateParam;
+                    }
+                }
+                if (firstResolved == null) {
+                    // must be assert firstResolved != null instead of this
+                    return instantiation;
+                } else if (firstResolved != firstParam) {
+                    Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
+                    for (Map.Entry<CsmTemplateParameter, CsmSpecializationParameter> entry : mapping.entrySet()) {
+                        if (entry.getKey().getStartOffset() < firstResolved.getStartOffset()) {
+                            newMapping.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                    CsmObject instantiated = create((CsmTemplate) instantiation.getTemplateDeclaration(), newMapping);
+                    if (CsmKindUtilities.isInstantiation(instantiated)) {
+                        return (CsmInstantiation) instantiated;
+                    }
+                } else {
+                    return null;
+                }
+            }
+            return instantiation;
+        }
 
         @Override
         protected TemplateParameterResolver clone() {
