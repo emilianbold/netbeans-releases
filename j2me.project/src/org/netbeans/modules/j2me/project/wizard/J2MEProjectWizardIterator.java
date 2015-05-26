@@ -82,7 +82,7 @@ public class J2MEProjectWizardIterator implements WizardDescriptor.ProgressInsta
     static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
     static final String JDK_PLATFORM = "jdk"; //NOI18N
     static final String PLATFORM = "platform"; //NOI18N
-    static final String DEVICE = "device"; //NOI18N
+    public static final String DEVICE = "device"; //NOI18N
     static final String CONFIGURATION = "config"; //NOI18N
     static final String PROFILE = "profile"; //NOI18N
     static final String OPTIONAL_API = "optionalApi"; //NOI18N
