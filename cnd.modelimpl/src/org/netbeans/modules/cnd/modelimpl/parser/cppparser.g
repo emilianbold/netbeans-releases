@@ -494,11 +494,15 @@ tokens {
                 if (TraceFlags.DEBUG) {
                     e.printStackTrace(System.err);
                 } else {
-                    super.reportError(e);
+                    doReportError(e);
                 }
 	    }
 	    errorCount++;
 	}
+
+	public void doReportError(RecognitionException e) {
+            super.reportError(e);
+        }
 
 	public void reportError(String s) {
 	    if (reportErrors) {

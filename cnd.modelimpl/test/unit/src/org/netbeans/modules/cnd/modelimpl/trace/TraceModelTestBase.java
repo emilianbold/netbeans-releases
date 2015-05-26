@@ -244,9 +244,24 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         File workDir = getWorkDir();
 
         File output = new File(workDir, goldenDataFileName);
-        PrintStream streamOut = new PrintStream(output);
+        PrintStream streamOut = new PrintStream(output) {
+
+            @Override
+            public void print(String s) {
+                // fake override to easy debug model tests
+                super.print(s);
+            }
+        };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error);
+        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error) {
+
+            @Override
+            public void print(String s) {
+                // fake override to easy debug model tests
+                super.print(s);
+            }
+
+        };
         try {
             doTest(args, streamOut, streamErr, params);
         } finally {
