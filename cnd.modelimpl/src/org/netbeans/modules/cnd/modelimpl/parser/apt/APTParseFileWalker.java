@@ -61,10 +61,10 @@ import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTPragma;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
@@ -118,7 +118,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private final CsmCorePackageAccessor csmCorePackageAccessor;
 
 
-    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
+    public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, PreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
         this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
@@ -158,13 +158,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return getTokenStream(true);
     }
 
-    public TokenStream getTokenStream(boolean filtered) {
+    public TokenStream getTokenStream(boolean filterOutComments) {
         setMode(ProjectBase.GATHERING_TOKENS);
         // get original
         TokenStream ts = super.getTokenStream();
         // expand macros
-        ts = new APTMacroExpandedStream(ts, getMacroMap(), !filtered);
-        if (filtered) {
+        ts = new APTMacroExpandedStream(ts, getMacroMap(), !filterOutComments);
+        if (filterOutComments) {
             // remove comments
             ts = new APTCommentsFilter(ts);
         }
@@ -225,7 +225,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected FileImpl includeAction(ProjectBase inclFileOwner, CharSequence inclPath, int mode, APTInclude apt, PostIncludeData postIncludeState) throws IOException {
         try {
-            APTPreprocHandler preprocHandler = getPreprocHandler();
+            PreprocHandler preprocHandler = getPreprocHandler();
             FileImpl includedFile = inclFileOwner.prepareIncludedFile(inclFileOwner, inclPath, preprocHandler);
             if (includedFile != null) {
                 ProjectBase startProject = getStartProject();
@@ -277,12 +277,12 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         private final ProjectBase startProject;
         private final FileImpl includedFile;
         private final CharSequence includedPath;
-        private final APTPreprocHandler preprocHandler;
+        private final PreprocHandler preprocHandler;
         private final PostIncludeData postIncludeState;
         private final int mode;
         private final boolean triggerParsingActivity;
 
-        public FileIncludeInParams(ProjectBase inclFileOwner, ProjectBase startProject, FileImpl includedFile, CharSequence includedFileName, APTPreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) {
+        public FileIncludeInParams(ProjectBase inclFileOwner, ProjectBase startProject, FileImpl includedFile, CharSequence includedFileName, PreprocHandler preprocHandler, PostIncludeData postIncludeState, int mode, boolean triggerParsingActivity) {
             this.inclFileOwner = inclFileOwner;
             this.startProject = startProject;
             this.includedFile = includedFile;
@@ -296,22 +296,22 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     private static final class FileIncludeOutParams {
         private final FileIncludeInParams inParams;
-        private final APTPreprocHandler.State ppState;
+        private final PreprocHandler.State ppState;
         private final FilePreprocessorConditionState pcState;
-        private final FilePreprocessorConditionState.Builder pcBuilder;
-        private final APTFileCacheEntry aptCacheEntry;
+        private final APTBasedPCStateBuilder pcBuilder;
+        private final APTFileCacheEntry aptCacheEntry;        
 
-        public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTFileCacheEntry aptCacheEntry) {
+        public FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTFileCacheEntry aptCacheEntry) {
             this(inParams, ppState, pcState, null, aptCacheEntry);
             assert pcState != null;
         }
 
-        public FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+        public FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, APTBasedPCStateBuilder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this(inParams, ppState, null, pcBuilder, aptCacheEntry);
             assert pcBuilder != null;
         }
 
-        private FileIncludeOutParams(FileIncludeInParams inParams, APTPreprocHandler.State ppState, FilePreprocessorConditionState pcState, FilePreprocessorConditionState.Builder pcBuilder, APTFileCacheEntry aptCacheEntry) {
+        private FileIncludeOutParams(FileIncludeInParams inParams, PreprocHandler.State ppState, FilePreprocessorConditionState pcState, APTBasedPCStateBuilder pcBuilder, APTFileCacheEntry aptCacheEntry) {
             this.inParams = inParams;
             this.ppState = ppState;
             this.pcState = pcState;
@@ -330,13 +330,13 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     }
 
     private FileIncludeOutParams includeFileWithTokens(FileIncludeInParams params) throws IOException {
-        APTFile aptFile = getCsmCorePackageAccessor().getFileAPT(params.includedFile, true);
+        APTFile aptFile = APTTokenStreamProducer.getFileAPT(params.includedFile, true);
         if (aptFile != null) {
-            APTPreprocHandler.State ppIncludeState = params.preprocHandler.getState();
+            PreprocHandler.State ppIncludeState = params.preprocHandler.getState();
             // ask for exclusive entry if absent
             APTFileCacheEntry aptCacheEntry = params.includedFile.getAPTCacheEntry(ppIncludeState, Boolean.TRUE);
             // gather macro map from all includes and fill preprocessor conditions state
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(params.includedFile.getAbsolutePath());
             APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptFile, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);
             FileContent inclFileContent = params.includedFile.prepareIncludedFileParsingContent();
             walker.setFileContent(inclFileContent);
@@ -366,7 +366,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         assert params.preprocHandler != null : "null preprocHandler for " + params.includedPath;
         assert params.includedFile != null : "null FileImpl for " + params.includedPath;
 
-        APTPreprocHandler.State newState = params.preprocHandler.getState();
+        PreprocHandler.State newState = params.preprocHandler.getState();
         PreprocessorStatePair cachedOut = null;
         APTFileCacheEntry aptCacheEntry = null;
         FilePreprocessorConditionState pcState = null;
@@ -392,7 +392,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         }
         // if not found in caches => visit include file
         if (!foundInCache) {
-            APTFile aptLight = getCsmCorePackageAccessor().getFileAPT(params.includedFile, false);
+            APTFile aptLight = APTTokenStreamProducer.getFileAPT(params.includedFile, false);
             if (aptLight == null) {
                 // in the case file was just removed
                 Utils.LOG.log(Level.INFO, "Can not find or build APT for file {0}", params.includedPath); //NOI18N
@@ -400,7 +400,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
 
             // gather macro map from all includes and fill preprocessor conditions state
-            FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(params.includedFile.getAbsolutePath());
+            APTBasedPCStateBuilder pcBuilder = new APTBasedPCStateBuilder(params.includedFile.getAbsolutePath());
             // ask for exclusive entry if absent
             aptCacheEntry = params.includedFile.getAPTCacheEntry(newState, Boolean.TRUE);
             APTParseFileWalker walker = new APTParseFileWalker(params.startProject, aptLight, params.includedFile, params.preprocHandler, params.triggerParsingActivity, pcBuilder, aptCacheEntry);

@@ -3593,20 +3593,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // iterate through local list
         GdbVariable[] new_local_vars = new GdbVariable[local_count];
         for (int vx = 0; vx < size; vx++) {
-            MIValue localvar = (MIValue) locals_list.get(vx);
-            GdbLocal loc = new GdbLocal(localvar);
-	    String var_name = loc.getName();
+            MIResult localvar = (MIResult) locals_list.get(vx);
+            String var_name = localvar.value().asConst().value();
             GdbVariable gv = variableBag.get(var_name,
                   false, VariableBag.FROM_LOCALS);
             if (gv == null) {
                 new_local_vars[vx] = new GdbVariable(this, localUpdater, null,
-                        var_name, loc.getType(), loc.getValue(), false);
+                        var_name, null, null, false);
                 createMIVar(new_local_vars[vx], false);
             } else {
-                if (loc.isSimple()) {
-                    gv.setValue(loc.getValue()); // update value
-                }
                 new_local_vars[vx] = gv;
+                evalMIVar(new_local_vars[vx]);
             }
         }
 

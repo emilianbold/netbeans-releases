@@ -77,6 +77,7 @@ public class FileImplOffsetsTest extends TraceModelTestBase {
     
     private void checkFileOffsetsConverting(final FileImpl file) {
         Collection<CsmOffsetableDeclaration> decls = file.getDeclarations();
+        assertEquals(decls.size(), 4);
         for (CsmOffsetableDeclaration csmOffsetableDeclaration : decls) {
             checkOffsetConverting(file, csmOffsetableDeclaration.getStartPosition());
             checkOffsetConverting(file, csmOffsetableDeclaration.getEndPosition());

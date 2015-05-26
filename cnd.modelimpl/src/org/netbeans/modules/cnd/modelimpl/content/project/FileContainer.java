@@ -61,9 +61,11 @@ import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.debug.DebugUtils;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
+import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
@@ -163,7 +165,7 @@ public class FileContainer extends ProjectComponent {
 	}
     }
 
-    public void putFile(FileImpl impl, APTPreprocHandler.State state) {
+    public void putFile(FileImpl impl, PreprocHandler.State state) {
         if (CndUtils.isDebugMode()) {
             checkConsistency();
         }
@@ -643,7 +645,7 @@ public class FileContainer extends ProjectComponent {
             }
         }
 
-        private FileEntry(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey, FileSystem fs, CharSequence canonicalFileKey) {
+        private FileEntry(CsmUID<CsmFile> fileNew, PreprocHandler.State state, CharSequence fileKey, FileSystem fs, CharSequence canonicalFileKey) {
             this.fileNew = fileNew;
             this.data = (state == null) ? null : new PreprocessorStatePair(state, FilePreprocessorConditionState.PARSING);
 //            if (state == null) {
@@ -687,7 +689,7 @@ public class FileContainer extends ProjectComponent {
 
         private static PreprocessorStatePair readStatePair(RepositoryDataInput input) throws IOException {
             if (input.readBoolean()) {
-                APTPreprocHandler.State state = null;
+                PreprocHandler.State state = null;
                 if (input.readBoolean()){
                     state = PersistentUtils.readPreprocState(input);
                 }
@@ -738,7 +740,7 @@ public class FileContainer extends ProjectComponent {
          * This should only be called if we are sure this is THE ONLY correct state:
          * e.g., when creating new file, when invalidating state of a *source* (not a header) file, etc
          */
-        public final synchronized void setState(APTPreprocHandler.State state, FilePreprocessorConditionState pcState) {
+        public final synchronized void setState(PreprocHandler.State state, FilePreprocessorConditionState pcState) {
             if (TraceFlags.TRACE_182342_BUG) {
                 new Exception("setState replacing:\n" + toString()).printStackTrace(System.err); //NOI18N
             }
@@ -970,8 +972,8 @@ public class FileContainer extends ProjectComponent {
                 return new ArrayList<>(array);
             }
         }
-
-        public synchronized Collection<APTPreprocHandler.State> getPrerocStates() {
+        
+        public synchronized Collection<PreprocHandler.State> getPrerocStates() {
             if (data == null) {
                 return Collections.emptyList();
             } else if(data instanceof PreprocessorStatePair) {
@@ -979,7 +981,7 @@ public class FileContainer extends ProjectComponent {
             } else {
                 @SuppressWarnings("unchecked")
                 Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>) data;
-                Collection<APTPreprocHandler.State> result = new ArrayList<>(pairs.size());
+                Collection<PreprocHandler.State> result = new ArrayList<>(pairs.size());
                 for (PreprocessorStatePair pair : pairs) {
                     result.add(pair.state);
                 }

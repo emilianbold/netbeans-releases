@@ -73,11 +73,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
         return null;
     }
 
-    public final void addNewPair(FilePreprocessorConditionState.Builder pcBuilder, TokenStream ts, APTLanguageFilter lang) {
-        // after the next call builder will be ready to create pc state
-        List<APTToken> tokens = APTUtils.toList(ts);
-        // Only now we can create pcState
-        FilePreprocessorConditionState pcState = pcBuilder.build();
+    public final void cacheTokens(FilePreprocessorConditionState pcState, List<APTToken> tokens, APTLanguageFilter lang) {
         TSData newData = new TSData(pcState, tokens, lang);
         cacheData.add(newData);
     }

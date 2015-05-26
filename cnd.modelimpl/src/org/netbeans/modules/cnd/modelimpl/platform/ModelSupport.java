@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,6 +64,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.project.NativeProjectSettings;
+import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.Installer;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
@@ -546,6 +548,16 @@ public class ModelSupport implements PropertyChangeListener {
         }
     }
 
+    /*package*/ Collection<APTFileBuffer> getUnsavedBuffers() {
+        Set<APTFileBuffer> res = new HashSet<>();
+        for (Collection<BufAndProj> coll : buffers.values()) {
+            for (BufAndProj bnp : coll) {
+                res.add(bnp.buffer);
+            }
+        }
+        return res;
+    }
+
     private static final class BufAndProj {
 
         public BufAndProj(FileBuffer buffer, ProjectBase project, NativeFileItem nativeFile, long lastModified) {
@@ -563,10 +575,10 @@ public class ModelSupport implements PropertyChangeListener {
         public final long lastModified;
     }
 
+    private final Map<DataObject, Collection<BufAndProj>> buffers = new ConcurrentHashMap<>();
+
     // remove as soon as TraceFlags.USE_PARSER_API becomes always true
     private class ModifiedObjectsChangeListener implements ChangeListener {
-
-        private final Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<>();
 
         private Collection<BufAndProj> getBufNP(DataObject dao) {
             Collection<BufAndProj> bufNPcoll = buffers.get(dao);
