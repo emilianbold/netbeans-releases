@@ -46,9 +46,14 @@
 package org.netbeans.modules.j2ee.jpa.refactoring.whereused;
 
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
@@ -65,6 +70,7 @@ import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.j2ee.persistence.provider.InvalidPersistenceXmlException;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.openide.util.Exceptions;
 
 /**
  * Handles renaming of the classes that are listed in <code>persistence.xml</code>.
@@ -80,33 +86,46 @@ public final class PersistenceXmlWhereUsed extends PersistenceXmlRefactoring {
     }
     
     @Override
-    public Problem prepare(RefactoringElementsBag refactoringElementsBag) {
-        Problem result = null;
-        TreePathHandle handle = whereUsedQuery.getRefactoringSource().lookup(TreePathHandle.class);
-        if (handle == null) { 
+    public Problem prepare(final RefactoringElementsBag refactoringElementsBag) {
+        final Problem[] result = {null};
+        final TreePathHandle handle = whereUsedQuery.getRefactoringSource().lookup(TreePathHandle.class);
+        if (handle == null) {
             return null;
         }
-        if(TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
-            Element resElement = handle.resolveElement(RefactoringUtil.getCompilationInfo(handle, whereUsedQuery));
-            TypeElement type = (TypeElement) resElement;
-            String clazz = type.getQualifiedName().toString();
-            for (FileObject each : getPersistenceXmls(handle.getFileObject())){
-                try{
-                    PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
-                    for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)){
-                        refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, handle.getFileObject(), pUDataObject, each));
+        if (TreeUtilities.CLASS_TREE_KINDS.contains(handle.getKind())) {
+            final ClasspathInfo cpInfo = getClasspathInfo(whereUsedQuery);
+            JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
+            try {
+                source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                    @Override
+                    public void cancel() {
                     }
-                } catch (InvalidPersistenceXmlException ex) {
-                    Problem newProblem =
-                            new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
 
-                    result = RefactoringUtil.addToEnd(newProblem, result);
-                }
-
+                    @Override
+                    public void run(CompilationController ci) throws Exception {
+                        Element resElement = handle.resolveElement(ci);
+                        TypeElement type = (TypeElement) resElement;
+                        String clazz = type.getQualifiedName().toString();
+                        for (FileObject each : getPersistenceXmls(handle.getFileObject())) {
+                            try {
+                                PUDataObject pUDataObject = ProviderUtil.getPUDataObject(each);
+                                for (PersistenceUnit persistenceUnit : getAffectedPersistenceUnits(pUDataObject, clazz)) {
+                                    refactoringElementsBag.add(getRefactoring(), getRefactoringElement(persistenceUnit, handle.getFileObject(), pUDataObject, each));
+                                }
+                            } catch (InvalidPersistenceXmlException ex) {
+                                Problem newProblem
+                                        = new Problem(false, NbBundle.getMessage(PersistenceXmlRefactoring.class, "TXT_PersistenceXmlInvalidProblem", ex.getPath()));
+                                result[0] = RefactoringUtil.addToEnd(newProblem, result[0]);
+                            }
+                        }
+                    }
+                }, false);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
-        } 
-        return result;
+        }
+        return result[0];
     }
     
     

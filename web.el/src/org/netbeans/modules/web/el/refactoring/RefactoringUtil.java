@@ -44,26 +44,16 @@
 package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.Node;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.web.el.ELElement;
-import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -73,33 +63,6 @@ import org.openide.util.Parameters;
 public final class RefactoringUtil {
 
     private RefactoringUtil() {
-    }
-
-    public static CompilationInfo getCompilationInfo(TreePathHandle handle, final AbstractRefactoring refactoring) {
-
-        CompilationInfo existing = refactoring.getRefactoringSource().lookup(CompilationInfo.class);
-        if (existing != null) {
-            return existing;
-        }
-        final ClasspathInfo cpInfo = refactoring.getContext().lookup(ClasspathInfo.class);
-        JavaSource source = JavaSource.create(cpInfo, new FileObject[]{handle.getFileObject()});
-        try {
-            source.runUserActionTask(new CancellableTask<CompilationController>() {
-
-                @Override
-                public void run(CompilationController co) throws Exception {
-                    co.toPhase(JavaSource.Phase.RESOLVED);
-                    refactoring.getContext().add(co);
-                }
-
-                @Override
-                public void cancel() {
-                }
-            }, false);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return refactoring.getContext().lookup(CompilationInfo.class);
     }
 
     /**

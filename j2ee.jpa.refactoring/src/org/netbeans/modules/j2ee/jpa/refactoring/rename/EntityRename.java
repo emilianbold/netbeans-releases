@@ -53,7 +53,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.jpa.refactoring.EntityAnnotationReference;
 import org.netbeans.modules.j2ee.jpa.refactoring.EntityAssociationResolver;
-import org.netbeans.modules.j2ee.jpa.refactoring.JPARefactoring;
 import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -61,6 +60,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScopes;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -76,7 +76,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Erno Mononen
  */
-public class EntityRename implements JPARefactoring {
+public class EntityRename extends JavaRefactoringPlugin {
 
     private final RenameRefactoring rename;
     private TreePathHandle treePathHandle;
@@ -88,6 +88,26 @@ public class EntityRename implements JPARefactoring {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+    
+    @Override
+    public Problem preCheck() {
+        return null;
+    }
+
+    @Override
+    public Problem fastCheckParameters() {
+        return null;
+    }
+    
+    @Override
+    public Problem checkParameters() {
+        return null;
+    }
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
 
     private PersistenceScope getPersistenceScope() {
@@ -139,11 +159,6 @@ public class EntityRename implements JPARefactoring {
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
-        return null;
-    }
-
-    @Override
-    public Problem preCheck() {
         return null;
     }
 
