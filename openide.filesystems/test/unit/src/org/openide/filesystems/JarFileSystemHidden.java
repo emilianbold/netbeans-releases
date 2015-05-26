@@ -63,7 +63,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
-import sun.security.tools.KeyTool;
+import sun.security.tools.keytool.Main;
 
 /**
  *
@@ -158,7 +158,7 @@ public class JarFileSystemHidden extends NbTestCase {
         }
         try {
             // create a key store
-            KeyTool.main(new String[]{"-genkey",
+            Main.main(new String[]{"-genkey",
                 "-alias", "t_alias",
                 "-keyalg", "RSA",
                 "-storepass", "testpass",
@@ -173,7 +173,7 @@ public class JarFileSystemHidden extends NbTestCase {
 
         // sign the jar
         try {
-            sun.security.tools.JarSigner.main(new String[]{
+            sun.security.tools.jarsigner.Main.main(new String[]{
                 "-keystore", keystoreFile.getAbsolutePath(),
                 "-storepass", "testpass",
                 jarFile.getAbsolutePath(),
