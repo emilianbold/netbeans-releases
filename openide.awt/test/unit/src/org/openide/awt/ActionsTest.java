@@ -439,20 +439,15 @@ public class ActionsTest extends NbTestCase {
         assertEquals(3, tc.getConnectCalled());
         tc.setActive(false);
     }
-
-    @SuppressWarnings("deprecation")
-    private static Object peer(Component menu) {
-        return menu.getPeer();
-    }
     
     public void testPopupTextIsTaken() throws Exception {
         Action action = new ActionsTest.TestAction();
         JMenuItem item = new JMenuItem();
         JMenu jmenu = new JMenu();
         jmenu.addNotify();
-        assertNotNull("Peer created", peer(jmenu));
+        assertTrue("Peer created", jmenu.isDisplayable());
         jmenu.getPopupMenu().addNotify();
-        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+        assertTrue("Peer for popup", jmenu.getPopupMenu().isDisplayable());
 
         action.putValue("popupText", "&Ahoj");
         action.putValue("menuText", "&Ble");
@@ -469,9 +464,9 @@ public class ActionsTest extends NbTestCase {
         JMenuItem item = new JMenuItem();
         JMenu jmenu = new JMenu();
         jmenu.addNotify();
-        assertNotNull("Peer created", peer(jmenu));
+        assertTrue("Peer created", jmenu.isDisplayable());
         jmenu.getPopupMenu().addNotify();
-        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+        assertTrue("Peer for popup", jmenu.getPopupMenu().isDisplayable());
 
         //action.putValue("popupText", "&Ahoj");
         action.putValue("menuText", "&Ble");
@@ -488,9 +483,9 @@ public class ActionsTest extends NbTestCase {
         JMenuItem item = new JMenuItem();
         JMenu jmenu = new JMenu();
         jmenu.addNotify();
-        assertNotNull("Peer created", peer(jmenu));
+        assertTrue("Peer created", jmenu.isDisplayable());
         jmenu.getPopupMenu().addNotify();
-        assertNotNull("Peer for popup", peer(jmenu.getPopupMenu()));
+        assertTrue("Peer for popup", jmenu.getPopupMenu().isDisplayable());
 
         //action.putValue("popupText", "&Ahoj");
         //action.putValue("menuText", "&Ble");
