@@ -171,6 +171,14 @@ public abstract class CsmInstantiationProvider {
     public abstract boolean isInstantiatedType(CsmType type);
     
     /**
+     * Returns the most outer (first) instantiation of the type
+     * 
+     * @param type
+     * @return instantiation or null
+     */
+    public abstract CsmInstantiation getInstantiatedTypeInstantiation(CsmType type);
+    
+    /**
      * Returns list of instantiations with which type is instantiated
      * 
      * @param type
@@ -333,6 +341,11 @@ public abstract class CsmInstantiationProvider {
         @Override
         public boolean isInstantiatedType(CsmType type) {
             return false;
+        }
+
+        @Override
+        public CsmInstantiation getInstantiatedTypeInstantiation(CsmType type) {
+            return null;
         }
 
         @Override

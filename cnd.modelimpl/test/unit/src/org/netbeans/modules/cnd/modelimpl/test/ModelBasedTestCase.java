@@ -41,7 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.test;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,6 +57,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.source.CndSourceTestUtilities;
@@ -61,6 +69,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -73,7 +82,7 @@ public class ModelBasedTestCase extends CndBaseTestCase {
     public ModelBasedTestCase(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -151,5 +160,106 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(fo), true, false);
         assertNotNull("Unresolved CsmFile for test file " + testSourceFile, csmFile);//NOI18N
         return csmFile;
-    }    
+    }
+
+    protected static boolean diffGoldenFiles(boolean isDumpingPPState, File toCheck, File goldenDataFile, File outDiffOrNull) throws IOException {
+        if (isDumpingPPState && APTTraceFlags.USE_CLANK) {
+            File filteredGoldenDataFile = goldenDataFile;
+            if (filteredGoldenDataFile.exists()) {
+                filteredGoldenDataFile = new File(toCheck.getParentFile(), goldenDataFile.getName() + ".no_macro");
+                filterOutMacroMapState(goldenDataFile, filteredGoldenDataFile);
+            }
+            return CndCoreTestUtils.diff(toCheck, filteredGoldenDataFile, outDiffOrNull);
+        } else {
+            return CndCoreTestUtils.diff(toCheck, goldenDataFile, outDiffOrNull);
+        }
+    }
+
+    protected static boolean diffErrorFiles(File toCheck, File goldenErrFile, File outDiffOrNull) throws IOException {
+        if (APTTraceFlags.USE_CLANK) {
+            File filteredGoldenErrFile = goldenErrFile;
+            File filteredToCheckErrFile = toCheck;
+            if (filteredGoldenErrFile.exists() && toCheck.exists()) {
+                filteredGoldenErrFile = new File(toCheck.getParentFile(), goldenErrFile.getName() + ".golden.no_failed_inc");
+                filteredToCheckErrFile = new File(toCheck.getParentFile(), toCheck.getName() + ".no_failed_inc");
+
+                filterOutFailedInclude(goldenErrFile, filteredGoldenErrFile);
+                filterOutFailedInclude(toCheck, filteredToCheckErrFile);
+            }
+            return CndCoreTestUtils.diff(filteredToCheckErrFile, filteredGoldenErrFile, outDiffOrNull);
+        } else {
+            return CndCoreTestUtils.diff(toCheck, goldenErrFile, outDiffOrNull);
+        }
+    }
+
+    private static void filterOutMacroMapState(File goldenDataFile, File filteredGoldenDataFile) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        boolean skip = false;
+        try (BufferedWriter writer = Files.newBufferedWriter(filteredGoldenDataFile.toPath(), charset)) {
+            try (BufferedReader reader = Files.newBufferedReader(goldenDataFile.toPath(), charset)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    if (skip) {
+                        if (isEndOfOwnMacroMap(line)) {
+                            skip = false;
+                            writer.write(line);
+                            writer.write('\n');
+                        }
+                    } else {
+                        writer.write(line);
+                        if (isStartOfOwnMacroMap(line)) {
+                            // Clank doesn't have own macros in state
+                            writer.write("\nMACROS (sorted 0):");
+                            skip = true;
+                        }
+                        writer.write('\n');
+                    }
+                    line = reader.readLine();
+                }
+            }
+        }
+    }
+
+    private static boolean isStartOfOwnMacroMap(String line) {
+        // see cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/APTFileMacroMap.java
+        // FileStateImpl.toString()
+        return line.trim().startsWith("Own Map:");
+    }
+
+    private static boolean isEndOfOwnMacroMap(String line) {
+        // skip till the first empty line
+        return line.trim().startsWith("System Map:");
+    }
+
+    private static void filterOutFailedInclude(File errFile, File filteredErrFile) throws IOException {
+        Charset charset = Charset.forName("UTF-8");
+        boolean skipTokenOrFileName = false;
+        try (BufferedWriter writer = Files.newBufferedWriter(filteredErrFile.toPath(), charset)) {
+            try (BufferedReader reader = Files.newBufferedReader(errFile.toPath(), charset)) {
+                String line = reader.readLine();
+                while (line != null) {
+                    if (skipTokenOrFileName) {
+                        skipTokenOrFileName = false;
+                    } else {
+                        writer.write(line);
+                        writer.write('\n');
+                        if (isStartOfFailedInclude(line)) {
+                            // Clank and APT has different messages, filter them out
+                            skipTokenOrFileName = true;
+                        }
+                    }
+                    line = reader.readLine();
+                }
+            }
+        }
+    }
+
+    private static boolean isStartOfFailedInclude(String line) {
+        // see cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/APTAbstractWalker.java
+        // onInclude
+        // vs.
+        // cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/clank/ClankPPCallback.java
+        // onInclusionDirective
+        return line.trim().startsWith("FAILED INCLUDE");
+    }
 }

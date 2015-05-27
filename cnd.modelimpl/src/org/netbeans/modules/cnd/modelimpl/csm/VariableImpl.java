@@ -269,11 +269,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             int curlyLevel = 0;
             int templateLevel = 0;
             int parenLevel = 0;
+            int squaresLevel = 0;
             
             List<CsmStatement> lambdas = new ArrayList<>();
             
             while (tok != null) {
-                if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {
+                if ((curlyLevel == 0 && templateLevel == 0 && parenLevel == 0 && squaresLevel == 0 && tok.getType() == CPPTokenTypes.COMMA) || tok.getType() == CPPTokenTypes.SEMICOLON) {
                     break;
                 }
                 if (tok.getType() != CPPTokenTypes.LCURLY) {
@@ -293,6 +294,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 }
                 if (tok.getType() != CPPTokenTypes.RPAREN) {
                     parenLevel--;
+                }
+                if (tok.getType() != CPPTokenTypes.LSQUARE) {
+                    squaresLevel++;
+                }
+                if (tok.getType() != CPPTokenTypes.RSQUARE) {
+                    squaresLevel--;
                 }
                 lastInitAst = tok;
                 

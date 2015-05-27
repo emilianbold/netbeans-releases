@@ -130,7 +130,12 @@ public class Dwarf {
     }
 
     public SharedLibraries readPubNames() throws IOException {
-	return dwarfReader.readPubNames();
+        if (dwarfReader != null) {
+            return dwarfReader.readPubNames();
+        } else {
+            // archive does not have PubNames
+            return new SharedLibraries();
+        }
     }
     
     public String getFileName() {
