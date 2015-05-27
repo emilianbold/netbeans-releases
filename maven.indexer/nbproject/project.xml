@@ -187,6 +187,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.indexer.api</package>
                 <package>org.netbeans.modules.maven.indexer.api.ui</package>
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
+                <package>org.netbeans.modules.maven.indexer.spi.impl</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/maven/indexer-core-5.1.1-patched.jar</runtime-relative-path>
