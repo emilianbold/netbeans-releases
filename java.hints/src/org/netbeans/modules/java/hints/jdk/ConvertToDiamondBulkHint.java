@@ -83,7 +83,7 @@ import org.openide.util.NbBundle;
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";
-    public static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args", "compiler.warn.diamond.redundant.args.1"));
+    public static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args"));
 
     //XXX: hack:
     public static boolean isHintEnabled() {

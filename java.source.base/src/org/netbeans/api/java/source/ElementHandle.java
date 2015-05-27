@@ -49,6 +49,7 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.util.Name;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
@@ -185,7 +186,7 @@ public final class ElementHandle<T extends Element> {
                        }
                    }
                 } else if (type != null) {
-                    return (T) new Symbol.MethodSymbol(0, jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
+                    return (T) new Symbol.MethodSymbol(0, (Name) jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
                 } else 
                     log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind);  // NOI18N
                 break;
@@ -227,7 +228,7 @@ public final class ElementHandle<T extends Element> {
                         }
                     }
                 } else if (type != null) {
-                    return (T) new Symbol.VarSymbol(0, jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
+                    return (T) new Symbol.VarSymbol(0, (Name) jt.getElements().getName(this.signatures[1]), Symtab.instance(jt.getContext()).unknownType, (Symbol)type);
                 } else 
                     log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind); // NOI18N
                 break;
@@ -618,7 +619,7 @@ public final class ElementHandle<T extends Element> {
             return Symtab.instance(jt.getContext()).arrayClass;
         }
         else {
-            final JavacElements elements = jt.getElements();                    
+            final JavacElements elements = (JavacElements) jt.getElements();                    
             return (TypeElement) elements.getTypeElementByBinaryName(signature);
         }
     }

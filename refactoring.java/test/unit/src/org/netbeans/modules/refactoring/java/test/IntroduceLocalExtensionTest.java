@@ -766,6 +766,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "package t;\n"
                 + "\n"
                 + "import java.io.Serializable;\n"
+                + "import java.time.Instant;\n"
                 + "import java.util.Date;\n"
                 + "\n"
                 + "/**\n"
@@ -907,6 +908,14 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        return delegate.getTimezoneOffset();\n"
                 + "    }\n"
                 + "\n"
+                + "    public static DateExt from(Instant instnt) {\n"
+                + "        return new DateExt(Date.from(instnt));\n"
+                + "    }\n"
+                + "\n"
+                + "    public Instant toInstant() {\n"
+                + "        return delegate.toInstant();\n"
+                + "    }\n"
+                + "\n"
                 + "    public boolean equals(Object o) {\n"
                 + "        Object target = o;\n"
                 + "        if (o instanceof DateExt) {\n"
@@ -936,10 +945,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("package t;")
                 .append("\n").append("")
                 .append("\n").append("import java.util.Collection;")
+                .append("\n").append("import java.util.Comparator;")
                 .append("\n").append("import java.util.Iterator;")
                 .append("\n").append("import java.util.List;")
                 .append("\n").append("import java.util.ListIterator;")
                 .append("\n").append("import java.util.Objects;")
+                .append("\n").append("import java.util.Spliterator;")
+                .append("\n").append("import java.util.function.Consumer;")
+                .append("\n").append("import java.util.function.Predicate;")
+                .append("\n").append("import java.util.function.UnaryOperator;")
+                .append("\n").append("import java.util.stream.Stream;")
                 .append("\n").append("")
                 .append("\n").append("/**")
                 .append("\n").append(" *")
@@ -984,6 +999,22 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 sb1.append("\n").append("")
                 .append("\n").append("    public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
+                .append("\n").append("    @Override public void forEach(Consumer<? super E> cnsmr) {")
+                .append("\n").append("        delegate.forEach(cnsmr);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public boolean removeIf(Predicate<? super E> prdct) {")
+                .append("\n").append("        return delegate.removeIf(prdct);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Stream<E> stream() {")
+                .append("\n").append("        return delegate.stream();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Stream<E> parallelStream() {")
+                .append("\n").append("        return delegate.parallelStream();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
                 .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
@@ -998,6 +1029,18 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
                 .append("\n").append("        return delegate.toString();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public void replaceAll(UnaryOperator<E> uo) {")
+                .append("\n").append("        delegate.replaceAll(uo);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public void sort(Comparator<? super E> cmprtr) {")
+                .append("\n").append("        delegate.sort(cmprtr);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Spliterator<E> spliterator() {")
+                .append("\n").append("        return delegate.spliterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public Iterator<E> iterator() {")
@@ -1338,9 +1381,15 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("package t;")
                 .append("\n").append("")
                 .append("\n").append("import java.util.Collection;")
+                .append("\n").append("import java.util.Comparator;")
                 .append("\n").append("import java.util.Iterator;")
                 .append("\n").append("import java.util.List;")
                 .append("\n").append("import java.util.ListIterator;")
+                .append("\n").append("import java.util.Spliterator;")
+                .append("\n").append("import java.util.function.Consumer;")
+                .append("\n").append("import java.util.function.Predicate;")
+                .append("\n").append("import java.util.function.UnaryOperator;")
+                .append("\n").append("import java.util.stream.Stream;")
                 .append("\n").append("")
                 .append("\n").append("/**")
                 .append("\n").append(" *")
@@ -1383,6 +1432,22 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("    }");
                 sb1.append("\n").append("public static final MyList[] wrap(SingleList... singleLists) { return Arrays.stream(singleLists).map((SingleList t) -> new t.MyList(t)).toArray(t.MyList[]::new); }");
                 sb1.append("\n").append("")
+                .append("\n").append("    @Override public void forEach(Consumer<? super E> cnsmr) {")
+                .append("\n").append("        delegate.forEach(cnsmr);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public boolean removeIf(Predicate<? super E> prdct) {")
+                .append("\n").append("        return delegate.removeIf(prdct);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Stream<E> stream() {")
+                .append("\n").append("        return delegate.stream();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Stream<E> parallelStream() {")
+                .append("\n").append("        return delegate.parallelStream();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
                 .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
                 .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
@@ -1397,6 +1462,18 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
                 .append("\n").append("        return delegate.toString();")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public void replaceAll(UnaryOperator<E> uo) {")
+                .append("\n").append("        delegate.replaceAll(uo);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public void sort(Comparator<? super E> cmprtr) {")
+                .append("\n").append("        delegate.sort(cmprtr);")
+                .append("\n").append("    }");
+                sb1.append("\n").append("")
+                .append("\n").append("    @Override public Spliterator<E> spliterator() {")
+                .append("\n").append("        return delegate.spliterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public Iterator<E> iterator() {")
@@ -1726,8 +1803,8 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
     
     public void testNameClash() throws Exception {
         writeFilesAndWaitForScan(src,
-                new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { List<String> lijst = new ArrayList<String>(); } }"));
-        performIntroduceLocalExtension("ArrayList", false, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+                new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { Exception ex = new IllegalFormatException(); } }"));
+        performIntroduceLocalExtension("IllegalFormatException", false, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
         StringBuilder sb1 = new StringBuilder();
         //<editor-fold defaultstate="collapsed" desc="Result">
         sb1.append("/*")
@@ -1735,32 +1812,18 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         .append("\n").append(" */")
         .append("\n").append("package t;")
         .append("\n").append("")
-        .append("\n").append("import java.util.Collection;")
-        .append("\n").append("")
         .append("\n").append("/**")
         .append("\n").append(" *")
         .append("\n").append(" * @author junit")
         .append("\n").append(" */")
-        .append("\n").append("public class ArrayList<E> extends java.util.ArrayList<E> {")
-        .append("\n").append("")
-        .append("\n").append("    public ArrayList(int arg0) {")
-        .append("\n").append("        super(arg0);")
-        .append("\n").append("    }")
-        .append("\n").append("")
-        .append("\n").append("    public ArrayList() {")
-        .append("\n").append("        super();")
-        .append("\n").append("    }")
-        .append("\n").append("")
-        .append("\n").append("    public ArrayList(Collection<? extends E> arg0) {")
-        .append("\n").append("        super(arg0);")
-        .append("\n").append("    }")
+        .append("\n").append("public class IllegalFormatException extends java.util.IllegalFormatException {")
         .append("\n").append("")
         .append("\n").append("}")
         .append("\n");
         //</editor-fold>
         verifyContent(src,
-                new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { List<String> lijst = new t.ArrayList<String>(); } }"),
-                new File("t/ArrayList.java", sb1.toString()));
+                new File("t/A.java", "package t; import java.util.*; public class A { public static void main(String[] args) { Exception ex = new t.IllegalFormatException(); } }"),
+                new File("t/IllegalFormatException.java", sb1.toString()));
     }
     
     private void performIntroduceLocalExtensionInterface(final String source, final String name, final boolean wrap, final boolean replace, final String packageName, final IntroduceLocalExtensionRefactoring.Equality equality, Problem... expectedProblems) throws Exception {

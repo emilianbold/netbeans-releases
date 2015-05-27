@@ -48,6 +48,7 @@ import com.sun.javadoc.ClassDoc;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Kinds;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.PackageSymbol;
@@ -429,15 +430,14 @@ public class JavadocEnv extends DocEnv {
             TypeSymbol s = sym;
             while(s != null && st.hasMoreTokens()) {
                 Name clsName = nameTable.fromString(st.nextToken());
-                com.sun.tools.javac.code.Scope.Entry e = s.members().lookup(clsName);
-                s = null;
-                while (e.scope != null) {
-                    if (e.sym.kind == Kinds.TYP && (e.sym.flags_field & Flags.SYNTHETIC) == 0) {
-                        s = (TypeSymbol)e.sym;
+                TypeSymbol ts = null;
+                for (Symbol symbol : s.members().getSymbolsByName(clsName)) {
+                    if (symbol.kind == Kinds.Kind.TYP && (symbol.flags_field & Flags.SYNTHETIC) == 0) {
+                        ts = (TypeSymbol)symbol;
                         break;
                     }
-                    e = e.next();
                 }
+                s = ts;
             }
             return s instanceof ClassSymbol ? env.getClassDoc((ClassSymbol)s) : null;
         }

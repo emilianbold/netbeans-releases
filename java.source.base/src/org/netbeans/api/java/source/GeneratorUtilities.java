@@ -84,13 +84,12 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.ClassFinder;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Scope.Entry;
 import com.sun.tools.javac.code.Scope.StarImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -947,10 +946,10 @@ public final class GeneratorUtilities {
         JCCompilationUnit jcut = (JCCompilationUnit)cut;
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
         if (jcut.starImportScope != null) {
-            importScope.importAll(((JCCompilationUnit)cut).starImportScope);
+            importScope.prependSubScope(((JCCompilationUnit)cut).starImportScope);
         }
         if (jcut.packge != null) {
-            importScope.importAll(jcut.packge.members_field);
+            importScope.prependSubScope(jcut.packge.members_field);
         }
         for (Element e : elementsToImport) {
             boolean isStatic = false;
@@ -1081,9 +1080,9 @@ public final class GeneratorUtilities {
         Set<Element> explicitNamedImports = new HashSet<Element>();
         for (Element element : elementsToImport) {
             if (element.getKind().isClass() || element.getKind().isInterface()) {
-                for (Entry e = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName()); e.scope != null; e = e.next()) {
-                    if (e.sym.getKind().isClass() || e.sym.getKind().isInterface()) {
-                        if (e.sym != element) {
+                for (Symbol sym : importScope.getSymbolsByName((com.sun.tools.javac.util.Name)element.getSimpleName())) {
+                    if (sym.getKind().isClass() || sym.getKind().isInterface()) {
+                        if (sym != element) {
                             explicitNamedImports.add(element);
                         }
                         // break if explicitNameImport was added, or when the symbol is correctly resolved.
@@ -1097,8 +1096,8 @@ public final class GeneratorUtilities {
             if (entry.getValue() == -1) {
                 for (Element element : entry.getKey().getEnclosedElements()) {
                     if (element.getKind().isClass() || element.getKind().isInterface()) {
-                        Entry starEntry = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
-                        if (starEntry.scope != null) {
+                        Symbol sym = importScope.findFirst((com.sun.tools.javac.util.Name)element.getSimpleName());
+                        if (sym != null) {
                             TypeElement te = null;
                             for (Element e : elementsToImport) {
                                 if ((e.getKind().isClass() || e.getKind().isInterface()) && element.getSimpleName() == e.getSimpleName()) {
@@ -1123,7 +1122,7 @@ public final class GeneratorUtilities {
                 }
             }
             if (entry.getValue() < 0 && entry.getKey() instanceof Symbol)
-                importScope.importAll(((Symbol)entry.getKey()).members());
+                importScope.prependSubScope(((Symbol)entry.getKey()).members());
         }
 
         // sort the elements to import
@@ -1198,7 +1197,7 @@ public final class GeneratorUtilities {
         }
         
         // return a copy of the unit with changed imports section
-        return make.CompilationUnit(cut.getPackageAnnotations(), cut.getPackageName(), imports, cut.getTypeDecls(), cut.getSourceFile());
+        return make.CompilationUnit(cut.getPackage(), imports, cut.getTypeDecls(), cut.getSourceFile());
     }
 
     /**
@@ -1627,7 +1626,7 @@ public final class GeneratorUtilities {
         if (element == null)
             element = elements.getPackageElement(fqn);
         if (element == null)
-            element = ClassReader.instance(copy.impl.getJavacTask().getContext()).enterClass((com.sun.tools.javac.util.Name)elements.getName(fqn));
+            element = ClassFinder.instance(copy.impl.getJavacTask().getContext()).loadClass((com.sun.tools.javac.util.Name)elements.getName(fqn));
         return element;
     }
     

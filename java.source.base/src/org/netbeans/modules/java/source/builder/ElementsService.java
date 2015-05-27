@@ -121,11 +121,10 @@ public class ElementsService {
         if ((m.flags() & Flags.STATIC) == 0) {
             ClassSymbol owner = (ClassSymbol) m.owner;
             for (Type sup = jctypes.supertype(m.owner.type);
-                 sup.hasTag(TypeTag.CLASS);
-                 sup = jctypes.supertype(sup)) {
-                for (Scope.Entry e = sup.tsym.members().lookup(m.name);
-                     e.scope != null; e = e.next()) {
-                    if (m.overrides(e.sym, owner, jctypes, true)) 
+                    sup.hasTag(TypeTag.CLASS);
+                    sup = jctypes.supertype(sup)) {
+                for (Symbol sym : sup.tsym.members().getSymbolsByName(m.name)) {
+                    if (m.overrides(sym, owner, jctypes, true)) 
                         return true;
                 }
             }
@@ -141,9 +140,8 @@ public class ElementsService {
         MethodSymbol m = (MethodSymbol)element;
 	TypeSymbol owner = (TypeSymbol) m.owner;
 	for (Type type : jctypes.interfaces(m.owner.type)) {
-	    for (Scope.Entry e = type.tsym.members().lookup(m.name);
-		 e.scope != null; e = e.next()) {
-		if (m.overrides(e.sym, owner, jctypes, true)) 
+            for (Symbol sym : type.tsym.members().getSymbolsByName(m.name)) {
+		if (m.overrides(sym, owner, jctypes, true)) 
 		    return true;
 	    }
 	}
@@ -155,10 +153,11 @@ public class ElementsService {
         ClassSymbol clazz = (ClassSymbol)enclClass;
         Scope scope = clazz.members();
         Name n = names.fromString(name.toString());
-        for(Scope.Entry e = scope.lookup(n); e.scope==scope; e = e.next())
-            if(e.sym.type instanceof ExecutableType && 
-               types.isSubsignature(meth, (ExecutableType)e.sym.type))
+        for (Symbol sym : scope.getSymbolsByName(n, Scope.LookupKind.NON_RECURSIVE)) {
+            if(sym.type instanceof ExecutableType &&
+                    types.isSubsignature(meth, (ExecutableType)sym.type))
                 return true;
+        }
         return false;
     }
     
@@ -170,11 +169,12 @@ public class ElementsService {
         for (TypeMirror tm : paramTypes) {
             buff.append((Type)tm);
         }
-        for(Scope.Entry e = scope.lookup(n); e.scope==scope; e = e.next())
-            if(e.sym.type instanceof ExecutableType &&
-               jctypes.containsTypeEquivalent(e.sym.type.asMethodType().getParameterTypes(), buff.toList()) &&
-               jctypes.isSameType(e.sym.type.asMethodType().getReturnType(), (Type)returnType))
+        for (Symbol sym : scope.getSymbolsByName(n, Scope.LookupKind.NON_RECURSIVE)) {
+            if(sym.type instanceof ExecutableType &&
+                    jctypes.containsTypeEquivalent(sym.type.asMethodType().getParameterTypes(), buff.toList()) &&
+                    jctypes.isSameType(sym.type.asMethodType().getReturnType(), (Type)returnType))
                 return true;
+        }
         return false;
     }
     
@@ -191,12 +191,11 @@ public class ElementsService {
 	// Check if this method overrides a deprecated method. 
 	TypeSymbol owner = sym.enclClass();
 	for (Type sup = jctypes.supertype(owner.type);
-	     sup.hasTag(TypeTag.CLASS);
-	     sup = jctypes.supertype(sup)) {
-	    for (Scope.Entry e = sup.tsym.members().lookup(sym.name);
-		 e.scope != null; e = e.next()) {
-		if (sym.overrides(e.sym, owner, jctypes, true) &&
-			(e.sym.flags() & Flags.DEPRECATED) != 0)
+                sup.hasTag(TypeTag.CLASS);
+                sup = jctypes.supertype(sup)) {
+            for (Symbol symbol : sup.tsym.members().getSymbolsByName(sym.name)) {
+		if (sym.overrides(symbol, owner, jctypes, true) &&
+                        (symbol.flags() & Flags.DEPRECATED) != 0)
 		    return true;
 	    }
 	}
@@ -228,18 +227,16 @@ public class ElementsService {
         MethodSymbol bridgeCandidate = null;
 	for (Type t = jctypes.supertype(origin.type); t.hasTag(TypeTag.CLASS); t = jctypes.supertype(t)) {
 	    TypeSymbol c = t.tsym;
-	    Scope.Entry e = c.members().lookup(m.name);
-	    while (e.scope != null) {
-		if (m.overrides(e.sym, origin, jctypes, false)) {
-                    if ((e.sym.flags() & Flags.BRIDGE) > 0) {
+            for (Symbol sym : c.members().getSymbolsByName(m.name)) {
+		if (m.overrides(sym, origin, jctypes, false)) {
+                    if ((sym.flags() & Flags.BRIDGE) > 0) {
                         if (bridgeCandidate == null) {
-                            bridgeCandidate = (MethodSymbol)e.sym;
+                            bridgeCandidate = (MethodSymbol)sym;
                         }
                     } else {
-                        return (MethodSymbol)e.sym;
+                        return (MethodSymbol)sym;
                     }
                 }
-		e = e.next();
 	    }
 	}
         return bridgeCandidate;

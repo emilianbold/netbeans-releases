@@ -148,7 +148,7 @@ public class PackageTest extends GeneratorTestMDRCompat {
                 TreeMaker make = workingCopy.getTreeMaker();
                 CompilationUnitTree cut = workingCopy.getCompilationUnit();
                 CompilationUnitTree copy = make.CompilationUnit(
-                    null,
+                    (ExpressionTree)null,
                     cut.getImports(),
                     cut.getTypeDecls(),
                     cut.getSourceFile()

@@ -296,9 +296,7 @@ public final class ElementUtilities {
                 case SHORT:
                 case VOID:
                     Type t = Symtab.instance(ctx).classType;
-                    com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
-                        com.sun.tools.javac.util.List.of((Type)type) :
-                        com.sun.tools.javac.util.List.<Type>nil();
+                    com.sun.tools.javac.util.List<Type> typeargs = com.sun.tools.javac.util.List.of((Type)type);
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
                     if (acceptor == null || acceptor.accept(classPseudoMember, type))
@@ -310,9 +308,7 @@ public final class ElementUtilities {
                             members.add(member);
                     }
                     t = Symtab.instance(ctx).classType;
-                    typeargs = Source.instance(ctx).allowGenerics() ?
-                        com.sun.tools.javac.util.List.of((Type)type) :
-                        com.sun.tools.javac.util.List.<Type>nil();
+                    typeargs = com.sun.tools.javac.util.List.of((Type)type);
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
                     if (acceptor == null || acceptor.accept(classPseudoMember, type))

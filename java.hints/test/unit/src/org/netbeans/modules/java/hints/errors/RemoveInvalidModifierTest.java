@@ -164,10 +164,10 @@ public class RemoveInvalidModifierTest extends ErrorHintsTestBase {
     public void testRemoveMultipleFromMethod() throws Exception {
         performFixTest("test/AnotherInterface.java",
                 "public interface I {\n"
-                + "    private native void ttt();\n"
+                + "    protected native void ttt();\n"
                 + "}",
                 -1,
-                Bundle.FIX_RemoveInvalidModifier("private,native", 2),
+                Bundle.FIX_RemoveInvalidModifier("protected,native", 2),
                 ("public interface I {\n"
                 + "    void ttt();\n"
                 + "}").replaceAll("[ \t\n]+", " "));

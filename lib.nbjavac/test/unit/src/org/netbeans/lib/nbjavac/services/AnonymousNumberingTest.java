@@ -44,18 +44,9 @@ package org.netbeans.lib.nbjavac.services;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javadoc.JavadocClassReader;
-import com.sun.tools.javadoc.Messager;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.util.Arrays;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.ToolProvider;
 import junit.framework.TestCase;
 
 /**

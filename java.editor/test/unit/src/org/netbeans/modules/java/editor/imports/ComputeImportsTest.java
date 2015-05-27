@@ -350,8 +350,10 @@ public class ComputeImportsTest extends NbTestCase {
         
         dump(getLog(getName() + "-unfiltered.ref"), candidates.b, IGNORE_CLASSES);
         dump(getLog(getName() + "-filtered.ref"), candidates.a, IGNORE_CLASSES);
+
+        String version = System.getProperty("java.specification.version") + "/";
         
-        compareReferenceFiles(getName() + "-unfiltered.ref", getName() + "-unfiltered.pass", getName() + "-unfiltered.diff");
-        compareReferenceFiles(getName() + "-filtered.ref", getName() + "-filtered.pass", getName() + "-filtered.diff");
+        compareReferenceFiles(getName() + "-unfiltered.ref", version + getName() + "-unfiltered.pass", getName() + "-unfiltered.diff");
+        compareReferenceFiles(getName() + "-filtered.ref", version + getName() + "-filtered.pass", getName() + "-filtered.diff");
     }
 }

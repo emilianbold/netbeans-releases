@@ -48,14 +48,12 @@ import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
-import com.sun.tools.javac.code.TargetType;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.jvm.ClassWriter;
 import com.sun.tools.javac.jvm.Target;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Pair;
 import java.util.Collection;
 
 /**
@@ -74,14 +72,12 @@ public class NBClassWriter extends ClassWriter {
 
     private final NBNames nbNames;
     private final NBMessager nbMessager;
-    private final Target target;
     private final Types types;
 
     protected NBClassWriter(Context context) {
         super(context);
         nbNames = NBNames.instance(context);
         nbMessager = NBMessager.instance(context);
-        target = Target.instance(context);
         types = Types.instance(context);
     }
     
@@ -95,10 +91,7 @@ public class NBClassWriter extends ClassWriter {
                 }
             }
         }
-        if (!target.hasEnclosingMethodAttribute())
-            return writeEnclosingMethodAttribute(nbNames._org_netbeans_EnclosingMethod, c);
-        else
-            return 0;
+        return 0;
     }
 
     @Override

@@ -54,7 +54,7 @@ import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Flow;
-import com.sun.tools.javac.comp.MemberEnter;
+import com.sun.tools.javac.comp.TypeEnter;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.LazyDocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
@@ -119,7 +119,7 @@ public class PartialReparser {
         JCMethodDecl tree = (JCMethodDecl) methodToReparse;
         final Names names = Names.instance(context);
         final Symtab syms = Symtab.instance(context);
-        final MemberEnter memberEnter = MemberEnter.instance(context);
+        final TypeEnter typeEnter = TypeEnter.instance(context);
         final Log log = Log.instance(context);
         final TreeMaker make = TreeMaker.instance(context);
         final Env<AttrContext> env = attr.dupLocalEnv(((JCMethodDecl) methodToReparse).localEnv);
@@ -128,7 +128,7 @@ public class PartialReparser {
             JCBlock body = tree.body;
             if (body.stats.isEmpty() || !TreeInfo.isSelfCall(body.stats.head)) {
                 body.stats = body.stats.
-                prepend(memberEnter.SuperCall(make.at(body.pos),
+                prepend(typeEnter.SuperCall(make.at(body.pos),
                     List.<Type>nil(),
                     List.<JCVariableDecl>nil(),
                     false));

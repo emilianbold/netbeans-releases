@@ -249,7 +249,7 @@ public class SuspiciousToArray {
                 copy.rewrite(nat.getType(), mk.Type(compType));
                 return;
             }
-            List<ExpressionTree> l = new ArrayList<>(nat.getDimensions().subList(
+            List<ExpressionTree> l = new ArrayList<ExpressionTree>(nat.getDimensions().subList(
                     0, Math.min(newDim + 1, nat.getDimensions().size())));
             Tree replacement = mk.NewArray(mk.Type(compType), l, null);
             GeneratorUtilities.get(copy).copyComments(nat, replacement, true);

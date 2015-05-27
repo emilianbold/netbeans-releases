@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.source.pretty;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.LambdaExpressionTree.BodyKind;
@@ -88,13 +89,13 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
-import com.sun.source.tree.CaseTree;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.*;
 import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.Symbol.*;
+import com.sun.tools.javac.comp.Operators;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.DCTree;
 import com.sun.tools.javac.tree.DCTree.DCReference;
@@ -151,9 +152,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     private final Names names;
     private final CommentHandler commentHandler;
-    private final Symtab symbols;
-    private final Types types;
-    private final TreeInfo treeinfo;
+    private final Operators operators;
     private final WidthEstimator widthEstimator;
     private final DanglingElseChecker danglingElseChecker;
 
@@ -170,7 +169,6 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     private int fromOffset = -1;
     private int toOffset = -1;
-    private boolean containsError = false;
     private boolean insideAnnotation = false;
 
     private final Map<Tree, ?> tree2Tag;
@@ -201,9 +199,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	names = Names.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
-	symbols = Symtab.instance(context);
-        types = Types.instance(context);
-	treeinfo = TreeInfo.instance(context);
+        operators = Operators.instance(context);
 	widthEstimator = new WidthEstimator(context);
         danglingElseChecker = new DanglingElseChecker();
         prec = TreeInfo.notExpression;
@@ -702,8 +698,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitTopLevel(JCCompilationUnit tree) {
-        printAnnotations(tree.getPackageAnnotations());
-        printPackage(tree.pid);
+        print(tree.getPackage());
         List<JCTree> l = tree.defs;
         ArrayList<JCImport> imports = new ArrayList<JCImport>();
         while (l.nonEmpty() && l.head.getTag() == JCTree.Tag.IMPORT){
@@ -717,6 +712,14 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	}
     }
 
+    @Override
+    public void visitPackageDef(JCPackageDecl tree) {
+        if (tree != null) {
+            printAnnotations(tree.getAnnotations());
+            printPackage(tree.pid);
+        }
+    }
+    
     @Override
     public void visitImport(JCImport tree) {
         print("import ");
@@ -1520,7 +1523,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
-	print(treeinfo.operatorName(tree.getTag().noAssignOp()));
+	print(operators.operatorName(tree.getTag().noAssignOp()));
         print('=');
 	int rm = cs.getRightMargin();
         switch(cs.wrapAssignOps()) {
@@ -1549,7 +1552,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         switch (tree.getTag()) {
             case POS: opname = names.fromString("+"); break;
             case NEG: opname = names.fromString("-"); break;
-            default: opname = treeinfo.operatorName(tree.getTag()); break;
+            default: opname = operators.operatorName(tree.getTag()); break;
         }
 	if (tree.getTag().ordinal() <= JCTree.Tag.PREDEC.ordinal()) { //XXX: comparing ordinals!
             if (cs.spaceAroundUnaryOps()) {
@@ -1579,7 +1582,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitBinary(JCBinary tree) {
 	int ownprec = TreeInfo.opPrec(tree.getTag());
-	Name opname = treeinfo.operatorName(tree.getTag());
+	Name opname = operators.operatorName(tree.getTag());
         int col = out.col;
 	printExpr(tree.lhs, ownprec);
 	if(cs.spaceAroundBinaryOps())
@@ -1631,6 +1634,11 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 cs.wrapDisjunctiveCatchTypes(), 
                 cs.alignMultilineDisjunctiveCatchTypes() ? out.col : out.leftMargin + cs.getContinuationIndentSize(),
                 false, sep, sep, "|"); // NOI18N
+    }
+
+    @Override
+    public void visitTypeIntersection(JCTypeIntersection tree) {
+        printExprs(tree.bounds, " & ");
     }
 
     @Override
@@ -1777,7 +1785,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
     @Override
     public void visitWildcard(JCWildcard tree) {
-	print("" + tree.kind.kind);
+	print(String.valueOf(tree.kind));
 	if (tree.kind.kind != BoundKind.UNBOUND)
 	    printExpr(tree.inner);
     }
@@ -1841,7 +1849,6 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitErroneous(JCErroneous tree) {
 	print("(ERROR)");
-        containsError = true;
     }
 
     @Override
@@ -2565,7 +2572,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         boolean hasImports = !imports.isEmpty();
         CodeStyle.ImportGroups importGroups = null;
         if (hasImports) {
-            blankLines(Math.max(cs.getBlankLinesBeforeImports(), diffContext.origUnit.pid != null ? cs.getBlankLinesAfterPackage() : 0));
+            blankLines(Math.max(cs.getBlankLinesBeforeImports(), diffContext.origUnit.getPackageName() != null ? cs.getBlankLinesAfterPackage() : 0));
             if (cs.separateImportGroups())
                 importGroups = cs.getImportGroups();
         }

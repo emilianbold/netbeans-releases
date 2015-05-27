@@ -385,6 +385,7 @@ public final class TreeUtilities {
                         break;
                 case SEMICOLON:
                     if (path.getLeaf().getKind() == Tree.Kind.EMPTY_STATEMENT ||
+                            path.getLeaf().getKind() == Tree.Kind.TRY ||
                             (path.getLeaf().getKind() == Tree.Kind.FOR_LOOP &&
                             tokenList.offset() <= sourcePositions.getStartPosition(path.getCompilationUnit(), ((ForLoopTree)path.getLeaf()).getUpdate().get(0))))
                         break;

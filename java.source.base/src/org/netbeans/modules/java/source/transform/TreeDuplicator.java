@@ -79,6 +79,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PackageTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -312,6 +313,15 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
     }
 
     @Override
+    public Tree visitPackage(PackageTree tree, Void p) {
+        PackageTree n = make.Package(tree.getAnnotations(), tree.getPackageName());
+        model.setElement(n, model.getElement(tree));
+        comments.copyComments(tree, n);
+        model.setPos(n, model.getPos(tree));
+        return n;
+    }
+
+    @Override
     public Tree visitImport(ImportTree tree, Void p) {
         ImportTree n = make.Import(tree.getQualifiedIdentifier(), tree.isStatic());
         model.setType(n, model.getType(tree));
@@ -473,7 +483,7 @@ public class TreeDuplicator implements TreeVisitor<Tree, Void> {
 
     @Override
     public Tree visitCompilationUnit(CompilationUnitTree tree, Void p) {
-        CompilationUnitTree n = make.CompilationUnit(tree.getPackageAnnotations(), tree.getPackageName(), tree.getImports(), tree.getTypeDecls(), tree.getSourceFile());
+        CompilationUnitTree n = make.CompilationUnit(tree.getPackage(), tree.getImports(), tree.getTypeDecls(), tree.getSourceFile());
         model.setElement(n, model.getElement(tree));
         comments.copyComments(tree, n);
         model.setPos(n, model.getPos(tree));

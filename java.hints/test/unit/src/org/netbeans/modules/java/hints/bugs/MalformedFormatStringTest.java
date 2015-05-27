@@ -130,7 +130,7 @@ public class MalformedFormatStringTest extends NbTestCase {
 "}"
                 )
                 .run(MalformedFormatString.class)
-                .assertWarnings("4:37-4:42:verifier:Malformed format string: Width must be specified in `-d'");
+                .assertWarnings("4:37-4:42:verifier:Malformed format string: Width must be specified in `%-d'");
     }
     
     public void testMismatchedFlags() throws Exception {

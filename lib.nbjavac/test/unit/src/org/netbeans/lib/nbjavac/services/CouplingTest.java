@@ -48,11 +48,9 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javadoc.JavadocClassReader;
-import com.sun.tools.javadoc.Messager;
+import com.sun.tools.javac.model.JavacElements;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -164,7 +162,7 @@ public class CouplingTest extends TestCase {
         
         if (loadFromClasses) {
             for (String fqn : fqns) {
-                assertNotNull(fqn, ct.getElements().getTypeElementByBinaryName(fqn));
+                assertNotNull(fqn, ((JavacElements)ct.getElements()).getTypeElementByBinaryName(fqn));
             }
         }
 
@@ -174,7 +172,7 @@ public class CouplingTest extends TestCase {
         Set<String> classInfo = new HashSet<String>();
 
         for (String fqn : fqns) {
-            ClassSymbol clazz = ct.getElements().getTypeElementByBinaryName(fqn);
+            ClassSymbol clazz = ((JavacElements)ct.getElements()).getTypeElementByBinaryName(fqn);
             StringBuilder info = new StringBuilder();
 
             info.append(clazz.flatname.toString()).append(",");

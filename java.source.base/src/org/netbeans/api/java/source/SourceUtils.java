@@ -74,7 +74,7 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Scope.ImportScope;
+import com.sun.tools.javac.code.Scope.NamedImportScope;
 import com.sun.tools.javac.code.Scope.StarImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
@@ -431,16 +431,16 @@ public class SourceUtils {
             // only import symbols if import generation succeeded
             JCCompilationUnit unit = (JCCompilationUnit) info.getCompilationUnit();
             if (toImport.getKind() == ElementKind.PACKAGE) {
-                StarImportScope importScope = new StarImportScope(unit.starImportScope.owner);
-                importScope.importAll(unit.starImportScope);
-                importScope.importAll(((PackageSymbol)toImport).members());
+                StarImportScope importScope = new StarImportScope(unit.packge);
+                importScope.prependSubScope(unit.starImportScope);
+                importScope.prependSubScope(((PackageSymbol)toImport).members());
                 unit.starImportScope = importScope;
             } else {
-                ImportScope importScope = new ImportScope(unit.namedImportScope.owner);
-                for (Symbol symbol : unit.namedImportScope.getElements()) {
-                    importScope.enter(symbol);
+                NamedImportScope importScope = new NamedImportScope(unit.packge, unit.toplevelScope);
+                for (Symbol symbol : unit.namedImportScope.getSymbols()) {
+                    importScope.importType(symbol.members(), symbol.members(), symbol);
                 }
-                importScope.enterIfAbsent((Symbol) toImport);
+                importScope.importType(((Symbol)toImport).members(), ((Symbol)toImport).members(), (Symbol) toImport);
                 unit.namedImportScope = importScope;
             }
         } else { // embedded java, look up the handler for the top level language

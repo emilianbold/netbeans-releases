@@ -116,14 +116,6 @@ public class PostFlowAnalysis extends TreeScanner {
         }
     }
     
-    private void analyze(Element e) {
-        if (e instanceof TypeSymbol) {
-            Env<AttrContext> env = enter.getClassEnv((TypeSymbol)e);
-            if (env != null)
-                this.scan(env.toplevel);
-        }
-    }
-
     @Override
     public void scan(JCTree tree) {
         if (tree != null && tree.type != null && tree.type.constValue() != null) {
@@ -152,8 +144,7 @@ public class PostFlowAnalysis extends TreeScanner {
     @Override
     public void visitMethodDef(JCMethodDecl tree) {
         if (tree.name == names.init &&
-            (currentClass.isInner() ||
-             (currentClass.owner.kind & (Kinds.VAR | Kinds.MTH)) != 0)) {
+            (currentClass.isInner() || currentClass.isLocal())) {
             List<Pair<TypeSymbol, Symbol>> prevOuterThisStack = outerThisStack;
             try {
                 if (currentClass.hasOuterInstance())
@@ -173,12 +164,10 @@ public class PostFlowAnalysis extends TreeScanner {
             return;
         }
         Type type = types.erasure(tree.type);
-        for (Scope.Entry e = s.lookup(tree.name);
-             e.sym != null;
-             e = e.next()) {
-            if (e.sym != tree.sym &&
-                types.isSameType(types.erasure(e.sym.type), type) && !e.sym.type.isErroneous() && !type.isErroneous()) {
-                log.error(tree.pos(), "name.clash.same.erasure", tree.sym, e.sym); //NOI18N
+        for (Symbol sym : s.getSymbolsByName(tree.name)) {
+            if (sym != tree.sym &&
+                types.isSameType(types.erasure(sym.type), type) && !sym.type.isErroneous() && !type.isErroneous()) {
+                log.error(tree.pos(), "name.clash.same.erasure", tree.sym, sym); //NOI18N
                 return;
             }
         }
@@ -189,7 +178,7 @@ public class PostFlowAnalysis extends TreeScanner {
         super.visitNewClass(tree);
         Symbol c = tree.constructor != null ? tree.constructor.owner : null;
         if (c != null && c.hasOuterInstance()) {
-            if (tree.encl == null && (c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0) {
+            if (tree.encl == null && c.isLocal()) {
                 checkThis(tree.pos(), c.type.getEnclosingType().tsym);
             }
         }
@@ -205,7 +194,7 @@ public class PostFlowAnalysis extends TreeScanner {
                 Symbol c = meth.owner;
                 if (c.hasOuterInstance()) {
                     checkThis = false;
-                    if (tree.meth.getTag() != JCTree.Tag.SELECT && ((c.owner.kind & (Kinds.MTH | Kinds.VAR)) != 0 || methName == names._this)) {
+                    if (tree.meth.getTag() != JCTree.Tag.SELECT && (c.isLocal() || methName == names._this)) {
                         checkThis(tree.meth.pos(), c.type.getEnclosingType().tsym);
                     }
                 }
@@ -241,7 +230,7 @@ public class PostFlowAnalysis extends TreeScanner {
                     }
                     ot = ots.head;
                 } while (ot.snd != otc);
-                if (otc.owner.kind != Kinds.PCK && !otc.hasOuterInstance()) {
+                if (otc.owner.kind != Kinds.Kind.PCK && !otc.hasOuterInstance()) {
                     log.error(pos, "cant.ref.before.ctor.called", c); //NOI18N
                     return;
                 }

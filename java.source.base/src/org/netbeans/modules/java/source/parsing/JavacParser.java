@@ -69,6 +69,7 @@ import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
+import com.sun.tools.javadoc.JavadocClassFinder;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -821,7 +822,8 @@ public class JavacParser extends Parser {
         if (aptEnabled) {
             task.setProcessors(processors);
         }
-        NBClassReader.preRegister(context, !backgroundCompilation);
+        NBClassReader.preRegister(context);
+        JavadocClassFinder.preRegister(context, !backgroundCompilation);
         if (cnih != null) {
             context.put(ClassNamesForFileOraculum.class, cnih);
         }
