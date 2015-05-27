@@ -563,6 +563,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 }
             }
         } catch (IOException e) {
+            // see also issue #250365
             String noSpaceLeftMsg = null;
             if(e.getMessage().contains("No space left on device")) {
                 noSpaceLeftMsg = Bundle.MSG_NoSpace(repo.getName());
