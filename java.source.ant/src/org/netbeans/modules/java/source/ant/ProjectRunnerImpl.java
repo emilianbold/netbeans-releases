@@ -116,6 +116,7 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.project.runner.JavaRunnerImplementation.class)
 public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
+    private static final String NBJRT_PROTOCOL = "nbjrt";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
     
     public boolean isSupported(String command, Map<String, ?> properties) {
@@ -253,7 +254,9 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Map<String,String> antProps = new TreeMap<String,String>();
-        setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL));
+        if (!isModular(boot)) {
+            setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL));
+        }
         setProperty(antProps, "classpath", cp);
         setProperty(antProps, "classname", className);
         setProperty(antProps, "platform.java", javaTool);
@@ -808,5 +811,18 @@ out:                for (FileObject root : exec.getRoots()) {
             return delegate.getAttribute(name);
         }
 
+    }
+
+    private static boolean isModular(final ClassPath cp) {
+        for (ClassPath.Entry e : cp.entries()) {
+            if (isModular(e.getURL())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isModular(final URL root) {
+        return NBJRT_PROTOCOL.equals(root.getProtocol());
     }
 }
