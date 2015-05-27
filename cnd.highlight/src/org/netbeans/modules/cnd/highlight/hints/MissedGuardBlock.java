@@ -223,7 +223,8 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";  // NOI18N
             final String ifndefMacro = "#ifndef ";  // NOI18N
             final String defineMacro = "#define ";  // NOI18N
-            final String endifMacro = "#endif\n";  // NOI18N
+            final String endifMacro = "#endif\t// ";  // NOI18N
+            final String endifText = endifMacro + defName + "\n";  // NOI18N
             final String openGuardBlockText = ifndefMacro + defName + defineMacro + defName + "\n";  // NOI18N
             
             // offsets
@@ -235,17 +236,20 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             Position ifndefPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
             doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null);
             Position endifPossition = NbDocument.createPosition(doc, file.getText().length(), Position.Bias.Backward);
-            doc.insertString(endifPossition.getOffset(), "\n"+endifMacro, null); // NOI18N
+            doc.insertString(endifPossition.getOffset(), "\n"+endifText, null); // NOI18N
             
             Position ifndefStart = NbDocument.createPosition(doc, ifndefStartPos, Position.Bias.Forward);
             Position ifndefEnd = NbDocument.createPosition(doc, ifndefEndPos-1, Position.Bias.Backward); // substracts 1 because of new line symols
             Position defineStart = NbDocument.createPosition(doc, defStartPos, Position.Bias.Forward);
             Position defineEnd = NbDocument.createPosition(doc, defEndPos-1, Position.Bias.Backward); // substracts 1 because of new line symols
+            Position endifStart = NbDocument.createPosition(doc, endifPossition.getOffset()+endifMacro.length()+1, Position.Bias.Forward);
+            Position endifEnd = NbDocument.createPosition(doc, endifPossition.getOffset()+endifMacro.length()+defName.length(), Position.Bias.Backward);
             
             final ChangeInfo changeInfo = new ChangeInfo();
             final FileObject fo = file.getFileObject();
             changeInfo.add(fo, ifndefStart, ifndefEnd);
             changeInfo.add(fo, defineStart, defineEnd);
+            changeInfo.add(fo, endifStart, endifEnd);
             CsmRefactoringActionsFactory.performInstantRenameAction(EditorRegistry.lastFocusedComponent(), changeInfo);
             return null;
         }
