@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,95 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.navigation.callgraph;
 
 import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmField;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
-import org.netbeans.modules.cnd.api.model.services.CsmVirtualInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.callgraph.api.Function;
-import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphPreferences;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.NbBundle;
 
-public class FunctionImpl implements Function {
-
+/**
+ *
+ * @author toor
+ */
+public class VariableImpl implements Function {
     private static final Map<CsmDeclaration.Kind, CsmDeclaration.Kind> preferredIcons = new HashMap<CsmDeclaration.Kind, CsmDeclaration.Kind>();
-
+    
     static {
-        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION);
-        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND);
-        preferredIcons.put(CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
+        preferredIcons.put(CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION);
     }
-
-    private final CsmFunction function;
+    
+    private final CsmVariable variable;
     private String htmlDisplayName = ""; // NOI18N
     private String scopeName = null; // NOI18N
-    private final CsmFunction cachedFunctionDefinition;
-    private final CsmFunction cachedFunctionDeclaration;
-    private final boolean isVirtual;
-
-    public FunctionImpl(CsmFunction function) {
-        this.function = function;
-        cachedFunctionDefinition = initDefinition();
-        cachedFunctionDeclaration = initDeclaration();
-        isVirtual = initVirtual();
-    }
-
-    public CsmFunction getDeclaration() {
-        return cachedFunctionDeclaration;
-    }
-
-    private CsmFunction initDeclaration() {
-        if (CsmKindUtilities.isFunctionDefinition(function)) {
-            CsmFunction f = ((CsmFunctionDefinition) function).getDeclaration();
-            if (f != null) {
-                return f;
-            }
-        }
-        return function;
-    }
-
-    public CsmFunction getDefinition() {
-        return cachedFunctionDefinition;
-    }
-
-    private CsmFunction initDefinition() {
-        if (CsmKindUtilities.isFunctionDeclaration(function)) {
-            CsmFunction f = function.getDefinition();
-            if (f != null) {
-                return f;
-            }
-        }
-        return function;
+    
+    public VariableImpl(CsmVariable variable) {
+        this.variable = variable;
     }
     
     @Override
     public String getName() {
-        return function.getName().toString();
+        return variable.getName().toString();
     }
-
+    
     @Override
     public String getScopeName() {
         if (scopeName == null) {
             scopeName = "";
             try {
-                CsmFunction f = getDeclaration();
-                if (CsmKindUtilities.isClassMember(f)) {
-                    CsmClass cls = ((CsmMember) f).getContainingClass();
+                if (CsmKindUtilities.isField(variable)) {
+                    CsmClass cls = ((CsmField) variable).getContainingClass();
                     if (cls != null && cls.getName().length() > 0) {
                         scopeName = cls.getName().toString()+"::"; // NOI18N
                     }
@@ -138,7 +99,11 @@ public class FunctionImpl implements Function {
         }
         return scopeName;
     }
-
+    
+    public CsmVariable getVariable() {
+        return variable;
+    }
+    
     @Override
     public String getHtmlDisplayName() {
         if (htmlDisplayName.length() == 0) {
@@ -146,72 +111,37 @@ public class FunctionImpl implements Function {
         }
         return htmlDisplayName;
     }
-
-    @Override
-    public boolean isVurtual() {
-        return isVirtual;
-    }
-
-    private boolean initVirtual() {
-        try {
-            CsmFunction f = getDeclaration();
-            if (CsmKindUtilities.isClassMember(f)) {
-                CsmClass cls = ((CsmMember) f).getContainingClass();
-                if (cls != null && cls.getName().length() > 0) {
-                    return CsmKindUtilities.isMethod(f) && CsmVirtualInfoQuery.getDefault().isVirtual((CsmMethod)f);
-                }
-            }
-        } catch (AssertionError ex) {
-            ex.printStackTrace(System.err);
-        } catch (Exception ex) {
-            ex.printStackTrace(System.err);
-        }
-        return false;
-    }
-
+    
     private String createHtmlDisplayName() {
-        String displayName;
-        if (CallGraphPreferences.isShowParameters()) {
-            displayName = function.getSignature().toString();
-        } else {
-            displayName = function.getName().toString();
-        }
-        displayName = CsmDisplayUtilities.htmlize(displayName);
-        if (scopeName == null) {
-            scopeName = "";
-        }
+        String displayName = variable.getName().toString();
+        
         try {
-            CsmFunction f = getDeclaration();
-            if (CsmKindUtilities.isClassMember(f)) {
-                CsmClass cls = ((CsmMember) f).getContainingClass();
-                if (cls != null && cls.getName().length() > 0) {
-                    String name = CsmDisplayUtilities.htmlize(cls.getName().toString()); // NOI18N
-                    String in = NbBundle.getMessage(CallImpl.class, "LBL_inClass"); // NOI18N
-                    if (isVurtual()){
-                        displayName ="<i>"+displayName+"</i>"; // NOI18N
+            if (CsmKindUtilities.isField(variable)) {
+                    CsmClass cls = ((CsmField) variable).getContainingClass();
+                    if (cls != null && cls.getName().length() > 0) {
+                        String name = CsmDisplayUtilities.htmlize(cls.getName().toString());
+                        String in = NbBundle.getMessage(CallImpl.class, "LBL_inClass"); // NOI18N
+                        return displayName + "<font color=\'!controlShadow\'>  " + in + " " + name; // NOI18N
                     }
-                    scopeName = cls.getName().toString()+"::"; // NOI18N
-                    return displayName + "<font color=\'!controlShadow\'>  " + in + " " + name; // NOI18N
                 }
-            }
         } catch (AssertionError ex) {
             ex.printStackTrace(System.err);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
         }
+        
         return displayName;
     }
-
+    
     @Override
     public String getDescription() {
-        String scope = getScopeName();
-        return scope+function.getSignature().toString();
+        return getScopeName()+getName();
     }
-
+    
     @Override
     public Image getIcon() {
         try {
-            return CsmImageLoader.getImage(getDefinition(), preferredIcons);
+            return CsmImageLoader.getImage(variable, preferredIcons);
         } catch (AssertionError ex) {
             ex.printStackTrace(System.err);
         } catch (Exception ex) {
@@ -219,7 +149,7 @@ public class FunctionImpl implements Function {
         }
         return null;
     }
-
+    
     @Override
     public void open() {
         final String taskName = "Open declaration"; //NOI18N
@@ -227,18 +157,17 @@ public class FunctionImpl implements Function {
 
             @Override
             public void run() {
-                CsmUtilities.openSource(getDefinition());
+                CsmUtilities.openSource(variable);
             }
         };
         CsmModelAccessor.getModel().enqueue(run, taskName);
     }
-
+   
     @Override
     public boolean equals(Object obj) {
-        CsmFunction f = getDefinition();
-        if (f != null) {
-            if (obj instanceof FunctionImpl) {
-                return f.equals(((FunctionImpl) obj).getDefinition());
+        if (variable != null) {
+            if (obj instanceof VariableImpl) {
+                return variable.equals(((VariableImpl) obj).getVariable());
             }
         }
         return super.equals(obj);
@@ -246,9 +175,8 @@ public class FunctionImpl implements Function {
 
     @Override
     public int hashCode() {
-        CsmFunction f = getDefinition();
-        if (f != null) {
-            return f.hashCode();
+        if (variable != null) {
+            return variable.hashCode();
         }
         return super.hashCode();
     }
@@ -259,7 +187,15 @@ public class FunctionImpl implements Function {
     }
     
     @Override
+    public boolean isVurtual() {
+        return false;
+    }
+    
+    @Override
     public Kind kind() {
-        return Kind.FUNCTION;
+        if (CsmKindUtilities.isFunctionPointerType(variable.getType())) {
+            return Kind.FUNCTION_POINTER;
+        }
+        return Kind.VARIABLE;
     }
 }
