@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
@@ -245,7 +246,7 @@ public class RequireJsIndex {
             Exceptions.printStackTrace(ex);
         }
         if (result != null && !result.isEmpty()) {
-            List<String> paths = new ArrayList();
+            Set<String> paths = new HashSet<>();
             for (IndexResult indexResult : result) {
                 paths.addAll(Arrays.asList(indexResult.getValues(RequireJsIndexer.FIELD_SOURCE_ROOT)));
             }
