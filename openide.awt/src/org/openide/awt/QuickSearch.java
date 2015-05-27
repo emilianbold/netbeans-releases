@@ -51,6 +51,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.DocumentFilter;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
@@ -364,7 +369,11 @@ public class QuickSearch {
         searchFieldListener = new SearchFieldListener();
         searchTextField.addKeyListener(searchFieldListener);
         searchTextField.addFocusListener(searchFieldListener);
-        searchTextField.getDocument().addDocumentListener(searchFieldListener);
+        Document searchDoc = searchTextField.getDocument();
+        searchDoc.addDocumentListener(searchFieldListener);
+        if (searchDoc instanceof AbstractDocument) {
+            ((AbstractDocument) searchDoc).setDocumentFilter(searchFieldListener.new ReplaceFilter());
+        }
         if(isAlwaysShown()) {
             displaySearchField();
         }
@@ -733,6 +742,7 @@ public class QuickSearch {
     private class SearchFieldListener extends KeyAdapter implements DocumentListener, FocusListener {
         
         private boolean ignoreEvents;
+        private boolean ignoreRemove;
 
         SearchFieldListener() {
         }
@@ -751,7 +761,7 @@ public class QuickSearch {
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            if (ignoreEvents) return;
+            if (ignoreEvents || ignoreRemove) return;
             searchForNode();
         }
 
@@ -861,6 +871,25 @@ public class QuickSearch {
                 hasSearchText = false;
             }
         }
+        
+        private class ReplaceFilter extends DocumentFilter {
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                // Replace might do remove before insert. Suppress remove so that we get only one event with the final text
+                if (text != null && !text.isEmpty()) {
+                    // will insert
+                    ignoreRemove = true;
+                }
+                try {
+                    super.replace(fb, offset, length, text, attrs);
+                } finally {
+                    ignoreRemove = false;
+                }
+            }
+
+        }
+
     }
     
     /**
