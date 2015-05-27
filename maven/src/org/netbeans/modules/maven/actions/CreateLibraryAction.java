@@ -89,6 +89,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.maven.actions.Bundle.*;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
 
 /**
@@ -162,7 +163,8 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
         "MSG_Create_Library=Create Library",
         "# {0} - Maven coordinates", "MSG_Downloading=Maven: downloading {0}",
         "# {0} - Maven coordinates", "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
-        "# {0} - Maven coordinates", "MSG_Downloading_sources=Maven: downloading sources {0}"
+        "# {0} - Maven coordinates", "MSG_Downloading_sources=Maven: downloading sources {0}",
+        "# {0} - Maven coordinates", "MSG_NoJar=No jar file available for {0}"
     })
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // baseFolder.mkdirs; will throw IOE later from getJarUri
     private static @CheckForNull Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {
@@ -226,6 +228,10 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
                     online.resolve(a, project.getRemoteArtifactRepositories(), online.getLocalRepository());
                     AtomicBoolean cancel = ProgressTransferListener.activeListener().cancel;
                     if (cancel != null && cancel.get()) {
+                        return null;
+                    }
+                    if(!a.getFile().exists()) { 
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(MSG_NoJar(a.getId()), NotifyDescriptor.WARNING_MESSAGE));
                         return null;
                     }
                     classpathVolume.add(getJarUri(a, baseFolder, nonDefaultLibBase, ClassifierType.BINARY));
@@ -307,7 +313,7 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
     private enum ClassifierType {BINARY, JAVADOC, SOURCES}
 
     private static URI getJarUri(Artifact a, File copyTo, File nonDefaultLibBase, ClassifierType type) throws IOException {
-        File res = a.getFile();
+        File res = a.getFile();        
         URI uri = Utilities.toURI(res);
         String jarPath = null;
         if (copyTo != null) {
