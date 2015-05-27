@@ -56,6 +56,7 @@ import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -385,21 +386,40 @@ public final class AntBridge {
         addJARs(cp, new File(new File(System.getProperty("user.home"), ".ant"), "lib"));
         cp.addAll(AntSettings.getExtraClasspath());
         cp.addAll(AntSettings.getAutomaticExtraClasspath());
-        return new ArrayList<File>(cp);
+        return new ArrayList<>(cp);
     }
+
     private static void addJARs(Collection<File> cp, File dir) {
         File[] libs = dir.listFiles(new JarFilter());
         if (libs != null) {
-            cp.addAll(Arrays.asList(libs));
+            Collections.addAll(cp, libs);
         }
     }
-    
-    private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
-        URL[] cp = new URL[mainClassPath.size()];
+
+    private static URL[] toURLs(List<? extends File> classPath) throws MalformedURLException {
+        final URL[] urls = new URL[classPath.size()];
         int i = 0;
-        for (File entry : mainClassPath) {
-            cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
+        for (File entry : classPath) {
+            urls[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
         }
+        return urls;
+    }
+
+    private static boolean hasJavac(final ClassLoader cl) {
+        return cl.getResource("com/sun/tools/javac/Main.class") != null;    //NOI18N
+    }
+
+    private static List<File> prependTools(List<File> origCp) {
+        final Collection<File> tools = new LinkedHashSet<>();
+        addJARs(tools, new File(new File(System.getProperty("java.home")).getParentFile(), "lib")); //NOI18N
+        tools.removeAll(origCp);
+        final List<File> res = new ArrayList<>(tools.size() + origCp.size());
+        res.addAll(tools);
+        res.addAll(origCp);
+        return res;
+    }
+
+    private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
         if (AntSettings.getAntHome() != null) {
             final ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
             ClassLoader parent = sysClassLoader/* #152620 */.getParent();
@@ -410,16 +430,27 @@ public final class AntBridge {
                 } else {
                     parentURLs = null;
                 }
-                LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {Arrays.asList(cp), parentURLs});
+                LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {mainClassPath, parentURLs});
             }
-            if (parent.getResource("com/sun/tools/javac/Main.class") == null) {
-                //No javac in ext  ClassLoader add it
-                parent = new AddJavacClassLoader(parent, sysClassLoader);
+            if (!hasJavac(parent)) {
+                //No javac in ext  ClassLoader add it either from sys ClassLoader
+                //or try to add tools.jar on cp
+                if (hasJavac(sysClassLoader)) {
+                    parent = new AddJavacClassLoader(parent, sysClassLoader);
+                } else {
+                    mainClassPath = prependTools(mainClassPath);
+                }
             }
-            return new MainClassLoader(cp, parent);
+            return new MainClassLoader(toURLs(mainClassPath), parent);
         } else {
             // Run-in-classpath mode.
             ClassLoader existing = AntBridge.class.getClassLoader();
+            if (!hasJavac(existing)) {
+                //javac is not transitivelly on ext ClassLoader
+                //try to add it
+                mainClassPath = prependTools(mainClassPath);
+            }
+            final URL[] cp = toURLs(mainClassPath);
             if (existing instanceof URLClassLoader) {
                 try {
                     // Need to insert resources into it.
