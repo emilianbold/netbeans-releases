@@ -302,6 +302,9 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                 refreshTask.cancel();
             }
         }
+        if(!query.isSaved()) {
+            query.delete();
+        }        
     }
 
     private <T extends QueryParameter> T createQueryParameter(Class<T> clazz, Component c, String parameter) {

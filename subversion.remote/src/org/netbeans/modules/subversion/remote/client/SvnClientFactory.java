@@ -79,7 +79,7 @@ public class SvnClientFactory {
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.remote.client.SvnClientFactory"); //NOI18N
     public static final String FACTORY_TYPE_COMMANDLINE = "commandline"; //NOI18N
     public static final String DEFAULT_FACTORY = FACTORY_TYPE_COMMANDLINE; // javahl is default
-    private static boolean cli16Version;
+    private boolean cli16Version;
 
     /** Creates a new instance of SvnClientFactory */
     private SvnClientFactory(FileSystem fileSystem) {
@@ -127,7 +127,7 @@ public class SvnClientFactory {
         return true;
     }
 
-    public static boolean isCLIOldFormat () {
+    public boolean isCLIOldFormat () {
         return cli16Version;
     }
 

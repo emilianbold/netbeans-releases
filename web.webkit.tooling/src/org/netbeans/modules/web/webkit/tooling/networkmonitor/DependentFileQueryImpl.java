@@ -59,24 +59,24 @@ import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=DependentFileQueryImplementation.class)
 public class DependentFileQueryImpl implements DependentFileQueryImplementation {
-
     private static final RequestProcessor RP = new RequestProcessor(DependentFileQueryImpl.class);
-    
+    private static final DependencyInfo DEFAULT = new DependencyInfo();
+
     @Override
     public Dependency isDependent(FileObject master, FileObject dependent) {
         return DEFAULT.isDependent(master, dependent);
     }
 
-    static DependencyInfo DEFAULT = new DependencyInfo();
+    static void networkRequest(Project p, Network.Request request) {
+        DEFAULT.networkRequestHandler(p, request);
+    }
 
     /**
      * Class which listens on runtime Network requests and provides dependency information
      * based on what resources were loaded as part of a page loading in the browser.
      */
-    static class DependencyInfo {
-
-        private final WeakHashMap<Project, Map<FileObject, List<FileObject>>> dependecies =
-                new WeakHashMap<Project, Map<FileObject, List<FileObject>>>();
+    private static class DependencyInfo {
+        private final WeakHashMap<Project, Map<FileObject, List<FileObject>>> dependecies = new WeakHashMap<>();
 
         public Dependency isDependent(FileObject master, FileObject dependent) {
             Project p = FileOwnerQuery.getOwner(master);
@@ -98,20 +98,20 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    networkRequestHamdler(p, request);
+                    networkRequestHandler(p, request);
                 }
             });
         }
 
-        private void networkRequestHamdler(Project p, Network.Request request) {
+        private void networkRequestHandler(Project p, Network.Request request) {
             Map<FileObject, List<FileObject>> map = dependecies.get(p);
             if (map == null) {
-                map = new HashMap<FileObject, List<FileObject>>();
+                map = new HashMap<>();
                 dependecies.put(p, map);
             }
 
             String documentUrl = request.getDocumentUrl();
-            String url = (String)request.getRequest().get("url");
+            String url = (String)request.getRequest().get("url"); // NOI18N
             if (documentUrl == null || url == null) {
                 return;
             }
@@ -132,7 +132,7 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
                 }
                 List<FileObject> deps = map.get(documentUrlFO);
                 if (deps == null) {
-                    deps = new ArrayList<FileObject>();
+                    deps = new ArrayList<>();
                     map.put(documentUrlFO, deps);
                 }
                 deps.add(dep);
@@ -151,6 +151,6 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
             return null;
         }
 
-        }
+    }
 
 }

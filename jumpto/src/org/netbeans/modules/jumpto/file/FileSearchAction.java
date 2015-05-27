@@ -119,13 +119,19 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
     /* package */ static final String CAMEL_CASE_SEPARATOR = "\\p{javaUpperCase}|-|_|\\.";    //NOI18N
-    /* package */ static final String CAMEL_CASE_PART = "\\p{javaLowerCase}|\\p{Digit}|\\$";         //NOI18N
-    /* package */ static final Map<String,Object> SEARCH_OPTIONS;
+    /* package */ static final String CAMEL_CASE_PART_CASE_SENSITIVE = "\\p{javaLowerCase}|\\p{Digit}|\\$";         //NOI18N
+    /* package */ static final String CAMEL_CASE_PART_CASE_INSENSITIVE = "\\p{javaLowerCase}|\\p{Digit}|\\p{javaUpperCase}|\\$";         //NOI18N
+    /* package */ static final Map<String,Object> SEARCH_OPTIONS_CASE_SENSITIVE;
+    /* package */ static final Map<String,Object> SEARCH_OPTIONS_CASE_INSENSITIVE;
     static {
         Map<String,Object> m = new HashMap<>();
         m.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, CAMEL_CASE_SEPARATOR);
-        m.put(Queries.OPTION_CAMEL_CASE_PART, CAMEL_CASE_PART);
-        SEARCH_OPTIONS = Collections.unmodifiableMap(m);
+        m.put(Queries.OPTION_CAMEL_CASE_PART, CAMEL_CASE_PART_CASE_SENSITIVE);
+        SEARCH_OPTIONS_CASE_SENSITIVE = Collections.unmodifiableMap(m);
+        m = new HashMap<>();
+        m.put(Queries.OPTION_CAMEL_CASE_SEPARATOR, CAMEL_CASE_SEPARATOR);
+        m.put(Queries.OPTION_CAMEL_CASE_PART, CAMEL_CASE_PART_CASE_INSENSITIVE);
+        SEARCH_OPTIONS_CASE_INSENSITIVE = Collections.unmodifiableMap(m);
     }
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
     private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
@@ -221,7 +227,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 exact,
                 panel.isCaseSensitive(),
                 CAMEL_CASE_SEPARATOR,
-                CAMEL_CASE_PART));
+                CAMEL_CASE_PART_CASE_INSENSITIVE));
         if (nameKind == QuerySupport.Kind.REGEXP || nameKind == QuerySupport.Kind.CASE_INSENSITIVE_REGEXP) {
             text = Utils.removeNonNeededWildCards(text);
         }
@@ -229,10 +235,13 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         // Compute in other thread
         synchronized(this) {
             final SearchType searchType = Utils.toSearchType(nameKind);
-            if (currentSearch.isNarrowing(searchType, text, null)) {
+            if (currentSearch.isNarrowing(searchType, text, null, true)) {
                 itemsComparator.setUsePreferred(panel.isPreferedProject());
                 filterFactory.setLineNumber(lineNr);
-                currentSearch.filter(searchType, text);
+                currentSearch.filter(
+                        searchType,
+                        text,
+                        panel.isCaseSensitive() ? SEARCH_OPTIONS_CASE_SENSITIVE : SEARCH_OPTIONS_CASE_INSENSITIVE);
                 enableOK(panel.searchCompleted(true));
                 return false;
             } else {
@@ -663,7 +672,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
         @Override
         public Models.Filter<FileDescriptor> call() throws Exception {
-            return new AbstractModelFilter<FileDescriptor>(SEARCH_OPTIONS) {
+            return new AbstractModelFilter<FileDescriptor>() {
                 @NonNull
                 @Override
                 protected String getItemValue(@NonNull final FileDescriptor item) {

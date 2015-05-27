@@ -56,6 +56,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.MapFormat;
+import org.openide.util.Parameters;
 
 /**
  * Fluent interface for file creation. The Builder is first parametrized. After
@@ -98,6 +99,29 @@ public final class FileBuilder {
          * The template will not be processed if no custom {@link CreateFromTemplateHandler} handles it.
          */
         FAIL
+    }
+    
+    /**
+     * Creates a Builder based on the CreateDescriptor. The FileBuilder inherits 
+     * all parameters of the original {@link CreateDescriptor}. The client may change the attributes.
+     * The method may be useful when creating secondary files; for example target and all attributes
+     * are retained. During {@link #build()}, attributes may be redefined as needed for the 
+     * additional file, just like in normal Builder operation.
+     * <p/>
+     * The new FileBuilder instance is completely indepenent of the original Descriptor. If the CreateDescriptor
+     * supports additional properties in the future, using this method guarantees that they will be
+     * transferred to the FileBuilder copy.
+     * 
+     * @param desc the original descriptor
+     * @return new FileBuilder
+     * @since 1.5
+     */
+    public static @NonNull FileBuilder fromDescriptor(@NonNull CreateDescriptor desc) {
+        Parameters.notNull("desc", desc);
+        return new FileBuilder(desc.getTemplate(), desc.getTarget()).
+                name(desc.getProposedName()).
+                useLocale(desc.getLocale()).
+                withParameters(desc.getParameters());
     }
     
     /**
@@ -227,6 +251,29 @@ public final class FileBuilder {
     }
     
     CreateDescriptor    getDescriptor() {
+        return descriptor;
+    }
+    
+    /**
+     * Creates a descriptor from the current Builder's state. 
+     * If `collectAttributes' is false, the descriptor
+     * will have no additional parameters set from {@link CreateFromTemplateAttributes} providers;
+     * the caller must process the providers, if it wishes to get additional attributes.
+     * The Descriptor can be used to collect information from attribute providers or manually
+     * trigger file creation in template handler.
+     * <p/>
+     * The operation changes the FileBuilder state.
+     * 
+     * @param collectAttributes if true, attribute providers are asked to add their attributes
+     * to the builder/descriptor.
+     * @return descriptor
+     * @since 1.5
+     */
+    public @NonNull CreateDescriptor createDescriptor(boolean collectAttributes) {
+        if (collectAttributes) {
+            CreateFromTemplateImpl.collectAttributes(this);
+        }
+        CreateFromTemplateImpl.computeEffectiveName(descriptor);
         return descriptor;
     }
     

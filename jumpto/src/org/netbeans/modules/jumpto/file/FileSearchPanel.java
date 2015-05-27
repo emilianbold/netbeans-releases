@@ -51,6 +51,7 @@ package org.netbeans.modules.jumpto.file;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -61,6 +62,8 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
@@ -75,6 +78,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
@@ -86,10 +90,13 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
+import org.openide.util.Pair;
 
 /**
  *
- * @author  Petr Hrebejk, Andrei Badea, Tomas Zezula
+ * @author  Petr Hrebejk
+ * @author  Andrei Badea
+ * @author  Tomas Zezula
  */
 public class FileSearchPanel extends javax.swing.JPanel implements ActionListener {
 
@@ -501,31 +508,47 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
         }
 }//GEN-LAST:event_resultListValueChanged
 
+    @CheckForNull
+    private Pair<String,JComponent> listActionFor(KeyEvent ev) {
+        InputMap map = resultList.getInputMap();
+        Object o = map.get(KeyStroke.getKeyStrokeForEvent(ev));
+        if (o instanceof String) {
+            return Pair.<String,JComponent>of((String)o, resultList);
+        }
+        map = resultScrollPane.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        o = map.get(KeyStroke.getKeyStrokeForEvent(ev));
+        if (o instanceof String) {
+            return Pair.<String,JComponent>of((String)o, resultScrollPane);
+        }
+        return null;
+    }
+
     private void fileNameTextFieldKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_fileNameTextFieldKeyPressed
-        Object actionKey = resultList.getInputMap().get(KeyStroke.getKeyStrokeForEvent(evt));
-        
+        final Pair<String,JComponent> p = listActionFor(evt);
+        final String actionKey = p == null ? null : p.first();
+        final JComponent actionTarget = p == null ? null : p.second();
+
         // see JavaFastOpen.boundScrollingKey()
-        boolean isListScrollAction = 
+        boolean isListScrollAction =
             "selectPreviousRow".equals(actionKey) || // NOI18N
-            "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N            
+            "selectPreviousRowExtendSelection".equals(actionKey) || // NOI18N
             "selectNextRow".equals(actionKey) || // NOI18N
             "selectNextRowExtendSelection".equals(actionKey) || // NOI18N
             // "selectFirstRow".equals(action) || // NOI18N
             // "selectLastRow".equals(action) || // NOI18N
-            "scrollUp".equals(actionKey) || // NOI18N            
-            "scrollUpExtendSelection".equals(actionKey) || // NOI18N            
+            "scrollUp".equals(actionKey) || // NOI18N
+            "scrollUpExtendSelection".equals(actionKey) || // NOI18N
             "scrollDown".equals(actionKey) || // NOI18N
             "scrollDownExtendSelection".equals(actionKey); // NOI18N
-        
-        
+
         int selectedIndex = resultList.getSelectedIndex();
         ListModel model = resultList.getModel();
         int modelSize = model.getSize();
-        
+
         // Wrap around
-        if ( "selectNextRow".equals(actionKey) && 
+        if ( "selectNextRow".equals(actionKey) &&
               ( selectedIndex == modelSize - 1 ||
-                ( selectedIndex == modelSize - 2 && 
+                ( selectedIndex == modelSize - 2 &&
                   model.getElementAt(modelSize - 1) == SEARCH_IN_PROGRES )
              ) ) {
             resultList.setSelectedIndex(0);
@@ -535,19 +558,18 @@ private void resultListValueChanged(javax.swing.event.ListSelectionEvent evt) {/
         else if ( "selectPreviousRow".equals(actionKey) &&
                    selectedIndex == 0 ) {
             int last = modelSize - 1;
-            
             if ( model.getElementAt(last) == SEARCH_IN_PROGRES ) {
                 last--;
-            } 
-            
+            }
             resultList.setSelectedIndex(last);
             resultList.ensureIndexIsVisible(last);
             return;
         }
-        
+
         if (isListScrollAction) {
-            Action a = resultList.getActionMap().get(actionKey);
-            a.actionPerformed(new ActionEvent(resultList, 0, (String)actionKey));
+            assert actionTarget != null;
+            final Action a = actionTarget.getActionMap().get(actionKey);
+            a.actionPerformed(new ActionEvent(actionTarget, 0, (String)actionKey));
             evt.consume();
         } else {
             //handling http://netbeans.org/bugzilla/show_bug.cgi?id=203119

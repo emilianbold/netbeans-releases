@@ -161,7 +161,7 @@ public final class ClientSideProjectUtilities {
     }
 
     public static void initializeProject(@NonNull ClientSideProject project, @NullAllowed String sources, @NullAllowed String siteRoot,
-            @NullAllowed String test) throws IOException {
+            @NullAllowed String test, @NullAllowed String testSelenium) throws IOException {
         assert sources != null || siteRoot != null : "Sources and/or Site Root must be set";
         File projectDirectory = FileUtil.toFile(project.getProjectDirectory());
         assert projectDirectory != null;
@@ -177,11 +177,15 @@ public final class ClientSideProjectUtilities {
         if (test != null) {
             ensureDirectoryExists(is.resolveFile(projectDirectory, test));
         }
+        if (testSelenium != null) {
+            ensureDirectoryExists(is.resolveFile(projectDirectory, testSelenium));
+        }
         // save project
         ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
         projectProperties.setSourceFolder(sources);
         projectProperties.setSiteRootFolder(siteRoot);
         projectProperties.setTestFolder(test);
+        projectProperties.setTestSeleniumFolder(testSelenium);
         projectProperties.setSelectedBrowser(project.getProjectWebBrowser().getId());
         projectProperties.save();
     }

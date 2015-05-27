@@ -66,6 +66,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.openide.filesystems.FileObject;
@@ -74,7 +75,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JSFMoveClassPlugin implements RefactoringPlugin{
+public class JSFMoveClassPlugin extends JavaRefactoringPlugin {
     
     private Collection<TreePathHandle> treePathHandles;
     
@@ -86,22 +87,27 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem checkParameters() {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
-    
-    public void cancelRequest() {
-        
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         Collection<? extends FileObject> fileObjects = refactoring.getRefactoringSource().lookupAll(FileObject.class);    
         Collection treePathHandlesFromLookup = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
@@ -154,7 +160,7 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                 if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())) {
                     Project project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                     if (project != null) {
-                        Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                        Element resElement = JSFRefactoringUtils.resolveElement(getClasspathInfo(refactoring), refactoring, treePathHandle);
                         TypeElement type = (TypeElement) resElement;
                         URL targetUrl = refactoring.getTarget().lookup(URL.class);
                         if (type != null && targetUrl != null) {

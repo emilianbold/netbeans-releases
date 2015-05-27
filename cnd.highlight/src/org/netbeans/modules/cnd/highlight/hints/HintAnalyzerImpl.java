@@ -93,7 +93,7 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
             return Collections.<ErrorDescription>emptyList();
         }
         CsmErrorProvider.Request request = new AbstractAnalyzer.RequestImpl(csmFile, ctx, cancel);
-        final ArrayList<ErrorDescription> res = new ArrayList<ErrorDescription>();
+        final ArrayList<ErrorDescription> res = new ArrayList<>();
         CsmErrorProvider.Response responce = new ResponseImpl(sr, res, cancel);
         provider.getErrors(request, responce);
         return res;
@@ -146,7 +146,7 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
 
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
-            List<WarningDescription> result = new ArrayList<WarningDescription>();
+            List<WarningDescription> result = new ArrayList<>();
             final CsmHintProvider provider = (CsmHintProvider)CsmHintProvider.getInstance();
             for(CodeAudit audit : provider.getAudits()) {
                 result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(), CsmHintProvider.NAME, provider.getDisplayName()));

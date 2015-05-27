@@ -53,8 +53,12 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -90,54 +94,51 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
         }
         
         String binaryRootS = binaryRoot.toExternalForm();
-        URL[] urls = null;
+        URL url = null;
         if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-            if ((urls = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/nb-javac-api")) == null) { // NOI18N
-                urls = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/nb-javac-impl"); // NOI18N
+            if ((url = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/nb-javac-api")) == null) { // NOI18N
+                url = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/nb-javac-impl"); // NOI18N
             }
-            final FileObject resultFO = urls != null ? URLMapper.findFileObject(urls[0]) : null;
-            if (resultFO != null) {
-                FileObject projectFO = urls != null ? URLMapper.findFileObject(urls[1]) : null;
-                if (projectFO != null) {
-                    try {
-                        ProjectManager.getDefault().findProject(projectFO);
-                    } catch (IOException ex) {
-                        Logger.getLogger(SourceForBinaryQueryImpl.class.getName()).log(Level.FINE, null, ex);
-                    } catch (IllegalArgumentException ex) {
-                        Logger.getLogger(SourceForBinaryQueryImpl.class.getName()).log(Level.FINE, null, ex);
+            FileObject projectFO = url != null ? URLMapper.findFileObject(url) : null;
+            if (projectFO != null) {
+                try {
+                    Project project = ProjectManager.getDefault().findProject(projectFO);
+                    SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    final FileObject[] roots = new FileObject[sourceGroups.length];
+                    for (int i = 0; i < sourceGroups.length; i++) {
+                        roots[i] = sourceGroups[i].getRootFolder();
                     }
-                }
-                
-                Result result = new Result() {
-                    public FileObject[] getRoots() {
-                        return new FileObject[]{resultFO};
-                    }
+                    Result result = new Result() {
+                        public FileObject[] getRoots() {
+                            return roots;
+                        }
 
-                    public void addChangeListener(ChangeListener l) {
-                    }
+                        public void addChangeListener(ChangeListener l) {
+                        }
 
-                    public void removeChangeListener(ChangeListener l) {
-                    }
-                };
+                        public void removeChangeListener(ChangeListener l) {
+                        }
+                    };
 
-                url2Result.put(binaryRoot, new WeakReference<Result>(result));
-                result2URL.put(result, binaryRoot);
+                    url2Result.put(binaryRoot, new WeakReference<Result>(result));
+                    result2URL.put(result, binaryRoot);
 
-                return result;
+                    return result;
+                } catch (IOException ex) {
+                    Logger.getLogger(SourceForBinaryQueryImpl.class.getName()).log(Level.FINE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(SourceForBinaryQueryImpl.class.getName()).log(Level.FINE, null, ex);
+                }                
             }
         }
         return null;
     }
 
-    private URL[] checkForBinaryRoot(String ext, String prefix) {
+    private URL checkForBinaryRoot(String ext, String prefix) {
         if (ext.endsWith(prefix + ".jar!/")) { // NOI18N
             try {
-                String part = ext.substring("jar:".length(), ext.length() - prefix.length() - ".jar!/".length()); // NOI18N
-                
-                return new URL[] {
-                    new URL(part + "/nb-javac/src/share/classes"), // NOI18N
-                    new URL(part + "/nb-javac/make/netbeans/nb-javac")  // NOI18N
-                };
+                String part = ext.substring("jar:".length(), ext.length() - prefix.length() - ".jar!/".length()); // NOI18N                
+                return new URL(part + "/nb-javac/make/netbeans/nb-javac"); // NOI18N
             } catch (MalformedURLException ex) {
                 Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N
             }

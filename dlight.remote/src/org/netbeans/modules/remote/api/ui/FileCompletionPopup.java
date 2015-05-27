@@ -79,12 +79,12 @@ import javax.swing.text.JTextComponent;
  */
 class FileCompletionPopup extends JPopupMenu implements KeyListener {
     
-    private final JList list;
+    private final JList<File> list;
     private final JTextField textField;
     private final FileChooserBuilder.JFileChooserEx chooser;
     
     public FileCompletionPopup(FileChooserBuilder.JFileChooserEx chooser, JTextField textField, Vector<File> files) {
-        this.list = new JList(files);
+        this.list = new JList<>(files);
         this.textField = textField;
         this.chooser = chooser;
         list.setVisibleRowCount(4);
@@ -104,7 +104,7 @@ class FileCompletionPopup extends JPopupMenu implements KeyListener {
         textField.addKeyListener(this);
     }
      
-    public void setDataList(Vector files) {
+    public void setDataList(Vector<File> files) {
         list.setListData(files);
         ensureSelection();
     }
@@ -192,7 +192,7 @@ class FileCompletionPopup extends JPopupMenu implements KeyListener {
             int index = list.locationToIndex(p);
             list.setSelectedIndex(index);
             setVisible(false);
-            File file = (File)list.getSelectedValue();
+            File file = list.getSelectedValue();
             if (file == null) {
                 return;
             }
@@ -244,7 +244,7 @@ class FileCompletionPopup extends JPopupMenu implements KeyListener {
         }
         
         if (isCompletionKey(code, textField) && !e.isConsumed()) {
-            File file = (File)list.getSelectedValue();
+            File file = list.getSelectedValue();
             if(file != null) { 
                 if(file.equals(chooser.getCurrentDirectory())) {
                     chooser.firePropertyChange(JFileChooser.DIRECTORY_CHANGED_PROPERTY, false, true);

@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -80,6 +81,9 @@ import org.openide.util.RequestProcessor;
         this.data = data;
         wizardListener = listener;
         initComponents();
+        
+        cbACL.setEnabled(true);
+        cbACL.setSelected(true);
         
         textLoginName.setText(System.getProperty("user.name"));
 
@@ -161,6 +165,7 @@ import org.openide.util.RequestProcessor;
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         textLoginName = new javax.swing.JTextField();
+        cbACL = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(534, 409));
         setRequestFocusEnabled(false);
@@ -210,6 +215,13 @@ import org.openide.util.RequestProcessor;
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbACL, org.openide.util.NbBundle.getMessage(CreateHostVisualPanel2.class, "CreateHostVisualPanel2.cbACL.text")); // NOI18N
+        cbACL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbACLActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -220,19 +232,25 @@ import org.openide.util.RequestProcessor;
             .addComponent(jScrollPane1)
             .addGroup(layout.createSequentialGroup()
                 .addGap(18, 18, 18)
-                .addComponent(cbFindCompilers, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbACL, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbFindCompilers, javax.swing.GroupLayout.PREFERRED_SIZE, 502, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 2, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(authPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 10, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbFindCompilers)
+                .addGap(2, 2, 2)
+                .addComponent(cbACL)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 250, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(pbarStatusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -248,6 +266,15 @@ import org.openide.util.RequestProcessor;
             }
         }
     }//GEN-LAST:event_cbFindCompilersActionPerformed
+
+    private void cbACLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbACLActionPerformed
+        data.enableACL(cbACL.isSelected());
+        ExecutionEnvironment env = data.getExecutionEnvironment();
+        if (env != null) {
+            FileSystemProvider.setAccessCheckType(env, cbACL.isSelected()
+                    ? FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST);
+        }
+    }//GEN-LAST:event_cbACLActionPerformed
     private ProgressHandle phandle;
     private volatile HostValidator hostValidator;
 
@@ -316,6 +343,8 @@ import org.openide.util.RequestProcessor;
                 try {
                     StopWatch sw = StopWatch.createAndStart(TRACE_SETUP, TRACE_SETUP_PREFIX, env, "hostValidator.validate"); //NOI18N
                     hostValidator = new HostValidatorImpl(data.getCacheManager());
+                    FileSystemProvider.setAccessCheckType(env, cbACL.isSelected()
+                            ? FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST);                    
                     if (hostValidator.validate(env, data.getSearchTools(), new TextComponentWriter(tpOutput))) {
                         sw.stop();
                         hostFound = env;
@@ -338,6 +367,7 @@ import org.openide.util.RequestProcessor;
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel authPanel;
+    private javax.swing.JCheckBox cbACL;
     private javax.swing.JCheckBox cbFindCompilers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

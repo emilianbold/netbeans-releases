@@ -49,14 +49,15 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SafeDeleteRefactoring;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
@@ -69,7 +70,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Pisl, Po-Ting Wu
  */
-public class JSFSafeDeletePlugin implements RefactoringPlugin{
+public class JSFSafeDeletePlugin extends JavaRefactoringPlugin{
     
     /** This one is important creature - makes sure that cycles between plugins won't appear */
     private static ThreadLocal semafor = new ThreadLocal();
@@ -84,22 +85,27 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
         this.refactoring = refactoring;
     }
     
+    @Override
     public Problem preCheck() {
         return null;
     }
     
+    @Override
     public Problem checkParameters() {
         return null;
     }
     
+    @Override
     public Problem fastCheckParameters() {
         return null;
     }
-    
-    public void cancelRequest() {
-        
+
+    @Override
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
     
+    @Override
     public Problem prepare(RefactoringElementsBag refactoringElements) {
         if (semafor.get() == null) {
             semafor.set(new Object());
@@ -124,7 +130,7 @@ public class JSFSafeDeletePlugin implements RefactoringPlugin{
             if (treePathHandle != null && TreeUtilities.CLASS_TREE_KINDS.contains(treePathHandle.getKind())){
                 project = FileOwnerQuery.getOwner(treePathHandle.getFileObject());
                 if (project != null){
-                    Element resElement = JSFRefactoringUtils.resolveElement(refactoring, treePathHandle);
+                    Element resElement = JSFRefactoringUtils.resolveElement(getClasspathInfo(refactoring), refactoring, treePathHandle);
                     TypeElement type = (TypeElement) resElement;
                     String fqcn = type.getQualifiedName().toString();
                     List <Occurrences.OccurrenceItem> items = Occurrences.getAllOccurrences(project, fqcn, null);

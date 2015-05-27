@@ -566,7 +566,9 @@ final class Worker implements Runnable {
                 roots.toArray(new FileObject[roots.size()]));
             final QuerySupport.Query.Factory f = q.getQueryFactory().
                     setCamelCaseSeparator(FileSearchAction.CAMEL_CASE_SEPARATOR).
-                    setCamelCasePart(FileSearchAction.CAMEL_CASE_PART);
+                    setCamelCasePart(Utils.isCaseSensitive(Utils.toSearchType(request.getSearchKind())) ?
+                            FileSearchAction.CAMEL_CASE_PART_CASE_SENSITIVE :
+                            FileSearchAction.CAMEL_CASE_PART_CASE_INSENSITIVE);
             if (isCancelled()) {
                 return false;
             }
@@ -667,7 +669,9 @@ final class Worker implements Runnable {
             final NameMatcher matcher = NameMatcherFactory.createNameMatcher(
                     request.getText(),
                     jumpToSearchType,
-                    FileSearchAction.SEARCH_OPTIONS);
+                    Utils.isCaseSensitive(Utils.toSearchType(request.getSearchKind())) ?
+                            FileSearchAction.SEARCH_OPTIONS_CASE_SENSITIVE :
+                            FileSearchAction.SEARCH_OPTIONS_CASE_INSENSITIVE);
             final List<FileDescriptor> files = new ArrayList<FileDescriptor>();
             final Collection <FileObject> allFolders = new HashSet<FileObject>();
             List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;

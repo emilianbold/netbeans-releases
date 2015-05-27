@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -188,11 +187,6 @@ public class SiteZip implements SiteTemplateImplementation {
                 archiveFile.deleteOnExit();
             }
         }
-    }
-
-    @Override
-    public Collection<String> supportedLibraries() {
-        return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(getArchiveFile()));
     }
 
     private File getArchiveFile() {

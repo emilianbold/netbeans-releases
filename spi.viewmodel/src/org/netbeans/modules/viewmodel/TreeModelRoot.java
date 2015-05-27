@@ -45,12 +45,12 @@
 package org.netbeans.modules.viewmodel;
 
 import java.beans.PropertyVetoException;
+import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,11 +58,9 @@ import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import org.netbeans.spi.viewmodel.Models;
 
 import org.netbeans.spi.viewmodel.ModelEvent;
-import org.netbeans.spi.viewmodel.ModelListener;
-
+import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -71,7 +69,6 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 /**
@@ -285,12 +282,18 @@ public class TreeModelRoot {
     public synchronized void destroy () {
         if (model != null) {
             for (ModelChangeListener mchl : modelListeners) {
-                mchl.model.removeModelListener (mchl);
+                Models.CompoundModel cm = mchl.getModel();
+                if (cm != null) {
+                    cm.removeModelListener (mchl);
+                }
             }
             treeFeatures.destroy();
             treeFeatures = null;
         }
         model = null;
+        if (hyperModel != null) {
+            hyperModel = null;
+        }
         synchronized (objectToNode) {
             objectToNode.clear();
         }
@@ -312,10 +315,14 @@ public class TreeModelRoot {
 
         //private final Logger logger = Logger.getLogger(ModelChangeListener.class.getName());
 
-        private final Models.CompoundModel model;
+        private final Reference<Models.CompoundModel> modelRef;
 
         public ModelChangeListener(Models.CompoundModel model) {
-            this.model = model;
+            this.modelRef = new WeakReference<Models.CompoundModel>(model);
+        }
+        
+        Models.CompoundModel getModel() {
+            return modelRef.get();
         }
 
         public void modelChanged (final ModelEvent event) {
@@ -325,6 +332,7 @@ public class TreeModelRoot {
             //logger.log(Level.FINE, "Called from ", new IllegalStateException("TEST_MODEL_CHANGED"));
             SwingUtilities.invokeLater (new Runnable () {
                 public void run () {
+                    Models.CompoundModel model = getModel();
                     if (model == null)
                         return; // already disposed
                     if (event instanceof ModelEvent.TableValueChanged) {

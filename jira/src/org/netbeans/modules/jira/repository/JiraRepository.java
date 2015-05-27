@@ -126,6 +126,7 @@ public class JiraRepository {
     private UnsubmittedTasksContainer unsubmittedTasksContainer;
     private PropertyChangeListener unsubmittedTasksListener;
     private final Object CACHE_LOCK = new Object();
+    private boolean queryCleanedup;
     
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -318,6 +319,22 @@ public class JiraRepository {
     private Set<JiraQuery> getQueriesIntern() {
         synchronized (QUERIES_LOCK) {
             if(queries == null) {
+                if(!queryCleanedup) {
+                    // clean up. we are deleting adhoc queries when closing the query dialog
+                    // an eventual crash could have left some stored in MylynSupport
+                    queryCleanedup = true;
+                    try {
+                        Set<IRepositoryQuery> iqs = MylynSupport.getInstance().getRepositoryQueries(taskRepository);
+                        for (IRepositoryQuery q : iqs) {
+                            if(q.getSummary().startsWith(JiraQuery.JIRA_ADHOC_QUERY_PREFIX)) {
+                                MylynSupport.getInstance().deleteQuery(q);
+                            }
+                        }
+                    } catch (CoreException ex) { 
+                        Jira.LOG.log(Level.INFO, null, ex);
+                    }
+                }
+
                 JiraStorageManager manager = Jira.getInstance().getStorageManager();
                 queries = manager.getQueries(this);
             }
@@ -327,7 +344,7 @@ public class JiraRepository {
 
     public Collection<JiraQuery> getQueries() {
         List<JiraQuery> ret = new ArrayList<JiraQuery>();
-        synchronized (QUERIES_LOCK) {
+        synchronized (QUERIES_LOCK) {            
             Set<JiraQuery> l = getQueriesIntern();
             ret.addAll(l);
             if(remoteFilters == null) {

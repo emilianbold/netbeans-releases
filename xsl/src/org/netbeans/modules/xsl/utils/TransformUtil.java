@@ -319,7 +319,7 @@ public class TransformUtil {
                 if ( ( notifier != null ) &&
                      ( detail != null ) ) {
                     CookieMessage message = new CookieMessage
-                        (unwrapException(exc).getLocalizedMessage(), 
+                        (unwrapExceptionMessage(exc), 
                          CookieMessage.FATAL_ERROR_LEVEL,
                          detail);
                     notifier.receive (message);
@@ -330,6 +330,16 @@ public class TransformUtil {
                 throw transExcept;
             }
         }
+    }
+    
+    public static String unwrapExceptionMessage(Throwable exc) {
+        Throwable msgHolder = unwrapException(exc);
+        String m = msgHolder.getMessage();
+        if (m != null) {
+            return m;
+        }
+        // no messag present, at least use the original exception's classname
+        return msgHolder.getClass().getSimpleName();
     }
 
     /** Unwrap wrapped cause exception.
@@ -390,9 +400,8 @@ public class TransformUtil {
 //                Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
 //            }
 
-            Throwable unwrappedExc = unwrapException (tex);
             CookieMessage message = new CookieMessage (
-                unwrappedExc.getLocalizedMessage(), 
+                unwrapExceptionMessage(tex), 
                 level,
                 new DefaultXMLProcessorDetail (tex)
             );

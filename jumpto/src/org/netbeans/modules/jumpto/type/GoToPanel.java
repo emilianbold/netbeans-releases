@@ -62,6 +62,8 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.InputMap;
+import javax.swing.JComponent;
+import static javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.KeyStroke;
@@ -76,6 +78,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.SearchHistory;
@@ -83,6 +86,7 @@ import org.netbeans.modules.jumpto.common.UiUtils;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -462,18 +466,27 @@ public class GoToPanel extends javax.swing.JPanel {
        }                
     }
     
-    private String listActionFor(KeyEvent ev) {
+    @CheckForNull
+    private Pair<String,JComponent> listActionFor(KeyEvent ev) {
         InputMap map = matchesList.getInputMap();
         Object o = map.get(KeyStroke.getKeyStrokeForEvent(ev));
         if (o instanceof String) {
-            return (String)o;
-        } else {
-            return null;
+            return Pair.<String,JComponent>of((String)o, matchesList);
         }
+        map = matchesScrollPane1.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        o = map.get(KeyStroke.getKeyStrokeForEvent(ev));
+        if (o instanceof String) {
+            return Pair.<String,JComponent>of((String)o, matchesScrollPane1);
+        }
+        return null;
     }
 
     private boolean boundScrollingKey(KeyEvent ev) {
-        String action = listActionFor(ev);
+        final Pair<String,JComponent> p = listActionFor(ev);
+        if (p == null) {
+            return false;
+        }
+        String action = p.first();
         // See BasicListUI, MetalLookAndFeel:
         return "selectPreviousRow".equals(action) || // NOI18N
         "selectNextRow".equals(action) || // NOI18N
@@ -484,8 +497,12 @@ public class GoToPanel extends javax.swing.JPanel {
     }
 
     private void delegateScrollingKey(KeyEvent ev) {
-        String action = listActionFor(ev);
-        
+        final Pair<String,JComponent> p = listActionFor(ev);
+        if (p == null) {
+            return;
+        }
+        final String action = p.first();
+        final JComponent target = p.second();
         // Wrap around
         if ( "selectNextRow".equals(action) && 
             matchesList.getSelectedIndex() == matchesList.getModel().getSize() -1 ) {
@@ -501,9 +518,9 @@ public class GoToPanel extends javax.swing.JPanel {
             return;
         }        
         // Plain delegation        
-        Action a = matchesList.getActionMap().get(action);
+        Action a = target.getActionMap().get(action);
         if (a != null) {
-            a.actionPerformed(new ActionEvent(matchesList, 0, action));
+            a.actionPerformed(new ActionEvent(target, 0, action));
         }
     }
     

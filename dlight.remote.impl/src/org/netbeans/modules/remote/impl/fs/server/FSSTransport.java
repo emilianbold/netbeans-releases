@@ -75,6 +75,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFileSystem;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemManager;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemTransport;
 import org.netbeans.modules.remote.impl.fs.RemoteFileSystemUtils;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -600,6 +601,22 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
         }
     }
     
+
+    @Override
+    protected boolean canSetAccessCheckType() {
+        return true;
+    }
+
+    @Override
+    protected void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType) {
+        dispatcher.setAccessCheckType(accessCheckType);
+    }
+
+    @Override
+    protected FileSystemProvider.AccessCheckType getAccessCheckType() {
+        return dispatcher.getAccessCheckType();
+    }
+
     private class WarmupImpl implements Warmup, FSSResponse.Listener, Runnable {
 
         private final String path;
@@ -748,5 +765,5 @@ public class FSSTransport extends RemoteFileSystemTransport implements Connectio
                         env, path, realCnt.get(), System.currentTimeMillis() - time);
             }
         }
-    }    
+    }
 }

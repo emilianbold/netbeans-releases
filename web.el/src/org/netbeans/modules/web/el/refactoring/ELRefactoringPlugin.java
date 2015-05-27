@@ -45,6 +45,7 @@ package org.netbeans.modules.web.el.refactoring;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -54,8 +55,8 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.el.ELLanguage;
 import org.netbeans.modules.web.el.ELParserResult;
@@ -65,7 +66,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public class ELRefactoringPlugin implements RefactoringPlugin {
+public class ELRefactoringPlugin extends JavaRefactoringPlugin {
 
     protected final AbstractRefactoring refactoring;
 
@@ -89,7 +90,8 @@ public class ELRefactoringPlugin implements RefactoringPlugin {
     }
 
     @Override
-    public void cancelRequest() {
+    protected JavaSource getJavaSource(Phase p) {
+        return null;
     }
 
     @Override
@@ -113,7 +115,7 @@ public class ELRefactoringPlugin implements RefactoringPlugin {
         }
         // seeems we're looking for usages of a class/method that is not declared
         // in the project's sources
-        ClasspathInfo cpinfo = refactoring.getContext().lookup(ClasspathInfo.class);
+        ClasspathInfo cpinfo = getClasspathInfo(refactoring);
         FileObject[] roots = cpinfo.getClassPath(ClasspathInfo.PathKind.SOURCE).getRoots();
         return roots.length > 0 ? roots[1] : null;
     }

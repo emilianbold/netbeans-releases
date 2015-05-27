@@ -143,13 +143,15 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
     }
 
     public void testDeleteContComment2() throws Exception {
-        deleteChar("// ^  ", "^  ");
-        deleteChar("\n// ^  ", "\n^  ");
+        deleteChar("// ^var x = 5", "^var x = 5");
+        deleteChar("\n// ^alert()", "\n^alert()");
     }
 
     public void testNoDeleteContComment() throws Exception {
         deleteChar("//  ^", "// ^");
         deleteChar("//^", "/^");
+        deleteChar("// ^  ", "//^  ");
+        deleteChar("\n// ^  ", "\n//^  ");
         deleteChar("puts ('// ^')", "puts ('//^')");
     }
 
@@ -236,6 +238,10 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
         MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
                 .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
         deleteChar("x = {^}", "x = ^}");
+    }
+
+    public void testNoDeleteSlashInString() throws Exception {
+        deleteChar("'http://localhost/aa/src/^/todolists.php'", "'http://localhost/aa/src^/todolists.php'");
     }
 
 }

@@ -66,8 +66,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -260,7 +258,7 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
 		String oldName = warName.substring(0, warName.length() - 4);
 		if (warName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
 		    projectProps.put(WebProjectProperties.WAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
-		if (warEarName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
+		if (warEarName != null && warEarName.endsWith(".war") && oldName.equals(oldProjectName)) //NOI18N
 		    projectProps.put(WebProjectProperties.WAR_EAR_NAME, PropertyUtils.getUsablePropertyName(newName) + ".war"); //NOI18N
 
 		ProjectWebModule wm = (ProjectWebModule) project.getLookup().lookup(ProjectWebModule.class);

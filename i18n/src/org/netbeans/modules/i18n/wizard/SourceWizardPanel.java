@@ -118,8 +118,10 @@ final class SourceWizardPanel extends JPanel {
         
         if (testRole) {
             setName(Util.getString("TXT_SelecTestSources"));            //NOI18N
+            HelpCtx.setHelpIDString(this, Util.HELP_ID_SELECTTESTSOURCES);
         } else {
             setName(Util.getString("TXT_SelectSources"));               //NOI18N
+            HelpCtx.setHelpIDString(this, Util.HELP_ID_SELECTSOURCES);
         }        
     }
     

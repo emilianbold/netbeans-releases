@@ -134,7 +134,7 @@ public final class SemanticEntitiesProvider {
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
             Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
-            List<CsmOffsetable> res = new ArrayList<CsmOffsetable>();
+            List<CsmOffsetable> res = new ArrayList<>();
             for(CsmReference ref : references) {
                 if (interrupter.cancelled()) {
                     break;
@@ -206,7 +206,7 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=500)
     })
     public static final class FastFunctionsCodeProvider extends AbstractSemanticEntity {
-        private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
         
         public FastFunctionsCodeProvider(){
             super(FontColorProvider.Entity.FUNCTION);
@@ -227,7 +227,7 @@ public final class SemanticEntitiesProvider {
         @Override
         public List<? extends CsmOffsetable> getBlocks(CsmFile csmFile, Document doc, Interrupter interrupter) {
             Collection<CsmReference> references = CsmReferenceResolver.getDefault().getReferences(csmFile);
-            List<CsmOffsetable> res = new ArrayList<CsmOffsetable>();
+            List<CsmOffsetable> res = new ArrayList<>();
             for(CsmReference ref : references) {
                 if (interrupter.cancelled()) {
                     break;
@@ -272,7 +272,7 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=600)
     })
     public static final class FunctionsCodeProvider extends AbstractSemanticEntity {
-        private Map<String, AttributeSet> funUsageColors = new HashMap<String, AttributeSet>();
+        private Map<String, AttributeSet> funUsageColors = new HashMap<>();
         
         public FunctionsCodeProvider() {
             super(FontColorProvider.Entity.FUNCTION);
@@ -329,8 +329,8 @@ public final class SemanticEntitiesProvider {
     public static final class MacrosCodeProvider extends AbstractSemanticEntity {
         /*package*/static final String NAME = "macros"; // NOI18N
         
-        private Map<String, AttributeSet> sysMacroColors= new HashMap<String, AttributeSet>();
-        private Map<String, AttributeSet> userMacroColors= new HashMap<String, AttributeSet>();
+        private Map<String, AttributeSet> sysMacroColors= new HashMap<>();
+        private Map<String, AttributeSet> userMacroColors= new HashMap<>();
         
         public MacrosCodeProvider() {
             super(FontColorProvider.Entity.DEFINED_MACRO);
@@ -426,7 +426,7 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=800)
     })
     public static final class UnusedVariablesCodeProvider extends AbstractSemanticEntity {
-        private final ConcurrentHashMap<String, AttributeSet> unusedToolTipColors= new ConcurrentHashMap<String, AttributeSet>();
+        private final ConcurrentHashMap<String, AttributeSet> unusedToolTipColors= new ConcurrentHashMap<>();
         private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
                     EditorStyleConstants.Tooltip,
                     NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
@@ -480,16 +480,16 @@ public final class SemanticEntitiesProvider {
     private SemanticEntitiesProvider() {
         Collection<? extends SemanticEntity> lookupAll = Lookup.getDefault().lookupAll(SemanticEntity.class);
         if (HighlighterBase.MINIMAL) { // for QEs who want to save performance on UI tests
-            list = new ArrayList<SemanticEntity>();
+            list = new ArrayList<>();
             list.add(lookupAll.iterator().next());
         } else {
-            list = new ArrayList<SemanticEntity>(Lookup.getDefault().lookupAll(SemanticEntity.class));
+            list = new ArrayList<>(Lookup.getDefault().lookupAll(SemanticEntity.class));
         } 
     }
     
     private static abstract class AbstractSemanticEntity extends SemanticEntity {
 
-        private final ConcurrentHashMap<String, AttributeSet> color = new ConcurrentHashMap<String, AttributeSet>();
+        private final ConcurrentHashMap<String, AttributeSet> color = new ConcurrentHashMap<>();
         private final FontColorProvider.Entity entity;
         private static final AttributeSet cleanUp = AttributesUtilities.createImmutable(
                 StyleConstants.Underline, null,

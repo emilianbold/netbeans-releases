@@ -101,9 +101,14 @@ final class AdditionalWizardPanel extends JPanel {
     private AdditionalWizardPanel() {
         initComponents();
         initA11Y();
+        initHelpCtx();
         
         // set customized model
         setComboModel(sourceMap);
+    }
+    
+    private void initHelpCtx() {
+        HelpCtx.setHelpIDString(this, Util.HELP_ID_ADDITIONAL);
     }
 
     /** Does additional init of components. */

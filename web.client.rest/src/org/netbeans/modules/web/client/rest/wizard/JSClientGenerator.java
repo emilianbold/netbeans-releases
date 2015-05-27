@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -94,9 +93,9 @@ class JSClientGenerator {
     }
     
     enum HttpRequests {
-        POST("create"), 
-        PUT("update"),
-        DELETE("delete");
+        POST("create"),  // NOI18N
+        PUT("update"),  // NOI18N
+        DELETE("delete");  // NOI18N
         
         HttpRequests(String method){
             myBackboneMethod = method;
@@ -106,7 +105,7 @@ class JSClientGenerator {
             return myBackboneMethod;
         }
         
-        private String myBackboneMethod;
+        private final String myBackboneMethod;
     }
     
     private static final Logger LOG = Logger.getLogger( JSClientGenerator.class.getName()); 
@@ -146,7 +145,7 @@ class JSClientGenerator {
         myHeader =  new StringBuilder();
         mySidebar = new StringBuilder();
         myTmplCreate = new StringBuilder();
-        myTmplList = new StringBuilder();;
+        myTmplList = new StringBuilder();
         myTmplDetails = new StringBuilder();
         
         JavaSource javaSource = JavaSource.forFileObject( restSource);
@@ -254,7 +253,7 @@ class JSClientGenerator {
             String path = getValue( annotation );
             if ( parameters.isEmpty() ){
                 if ( path == null ){
-                    path = "";
+                    path = ""; // NOI18N
                 }
                 noParamGetMethods.put( path, method );
                 continue;
@@ -350,7 +349,7 @@ class JSClientGenerator {
         for (ExecutableElement method : methods) {
             List<? extends VariableElement> parameters = method.getParameters();
             boolean matches = false;
-            if ( parameters.size() == 0 ){
+            if (parameters.isEmpty()) {
                 matches = true;
             }
             else if ( parameters.size() == 1){
@@ -365,7 +364,7 @@ class JSClientGenerator {
             if ( matches ){
                 AnnotationMirror annotation = getAnnotation(method, PATH);
                 if ( annotation == null ){
-                    return "";
+                    return ""; // NOI18N
                 }
                 else {
                     return getValue(annotation);
@@ -420,7 +419,7 @@ class JSClientGenerator {
             if ( matches ){
                 AnnotationMirror annotation = getAnnotation(method, PATH);
                 if ( annotation == null ){
-                    paths.put(request, "") ;
+                    paths.put(request, ""); // NOI18N
                 }
                 else {
                     String path = getValue(annotation);
@@ -457,7 +456,7 @@ class JSClientGenerator {
         }
         String name = "AppRouter";                                  // NOI18N
         if ( myModelsCount >0 ){
-            name = name +myModelsCount;                              
+            name += myModelsCount;                              
         }
         RouterGenerator generator = new RouterGenerator(myRouters, name, 
                 modelGenerator);
@@ -510,7 +509,7 @@ class JSClientGenerator {
                 myTmplDetails.append("<div>\n");                                        // NOI18N
                 String idAttribute = null; 
                 if ( generator.useUi()){
-                    myTmplDetails.append("<table>\n<tbody>\n");
+                    myTmplDetails.append("<table>\n<tbody>\n"); // NOI18N
                 }
                 if ( modelGenerator.getIdAttribute()!= null ){
                     idAttribute = modelGenerator.getIdAttribute().getName();
@@ -705,7 +704,7 @@ class JSClientGenerator {
 
     private String removeParamTemplate( String path, String param ) {
         int index = path.indexOf('{');
-        String template = path;
+        String template;
         if ( index == -1 ){
             return path;
         }
@@ -755,7 +754,7 @@ class JSClientGenerator {
     private TypeMirror getParameterType( TypeMirror type ){
         if ( type instanceof DeclaredType ){
             List<? extends TypeMirror> typeArguments = ((DeclaredType)type).getTypeArguments();
-            if ( typeArguments.size() == 0){
+            if (typeArguments.isEmpty()) {
                 return null;
             }
             return typeArguments.get(0);
@@ -840,22 +839,8 @@ class JSClientGenerator {
         return getAnnotation(annotations, annotation);
     }
     
-    private  Map<String,AnnotationMirror> getAnnotions( Element element )
-    {
-        List<? extends AnnotationMirror> annotations = element.getAnnotationMirrors();
-        Map<String,AnnotationMirror> map = new HashMap<String, AnnotationMirror>();
-        for (AnnotationMirror annotationMirror : annotations) {
-            Element annotationElement = annotationMirror.getAnnotationType().asElement();
-            if ( annotationElement instanceof TypeElement){
-                TypeElement annotationDecl = (TypeElement) annotationElement;
-                map.put(annotationDecl.getQualifiedName().toString(), annotationMirror);
-            }
-        }
-        return map;
-    }
-    
-    private RestServiceDescription myDescription;
-    private JsUi myUi;
+    private final RestServiceDescription myDescription;
+    private final JsUi myUi;
     private StringBuilder myModels;
     private StringBuilder myRouters;
     private StringBuilder myHeader;
@@ -864,7 +849,7 @@ class JSClientGenerator {
     private StringBuilder myTmplCreate;
     private StringBuilder myTmplList;
     private StringBuilder myTmplDetails;
-    private Set<String> myEntities  = new HashSet<String>();
+    private final Set<String> myEntities = new HashSet<String>();
     private boolean isModelGenerated;
     private int myModelsCount;
     private boolean hasUi;

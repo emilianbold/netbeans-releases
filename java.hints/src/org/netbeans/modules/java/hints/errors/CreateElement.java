@@ -80,6 +80,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -113,6 +114,7 @@ public final class CreateElement implements ErrorRule<Void> {
     private static final Logger LOG = Logger.getLogger(CreateElement.class.getName());
     private static final int PRIO_TESTSOURCEGROUP = 500;
     private static final int PRIO_MAINSOURCEGROUP = 1000;
+    private static final int PRIO_INNER = 2000;
     
     /** Creates a new instance of CreateElement */
     public CreateElement() {
@@ -590,7 +592,7 @@ public final class CreateElement implements ErrorRule<Void> {
     
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, Element source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
         Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : Pair.<List<? extends TypeMirror>, List<String>>of(null, null);
-
+        
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
         }
@@ -600,9 +602,6 @@ public final class CreateElement implements ErrorRule<Void> {
         }
         final FileObject fileObject = info.getFileObject();
         Project p = FileOwnerQuery.getOwner(fileObject);
-        if (null == p) {
-            return Collections.emptyList();
-        }
         List<Fix> fixes = new ArrayList<>();
 
         for (Map.Entry<SourceGroup, Integer> entrySet : getPossibleSourceGroups(fileObject).entrySet()) {
@@ -614,6 +613,20 @@ public final class CreateElement implements ErrorRule<Void> {
             PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
             final CreateOuterClassFix fix = new CreateOuterClassFix(info, sourceGroupRoot, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, sourceRootName);
             fix.setPriority(value);
+            fixes.add(fix);
+        }
+        if (null == p || fixes.isEmpty()) {
+            // fall back to CP info, for siblings outside projects (and tests)
+            FileObject root = info.getClasspathInfo().getClassPath(
+                    PathKind.SOURCE).findOwnerRoot(info.getFileObject());
+            if (root == null) {
+                return Collections.emptyList();
+            }
+            PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
+            final CreateOuterClassFix fix = new CreateOuterClassFix(
+                    info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters,
+                    root.getName());
+            fix.setPriority(PRIO_MAINSOURCEGROUP);
             fixes.add(fix);
         }
         return fixes;
@@ -634,8 +647,9 @@ public final class CreateElement implements ErrorRule<Void> {
 
         if (targetFile == null)
             return Collections.<Fix>emptyList();
-
-        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, targetFile));
+        final CreateInnerClassFix fix = new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, targetFile);
+        fix.setPriority(PRIO_INNER);
+        return Collections.<Fix>singletonList(fix);
     }
 
     private static ElementKind getClassType(Set<ElementKind> types) {

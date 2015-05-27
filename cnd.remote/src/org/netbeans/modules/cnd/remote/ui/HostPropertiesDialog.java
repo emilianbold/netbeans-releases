@@ -56,9 +56,11 @@ import org.netbeans.modules.cnd.remote.server.RemoteServerList;
 import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
 import org.netbeans.modules.cnd.remote.sync.SyncUtils;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ValidateablePanel;
 import org.netbeans.modules.nativeexecution.api.util.ValidatablePanelListener;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Mutex;
@@ -113,6 +115,15 @@ public class HostPropertiesDialog extends JPanel {
                 record.setSyncFactory(syncFactory);
                 changed = true;
             }
+            if (pane.cbACL.isEnabled()) {
+                FileSystemProvider.AccessCheckType access = pane.cbACL.isSelected() ? 
+                        FileSystemProvider.AccessCheckType.FULL : FileSystemProvider.AccessCheckType.FAST;
+                ExecutionEnvironment execEnv = record.getExecutionEnvironment();
+                if (FileSystemProvider.getAccessCheckType(execEnv) != access) {
+                    FileSystemProvider.setAccessCheckType(execEnv, access);
+                    changed = true;
+                }
+            }
 //            if (record.isX11forwardingPossible()) {
             boolean x11forwarding = pane.cbX11.isSelected();
             if (x11forwarding != record.getX11Forwarding()) {
@@ -136,8 +147,12 @@ public class HostPropertiesDialog extends JPanel {
         initComponents();
 
         ok = new JButton("OK"); // NOI18N
+        final ExecutionEnvironment execEnv = serverRecord.getExecutionEnvironment();
 
-        vpanel = ConnectionManager.getInstance().getConfigurationPanel(serverRecord.getExecutionEnvironment());
+        cbACL.setEnabled(FileSystemProvider.canSetAccessCheckType(execEnv));
+        cbACL.setSelected(FileSystemProvider.getAccessCheckType(execEnv) == FileSystemProvider.AccessCheckType.FULL);
+
+        vpanel = ConnectionManager.getInstance().getConfigurationPanel(execEnv);
         vpanel.addValidationListener(validationListener);
 
         connectionPanel.add(vpanel);
@@ -183,6 +198,7 @@ public class HostPropertiesDialog extends JPanel {
         lblName = new javax.swing.JLabel();
         cbX11 = new javax.swing.JCheckBox();
         lblSync = new javax.swing.JLabel();
+        cbACL = new javax.swing.JCheckBox();
         errorLabel = new javax.swing.JLabel();
 
         connectionPanel.setLayout(new java.awt.BorderLayout());
@@ -198,6 +214,8 @@ public class HostPropertiesDialog extends JPanel {
 
         lblSync.setLabelFor(cbSync);
         org.openide.awt.Mnemonics.setLocalizedText(lblSync, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.lblSync.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbACL, org.openide.util.NbBundle.getMessage(HostPropertiesDialog.class, "HostPropertiesDialog.cbACL.text")); // NOI18N
 
         javax.swing.GroupLayout serverRecordPanelLayout = new javax.swing.GroupLayout(serverRecordPanel);
         serverRecordPanel.setLayout(serverRecordPanelLayout);
@@ -217,7 +235,10 @@ public class HostPropertiesDialog extends JPanel {
                         .addGap(12, 12, 12))
                     .addGroup(serverRecordPanelLayout.createSequentialGroup()
                         .addComponent(cbX11)
-                        .addContainerGap(288, Short.MAX_VALUE))))
+                        .addContainerGap(288, Short.MAX_VALUE))
+                    .addGroup(serverRecordPanelLayout.createSequentialGroup()
+                        .addComponent(cbACL)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         serverRecordPanelLayout.setVerticalGroup(
             serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -229,7 +250,9 @@ public class HostPropertiesDialog extends JPanel {
                 .addGroup(serverRecordPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblSync)
                     .addComponent(cbSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addGap(24, 24, 24)
+                .addComponent(cbACL)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbX11)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -244,25 +267,24 @@ public class HostPropertiesDialog extends JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 477, Short.MAX_VALUE)
+                    .addComponent(connectionPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 529, Short.MAX_VALUE)
                     .addComponent(serverRecordPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 465, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(connectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
+                .addComponent(connectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 71, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(serverRecordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(serverRecordPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(errorLabel))
+                .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbACL;
     private javax.swing.JComboBox cbSync;
     private javax.swing.JCheckBox cbX11;
     private javax.swing.JPanel connectionPanel;

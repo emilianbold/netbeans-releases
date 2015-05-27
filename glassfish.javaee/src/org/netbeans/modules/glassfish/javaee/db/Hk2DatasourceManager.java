@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -75,11 +76,13 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -156,9 +159,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         // Fallback option to retrieve data sources from domain.xml
         // for local server
         if (!server.isRemote() && null != domainsDir) {
+            // XXX This won't read app scoped DS. This does not seem to be a problem.
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
             return readDatasources(
-                    domainXml, "/domain/", server.getVersion());
+                    domainXml, "/domain/", server.getVersion(), false);
         } else {
             return Collections.EMPTY_SET;
         }
@@ -189,9 +193,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     public static Set<Datasource> getDatasources(
             final J2eeModule module, final GlassFishVersion version) {
-        File file = GlassfishConfiguration.getExistingResourceFile(module, version);
-        if (file != null) {
-            return readDatasources(file, "/", version);
+        Pair<File, Boolean> result = GlassfishConfiguration.getExistingResourceFile(module, version);
+        if (result != null) {
+            return readDatasources(result.first(), "/", version, result.second());
         } else {
             return new HashSet<>();
         }
@@ -223,15 +227,16 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @throws DatasourceAlreadyExistsException if the required data source
      *         already exists in resource file.
      */
-    private static File resourceFileForDSCreation(
+    private static Pair<File, Boolean> resourceFileForDSCreation(
             final String jndiName, final String url, final String username,
             final String password, final String driver, final J2eeModule module,
             final GlassFishVersion version,final ConnectionPoolFinder cpFinder
     ) throws ConfigurationException, DatasourceAlreadyExistsException {
-        final DuplicateJdbcResourceFinder jdbcFinder
-                = new DuplicateJdbcResourceFinder(jndiName);
-        File file = GlassfishConfiguration.getExistingResourceFile(module, version);
+        Pair<File, Boolean> pair = GlassfishConfiguration.getExistingResourceFile(module, version);
+        File file = pair == null ? null : pair.first();
         if (file != null && file.exists()) {
+            final DuplicateJdbcResourceFinder jdbcFinder
+                    = new DuplicateJdbcResourceFinder(jndiName);
             List<TreeParser.Path> pathList = new ArrayList<>();
             pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
             pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
@@ -247,8 +252,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             }
         }
-        return file != null
-                ? file : GlassfishConfiguration.getNewResourceFile(module, version);
+        return pair != null
+                ? pair : GlassfishConfiguration.getNewResourceFile(module, version);
     }
     
     /**
@@ -276,9 +281,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         SunDatasource ds;
         ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
         
-        File xmlFile = resourceFileForDSCreation(
+        Pair<File, Boolean> pair = resourceFileForDSCreation(
                 jndiName, url, username, password, driver, module, version, cpFinder);
 
+        File xmlFile = pair == null ? null : pair.first();
         try {
             String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
             if(vendorName == null) {
@@ -314,10 +320,15 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 createConnectionPool(xmlFile, poolName, url, username, password, driver);
             }
             
-            // create jdbc resource
-            createJdbcResource(xmlFile, jndiName, poolName);
+            // FIXME we generate the DS with the java:module namespace as
+            // it is close to the current behavior and it will work in both EAR
+            // and standalone module setup
+            String realJndi = getJndiName(jndiName, pair.second(), JndiNamespacesDefinition.MODULE_NAMESPACE);
 
-            ds = new SunDatasource(jndiName, url, username, password, driver);
+            // create jdbc resource
+            createJdbcResource(xmlFile, realJndi, poolName);
+            
+            ds = new SunDatasource(realJndi, url, username, password, driver, pair.second());
         } catch(IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new ConfigurationException(ex.getLocalizedMessage(), ex);
@@ -344,15 +355,15 @@ public class Hk2DatasourceManager implements DatasourceManager {
      */
     private static Set<Datasource> readDatasources(
             final File xmlFile, final String xPathPrefix,
-            final GlassFishVersion version) {
+            final GlassFishVersion version, boolean applicationScoped) {
         final Set<Datasource> dataSources = new HashSet<>();
 
         if (xmlFile.canRead()) {
-            final Map<String, JdbcResource> jdbcResourceMap = new HashMap<>();
+            final List<JdbcResource> jdbcResources = new LinkedList<>();
             final Map<String, ConnectionPool> connectionPoolMap = new HashMap<>();
 
             final List<TreeParser.Path> pathList = new ArrayList<>();
-            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResourceMap)));
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResources)));
             pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool", new ConnectionPoolReader(connectionPoolMap)));
 
             try {
@@ -361,7 +372,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
 
-            for (JdbcResource jdbc : jdbcResourceMap.values()) {
+            for (JdbcResource jdbc : jdbcResources) {
                 final ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
                 if (pool != null) {
                     try {
@@ -372,9 +383,12 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         final String username = pool.getProperty("User"); //NOI18N
                         final String password = pool.getProperty("Password"); //NOI18N
                         final String driverClassName = pool.getProperty("driverClass"); //NOI18N
+                        // FIXME for existing unprefixed JNDI names we assume it
+                        // is java:app in most cases (except module inside war) :(
+                        String jndi = getJndiName(jdbc.getJndiName(), applicationScoped,
+                                JndiNamespacesDefinition.APPLICATION_NAMESPACE);
                         final SunDatasource dataSource = new SunDatasource(
-                                jdbc.getJndiName(), url, username,
-                                password, driverClassName);
+                                jndi, url, username, password, driverClassName, applicationScoped);
                         dataSources.add(dataSource);
                         // Add Java EE 7 comp/DefaultDataSource data source
                         // as jdbc/__default clone (since GF 4).
@@ -393,7 +407,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }        
         return dataSources;
     }
-    
+
+    private static String getJndiName(String jndiName, boolean applicationScoped, String namespace) {
+        if (!applicationScoped) {
+            return jndiName;
+        }
+        return JndiNamespacesDefinition.normalize(jndiName, namespace);
+    }
+
     private static class JdbcResource {
 
         private final String jndiName;
@@ -419,10 +440,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
     private static class JdbcReader extends TreeParser.NodeReader {
 
-        private final Map<String, JdbcResource> resourceMap;
+        private final List<JdbcResource> resources;
         
-        public JdbcReader(Map<String, JdbcResource> resourceMap) {
-            this.resourceMap = resourceMap;
+        public JdbcReader(List<JdbcResource> resources) {
+            this.resources = resources;
         }
         
         // <jdbc-resource 
@@ -440,7 +461,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             if(jndiName != null && jndiName.length() > 0 && 
                     poolName != null && poolName.length() > 0) {
                 // add to jdbc resource list
-                resourceMap.put(poolName, 
+                resources.add(
                         new JdbcResource(jndiName, poolName));
             }
         }

@@ -55,10 +55,17 @@ import org.openide.windows.TopComponent;
 public abstract class HintAction extends TextAction implements PropertyChangeListener {
 
     protected HintAction() {
-        super(null);
+        this(null);
+    }
+
+    protected HintAction(String key) {
+        super(key);
         putValue("noIconInMenu", Boolean.TRUE); //NOI18N
 
-        TopComponent.getRegistry().addPropertyChangeListener(WeakListeners.propertyChange(HintAction.this, TopComponent.getRegistry()));
+        EditorRegistry.addPropertyChangeListener(WeakListeners.propertyChange(this, TopComponent.getRegistry()));
+
+        setEnabled(false);
+        updateEnabled();
     }
 
     private void updateEnabled() {

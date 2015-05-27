@@ -1427,6 +1427,58 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue249487.js", "this.iA^rg = iArg;", true); 
     }
     
+    public void testIssue252375_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252375.js", "this.xxx = x^xx;", true); 
+    }
+    
+    public void testIssue252375_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252375.js", "this.xx^x = xxx;", true); 
+    }
+    
+    public void testIssue252375_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252375.js", "fn^1: function (data) {", true); 
+    }
+    
+    public void testIssue252375_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252375.js", "fn1: function (d^ata) {", true); 
+    }
+    
+    public void testIssue252135_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252135.js", "var a^a = function bb () {", true); 
+    }
+    
+    public void testIssue252135_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252135.js", "var aa = function b^b () {", true); 
+    }
+    
+    public void testIssue226977_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue226977_01.js", "var us^er = {};", true); 
+    }
+    
+    public void testIssue226977_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue226977_02.js", "var se^lf = this;", true); 
+    }
+    
+    public void testIssue226977_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue226977_02.js", "self.onL^oading();", true); 
+    }
+    
+    public void testIssue252469_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252469.js", "_eve^nts[evtId] = handlers = [];", true);
+    }
+    
+    public void testIssue252469_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252469.js", "_events[ev^tId] = handlers = [];", true);
+    }
+    
+    public void testIssue252469_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252469.js", "_events[evtId] = hand^lers = [];", true);
+    }
+    
+    public void testIssue252019_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue252019.js", "var f^n = function FnName(){", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

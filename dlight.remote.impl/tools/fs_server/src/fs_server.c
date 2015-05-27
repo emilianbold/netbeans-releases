@@ -89,8 +89,8 @@ static int refresh_sleep = 1;
 //static bool shutting_down = false;
 
 #define FS_SERVER_MAJOR_VERSION 1
-#define FS_SERVER_MID_VERSION 6
-#define FS_SERVER_MINOR_VERSION 2
+#define FS_SERVER_MID_VERSION 7
+#define FS_SERVER_MINOR_VERSION 1
 
 typedef struct fs_entry {
     int /*short?*/ name_len;
@@ -580,6 +580,57 @@ static bool read_entries_from_cache(array/*<fs_entry>*/ *entries, dirtab_element
     return success;
 }
 
+/** 
+ * Implementation for  set_full_access_check and need_full_access_check. 
+ * The idea is just to hide both full_access_check field and its mutex
+ */
+static bool __full_access_check(const bool *new_value) {
+    static bool full_access_check = true;
+    static pthread_mutex_t full_access_mutex = PTHREAD_MUTEX_INITIALIZER;    
+    bool result;
+    mutex_lock(&full_access_mutex);
+    if (new_value) {
+        full_access_check = *new_value;
+        trace(TRACE_FINEST, "Setting full access check %s\n", full_access_check ? "ON" : "OFF");
+    }
+    result = full_access_check;
+    mutex_unlock(&full_access_mutex);
+    return result;
+}
+
+static void set_full_access_check(bool full) {
+    __full_access_check(&full);
+}
+
+static bool need_full_access_check() {
+    return __full_access_check(NULL);
+}
+
+static void get_access_c(const char *abspath, const struct stat *stat_buf, char *r, char *w, char *x) {
+    if (need_full_access_check()) {
+        // NB: access() returns 0 if user can access file
+        *r = access(abspath, R_OK) ? '-' : 'r';
+        *w = access(abspath, W_OK) ? '-' : 'w';
+        *x = access(abspath, X_OK) ? '-' : 'x';
+    } else {        
+        *r = can_read(stat_buf) ?  'r' : '-';
+        *w = can_write(stat_buf) ? 'w' : '-';
+        *x = can_exec(stat_buf) ?  'x' : '-';
+    }
+}
+
+static void get_access_e(const char *abspath, const struct stat *stat_buf, fs_entry *entry) {
+    if (need_full_access_check()) {
+        entry->can_read = !access(abspath, R_OK);
+        entry->can_write = !access(abspath, W_OK);
+        entry->can_exec = !access(abspath, X_OK);
+    } else {
+        entry->can_read = can_read(stat_buf);
+        entry->can_write = can_write(stat_buf);
+        entry->can_exec = can_exec(stat_buf);
+    }
+}
+
 static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* link, const char* abspath, void *data) {
     fs_entry tmp;
     tmp.name_len = strlen(name);
@@ -595,11 +646,9 @@ static bool fs_entry_creating_visitor(char* name, struct stat *stat_buf, char* l
         tmp.can_read = true;
         tmp.can_write = true;
         tmp.can_exec = true;
-   } else {
-        tmp.can_read = !access(abspath, R_OK);
-        tmp.can_write = !access(abspath, W_OK);
-        tmp.can_exec = !access(abspath, X_OK);
-   }
+    } else {
+        get_access_e(abspath, stat_buf, &tmp);
+    }
     tmp.link_len = is_link ? strlen(link) : 0;
     tmp.link = is_link ? link : "";
     fs_entry* new_entry = create_fs_entry(&tmp);
@@ -658,9 +707,7 @@ static bool response_entry_create(buffer response_buf,
                 escape_strcpy(escaped_link, link);
             }
         } else {
-            can_read = access(abspath, R_OK) ? '-' : 'r';
-            can_write = access(abspath, W_OK) ? '-' : 'w';
-            can_exec = access(abspath, X_OK) ? '-' : 'x';
+            get_access_c(abspath, &stat_buf, &can_read, &can_write, &can_exec);
         }
 
         // name_len name type size mtime access device inode link_len link
@@ -862,9 +909,8 @@ static void response_stat(int request_id, const char* path) {
         int escaped_name_size = strlen(escaped_name);
 
         // in contrary to lstat, we call access() even for links)
-        char can_read = access(path, R_OK) ? '-' : 'r';
-        char can_write = access(path, W_OK) ? '-' : 'w';
-        char can_exec = access(path, X_OK) ? '-' : 'x';
+        char can_read, can_write, can_exec;
+        get_access_c(path, &stat_buf, &can_read, &can_write, &can_exec);
         
         // name_len name type size mtime access device inode link_len link
         my_fprintf(STDOUT, "%c %i %i %s %c %lu %lli %c%c%c %lu %lu %i %s\n",
@@ -1375,6 +1421,51 @@ static void response_refresh(fs_request* request) {
     refresh_cycle(request);
 }
 
+static void process_option(const char* option, const char* value) {
+    //trace(TRACE_FINEST, "Processing option %s=%s\n", option, value);
+    if (strcmp(option, "access") == 0) {
+        if (strcmp(value, "fast") == 0) {
+            set_full_access_check(false);
+        } else if (strcmp(value, "full") == 0) {            
+            set_full_access_check(true);
+        } else {
+            report_error("Unexpected option value: %s=%s\n", option, value);
+        }
+    } else {
+        report_error("Unexpected option key: %s\n", option);
+    }
+}
+
+static void response_options(fs_request* request) {
+    char* options = request->data;
+    // request->data contains a zero-terminated string
+    // we own it, so we are going to modify it in place
+    trace(TRACE_FINEST, "Processing options \"%s\"\n", options);
+    char* option = options;
+    char* value = NULL;
+    char* p = options;
+    while (true) {
+        if (*p ==',' || *p == '\0') {
+            bool last = (*p == '\0');
+            if (value) {
+                *p = '\0';
+                process_option(option, value);
+            } else {
+                report_error("Wrong options format: %s\n", options);
+            }
+            if (last) {
+                break;
+            }
+            option = p + 1;
+            value = NULL;
+        } else if (*p == '=') {
+            *p = '\0';
+            value = p+1;
+        }
+        p++;
+    };    
+}
+
 static void response_help() {
     my_fprintf(STDOUT, "Help on request kinds\n");
     #define help_req_kind(kind) my_fprintf(STDOUT, "%c - %s\n", kind, #kind)
@@ -1391,6 +1482,7 @@ static void response_help() {
     help_req_kind(FS_REQ_REFRESH);
     help_req_kind(FS_REQ_DELETE);
     help_req_kind(FS_REQ_SERVER_INFO);
+    help_req_kind(FS_REQ_OPTION);
     help_req_kind(FS_REQ_HELP);
     #undef  help_req_kind
 }
@@ -1432,6 +1524,9 @@ static void process_request(fs_request* request) {
             break;
         case FS_REQ_HELP:
             response_help();
+            break;
+        case FS_REQ_OPTION:
+            response_options(request);
             break;
         default:
             report_error("unexpected mode: '%c'\n", request->kind);

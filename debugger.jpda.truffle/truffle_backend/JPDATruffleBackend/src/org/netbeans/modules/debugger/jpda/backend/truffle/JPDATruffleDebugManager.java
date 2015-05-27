@@ -52,56 +52,52 @@ import com.oracle.truffle.api.frame.FrameSlot;
 import com.oracle.truffle.api.frame.FrameSlotKind;
 import com.oracle.truffle.api.frame.MaterializedFrame;
 import com.oracle.truffle.api.frame.VirtualFrame;
-import com.oracle.truffle.api.instrument.KillException;
 import com.oracle.truffle.api.instrument.Probe;
-import com.oracle.truffle.api.instrument.QuitException;
-import com.oracle.truffle.api.instrument.SyntaxTag;
-import com.oracle.truffle.api.instrument.ToolEvalNodeFactory;
-import com.oracle.truffle.api.instrument.ToolEvalResultListener;
 import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
 import com.oracle.truffle.debug.DebugClient;
-import com.oracle.truffle.debug.impl.AbstractDebugEngine;
-import com.oracle.truffle.debug.impl.DebugException;
+import com.oracle.truffle.debug.DebugEngine;
+import com.oracle.truffle.debug.DebugException;
 import com.oracle.truffle.js.engine.TruffleJSEngine;
-import com.oracle.truffle.js.nodes.JavaScriptNode;
-import com.oracle.truffle.js.nodes.ScriptNode;
-import com.oracle.truffle.js.parser.JSEngine;
-import com.oracle.truffle.js.parser.env.Environment;
 import com.oracle.truffle.js.runtime.JSContext;
 import com.oracle.truffle.js.runtime.JSFrameUtil;
-import com.oracle.truffle.js.runtime.UserScriptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import javax.script.ScriptEngine;
-import javax.script.ScriptException;
 import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSDebugProber;
+import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSSourceExecution;
 
 /**
  *
  * @author martin
  */
-class JPDATruffleDebugManager extends AbstractDebugEngine {
+class JPDATruffleDebugManager {
     
     //private static final JSNodeProberDelegate nodeProberDelegate = new JSNodeProberDelegate();
     
     private final ScriptEngine engine;
     private final ExecutionContext context;
     private final TopFrameHolder topFrameHolder;
+    private final JPDAJSSourceExecution sourceExecution;
+    private final DebugEngine debugger;
 
     public JPDATruffleDebugManager(ScriptEngine engine, ExecutionContext context, DebugClient dbgClient) {
-        super(dbgClient);
+        //super(dbgClient);
         this.engine = engine;
         this.context = context;
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
+        this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
+        this.debugger = DebugEngine.create(dbgClient, sourceExecution);
+        /*
         startExecution(null);
         prepareContinue();
+        */
         //nodeProberDelegate.addNodeProber(
         //        new JPDAJSDebugProber((JSContext) context, this, new JPDAInstrumentProxy(instrumentCallback, context)));
         //System.err.println("new JPDATruffleDebugManager("+engine+")");
@@ -129,6 +125,11 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         return context;
     }
     
+    DebugEngine getDebugger() {
+        return debugger;
+    }
+    
+    /*
     @Override
     public void run(Source source) throws DebugException {
         //System.err.println("JPDATruffleDebugManager.run("+source+")");
@@ -176,11 +177,13 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
             throw new DebugException("Can't run source " + source.getName() + ": " + e.getMessage());
         }
     }
+    */
     
     Object eval(Source source) {
-        return eval(source, topFrameHolder.currentNode, topFrameHolder.currentTopFrame);
+        return debugger.eval(source, topFrameHolder.currentNode, topFrameHolder.currentTopFrame);
     }
-
+    
+    /*
     @Override
     public Object eval(Source source, Node node, MaterializedFrame frame) {
         //System.err.println("JPDATruffleDebugManager.eval("+source+", "+node+", "+frame+")");
@@ -204,7 +207,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
     public ToolEvalNodeFactory createExprEvalNodeFactory(String expr, ToolEvalResultListener resultListener) {
         return ((TruffleJSEngine) engine).createExprEvalNodeFactory((JSContext) context, expr, resultListener);
     }
-    
+    */
     static SourcePosition getPosition(Node node) {
         SourceSection sourceSection = node.getSourceSection();
         if (sourceSection == null) {
@@ -224,7 +227,9 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
     }
 
     void dispose() {
+        /*
         endExecution();
+        */
     }
 
     /*
@@ -266,7 +271,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         }
 
         @Override
-        public void haltedAt(Node astNode, MaterializedFrame frame) {
+        public void haltedAt(Node astNode, MaterializedFrame frame, List<String> warnings) {
             //System.err.println("JPDADebugClient.haltedAt("+astNode+", "+frame+")");
             topFrameHolder.currentTopFrame = frame;
             topFrameHolder.currentNode = astNode;
@@ -276,7 +281,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
             FrameInfo fi = new FrameInfo(frame, visualizer, astNode);
             
             if (JPDATruffleAccessor.isSteppingInto) {
-                JPDATruffleAccessor.executionStepInto(astNode, visualizer.displayMethodName(astNode), //name,
+                JPDATruffleAccessor.executionStepInto(astNode, frame, visualizer.displayMethodName(astNode), //name,
                         position.id, position.name, position.path,
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
@@ -303,7 +308,7 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         public ExecutionContext getExecutionContext() {
             return context;
         }
-        
+
     }
     
     /*
@@ -530,4 +535,5 @@ class JPDATruffleDebugManager extends AbstractDebugEngine {
         
     }
     */
+    
 }

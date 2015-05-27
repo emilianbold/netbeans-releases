@@ -52,6 +52,7 @@ import javax.swing.event.AncestorListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
+import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
 import org.openide.NotificationLineSupport;
 import org.openide.util.NbBundle;
 
@@ -65,12 +66,17 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
     
     // map because of faster searching
     private final Map<String, MessageDestination.Type> destinationMap;
+    private final boolean generated;
+    private final String prefix;
     private NotificationLineSupport statusLine;
     
     // private because correct initialization is needed
-    private MessageDestinationPanel(Map<String, MessageDestination.Type> destinationMap) {
+    private MessageDestinationPanel(Map<String, MessageDestination.Type> destinationMap,
+            boolean generated, String prefix) {
         initComponents();
         this.destinationMap = destinationMap;
+        this.generated = generated;
+        this.prefix = prefix;
     }
     
     /**
@@ -78,8 +84,9 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
      * @param destinationMap the names and the types of project message destinations.
      * @return MessageDestinationPanel instance.
      */
-    public static MessageDestinationPanel newInstance(final Map<String, MessageDestination.Type> destinationMap) {
-        MessageDestinationPanel mdp = new MessageDestinationPanel(destinationMap);
+    public static MessageDestinationPanel newInstance(final Map<String, MessageDestination.Type> destinationMap,
+            boolean generated, String prefix) {
+        MessageDestinationPanel mdp = new MessageDestinationPanel(destinationMap, generated, prefix);
         mdp.initialize();
         return mdp;
     }
@@ -93,7 +100,11 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
      * @return message destination name.
      */
     public String getDestinationName() {
-        return destinationNameText.getText().trim();
+        String name = destinationNameText.getText().trim();
+        if (generated) {
+            return JndiNamespacesDefinition.normalize(name, prefix);
+        }
+        return name;
     }
     
     /**
@@ -177,6 +188,9 @@ public class MessageDestinationPanel extends javax.swing.JPanel {
             return false;
         } else {
             destinationName = destinationName.trim();
+            if (generated) {
+                destinationName = JndiNamespacesDefinition.normalize(destinationName, prefix);
+            }
             MessageDestination.Type type = destinationMap.get(destinationName);
             if (type != null && type.equals(getDestinationType())) {
                 setError("ERR_DuplicateDestination"); // NOI18N

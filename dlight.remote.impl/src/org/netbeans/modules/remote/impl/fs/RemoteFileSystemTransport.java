@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 
 /**
  *
@@ -59,7 +60,7 @@ import org.netbeans.modules.remote.impl.fs.server.FSSTransport;
  */
 public abstract class RemoteFileSystemTransport {
 
-    public abstract interface Warmup {
+    public interface Warmup {
         DirEntryList getAndRemove(String path) throws InterruptedException;
         void remove(String path);
         DirEntryList tryGetAndRemove(String path);
@@ -77,6 +78,18 @@ public abstract class RemoteFileSystemTransport {
         return getInstance(execEnv).canRefreshFast();
     }
 
+    public static boolean canSetAccessCheckType(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).canSetAccessCheckType();
+    }
+
+    public static void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType) {
+        getInstance(execEnv).setAccessCheckType(accessCheckType);
+    }
+
+    static FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
+        return getInstance(execEnv).getAccessCheckType();
+    }
+    
     public static void refreshFast(RemoteDirectory directory, boolean expected) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (!directory.hasCache()) {
@@ -269,7 +282,14 @@ public abstract class RemoteFileSystemTransport {
     
     protected abstract DirEntry uploadAndRename(File srcFile, String pathToUpload, String pathToRename)
             throws ConnectException, IOException, InterruptedException, ExecutionException, InterruptedException;
-    
+
+    protected abstract boolean canSetAccessCheckType();
+
+    protected abstract void setAccessCheckType(FileSystemProvider.AccessCheckType accessCheckType);
+
+    /** can be null */
+    protected abstract FileSystemProvider.AccessCheckType getAccessCheckType();
+
     /** 
      * Deletes the file, returns parent directory content.
      * Returning parent directory content is for the sake of optimization.

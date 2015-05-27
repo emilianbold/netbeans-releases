@@ -63,7 +63,8 @@ enum fs_request_kind {
     FS_REQ_REFRESH = 'R',
     FS_REQ_DELETE = 'd',
     FS_REQ_SERVER_INFO = 'i',
-    FS_REQ_HELP = '?'
+    FS_REQ_HELP = '?',
+    FS_REQ_OPTION = 'o'
 };
 
 enum fs_response_kind {

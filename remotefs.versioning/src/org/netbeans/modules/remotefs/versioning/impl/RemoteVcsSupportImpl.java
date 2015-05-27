@@ -148,7 +148,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
     public FileSystem[] getFileSystems() {
         // TODO: get list from cnd.remote !!!
         List<ExecutionEnvironment> execEnvs = ConnectionManager.getInstance().getRecentConnections();
-        List<FileSystem> fileSystems = new ArrayList<FileSystem>(execEnvs.size());
+        List<FileSystem> fileSystems = new ArrayList<>(execEnvs.size());
         for (ExecutionEnvironment env : execEnvs) {
             if (env.isRemote()) {
                 fileSystems.add(FileSystemProvider.getFileSystem(env));
@@ -278,7 +278,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return getFakeHome(fs);
                 } catch (ConnectionManager.CancellationException ex) {
-                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    // do not report CancellationException
                     return getFakeHome(fs);
                 }
             } else {
@@ -299,10 +299,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             if (HostInfoUtils.isHostInfoAvailable(env)) {
                 try {
                     return HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.MACOSX;
-                } catch (IOException ex) {
-                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return false;
-                } catch (ConnectionManager.CancellationException ex) {
+                } catch (IOException | ConnectionManager.CancellationException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return false;
                 }
@@ -324,10 +321,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
             if (HostInfoUtils.isHostInfoAvailable(env)) {
                 try {
                     return HostInfoUtils.getHostInfo(env).getOSFamily() == HostInfo.OSFamily.SUNOS;
-                } catch (IOException ex) {
-                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return false;
-                } catch (ConnectionManager.CancellationException ex) {
+                } catch (IOException | ConnectionManager.CancellationException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return false;
                 }
@@ -360,10 +354,7 @@ public class RemoteVcsSupportImpl implements RemoteVcsSupportImplementation {
                         default:
                             throw new IllegalStateException("Unexpected OSFamily: " + this); //NOI18N
                     }
-                } catch (IOException ex) {
-                    Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
-                    return false;
-                } catch (ConnectionManager.CancellationException ex) {
+                } catch (IOException | ConnectionManager.CancellationException ex) {
                     Logger.getLogger(RemoteVcsSupportImpl.class.getName()).log(Level.SEVERE, null, ex);
                     return false;
                 }

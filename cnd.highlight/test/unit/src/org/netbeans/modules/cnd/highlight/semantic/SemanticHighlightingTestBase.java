@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +81,7 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
             FileImpl file = (FileImpl)getCsmFile(getDataFile(testFileName));
             Collection<? extends CsmOffsetable> out = getBlocks(file, offset);
             assertNotNull(out);
-            List<CsmOffsetable> sorted = new ArrayList<CsmOffsetable>(out);
+            List<CsmOffsetable> sorted = new ArrayList<>(out);
             Collections.sort(sorted, new Comparator<CsmOffsetable>() {
 
                 @Override

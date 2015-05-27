@@ -319,7 +319,11 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             Value[] vs = new Value [arguments.length];
             int i, k = arguments.length;
             for (i = 0; i < k; i++) {
-                vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
+                if (arguments[i] == null) {
+                    vs[i] = null;
+                } else {
+                    vs[i] = ((AbstractVariable) arguments [i]).getInnerValue ();
+                }
             }
             v = getDebugger().invokeMethod (
                 (JPDAThreadImpl) thread,

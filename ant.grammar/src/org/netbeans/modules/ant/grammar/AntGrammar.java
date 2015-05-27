@@ -525,7 +525,7 @@ class AntGrammar implements GrammarQuery {
         List<GrammarResult> list = new ArrayList<GrammarResult>();
         for (String choice : choices) {
             if (choice.startsWith(prefix)) {
-                list.add (new MyText(choice, choice));
+                list.add (new MyText(choice, choice, -1));
             }
         }
 
@@ -561,14 +561,27 @@ class AntGrammar implements GrammarQuery {
         assert content.length() > 0;
         String header;
         String propPrefix;
-        if (content.charAt(content.length() - 1) == '$') {
+        String wholeText = ctx.getNodeValue();
+        int replaceLen;
+        
+        if (content.charAt(content.length() - 1) == '$') { // NOI18N
             header = content + '{';
             propPrefix = "";
+            // no closing brace, since even opening brace is missing
+            replaceLen = 1;
         } else {
-            int idx = content.lastIndexOf("${");
+            int idx = content.lastIndexOf("${"); // NOI18N
             assert idx != -1;
             header = content.substring(0, idx + 2);
             propPrefix = content.substring(idx + 2);
+            
+            int closingBrace = wholeText.indexOf('}', content.length()); // NOI18N
+            if (closingBrace == -1) {
+                replaceLen = content.length();
+            } else {
+                // only delete the text up to the closing brace
+                replaceLen = closingBrace + 1;
+            }
         }
         String[] props = likelyPropertyNames(ctx);
         // completion on text works differently from attrs:
@@ -583,7 +596,7 @@ class AntGrammar implements GrammarQuery {
                     assert text.startsWith(content) : "text=" + text + " content=" + content;
                     text = text.substring(content.length());
                 }
-                list.add(new MyText(text, all));
+                list.add(new MyText(text, all, replaceLen));
             }
         }
         LOG.log(Level.FINE, "completeProperties({0}) -> {1}", new Object[] {content, list});
@@ -902,10 +915,12 @@ class AntGrammar implements GrammarQuery {
 
         private final String data;
         private final String displayName;
-
-        MyText(String data, String displayName) {
+        private final int    replace;
+        
+        MyText(String data, String displayName, int replace) {
             this.data = data;
             this.displayName = displayName;
+            this.replace = replace;
         }
 
 
@@ -922,7 +937,11 @@ class AntGrammar implements GrammarQuery {
         }
 
         public @Override int getLength() {
-            return data == null ? -1 : data.length();
+//            if (replace != -1) {
+//                return replace;
+//            }
+//            return data == null ? -1 : data.length();
+            return replace;
         }
 
         public @Override String toString() {

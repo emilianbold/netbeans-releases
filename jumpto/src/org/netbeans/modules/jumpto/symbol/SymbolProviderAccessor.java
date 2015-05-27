@@ -86,4 +86,6 @@ public abstract class SymbolProviderAccessor {
 
     @CheckForNull
     public abstract SymbolProvider getSymbolProvider(@NonNull SymbolDescriptor desc);
+
+    public abstract void setSymbolProvider(@NonNull SymbolDescriptor desc, @NonNull SymbolProvider provider);
 }

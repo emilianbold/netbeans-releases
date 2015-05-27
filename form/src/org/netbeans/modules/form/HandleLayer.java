@@ -2879,7 +2879,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     Image image = comp.createImage(width, height);
                     Graphics gImage = image.getGraphics();
                     gImage.setClip(0, 0, width, height);
-                    comp.getPeer().paint(gImage);
+                    FakePeerSupport.getPeer(comp).paint(gImage);
                     g.drawImage(image, 0, 0, null);
                 }
             }

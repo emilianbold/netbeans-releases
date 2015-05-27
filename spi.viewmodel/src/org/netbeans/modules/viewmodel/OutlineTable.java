@@ -365,6 +365,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 1) destroy old model
         if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+            currentTreeModelRoot = null;
         }
         
         // 3) no model => set empty root node & return
@@ -475,6 +476,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         // 1) destroy old model
         if (currentTreeModelRoot != null) {
             currentTreeModelRoot.destroy ();
+            currentTreeModelRoot = null;
         }
 
         // 3) no model => set empty root node & return
@@ -1029,7 +1031,10 @@ ExplorerManager.Provider, PropertyChangeListener {
                 continue;
             }
             int visibleOrder = columnVisibleMap[i];
-            logger.fine("  visibleOrder["+i+"] = "+visibleOrder+", ");
+            logger.log(Level.FINE, "  visibleOrder[{0}] = {1}, ", new Object[]{i, visibleOrder});
+            if (visibleOrder >= tcm.getColumnCount()) {
+                continue;
+            }
             ETableColumn tc;
             try {
                 tc = (ETableColumn) tcm.getColumn (visibleOrder);
@@ -1075,6 +1080,7 @@ ExplorerManager.Provider, PropertyChangeListener {
         TopComponent.getRegistry ().removePropertyChangeListener (this);
         ExplorerUtils.activateActions(getExplorerManager (), false);
         getExplorerManager ().removePropertyChangeListener (this);
+        setModel(null);
     }
     
     public boolean isExpanded (Object node) {

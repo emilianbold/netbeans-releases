@@ -50,22 +50,25 @@ import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Vector;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -78,6 +81,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.DialogBinding;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
@@ -85,6 +89,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
@@ -95,10 +100,16 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes;
 import org.netbeans.modules.cnd.api.model.services.CsmTypes.TypeDescriptor;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.refactoring.hints.BodyFinder;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring;
+import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring.IntroduceMethodContext.FunctionKind;
 import org.netbeans.modules.cnd.refactoring.ui.InsertPoint;
+import org.netbeans.modules.cnd.refactoring.ui.UIUtilities.BooleanTableCellRenderer;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -109,81 +120,112 @@ import org.openide.util.NbPreferences;
  *
  * @author  Pavel Flaska, Jan Becicka
  */
-public class IntroduceMethodPanel extends JPanel {
+public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPanel {
 
-    private final BodyFinder.BodyResult res;
     private final ParamTableModel model;
-    private final JButton btnOk;
     private final FileObject fileObject;
+    private final ChangeListener parent;
+    private final CsmObject selectedObj;
+    private final CsmContext editorContext;
+    private final IntroduceMethodRefactoring refactoring;
+    private IntroduceMethodRefactoring.IntroduceMethodContext res;
 
     private static final String DEFAULT_VALUES_ONLY_IN_DECLARATION = "UseDefaultValueOnlyInFunctionDefinition"; // NOI18N
     private static Action editAction = null;
-    private final static int PARAM_NAME = 0;
-    private final static int PARAM_TYPE = 1;
     private static final String[] columnNames = {
+        getString("LBL_ChangeParsColByRef"), // NOI18N
         getString("LBL_ChangeParsColName"), // NOI18N
         getString("LBL_ChangeParsColType"), // NOI18N
     };
 
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
-    /** Creates new form ChangeMethodSignature */
-    public IntroduceMethodPanel(BodyFinder.BodyResult res, JButton btnOk, FileObject fileObject) {
-        this.res = res;
-        this.btnOk = btnOk;
-        this.fileObject = fileObject;
+    public IntroduceMethodPanel(IntroduceMethodRefactoring refactoring, CsmObject selectedObj, CsmContext editorContext, ChangeListener parent) {
+        this.refactoring = refactoring;
+        this.parent = parent;
+        this.selectedObj = selectedObj;
+        this.editorContext = editorContext;
+        this.fileObject = editorContext.getFileObject();
         model = new ParamTableModel(columnNames, 0);
         initComponents();
         paramTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-        initialize();
     }
-    
+
     private boolean initialized = false;
 
-    private void initialize() {
+    @Override
+    public void initialize() {
         if (initialized) {
             return;
         }
-        returnTypeTextField.setText("void"); //NOI18N
-        name.setText("function"); //NOI18N
-        if (res.getFunctionKind() == BodyFinder.FunctionKind.MethodDefinition) {
-            insertionPointLabel.setVisible(true);
-            insertPointCombo.setVisible(true);
-            insertPointCombo.setEnabled(true);
-            InsertPoint.initInsertPoints(insertPointCombo, res.getEnclosingClass());
-        } else {
-            insertionPointLabel.setVisible(false);
-            insertPointCombo.setEnabled(false);
-            insertPointCombo.setVisible(false);
+        res = refactoring.getIntroduceMethodContext();
+        if (res == null) {
+            return;
         }
-        initTableData();
-        DialogBinding.bindComponentToFile(fileObject, res.getSelectionFrom(), res.getSelectionTo() - res.getSelectionFrom(), previewEditorPane);
-        previewEditorPane.setBackground(getBackground());
-        previewEditorPane.setText(genDeclarationString());
-        DocumentListener documentListener = new DocumentListener() {
-            
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                previewEditorPane.setText(genDeclarationString());
-            }
+        SwingUtilities.invokeLater(new Runnable() {
 
             @Override
-            public void removeUpdate(DocumentEvent e) {
-                previewEditorPane.setText(genDeclarationString());
-            }
+            public void run() {
+                name.requestFocus();
+                returnTypeTextField.setText("void"); //NOI18N
+                name.setText("function"); //NOI18N
+                name.selectAll();
+                if (res.getFunctionKind() == FunctionKind.MethodDefinition) {
+                    insertionPointLabel.setVisible(true);
+                    insertPointCombo.setVisible(true);
+                    insertPointCombo.setEnabled(true);
+                    InsertPoint.initInsertPoints(insertPointCombo, res.getEnclosingClass());
+                } else {
+                    insertionPointLabel.setVisible(false);
+                    insertPointCombo.setEnabled(false);
+                    insertPointCombo.setVisible(false);
+                }
+                initTableData();
+                DialogBinding.bindComponentToFile(fileObject, res.getSelectionFrom(), res.getSelectionTo() - res.getSelectionFrom(), previewEditorPane);
+                previewEditorPane.setBackground(getBackground());
+                updateSignaturePreview();
+                DocumentListener documentListener = new DocumentListener() {
 
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                previewEditorPane.setText(genDeclarationString());
+                    @Override
+                    public void insertUpdate(DocumentEvent e) {
+                        updateSignaturePreview();
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent e) {
+                        updateSignaturePreview();
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent e) {
+                        updateSignaturePreview();
+                    }
+                };
+                returnTypeTextField.getDocument().addDocumentListener(documentListener);
+                name.getDocument().addDocumentListener(documentListener);
+                initialized = true;
+                //btnOk.setEnabled(((ErrorLabel)errorLabel).isInputTextValid());
             }
-        };
-        returnTypeTextField.getDocument().addDocumentListener(documentListener);
-        name.getDocument().addDocumentListener(documentListener);
-        initialized = true;
-        btnOk.setEnabled(((ErrorLabel)errorLabel).isInputTextValid());
+        });
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        name.requestFocusInWindow();
+        return true;
+    }
+
+    @Override
+    public void requestFocus() {
+        name.requestFocus();
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
     }
     
-    protected DefaultTableModel getTableModel() {
+    public DefaultTableModel getTableModel() {
         return model;
     }
     
@@ -210,7 +252,7 @@ public class IntroduceMethodPanel extends JPanel {
         eLabel.addPropertyChangeListener(  ErrorLabel.PROP_IS_VALID, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
-                btnOk.setEnabled(eLabel.isInputTextValid());
+                //btnOk.setEnabled(eLabel.isInputTextValid());
             }
         });
         return eLabel;
@@ -273,7 +315,7 @@ public class IntroduceMethodPanel extends JPanel {
                     .addComponent(lblName, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE)
+                    .addComponent(name, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                     .addComponent(returnTypeTextField)))
         );
         jPanel1Layout.setVerticalGroup(
@@ -428,7 +470,7 @@ public class IntroduceMethodPanel extends JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(previewChange, gridBagConstraints);
 
-        jScrollPane1.setPreferredSize(new java.awt.Dimension(110, 40));
+        jScrollPane1.setPreferredSize(new java.awt.Dimension(110, 70));
 
         previewEditorPane.setEditable(false);
         jScrollPane1.setViewportView(previewEditorPane);
@@ -438,6 +480,7 @@ public class IntroduceMethodPanel extends JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 0.3;
         add(jScrollPane1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -448,7 +491,7 @@ public class IntroduceMethodPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void insertPointComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertPointComboActionPerformed
-        previewEditorPane.setText(genDeclarationString());
+        updateSignaturePreview();
     }//GEN-LAST:event_insertPointComboActionPerformed
 
     private void moveDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_moveDownButtonActionPerformed
@@ -519,31 +562,21 @@ public class IntroduceMethodPanel extends JPanel {
                 }
 
                 // update preview
-                previewEditorPane.setText(genDeclarationString());
+                updateSignaturePreview();
             }
         };
     }
 
     private void initTableData() {
-        for(BodyFinder.VariableInfo info : res.getImportantVariables()) {
-            CsmVariable variable = info.getVariable();
-            CsmType desc = variable.getType();
-            boolean isC = res.isC();
-            String typeRepresentation = getTypeStringRepresentation(desc, isC);
-            if (isC) {
-                CsmClassifier classifier = desc.getClassifier();
-                if (classifier != null) {
-                    if (classifier.getKind() == CsmDeclaration.Kind.STRUCT && !CharSequenceUtils.startsWith(typeRepresentation, "struct")) { //NOI18N
-                        typeRepresentation = "struct " + typeRepresentation; //NOI18N
-                    }
-                }
-            }
-            Object[] parRep = new Object[] { variable.getName().toString(), typeRepresentation};
-            model.addRow(parRep);
+        boolean isC = res.isC();
+        for(IntroduceMethodRefactoring.VariableContext info : res.getImportantVariables()) {
+            model.addRow(getParameterRow(info, isC));
         }
     }
 
-    private static String getTypeStringRepresentation(CsmType desc, boolean isC) {
+    private static Object[] getParameterRow(IntroduceMethodRefactoring.VariableContext info, boolean isC) {
+        CsmVariable variable = info.getVariable();
+        CsmType desc = variable.getType();
         if (isC) {
             CharSequence typeText = CsmInstantiationProvider.getDefault().getInstantiatedText(desc);
             if (isC) {
@@ -554,18 +587,27 @@ public class IntroduceMethodPanel extends JPanel {
                     }
                 }
             }
-            return typeText.toString();
+            String typeRepresentation = typeText.toString();
+            return new Object[] { info.isWriteAccessInside(), variable.getName().toString(), typeRepresentation};
         } else {
             if (desc.isReference()) {
-                return desc.getCanonicalText().toString();
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                CsmType createType = CsmTypes.createType(desc, typeDescriptor);
+                return new Object[] { true, variable.getName().toString(), createType.getCanonicalText().toString()};
             } else if (desc.getArrayDepth() > 0) {
                 TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(false, TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
                 CsmType createType = CsmTypes.createType(desc, typeDescriptor);
-                return createType.getCanonicalText().toString();
+                return new Object[] { false, variable.getName().toString(), createType.getCanonicalText().toString()};
             } else {
-                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
+                TypeDescriptor typeDescriptor = new CsmTypes.TypeDescriptor(desc.isConst(), TypeDescriptor.NON_REFERENCE, desc.getPointerDepth(), desc.getArrayDepth());
                 CsmType createType = CsmTypes.createType(desc, typeDescriptor);
-                return createType.getCanonicalText().toString();
+                if (desc.isBuiltInBased(true) && !info.isWriteAccessInside()) {
+                    return new Object[] { false, variable.getName().toString(), createType.getCanonicalText().toString()};
+                }
+                if (desc.isPointer() && !info.isWriteAccessInside()) {
+                    return new Object[] { false, variable.getName().toString(), createType.getCanonicalText().toString()};
+                }
+                return new Object[] { true, variable.getName().toString(), createType.getCanonicalText().toString()};
             }
         }
     }
@@ -599,20 +641,90 @@ public class IntroduceMethodPanel extends JPanel {
     private void initRenderer() {
         TableColumnModel tcm = paramTable.getColumnModel();
         Enumeration columns = paramTable.getColumnModel().getColumns();
-
         TableColumn tc;
+        int i = 0;
         while (columns.hasMoreElements()) {
             tc = (TableColumn) columns.nextElement();
-            tc.setCellRenderer(new ParamRenderer());
+            switch (i) {
+                case IntroduceMethodRefactoring.PARAM_BY_REF:
+                    tc.setPreferredWidth(40);
+                    tc.setMaxWidth(60);
+                    break;
+                case IntroduceMethodRefactoring.PARAM_NAME:
+                    tc.setPreferredWidth(100);
+                    break;
+                case IntroduceMethodRefactoring.PARAM_TYPE:
+                    tc.setPreferredWidth(200);
+                    break;
+                default:
+            }
+            i++;
+        }
+        paramTable.setDefaultRenderer(String.class, new ParamRenderer());
+        paramTable.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer());
+    }
+
+    String getMethodDefinition() {
+        try {
+            String text = res.getDocument().getText(res.getSelectionFrom(), res.getSelectionTo() - res.getSelectionFrom());
+            ArrayList<Diff> diffs = new ArrayList<>();
+            if (res.isC()) {
+                @SuppressWarnings("unchecked")
+                Vector<List<Object>> data = model.getDataVector();
+                List<?>[] parameters = data.toArray(new List[0]);
+                for (int i = 0; i < parameters.length; i++) {
+                    if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
+                        String name = (String) parameters[i].get(IntroduceMethodRefactoring.PARAM_NAME);
+                        for(IntroduceMethodRefactoring.VariableContext varInfo : res.getImportantVariables()) {
+                            if (name.equals(varInfo.getVariable().getName().toString())) {
+                                for(CsmReference reference : varInfo.getReferences()) {
+                                    if (res.getSelectionFrom() <= reference.getStartOffset() && reference.getEndOffset() <= res.getSelectionTo()) {
+                                        diffs.add(new Diff(reference.getStartOffset()-res.getSelectionFrom(), name.length(), "(*"+name+")")); //NOI18N
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (diffs.size() > 0) {
+                Collections.sort(diffs);
+                StringBuilder buf = new StringBuilder(text);
+                for(Diff diff : diffs) {
+                    buf.replace(diff.start, diff.start + diff.len, diff.to);
+                }
+                text = buf.toString();
+            }
+            return "\n"+genDeclarationString()+"{\n"+text+"\n}\n"; //NOI18N
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+            return "";
         }
     }
 
-    String getMethodSignature() {
-        return genDeclarationString();
+    int getInsertPoint() {
+        if (res.getFunctionKind() == FunctionKind.MethodDefinition){
+            CsmFunction functionDeclaration = res.getFunctionDeclaration();
+            InsertPoint insertPoint = (InsertPoint) insertPointCombo.getSelectedItem();
+            if (insertPoint.getContainerClass() == null) {
+                // default
+                return functionDeclaration.getEndOffset();
+            } else if (insertPoint.getIndex() == Integer.MIN_VALUE) {
+                // at the beginning class
+                return insertPoint.getContainerClass().getLeftBracketOffset()+1;
+            } else if (insertPoint.getIndex() == Integer.MAX_VALUE) {
+                // at the end class
+                return insertPoint.getContainerClass().getEndOffset()-1;
+            } else {
+                return insertPoint.getElementDeclaration().getEndOffset();
+            }
+        } else {
+            return 0;
+        }
     }
 
-    InsertPoint getInsertPoint() {
-        return (InsertPoint) insertPointCombo.getSelectedItem();
+    String getFunctionName() {
+        return name.getText();
     }
 
     String getMethodCall() {
@@ -624,7 +736,12 @@ public class IntroduceMethodPanel extends JPanel {
         Vector<List<Object>> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
-            buf.append(parameters[i].get(PARAM_NAME));
+            if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
+                if (res.isC()) {
+                    buf.append('&');
+                }
+            }
+            buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_NAME));
             if (i < parameters.length - 1) {
                 buf.append(',').append(' '); // NOI18N
             }
@@ -635,11 +752,33 @@ public class IntroduceMethodPanel extends JPanel {
         return buf.toString();
     }
 
+    private void updateSignaturePreview() {
+        previewEditorPane.setText(genWrapDeclarationString());
+        previewEditorPane.setCaretPosition(0);
+    }
+
+    private String genWrapDeclarationString() {
+        String decl = genDeclarationString();
+        StringBuilder buf = new StringBuilder();
+        int col = 0;
+        for(int i = 0; i < decl.length(); i++) {
+            buf.append(decl.charAt(i));
+            col++;
+            if (col > 50) {
+                if (decl.charAt(i) == ',') {
+                    buf.append('\n');
+                    col = 0;
+                }
+            }
+        }
+        return buf.toString();
+    }
+
     private String genDeclarationString() {
         StringBuilder buf = new StringBuilder();
 
         // generate the return type for the method and name
-        if (res.getFunctionKind() == BodyFinder.FunctionKind.Function || res.getFunctionKind() == BodyFinder.FunctionKind.MethodDeclarationDefinition) {
+        if (res.getFunctionKind() == FunctionKind.Function || res.getFunctionKind() == FunctionKind.MethodDeclarationDefinition) {
             buf.append(returnTypeTextField.getText());
             buf.append(' '); // NOI18N
         } else {
@@ -652,9 +791,16 @@ public class IntroduceMethodPanel extends JPanel {
         Vector<List<Object>> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
-            buf.append(parameters[i].get(PARAM_TYPE));
+            buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_TYPE));
+            if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
+                if (res.isC()) {
+                    buf.append('*');
+                } else {
+                    buf.append('&');
+                }
+            }
             buf.append(' ');
-            buf.append(parameters[i].get(PARAM_NAME));
+            buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_NAME));
             if (i < parameters.length - 1) {
                 buf.append(',').append(' '); // NOI18N
             }
@@ -664,7 +810,7 @@ public class IntroduceMethodPanel extends JPanel {
     }
 
     String getMethodDeclarationString() {
-        StringBuilder buf = new StringBuilder();
+        StringBuilder buf = new StringBuilder("\n"); // NOI18N
         buf.append(returnTypeTextField.getText());
         buf.append(' '); // NOI18N
         buf.append(name.getText());
@@ -674,14 +820,21 @@ public class IntroduceMethodPanel extends JPanel {
         Vector<List<Object>> data = model.getDataVector();
         List<?>[] parameters = data.toArray(new List[0]);
         for (int i = 0; i < parameters.length; i++) {
-            buf.append(parameters[i].get(PARAM_TYPE));
+            buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_TYPE));
+            if ((Boolean)parameters[i].get(IntroduceMethodRefactoring.PARAM_BY_REF)) {
+                if (res.isC()) {
+                    buf.append('*');
+                } else {
+                    buf.append('&');
+                }
+            }
             buf.append(' ');
-            buf.append(parameters[i].get(PARAM_NAME));
+            buf.append(parameters[i].get(IntroduceMethodRefactoring.PARAM_NAME));
             if (i < parameters.length - 1) {
                 buf.append(',').append(' '); // NOI18N
             }
         }
-        buf.append(')'); //NOI18N
+        buf.append(");\n"); //NOI18N
         return buf.toString();
     }
 
@@ -788,10 +941,15 @@ public class IntroduceMethodPanel extends JPanel {
     private void autoEdit(JTable tab) {
         if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null) &&
                 tab.getEditorComponent() != null) {
-            JTextField field = (JTextField) tab.getEditorComponent();
-            field.setCaretPosition(field.getText().length());
-            field.requestFocusInWindow();
-            field.selectAll();
+            if (tab.getEditorComponent() instanceof JTextField) {
+                JTextField field = (JTextField) tab.getEditorComponent();
+                field.setCaretPosition(field.getText().length());
+                field.requestFocusInWindow();
+                field.selectAll();
+            } else if (tab.getEditorComponent() instanceof JCheckBox) {
+                JCheckBox field = (JCheckBox) tab.getEditorComponent();
+                field.setSelected(!field.isSelected());
+            }
         }
     }
 
@@ -810,10 +968,13 @@ public class IntroduceMethodPanel extends JPanel {
 
         @Override
         public boolean isCellEditable(int row, int column) {
-            if (column == 0) {
+            if (column == IntroduceMethodRefactoring.PARAM_BY_REF) {
+                return true;
+            }
+            if (column == IntroduceMethodRefactoring.PARAM_NAME) {
                 return false;
             }
-            if (column == 1) {
+            if (column == IntroduceMethodRefactoring.PARAM_TYPE) {
                 return true;
             }
             return false;
@@ -826,7 +987,7 @@ public class IntroduceMethodPanel extends JPanel {
 
         @Override
         public void setValueAt(Object aValue, int row, int column) {
-            if (column == PARAM_NAME || column == PARAM_TYPE) {
+            if (column == IntroduceMethodRefactoring.PARAM_NAME || column == IntroduceMethodRefactoring.PARAM_TYPE) {
                 if (aValue instanceof String) {
                     aValue = ((String)aValue).trim();
                 }
@@ -862,6 +1023,22 @@ public class IntroduceMethodPanel extends JPanel {
             setBorder(hasFocus ? UIManager.getBorder("Table.focusCellHighlightBorder") : noFocusBorder); // NOI18N
             return this;
         }
+    }
 
+    private static class Diff implements Comparable<Diff>{
+        private int start;
+        private int len;
+        private String to;
+
+        public Diff(int start, int len, String to) {
+            this.start = start;
+            this.len = len;
+            this.to = to;
+        }
+
+        @Override
+        public int compareTo(Diff o) {
+            return o.start - start;
+        }
     }
 }

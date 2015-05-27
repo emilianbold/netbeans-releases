@@ -52,7 +52,6 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.cnd.source.spi.CndSourcePropertiesProvider;
 import org.openide.loaders.DataObject;
 import org.openide.util.lookup.Lookups;

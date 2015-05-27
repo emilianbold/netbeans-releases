@@ -133,6 +133,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             request.result = jsParserResult;
             request.info = info;
             request.prefix = pref;
+            request.completionContext = context;
         
         jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
@@ -208,6 +209,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                     completeExpression(request, added);
                     completeObjectProperty(request, added);
                     completeInWith(request, added);
+                    added.remove(ModelUtils.PROTOTYPE);
                     break;
                 case OBJECT_PROPERTY:
                     completeObjectProperty(request, added);
@@ -1220,17 +1222,13 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
     
     private void addObjectPropertiesFromIndex(String fqn, JsIndex jsIndex, CompletionRequest request, Map<String, List<JsElement>> addedProperties) {
         Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
-        String prototypeFQN = null;
         for (IndexedElement indexedElement : properties) {
             addPropertyToMap(request, addedProperties, indexedElement);
             if (ModelUtils.PROTOTYPE.equals(indexedElement.getName())) {
-                prototypeFQN = indexedElement.getFQN();
-            }
-        }
-        if (prototypeFQN != null) {
-            properties = jsIndex.getProperties(prototypeFQN);
-            for (IndexedElement indexedElement : properties) {
-                addPropertyToMap(request, addedProperties, indexedElement);
+                Collection<IndexedElement> protoProperties = jsIndex.getProperties(indexedElement.getFQN());
+                for (IndexedElement protoProperty : protoProperties) {
+                    addPropertyToMap(request, addedProperties, protoProperty);
+                }
             }
         }
     }

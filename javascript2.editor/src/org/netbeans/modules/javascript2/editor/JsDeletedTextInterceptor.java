@@ -113,7 +113,7 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
                 TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
                         doc, dotPos, language);
                 if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
-                    if (ts.offset() == dotPos-2) {
+                    if (ts.offset() == dotPos - 2 && !doc.getText(dotPos, 1).equals(" ")) { //NOI18N
                         doc.remove(dotPos-2, 2);
                         target.getCaret().setDot(dotPos-2);
 
@@ -154,6 +154,9 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
 
                         return;
                     }
+                } else if (ts != null && ts.token().id() == JsTokenId.STRING) {
+                    // ignore deleting of '/' inside a string
+                    break;
                 }
             }
             // Fallthrough for match-deletion

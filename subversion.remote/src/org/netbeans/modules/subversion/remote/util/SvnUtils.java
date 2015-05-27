@@ -970,7 +970,16 @@ public class SvnUtils {
         if (file.isFile()) {
             return false;
         }
-        return VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR)) || VCSFileProxySupport.canRead(VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB));
+        //return VCSFileProxySupport.canRead(entries) || VCSFileProxySupport.canRead(db);
+        final VCSFileProxy entries = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_ENTRIES_DIR);
+        if (entries.exists() && VCSFileProxySupport.canRead(entries)) {
+            return true;
+        }
+        final VCSFileProxy db = VCSFileProxy.createFileProxy(file, SvnUtils.SVN_WC_DB);
+        if (db.exists() && VCSFileProxySupport.canRead(db)) {
+            return true;
+        }
+        return false;
     }
 
     private static final ThreadLocal<Map<VCSFileProxy, ISVNInfo>> infoCache = new ThreadLocal<>();

@@ -151,7 +151,7 @@ public final class IncludeErrorProvider extends AbstractCodeAudit {
             return;
         }
         if (kind == UNRESOLVED_INSIDE) {
-            Collection<CsmFile> visited = new HashSet<CsmFile>();
+            Collection<CsmFile> visited = new HashSet<>();
             for (CsmInclude incl : file.getIncludes()) {
                 if (request.isCancelled()) {
                     return;

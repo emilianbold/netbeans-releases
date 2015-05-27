@@ -74,12 +74,17 @@ class ValueResultItem extends XMLResultItem {
     
     private int delLen;
 
-    public ValueResultItem(int position, GrammarResult res, int delLen) {
+    public ValueResultItem(int position, GrammarResult res, int delLen, String suffix) {
         super(position, res.getDisplayName(), res.getDisplayName());
         this.res = res;
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
-        replText = res.getNodeValue();
+        String t = res.getNodeValue();
+        if (suffix != null) {
+            replText = t + suffix;
+        } else {
+            replText = t;
+        }
         icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
         this.delLen = delLen;
     }

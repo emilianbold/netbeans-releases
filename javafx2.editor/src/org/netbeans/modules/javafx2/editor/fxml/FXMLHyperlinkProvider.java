@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
 // TODO <Button text="Click Me!" onAction="java.lang.System.out.println('You clicked me!');"/> support
 // TODO <Button text="Click Me!" onAction="#handleButtonAction"/> support
  
-@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=HyperlinkProviderExt.class)
+@MimeRegistration(mimeType=JavaFXEditorUtils.FXML_MIME_TYPE, service=HyperlinkProviderExt.class, position = 1000)
 public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override

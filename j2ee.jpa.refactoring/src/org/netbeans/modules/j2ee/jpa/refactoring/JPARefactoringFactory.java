@@ -44,19 +44,14 @@
 
 package org.netbeans.modules.j2ee.jpa.refactoring;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.j2ee.jpa.refactoring.moveclass.PersistenceXmlMoveClass;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.EntityRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlPackageRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.rename.PersistenceXmlRename;
-import org.netbeans.modules.j2ee.jpa.refactoring.rename.RelationshipMappingRename;
 import org.netbeans.modules.j2ee.jpa.refactoring.safedelete.PersistenceXmlSafeDelete;
 import org.netbeans.modules.j2ee.jpa.refactoring.whereused.PersistenceXmlWhereUsed;
-import org.netbeans.modules.j2ee.jpa.refactoring.whereused.RelationshipMappingWhereUsed;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -88,38 +83,24 @@ public class JPARefactoringFactory implements RefactoringPluginFactory{
         boolean javaFile = targetFile != null && RefactoringUtil.isJavaFile(targetFile);
         boolean javaMember = handle != null;
         
-        List<JPARefactoring> refactorings = new ArrayList<JPARefactoring>();
-        
         if (refactoring instanceof RenameRefactoring) {
             RenameRefactoring rename = (RenameRefactoring) refactoring;
             if (javaFile){
-                refactorings.add(new PersistenceXmlRename(rename));
+                return new PersistenceXmlRename(rename);
             } else if (javaPackage || folder){
-                refactorings.add(new PersistenceXmlPackageRename(rename));
+                return new PersistenceXmlPackageRename(rename);
             } else if (javaMember){
-                refactorings.add(new EntityRename(rename));
-                refactorings.add(new RelationshipMappingRename(rename));
+                return new EntityRename(rename);
             }
-            return new JPARefactoringPlugin(refactorings);
-        }
-        
-        if (refactoring instanceof MoveRefactoring) {
+        } else if (refactoring instanceof MoveRefactoring) {
             MoveRefactoring move = (MoveRefactoring) refactoring;
-            refactorings.add(new PersistenceXmlMoveClass(move));
-            return new JPARefactoringPlugin(refactorings);
-        }
-
-        if (refactoring instanceof SafeDeleteRefactoring) {
+            return new PersistenceXmlMoveClass(move);
+        } else if (refactoring instanceof SafeDeleteRefactoring) {
             SafeDeleteRefactoring safeDeleteRefactoring = (SafeDeleteRefactoring) refactoring;
-            refactorings.add(new PersistenceXmlSafeDelete(safeDeleteRefactoring));
-            return new JPARefactoringPlugin(refactorings);
-        }
-        
-        if (refactoring instanceof WhereUsedQuery) {
+            return new PersistenceXmlSafeDelete(safeDeleteRefactoring);
+        } else if (refactoring instanceof WhereUsedQuery) {
             WhereUsedQuery whereUsedQuery = (WhereUsedQuery) refactoring;
-            refactorings.add(new PersistenceXmlWhereUsed(whereUsedQuery));
-            refactorings.add(new RelationshipMappingWhereUsed(whereUsedQuery));
-            return new JPARefactoringPlugin(refactorings);
+            return new PersistenceXmlWhereUsed(whereUsedQuery);
         }
         
         return null;

@@ -184,7 +184,7 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     
     public void test207480() throws Exception {
         prepareTest("test/Test.java",
-                    "package test; import java.io.*; public class Test { public void getTestCase(URL url) { try(Reader r = new FileReader(\"\")) { } } }");
+                    "package test; import java.io.*; public class Test { public void getTestCase(URL url) throws FileNotFoundException { try(Reader r = new FileReader(\"\")) { } } }");
         
         int pos = positionForErrors();
         TreePath path = info.getTreeUtilities().pathFor(pos);

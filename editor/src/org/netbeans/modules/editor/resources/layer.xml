@@ -334,7 +334,9 @@ made subject to such option by the copyright holder.
         </folder>
             
         <folder name="HyperlinkProviders">
-            <file name="org-netbeans-modules-editor-url-HyperlinkImpl.instance" />
+            <file name="org-netbeans-modules-editor-url-HyperlinkImpl.instance">
+                <attr name="position" intvalue="2100"/>
+            </file>
         </folder>
         
         <folder name="AnnotationTypes">
