@@ -78,9 +78,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -367,8 +369,7 @@ public final class AntBridge {
     
     private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
-        Collection<File> cp = new LinkedHashSet<File>();
-        addJARs(cp, new File(new File(System.getProperty("java.home")).getParentFile(), "lib"));
+        final Collection<File> cp = new LinkedHashSet<>();
         File antHome = AntSettings.getAntHome();
         if (antHome != null) {
             File libdir = new File(antHome, "lib"); // NOI18N
@@ -400,7 +401,8 @@ public final class AntBridge {
             cp[i++] = /* #162158: do not use FileUtil.urlForArchiveOrDir(entry) */Utilities.toURI(entry).toURL();
         }
         if (AntSettings.getAntHome() != null) {
-            ClassLoader parent = ClassLoader.getSystemClassLoader()/* #152620 */.getParent();
+            final ClassLoader sysClassLoader = ClassLoader.getSystemClassLoader();
+            ClassLoader parent = sysClassLoader/* #152620 */.getParent();
             if (LOG.isLoggable(Level.FINE)) {
                 List<URL> parentURLs;
                 if (parent instanceof URLClassLoader) {
@@ -409,6 +411,10 @@ public final class AntBridge {
                     parentURLs = null;
                 }
                 LOG.log(Level.FINER, "AntBridge.createMainClassLoader: cp={0} parent.urls={1}", new Object[] {Arrays.asList(cp), parentURLs});
+            }
+            if (parent.getResource("com/sun/tools/javac/Main.class") == null) {
+                //No javac in ext  ClassLoader add it
+                parent = new AddJavacClassLoader(parent, sysClassLoader);
             }
             return new MainClassLoader(cp, parent);
         } else {
@@ -661,7 +667,73 @@ public final class AntBridge {
         }
         
     }
-    
+
+
+    private static final class AddJavacClassLoader extends ClassLoader {
+        private static final Iterable<? extends String> javacPackages = Arrays.asList(
+                "com.sun.javadoc.",                 //NOI18N
+                "com.sun.source.",                  //NOI18N
+                "javax.annotation.processing.",     //NOI18N
+                "javax.lang.model.",                //NOI18N
+                "javax.tools.",                     //NOI18N
+                "com.sun.tools.javac.",             //NOI18N
+                "com.sun.tools.javadoc.",           //NOI18N
+                "com.sun.tools.classfile.");        //NOI18N
+
+        private final ClassLoader contextClassLoader;
+        public AddJavacClassLoader(
+                @NonNull final ClassLoader parentClassLoader,
+                @NonNull final ClassLoader contextClassLoader) {
+            super(parentClassLoader);
+            this.contextClassLoader = contextClassLoader;
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (isFromContextClassLoader(name, true)) {
+                return contextClassLoader.loadClass(name);
+            }
+            return super.loadClass(name, resolve);
+        }
+
+        @Override
+        public URL getResource(String name) {
+            if (isFromContextClassLoader(name, false)) {
+                return contextClassLoader.getResource(name);
+            }
+            return super.getResource(name);
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            Enumeration<URL> res =  super.getResources(name);
+            if (isFromContextClassLoader(name, false)) {
+                final Enumeration<URL> cclRes = contextClassLoader.getResources(name);
+                res = Enumerations.concat(res, cclRes);
+            }
+            return res;
+        }
+
+        private static boolean isFromContextClassLoader(
+                @NonNull String name,
+                final boolean pkg) {
+            //the 5-th letter of all interesting packages is either 's' or 'x'
+            //using that to prevent (possibly expensive) loop through javacPackages:
+            char f = name.length() > 4 ? name.charAt(4) : '\0';
+            if (f == 'x' || f == 's') { //NOI18N
+                if (!pkg) {
+                    name = name.replace('/', '.');  //NOI18N
+                }
+                for (String pack : javacPackages) {
+                    if (name.startsWith(pack)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+    }
     // I/O redirection impl. Keyed by thread group (each Ant process has its own TG).
     // Various Ant tasks (e.g. <java fork="false" output="..." ...>) need the system
     // I/O streams to be redirected to the demux streams of the project so they can
