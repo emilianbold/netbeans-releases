@@ -192,4 +192,8 @@ public class RemoteIndexTransferListener implements TransferListener, Cancellabl
         handle.finish();
     }
 
+    long getUnits() {
+        return units;
+    }
+    
 }

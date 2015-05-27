@@ -49,6 +49,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.file.FileStore;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -119,14 +121,17 @@ import org.netbeans.modules.maven.indexer.spi.DependencyInfoQueries;
 import org.netbeans.modules.maven.indexer.spi.GenericFindQuery;
 import org.netbeans.modules.maven.indexer.spi.Redo;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
+import org.netbeans.modules.maven.indexer.spi.impl.IndexingNotificationProvider;
 import org.openide.modules.Places;
 import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
+import org.openide.util.NbBundle.Messages;
 
 @ServiceProviders({
     @ServiceProvider(service=RepositoryIndexerImplementation.class),
@@ -458,6 +463,10 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
     }
     
+    @Messages({"# {0} - folder path",
+               "MSG_NoSpace=There is not enough space in your temp folder to download and unpack the index for ''{0}''.",
+               "# {0} - folder path",
+               "MSG_SeemsNoSpace=It seems that there is not enough space in your temp folder to download and unpack the index for ''{0}''."})
     private void indexLoadedRepo(final RepositoryInfo repo, boolean updateLocal) throws IOException {
         Mutex mutex = getRepoMutex(repo);
         assert mutex.isWriteAccess();
@@ -466,6 +475,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
         boolean fetchFailed = false;
         long t = System.currentTimeMillis();
+        final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
         try {
             IndexingContext indexingContext = getIndexingContexts().get(repo.getId());
             if (indexingContext == null) {
@@ -474,7 +484,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             if (repo.isRemoteDownloadable()) {
                 LOGGER.log(Level.FINE, "Indexing Remote Repository: {0}", repo.getId());
-                final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
                 try {
                     String protocol = URI.create(indexingContext.getIndexUpdateUrl()).getScheme();
                     SettingsDecryptionResult settings = embedder.lookup(SettingsDecrypter.class).decrypt(new DefaultSettingsDecryptionRequest(EmbedderFactory.getOnlineEmbedder().getSettings()));
@@ -545,13 +554,47 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     //#210743
                     LOGGER.log(Level.FINE, "Local repository at {0} doesn't exist, no scan.", indexingContext.getRepository());
                 } else {
-                    RepositoryIndexerListener listener = new RepositoryIndexerListener(indexingContext);
+                    RepositoryIndexerListener repoListener = new RepositoryIndexerListener(indexingContext);
                     try {
-                        scan(indexingContext, null, listener, updateLocal);
+                        scan(indexingContext, null, repoListener, updateLocal);
                     } finally {
-                        listener.close();
+                        repoListener.close();
                     }
                 }
+            }
+        } catch (IOException e) {
+            String noSpaceLeftMsg = null;
+            if(e.getMessage().contains("No space left on device")) {
+                noSpaceLeftMsg = Bundle.MSG_NoSpace(repo.getName());
+            }
+            
+            long downloaded = listener.getUnits() * 1024;
+            long usableSpace = -1;
+            File tmpFolder = new File(System.getProperty("java.io.tmpdir"));
+            try {
+                FileStore store = Files.getFileStore(tmpFolder.toPath());
+                usableSpace = store.getUsableSpace();                    
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            LOGGER.log(Level.INFO, "Downloaded maven index file has size {0} (zipped). The usable space in {1} (java.io.tmpdir) is {2}.", new Object[]{downloaded, tmpFolder, usableSpace});
+
+            // still might be a problem with a too small tmp,
+            // let's try to figure out ...
+            if(noSpaceLeftMsg == null && downloaded > -1 && downloaded * 15 > usableSpace) {
+                noSpaceLeftMsg = Bundle.MSG_SeemsNoSpace(repo.getName());
+            }
+
+            if(noSpaceLeftMsg != null) {
+                LOGGER.log(Level.INFO, null, e);
+                IndexingNotificationProvider np = Lookup.getDefault().lookup(IndexingNotificationProvider.class);
+                if(np != null) {
+                    np.notifyError(noSpaceLeftMsg);
+                } else {
+                    throw e;
+                }
+            } else {
+                throw e;
             }
         } catch (Cancellation x) {
             throw new IOException("canceled indexing");
