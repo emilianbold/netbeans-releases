@@ -48,7 +48,9 @@ import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -75,7 +77,7 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         if (activatedNodes == null || activatedNodes.length == 0) {
             return null;
         }
-        CsmFunction function = null;
+        CsmOffsetableDeclaration declaration = null;
         CsmProject project = null;
         CsmReference ref = CsmReferenceResolver.getDefault().findReference(activatedNodes[0]);
         if (ref == null) {
@@ -91,15 +93,17 @@ public class CallGraphModelFactoryImpl extends CallGraphModelFactory {
         }
         CsmObject obj = ref.getReferencedObject();
         if (CsmKindUtilities.isFunction(obj)) {
-            function = (CsmFunction) obj;
+            declaration = (CsmFunction) obj;
+        } else if(CsmKindUtilities.isVariable(obj)) { 
+            declaration = (CsmVariable) obj;
         } else {
             obj = ref.getClosestTopLevelObject();
             if (CsmKindUtilities.isFunction(obj)) {
-                function = (CsmFunction) obj;
+                declaration = (CsmFunction) obj;
             }
         }
-        if (function != null) {
-            return new CallModelImpl(project, function);
+        if (declaration != null) {
+            return new CallModelImpl(project, declaration);
         }
         return null;
     }

@@ -245,6 +245,14 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
+    protected boolean isDumpingPPState() {
+        Iterator<TestModelHelper> iterator = projectHelpers.values().iterator();
+        while (iterator.hasNext()) {
+            TestModelHelper testModelHelper = iterator.next();
+        }
+        return false;
+    }
+
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -384,13 +392,13 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         if (!goldenDataFile.exists()) {
             fail("No golden file " + goldenDataFile.getAbsolutePath() + "\n to check with output file " + output.getAbsolutePath());
         }
-        if (CndCoreTestUtils.diff(output, goldenDataFile, null)) {
+        if (diffGoldenFiles(isDumpingPPState(), output, goldenDataFile, null)) {
             // copy golden
             File goldenCopyFile = new File(workDir, goldenDataFile.getName() + ".golden");
             CndCoreTestUtils.copyToWorkDir(goldenDataFile, goldenCopyFile); // NOI18N
             StringBuilder buf = new StringBuilder("OUTPUT Difference between diff " + output + " " + goldenCopyFile);
             File diffErrorFile = new File(output.getAbsolutePath() + ".diff");
-            CndCoreTestUtils.diff(output, goldenDataFile, diffErrorFile);
+            diffGoldenFiles(isDumpingPPState(), output, goldenDataFile, diffErrorFile);
             showDiff(diffErrorFile, buf);
             fail(buf.toString());
         }         

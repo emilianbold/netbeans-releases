@@ -43,6 +43,8 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.Image;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.cnd.callgraph.api.Call;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
@@ -85,6 +87,11 @@ public class LoadingNode extends AbstractNode implements Call {
         return null;
     }
 
+    @Override
+    public Collection<Occurrence> getOccurrences() {
+        return Collections.EMPTY_LIST;
+    }
+    
     @Override
     public int compareTo(Call o) {
         return -1;

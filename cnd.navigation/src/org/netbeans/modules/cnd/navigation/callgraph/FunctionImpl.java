@@ -257,4 +257,9 @@ public class FunctionImpl implements Function {
     public String toString() {
         return getName();
     }
+    
+    @Override
+    public Kind kind() {
+        return Kind.FUNCTION;
+    }
 }

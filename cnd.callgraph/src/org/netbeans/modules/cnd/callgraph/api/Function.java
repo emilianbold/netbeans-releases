@@ -49,6 +49,14 @@ import java.awt.Image;
  * @author Alexander Simon
  */
 public interface Function {
+    
+    // kind of "function", e.g. entity which will be presented on call graph
+    public enum Kind {
+        FUNCTION,
+        FUNCTION_POINTER,
+        VARIABLE
+    }
+    
     /**
      * 
      * @return Function short name
@@ -88,4 +96,10 @@ public interface Function {
      * Open function in editor
      */
     void open();
+    
+    /**
+     * 
+     * @return kind of entity
+     */
+    Kind kind();
 }

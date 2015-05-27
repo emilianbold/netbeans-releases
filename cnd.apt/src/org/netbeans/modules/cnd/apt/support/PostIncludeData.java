@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import org.netbeans.modules.cnd.apt.support.APTMacroMap.State;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap.State;
 
 /**
  * entry to store post include data

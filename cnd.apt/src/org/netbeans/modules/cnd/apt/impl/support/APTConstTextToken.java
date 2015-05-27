@@ -187,6 +187,10 @@ public final class APTConstTextToken extends APTTokenAbstact implements APTToken
         return constText[getType()];
     }
 
+    public static CharSequence getConstTextID(int type) {
+        return constTextID[type];
+    }
+    
     @Override
     public void setText(String t) {
         //assert(true) : "setText should not be called for ConstText token"; // NOI18N
