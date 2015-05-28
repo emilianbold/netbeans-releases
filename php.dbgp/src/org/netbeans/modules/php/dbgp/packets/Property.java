@@ -43,11 +43,11 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
@@ -57,7 +57,6 @@ import org.netbeans.modules.php.dbgp.SessionManager;
 import org.netbeans.modules.php.dbgp.UnsufficientValueException;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
-import sun.misc.BASE64Decoder;
 
 /**
  * @author ads
@@ -162,10 +161,9 @@ public class Property extends BaseMessageChildElement {
     public byte[] getValue() throws UnsufficientValueException {
         String value = DbgpMessage.getNodeValue(getNode());
         byte[] result;
-        BASE64Decoder decoder = new BASE64Decoder();
         try {
-            result = decoder.decodeBuffer(value);
-        } catch (IOException e) {
+            result = Base64.getDecoder().decode(value);
+        } catch (IllegalArgumentException e) {
             result = new byte[0];
         }
         return getValue(result);

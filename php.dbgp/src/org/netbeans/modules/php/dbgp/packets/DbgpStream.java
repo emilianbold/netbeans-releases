@@ -43,8 +43,8 @@
  */
 package org.netbeans.modules.php.dbgp.packets;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.dbgp.DebugSession;
@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.w3c.dom.Node;
-import sun.misc.BASE64Decoder;
 
 /**
  * @author ads
@@ -77,11 +76,10 @@ public class DbgpStream extends DbgpMessage {
     @Override
     @NbBundle.Messages("LBL_PhpDebuggerConsole=PHP Debugger Console")
     public void process(DebugSession session, DbgpCommand command) {
-        BASE64Decoder decoder = new BASE64Decoder();
         byte[] buffer;
         try {
-            buffer = decoder.decodeBuffer(getNodeValue(getNode()));
-        } catch (IOException ex) {
+            buffer = Base64.getDecoder().decode(getNodeValue(getNode()));
+        } catch (IllegalArgumentException ex) {
             Logger.getLogger(DbgpStream.class.getName()).log(Level.WARNING, null, ex);
             buffer = new byte[0];
         }

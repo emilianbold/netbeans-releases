@@ -46,6 +46,7 @@ package org.netbeans.modules.php.dbgp.packets;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -54,7 +55,6 @@ import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.DebuggerOptions;
 import org.netbeans.modules.php.dbgp.SessionId;
 import org.netbeans.modules.php.dbgp.SessionManager;
-import sun.misc.BASE64Encoder;
 
 /**
  * @author ads
@@ -94,7 +94,6 @@ public abstract class DbgpCommand {
     }
 
     private String encodeData() throws IOException {
-        BASE64Encoder encoder = new BASE64Encoder();
         Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
         byte[] bytes = getData().getBytes(Charset.defaultCharset());
         if (session != null) {
@@ -110,7 +109,7 @@ public abstract class DbgpCommand {
                 }
             }
         }
-        return encoder.encode(bytes);
+        return Base64.getEncoder().encodeToString(bytes);
     }
 
     public String getTransactionId() {
