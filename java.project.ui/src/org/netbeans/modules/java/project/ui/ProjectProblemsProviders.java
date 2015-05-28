@@ -246,6 +246,12 @@ public class ProjectProblemsProviders {
                             getDescription(RefType.VARIABLE, v),
                             new VariableResolver(RefType.VARIABLE, v));
                     } else {
+                        // Since 8.1, "junit" library definition and junit-3.8.2 binaries
+                        // were removed. Project problems are handled now from class
+                        // org.netbeans.modules.junit.ant.ui.JUnitProjectOpenedHook.
+                        if (val.equals("libs.junit.classpath")) {
+                            continue;
+                        }
                         problem = ProjectProblemsProvider.ProjectProblem.createError(
                             getDisplayName(RefType.LIBRARY, val),
                             getDescription(RefType.LIBRARY, val),
@@ -363,6 +369,12 @@ public class ProjectProblemsProviders {
             String libraryName = libraryRef.substring(5,libraryRef.length()-10);
             Library lib = refHelper.findLibrary(libraryName);
             if (lib == null) {
+                // Since 8.1, "junit" library definition and junit-3.8.2 binaries
+                // were removed. Project problems are handled now from class
+                // org.netbeans.modules.junit.ant.ui.JUnitProjectOpenedHook.
+                if(libraryName.equals("junit")) {
+                    continue;
+                }
                 // Should already have been caught before?
                 set.add(
                     ProjectProblemsProvider.ProjectProblem.createError(
