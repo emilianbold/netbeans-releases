@@ -55,8 +55,11 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
@@ -132,7 +135,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
                         if (testedCtor.getParameters().isEmpty()) {
-                            flag = false;
+                            flag = (testedCtor.getDefinition().getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
                             break;
                         } else {
                             flag = true;
@@ -192,7 +195,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
         
         private List<? extends Fix> createFixes(NoMatchingConstructorErrorInfoImpl info) {
             try {
-                return Collections.singletonList(new AddConstructor(info.doc, info.clazz, info.getStartOffset(), info.getEndOffset()));
+                return Collections.singletonList(new AddConstructor(info.doc, info.clazz, info.getStartOffset(), info.clazz.getEndOffset()));
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
             }
@@ -219,7 +222,17 @@ class NoMatchingConstructor extends AbstractCodeAudit {
 
         @Override
         public ChangeInfo implement() throws Exception {
-            CsmContext context = CsmContext.create(doc, startOffset, endOffset, 0);
+            int carretOffset = 0;
+            
+            // get carret offset
+            for (CsmMember member : clazz.getMembers()) {
+                if (member.getVisibility() == CsmVisibility.PUBLIC) {
+                    int memberOffset = member.getStartOffset();
+                    carretOffset = memberOffset - CsmFileInfoQuery.getDefault().getLineColumnByOffset(clazz.getContainingFile(), memberOffset)[1];
+                }
+            }
+            
+            CsmContext context = CsmContext.create(doc, startOffset, endOffset, carretOffset);
             InstanceContent ic = new InstanceContent();
             ic.add(context);
             ic.add(EditorRegistry.lastFocusedComponent());
