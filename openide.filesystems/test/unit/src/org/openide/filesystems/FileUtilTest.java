@@ -276,7 +276,7 @@ public class FileUtilTest extends NbTestCase {
         final File testFile = new File (wd,"test.jar"); //NOI18N
         FileUtil.createData(testFile);
 
-        final Logger log = Logger.getLogger(FileUtil.class.getName());
+        final Logger log = Logger.getLogger(JarArchiveRootProvider.class.getName());
         log.setLevel(Level.FINEST);
         final Handler handler = new Handler() {
             @Override
