@@ -693,7 +693,6 @@ declaration
     | (cp_mixin_declaration)=>cp_mixin_declaration
     | (cp_mixin_call)=> cp_mixin_call (ws? IMPORTANT_SYM)?
     | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?    
-    | {isLessSource()}? AT_IDENT LPAREN RPAREN
     | {isLessSource()}? LESS_AND pseudo
     | {isCssPreprocessorSource()}? at_rule
     | {isScssSource()}? sass_control
@@ -1131,7 +1130,7 @@ cp_mixin_declaration
 cp_mixin_call
     :
     (
-        {isLessSource()}? (DOT cp_mixin_name | HASH) (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
+        {isLessSource()}? (DOT cp_mixin_name | HASH | AT_IDENT) (ws? LPAREN ws? cp_mixin_call_args? RPAREN)?
         |
         {isScssSource()}? SASS_INCLUDE ws cp_mixin_name (ws? LPAREN ws? cp_mixin_call_args? RPAREN)? (ws? cp_mixin_block)?
     )
