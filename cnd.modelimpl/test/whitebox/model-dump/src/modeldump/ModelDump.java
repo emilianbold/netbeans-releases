@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
+import org.netbeans.modules.cnd.apt.impl.support.PPIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocHandlerImpl;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.makeproject.api.compilers.GNUCCCompiler;
@@ -65,8 +65,8 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 //import org.netbeans.modules.cnd.modelimpl.parser.apt.APTPreprocStateImpl;
 //import org.netbeans.modules.cnd.modelimpl.parser.apt.APTSystemStorage;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTMacroMap;
+import org.netbeans.modules.cnd.apt.support.PPIncludeHandler;
+import org.netbeans.modules.cnd.apt.support.PPMacroMap;
 //import org.netbeans.modules.cnd.apt.support.APTPreprocState;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
@@ -274,14 +274,14 @@ public class ModelDump {
         log.println("Quote includes: " + quoteIncludes); // NOI18N
         log.println("Definitions: " + defines); // NOI18N
         
-        APTMacroMap map = APTSystemStorage.getDefault().getMacroMap(defines);
+        PPMacroMap map = APTSystemStorage.getDefault().getMacroMap(defines);
         
         List checkedSysIncludes = APTSystemStorage.getDefault().getIncludes(sysIncludes);
-        APTIncludeHandler aptIncludeHandler = new APTIncludeHandlerImpl(new StartEntry(file.getAbsolutePath(), null), quoteIncludes, checkedSysIncludes);
+        PPIncludeHandler PPIncludeHandler = new PPIncludeHandlerImpl(new StartEntry(file.getAbsolutePath(), null), quoteIncludes, checkedSysIncludes);
         
-        APTPreprocHandlerImpl ph = new APTPreprocHandlerImpl(map, aptIncludeHandler, true);
+        APTPreprocHandlerImpl ph = new APTPreprocHandlerImpl(map, PPIncludeHandler, true);
         
-        //APTPreprocState preprocState = new APTPreprocStateImpl(map, aptIncludeHandler, true);
+        //APTPreprocState preprocState = new APTPreprocStateImpl(map, PPIncludeHandler, true);
         //APTPreprocState.State state = preprocState.getState();
         //fileImpl = (FileImpl) project.testAPTParseFile(file.getAbsolutePath(), preprocState);
         

@@ -174,11 +174,48 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     public boolean isKeyword(int ttype) {
         return keywords.contains(Integer.valueOf(ttype));
     }
+
+    public static final class FilterTextToken extends FilterToken {
+        private final String text;
+        private final int shift;
+
+        public FilterTextToken(APTToken origToken, int type, String text, int shift) {
+            super(origToken, type);
+            this.text = text;
+            this.shift = shift;
+        }
+
+        @Override
+        public String getText() {
+            return text;
+        }
+
+        @Override
+        public CharSequence getTextID() {
+            return text;
+        }
+
+        @Override
+        public int getColumn() {
+            return super.getColumn()+shift;
+        }
+
+        @Override
+        public int getEndColumn() {
+            return super.getEndColumn()+shift;
+        }
+
+        @Override
+        public int getOffset() {
+            return super.getOffset()+shift;
+        }
+    }
+
     /**
      * A wrapper token that changes original token type
      * and delegates the rest of the methods to original token.
      */
-    public static final class FilterToken implements APTToken {
+    public static class FilterToken implements APTToken {
 
         private final APTToken origToken;
         private int type;

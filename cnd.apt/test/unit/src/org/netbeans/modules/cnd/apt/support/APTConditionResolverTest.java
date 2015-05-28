@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.filesystems.FileObject;
@@ -116,6 +121,9 @@ public class APTConditionResolverTest {
     }
 
     private void doTestSizeof(String src, String macroName, String maxValue, String testMacro, int sizeof) {
+        if (APTTraceFlags.USE_CLANK) {
+            return;
+        }
         APTFileMacroMap mmap = new APTFileMacroMap(null, Arrays.asList(macroName+"="+maxValue));
         APTMacro macro__INT_MAX__ = mmap.getMacro(APTUtils.createIDENT(CharSequences.create(macroName)));
         assertNotNull(macro__INT_MAX__);
@@ -137,6 +145,9 @@ public class APTConditionResolverTest {
                                                             "#endif";
     @Test
     public void testLongVsUint() {
+        if (APTTraceFlags.USE_CLANK) {
+            return;
+        }
         // #229008 - inaccuracy tests: MySQL project has unresolved includes (#error zzzz)
         APTFileMacroMap mmap = new APTFileMacroMap(null, Collections.<String>emptyList());
         TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(LONG_VS_UNIT_CHECK_CODE, APTLanguageSupport.GNU_CPP);
@@ -149,7 +160,7 @@ public class APTConditionResolverTest {
     private static final class TestWalker extends APTAbstractWalker {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
-            super(apt, APTHandlersSupport.createPreprocHandler(macros, 
+            super(apt, APTHandlersSupportImpl.createPreprocHandler(macros, 
                     new APTIncludeHandlerImpl(createStartEntry(apt), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), null),
                     true, CharSequences.empty(), CharSequences.empty()), null);
         }

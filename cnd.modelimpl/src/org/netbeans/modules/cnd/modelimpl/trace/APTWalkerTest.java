@@ -51,8 +51,8 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTAbstractWalker;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler.IncludeState;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -68,7 +68,7 @@ import org.openide.filesystems.FileObject;
  */
 public class APTWalkerTest extends APTAbstractWalker {
 
-    public APTWalkerTest(APTFile apt, APTPreprocHandler ppHandler) {
+    public APTWalkerTest(APTFile apt, PreprocHandler ppHandler) {
         super(apt, ppHandler, null);
     }
 
