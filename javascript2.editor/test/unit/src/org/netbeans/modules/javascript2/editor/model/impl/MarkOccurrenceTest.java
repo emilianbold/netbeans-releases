@@ -1479,6 +1479,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue252019.js", "var f^n = function FnName(){", true);
     }
     
+    public void testIssue250376_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250376.js", "* @property  {SomeW^idget} yet", true);
+    }
+    
+    public void testIssue250376_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue250376.js", "* @property  {Anothe^rOne} [label]", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
