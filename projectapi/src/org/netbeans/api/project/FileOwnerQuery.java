@@ -44,7 +44,9 @@
 
 package org.netbeans.api.project;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -130,19 +132,29 @@ public class FileOwnerQuery {
      * @throws IllegalArgumentException if the URI is relative or opaque
      */
     public static Project getOwner(URI uri) {
-        if ("jar".equals(uri.getScheme())) {
-            try {
-                URL jar = FileUtil.getArchiveFile(uri.toURL());
-                if (jar != null) {
-                    uri = jar.toURI();
+//        if ("jar".equals(uri.getScheme())) {
+//            try {
+//                URL jar = FileUtil.getArchiveFile(uri.toURL());
+//                if (jar != null) {
+//                    uri = jar.toURI();
+//                }
+//            } catch (Exception x) {
+//                LOG.log(Level.INFO, null, x);
+//            }
+//        }
+        try {
+            URL url = uri.toURL();
+            if (FileUtil.isArchiveRoot(url)) {
+                url = FileUtil.getArchiveFile(url);
+                if (url != null) {
+                    uri = url.toURI();
                 }
-            } catch (Exception x) {
-                LOG.log(Level.INFO, null, x);
             }
+        } catch (MalformedURLException | URISyntaxException e) {
+            LOG.log(Level.INFO, null, e);
         }
         if (!uri.isAbsolute() || uri.isOpaque()) {
-            //throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
-            return null;
+            throw new IllegalArgumentException("Bad URI: " + uri); // NOI18N
         }
         for (FileOwnerQueryImplementation q : getInstances()) {
             Project p = q.getOwner(uri);
