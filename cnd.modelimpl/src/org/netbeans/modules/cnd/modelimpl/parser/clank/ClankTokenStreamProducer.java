@@ -130,6 +130,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           FileTokenStreamCallback callback = new FileTokenStreamCallback(
                   ppHandler,
                   triggerParsingActivity,
+                  filterOutComments,
                   fileImpl, getFileContent(),
                   tokStreamCache.getFileIndex());
           boolean tsFromClank = ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter);
@@ -179,12 +180,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private State alreadySeenInterestedFileEnter = State.INITIAL;
         private boolean insideInterestedFile = false;
         private final boolean triggerParsingActivity;
+        private final boolean filterOutComments;
 
         private List<FileImpl> curFiles = new ArrayList<FileImpl>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
                 boolean triggerParsingActivity,
+                boolean filterOutComments,
                 FileImpl stopFileImpl, 
                 FileContent fileContent,
                 int stopAtIndex) {
@@ -193,6 +196,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             this.startProject = Utils.getStartProject(startEntry);
             this.startFile = Utils.getStartFile(ppHandler.getState());
             this.triggerParsingActivity = triggerParsingActivity;
+            this.filterOutComments = filterOutComments;
             this.stopFileImpl = stopFileImpl;
             this.fileContent = fileContent;
             this.stopAtIndex = stopAtIndex;
@@ -224,6 +228,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
           return this.insideInterestedFile || !CLEAN_STATE;
         }
 
+        @Override
+        public boolean needComments() {
+          return !filterOutComments;
+        }
+        
         @Override
         public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
             if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
@@ -397,7 +406,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public boolean needMacroExpansion() {
-          return this.insideInterestedFile;
+          return false;
+        }
+
+        @Override
+        public boolean needComments() {
+          return false;
         }
 
         @Override

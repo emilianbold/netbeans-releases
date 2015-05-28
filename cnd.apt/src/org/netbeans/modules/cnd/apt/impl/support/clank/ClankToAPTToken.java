@@ -49,6 +49,7 @@ import org.clang.lex.Lexer;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.SmallVectorToken;
 import org.clang.lex.Token;
+import org.clang.tools.services.support.FileInfoCallback;
 import static org.clank.java.std.*;
 import org.clank.support.Unsigned;
 import org.llvm.adt.aliases.SmallVectorChar;
@@ -88,11 +89,29 @@ class ClankToAPTToken implements APTToken {
             SourceManager SM = PP.getSourceManager();
             assert SM != null;
             Token token = tokens[i];
+            FileInfoCallback.MacroExpansionInfo info = null;
+            if (token.isAnnotation() && (token.getAnnotationValue() instanceof FileInfoCallback.MacroExpansionInfo)) {
+                info = (FileInfoCallback.MacroExpansionInfo)token.getAnnotationValue();
+            }
             int rawLocation = token.getRawLocation();
             int offset;
-            boolean isFromMacro = SourceLocation.isMacroID(rawLocation);
+            // is the token real macro expansion?
+            boolean isFromRealMacro = (info == null) && SourceLocation.isMacroID(rawLocation);
             APTCommentToken endOffsetToken = null;
-            if (isFromMacro) {
+            APTToken converted;
+            boolean needToWrapAsMacro = isFromRealMacro || (info != null);
+            if (info != null) {
+                // handle annotated macro expansion range
+                // convert it into comment token and use as end offset token
+                // duing macro expansion
+                converted = ClankToAPTToken.convertAnnotation(PP, token, info, needLineColumns);
+                lastExpandedStartOffset = info.getStartOffset();
+                lastExpansionRange = info.getRawExpansionRange();
+                lastEndOffsetToken = (APTCommentToken)converted;
+                endOffsetToken = lastEndOffsetToken;
+                needToWrapAsMacro = true;
+                assert APTUtils.isCommentToken(converted) : "annotated token must be comment";
+            } else if (isFromRealMacro) {
                 // reuse start/end if was already calculated for this range
                 long/*<SourceLocation, SourceLocation>*/ curExpansionRange = SM.getExpansionRange(rawLocation);
                 if (lastExpansionRange != curExpansionRange) {
@@ -111,6 +130,7 @@ class ClankToAPTToken implements APTToken {
                         tokenEndColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(decomposedRangeEnd), $second_uint(decomposedRangeEnd), null));
                     }
                     lastEndOffsetToken = new APTCommentToken();
+                    lastEndOffsetToken.setType(APTTokenTypes.COMMENT);
                     lastEndOffsetToken.setOffset(expandedEndOffset);
                     lastEndOffsetToken.setTextLength(0);
                     lastEndOffsetToken.setColumn(tokenEndColumn);
@@ -120,18 +140,39 @@ class ClankToAPTToken implements APTToken {
                 }
                 endOffsetToken = lastEndOffsetToken;
                 offset = lastExpandedStartOffset;
+                converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
+                needToWrapAsMacro = true;
             } else {
                 long/*<FileID, uint>*/ decomposedLoc = SM.getDecomposedLoc(rawLocation);
                 offset = Unsigned.long2uint($second_uint(decomposedLoc));
+                converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
             }
-            APTToken converted = ClankToAPTToken.convert(PP, token, offset, spell, needLineColumns);
-            if (isFromMacro) {
+            if (needToWrapAsMacro) {
                 // TODO: can introduce more light weight token, but for now reuse MacroExpandedToken
                 assert endOffsetToken != null;
                 converted = new MacroExpandedToken(converted, converted, endOffsetToken);
+                assert info == null || APTUtils.isCommentToken(converted) : "annotated token must be macro expanded comment";
             }
             out[i] = converted;
         }
+        return out;
+    }
+
+    private static APTToken convertAnnotation(Preprocessor PP, Token token, FileInfoCallback.MacroExpansionInfo info, boolean needLineColumns) {
+        int tokenLine = FAKE_LINE;
+        int tokenColumn = FAKE_COLUMN;
+        if (needLineColumns) {
+            SourceManager SM = PP.getSourceManager();
+            long/*<FileID, uint>*/ LocInfo = SM.getDecomposedExpansionLoc(token.getRawLocation());
+            tokenLine = Unsigned.long2uint(SM.getLineNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+            tokenColumn = Unsigned.long2uint(SM.getColumnNumber($first_FileID(LocInfo), $second_uint(LocInfo), null));
+        }
+        APTCommentToken out = new APTCommentToken();
+        out.setType(APTTokenTypes.COMMENT);
+        out.setOffset(info.getStartOffset());
+        out.setTextLength(info.getEndOffset() - info.getStartOffset());
+        out.setColumn(tokenColumn);
+        out.setLine(tokenLine);
         return out;
     }
 
@@ -153,6 +194,7 @@ class ClankToAPTToken implements APTToken {
                 return out;
             } else if (aptTokenType == APTTokenTypes.COMMENT) {
                 APTCommentToken out = new APTCommentToken();
+                out.setType(APTTokenTypes.COMMENT);
                 out.setOffset(offset);
                 out.setTextLength(token.getLength());
                 out.setColumn(tokenColumn);

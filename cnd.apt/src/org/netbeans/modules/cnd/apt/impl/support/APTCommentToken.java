@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  *
@@ -89,6 +90,7 @@ public final class APTCommentToken extends APTTokenAbstact {
 
     @Override
     public int getType() {
+        assert APTUtils.isCommentToken(type) : "forgot to set comment kind type?";
         return type;
     }
 

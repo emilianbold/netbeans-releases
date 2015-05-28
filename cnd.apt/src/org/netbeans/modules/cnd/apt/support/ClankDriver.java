@@ -84,7 +84,7 @@ public final class ClankDriver {
     }
 
     public static boolean preprocess(APTFileBuffer buffer,
-            PreprocHandler ppHandler, 
+            PreprocHandler ppHandler,
             ClankPreprocessorCallback callback, Interrupter interrupter) {
         return ClankDriverImpl.preprocessImpl(buffer, ppHandler, callback, interrupter);
     }
@@ -150,7 +150,8 @@ public final class ClankDriver {
       boolean needTokens();
       boolean needSkippedRanges();
       boolean needMacroExpansion();
-
+      boolean needComments();
+      
       /**
        * 
        * @param directiveOwner
