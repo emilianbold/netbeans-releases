@@ -106,7 +106,7 @@ public class ParseTest extends NbTestCase {
     }
 	 */
 
-    public void testAnalysisXMLTextRotate_1_6() throws Exception {
+    public void testAnalysisXMLTextRotate_1_5() throws Exception {
             parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
     }
 
