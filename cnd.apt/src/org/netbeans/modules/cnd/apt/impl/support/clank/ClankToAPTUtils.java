@@ -766,7 +766,7 @@ public final class ClankToAPTUtils {
         assert II != null;
         StringMapEntryBase entry = II.getEntry();
         assert entry != null;
-        return CharSequences.create(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength());
+        return CharSequences.create(new ByteBasedCharSequence(entry.getKeyArray(), entry.getKeyArrayIndex(), entry.getKeyLength()));
     }
 
     public static CharSequence getTokenText(Token token, Preprocessor PP, SmallVectorChar spell) {
@@ -794,7 +794,7 @@ public final class ClankToAPTUtils {
             } else if (token.is(tok.TokenKind.raw_identifier)) {
                 byte[] $CharPtrData = token.$CharPtrData();
                 if ($CharPtrData != null) {
-                    textID = CharSequences.create($CharPtrData, token.$CharPtrDataIndex(), token.getLength());
+                    textID = CharSequences.create(new ByteBasedCharSequence($CharPtrData, token.$CharPtrDataIndex(), token.getLength()));
                 } else {
                     SpellingData = token.getRawIdentifierData();
                     SpellingLen = token.getLength();
@@ -809,7 +809,7 @@ public final class ClankToAPTUtils {
                 }
                 assert SpellingData != null : "" + token;
                 if (SpellingData instanceof char$ptr$array) {
-                    textID = CharSequences.create(SpellingData.$array(), SpellingData.$index(), SpellingLen);
+                    textID = CharSequences.create(new ByteBasedCharSequence(SpellingData.$array(), SpellingData.$index(), SpellingLen));
                 } else if (SpellingData instanceof char$ptr$CharSequence) {
                     char$ptr$CharSequence cssd = (char$ptr$CharSequence) SpellingData;
                     int idx = cssd.$index();
@@ -822,5 +822,33 @@ public final class ClankToAPTUtils {
         }
         assert textID != null : "" + token;
         return textID;
+    }
+    
+    private static final class ByteBasedCharSequence implements CharSequence {
+        private final byte buf[];
+        private final int zeroIndex;
+        private final int length;
+
+        public ByteBasedCharSequence(byte[] buf, int start, int count) {
+            this.buf = buf;
+            this.zeroIndex = start;
+            this.length = count;
+        }
+                        
+        @Override
+        public int length() {
+            return length;
+        }
+
+        @Override
+        public char charAt(int index) {
+            return Casts.$char(buf[zeroIndex + index]);
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return new ByteBasedCharSequence(buf, zeroIndex + start, end-start);
+        }
+        
     }
 }
