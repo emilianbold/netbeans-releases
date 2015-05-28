@@ -56,24 +56,29 @@
                     <folder name="WAR">
                         <file name="WEB-INF\sun-web.xml"/> 
                         <file name="WEB-INF\glassfish-web.xml"/>
+                        <file name="WEB-INF\glassfish-resources.xml"/>
                     </folder>
                     <folder name="EJB">
                         <file name="META-INF\sun-ejb-jar.xml"/>
                         <file name="META-INF\sun-cmp-mappings.xml"/>
                         <file name="META-INF\glassfish-ejb-jar.xml"/>
                         <file name="META-INF\glassfish-cmp-mappings.xml"/>
+                        <file name="META-INF\glassfish-resources.xml"/>
                     </folder>
                     <folder name="EAR">
                         <file name="META-INF\sun-application.xml"/>
                         <file name="META-INF\glassfish-application.xml"/>
+                        <file name="META-INF\glassfish-resources.xml"/>
                     </folder>
                     <folder name="RAR">
                         <file name="META-INF\sun-ra.xml"/>
                         <file name="META-INF\glassfish-ra.xml"/>
+                        <file name="META-INF\glassfish-resources.xml"/>
                     </folder>
                     <folder name="CAR">
                         <file name="META-INF\sun-application-client.xml"/>
                         <file name="META-INF\glassfish-application-client.xml"/>
+                        <file name="META-INF\glassfish-resources.xml"/>
                     </folder>
                 </folder>
             </folder>
