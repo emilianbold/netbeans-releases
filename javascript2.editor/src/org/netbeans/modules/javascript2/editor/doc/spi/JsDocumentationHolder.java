@@ -109,6 +109,15 @@ public abstract class JsDocumentationHolder {
                         insertIntoOccurencesMap(type);
                     }
                 }
+                
+                List<DocParameter> properties = comment.getProperties();
+                if (properties != null) {
+                    for (DocParameter property : properties) {
+                        for (Type type : property.getParamTypes()) {
+                            insertIntoOccurencesMap(type);
+                        }
+                    }
+                }
             }
         }
         return occurencesMap;
