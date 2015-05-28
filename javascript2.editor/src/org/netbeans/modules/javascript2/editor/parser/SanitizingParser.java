@@ -66,7 +66,7 @@ public abstract class SanitizingParser extends Parser {
     
     private static final boolean PARSE_BIG_FILES = Boolean.getBoolean("nb.js.parse.big.files"); //NOI18N
     private static final long MAX_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.file.size", 1024 * 1024); //NOI18N
-    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", (1024 * 1024) / 3); //NOI18N
+    private static final long MAX_MINIMIZE_FILE_SIZE_TO_PARSE = Integer.getInteger("nb.js.big.minimize.file.size", 0); //NOI18N
 
    /**
      * This is count of closing curly brackets that follows at the end of a json file. 
@@ -174,7 +174,7 @@ public abstract class SanitizingParser extends Parser {
                         return false;
                     }
                 }
-            } else if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE && snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
+            } else if (snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
                 int index = text.length() - 1;
                 char ch = text.charAt(index);
                 while (index > 0 && ch != '}') {
