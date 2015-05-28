@@ -173,7 +173,7 @@ public abstract class SanitizingParser extends Parser {
                         return false;
                     }
                 }
-            } else if (size > MAX_MINIMIZE_FILE_SIZE_TO_PARSE && snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
+            } else if (snapshot.getMimeType().equals(JsTokenId.JSON_MIME_TYPE)) {
                 int index = text.length() - 1;
                 char ch = text.charAt(index);
                 while (index > 0 && ch != '}') {
