@@ -1487,6 +1487,18 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue250376.js", "* @property  {Anothe^rOne} [label]", true);
     }
     
+    public void testIssue252655_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252655.js", "(wi^ndow[varName].q = window[varName].q || []);", true);
+    }
+    
+    public void testIssue252655_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252655.js", "(window[varN^ame].q = window[varName].q || []);", true);
+    }
+    
+    public void testIssue252655_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252655.js", "(window[varName].q^ = window[varName].q || []);", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
