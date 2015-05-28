@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +58,6 @@ import org.netbeans.modules.glassfish.tooling.utils.OsUtils;
 import static org.netbeans.modules.glassfish.tooling.utils.ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME;
 import static org.netbeans.modules.glassfish.tooling.utils.ServerUtils.addPathElement;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
-import sun.misc.BASE64Encoder;
 
 /**
  * GlassFish <code>admin-keyfile</code>.
@@ -668,10 +668,10 @@ public class AdminKeyFile {
                     new Object[] {HASH_ALGORITHM, nae.getMessage()});
         }
         if (success && passwordBytes != null && md != null) {
-            BASE64Encoder b64Enc = new BASE64Encoder();
+            Base64.Encoder b64Enc = Base64.getEncoder();
             md.reset();
             md.update(passwordBytes);
-            String b64Hash = b64Enc.encode(md.digest());
+            String b64Hash = b64Enc.encodeToString(md.digest());
             if (b64Hash != null) {
                 StringBuilder sb = new StringBuilder(
                         1 + HASH_ALGORITHM_GALSSFISH.length()
