@@ -55,6 +55,7 @@ import java.net.URLEncoder;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,7 +137,7 @@ public class RestConnection {
                 if (pa!= null && pa.getUserName()!=null && (params==null || !params[0][0].equals("username"))) {
                     assert pa.getPassword()!=null;
                     String userPassword = pa.getUserName() + ":" + String.valueOf(pa.getPassword());
-                    String encoding = new sun.misc.BASE64Encoder().encode(userPassword.getBytes());
+                    String encoding = Base64.getEncoder().encodeToString(userPassword.getBytes());
                     conn.setRequestProperty("Authorization", "Basic " + encoding);
                 }
 
