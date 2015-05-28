@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmCompilationUnit;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -439,7 +439,7 @@ public final class DeepReparsingUtils {
     private static void addToReparse(final ProjectBase project, final NativeFileItem nativeFile, final FileImpl file) {
         if (nativeFile.getFileObject() != null && nativeFile.getFileObject().isValid()) {
             file.markReparseNeeded(true);
-            APTPreprocHandler.State state = project.setChangedFileState(nativeFile);
+            PreprocHandler.State state = project.setChangedFileState(nativeFile);
             if (state == null) {
                 CndUtils.assertTrue(!file.isValid(), "setChangedFileState returned null for valid file ", file); //NOI18N
             } else {

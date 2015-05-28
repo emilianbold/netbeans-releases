@@ -290,6 +290,26 @@ int posix_spawn(
     return _orig_posix_spawn(pid, path, file_actions, attrp, argv, envp);   
 }
 
+int posix_spawnp(
+	pid_t * pid,
+	const char * file,
+	const posix_spawn_file_actions_t *file_actions,
+	const posix_spawnattr_t * attrp,
+	char *const *argv,
+	char *const *envp) {
+    LOG("BuildTrace: posix_spawnp\n");
+    static int (* _orig_posix_spawnp)(pid_t *,
+	const char *,
+	const posix_spawn_file_actions_t *,
+	const posix_spawnattr_t *,
+	char *const*,
+	char *const*) = 0;
+    if (!_orig_posix_spawnp) {
+        _orig_posix_spawnp = (typeof ( _orig_posix_spawnp))dlsym((void*) - 1, "posix_spawnp");
+    }
+    __logprint(file, argv, envp);
+    return _orig_posix_spawnp(pid, file, file_actions, attrp, argv, envp);   
+}
 
 static void
 __attribute((constructor))

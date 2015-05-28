@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.callgraph.api;
 
+import java.util.Collection;
+
 /**
  *
  * @author Alexander Simon
@@ -66,4 +68,12 @@ public interface Call extends Comparable<Call>{
 
     Function getCallee();
     Function getCaller();
+    
+    Collection<Occurrence> getOccurrences();
+    
+    public interface Occurrence {
+        void open();
+        String getHtmlDisplayName();
+        String getDescription();
+    }
 }

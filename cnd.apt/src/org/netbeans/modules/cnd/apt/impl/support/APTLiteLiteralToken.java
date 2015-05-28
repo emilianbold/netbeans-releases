@@ -85,9 +85,9 @@ public final class APTLiteLiteralToken extends APTTokenAbstact {
         columnLineType = ((((column & MAX_COL)<<LINE_BITS) 
                        + (line & MAX_LINE))<<TYPE_BITS) 
                        + (type & MAX_TYPE);
-        assert column == getColumn();
-        assert line == getLine();
-        assert literalType == getLiteralType();
+        assert column == getColumn() : column + " vs. " + getColumn();
+        assert line == getLine() : line + " vs. " + getLine();
+        assert literalType == getLiteralType() : literalType + " vs. " + getLiteralType();
     }
     
     @Override

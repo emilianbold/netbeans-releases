@@ -42,8 +42,13 @@
 
 package org.netbeans.modules.cnd.navigation.callgraph;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.callgraph.api.Call;
@@ -55,62 +60,72 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
  * @author Alexander Simon
  */
 public class CallImpl implements Call {
-
-    private final Function owner;
-    private final CsmReference reference;
-    private final Function function;
-    private final boolean nameOrder;
-    private final CharSequence name;
-    private final CharSequence display;
     
-    public CallImpl(CsmFunction owner, CsmReference reference, CsmFunction function, boolean nameOrder){
-        this.owner = new FunctionImpl(owner);
-        this.reference = reference;
-        this.function = new FunctionImpl(function);
+    private final Function owner;
+    private final Function callee;
+    private final boolean nameOrder;
+    private final CsmReference firstOccurrence;
+    private final ArrayList<Occurrence> occurrences;
+    private final CharSequence description;
+    private final CharSequence htmlName;
+    
+    public CallImpl(CsmOffsetableDeclaration owner, ArrayList<CsmReference> references, CsmOffsetableDeclaration callee, boolean nameOrder) {
         this.nameOrder = nameOrder;
-        name = initDescription();
-        display = initHtmlDisplayName();
+        this.owner = implementationResolver(owner);
+        this.callee = implementationResolver(callee);
+        this.occurrences = initOccurrences(references);
+        this.firstOccurrence = (!references.isEmpty()) ? references.get(0) : null;
+        this.description = initDescription(firstOccurrence);
+        this.htmlName = initHtmlDisplayName(firstOccurrence);
     }
-
+    
     public Object getReferencedCall() {
-        return reference;
+        return firstOccurrence;
     }
-
+    
     @Override
     public void open() {
         final String taskName = "Open function call"; //NOI18N
         Runnable run = new Runnable() {
-
             @Override
             public void run() {
-                CsmUtilities.openSource(reference);
+                CsmUtilities.openSource(firstOccurrence);
             }
         };
         CsmModelAccessor.getModel().enqueue(run, taskName);
     }
-
+    
     @Override
     public Function getCallee() {
-        return function;
+        return callee;
     }
 
     @Override
     public Function getCaller() {
         return owner;
     }
-
+    
     @Override
-    public int compareTo(Call o) {
-        if (nameOrder) {
-            return getCaller().getName().compareTo(o.getCaller().getName());
+    public Collection<Occurrence> getOccurrences() {
+        return occurrences;
+    }
+    
+    @Override
+    public String getHtmlDisplayName() {
+        if (htmlName != null) {
+            return htmlName.toString();
         }
-        int diff = reference.getStartOffset() - ((CallImpl)o).reference.getStartOffset();
-        if (diff == 0) {
-             return getCallee().getName().compareTo(o.getCallee().getName());
-       }
-        return diff;
+        return null;
     }
 
+    @Override
+    public String getDescription() {
+        if (description != null) {
+            return description.toString();
+        }
+        return null;
+    }
+    
     @Override
     public String toString() {
         if (nameOrder) {
@@ -119,28 +134,91 @@ public class CallImpl implements Call {
             return getCaller().getName()+"->"+getCallee().getName(); // NOI18N
         }
     }
-
+    
     @Override
-    public String getHtmlDisplayName() {
-        if (display != null) {
-            return display.toString();
+    public int compareTo(Call o) {
+        if (nameOrder) {
+            return getCaller().getName().compareTo(o.getCaller().getName());
         }
-        return null;
-    }
-
-    @Override
-    public String getDescription() {
-        if (name != null) {
-            return name.toString();
+        int diff = firstOccurrence.getStartOffset() - ((CallImpl)o).firstOccurrence.getStartOffset();
+        if (diff == 0) {
+            return getCallee().getName().compareTo(o.getCallee().getName());
         }
-        return null;
+        return diff;
     }
-
-    private CharSequence initHtmlDisplayName() {
+    
+    private CharSequence initHtmlDisplayName(CsmReference reference) {
         return CsmReferenceSupport.getContextLineHtml(reference, true);
     }
 
-    private CharSequence initDescription() {
+    private CharSequence initDescription(CsmReference reference) {
         return CsmReferenceSupport.getContextLine(reference);
     }
+    
+    private ArrayList<Occurrence> initOccurrences(ArrayList<CsmReference> references) {
+        ArrayList<Occurrence> result = new ArrayList<Occurrence>(references.size());
+        for (CsmReference ref : references) {
+            result.add(new OccurrenceImpl(ref));
+        }
+        return result;
+    }
+    
+    private static Function implementationResolver(CsmOffsetableDeclaration entity) {
+        if (CsmKindUtilities.isFunction(entity)) {
+            return new FunctionImpl((CsmFunction) entity);
+        } else if (CsmKindUtilities.isVariable(entity)) {
+            return new VariableImpl((CsmVariable) entity);
+        } else {
+            return null;
+        }
+    }
+    
+    private static class OccurrenceImpl implements Call.Occurrence {
+        private final CsmReference reference;
+        private final CharSequence description;
+        private final CharSequence htmlName;
+    
+        private OccurrenceImpl(CsmReference reference) {
+            this.reference = reference;
+            description = initDescription(reference);
+            htmlName = initHtmlDisplayName(reference);
+        }
+        
+        @Override
+        public void open() {
+            final String taskName = "Open function call"; //NOI18N
+            Runnable run = new Runnable() {
+                @Override
+                public void run() {
+                    CsmUtilities.openSource(reference);
+                }
+            };
+            CsmModelAccessor.getModel().enqueue(run, taskName);
+        }
+        
+        @Override
+        public String getHtmlDisplayName() {
+            if (htmlName != null) {
+                return htmlName.toString();
+            }
+            return null;
+        }
+        
+        @Override
+        public String getDescription() {
+            if (description != null) {
+                return description.toString();
+            }
+            return null;
+        }
+        
+        private CharSequence initHtmlDisplayName(CsmReference ref) {
+            return CsmReferenceSupport.getContextLineHtml(ref, true);
+        }
+
+        private CharSequence initDescription(CsmReference ref) {
+            return CsmReferenceSupport.getContextLine(ref);
+        }
+    }
+    
 }

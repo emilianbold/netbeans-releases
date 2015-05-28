@@ -90,6 +90,8 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
@@ -905,7 +907,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             //allow implementator to implement call as a node
             initDefaultView();
             Collection<Node> list = new ArrayList<Node>(1);
-            list.add(new CallContext(new LoadingNode()));
+            list.add(new CallContext(new LoadingOccurencesNode()));
             Node root  = new CallContextRoot(new ContextList(list));
             getExplorerManager().setRootContext(root);
             revalidate();
@@ -919,8 +921,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                         list = Collections.<Node>emptyList();
                         root  = new CallContextRoot(new ContextList(list));
                     } else {
-                        list = new ArrayList<Node>(1);
                         Call call = node.getCall();
+                        list = new ArrayList<Node>(call.getOccurrences().size());
                         final JPanel contextPanel = graphUI == null ? null : graphUI.getContextPanel(call);
                         if (contextPanel != null) {
                             SwingUtilities.invokeLater(new Runnable() {
@@ -940,7 +942,9 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                                 root = (Node)call;
 
                             } else {
-                                list.add(new CallContext(call));
+                                for (Call.Occurrence occurrence : call.getOccurrences()) {
+                                    list.add(new CallContext(occurrence));
+                                }
                                 root  = new CallContextRoot(new ContextList(list));
                             }
                         }
@@ -973,16 +977,16 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
 
         public static class CallContext extends AbstractNode {
-            private final Call call;
-            public CallContext(Call element) {
+            private final Call.Occurrence occurrence;
+            public CallContext(Call.Occurrence element) {
                 super( Children.LEAF);
-                call = element;
+                occurrence = element;
             }
 
             @Override
             public String getHtmlDisplayName() {
-                if (call != null) {
-                    return call.getHtmlDisplayName();
+                if (occurrence != null) {
+                    return occurrence.getHtmlDisplayName();
                 }
                 return super.getHtmlDisplayName();
             }
@@ -993,7 +997,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
             @Override
             public String getShortDescription() {
-                String ret = call.getDescription();
+                String ret = occurrence.getDescription();
                 if (ret != null){
                     return ret;
                 }
@@ -1007,8 +1011,8 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
             @Override
             public Image getIcon(int type) {
-                if (call instanceof Node) {
-                    return ((Node)call).getIcon(type);
+                if (occurrence instanceof Node) {
+                    return ((Node)occurrence).getIcon(type);
                 }
                 return super.getIcon(type);
             }
@@ -1088,6 +1092,52 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 return getComponentAtIndex(0);
             }
             return null;
+        }
+    }
+    
+    private static class LoadingOccurencesNode extends AbstractNode implements Call.Occurrence {
+        public LoadingOccurencesNode() {
+            super(Children.LEAF);
+            setName("dummy"); // NOI18N
+            setDisplayName(NbBundle.getMessage(getClass(), "Loading")); // NOI18N
+        }
+
+        @Override
+        public Image getIcon(int param) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cnd/callgraph/resources/waitNode.gif"); // NOI18N
+        }
+
+        @Override
+        public void open() {
+        }
+        
+        @Override
+        public String getHtmlDisplayName() {
+            return getDescription();
+        }
+        
+        @Override
+        public String getDisplayName() {
+            return NbBundle.getMessage(getClass(), "Loading");
+        }
+
+        @Override
+        public String getDescription() {
+            return  getDisplayName();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof LoadingNode) {
+                return this == obj;
+            }
+            return false;
         }
     }
 }

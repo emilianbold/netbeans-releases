@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
@@ -62,10 +63,12 @@ import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmFileReferences;
@@ -89,26 +92,26 @@ import org.netbeans.modules.cnd.support.Interrupter;
  */
 public class CallModelImpl implements CallModel {
     private final CsmReferenceRepository repository;
-    private final CsmFileReferences references;
+    private final CsmFileReferences fileReferences;
     private final CsmProject project;
     private String name;
-    private FunctionUIN uin;
+    private DeclarationUIN uin;
     
-    public CallModelImpl(CsmProject project, CsmFunction root){
+    public CallModelImpl(CsmProject project, CsmOffsetableDeclaration root) {
         repository = CsmReferenceRepository.getDefault();
-        references = CsmFileReferences.getDefault();
+        fileReferences = CsmFileReferences.getDefault();
         this.project = project;
-        uin = new FunctionUIN(project, root);
+        uin = new CallModelImpl.DeclarationUIN(project, root);
         name = root.getName().toString();
     }
 
     @Override
     public Function getRoot() {
-        CsmFunction root = uin.getFunction();
+        CsmOffsetableDeclaration root = uin.getDeclaration();
         if (root != null) {
             CsmCacheManager.enter();
             try {
-                return new FunctionImpl(root);
+                return implementationResolver(root);
             } finally {
                 CsmCacheManager.leave();
             }
@@ -132,8 +135,15 @@ public class CallModelImpl implements CallModel {
             FunctionImpl impl = (FunctionImpl)newRoot;
             CsmFunction f = impl.getDefinition();
             if (f != null) {
-                uin = new FunctionUIN(project, f);
+                uin = new DeclarationUIN(project, f);
                 name = f.getName().toString();
+            }
+        } else if (newRoot instanceof VariableImpl) {
+            VariableImpl impl = (VariableImpl)newRoot;
+            CsmVariable v = impl.getVariable();
+            if (v != null) {
+                uin = new DeclarationUIN(project, v);
+                name = v.getName().toString();
             }
         }
     }
@@ -152,23 +162,37 @@ public class CallModelImpl implements CallModel {
     public List<Call> getCallers(Function declaration) {
         CsmCacheManager.enter();
         try {
-            FunctionImpl functionImpl = (FunctionImpl) declaration;
-            CsmFunction owner = functionImpl.getDeclaration();
-            Collection<CsmFunction> functions = new ArrayList<CsmFunction>();
-            functions.add(owner);
-            if (CallGraphPreferences.isShowOverriding()) {
-                if (CsmKindUtilities.isMethodDeclaration(owner)) {
-                    Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) owner);
-                    functions.addAll(overrides);
-                }
-            }
-            EnumSet<CsmReferenceKind> kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.UNKNOWN);
+            Collection<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
             List<Call> res = new ArrayList<Call>();
-            HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
+            
+            if (declaration instanceof FunctionImpl) {
+                FunctionImpl functionImpl = (FunctionImpl) declaration;
+                CsmFunction owner = functionImpl.getDeclaration();
+                declarations.add(owner);
+                if (CallGraphPreferences.isShowOverriding()) {
+                    if (CsmKindUtilities.isMethodDeclaration(owner)) {
+                        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getAllBaseDeclarations((CsmMethod) owner);
+                        declarations.addAll(overrides);
+                    }
+                }
+            } else if (declaration instanceof VariableImpl) {
+                declarations.add(((VariableImpl) declaration).getVariable());
+            } else {
+                return res;
+            }
+            
+            EnumSet<CsmReferenceKind> kinds;
+            if (declaration instanceof FunctionImpl) {
+                kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.UNKNOWN);
+            } else {
+                kinds = EnumSet.of(CsmReferenceKind.DIRECT_USAGE, CsmReferenceKind.UNKNOWN, CsmReferenceKind.DECLARATION);
+            }
+            
+            HashMap<CsmFunction,ArrayList<CsmReference>> set = new HashMap<CsmFunction,ArrayList<CsmReference>>();
             HashMap<CsmMacro,CsmReference> macros = new HashMap<CsmMacro,CsmReference>();
-            for(CsmFunction function : functions) {
-                if (CsmKindUtilities.isFunction(function) && function.getContainingFile().isValid()) {
-                    for(CsmReference r : repository.getReferences(function, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
+            for(CsmOffsetableDeclaration decl : declarations) {
+                if (decl.getContainingFile().isValid()) {
+                    for(CsmReference r : repository.getReferences(decl, project, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE, Interrupter.DUMMY)){
                         if (r == null) {
                             continue;
                         }
@@ -176,8 +200,9 @@ public class CallModelImpl implements CallModel {
                             CsmFunction o = getFunctionDeclaration(getEnclosingFunction(r));
                             if (o != null) {
                                 if (!set.containsKey(o)) {
-                                    set.put(o, r);
+                                    set.put(o, new ArrayList<CsmReference>());
                                 }
+                                set.get(o).add(r);
                             } else {
                                 CsmMacro enclosingMacro = getEnclosingMacro(r);
                                 if (enclosingMacro != null && !macros.containsKey(enclosingMacro)) {
@@ -197,16 +222,28 @@ public class CallModelImpl implements CallModel {
                         CsmFunction o = getFunctionDeclaration(getEnclosingFunction(r));
                         if (o != null) {
                             if (!set.containsKey(o)) {
-                                set.put(o, r);
+                                set.put(o, new ArrayList<CsmReference>());
                             }
+                            set.get(o).add(r);
                         }
                     }
                 }
             }
-            final CsmFunction functionDeclaration = getFunctionDeclaration(owner);
-            if (functionDeclaration != null) {
-                for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
-                    res.add(new CallImpl(r.getKey(), r.getValue(), functionDeclaration, true));
+            
+            CsmOffsetableDeclaration owner;
+            if (declaration instanceof FunctionImpl) {
+                FunctionImpl functionImpl = (FunctionImpl) declaration;
+                owner = functionImpl.getDeclaration();
+            } else if (declaration instanceof VariableImpl) {
+                owner = ((VariableImpl) declaration).getVariable();
+            } else {
+                owner = null;
+            }
+            
+            final CsmOffsetableDeclaration ownerDeclaration = owner;
+            if (ownerDeclaration != null) {
+                for(Map.Entry<CsmFunction,ArrayList<CsmReference>> entry : set.entrySet()){
+                    res.add(new CallImpl(entry.getKey(), entry.getValue(), ownerDeclaration, true));
                 }
             }
             return res;
@@ -224,64 +261,78 @@ public class CallModelImpl implements CallModel {
     public List<Call> getCallees(Function definition) {
         CsmCacheManager.enter();
         try {
-            FunctionImpl definitionImpl = (FunctionImpl) definition;
-            CsmFunction owner = definitionImpl.getDefinition();
-            Collection<CsmFunction> functions = new ArrayList<CsmFunction>();
-            functions.add(owner);
-            if (CallGraphPreferences.isShowOverriding()) {
-                if (CsmKindUtilities.isMethodDeclaration(owner)) {
-                    Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods((CsmMethod) owner, false);
-                    functions.addAll(overrides);
+            if (definition instanceof VariableImpl) {
+                return new ArrayList<Call>();
+            } else if (definition instanceof FunctionImpl) {
+                FunctionImpl definitionImpl = (FunctionImpl) definition;
+                CsmFunction owner = definitionImpl.getDefinition();
+                Collection<CsmFunction> functions = new ArrayList<CsmFunction>();
+                functions.add(owner);
+                if (CallGraphPreferences.isShowOverriding()) {
+                    if (CsmKindUtilities.isMethodDeclaration(owner)) {
+                        Collection<CsmMethod> overrides = CsmVirtualInfoQuery.getDefault().getOverriddenMethods((CsmMethod) owner, false);
+                        functions.addAll(overrides);
+                    }
                 }
-            }
-            List<Call> res = new ArrayList<Call>();
-            final HashMap<CsmFunction,CsmReference> set = new HashMap<CsmFunction,CsmReference>();
-            for(CsmFunction function : functions) {
-                if (CsmKindUtilities.isFunctionDefinition(function) && function.getContainingFile().isValid()) {
-                    final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile(), Interrupter.DUMMY);
-                    references.accept((CsmScope)function, null, new CsmFileReferences.Visitor() {
-                        @Override
-                        public void visit(CsmReferenceContext context) {
-                            CsmReference r = context.getReference();
-                            if (r == null) {
-                                return;
-                            }
-                            for(CsmOffsetable offset:list){
-                                if (offset.getStartOffset()<=r.getStartOffset() &&
-                                    offset.getEndOffset()  >=r.getEndOffset()){
+                List<Call> res = new ArrayList<Call>();
+                final HashMap<CsmOffsetableDeclaration,ArrayList<CsmReference>> set = new HashMap<CsmOffsetableDeclaration,ArrayList<CsmReference>>();
+                for(CsmFunction function : functions) {
+                    if (CsmKindUtilities.isFunctionDefinition(function) && function.getContainingFile().isValid()) {
+                        final List<CsmOffsetable> list = CsmFileInfoQuery.getDefault().getUnusedCodeBlocks((function).getContainingFile(), Interrupter.DUMMY);
+                        fileReferences.accept((CsmScope)function, null, new CsmFileReferences.Visitor() {
+                            @Override
+                            public void visit(CsmReferenceContext context) {
+                                CsmReference r = context.getReference();
+                                if (r == null) {
                                     return;
                                 }
-                            }
-                            try {
-                                CsmObject o = r.getReferencedObject();
-                                if (CsmKindUtilities.isFunction(o) && 
-                                        !CsmReferenceResolver.getDefault().isKindOf(r, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
-                                    o = getFunctionDeclaration((CsmFunction)o);
-                                    if (!set.containsKey((CsmFunction)o)) {
-                                        set.put((CsmFunction)o, r);
+                                for(CsmOffsetable offset:list){
+                                    if (offset.getStartOffset()<=r.getStartOffset() &&
+                                        offset.getEndOffset()  >=r.getEndOffset()){
+                                        return;
                                     }
                                 }
-                            } catch (AssertionError e){
-                                e.printStackTrace(System.err);
-                            } catch (Exception e) {
-                                e.printStackTrace(System.err);
+                                try {
+                                    CsmObject o = r.getReferencedObject();
+                                    if (CsmKindUtilities.isFunction(o) && 
+                                            !CsmReferenceResolver.getDefault().isKindOf(r, CsmReferenceKind.FUNCTION_DECLARATION_KINDS)) {
+                                        o = getFunctionDeclaration((CsmFunction)o);
+                                        if (!set.containsKey((CsmOffsetableDeclaration)o)) {
+                                            set.put((CsmOffsetableDeclaration)o, new ArrayList<CsmReference>());
+                                        }
+                                        set.get((CsmOffsetableDeclaration)o).add(r);
+                                    } else if (CsmKindUtilities.isVariable(o)) {
+                                        if (CsmKindUtilities.isFunctionPointerType(((CsmVariable) o).getType())) {
+                                            if (!set.containsKey((CsmOffsetableDeclaration)o)) {
+                                                set.put((CsmOffsetableDeclaration)o, new ArrayList<CsmReference>());
+                                            }
+                                            set.get((CsmOffsetableDeclaration)o).add(r);
+                                        }
+                                    }
+                                } catch (AssertionError e){
+                                    e.printStackTrace(System.err);
+                                } catch (Exception e) {
+                                    e.printStackTrace(System.err);
+                                }
                             }
-                        }
 
-                        @Override
-                        public boolean cancelled() {
-                            return false;
-                        }
-                    }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+                            @Override
+                            public boolean cancelled() {
+                                return false;
+                            }
+                        }, CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE);
+                    }
                 }
-            }
-            final CsmFunction functionDeclaration = getFunctionDeclaration(owner);
-            if (functionDeclaration != null) {
-                for(Map.Entry<CsmFunction,CsmReference> r : set.entrySet()){
-                    res.add(new CallImpl( functionDeclaration, r.getValue(),r.getKey(), false));
+                final CsmFunction functionDeclaration = getFunctionDeclaration(owner);
+                if (functionDeclaration != null) {
+                    for(Map.Entry<CsmOffsetableDeclaration,ArrayList<CsmReference>> entry : set.entrySet()){
+                        res.add(new CallImpl(functionDeclaration, entry.getValue(), entry.getKey(), false));
+                    }
                 }
+                return res;
+            } else {
+                return new ArrayList<Call>();
             }
-            return res;
         } finally {
             CsmCacheManager.leave();
         }
@@ -311,24 +362,33 @@ public class CallModelImpl implements CallModel {
         }
         return null;
     }
-
-    private static class FunctionUIN {
-
-        private final CsmProject project;
-        private final CharSequence functionUin;
-        private final CsmUID<CsmFile> fileUid;
-
-        private FunctionUIN(CsmProject project, CsmFunction root) {
-            this.project = project;
-            functionUin = root.getUniqueName();
-            fileUid = UIDs.get(root.getContainingFile());
+    
+    private static Function implementationResolver(CsmOffsetableDeclaration entity) {
+        if (CsmKindUtilities.isFunction(entity)) {
+            return new FunctionImpl((CsmFunction) entity);
+        } else if (CsmKindUtilities.isVariable(entity)) {
+            return new VariableImpl((CsmVariable) entity);
+        } else {
+            return null;
         }
+    }
 
-        private CsmFunction getFunction() {
+    private static class DeclarationUIN {
+        private final CsmProject project;
+        private final CharSequence declarationUin;
+        private final CsmUID<CsmFile> fileUid;
+        
+        private DeclarationUIN(CsmProject project, CsmOffsetableDeclaration declaration) {
+            this.project = project;
+            fileUid = UIDs.get(declaration.getContainingFile());
+            declarationUin = declaration.getUniqueName();
+        }
+        
+        private CsmOffsetableDeclaration getDeclaration() {
             if (!project.isValid()) {
                 return null;
             }
-            CsmFunction root = (CsmFunction) project.findDeclaration(functionUin);
+            CsmOffsetableDeclaration root = (CsmOffsetableDeclaration) project.findDeclaration(declarationUin);
             if (root != null) {
                 return root;
             }
@@ -337,24 +397,24 @@ public class CallModelImpl implements CallModel {
                 return null;
             }
             for (CsmDeclaration d : file.getDeclarations()) {
-                root = findFunction(d);
+                root = findDeclaration(d);
                 if (root != null){
                     return root;
                 }
             }
             return null;
         }
-
-        private CsmFunction findFunction(CsmDeclaration element) {
+        
+        private CsmOffsetableDeclaration findDeclaration(CsmDeclaration element) {
             if (CsmKindUtilities.isTypedef(element) || CsmKindUtilities.isTypeAlias(element)) {
                 CsmTypedef def = (CsmTypedef) element;
                 if (def.isTypeUnnamed()) {
                     CsmClassifier cls = def.getType().getClassifier();
                     if (cls != null && cls.getName().length() == 0 &&
                             (cls instanceof CsmCompoundClassifier)) {
-                        return findFunction((CsmCompoundClassifier) cls);
+                        return findDeclaration((CsmCompoundClassifier) cls);
                     }
-                }
+                } 
                 return null;
             } else if (CsmKindUtilities.isClassifier(element)) {
                 String name = ((CsmClassifier) element).getName().toString();
@@ -366,14 +426,14 @@ public class CallModelImpl implements CallModel {
                 }
                 if (CsmKindUtilities.isClass(element)) {
                     CsmClass cls = (CsmClass) element;
-                    for (CsmMember m : cls.getMembers()) {
-                        CsmFunction res = findFunction(m);
+                    for (CsmMember member : cls.getMembers()) {
+                        CsmOffsetableDeclaration res = findDeclaration(member);
                         if (res != null) {
                             return res;
                         }
                     }
-                    for (CsmFriend m : cls.getFriends()) {
-                        CsmFunction res = findFunction(m);
+                    for (CsmFriend friend : cls.getFriends()) {
+                        CsmOffsetableDeclaration res = findDeclaration(friend);
                         if (res != null) {
                             return res;
                         }
@@ -382,14 +442,34 @@ public class CallModelImpl implements CallModel {
                 return null;
             } else if (CsmKindUtilities.isNamespaceDefinition(element)) {
                 for (CsmDeclaration d : ((CsmNamespaceDefinition) element).getDeclarations()) {
-                    CsmFunction res = findFunction(d);
+                    CsmOffsetableDeclaration res = findDeclaration(d);
                     if (res != null) {
                         return res;
                     }
                 }
             } else if (CsmKindUtilities.isFunction(element)) {
-                if (element.getUniqueName().equals(functionUin)) {
-                    return (CsmFunction) element;
+                if (element.getUniqueName().equals(declarationUin)) {
+                    return (CsmOffsetableDeclaration)element;
+                } else if (CsmKindUtilities.isOffsetableDeclaration(element)) {
+                    if (CsmKindUtilities.isFunctionDefinition(element)) {
+                        CsmFunction func = (CsmFunction) element;
+                        int start = func.getStartOffset();
+                        int end = func.getEndOffset();
+                        Document doc = CsmReferenceRepository.getDocument(fileUid.getObject());
+                        CsmReferenceResolver refResolver = CsmReferenceResolver.getDefault();
+                        for (int i = start; i <= end; i++) {
+                            CsmReference ref = refResolver.findReference(fileUid.getObject(), doc, i);
+                            if (ref != null) {
+                                CsmObject obj = ref.getReferencedObject();
+                                if (CsmKindUtilities.isVariable(obj)) {
+                                    CsmVariable var = (CsmVariable) obj;
+                                    if (var.getUniqueName().equals(declarationUin)) {
+                                        return (CsmOffsetableDeclaration) var;
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             return null;

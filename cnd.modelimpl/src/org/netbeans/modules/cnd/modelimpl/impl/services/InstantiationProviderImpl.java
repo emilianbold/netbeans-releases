@@ -420,6 +420,11 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
     }
 
     @Override
+    public CsmInstantiation getInstantiatedTypeInstantiation(CsmType type) {
+        return Instantiation.getInstantiatedTypeInstantiation(type);
+    }
+
+    @Override
     public List<CsmInstantiation> getInstantiatedTypeInstantiations(CsmType type) {
         return Instantiation.getInstantiatedTypeInstantiations(type);
     }
@@ -1018,7 +1023,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             CsmSpecializationParameter param = instParams.get(i);
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(specParam) &&
                                     CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                                CsmTypeBasedSpecializationParameter instSpecParam = (CsmTypeBasedSpecializationParameter)param;
+                                CsmType instSpecParam = paramsType.get(i);
                                 CsmTypeBasedSpecializationParameter declSpecParam = (CsmTypeBasedSpecializationParameter) specParam;
                                 CsmClassifier declCls = declSpecParam.getClassifier();
                                 if (declCls != null && !CsmKindUtilities.isTemplateParameter(declCls)) {
@@ -1085,7 +1090,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
         return bestSpecialization;
     }
 
-    private static Set<String> getNestedTypeNames(CsmTypeBasedSpecializationParameter instSpecParam) {
+    private static Set<String> getNestedTypeNames(CsmType instSpecParam) {
         final Set<String> nestedQualifiedNames = new HashSet<>();
         CsmUtilities.iterateTypeChain(instSpecParam, new CsmUtilities.Predicate<CsmType>() {
             @Override
