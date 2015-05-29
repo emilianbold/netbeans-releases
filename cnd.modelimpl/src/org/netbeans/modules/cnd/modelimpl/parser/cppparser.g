@@ -2353,6 +2353,7 @@ enum_qualified_id returns [String qid = ""]
 
 enumerator_list
     :           
+                (COMMA!)? // To increase parser recovery
                 enumerator
                 ( options {greedy=true;} : (COMMA!) enumerator )*  
                 (COMMA!)?
