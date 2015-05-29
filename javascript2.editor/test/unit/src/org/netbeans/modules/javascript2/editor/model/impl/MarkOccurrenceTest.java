@@ -1499,6 +1499,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue252655.js", "(window[varName].q^ = window[varName].q || []);", true);
     }
     
+    public void testIssue252656_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252656.js", "u^ga.q = [];", true);
+    }
+    
+    public void testIssue252656_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252656.js", "uga.q^ = [];", true);
+    }
+    
+    public void testIssue252656_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252656.js", "wi^ndow[ugaVarName] = uga;", true);
+    }
+    
+    public void testIssue252656_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252656.js", "window[ugaV^arName] = uga;", true);
+    }
+    
+    public void testIssue252656_05() throws Exception {
+        checkOccurrences("testfiles/coloring/issue252656.js", "window[ugaVarName] = u^ga;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
