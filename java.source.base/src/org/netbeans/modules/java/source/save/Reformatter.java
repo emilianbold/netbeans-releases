@@ -916,11 +916,11 @@ public class Reformatter implements ReformatTask {
             boolean old = continuationIndent;
             try {
                 Tree parent = getCurrentPath().getParentPath().getLeaf();
-                boolean insideForOrCatch = EnumSet.of(Tree.Kind.FOR_LOOP, Tree.Kind.CATCH).contains(parent.getKind());
+                boolean insideForTryOrCatch = EnumSet.of(Tree.Kind.FOR_LOOP, Tree.Kind.TRY, Tree.Kind.CATCH).contains(parent.getKind());
                 ModifiersTree mods = node.getModifiers();
                 if (mods != null && !fieldGroup && sp.getStartPosition(root, mods) < sp.getEndPosition(root, mods)) {
                     if (scan(mods, p)) {
-                        if (!insideForOrCatch) {
+                        if (!insideForTryOrCatch) {
                             continuationIndent = true;
                             if (cs.placeNewLineAfterModifiers())
                                 newline();
@@ -990,7 +990,7 @@ public class Reformatter implements ReformatTask {
                             scan(body, p);
                     }
                 } else {
-                    if (!insideForOrCatch)
+                    if (!insideForTryOrCatch)
                         continuationIndent = true;
                     if (node.getType() == null || scan(node.getType(), p)) {
                         if (node.getType() != null) {
