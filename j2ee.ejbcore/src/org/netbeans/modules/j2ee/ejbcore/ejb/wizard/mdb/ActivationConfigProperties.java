@@ -116,6 +116,9 @@ public class ActivationConfigProperties {
     }
 
     public static enum AcknowledgeMode {
+        // these values actually violates spec, but only these values works with GF
+        // should be Auto_acknowledge and Dups_ok_acknowledge
+        // see http://docs.oracle.com/javaee/6/api/javax/ejb/ActivationConfigProperty.html
         AUTO_ACKNOWLEDGE("Auto-acknowledge"),          //NOI18N
         DUPS_OK_ACKNOWLEDGE("Dups-ok-acknowledge");    //NOI18N
 
@@ -146,8 +149,8 @@ public class ActivationConfigProperties {
     }
 
     public static enum SubscriptionDurability {
-        NON_DURABLE("non-durable"), //NOI18N
-        DURABLE("durable");         //NOI18N
+        NON_DURABLE("NonDurable"), //NOI18N
+        DURABLE("Durable");         //NOI18N
 
         private final String value;
 
