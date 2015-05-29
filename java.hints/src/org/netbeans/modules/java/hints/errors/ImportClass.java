@@ -158,6 +158,9 @@ public final class ImportClass implements ErrorRule<Void> {
         FileObject file = info.getFileObject();
         String simpleName = ident.text().toString();
         ComputeImports imps = getCandidateFQNs(info, file, simpleName, data);
+        if (imps == null) {
+            return Collections.<Fix>emptyList();
+        }
         List<Element> cands = imps.getCandidates(simpleName);
 
         //workaround for #118714 -- neverending import
