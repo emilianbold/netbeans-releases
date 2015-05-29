@@ -45,11 +45,13 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
 import org.netbeans.modules.nativeexecution.api.pty.Pty;
@@ -135,7 +137,8 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         info.setCommandLine(null);
-        info.setExecutable(PtyUtility.getInstance().getPath(env));
+        final String path = PtyUtility.getInstance().getPath(env);
+        info.setExecutable(path);
         info.setArguments(newArgs.toArray(new String[newArgs.size()]));
 
         // no need to preload unbuffer in case of running in internal terminal
@@ -183,6 +186,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
 
         if (pidLine == null || ttyLine == null) {
             String error = ProcessUtils.readProcessErrorLine(this);
+            LOG.log(Level.INFO, "Unable to start pty process: binary={0}; args={1}; rc={2}", new Object[]{path, newArgs, error}); //NOI18N
             throw new IOException("Unable to start pty process: " + error); // NOI18N
         }
 

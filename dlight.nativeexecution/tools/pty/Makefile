@@ -2,8 +2,13 @@ MAKEFILE = $(shell echo gmake)
 MAKEFILE:sh = echo make
 ROOT_DIR = $(shell pwd)
 ROOT_DIR:sh = pwd
-OS = $(shell uname -s)
-OS:sh = uname -s
+_OS = $(shell uname -s)
+_OS:sh = uname -s
+ifeq (CYGWIN, $(shell expr substr `uname -s` 1 6))
+    OS=Windows
+else
+    OS=$(_OS)
+endif
 ARCH = $(shell arch)
 ARCH:sh = arch
 
