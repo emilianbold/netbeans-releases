@@ -130,6 +130,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
          return getFileObject(composeName(name, ext), antiLoop);
     }
 
+    public final FileSystemProvider.Stat getStat(String childNameExt) throws IOException {
+        DirEntry entry = getEntry(childNameExt);
+        return FileSystemProvider.Stat.create(entry.getDevice(), entry.getINode());
+    }
+
     private DirEntry getEntry(String childNameExt) throws IOException {
         try {
             DirectoryStorage storage = getDirectoryStorage(childNameExt);

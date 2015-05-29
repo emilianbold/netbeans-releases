@@ -98,9 +98,9 @@ class LineBreakpointPanel extends BreakpointPanel {
 
 	if (!customizing) {
 	    // Seed the bpt object
-            String fileName = EditorContextBridge.getCurrentFilePath();
+            String fileName = EditorContextBridge.getMostRecentFilePath();
             if (!fileName.trim().equals("")) {
-                int lineNo = EditorContextBridge.getCurrentLineNumber();
+                int lineNo = EditorContextBridge.getMostRecentLineNumber();
                 breakpoint.setFileAndLine(fileName, lineNo);
             }
 	}

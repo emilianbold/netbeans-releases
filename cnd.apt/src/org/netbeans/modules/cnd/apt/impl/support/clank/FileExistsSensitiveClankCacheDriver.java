@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -53,12 +54,16 @@ public class FileExistsSensitiveClankCacheDriver implements CndFileExistSensitiv
 
     @Override
     public void invalidateAll() {
-        ClankDriverImpl.invalidateAllImpl();
+        if (APTTraceFlags.USE_CLANK) {
+            ClankDriverImpl.invalidateAllImpl();
+        }
     }
 
     @Override
     public void invalidateFile(String file) {
-        ClankDriverImpl.invalidateImpl(file);
+        if (APTTraceFlags.USE_CLANK) {
+            ClankDriverImpl.invalidateImpl(file);
+        }
     }
 
 }

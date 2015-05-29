@@ -447,7 +447,7 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    
+
     public boolean canExecute() {
         try {
             RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
@@ -486,7 +486,23 @@ public abstract class RemoteFileObjectBase {
     public final boolean canWrite() {
         return canWriteImpl(this);
     }
-    
+
+    public final FileSystemProvider.Stat getStat() {
+        try {
+            RemoteDirectory canonicalParent = RemoteFileSystemUtils.getCanonicalParent(this);
+            if (canonicalParent != null) {
+                return canonicalParent.getStat(getNameExt());
+            } else {
+                return FileSystemProvider.Stat.createInvalid();
+            }
+        } catch (ConnectException ex) {
+            return FileSystemProvider.Stat.createInvalid();
+        } catch (IOException ex) {
+            reportIOException(ex);
+            return FileSystemProvider.Stat.createInvalid();
+        }
+    }
+
     protected boolean canWriteImpl(RemoteFileObjectBase orig) {
         setFlag(CHECK_CAN_WRITE, true);
         if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {

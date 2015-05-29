@@ -73,6 +73,34 @@ public abstract class CndFileSystemProvider {
     private static final CndFileSystemProvider DEFAULT = new DefaultProvider();
     private static FileSystem rootFileSystem = null;
 
+    public static final class CndStatInfo {
+
+        public final long inode;
+        public final long device;
+
+        private CndStatInfo(long device, long inode) {
+            this.inode = inode;
+            this.device = device;
+        }
+        
+        public static CndStatInfo create(long  device, long inode) {
+            return new CndStatInfo(device, inode);
+        }
+
+        public static CndStatInfo createInvalid() {
+            return new CndStatInfo(0, 0);
+        }
+
+        public boolean isValid() {
+            return inode > 0;
+        }
+
+        @Override
+        public String toString() {
+            return "CndStatInfo(" + "dev=" + device + ",ino=" + device + ')'; //NOI18N
+        }
+    }
+
     public static class FileInfo {
         public final String absolutePath;
         public final boolean directory;
@@ -128,6 +156,17 @@ public abstract class CndFileSystemProvider {
     public static FileObject toFileObject(File file) {
         return getDefault().toFileObjectImpl(file);
     }    
+
+    /**
+     * Returns inode and device of the given file, if possible
+     */
+    public static CndStatInfo getStatInfo(FileObject fo) {
+        return getDefault().getStatInfoImpl(fo);
+    }
+
+    public static final boolean isRemote(FileSystem fs) {
+        return getDefault().isRemoteImpl(fs);
+    }
 
     public static Boolean exists(CharSequence path) {
         return getDefault().existsImpl(path);
@@ -189,7 +228,7 @@ public abstract class CndFileSystemProvider {
     public static boolean isAbsolute(FileSystem fs, String path) {
         return getDefault().isAbsoluteImpl(fs, path);
     }
-    
+
     public static void addFileChangeListener(FileChangeListener listener) {
         getDefault().addFileChangeListenerImpl(listener);
     }
@@ -259,7 +298,10 @@ public abstract class CndFileSystemProvider {
 
     protected abstract boolean isMacOSImpl(FileSystem fs);
     protected abstract boolean isWindowsImpl(FileSystem fs);
-    
+
+    protected abstract boolean isRemoteImpl(FileSystem fs);
+    protected abstract CndStatInfo getStatInfoImpl(FileObject fo);
+
     private static class DefaultProvider extends CndFileSystemProvider {
         private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
@@ -592,6 +634,22 @@ public abstract class CndFileSystemProvider {
                 return provider.getInputStreamImpl(fo, maxSize);
             }
             return fo.getInputStream();
+        }
+
+        @Override
+        protected boolean isRemoteImpl(FileSystem fs) {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.isRemoteImpl(fs);
+            }
+            return false;
+        }
+
+        @Override
+        protected CndStatInfo getStatInfoImpl(FileObject fo) {
+            for (CndFileSystemProvider provider : cache) {
+                return provider.getStatInfoImpl(fo);
+            }
+            return CndStatInfo.createInvalid();
         }
     }
 }
