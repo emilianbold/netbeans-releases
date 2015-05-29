@@ -118,7 +118,14 @@ int loop(int master_fd) {
 
         if (fds[1].revents & POLLIN) {
             if ((n = read(master_fd, buf, BUFSIZ)) == -1) {
+#ifdef __CYGWIN__
+                // On Windows master_fd is invalid here
+                // (bug #252202)
+                close(master_fd);
+                return 0;
+#else
                 err_sys("read from master failed\n");
+#endif
             }
 
             if (n == 0) {
