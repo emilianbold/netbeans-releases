@@ -65,7 +65,7 @@ public class NBJRTURLMapper extends URLMapper {
 
     @Override
     public URL getURL(FileObject fo, int type) {
-        if (type != INTERNAL)
+        if (type == NETWORK)
             return null;
 
         try {
