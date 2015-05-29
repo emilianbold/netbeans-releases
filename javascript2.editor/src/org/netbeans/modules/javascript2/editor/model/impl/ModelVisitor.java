@@ -1596,8 +1596,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
                                 oldVariable != null ? oldVariable.getModifiers() : null );
                         function.addProperty(variable.getName(), variable);
-                        for(Occurrence occurrence : oldVariable.getOccurrences()) {
-                           variable.addOccurrence(occurrence.getOffsetRange());
+                        if (oldVariable != null) {
+                            for(Occurrence occurrence : oldVariable.getOccurrences()) {
+                               variable.addOccurrence(occurrence.getOffsetRange());
+                            }
                         }
                     }
                 }
