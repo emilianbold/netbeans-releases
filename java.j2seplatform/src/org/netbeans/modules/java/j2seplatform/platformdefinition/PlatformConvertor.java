@@ -77,7 +77,6 @@ import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 /**
@@ -102,6 +101,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static final String PLATFORM_STOREGE = "Services/Platforms/org-netbeans-api-java-Platform"; //NOI18N
     private static final String PLATFORM_DTD_ID = "-//NetBeans//DTD Java PlatformDefinition 1.0//EN"; // NOI18N
+    private static final String URL_EMBEDDING = "!/";   //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(PlatformConvertor.class.getName(), 1, false, false);
 
     private PlatformConvertor() {}
@@ -338,20 +338,33 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             StringBuilder sbootcp = new StringBuilder();
             for (ClassPath.Entry entry : bootCP.entries()) {
                 URL url = entry.getURL();
-                final String proto = url.getProtocol();
-                if (NBJRTUtil.PROTOCOL.equals(proto)) {
-                    //Modules image file, don't store boot cp property
-                    sbootcp = null;
-                    break;
-                }
-                if ("jar".equals(proto)) {              //NOI18N
+                String pathInArchive = "";  //NOI18N
+                boolean wasFolder = false;
+                if (FileUtil.isArchiveRoot(url)) {
+                    String path = url.getPath();
+                    int index = path.lastIndexOf(URL_EMBEDDING); //NOI18N
+                    if (index >= 0) {
+                        wasFolder = index > 0 && path.charAt(index-1) == '/';   //NOI18N
+                        pathInArchive = path.substring(index+URL_EMBEDDING.length());
+                    }
                     url = FileUtil.getArchiveFile(url);
                 }
-                File root = Utilities.toFile(URI.create(url.toExternalForm()));
+                String rootPath = BaseUtilities.toFile(URI.create(url.toExternalForm())).getAbsolutePath();
+                if (!pathInArchive.isEmpty()) {
+                    final StringBuilder rpb = new StringBuilder(
+                            rootPath.length() + File.separator.length() + URL_EMBEDDING.length() + pathInArchive.length());
+                    rpb.append(rootPath);
+                    if (wasFolder && !rootPath.endsWith(File.separator)) {
+                        rpb.append(File.separator);
+                    }
+                    rpb.append(URL_EMBEDDING);
+                    rpb.append(pathInArchive);
+                    rootPath = rpb.toString();
+                }
                 if (sbootcp.length()>0) {
                     sbootcp.append(File.pathSeparator);
                 }
-                sbootcp.append(normalizePath(root, jdkHome, homePropName));
+                sbootcp.append(normalizePath(rootPath, jdkHome, homePropName));
             }
             if (sbootcp != null) {
                 props.setProperty(bootClassPathPropName,sbootcp.toString());
@@ -446,22 +459,24 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     }
 
 
-    private static File getToolPath (FileObject tool) throws IOException {
+    private static File getToolPath (FileObject tool) {
         assert tool != null;
-        return Utilities.toFile(URI.create(tool.getURL().toExternalForm()));
+        return Utilities.toFile(URI.create(tool.toURL().toExternalForm()));
     }
 
     private static String normalizePath (File path,  File jdkHome, String propName) {
+        return normalizePath(path.getAbsolutePath(), jdkHome, propName);
+    }
+
+    private static String normalizePath (String absolutePath,  File jdkHome, String propName) {
         String jdkLoc = jdkHome.getAbsolutePath();
         if (!jdkLoc.endsWith(File.separator)) {
             jdkLoc = jdkLoc + File.separator;
         }
-        String loc = path.getAbsolutePath();
-        if (loc.startsWith(jdkLoc)) {
-            return "${"+propName+"}"+File.separator+loc.substring(jdkLoc.length());           //NOI18N
-        }
-        else {
-            return loc;
+        if (absolutePath.startsWith(jdkLoc)) {
+            return "${"+propName+"}"+File.separator+absolutePath.substring(jdkLoc.length());           //NOI18N
+        } else {
+            return absolutePath;
         }
     }
     
