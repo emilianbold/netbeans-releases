@@ -26,7 +26,7 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
         InputStream is = null;
         try {
             if (fo.getSize() >= Integer.MAX_VALUE) {
-                throw new IOException("Can't read file: " + fo.getPath() + ". The file is too long: " + fo.getSize());
+                throw new IOException("Can't read file: " + fo.getPath() + ". The file is too long: " + fo.getSize()); // NOI18N
             }
             int sz = (int) fo.getSize();
             byte[] array = new byte[sz + 1]; // reserve 1 byte for trailing zero

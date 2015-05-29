@@ -90,7 +90,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
     private static final String FILE_PROTOCOL = "file"; // NOI18N
     private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
-    private static final Path ROOT_PATH = Paths.get("/");
+    private static final Path ROOT_PATH = Paths.get("/"); // NOI18N
 
     private FileSystem rootFileSystem = null;
     private final Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();

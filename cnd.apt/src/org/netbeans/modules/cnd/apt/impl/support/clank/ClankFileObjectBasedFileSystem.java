@@ -133,7 +133,7 @@ public class ClankFileObjectBasedFileSystem extends org.clang.basic.vfs.FileSyst
 
     @Override
     public directory_iterator dir_begin(Twine Dir, std_errors.error_code EC) {
-        throw new UnsupportedOperationException("Not supported yet."); // TODO: implement?
+        throw new UnsupportedOperationException("Not supported yet."); // TODO: implement? // NOI18N
     }
 
 
