@@ -56,6 +56,7 @@ made subject to such option by the copyright holder.
                 <package>org.clang.basic.spi</package>
                 <package>org.clang.basic.target</package>
                 <package>org.clang.basic.vfs</package>
+                <package>org.clang.basic.vfs.detail</package>
                 <package>org.clang.codegen</package>
                 <package>org.clang.driver</package>
                 <package>org.clang.frontend</package>
@@ -84,6 +85,7 @@ made subject to such option by the copyright holder.
                 <package>org.llvm.option</package>
                 <package>org.llvm.support</package>
                 <package>org.llvm.support.spi</package>
+                <package>org.llvm.support.sys</package>
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/org-clang-rewrite.jar</runtime-relative-path>

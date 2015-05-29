@@ -52,6 +52,7 @@ import java.util.Map;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
+import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
@@ -82,6 +83,10 @@ public class ClankDriverImpl {
     }
 
     static final boolean TRACE = false;
+    
+    static {
+        ClangFileSystemProvider.setImplementation(new ClankFileSystemProviderImpl());
+    }
 
     public static void invalidateImpl(CharSequence absPath) {
         ClankPreprocessorServices.invalidate(absPath);
@@ -352,9 +357,9 @@ public class ClankDriverImpl {
                 result = new HashMap<StringRef, MemoryBuffer>();
                 for (APTFileBuffer buf : buffers) {
                     StringRef path = new StringRef(buf.getAbsolutePath());
-                    MemoryBufferImpl mb;
+                    ClankMemoryBufferImpl mb;
                     try {
-                        mb = MemoryBufferImpl.create(buf);
+                        mb = ClankMemoryBufferImpl.create(buf);
                         result.put(path, mb);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex); //TODO: error processing!!!!

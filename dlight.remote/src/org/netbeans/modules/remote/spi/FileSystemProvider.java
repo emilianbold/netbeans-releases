@@ -77,7 +77,35 @@ public final class FileSystemProvider {
         void problemOccurred(FileSystem fileSystem, String path);
         void recovered(FileSystem fileSystem);
     }
-    
+
+    public static final class Stat {
+
+        public final long inode;
+        public final long device;
+
+        private Stat(long device, long inode) {
+            this.inode = inode;
+            this.device = device;
+        }
+
+        public static Stat create(long  device, long inode) {
+            return new Stat(device, inode);
+        }
+
+        public static Stat createInvalid() {
+            return new Stat(-1, -1);
+        }
+
+        public boolean isValid() {
+            return inode >= 0;
+        }
+
+        @Override
+        public String toString() {
+            return "Stat(" + "dev=" + device + ",ino=" + device + ')'; //NOI18N
+        }
+    }
+
     public enum AccessCheckType {
         FAST,
         FULL;
@@ -594,6 +622,16 @@ public final class FileSystemProvider {
             }
         }
         noProvidersWarning(execEnv);
+    }
+
+    public static Stat getStat(FileObject fo) {
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fo)) {
+                return provider.getStat(fo);
+            }
+        }
+        noProvidersWarning(fo);
+        return Stat.createInvalid();
     }
 
     /** can be null if provider does not support this or no providers found */

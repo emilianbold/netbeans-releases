@@ -90,6 +90,7 @@ import org.openide.util.lookup.ServiceProvider;
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
     private static final String FILE_PROTOCOL = "file"; // NOI18N
     private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
+    private static final Path ROOT_PATH = Paths.get("/");
 
     private FileSystem rootFileSystem = null;
     private final Map<String, LocalFileSystem> nonRootFileSystems = new HashMap<String, LocalFileSystem>();
@@ -506,5 +507,22 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
         return null;
-    }    
+    }
+
+    @Override
+    public FileSystemProvider.Stat getStat(FileObject fo) {
+        if (!Utilities.isWindows()) {
+            Path path = ROOT_PATH.resolve(fo.getPath());
+            if (Files.exists(path)) {
+                try {
+                    long st_ino = ((Number)Files.getAttribute(path, "unix:ino")).longValue(); //NOI18N
+                    long st_dev = ((Number)Files.getAttribute(path, "unix:dev")).longValue(); //NOI18N
+                    return FileSystemProvider.Stat.create(st_dev, st_ino);
+                } catch (IOException ex) {
+                    RemoteLogger.finest(ex);
+                }
+            }
+        }
+        return FileSystemProvider.Stat.createInvalid();
+    }
 }
