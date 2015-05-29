@@ -1067,11 +1067,7 @@ This list is exposed in a popup menu.
 -->
  <answer id="exec-introspection">
   <p>
-      <api name="sun.swing.plaf.synth.SynthIcon" category="private" group="java" type="import">
-      We use class sun.swing.plaf.synth.SynthIcon from Sun proprietary API to paint
-      native toolbar D&amp;D handle for GTK L&amp;F. If this class is not found there
-      is fallback code to paint handle.
-      </api>
+    No.
   </p>
  </answer>
 

@@ -1093,19 +1093,20 @@ public class ModelVisitor extends PathNodeVisitor {
                     isDeclaredInParent = ((FunctionNode) lastVisited).getKind() == FunctionNode.Kind.SCRIPT;
                 }
             }
-            JsArrayImpl array;
+            JsArrayImpl array = null;
             if (!treatAsAnonymous) {
-                if (fqName == null || fqName.isEmpty()) {
-                    fqName = new ArrayList<Identifier>(1);
-                    fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
-                            new OffsetRange(lNode.getStart(), lNode.getFinish())));
-                }
+//                if (fqName == null || fqName.isEmpty()) {
+//                    fqName = new ArrayList<Identifier>(1);
+//                    fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
+//                            new OffsetRange(lNode.getStart(), lNode.getFinish())));
+//                }
                 
-                
-                array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent, parent);
-                if (array != null && isPrivate) {
-                    array.getModifiers().remove(Modifier.PUBLIC);
-                    array.getModifiers().add(Modifier.PRIVATE);
+                if (fqName != null) {
+                    array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent, parent);
+                    if (array != null && isPrivate) {
+                        array.getModifiers().remove(Modifier.PUBLIC);
+                        array.getModifiers().add(Modifier.PRIVATE);
+                    }
                 }
             } else {
                 array = ModelElementFactory.createAnonymousObject(parserResult, aNode, modelBuilder);
@@ -1805,7 +1806,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } else {
                     return null;
-                }
+                } 
                 base = iNode.getBase();
             }
             if (base instanceof AccessNode) {

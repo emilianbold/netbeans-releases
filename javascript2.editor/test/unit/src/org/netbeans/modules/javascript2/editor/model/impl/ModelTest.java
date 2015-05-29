@@ -151,6 +151,10 @@ public class ModelTest extends ModelTestBase {
     public void testIssue248696_01() throws Exception {
         checkModel("testfiles/hints/issue248696_01.js");
     }
+    
+    public void testIssue252655() throws Exception {
+        checkModel("testfiles/coloring/issue252655.js");
+    }
 
     public void testPropertyWithNewAssignments() throws Exception {
         Model model = getModel("testfiles/model/propertyWithNew.js");
