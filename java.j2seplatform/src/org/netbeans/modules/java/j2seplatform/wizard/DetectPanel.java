@@ -771,11 +771,18 @@ public class DetectPanel extends javax.swing.JPanel {
                         relative = "";  //NOI18N
                     } else {                
                         int index = extUrl.lastIndexOf(INNER_SEPARATOR);
-                        relative = index < 0 ? "" : extUrl.substring(index);    //NOI18N
+                        relative = index < 0 ? "" : extUrl.substring(index+INNER_SEPARATOR.length());    //NOI18N
                     }
                     final String protocol = url.getProtocol();
-                    if (Util.PROTO_FILE.equals(protocol)){
-                        userName = Utilities.toFile(url.toURI()).getAbsolutePath() + relative;
+                    if (Util.PROTO_FILE.equals(protocol)) {
+                        final String absolutePath = Utilities.toFile(url.toURI()).getAbsolutePath();
+                        final StringBuilder sb = new StringBuilder(absolutePath.length() + INNER_SEPARATOR.length() + relative.length());
+                        sb.append(absolutePath);
+                        if (!relative.isEmpty()) {
+                            sb.append(INNER_SEPARATOR);
+                            sb.append(relative);
+                        }
+                        userName = sb.toString();
                     } else if (Util.isRemoteProtocol(protocol)) {
                         userName = extUrl;
                     } else {
