@@ -105,7 +105,8 @@ static void __logprint(const char* fname, char *const argv[], ...) {
             break;
         }
     }
-
+    free(filters);
+    
     if (found) {
         if (shortName == 0) {
             int status = stat(fname, &buffer);
@@ -123,14 +124,18 @@ static void __logprint(const char* fname, char *const argv[], ...) {
             return;
         }
 
-        fprintf(flog, "called: %s\n", fname);
         char *buf = malloc(1024);
-        getcwd(buf, 1024);
-        fprintf(flog, "\t%s\n", buf);
-        free(buf);
-        char** par = (char**) argv;
-        for (; *par != 0; par++) {
-            fprintf(flog, "\t%s\n", *par);
+        if (buf == NULL) {
+            LOG("\nBuildTrace ERROR: can not get cwd!!!\n");
+        } else {
+            fprintf(flog, "called: %s\n", fname);
+            getcwd(buf, 1024);
+            fprintf(flog, "\t%s\n", buf);
+            free(buf);
+            char** par = (char**) argv;
+            for (; *par != 0; par++) {
+                fprintf(flog, "\t%s\n", *par);
+            }
         }
         fprintf(flog, "\n");
         fflush(flog);
