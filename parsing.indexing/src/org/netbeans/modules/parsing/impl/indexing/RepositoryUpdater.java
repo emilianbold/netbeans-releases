@@ -5315,7 +5315,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 success = indexBinary(root, binaryIndexers, contexts);
                             } finally {
                                 binaryScanFinished(binaryIndexers, contexts, startedIndexers, success);
-                                if (success && !upToDate) {
+                                if (success && !upToDate && FileUtil.getArchiveFile(root) != null) {
                                     ArchiveTimeStamps.setLastModified(root, createBinaryIndexersTimeStamp(currentLastModified,contexts));
                                 }
                             }
