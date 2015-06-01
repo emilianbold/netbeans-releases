@@ -71,7 +71,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
