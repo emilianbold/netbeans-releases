@@ -47,6 +47,7 @@ package org.netbeans.modules.java.j2seplatform.platformdefinition;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
@@ -72,7 +73,7 @@ public class DefaultSourceLevelQueryImplTest extends NbTestCase {
         FileObject root = FileUtil.toFileObject(this.getWorkDir());
         assertNotNull ("Cannot convert File to FileObject, missing master-fs?",root);    //NOI18N
         FileObject javaFile = createTestFile (root,"test","Test.java","package test;\n class Test {}");    //NOI18N
-        assertEquals("1.7", SourceLevelQuery.getSourceLevel(javaFile));
+        assertEquals(JavaPlatform.getDefault().getSpecification().getVersion().toString(), SourceLevelQuery.getSourceLevel(javaFile));
     }        
     
     private FileObject createTestFile (FileObject root, String path, String fileName, String content) throws IOException {
