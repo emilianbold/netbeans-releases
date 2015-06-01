@@ -169,8 +169,9 @@ public final class JaxWsDataObject extends MultiDataObject {
         lazyInitialize();
         if (mvc == null) {
             createEditorSupport();
-            if(getPrimaryFile().getAttribute("jax-ws-service-provider")==null)
+            if(getPrimaryFile().getAttribute("jax-ws-service-provider")==null) {
                 mvc = new MultiViewSupport(service, this);
+            }
         }
         return mvc;
     }            
@@ -230,8 +231,9 @@ public final class JaxWsDataObject extends MultiDataObject {
             public void addSaveCookie() {
                 JaxWsDataObject javaData = (JaxWsDataObject) this.getDataObject();
                 if (javaData.getCookie(SaveCookie.class) == null) {
-                    if (this.saveCookie == null)
+                    if (this.saveCookie == null) {
                         this.saveCookie = new SaveSupport();
+                    }
                     javaData.getCookieSet().add(this.saveCookie);
                     javaData.setModified(true);
                 }
@@ -253,8 +255,9 @@ public final class JaxWsDataObject extends MultiDataObject {
         
         @Override 
         protected boolean notifyModified() {
-            if (!super.notifyModified())
+            if (!super.notifyModified()) {
                 return false;
+            }
             ((Environment)this.env).addSaveCookie();
             return true;
         }
