@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
@@ -104,6 +105,7 @@ import org.w3c.dom.UserDataHandler;
 import static org.netbeans.api.java.project.runner.JavaRunner.*;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.loaders.DataObject;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
@@ -116,7 +118,7 @@ import org.openide.util.lookup.InstanceContent;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.project.runner.JavaRunnerImplementation.class)
 public class ProjectRunnerImpl implements JavaRunnerImplementation {
 
-    private static final String NBJRT_PROTOCOL = "nbjrt";   //NOI18N
+    private static final String URL_EMBEDDING = "!/";   //NOI18N
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());
     
     public boolean isSupported(String command, Map<String, ?> properties) {
@@ -254,9 +256,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation {
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Map<String,String> antProps = new TreeMap<String,String>();
-        if (!isModular(boot)) {
-            setProperty(antProps, "platform.bootcp", boot.toString(ClassPath.PathConversionMode.FAIL));
-        }
+        setProperty(antProps, "platform.bootcp", classPathToString(boot));
         setProperty(antProps, "classpath", cp);
         setProperty(antProps, "classname", className);
         setProperty(antProps, "platform.java", javaTool);
@@ -813,16 +813,40 @@ out:                for (FileObject root : exec.getRoots()) {
 
     }
 
-    private static boolean isModular(final ClassPath cp) {
+    /*
+     * Todo: Consider to extend ClassPath.ConversionMode to support embedding.
+     */
+    private static String classPathToString(final ClassPath cp) {
+        final StringBuilder sb = new StringBuilder();
         for (ClassPath.Entry e : cp.entries()) {
-            if (isModular(e.getURL())) {
-                return true;
+            URL root = e.getURL();
+            String pathInArchive = "";  //NOI18N
+            boolean wasFolder = false;
+            if (FileUtil.isArchiveRoot(root)) {
+                final String path = root.getPath();
+                int index = path.indexOf(URL_EMBEDDING);
+                if (index > 0) {
+                    pathInArchive = path.substring(index+URL_EMBEDDING.length());
+                    wasFolder = index > 0 && path.charAt(index-1) == '/';   //NOI18N
+                }
+                root = FileUtil.getArchiveFile(root);
+            }
+            if (sb.length() > 0) {
+                sb.append(File.pathSeparatorChar);
+            }
+            try {
+                sb.append(BaseUtilities.toFile(root.toURI()).getAbsolutePath());
+                if (!pathInArchive.isEmpty()) {
+                    if (wasFolder && sb.charAt(sb.length()-1) != File.separatorChar) {
+                        sb.append(File.separatorChar);
+                    }
+                    sb.append(URL_EMBEDDING);
+                    sb.append(pathInArchive);
+                }
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        return false;
-    }
-
-    private static boolean isModular(final URL root) {
-        return NBJRT_PROTOCOL.equals(root.getProtocol());
+        return sb.toString();
     }
 }
