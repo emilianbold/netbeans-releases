@@ -129,11 +129,15 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 
     public static class WildFlyClassLoader extends URLClassLoader {
 
-        private final boolean patch249135;
+        /**
+         * Patching the xnio code to avoid bug #249135
+         * @see https://netbeans.org/bugzilla/show_bug.cgi?id=249135
+         */
+        private final boolean patchXnio;
 
-        public WildFlyClassLoader(URL[] urls, ClassLoader parent, boolean patch249135) throws MalformedURLException, RuntimeException {
+        public WildFlyClassLoader(URL[] urls, ClassLoader parent, boolean patchXnio) throws MalformedURLException, RuntimeException {
             super(urls, parent);
-            this.patch249135 = patch249135;
+            this.patchXnio = patchXnio;
         }
 
         @Override
@@ -156,7 +160,7 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             // see issue #249135
-            if (patch249135 && "org.xnio.nio.WorkerThread".equals(name)) { // NOI18N
+            if (patchXnio && "org.xnio.nio.WorkerThread".equals(name)) { // NOI18N
                 try {
                     LOGGER.log(Level.INFO, "Patching the issue #249135");
                     String path = name.replace('.', '/').concat(".class"); // NOI18N
@@ -269,12 +273,11 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             addUrl(urlList, jboss, "vfs" + sep + "main", Pattern.compile("jboss-vfs-.*.jar"));
             addUrl(urlList, org, "picketbox" + sep + "main", Pattern.compile("picketbox-.*.jar"));
             addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
-
-            Version version = WildflyPluginUtils.getServerVersion(new File(serverRoot));
-            WildFlyClassLoader loader = new WildFlyClassLoader(
-                    urlList.toArray(new URL[] {}),
-                    WildflyDeploymentFactory.class.getClassLoader(),
-                    version != null && version.compareToIgnoreUpdate(WildflyPluginUtils.WILDFLY_8_2_0) == 0);
+            File serverPath = new File(serverRoot);
+            Version version = WildflyPluginUtils.getServerVersion(serverPath);
+            boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0 && WildflyPluginUtils.isWildFly(serverPath);
+            WildFlyClassLoader loader = new WildFlyClassLoader(urlList.toArray(new URL[] {}),
+                    WildflyDeploymentFactory.class.getClassLoader(), shouldPatchXnio);
             return loader;
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, null, e);
