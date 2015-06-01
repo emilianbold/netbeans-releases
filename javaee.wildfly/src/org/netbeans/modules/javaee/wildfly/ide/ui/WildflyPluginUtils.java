@@ -43,9 +43,11 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.ui;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
+
 import static java.io.File.separatorChar;
+
+import java.beans.PropertyVetoException;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FilenameFilter;
@@ -64,7 +66,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.openide.filesystems.JarFileSystem;
 
 /**
@@ -330,6 +331,39 @@ public class WildflyPluginUtils {
             env = defaultVal;
         }
         return env;
+    }
+
+    /**
+     * Check the product name of the server located at the given path. If the server
+     * version can't be determined returns <code>null</code>.
+     *
+     * @param serverPath path to the server directory
+     * @return specification version of the server using product.conf.
+     */
+    @CheckForNull
+    public static boolean isWildFly(File serverPath) {
+        assert serverPath != null : "Can't determine version with null server path"; // NOI18N
+        String productConf = getProductConf(serverPath);
+        if(productConf != null) {
+            try (FileReader reader = new FileReader(productConf)) {
+                Properties props = new Properties();
+                props.load(reader);
+                String slot = props.getProperty("slot");
+                if (slot != null) {
+                    File manifestFile = new File(serverPath, getModulesBase(serverPath.getAbsolutePath()) + "org.jboss.as.product".replace('.', separatorChar) + separatorChar + slot + separatorChar + "dir" + separatorChar + "META-INF" + separatorChar + "MANIFEST.MF");
+                    InputStream stream = new FileInputStream(manifestFile);
+                    Manifest manifest = new Manifest(stream);
+                    String productName = manifest.getMainAttributes().getValue("JBoss-Product-Release-Name");
+                    if(productName == null || productName.isEmpty()) {
+                        productName = manifest.getMainAttributes().getValue("JBoss-Project-Release-Name");
+                    }
+                    return productName == null || !productName.toLowerCase().contains("eap");
+                }
+            } catch (Exception e) {
+                // Don't care
+            }
+        }
+        return true;
     }
 
     private static class VersionJarFileFilter implements FilenameFilter {
