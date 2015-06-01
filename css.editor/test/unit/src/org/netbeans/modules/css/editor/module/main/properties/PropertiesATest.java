@@ -2685,4 +2685,15 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "}";
         assertCssCode(code);
     }
+    
+    public void testCursorNewProperties() throws ParseException {
+        String code = "span.wait {\n"
+                + "    cursor:url(smiley.gif),url(myBall.cur),auto;\n"
+                + "    cursor: zoom-in;\n"
+                + "    cursor: zoom-out;\n"
+                + "    cursor: grab;\n"
+                + "    cursor: grabbing;\n"
+                + "}";
+        assertCssCode(code);
+    }
 }
