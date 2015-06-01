@@ -2703,4 +2703,14 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "}";
         assertCssCode(code);
     }
+    
+    public void testLinerGradient() throws ParseException {
+        String code = "#grad {\n"
+                + "  background: -webkit-linear-gradient(left top, red , blue); /* For Safari 5.1 to 6.0 */\n"
+                + "  background: -o-linear-gradient(bottom right, red, blue); /* For Opera 11.1 to 12.0 */\n"
+                + "  background: -moz-linear-gradient(bottom right, red, blue); /* For Firefox 3.6 to 15 */\n"
+                + "  background: linear-gradient(to bottom right, red , blue); /* Standard syntax */\n"
+                + "}";
+        assertCssCode(code);
+    }
 }
