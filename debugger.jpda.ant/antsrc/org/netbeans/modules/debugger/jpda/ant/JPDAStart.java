@@ -118,7 +118,7 @@ public class JPDAStart extends Task implements Runnable {
 
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.ant"); // NOI18N
 
-    private static final String URL_EMBEDDING = "!/";   //NOI18N
+    private static final String URL_EMBEDDING = String.format("!%c",File.separatorChar);   //NOI18N
     private static final String SOCKET_TRANSPORT = "dt_socket"; // NOI18N
     private static final String SHMEM_TRANSPORT = "dt_shmem"; // NOI18N
     private static final String SOCKET_CONNECTOR = "com.sun.jdi.SocketListen"; // NOI18N
@@ -730,7 +730,7 @@ public class JPDAStart extends Task implements Runnable {
             final String pathInArchive;
             final int index = pathName.lastIndexOf(URL_EMBEDDING);
             if (index >= 0) {
-                pathInArchive = pathName.substring(index+URL_EMBEDDING.length());
+                pathInArchive = pathName.substring(index+URL_EMBEDDING.length()).replace(File.separatorChar, '/');  //NOI18N
                 pathName = pathName.substring(0, index);
             } else {
                 pathInArchive = ""; //NOI18N
