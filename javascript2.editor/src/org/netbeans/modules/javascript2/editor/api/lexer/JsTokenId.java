@@ -204,10 +204,15 @@ public enum JsTokenId implements TokenId {
     public static final String BOWER_JSON_MIME_TYPE = "text/bower+x-json"; // NOI18N
     public static final String BOWERRC_JSON_MIME_TYPE = "text/bowerrc+x-json"; // NOI18N
     public static final String JSHINTRC_JSON_MIME_TYPE = "text/jshintrc+x-json"; // NOI18N
-
+    private static final String JSON_MIME_TYPE_END = "x-json";  //NOI18N
+    
     private final String fixedText;
 
     private final String primaryCategory;
+    
+    public static boolean isJSONBasedMimeType(String mimeType) {
+        return (mimeType != null && mimeType.endsWith(JSON_MIME_TYPE_END));
+    }
 
     JsTokenId(String fixedText, String primaryCategory) {
         this.fixedText = fixedText;

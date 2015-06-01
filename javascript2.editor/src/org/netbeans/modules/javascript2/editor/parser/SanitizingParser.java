@@ -99,7 +99,7 @@ public abstract class SanitizingParser extends Parser {
 
     protected abstract String getDefaultScriptName();
 
-    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
+    protected abstract FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset,  JsErrorManager errorManager) throws Exception;
 
     protected abstract String getMimeType();
     
@@ -218,7 +218,7 @@ public abstract class SanitizingParser extends Parser {
         
         JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
         FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
-                context.getSource(), current);
+                context.getSource(), context.getCaretOffset(), current);
 
         if (copyErrors) {
             errorManager.fillErrors(current);
@@ -286,6 +286,12 @@ public abstract class SanitizingParser extends Parser {
                         int start = ts.offset();
                         if (start >= 0 && ts.moveNext()) {
                             int end = ts.offset();
+                            ts.movePrevious();
+                            while(ts.movePrevious() && ts.token().id() == JsTokenId.WHITESPACE) {
+                            }
+                            if (ts.token().id() == JsTokenId.OPERATOR_DOT) {
+                                start = ts.offset();
+                            }
                             StringBuilder builder = new StringBuilder(context.getOriginalSource());
                             erase(builder, start, end);
                             context.setSanitizedSource(builder.toString());

@@ -257,7 +257,7 @@ public class JsStructureScanner implements StructureScanner {
         long start = System.currentTimeMillis(); 
         Map<String, List<OffsetRange>> folds;
         String mimeType = info.getSnapshot().getMimeType();
-        if (JsTokenId.JSON_MIME_TYPE.equals(mimeType)) {
+        if (JsTokenId.isJSONBasedMimeType(mimeType)) {
             folds = foldsJson(info);
         } else {
             folds = new HashMap<String, List<OffsetRange>>();
