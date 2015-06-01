@@ -72,9 +72,11 @@ import org.openide.nodes.Node.Cookie;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.CloneableOpenSupport;
 
 public final class JaxWsDataObject extends MultiDataObject {
+    private static final RequestProcessor RP = new RequestProcessor(JaxWsDataObject.class);
     
     private static final long serialVersionUID = -2635172073868722799L;
 
@@ -120,7 +122,12 @@ public final class JaxWsDataObject extends MultiDataObject {
     }
 
     public @Override Node createNodeDelegate() {
-        lazyInitialize();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                lazyInitialize();
+            }
+        });
         return new JaxWsDataNode(this);
     }
 
