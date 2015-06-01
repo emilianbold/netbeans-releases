@@ -2696,4 +2696,11 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "}";
         assertCssCode(code);
     }
+    
+    public void testListInherit()  throws ParseException {
+        String code = "ul {\n"
+                + "    list-style-position: inherit;\n"
+                + "}";
+        assertCssCode(code);
+    }
 }
