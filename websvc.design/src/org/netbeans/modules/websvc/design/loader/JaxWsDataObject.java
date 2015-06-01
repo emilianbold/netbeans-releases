@@ -89,16 +89,19 @@ public final class JaxWsDataObject extends MultiDataObject {
     public JaxWsDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
         getCookieSet().assign( SaveAsCapable.class, new SaveAsCapable() {
+            @Override
             public void saveAs( FileObject folder, String fileName ) throws IOException {
                 createEditorSupport().saveAs( folder, fileName );
             }
         });
         getCookieSet().add(JaxWsJavaEditorSupport.class, new CookieSet.Factory() {
+            @Override
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 return klass.cast(createEditorSupport());
             }
         });
         getCookieSet().add(MultiViewSupport.class, new CookieSet.Factory() {
+            @Override
             public <T extends Cookie> T createCookie(Class<T> klass) {
                 Cookie cake = createMultiViewCookie ();
                 if (cake != null) {
@@ -199,6 +202,7 @@ public final class JaxWsDataObject extends MultiDataObject {
             private transient SaveSupport saveCookie = null;
             
             private final class SaveSupport implements SaveCookie {
+                @Override
                 public void save() throws java.io.IOException {
                     ((JaxWsJavaEditorSupport)findCloneableOpenSupport()).saveDocument();
                 }
@@ -208,10 +212,12 @@ public final class JaxWsDataObject extends MultiDataObject {
                 super(obj);
             }
             
+            @Override
             protected FileObject getFile() {
                 return this.getDataObject().getPrimaryFile();
             }
             
+            @Override
             protected FileLock takeLock() throws java.io.IOException {
                 return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
             }
@@ -282,6 +288,7 @@ public final class JaxWsDataObject extends MultiDataObject {
     public static class Factory extends I18nSupport.Factory {
         
         /** Implements superclass abstract method. */
+        @Override
         public I18nSupport createI18nSupport(DataObject dataObject) {
             return new JavaI18nSupport(dataObject);
         }
@@ -289,6 +296,7 @@ public final class JaxWsDataObject extends MultiDataObject {
         /** Gets class of supported <code>DataObject</code>.
          * @return <code>JspDataObject</code> class or <code>null</code> 
          * if jsp module is not available */
+        @Override
         public Class getDataObjectClass() {
             // XXX Cleaner should be this code dependend on java module
             // -> I18n API needed.
