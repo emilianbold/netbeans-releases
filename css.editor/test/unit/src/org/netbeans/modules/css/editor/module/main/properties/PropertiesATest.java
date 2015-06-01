@@ -2675,4 +2675,14 @@ public class PropertiesATest extends CssModuleTestBase {
         String code = "#foo {width: inherit;}";
         assertCssCode(code);
     }
+    
+    public void testInheritInMaxMinWidthHeight() throws ParseException {
+        String code = "#foo {"
+                + "    max-width: inherit;\n"
+                + "    min-width: inherit;\n"
+                + "    max-height: inherit;\n"
+                + "    min-height: inherit;"
+                + "}";
+        assertCssCode(code);
+    }
 }
