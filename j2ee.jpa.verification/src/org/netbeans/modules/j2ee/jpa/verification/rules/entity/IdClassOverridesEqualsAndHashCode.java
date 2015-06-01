@@ -120,8 +120,13 @@ public class IdClassOverridesEqualsAndHashCode {
         if(idclass[0] == null) {
             return null;
         }
+        String className = idclass[0].getClass2();
+        // this may happen when the id class is not (yet) defined
+        if (className == null) {
+            return null;
+        }
         
-        TypeElement subject = hc.getInfo().getElements().getTypeElement(idclass[0].getClass2());
+        TypeElement subject = hc.getInfo().getElements().getTypeElement(className);
         
         if(subject == null) {
             return null;

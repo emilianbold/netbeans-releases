@@ -49,6 +49,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
@@ -162,6 +163,16 @@ public class PHP54UnhandledError extends UnhandledErrorRule {
         public void visit(LambdaFunctionDeclaration node) {
             if (node.isStatic()) {
                 createError(node);
+            }
+        }
+
+        @Override
+        public void visit(ArrayCreation node) {
+            ArrayCreation.Type type = node.getType();
+            if (type == ArrayCreation.Type.NEW) {
+                createError(node);
+            } else {
+                super.visit(node);
             }
         }
 
