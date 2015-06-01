@@ -49,3 +49,4 @@ FIELD      PI: Number                      [PUBLIC]   JS Platform
 FIELD      SQRT1_2: Number                 [PUBLIC]   JS Platform
 FIELD      SQRT2: Number                   [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      var: Math                       [PUBLIC]   issue215777.js

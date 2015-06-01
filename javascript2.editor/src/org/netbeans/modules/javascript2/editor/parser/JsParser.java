@@ -62,7 +62,7 @@ public class JsParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
+    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager) throws Exception {
         String parsableText = text;
 //        System.out.println(text);
 //        System.out.println("----------------");
@@ -81,7 +81,16 @@ public class JsParser extends SanitizingParser {
 
             parsableText = sb.toString();
         }
-
+        if (caretOffset > 0 && parsableText.charAt(caretOffset - 1) == '.' 
+                && (parsableText.length() > caretOffset)
+                && Character.isWhitespace(parsableText.charAt(caretOffset))) {
+            // we are expecting that the dot was just written. See issue #246006
+            StringBuilder sb = new StringBuilder(parsableText);
+            sb.delete(caretOffset - 1, caretOffset);
+            sb.insert(caretOffset - 1, ' ');
+            parsableText = sb.toString();
+        }
+        
         Source source = new Source(name, parsableText);
         Options options = new Options("nashorn"); // NOI18N
         options.process(new String[] {
