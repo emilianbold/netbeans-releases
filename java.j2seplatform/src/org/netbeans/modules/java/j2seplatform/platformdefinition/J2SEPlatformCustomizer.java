@@ -793,7 +793,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         @NonNull
         private static String getDisplayName(@NonNull URL url) {
             try {
-                final Pair<File,String> parsed = NBJRTUtil.parseURI(url.toURI());
+                final Pair<URL,String> parsed = NBJRTUtil.parseURI(url.toURI());
                 if (parsed != null) {
                     String moduleName = parsed.second();
                     if (moduleName.endsWith(URL_SEPARATOR)) {

@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.spi.ArchiveRootProvider;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -85,33 +86,9 @@ public class NBJRTArchiveRootProvider implements ArchiveRootProvider {
 
     @Override
     @CheckForNull
-    public URL getArchiveFile(URL url) {
-        if (isArchiveRoot(url)) {
-            final String path = url.getPath();
-            int index = path.indexOf("!/"); //NOI18N
-            if (index >= 0) {
-                String jdkPath = null;
-                try {
-                    jdkPath = path.substring(0, index);
-                    if (jdkPath.indexOf("file://") > -1 && jdkPath.indexOf("file:////") == -1) {  //NOI18N
-                        /* Replace because JDK application classloader wrongly recognizes UNC paths. */
-                        jdkPath = jdkPath.replaceFirst("file://", "file:////");  //NOI18N
-                    }
-                    return new URL(jdkPath);
-
-                } catch (MalformedURLException mue) {
-                    LOG.log(
-                        Level.WARNING,
-                        "Invalid URL ({0}): {1}, jdkHome: {2}", //NOI18N
-                        new Object[] {
-                            mue.getMessage(),
-                            url.toExternalForm(),
-                            jdkPath
-                        });
-                }
-            }
-        }
-        return null;
+    public URL getArchiveFile(@NonNull final URL url) {
+        final Pair<URL,String> p = NBJRTUtil.parseURL(url);
+        return p != null ? p.first() : null;
     }
 
     @Override

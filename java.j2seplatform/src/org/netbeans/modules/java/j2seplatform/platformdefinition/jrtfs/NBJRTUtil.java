@@ -92,7 +92,7 @@ public final class NBJRTUtil {
     }
 
     @CheckForNull
-    public static Pair<File,String> parseURI(@NonNull final URI uri) {
+    public static Pair<URL,String> parseURI(@NonNull final URI uri) {
         try {
             return parseURL(uri.toURL());
         } catch (MalformedURLException ex) {
@@ -101,28 +101,46 @@ public final class NBJRTUtil {
     }
 
     @CheckForNull
-    static Pair<File,String> parseURL(@NonNull final URL url) {
+    static Pair<URL,String> parseURL(@NonNull final URL url) {
         if (PROTOCOL.equals(url.getProtocol())) {
             final String path = url.getPath();
-            if (!path.startsWith("file:")) {    //NOI18N
-                throw new IllegalArgumentException(String.format(
-                    "Invalid %s URI: %s",   //NOI18N
+            int index = path.indexOf("!/"); //NOI18N
+            if (index >= 0) {
+                if (!path.startsWith("file:")) {    //NOI18N
+                    throw new IllegalArgumentException(String.format(
+                        "Invalid %s URI: %s",   //NOI18N
+                        PROTOCOL,
+                        url.toExternalForm()
+                    ));
+                }
+                String jdkPath = null;
+                try {
+                    jdkPath = path.substring(0, index);
+                    if (jdkPath.indexOf("file://") > -1 && jdkPath.indexOf("file:////") == -1) {  //NOI18N
+                        /* Replace because JDK application classloader wrongly recognizes UNC paths. */
+                        jdkPath = jdkPath.replaceFirst("file://", "file:////");  //NOI18N
+                    }
+                    final URL archiveFile = new URL(jdkPath);
+                    final String pathInArchive = path.substring(index + 2);
+                    return Pair.of(archiveFile, pathInArchive);
+                } catch (MalformedURLException mue) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL ({0}): {1}, jdkHome: {2}", //NOI18N
+                        new Object[] {
+                            mue.getMessage(),
+                            url.toExternalForm(),
+                            jdkPath
+                        });
+                }
+            } else {
+                LOG.log(
+                    Level.WARNING,
+                    "Invalid {0} URI: {1}",   //NOI18N
+                    new Object[] {
                     PROTOCOL,
-                    url.toExternalForm()
-                ));
+                    url});
             }
-            final int beginIndex = 5; //"file:"
-            final int bangSlash = path.indexOf("!/");
-            if (bangSlash <= 0) {
-                throw new IllegalArgumentException(String.format(
-                    "Invalid %s URI: %s",   //NOI18N
-                    PROTOCOL,
-                    url.toExternalForm()
-                ));
-            }
-            final File root = new File(path.substring(beginIndex, bangSlash));
-            final String pathInImage = path.substring(bangSlash + 2);
-            return Pair.<File,String>of(root, pathInImage);
         }
         return null;
     }

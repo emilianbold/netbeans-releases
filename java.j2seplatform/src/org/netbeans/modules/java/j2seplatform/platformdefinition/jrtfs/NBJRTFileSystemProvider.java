@@ -42,23 +42,42 @@
 package org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs;
 
 import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.BaseUtilities;
 
 /**
  *
  * @author Tomas Zezula
  */
 public final class NBJRTFileSystemProvider {
+    private static final Logger LOG = Logger.getLogger(NBJRTFileSystemProvider.class.getName());
     private static final NBJRTFileSystemProvider INSTANCE = new NBJRTFileSystemProvider();
 
     //@GuardedBy("javaHome2JRTFS")
     private final Map<File, NBJRTFileSystem> javaHome2JRTFS = Collections.synchronizedMap(new HashMap<File,NBJRTFileSystem>());
 
     private NBJRTFileSystemProvider() {}
+
+    @CheckForNull
+    NBJRTFileSystem getFileSystem(@NonNull final URL jdkHome) {
+        try {
+            return getFileSystem(BaseUtilities.toFile(jdkHome.toURI()));
+        } catch (URISyntaxException e) {
+            LOG.log(
+                    Level.WARNING,
+                    "Invalid URI: {0}",     //NOI18N
+                    jdkHome);
+            return null;
+        }
+    }
 
     @CheckForNull
     NBJRTFileSystem getFileSystem(@NonNull final File jdkHome) {

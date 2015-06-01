@@ -51,6 +51,8 @@ import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.BaseUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -88,9 +90,9 @@ public class NBJRTURLMapper extends URLMapper {
 
     @Override
     public FileObject[] getFileObjects(URL url) {
-        final Pair<File,String> parsed = NBJRTUtil.parseURL(url);
+        final Pair<URL,String> parsed = NBJRTUtil.parseURL(url);
         if (parsed != null) {
-            final File root = parsed.first();
+            final URL root = parsed.first();
             final String pathInImage = parsed.second();
             FileSystem fs = NBJRTFileSystemProvider.getDefault().getFileSystem(root);
             if (fs != null) {

@@ -90,7 +90,7 @@ public class NBJRTURLStreamHandler extends URLStreamHandler {
 
         @Override
         public void connect() throws IOException {
-            final Pair<File,String> parsed = NBJRTUtil.parseURL(url);
+            final Pair<URL,String> parsed = NBJRTUtil.parseURL(url);
             if (parsed == null) {
                 throw new IOException(String.format(
                     "Invalid URL: %s",  //NOI18N
