@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
@@ -69,7 +70,6 @@ import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.team.commons.LogUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
-import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.internal.Accessor;
 
@@ -81,24 +81,25 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
     private String stringValue;
     private final TaskRepository taskRepository;
     private final RepositoryQuery query;
-    private final CancelableProgressMonitor monitor;
+    private final IProgressMonitor monitor;
     private final List<CommandProgressListener> listeners = new CopyOnWriteArrayList<CommandProgressListener>();
     private final TaskList taskList;
     private final AbstractRepositoryConnector repositoryConnector;
     private final RepositoryModel repositoryModel;
     private final TaskDataManager taskDataManager;
     private IStatus status;
-
+    
     SynchronizeQueryCommand (RepositoryModel repositoryModel, 
             AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository,
-            TaskList taskList, TaskDataManager taskDataManager, RepositoryQuery query) {
+            TaskList taskList, TaskDataManager taskDataManager, RepositoryQuery query, IProgressMonitor monitor) 
+    {
         this.repositoryModel = repositoryModel;
         this.repositoryConnector = repositoryConnector;
         this.taskRepository = taskRepository;
         this.taskList = taskList;
         this.taskDataManager = taskDataManager;
         this.query = query;
-        this.monitor = new CancelableProgressMonitor();
+        this.monitor = monitor;
     }
 
     @Override
