@@ -58,7 +58,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 100)
 public final class SassCssPreprocessor extends BaseCssPreprocessor {
 
-    private static final String IDENTIFIER = "SASS"; // NOI18N
+    public static final String IDENTIFIER = "SASS"; // NOI18N
 
 
     @Override
