@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.editor.fold.FoldTemplate;
 import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -85,7 +86,7 @@ public class JsonFoldTypeProvider implements FoldTypeProvider {
 
     @Override
     public boolean inheritable() {
-        return false;
+        return true;
     }
     
 }
