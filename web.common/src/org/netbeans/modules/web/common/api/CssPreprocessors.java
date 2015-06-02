@@ -141,6 +141,23 @@ public final class CssPreprocessors {
         return INSTANCE;
     }
 
+    /**
+     * Get CSS preprocessor for the given identifier.
+     * @param cssPreprocessorIdentifier identifier
+     * @return CSS preprocessor for the given identifier or {@code null} if no CSS preprocessor is found
+     * @since 1.87
+     */
+    @CheckForNull
+    public CssPreprocessor getCssPreprocessor(String cssPreprocessorIdentifier) {
+        Parameters.notNull("cssPreprocessorIdentifier", cssPreprocessorIdentifier); // NOI18N
+        for (CssPreprocessor cssPreprocessor : preprocessors) {
+            if (cssPreprocessorIdentifier.equals(cssPreprocessor.getIdentifier())) {
+                return cssPreprocessor;
+            }
+        }
+        return null;
+    }
+
     List<CssPreprocessor> getPreprocessors() {
         return new ArrayList<>(preprocessors);
     }
@@ -243,6 +260,7 @@ public final class CssPreprocessors {
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid or even invalid file (or folder) to be processed
      * @see #process(CssPreprocessor, Project, FileObject, String, String)
+     * @see #getCssPreprocessor(String)
      * @since 1.42
      */
     public void process(@NonNull CssPreprocessor cssPreprocessor, @NullAllowed final Project project, @NonNull final FileObject fileObject) {
@@ -260,6 +278,7 @@ public final class CssPreprocessors {
      * @param originalName original file name
      * @param originalExtension original file extension
      * @see #process(CssPreprocessor, Project, FileObject)
+     * @see #getCssPreprocessor(String)
      * @since 1.52
      */
     public void process(@NonNull CssPreprocessor cssPreprocessor, @NullAllowed final Project project, @NonNull final FileObject fileObject,
