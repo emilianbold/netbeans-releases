@@ -72,7 +72,7 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 	}
 
 	/** List of system actions to be displayed within this one's toolbar or submenu. */
-	private static final SystemAction[] grouped() {
+	private static SystemAction[] grouped() {
 		return new SystemAction[] {
 			SystemAction.get(InvokeOperationAction.class),
 		};
