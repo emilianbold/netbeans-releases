@@ -60,7 +60,7 @@ public class Line2Offset {
         lines = init();
     }
 
-    Line2Offset(char[] buffer) {
+    public Line2Offset(char[] buffer) {
         this.buffer = buffer;
         lines = init();
     }
@@ -68,6 +68,10 @@ public class Line2Offset {
     Line2Offset(char[] buffer, int lines[]) {
         this.buffer = buffer;
         this.lines = lines;
+    }
+
+    public int getLineCount() {
+        return lines.length;
     }
 
     public int[] getLineColumnByOffset(int offset) throws IOException {
