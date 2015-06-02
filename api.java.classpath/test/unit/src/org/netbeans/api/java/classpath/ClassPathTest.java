@@ -795,6 +795,30 @@ public class ClassPathTest extends NbTestCase {
         // XXX could also test IAE (tricky - need to have a URLMapper in Lookup, etc.)
     }
 
+    public void testInArchivePaths() throws Exception {
+        final String root = Utilities.toURI(getWorkDir()).toString();
+        //Test regular folder
+        ClassPath cp = ClassPathSupport.createClassPath(new URL(root + "folder/"));
+        assertEquals(massagePath("<root>/folder"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.INCLUDE));
+        assertEquals(massagePath("<root>/folder"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.EXCLUDE));
+        assertEquals(massagePath("<root>/folder"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.FAIL));
+        //Test archive with no in archive path
+        cp = ClassPathSupport.createClassPath(new URL("jar:" + root + "file.zip!/"));
+        assertEquals(massagePath("<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.INCLUDE));
+        assertEquals(massagePath("<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.EXCLUDE));
+        assertEquals(massagePath("<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.FAIL));
+        //Test archive with in archive path
+        cp = ClassPathSupport.createClassPath(new URL("jar:" + root + "file.zip!/java.base/"));
+        assertEquals(massagePath("<root>/file.zip!/java.base/"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.INCLUDE));
+        assertEquals(massagePath("<root>/file.zip"), cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.EXCLUDE));
+        try {
+            cp.toString(ClassPath.PathConversionMode.FAIL, ClassPath.PathEmbeddingMode.FAIL);
+            assertTrue("Should be unreachable",false);
+        } catch (IllegalArgumentException iae) {
+            //IAE should be thrown
+        }
+    }
+
     public void testEmptyClassPath() throws Exception {
         final ClassPath cp = ClassPath.EMPTY;
         assertNotNull(cp);
