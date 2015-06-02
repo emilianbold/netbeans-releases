@@ -2024,7 +2024,7 @@ public final class FileUtil extends Object {
         if (isArchiveRoot(entry)) {
             entry = getArchiveFile(entry);
             try {
-                return u.endsWith("!/") && entry != null ?  //NOI18N
+                return u.endsWith("!/") && entry != null && "file".equals(entry.getProtocol()) ?  //NOI18N
                     BaseUtilities.toFile(entry.toURI()):
                     null;
             } catch (URISyntaxException e) {
