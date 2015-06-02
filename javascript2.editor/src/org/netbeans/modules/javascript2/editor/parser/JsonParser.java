@@ -63,7 +63,7 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
+    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, int caretOffset, JsErrorManager errorManager) throws Exception {
         Source source = new Source(name, text);
         Options options = new Options("nashorn");
         options.process(new String[] {
