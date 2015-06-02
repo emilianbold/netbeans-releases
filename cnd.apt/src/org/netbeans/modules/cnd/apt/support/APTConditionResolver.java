@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.apt.structure.APTIfCondition;
 import org.netbeans.modules.cnd.apt.structure.APTIfdef;
 import org.netbeans.modules.cnd.apt.structure.APTIfndef;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.openide.util.CharSequences;
 
 /**
  * evaluator to resolve preproc expressions of APT condition nodes
@@ -109,13 +110,23 @@ public final class APTConditionResolver {
         return callback.isDefined(macro);
     }
 
+    private static final CharSequence __CPLUSPLUS = CharSequences.create("__cplusplus"); // NOI18N
+    private static final CharSequence __SUNPRO_CC = CharSequences.create("__SUNPRO_CC"); // NOI18N
+    private static final CharSequence __SUNPRO_C = CharSequences.create("__SUNPRO_C"); // NOI18N
     private static Boolean evaluate(APTIfCondition apt, APTMacroCallback callback, boolean bigIntegers) throws TokenStreamException {
         TokenStream expr = apt.getCondition();
         Boolean res;
         TokenStream expandedTS = expandTokenStream(expr, callback);
+        boolean treatTrueIDAsValueOne = callback.isDefined(__CPLUSPLUS);
+        if (treatTrueIDAsValueOne) {
+            // SunStudio compiler does not treat true as 1
+            if (callback.isDefined(__SUNPRO_CC) || callback.isDefined(__SUNPRO_C)) {
+                treatTrueIDAsValueOne = false;
+            }
+        }
         try {
             if (bigIntegers) {
-                APTBigIntegerExprParser parser = new APTBigIntegerExprParser(expandedTS, callback);
+                APTBigIntegerExprParser parser = new APTBigIntegerExprParser(expandedTS, callback, treatTrueIDAsValueOne ? BigInteger.ONE : BigInteger.ZERO);
                 BigInteger r = parser.expr();
                 if (APT_EXPR_TRACE) {
                     System.out.println("Value is " + r); // NOI18N
@@ -126,7 +137,7 @@ public final class APTConditionResolver {
                     res = Boolean.TRUE;
                 }
             } else {
-                APTExprParser parser = new APTExprParser(expandedTS, callback);
+                APTExprParser parser = new APTExprParser(expandedTS, callback, treatTrueIDAsValueOne ? 1L : 0L);
                 long r = parser.expr();
                 if (APT_EXPR_TRACE) {
                     System.out.println("Value is " + r); // NOI18N

@@ -134,6 +134,21 @@ public class FileModelTest extends TraceModelTestBase {
     public void testPreProcDefinedKeyword() throws Exception {
         performTest("preproc_defined_keyword.cc");        
     }
+
+    public void testPreProcTrueKeywordID_Studio() throws Exception {
+        if (!APTTraceFlags.USE_CLANK) {
+            // clank doesn't have this specific of Studio compiler
+            performTest("check.true.studio.cc");
+        }
+    }
+    
+    public void testPreProcTrueKeywordIDCPP() throws Exception {
+        performTest("check.true.cc");        
+    }
+    
+    public void testPreProcTrueKeywordIDC() throws Exception {
+        performTest("check.true.c");        
+    }
     
     public void testFriendsDeclaration() throws Exception {
         performTest("friend.cc"); // NOI18N

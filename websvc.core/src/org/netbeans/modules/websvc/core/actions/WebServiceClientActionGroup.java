@@ -66,17 +66,19 @@ import org.openide.util.Lookup;
  */
 public class WebServiceClientActionGroup extends NodeAction implements Presenter.Popup {
 	
+        @Override
 	public String getName() {
             return NbBundle.getMessage(WebServiceClientActionGroup.class, "LBL_WebServiceClientActionGroup"); // NOI18N
 	}
 
 	/** List of system actions to be displayed within this one's toolbar or submenu. */
-	private static final SystemAction[] grouped() {
+	private static SystemAction[] grouped() {
 		return new SystemAction[] {
 			SystemAction.get(InvokeOperationAction.class),
 		};
 	}
 
+        @Override
 	public JMenuItem getPopupPresenter() {
 		Node[] activatedNodes = getActivatedNodes();
 		if(activatedNodes.length == 1 && hasWebServiceClient()) {
@@ -87,16 +89,19 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
 		return i;
 	}
 
+        @Override
 	public HelpCtx getHelpCtx() {
 		// If you will provide context help then use:
 		// return new HelpCtx(PromoteBusinessMethodAction.class);
 		return HelpCtx.DEFAULT_HELP;
 	}
 
+        @Override
 	protected boolean enable(org.openide.nodes.Node[] activatedNodes) {
 		return true;
 	}
 
+        @Override
 	protected void performAction(org.openide.nodes.Node[] activatedNodes) {
 		assert false : "Should never be called: ";
 	}
@@ -123,6 +128,7 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
             return false;
 	}
 
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         boolean enable = enable(actionContext.lookup(new Lookup.Template<Node>(Node.class)).allInstances().<Node>toArray(new Node[0]));
         return enable ? this : null;
@@ -137,6 +143,7 @@ public class WebServiceClientActionGroup extends NodeAction implements Presenter
             super(WebServiceClientActionGroup.this.getName());
         }
         
+        @Override
         public JPopupMenu getPopupMenu() {
             if (getItemCount() == 0) {
                 SystemAction[] grouped = grouped();

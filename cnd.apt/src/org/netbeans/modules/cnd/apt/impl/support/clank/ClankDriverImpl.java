@@ -62,6 +62,7 @@ import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
@@ -91,7 +92,9 @@ public class ClankDriverImpl {
     }
 
     public static void invalidateImpl(CharSequence absPath) {
-        ClankPreprocessorServices.invalidate(absPath);
+        if (APTTraceFlags.USE_CLANK) {
+            ClankPreprocessorServices.invalidate(absPath);
+        }
     }
 
     public static void invalidateImpl(APTFileBuffer buffer) {
