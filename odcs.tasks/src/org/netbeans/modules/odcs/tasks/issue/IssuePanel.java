@@ -415,7 +415,10 @@ public class IssuePanel extends javax.swing.JPanel {
         if(rc != null) {
             wikiLanguage = rc.getMarkupLanguage();
             addCommentPanel = WikiUtils.getWikiPanel(wikiLanguage, true, true);
-            ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, getAddCommentsPanel());
+            WikiPanel addCommentsPanel = getAddCommentsPanel();            
+            if (addCommentPanel != null) {
+                ((GroupLayout) newCommentSectionPanel.getLayout()).replace(dummyAddCommentPanel, addCommentsPanel);
+            }
 
             commentsPanel.setWikiLanguage(wikiLanguage);
 
@@ -764,10 +767,13 @@ public class IssuePanel extends javax.swing.JPanel {
         attachmentsSection.setLabel(NbBundle.getMessage(IssuePanel.class, "IssuePanel.attachmentsLabel.text", attachments.size())); //NOI18N
         UIUtils.keepFocusedComponentVisible(commentsPanel, this);
         UIUtils.keepFocusedComponentVisible(attachmentsPanel, this);
-        if (isNew) {
-            reloadField(getAddCommentsPanel().getCodePane(), IssueField.DESCRIPTION);
-        } else {
-            reloadField(getAddCommentsPanel().getCodePane(), IssueField.COMMENT);
+        WikiPanel addCommentsPane = getAddCommentsPanel();
+        if (addCommentsPane != null) {
+            if (isNew) {
+                reloadField(getAddCommentsPanel().getCodePane(), IssueField.DESCRIPTION);
+            } else {
+                reloadField(getAddCommentsPanel().getCodePane(), IssueField.COMMENT);
+            }
         }
         
         boolean hasSubtasks = issue.hasSubtasks();
@@ -1280,7 +1286,10 @@ public class IssuePanel extends javax.swing.JPanel {
         updateFieldStatus(IssueField.TASK_TYPE, issueTypeLabel);
         updateFieldDecorations(issueTypeCombo, IssueField.TASK_TYPE, issueTypeWarning, issueTypeLabel);
         updateFieldStatus(IssueField.MODIFIED, modifiedLabel);
-        updateFieldDecorations(getAddCommentsPanel().getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent());
+        WikiPanel addCommentsPanel = getAddCommentsPanel();
+        if (addCommentsPanel != null) {
+            updateFieldDecorations(addCommentsPanel.getCodePane(), IssueField.COMMENT, addCommentWarning, newCommentSection.getLabelComponent());
+        }
 //        for (CustomFieldInfo field : customFields) {
 //            updateFieldStatus(field.field, field.label);
 //        }
