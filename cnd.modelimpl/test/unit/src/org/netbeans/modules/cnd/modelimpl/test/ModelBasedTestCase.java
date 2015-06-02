@@ -183,8 +183,8 @@ public class ModelBasedTestCase extends CndBaseTestCase {
                 filteredGoldenErrFile = new File(toCheck.getParentFile(), goldenErrFile.getName() + ".golden.no_failed_inc");
                 filteredToCheckErrFile = new File(toCheck.getParentFile(), toCheck.getName() + ".no_failed_inc");
 
-                filterOutFailedInclude(goldenErrFile, filteredGoldenErrFile);
-                filterOutFailedInclude(toCheck, filteredToCheckErrFile);
+                filterOutFailedInclude(goldenErrFile, filteredGoldenErrFile, false);
+                filterOutFailedInclude(toCheck, filteredToCheckErrFile, true);
             }
             return CndCoreTestUtils.diff(filteredToCheckErrFile, filteredGoldenErrFile, outDiffOrNull);
         } else {
@@ -231,7 +231,7 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         return line.trim().startsWith("System Map:");
     }
 
-    private static void filterOutFailedInclude(File errFile, File filteredErrFile) throws IOException {
+    private static void filterOutFailedInclude(File errFile, File filteredErrFile, boolean filterOutNotImplemented) throws IOException {
         Charset charset = Charset.forName("UTF-8");
         boolean skipTokenOrFileName = false;
         try (BufferedWriter writer = Files.newBufferedWriter(filteredErrFile.toPath(), charset)) {
@@ -241,8 +241,10 @@ public class ModelBasedTestCase extends CndBaseTestCase {
                     if (skipTokenOrFileName) {
                         skipTokenOrFileName = false;
                     } else {
-                        writer.write(line);
-                        writer.write('\n');
+                        if (!(filterOutNotImplemented && isClankNotImplemented(line))) {
+                            writer.write(line);
+                            writer.write('\n');
+                        }
                         if (isStartOfFailedInclude(line)) {
                             // Clank and APT has different messages, filter them out
                             skipTokenOrFileName = true;
@@ -261,5 +263,9 @@ public class ModelBasedTestCase extends CndBaseTestCase {
         // cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/clank/ClankPPCallback.java
         // onInclusionDirective
         return line.trim().startsWith("FAILED INCLUDE");
+    }
+
+    private static boolean isClankNotImplemented(String line) {
+        return line.trim().startsWith("NOT IMPLEMENTED ");
     }
 }
