@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.GroupLayout;
@@ -70,9 +71,15 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
@@ -82,6 +89,8 @@ public class OptionsPanel extends JPanel {
     private static final long serialVersionUID = 16987546576769L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private final CssPreprocessorType type;
+    private final Project project;
     // @GuardedBy("EDT")
     private final MappingsTableModel mappingsTableModel;
     // we must be thread safe
@@ -93,22 +102,26 @@ public class OptionsPanel extends JPanel {
     volatile String compilerOptions;
 
 
-    public OptionsPanel(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
+    public OptionsPanel(CssPreprocessorType type, Project project, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
         assert EventQueue.isDispatchThread();
+        assert type != null;
+        assert project != null;
 
+        this.type = type;
+        this.project = project;
         mappingsTableModel = new MappingsTableModel(mappings);
         enabled = initialEnabled;
         compilerOptions = initialCompilerOptions;
 
         initComponents();
-        init(type, initialEnabled, initialMappings, initialCompilerOptions);
+        init(initialEnabled, initialMappings, initialCompilerOptions);
     }
 
     @NbBundle.Messages({
         "# {0} - preprocessor name",
         "OptionsPanel.compilationEnabled.label=Co&mpile {0} Files on Save",
     })
-    private void init(CssPreprocessorType type, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
+    private void init(boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
         assert EventQueue.isDispatchThread();
         configureExecutablesButton.setVisible(false);
         Mnemonics.setLocalizedText(enabledCheckBox, Bundle.OptionsPanel_compilationEnabled_label(type.getDisplayName()));
@@ -137,6 +150,7 @@ public class OptionsPanel extends JPanel {
         mappingsTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
+                enableRecompileButton();
                 fireChange();
             }
         });
@@ -187,7 +201,7 @@ public class OptionsPanel extends JPanel {
     }
 
     public List<Pair<String, String>> getMappings() {
-        return mappings;
+        return Collections.unmodifiableList(mappings);
     }
 
     public void setMappings(List<Pair<String, String>> mappings) {
@@ -220,6 +234,11 @@ public class OptionsPanel extends JPanel {
     }
 
     void enablePanel(boolean enabled) {
+        if (enabled) {
+            enableRecompileButton();
+        } else {
+            recompileButton.setEnabled(false);
+        }
         watchLabel.setEnabled(enabled);
         mappingsTable.setEnabled(enabled);
         mappingsInfoLabel.setEnabled(enabled);
@@ -233,6 +252,18 @@ public class OptionsPanel extends JPanel {
         compilerOptionsLabel.setEnabled(enabled);
         compilerOptionsTextField.setEnabled(enabled);
         compilerOptionsInfoLabel.setEnabled(enabled);
+    }
+
+    void enableRecompileButton() {
+        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project);
+        if (webRoot == null) {
+            recompileButton.setEnabled(false);
+            return;
+        }
+        ValidationResult result = type.getPreferencesValidator()
+                .validateMappings(webRoot, true, mappings)
+                .getResult();
+        recompileButton.setEnabled(result.isFaultless());
     }
 
     void enableRemoveButton() {
@@ -250,6 +281,7 @@ public class OptionsPanel extends JPanel {
         enabledCheckBox = new JCheckBox();
         configureExecutablesButton = new JButton();
         watchLabel = new JLabel();
+        recompileButton = new JButton();
         mappingsScrollPane = new JScrollPane();
         mappingsTable = new JTable();
         addButton = new JButton();
@@ -270,6 +302,13 @@ public class OptionsPanel extends JPanel {
 
         watchLabel.setLabelFor(mappingsTable);
         Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(recompileButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.recompileButton.text")); // NOI18N
+        recompileButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                recompileButtonActionPerformed(evt);
+            }
+        });
 
         mappingsScrollPane.setViewportView(mappingsTable);
 
@@ -298,8 +337,7 @@ public class OptionsPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(enabledCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -319,22 +357,25 @@ public class OptionsPanel extends JPanel {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(compilerOptionsTextField)))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(watchLabel)
-                    .addComponent(mappingsInfoLabel))
+                .addComponent(mappingsInfoLabel)
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(watchLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(recompileButton))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
 
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(enabledCheckBox)
                     .addComponent(configureExecutablesButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(watchLabel)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addComponent(watchLabel)
+                    .addComponent(recompileButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
@@ -373,6 +414,22 @@ public class OptionsPanel extends JPanel {
         OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
     }//GEN-LAST:event_configureExecutablesButtonActionPerformed
 
+    private void recompileButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_recompileButtonActionPerformed
+        assert EventQueue.isDispatchThread();
+        CssPreprocessor cssPreprocessor = CssPreprocessors.getDefault().getCssPreprocessor(type.getIdentifier());
+        assert cssPreprocessor != null : "CSS preprocessor must be found for identifier: " + type.getIdentifier();
+        FileObject webRoot = CssPreprocessorUtils.getWebRoot(project);
+        assert webRoot != null : "No web root found for project: " + project.getProjectDirectory();
+        for (Pair<String, String> mapping : mappings) {
+            FileObject input = FileUtil.toFileObject(CssPreprocessorUtils.resolveInput(webRoot, mapping));
+            if (input == null) {
+                // non-existing file
+                continue;
+            }
+            CssPreprocessors.getDefault().process(cssPreprocessor, project, input);
+        }
+    }//GEN-LAST:event_recompileButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
     private JLabel compilerOptionsInfoLabel;
@@ -383,6 +440,7 @@ public class OptionsPanel extends JPanel {
     private JLabel mappingsInfoLabel;
     private JScrollPane mappingsScrollPane;
     private JTable mappingsTable;
+    private JButton recompileButton;
     private JButton removeButton;
     private JLabel watchLabel;
     // End of variables declaration//GEN-END:variables

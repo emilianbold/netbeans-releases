@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
+import org.netbeans.modules.j2ee.persistence.spi.PersistenceLocationProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -127,6 +128,7 @@ public class PersistenceUnitPresent{
                     hc,
                     hc.getPath().getParentPath(),
                     NbBundle.getMessage(PersistenceUnitPresent.class, "MSG_MissingPersistenceUnitHint"),
-                    new CreatePersistenceUnit(project));
+                    project.getLookup().lookup(PersistenceLocationProvider.class) == null
+                            ? null : new CreatePersistenceUnit(project));
     }
 }

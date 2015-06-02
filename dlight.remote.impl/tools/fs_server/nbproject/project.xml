@@ -69,6 +69,10 @@
                     <name>SLinux64</name>
                     <type>0</type>
                 </confElem>
+                <confElem>
+                    <name>Previse_Solaris-x86</name>
+                    <type>0</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>
