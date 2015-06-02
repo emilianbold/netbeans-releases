@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -53,6 +54,7 @@ import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clang.tools.services.support.ClangFileSystemProvider;
+import org.clang.tools.services.support.PrintWriter_ostream;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
@@ -119,8 +121,15 @@ public class ClankDriverImpl {
             boolean fortranFlavor = APTToClankCompilationDB.isFortran(ppHandler);
             settings.KeepCommentsTokens = callback.needComments() || fortranFlavor;
             settings.GenerateDiagnostics = true;
-            settings.PrettyPrintDiagnostics = false;
-            settings.PrintDiagnosticsOS = llvm.nulls();
+            PrintWriter printWriter = null;
+            if (CndUtils.isUnitTestMode() && !fortranFlavor) {
+                settings.PrettyPrintDiagnostics = true;
+                printWriter = new PrintWriter(System.err);
+                settings.PrintDiagnosticsOS = new PrintWriter_ostream(printWriter);
+            } else {
+                settings.PrettyPrintDiagnostics = false;
+                settings.PrintDiagnosticsOS = llvm.nulls();
+            }
             settings.TraceClankStatistics = false;
             ClankPPCallback.CancellableInterrupter canceller = new ClankPPCallback.CancellableInterrupter(interrupter);
             settings.cancelled = canceller;
