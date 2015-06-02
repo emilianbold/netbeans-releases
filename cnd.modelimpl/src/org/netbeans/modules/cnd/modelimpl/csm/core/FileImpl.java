@@ -1243,6 +1243,46 @@ public final class FileImpl implements CsmFile,
         return stream;
     }
 
+    /**
+     * Token stream with replaced fragment
+     *
+     * @param startContextOffset
+     * @param endContextOffset
+     * @param context
+     * @param filtered
+     * @return
+     */
+    public final TokenStream getTokenStream(int startContextOffset, int endContextOffset, String context, boolean filtered) {
+        FileTokenStreamCache cache = new FileTokenStreamCache();
+        PreprocessorStatePair bestStatePair = getContextPreprocStatePair(startContextOffset, endContextOffset);
+        PreprocHandler preprocHandler = getPreprocHandler(bestStatePair);
+        if (preprocHandler == null) {
+            return null;
+        }
+        PreprocHandler.State ppState = preprocHandler.getState();
+        TokenStreamProducer tsp = TokenStreamProducer.create(this, true, false);
+        if (tsp == null) {
+            // probably file was removed
+            return null;
+        }
+        String contextLanguage = this.getContextLanguage(ppState);
+        String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
+        tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
+        tsp.setFixCode(new TokenStreamProducer.FixCode(startContextOffset, endContextOffset, context));
+        TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
+        if (tokenStream == null) {
+            return null;
+        }
+        APTLanguageFilter languageFilter = getLanguageFilter(ppState);
+        // after the next call builder will be ready to create pc state
+        List<APTToken> tokens = APTUtils.toList(tokenStream);
+        // Only now we can create pcState and cache if possible
+        FilePreprocessorConditionState pcState = tsp.release();
+        // cache collected tokens associaited with PCState
+        cache.cacheTokens(pcState, tokens, languageFilter);
+        return cache.getTokenStreamInActiveBlock(filtered, startContextOffset, startContextOffset+context.length(), 0);
+    }
+
     private TokenStream getTokenStreamOfIncludedFile(final CsmInclude include) {
         FileImpl file = (FileImpl) include.getIncludeFile();
         if (file != null && file.isValid()) {

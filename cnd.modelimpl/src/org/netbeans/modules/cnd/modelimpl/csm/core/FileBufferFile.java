@@ -234,12 +234,12 @@ public class FileBufferFile extends AbstractFileBuffer {
         return doGetChar();
     }
 
-    static final class MyCharSequence implements CharSequence {
+    public static final class MyCharSequence implements CharSequence {
         private final char[] buf;
         private final int start;
         private final int end;
 
-        MyCharSequence(char[] buf) {
+        public MyCharSequence(char[] buf) {
             this(buf, 0, buf.length);
         }
 

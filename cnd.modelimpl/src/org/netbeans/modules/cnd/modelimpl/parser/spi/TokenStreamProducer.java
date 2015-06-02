@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
-import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -66,6 +64,7 @@ public abstract class TokenStreamProducer {
     private final FileImpl fileImpl;
     private final FileContent fileContent;
     private boolean allowToCacheOnRelease;
+    private FixCode fixCode;
 
     protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent) {
         assert fileImpl != null : "null file is not allowed";        
@@ -123,5 +122,38 @@ public abstract class TokenStreamProducer {
 
     protected final boolean isAllowedToCacheOnRelease() {
         return allowToCacheOnRelease;
+    }
+
+    public FixCode getFixCode() {
+        return fixCode;
+    }
+
+    public void setFixCode(FixCode fixCode) {
+        this.fixCode = fixCode;
+    }
+
+    public static final class FixCode {
+        private final int startOffset;
+        private final int endOffset;
+        private final String patch;
+
+        public FixCode(int startOffset, int endOffset, String patch) {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.patch = patch;
+        }
+
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        public String getPatch() {
+            return patch;
+        }
+
     }
 }

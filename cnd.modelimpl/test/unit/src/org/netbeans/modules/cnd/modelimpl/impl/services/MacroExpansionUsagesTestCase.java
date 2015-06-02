@@ -59,6 +59,7 @@ import java.io.PrintStream;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
@@ -79,7 +80,12 @@ public class MacroExpansionUsagesTestCase extends MacroExpansionDocProviderImplB
     // performExpandFileTest("file name, line, column); // NOI18N
 
     public void testFile1() throws Exception {
-        performTest("file1.cc", 18, 7); // NOI18N
+        if (APTTraceFlags.USE_CLANK) {
+            // there is no usages of parameters
+            //performTest("file1.cc", 18, 7); // NOI18N
+        } else {
+            performTest("file1.cc", 18, 7); // NOI18N
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////

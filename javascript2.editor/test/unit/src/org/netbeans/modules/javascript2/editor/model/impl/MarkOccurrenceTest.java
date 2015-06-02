@@ -1519,6 +1519,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue252656.js", "window[ugaVarName] = u^ga;", true);
     }
     
+    public void testIssue243566_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue243566.js", "this.x = x^;", true);
+    }
+    
+    public void testIssue243566_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue243566.js", "this.x^ = x;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
