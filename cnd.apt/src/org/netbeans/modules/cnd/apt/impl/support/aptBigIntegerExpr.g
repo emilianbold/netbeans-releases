@@ -85,13 +85,17 @@ options {
 }
 
 {
+    // value for ID with text "true" (i.e. it is 1 in C++ and 0 in C langs)
+    private BigInteger trueIDValue = BigInteger.ZERO;
+    private final static String TRUE = "true";// NOI18N
     private APTMacroCallback callback = null;
     private boolean bigValuesInUse = false;
 
-    public APTBigIntegerExprParser(TokenStream lexer, APTMacroCallback callback) {
+    public APTBigIntegerExprParser(TokenStream lexer, APTMacroCallback callback, BigInteger trueIDValue) {
         super(lexer, 1, 16);
         tokenNames = _tokenNames;
         this.callback = callback;
+        this.trueIDValue = trueIDValue;
     }
 
     private boolean isDefined(Token id) {
@@ -217,6 +221,12 @@ options {
 
     private BigInteger evalID(Token id) {
         // each not expanded ID in expression is '0' by specification
+        // but 'true' can be treated differently:
+        //  in C++ as 1
+        //  in C as 0
+        if (id != null && TRUE.equals(id.getText())) {
+            return trueIDValue;
+        }
         return BigInteger.ZERO;
     }
 
