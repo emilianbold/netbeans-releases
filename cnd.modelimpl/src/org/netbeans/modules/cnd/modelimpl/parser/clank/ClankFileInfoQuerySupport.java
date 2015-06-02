@@ -46,15 +46,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
+import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -94,8 +100,19 @@ public class ClankFileInfoQuerySupport {
 
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "expand not yet implemented");
-        return code;
-    }
+        TokenStream ts = fileImpl.getTokenStream(offset, offset, code, true);
+        ts = new APTCommentsFilter(ts);
 
+        StringBuilder sb = new StringBuilder(""); // NOI18N
+        try {
+            APTToken t = (APTToken) ts.nextToken();
+            while (t != null && !APTUtils.isEOF(t)) {
+                sb.append(t.getTextID());
+                t = (APTToken) ts.nextToken();
+            }
+        } catch (TokenStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return sb.toString();
+    }
 }
