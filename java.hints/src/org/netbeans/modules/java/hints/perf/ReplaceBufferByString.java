@@ -534,6 +534,18 @@ public class ReplaceBufferByString {
         }
 
         @Override
+        public Boolean visitNewClass(NewClassTree node, Void p) {
+            scan(node.getEnclosingExpression(), p);
+            for (ExpressionTree et : node.getArguments()) {
+                Boolean used = scan(et, p);
+                if (used == Boolean.TRUE) {
+                    passedToMethod = true;
+                }
+            }
+            return false;
+        }
+
+        @Override
         public Boolean visitMemberSelect(MemberSelectTree node, Void p) {
             Boolean expr = scan(node.getExpression(), p);
             if (expr != Boolean.TRUE) {
