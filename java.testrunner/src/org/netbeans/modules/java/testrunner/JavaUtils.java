@@ -88,6 +88,14 @@ public final class JavaUtils {
     private Map<SourceGroup,Object[]> sourcesToTestsMap;
     /** <!-- PENDING --> */
     private Map<FileObject,Object> foldersToSourceGroupsMap;
+    /**
+     * Since 8.1, "junit" library definition and junit-3.8.2 binaries were
+     * removed. This property is saved in project.properties file once the
+     * project problems are resolved by updating test dependency to JUnit 4.x.
+     * The possible values are "3" or "4" to indicate JUnit 3.x or JUnit 4.x
+     * style for the test case sceletons.
+     */
+    public static final String PROP_JUNIT_SELECTED_VERSION = "junit.selected.version";
     
     /**
      * <!-- PENDING -->

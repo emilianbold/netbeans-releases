@@ -2675,4 +2675,42 @@ public class PropertiesATest extends CssModuleTestBase {
         String code = "#foo {width: inherit;}";
         assertCssCode(code);
     }
+    
+    public void testInheritInMaxMinWidthHeight() throws ParseException {
+        String code = "#foo {"
+                + "    max-width: inherit;\n"
+                + "    min-width: inherit;\n"
+                + "    max-height: inherit;\n"
+                + "    min-height: inherit;"
+                + "}";
+        assertCssCode(code);
+    }
+    
+    public void testCursorNewProperties() throws ParseException {
+        String code = "span.wait {\n"
+                + "    cursor:url(smiley.gif),url(myBall.cur),auto;\n"
+                + "    cursor: zoom-in;\n"
+                + "    cursor: zoom-out;\n"
+                + "    cursor: grab;\n"
+                + "    cursor: grabbing;\n"
+                + "}";
+        assertCssCode(code);
+    }
+    
+    public void testListInherit()  throws ParseException {
+        String code = "ul {\n"
+                + "    list-style-position: inherit;\n"
+                + "}";
+        assertCssCode(code);
+    }
+    
+    public void testLinerGradient() throws ParseException {
+        String code = "#grad {\n"
+                + "  background: -webkit-linear-gradient(left top, red , blue); /* For Safari 5.1 to 6.0 */\n"
+                + "  background: -o-linear-gradient(bottom right, red, blue); /* For Opera 11.1 to 12.0 */\n"
+                + "  background: -moz-linear-gradient(bottom right, red, blue); /* For Firefox 3.6 to 15 */\n"
+                + "  background: linear-gradient(to bottom right, red , blue); /* Standard syntax */\n"
+                + "}";
+        assertCssCode(code);
+    }
 }

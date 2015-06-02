@@ -74,8 +74,8 @@ import org.openide.util.NbBundle;
         enabled = true,
         suppressWarnings = "PersistenceUnitPresent")
 @NbBundle.Messages({
-    "PersistenceUnitPresent.display.name=Presece of persistence.xml",
-    "PersistenceUnitPresent.desc=Check if project with jpa usage contain persistence.xml with persistence unit"
+    "PersistenceUnitPresent.display.name=Presence of persistence.xml",
+    "PersistenceUnitPresent.desc=Check if project with jpa usage contains persistence.xml with persistence unit"
 })
 public class PersistenceUnitPresent{
 

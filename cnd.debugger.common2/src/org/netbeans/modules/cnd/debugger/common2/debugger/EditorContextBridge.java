@@ -55,14 +55,22 @@ public class EditorContextBridge {
     private static final EditorContextDispatcher contextDispatcher = EditorContextDispatcher.getDefault();
 
     public static String getCurrentURL() {
-        return contextDispatcher.getMostRecentURLAsString();
+        return contextDispatcher.getCurrentURLAsString();
     }
 
     public static FileObject getCurrentFileObject() {
-        return contextDispatcher.getMostRecentFile();
+        return contextDispatcher.getCurrentFile();
     }
 
     public static String getCurrentFilePath() {
+        FileObject currentFile = contextDispatcher.getCurrentFile();
+        if (currentFile != null) {
+            return currentFile.getPath();
+        }
+        return "";
+    }
+    
+    public static String getMostRecentFilePath() {
         FileObject currentFile = contextDispatcher.getMostRecentFile();
         if (currentFile != null) {
             return currentFile.getPath();
@@ -71,11 +79,15 @@ public class EditorContextBridge {
     }
 
     public static int getCurrentLineNumber() {
+        return contextDispatcher.getCurrentLineNumber();
+    }
+    
+    public static int getMostRecentLineNumber() {
         return contextDispatcher.getMostRecentLineNumber();
     }
     
     public static String getCurrentMIMEType() {
-        FileObject fo = contextDispatcher.getMostRecentFile();
+        FileObject fo = contextDispatcher.getCurrentFile();
         return fo != null ? fo.getMIMEType() : ""; // NOI18N
     }
 

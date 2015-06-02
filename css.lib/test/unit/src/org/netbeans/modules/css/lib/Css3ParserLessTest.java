@@ -839,6 +839,14 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
     }
     
+    public void testMixinCallInMedia() {
+        String source = ".desktop-and-old-ie(@rules) {\n"
+                + "  @media sceren and (min-width: 1200) { @rules(); }\n"
+                + "  html.lt-ie9 &                       { @rules(); }\n"
+                + "}";
+        assertParses(source);
+    }
+    
     public void testExtendKeyword() {
         
         assertParses(".sidenav:extend(.nav, #foo, .bar) {}");

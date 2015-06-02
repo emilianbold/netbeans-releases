@@ -56,8 +56,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ContainerEvent;
 import java.awt.event.ContainerListener;
 import java.awt.event.MouseEvent;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -68,6 +66,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -76,6 +75,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.plaf.synth.Region;
 import javax.swing.plaf.synth.SynthConstants;
 import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthGraphicsUtils;
 import javax.swing.plaf.synth.SynthLookAndFeel;
 import javax.swing.plaf.synth.SynthStyle;
 import javax.swing.plaf.synth.SynthStyleFactory;
@@ -428,32 +428,8 @@ final class ToolbarContainer extends JPanel {
         }
     } // end of inner class ToolbarBump
 
-
-    private static Class synthIconClass = null;
-    private static boolean testExecuted = false;
-    /**
-     * Test if SynthIcon is available and can be used for painting native Toolbar
-     * D&D handle. If not use our own handle. Reflection is used here as it is Sun
-     * proprietary API.
-     */
-    private static boolean useSynthIcon () {
-        if (!testExecuted) {
-            testExecuted = true;
-            try {
-                synthIconClass = ClassLoader.getSystemClassLoader().loadClass("sun.swing.plaf.synth.SynthIcon");
-            } catch (ClassNotFoundException exc) {
-                LOG.log(Level.INFO, null, exc);
-            }
-        }
-        return (synthIconClass != null);
-    }
-
     /** Bumps for floatable toolbar GTK L&F */
     private final class ToolbarGtk extends JPanel {
-        /** Top gap. */
-        int TOPGAP;
-        /** Bottom gap. */
-        int BOTGAP;
         /** Width of bump element. */
         private static final int GRIP_WIDTH = 6;
 
@@ -466,13 +442,6 @@ final class ToolbarContainer extends JPanel {
         public ToolbarGtk () {
             super();
             int width = GRIP_WIDTH;
-            if (useSynthIcon()) {
-                TOPGAP = 0;
-                BOTGAP = 0;
-            } else {
-                TOPGAP = 2;
-                BOTGAP = 2;
-            }
             dim = new Dimension (width, width);
             max = new Dimension (width, Integer.MAX_VALUE);
         }
@@ -480,65 +449,14 @@ final class ToolbarContainer extends JPanel {
         /** Paint bumps to specific Graphics. */
         @Override
         public void paint (Graphics g) {
-            if (useSynthIcon()) {
-                int height = toolbar.getHeight() - BOTGAP;
-                Icon icon = UIManager.getIcon("ToolBar.handleIcon");
-                Region region = Region.TOOL_BAR;
-                SynthStyleFactory sf = SynthLookAndFeel.getStyleFactory();
-                SynthStyle style = sf.getStyle(toolbar, region);
-                SynthContext context = new SynthContext(toolbar, region, style, SynthConstants.DEFAULT);
+            Icon icon = UIManager.getIcon("ToolBar.handleIcon");
+            Region region = Region.TOOL_BAR;
+            SynthStyleFactory sf = SynthLookAndFeel.getStyleFactory();
+            SynthStyle style = sf.getStyle(toolbar, region);
+            SynthContext context = new SynthContext(toolbar, region, style, SynthConstants.DEFAULT);
 
-                // for vertical toolbar, you'll need to ask for getIconHeight() instead
-                Method m = null;
-                try {
-                    m = synthIconClass.getMethod("getIconWidth",Icon.class, SynthContext.class);
-                } catch (NoSuchMethodException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                }
-                int width = 0;
-                //width = SynthIcon.getIconWidth(icon, context);
-                try {
-                    width = (Integer) m.invoke(null, new Object [] {icon, context});
-                } catch (IllegalAccessException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                } catch (InvocationTargetException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                }
-                try {
-                    m = synthIconClass.getMethod("paintIcon",Icon.class,SynthContext.class,
-                    Graphics.class,Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE);
-                } catch (NoSuchMethodException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                }
-                //SynthIcon.paintIcon(icon, context, g, 0, 0, width, height);
-                try {
-                    m.invoke(null, new Object [] {icon,context,g,new Integer(0),new Integer(-1),
-                    new Integer(width),new Integer(height)});
-                } catch (IllegalAccessException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                } catch (InvocationTargetException exc) {
-                    LOG.log(Level.WARNING, null, exc);
-                }
-            } else {
-                Dimension size = this.getSize();
-                int height = size.height - BOTGAP;
-                g.setColor (this.getBackground ());
-
-                for (int x = 0; x+1 < size.width; x+=4) {
-                    for (int y = TOPGAP; y+1 < height; y+=4) {
-                        g.setColor (this.getBackground ().brighter ());
-                        g.drawLine (x, y, x, y);
-                        if (x+5 < size.width && y+5 < height) {
-                            g.drawLine (x+2, y+2, x+2, y+2);
-                        }
-                        g.setColor (this.getBackground ().darker ().darker ());
-                        g.drawLine (x+1, y+1, x+1, y+1);
-                        if (x+5 < size.width && y+5 < height) {
-                            g.drawLine (x+3, y+3, x+3, y+3);
-                        }
-                    }
-                }
-            }
+            SynthGraphicsUtils sgu = context.getStyle().getGraphicsUtils(context);
+            sgu.paintText(context, g, null, icon, SwingConstants.LEADING, SwingConstants.LEADING, 0, 0, 0, -1, 0);
         }
 
         /** @return minimum size */

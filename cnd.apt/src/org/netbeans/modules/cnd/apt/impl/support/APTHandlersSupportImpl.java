@@ -44,21 +44,28 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankIncludeHandlerImpl;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap.StateImpl;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap.FileStateImpl;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.clank.ClankSystemMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
-import org.netbeans.modules.cnd.apt.support.APTMacro;
+import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.apt.support.api.PPMacroMap;
+import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
+import org.netbeans.modules.cnd.apt.support.api.StartEntry;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.openide.util.CharSequences;
 
@@ -72,46 +79,53 @@ public class APTHandlersSupportImpl {
     private APTHandlersSupportImpl() {
     }
 
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+    public static APTPreprocHandler createPreprocHandler(PPMacroMap macroMap, PPIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
         return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext, lang, flavor);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
-        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false, CharSequences.empty(), CharSequences.empty());
+        return new APTPreprocHandlerImpl(
+                APTTraceFlags.USE_CLANK ? new ClankFileMacroMap() : new APTFileMacroMap(), 
+                APTTraceFlags.USE_CLANK ? new ClankIncludeHandlerImpl(file) : new APTIncludeHandlerImpl(file), 
+                false, CharSequences.empty(), CharSequences.empty());
     }
 
-    public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
+    public static void invalidatePreprocHandler(PreprocHandler preprocHandler) {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
 
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
+    public static PPIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, List<String> includeFileEntries, APTFileSearch fileSearch) {
         // for now prepare IncludeDirEntry for "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         for (String file : includeFileEntries) {
             fileEntries.add(IncludeDirEntry.get(startFile.getFileSystem(), file));
         }
-//        SupportAPIAccessor accessor = SupportAPIAccessor.get();
-//        for (IncludeDirEntry includeDirEntry : userIncludePaths) {
-//            if (!accessor.isExistingDirectory(includeDirEntry)) {
-//                // check if this is file
-//                if (CndFileUtils.isExistingFile(includeDirEntry.getFileSystem(), includeDirEntry.getAsSharedCharSequence().toString())) {
-//                    fileEntries.add(includeDirEntry);
-//                }
-//            }
-//        }
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        if (APTTraceFlags.USE_CLANK) {
+            return new ClankIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        } else {
+            return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        }
     }
     
-    public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
+    public static long getCompilationUnitCRC(PreprocHandler preprocHandler){
         if (preprocHandler instanceof APTPreprocHandlerImpl) {
             return ((APTPreprocHandlerImpl)preprocHandler).getCompilationUnitCRC();
         }
         return 0;
     }
 
-    public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
-        APTMacroMap fileMap = new APTFileMacroMap(sysMap, userMacros);
+    public static PPMacroMap createMacroMap(PPMacroMap sysMap, List<String> userMacros) {
+        PPMacroMap fileMap;
+        if (APTTraceFlags.USE_CLANK) {
+            fileMap = new ClankFileMacroMap((ClankSystemMacroMap)sysMap, userMacros);
+        } else {
+            fileMap = new APTFileMacroMap((APTMacroMap)sysMap, userMacros);
+        }
         return fileMap;
+    }
+
+    public static APTPreprocHandler.State preparePreprocStateCachesIfPossible(APTPreprocHandler.State orig) {
+        return ((APTPreprocHandlerImpl.StateImpl)orig).prepareCachesIfPossible();
     }
 
     public static APTPreprocHandler.State createCleanPreprocState(APTPreprocHandler.State orig) {
@@ -132,15 +146,21 @@ public class APTHandlersSupportImpl {
         }
     }
 
-    public static boolean isFirstLevel(APTIncludeHandler includeHandler) {
-        if (includeHandler != null) {
-            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
+    public static boolean isFirstLevel(PPIncludeHandler includeHandler) {
+        if (includeHandler == null) {
+          return false;
+        }
+        if (includeHandler instanceof ClankIncludeHandlerImpl) {
+            assert APTTraceFlags.USE_CLANK;
+            return ((ClankIncludeHandlerImpl) includeHandler).isFirstLevel();
         } else {
-            return false;
+            assert !APTTraceFlags.USE_CLANK;
+            return ((APTIncludeHandlerImpl) includeHandler).isFirstLevel();
         }
     }
 
-    public static Collection<IncludeDirEntry> extractIncludeFileEntries(APTIncludeHandler includeHandler) {
+    public static Collection<IncludeDirEntry> extractIncludeFileEntries(PPIncludeHandler includeHandler) {
+        assert !APTTraceFlags.USE_CLANK;
         Collection<IncludeDirEntry> out = new ArrayList<IncludeDirEntry>(0);
         if (includeHandler != null) {
             return ((APTIncludeHandlerImpl) includeHandler).getUserIncludeFilePaths();
@@ -148,26 +168,22 @@ public class APTHandlersSupportImpl {
         return out;
     }
 
-    public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
-        assert state != null;
-        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.snap.getAll();
-    }
-
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
         assert state != null;
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
-    public static long getCompilationUnitCRC(APTMacroMap map){
+    public static long getCompilationUnitCRC(PPMacroMap map){
         assert map != null;
         if (map instanceof APTFileMacroMap) {
             return ((APTFileMacroMap)map).getCompilationUnitCRC();
+        } else if (map instanceof ClankFileMacroMap) {
+            return ((ClankFileMacroMap)map).getCompilationUnitCRC();
         }
         return 0;
     }
 
-    public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
+    public static PPIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
         assert state != null;
         return ((APTPreprocHandlerImpl.StateImpl) state).inclState;
     }
@@ -179,32 +195,29 @@ public class APTHandlersSupportImpl {
         return macro.getStateKey(extractStartEntry == null ? null : extractStartEntry.getStartFileProject());
     }
 
-    public static boolean isEmptyActiveMacroMap(APTPreprocHandler.State state) {
-        assert state != null;
-        APTFileMacroMap.FileStateImpl macro = (FileStateImpl) ((APTPreprocHandlerImpl.StateImpl) state).macroState;
-        return macro.isEmptyActiveMacroMap();
-    }
-
-    public static int getMacroSize(APTPreprocHandler.State state) {
-        assert state != null;
-        APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return macro.snap.getAll().size();
-    }
-
     public static int getIncludeStackDepth(APTPreprocHandler.State state) {
         assert state != null;
-        APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) ((APTPreprocHandlerImpl.StateImpl) state).inclState;
-        return incl == null ? 0 : incl.getIncludeStackDepth();
+        PPIncludeHandler.State inclState = ((APTPreprocHandlerImpl.StateImpl) state).inclState;
+        if (inclState == null) {
+            return 0;
+        }
+        if (inclState instanceof APTIncludeHandlerImpl.StateImpl) {
+            APTIncludeHandlerImpl.StateImpl incl = (APTIncludeHandlerImpl.StateImpl) inclState;
+            return incl.getIncludeStackDepth();
+        } else {
+            ClankIncludeHandlerImpl.StateImpl incl = (ClankIncludeHandlerImpl.StateImpl) inclState;
+            return incl.getIncludeStackDepth();
+        }
     }
 
-    public static LinkedList<APTIncludeHandler.IncludeInfo> extractIncludeStack(APTPreprocHandler.State state) {
+    public static LinkedList<PPIncludeHandler.IncludeInfo> extractIncludeStack(PreprocHandler.State state) {
         assert state != null;
-        Collection<APTIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
+        Collection<PPIncludeHandler.IncludeInfo> inclStack = getIncludeStack(((APTPreprocHandlerImpl.StateImpl)state).inclState);
         // return copy to prevent modification of frozen state objects
-        return inclStack == null ? new LinkedList<APTIncludeHandler.IncludeInfo>() : new LinkedList<APTIncludeHandler.IncludeInfo>(inclStack);
+        return inclStack == null ? new LinkedList<PPIncludeHandler.IncludeInfo>() : new LinkedList<PPIncludeHandler.IncludeInfo>(inclStack);
     }
 
-    public static StartEntry extractStartEntry(APTPreprocHandler.State state) {
+    public static StartEntry extractStartEntry(PreprocHandler.State state) {
         return (state == null) ? null : extractStartEntry(((APTPreprocHandlerImpl.StateImpl)state).inclState);
     }
     
@@ -215,22 +228,58 @@ public class APTHandlersSupportImpl {
     ////////////////////////////////////////////////////////////////////////////
     // impl details
     
-    private static StartEntry extractStartEntry(APTIncludeHandler.State state) {
-	return (state == null) ? null : ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+    private static StartEntry extractStartEntry(PPIncludeHandler.State state) {
+        if (state == null) {
+            return null;
+        }
+        if (state instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl) state).getStartEntry();
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl) state).getStartEntry();
+        }
     }
     
-    private static Collection<APTIncludeHandler.IncludeInfo> getIncludeStack(APTIncludeHandler.State inclState) {
-        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
+    private static Collection<PPIncludeHandler.IncludeInfo> getIncludeStack(PPIncludeHandler.State inclState) {
+        if (inclState == null) {
+            return null;
+        }
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).getIncludeStack();
+        }
     }
     
-    /*package*/ static APTIncludeHandler.State copyIncludeState(APTIncludeHandler.State inclState, boolean cleanState) {
-        return inclState == null ? null : ((APTIncludeHandlerImpl.StateImpl)inclState).copy(cleanState);
+    /*package*/ static PPIncludeHandler.State copyCleanIncludeState(PPIncludeHandler.State inclState) {
+        if (inclState == null) {
+          return null;
+        }      
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).copyCleaned();
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).copyCleaned();
+        }
+    }
+
+    /*package*/ static PPIncludeHandler.State prepareIncludeStateCachesIfPossible(PPIncludeHandler.State inclState) {
+        if (inclState == null) {
+          return null;
+        }
+        if (inclState instanceof ClankIncludeHandlerImpl.StateImpl) {
+            return ((ClankIncludeHandlerImpl.StateImpl)inclState).prepareCachesIfPossible();
+        } else {
+            return ((APTIncludeHandlerImpl.StateImpl)inclState).prepareCachesIfPossible();
+        }
     }
 
     /*package*/ static APTMacroMap.State createCleanMacroState(APTMacroMap.State macroState) {
         APTMacroMap.State out = null;
         if (macroState != null) {
-            out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
+            if (macroState instanceof ClankMacroMap.StateImpl) {
+                out = ((ClankMacroMap.StateImpl)macroState).copyCleaned();
+            } else {
+                out = ((APTBaseMacroMap.StateImpl)macroState).copyCleaned();
+            }
         }
         return out;
     }

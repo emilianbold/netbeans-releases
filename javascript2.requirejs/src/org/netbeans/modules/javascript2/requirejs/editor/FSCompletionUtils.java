@@ -359,7 +359,7 @@ public class FSCompletionUtils {
             Logger.getLogger(FSCompletionUtils.class.getName()).info("Cannot get RequireJS index."); //NOI18N
         }
         if (index != null && !path.isEmpty()) {
-            final Collection<String> sourceRoots = new ArrayList<>();
+            final Collection<String> sourceRoots = new HashSet<>();
             final Collection<String> modulePaths = new ArrayList<>();
             final Map<String, String> packages = index.getPackages();
             final Collection<String> basePaths = index.getBasePaths();

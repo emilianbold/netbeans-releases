@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -312,31 +314,89 @@ public class HintsTest extends PHPHintsTestBase {
     }
 
     public void testArraySyntaxSuggestion_01() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
     }
 
     public void testArraySyntaxSuggestion_02() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "11, ^22,");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", "11, ^22,");
     }
 
     public void testArraySyntaxSuggestion_03() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "2, ^3);");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", "2, ^3);");
     }
 
     public void testArraySyntaxSuggestion_04() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
     }
 
     public void testArraySyntaxSuggestion_05() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
     }
 
     public void testArraySyntaxSuggestion_06() throws Exception {
-        checkHints(new ArraySyntaxSuggestion(), "testArraySyntaxSuggestion.php", ")^; //huhu");
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_54_OR_NEWER), "testArraySyntaxSuggestion.php", ")^; //huhu");
+    }
+
+    public void testIssue248013_01() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", "$foo = ar^ray(");
+    }
+
+    public void testIssue248013_02() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", "11, ^22,");
+    }
+
+    public void testIssue248013_03() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", "2, ^3);");
+    }
+
+    public void testIssue248013_04() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", "$boo = a^rray(");
+    }
+
+    public void testIssue248013_05() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", "\"sdf\" => array(^1, 2, 3)");
+    }
+
+    public void testIssue248013_06() throws Exception {
+        checkHints(new ArraySyntaxSuggesionStub(PhpVersion.PHP_53_OR_OLDER), "testArraySyntaxSuggestion.php", ")^; //huhu");
     }
 
     public void testIssue249306() throws Exception {
         checkHints(new InitializeFieldSuggestion(), "testIssue249306.php", "function __construct(...$f^oo) {");
+    }
+
+    private static final class ArraySyntaxSuggesionStub extends ArraySyntaxSuggestion {
+
+        private final PhpVersion phpVersion;
+
+        public ArraySyntaxSuggesionStub(PhpVersion phpVersion) {
+            this.phpVersion = phpVersion;
+        }
+
+        @Override
+        protected boolean isAtLeastPhp54(FileObject fileObject) {
+            return phpVersion.isAtLeastPhp54();
+        }
+
+    }
+
+    private enum PhpVersion {
+
+        PHP_53_OR_OLDER {
+            @Override
+            public boolean isAtLeastPhp54() {
+                return false;
+            }
+        },
+        PHP_54_OR_NEWER {
+            @Override
+            public boolean isAtLeastPhp54() {
+                return true;
+            }
+        };
+
+        public abstract boolean isAtLeastPhp54();
+
     }
 
 }

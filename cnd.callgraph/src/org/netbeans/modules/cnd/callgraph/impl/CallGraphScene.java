@@ -4,10 +4,13 @@
 
 package org.netbeans.modules.cnd.callgraph.impl;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
 import org.netbeans.modules.cnd.callgraph.support.HorizontalHierarchicalLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -45,7 +48,6 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.router.Router;
 import org.netbeans.api.visual.router.RouterFactory;
 import org.netbeans.api.visual.widget.ConnectionWidget;
-import org.netbeans.api.visual.widget.LabelWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
@@ -265,14 +267,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         }
         String scope = node.getScopeName();
         Widget label;
-        if (scope != null && scope.length() > 0){
-            if (name.startsWith(scope)) {
-                name = name.substring(scope.length());
-            }
-            label = new MyMemberLabelWidget(this, scope, name);
-        } else {
-            label = new MyLabelWidget(this, name);
+        if (name.startsWith(scope)) {
+            name = name.substring(scope.length());
         }
+        label = new MyMemberLabelWidget(this, scope, name, node.getIcon());
         if (node.isVurtual()) {
             label.setFont(defaultItalicFont);
         }
@@ -289,6 +287,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     @Override
     protected Widget attachEdgeWidget(Call edge) {
         ConnectionWidget connection = new ConnectionWidget(this);
+        if (edge.getCallee().kind() == Function.Kind.VARIABLE) {
+            float dash[] = { 10.0f };
+            connection.setStroke(new BasicStroke(1.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 0.0f));
+        }
         connection.setToolTipText(edge.getDescription());
         connection.setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
         connection.getActions().addAction(hoverAction);
@@ -338,31 +340,18 @@ public class CallGraphScene extends GraphScene<Function,Call> {
         }
     }
 
-    private static final class MyLabelWidget extends LabelWidget {
-        public MyLabelWidget (Scene scene, String label) {
-            super(scene);
-            setFont(scene.getFont().deriveFont(Font.BOLD));
-            setLabel(label);
-        }
-
-        @Override
-        protected void notifyStateChanged(ObjectState previousState, ObjectState state) {
-            if (previousState.isHovered() == state.isHovered()) {
-                return;
-            }
-            setForeground(getScene().getLookFeel().getLineColor(state));
-            repaint();
-        }
-    }
-
     private static final class MyMemberLabelWidget extends Widget  {
+        private static final int ICON_X_OFFSET = 3; // 3 px offset between icon and var name
+        
         private String scope;
         private String label;
+        private final Image icon;
 
-        public MyMemberLabelWidget (Scene scene, String scope, String label) {
+        public MyMemberLabelWidget (Scene scene, String scope, String label, Image icon) {
             super (scene);
             this.scope = scope;
             this.label = label;
+            this.icon = icon;
             setOpaque(false);
             revalidate();
             setCheckClipping(true);
@@ -379,12 +368,30 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
         @Override
         protected Rectangle calculateClientArea () {
+            return (scope != null && scope.length() > 0) ? calculateClientAreaWithScope() : calculateClientAreaWithoutScope();
+        }
+        
+        private Rectangle calculateClientAreaWithScope() {
             Graphics2D gr = getGraphics();
             Rectangle2D stringBounds1 = gr.getFontMetrics(getFont()).getStringBounds(scope, gr);
             Rectangle2D stringBounds2 = gr.getFontMetrics(getFont().deriveFont(Font.BOLD)).getStringBounds(label, gr);
-            Rectangle2D stringBounds = new Rectangle2D.Double(stringBounds1.getX(), stringBounds1.getY(),
-                    Math.max(stringBounds1.getWidth(), stringBounds2.getWidth()), stringBounds1.getHeight()+stringBounds2.getHeight());
+            int iconWidth = icon.getWidth(null) + ICON_X_OFFSET;
+            Rectangle2D stringBounds = new Rectangle2D.Double( stringBounds1.getX(),
+                                                               stringBounds1.getY(),
+                                                               Math.max(stringBounds1.getWidth(), stringBounds2.getWidth()) + iconWidth,
+                                                               stringBounds1.getHeight()+Math.max(icon.getHeight(null), stringBounds2.getHeight()) );
             return roundRectangle(stringBounds);
+        }
+        
+        private Rectangle calculateClientAreaWithoutScope() {
+            Graphics2D gr = getGraphics();
+            Rectangle2D stringBounds = gr.getFontMetrics(getFont().deriveFont(Font.BOLD)).getStringBounds(label, gr);
+            int iconWidth = icon.getWidth(null) + ICON_X_OFFSET;
+            Rectangle2D newStringBounds = new Rectangle2D.Double( stringBounds.getX(),
+                                                                  stringBounds.getY(),
+                                                                  stringBounds.getWidth() + iconWidth,
+                                                                  Math.max(icon.getHeight(null), stringBounds.getHeight()) );
+            return roundRectangle(newStringBounds);
         }
 
         private static Rectangle roundRectangle (Rectangle2D rectangle) {
@@ -397,9 +404,6 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     
         @Override
         protected void paintWidget () {
-            if (label == null) {
-                return;
-            }
             Graphics2D gr = getGraphics();
             gr.setFont(getFont());
 
@@ -411,10 +415,20 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             AffineTransform previousTransform = gr.getTransform ();
             gr.translate (x, y);
             gr.setColor(getForeground());
-            gr.drawString (scope, 0, 0);
-            gr.setFont(getFont().deriveFont(Font.BOLD));
-            gr.drawString (label, 0, fontMetrics.getHeight());
-            gr.setTransform(previousTransform);
+            if (scope != null && scope.length() > 0) { 
+                gr.drawString (scope, 0, 0); 
+                gr.setFont(getFont().deriveFont(Font.BOLD));
+                gr.drawString (label, icon.getWidth(null) + ICON_X_OFFSET, fontMetrics.getHeight());
+                gr.setTransform(previousTransform);
+                gr.drawImage(icon, 0, icon.getHeight(null) - fontMetrics.getHeight(), null);
+            } else {
+                int iconYOffset = gr.getFont().getSize() - icon.getHeight(null);
+                int textYOffset = icon.getHeight(null) - fontMetrics.getHeight();
+                gr.setFont(getFont().deriveFont(Font.BOLD));
+                gr.drawString (label, icon.getWidth(null) + ICON_X_OFFSET, textYOffset);
+                gr.setTransform(previousTransform);
+                gr.drawImage(icon, 0, -(iconYOffset + fontMetrics.getHeight()), null);
+            }
         }
     }
 

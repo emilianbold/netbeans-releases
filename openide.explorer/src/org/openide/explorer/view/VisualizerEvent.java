@@ -158,12 +158,18 @@ abstract class VisualizerEvent extends EventObject {
     }
     
     static final class Destroyed extends VisualizerEvent implements Runnable {
-        public Destroyed(VisualizerChildren ch, NodeEvent ev) {
+
+        private final VisualizerNode vn;
+
+        public Destroyed(VisualizerChildren ch, NodeEvent ev, VisualizerNode vn) {
             super(ch, null, ev, null);
+            this.vn = vn;
         }
-        
+
         @Override
         public void run() {
+            // Reset the node, to free the original from memory.
+            vn.node = Node.EMPTY;
             Enumeration<VisualizerNode> ch = getChildren().children(false);
             while (ch.hasMoreElements()) {
                 final VisualizerNode v = ch.nextElement();

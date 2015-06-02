@@ -63,6 +63,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJob;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobEvent;
 import org.eclipse.mylyn.tasks.core.sync.SubmitJobListener;
+import org.netbeans.modules.mylyn.util.CancelableProgressMonitor;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.NbTaskDataModel;
 import org.netbeans.modules.mylyn.util.internal.Accessor;
@@ -95,6 +96,10 @@ public final class CommandFactory {
     }
 
     public SynchronizeQueryCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, IRepositoryQuery iquery) {
+        return createSynchronizeQueriesCommand(taskRepository, iquery, new CancelableProgressMonitor());
+    }
+    
+    public SynchronizeQueryCommand createSynchronizeQueriesCommand (TaskRepository taskRepository, IRepositoryQuery iquery, IProgressMonitor monitor) {
         assert iquery instanceof RepositoryQuery;
         RepositoryQuery repositoryQuery;
         if (iquery instanceof RepositoryQuery) {
@@ -104,7 +109,7 @@ public final class CommandFactory {
         }
         AbstractRepositoryConnector repositoryConnector = taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind());
         return new SynchronizeQueryCommand(repositoryModel, repositoryConnector,
-                taskRepository, taskList, taskDataManager, repositoryQuery);
+                taskRepository, taskList, taskDataManager, repositoryQuery, monitor);
     }
     
     /**

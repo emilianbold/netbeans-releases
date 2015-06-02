@@ -108,4 +108,5 @@ public interface FileSystemProviderImplementation {
     boolean canSetAccessCheckType(ExecutionEnvironment execEnv);
     void setAccessCheckType(ExecutionEnvironment execEnv, FileSystemProvider.AccessCheckType accessCheckType);
     FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv);
+    FileSystemProvider.Stat getStat(FileObject fo);
 }

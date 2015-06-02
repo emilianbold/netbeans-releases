@@ -210,11 +210,7 @@ public class GdbVersionPeculiarity {
     }
     
     public String stackListLocalsCommand() {
-        if (lldb) {
-            return "-stack-list-locals 2"; // NOI18N
-        } else {
-            return "-stack-list-locals --simple-values"; // NOI18N
-        }
+        return "-stack-list-locals --no-values"; // NOI18N
     }
 
     public boolean isSupported() {

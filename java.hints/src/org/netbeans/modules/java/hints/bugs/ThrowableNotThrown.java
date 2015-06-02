@@ -285,6 +285,12 @@ public class ThrowableNotThrown {
                     case RETURN:
                         return true;
                         
+                    case LAMBDA_EXPRESSION:
+                        // the Throwable is used as a part of Lambda expression;
+                        // ensure that the lambda is reasonably used:
+                        process = true;
+                        break;
+                        
                     case VARIABLE:  {
                         VariableTree var = (VariableTree)leaf;
                         Element el = info.getTrees().getElement(new TreePath(excPath, var));

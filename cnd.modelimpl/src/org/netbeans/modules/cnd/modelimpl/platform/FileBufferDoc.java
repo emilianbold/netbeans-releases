@@ -63,6 +63,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
+import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.openide.filesystems.FileObject;
 
@@ -112,6 +113,7 @@ public class FileBufferDoc extends AbstractFileBuffer {
             }
             // TODO: think over when do invalidate? before informing listeners or after
             APTDriver.invalidateAPT(this);
+            ClankDriver.invalidate(this);
             APTFileCacheManager.getInstance(getFileSystem()).invalidate(getAbsolutePath());
         }
     }

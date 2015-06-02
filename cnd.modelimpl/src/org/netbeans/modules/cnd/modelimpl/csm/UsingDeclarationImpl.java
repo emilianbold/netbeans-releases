@@ -225,7 +225,12 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
                 CsmObject result = null;
                 Resolver aResolver = ResolverFactory.createResolver(this);
                 try {
+                    // TODO: this is not correct - qualified name doesn't contain template parameters.
+                    // We need to store them and use CsmExpressionResolver to resolve qualified name
                     result = aResolver.resolve(partial, Resolver.CLASSIFIER);
+                    if (CsmKindUtilities.isClassifier(result)) {
+                        result = aResolver.getOriginalClassifier((CsmClassifier) result);
+                    }
                 } finally {
                     ResolverFactory.releaseResolver(aResolver);
                 }

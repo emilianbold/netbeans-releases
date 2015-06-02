@@ -204,7 +204,10 @@ static void dup_fd(int pty_fd) {
     sigaction(SIGINT, &act, NULL);
 
 
-#if defined(TIOCSCTTY) && !defined(__sun) && !defined(__APPLE__)
+#if defined(TIOCSCTTY) && !defined(__CYGWIN__) && !defined(__sun) && !defined(__APPLE__)
+    // If this terminal is already the controlling 
+    // terminal of a different session group then the 
+    // ioctl fails with EPERM, unless the caller is root
     if (ioctl(pty_fd, TIOCSCTTY, 0) == -1) {
         printf("ERROR ioctl(TIOCSCTTY) failed on \"pty %d\" -- %s\n",
                 pty_fd, strerror(errno));

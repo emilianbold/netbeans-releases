@@ -84,9 +84,9 @@ public class DirectoryStorage {
     
     private final Map<String, DirEntry> entries;
     private final File cacheFile;
-    private static final int VERSION = 6;
+    private static final int VERSION = 7;
     /* Incompatible version to discard */
-    private static final int ODD_VERSION = 5;
+    private static final int ODD_VERSION = 6;
 
     public DirectoryStorage(File file, Collection<DirEntry> newEntries) {
         this.cacheFile = file;

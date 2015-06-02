@@ -70,4 +70,8 @@ public class FileModelIncludeBodyTest extends TraceModelTestBase {
     public void testIncluder() throws Exception {
         performTest("includer_file.cpp"); // NOI18N
     }
+    
+    public void testBug252660() throws Exception {
+        performTest("bug252660.cpp"); // NOI18N
+    }
 }

@@ -354,6 +354,11 @@ public class HtmlLexerTest extends NbTestCase {
 //        System.out.println(b);
     }
     
+    public void testBoldAmp() {
+        checkTokens("&that", "&that|TEXT");
+        checkTokens("&that;", "&that;|CHARACTER");
+    }
+    
      public void testLexingOfScriptTagWithHtmlContent() {
         checkTokens("<script type='text/html'><div></div></script>",
                 "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT", 

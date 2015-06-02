@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Egor Ushakov
  */
+@Deprecated
 public final class Stat {
 
     private static final Logger LOG = org.netbeans.modules.nativeexecution.support.Logger.getInstance();

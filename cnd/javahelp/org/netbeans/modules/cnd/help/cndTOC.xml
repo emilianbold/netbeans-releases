@@ -85,6 +85,7 @@
 				<tocitem text="Using the Include Hierarchy Window" target="IncludeView" />
 				<tocitem text="Using the Macro Expansion Window" target="MacroExpansionWindow" />
 				<tocitem text="Using the C/C++ Documentation Window" target="CppDocumentation" />
+				<tocitem text="Navigating to the Build Log" target="NavigateToBuildLog" />
 			</tocitem>
 		</tocitem>
 		<tocitem text="Using Remote Development for C/C++/Fortran Projects">
@@ -95,7 +96,7 @@
 			<tocitem text="Sharing Files With Remote Build Hosts" target="RemoteDevelopmentFileSharing" />
 			<tocitem text="Setting Up C/C++ Projects for Remote Development" target="RemoteDevelopmentProjects" />
 			<tocitem text="Opening a Terminal Window for a Build Host" target="RemoteDevelopmentTerminal" />
-                        <tocitem text="Pinning a Terminal Window" target="SavingTerminalSettings" />
+			<tocitem text="Pinning a Terminal Window" target="SavingTerminalSettings" />
 			<tocitem text="Managing Build Hosts" target="RemoteDevelopmentBrowsing" />
 			<tocitem text="Working with Remote Build Hosts Using the Toolbar" target="RemoteDevelopmentToolbar" />
 			<tocitem text="Using Full Remote Mode with Version Control" target="RemoteVCS" />

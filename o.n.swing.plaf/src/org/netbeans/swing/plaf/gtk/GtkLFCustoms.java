@@ -54,6 +54,8 @@ import javax.swing.JScrollPane;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.FontUIResource;
+import javax.swing.plaf.synth.ColorType;
+import javax.swing.plaf.synth.Region;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.netbeans.swing.plaf.util.UIUtils;
 
@@ -62,9 +64,9 @@ import org.netbeans.swing.plaf.util.UIUtils;
  * @author  Tim Boudreau
  */
 public class GtkLFCustoms extends LFCustoms {
-    private Object light = new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.WHITE, Color.GRAY);
-    private static Object control = new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.MID, Color.GRAY);
-    private Object controlFont = new ThemeValue (ThemeValue.REGION_TAB, new FontUIResource ("Dialog", Font.PLAIN, 11)); //NOI18N
+    private Object light = new ThemeValue (Region.PANEL, ThemeValue.WHITE, Color.GRAY);
+    private static Object control = new ThemeValue (Region.PANEL, ThemeValue.MID, Color.GRAY);
+    private Object controlFont = new ThemeValue (Region.TABBED_PANE_TAB, new FontUIResource ("Dialog", Font.PLAIN, 11)); //NOI18N
     
 
     //Background colors for winsys tabs
@@ -75,12 +77,12 @@ public class GtkLFCustoms extends LFCustoms {
         //Avoid using ThemeValue if it can't work - mainly due to testing issues when trying to run GTK UI customizations
         //on the Mac, which doesn't have a GTKLookAndFeel
 
-        Object selBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.DARK, Color.CYAN) : (Object) Color.CYAN;
-        Object selFg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.TEXT_FOREGROUND, Color.BLACK) : (Object) Color.BLACK;
+        Object selBg = ThemeValue.functioning() ? new ThemeValue (Region.BUTTON, ThemeValue.DARK, Color.CYAN) : (Object) Color.CYAN;
+        Object selFg = ThemeValue.functioning() ? new ThemeValue (Region.BUTTON, ColorType.TEXT_FOREGROUND, Color.BLACK) : (Object) Color.BLACK;
         
-        Object bg = ThemeValue.functioning() ? ThemeValue.TEXT_BACKGROUND : Color.WHITE;
+        Object bg = ThemeValue.functioning() ? ColorType.TEXT_BACKGROUND : Color.WHITE;
         Object fb = new Color (144, 144, 255);
-        Object tabBg = ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_INTFRAME, ThemeValue.DARK, fb) : (Object) fb;
+        Object tabBg = ThemeValue.functioning() ? new ThemeValue (Region.INTERNAL_FRAME_TITLE_PANE, ThemeValue.DARK, fb) : (Object) fb;
         
         if (!ThemeValue.functioning()) {
             Integer i = (Integer) UIManager.get("customFontSize"); //NOI18N
@@ -136,7 +138,7 @@ public class GtkLFCustoms extends LFCustoms {
             SLIDING_TAB_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.SlidingTabDisplayerButtonUI", //NOI18N
             SLIDING_BUTTON_UI, "org.netbeans.swing.tabcontrol.plaf.GtkSlidingButtonUI", //NOI18N
 
-            DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (ThemeValue.REGION_BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
+            DESKTOP_BACKGROUND, ThemeValue.functioning() ? new ThemeValue (Region.BUTTON, ThemeValue.LIGHT, Color.GRAY) : (Object) Color.GRAY,
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createEmptyBorder(),
 
             //TOOLBAR_UI, "org.netbeans.swing.plaf.gtk.GtkToolbarUI", //NOI18N
@@ -162,12 +164,12 @@ public class GtkLFCustoms extends LFCustoms {
                 //UIManager keys into 1.5 (not there as of b47), these can 
                 //probably be deleted, resulting in a performance improvement:
                 "control", control,
-                "controlHighlight", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.LIGHT, Color.LIGHT_GRAY), //NOI18N
-                "controlShadow", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.DARK, Color.DARK_GRAY), //NOI18N
-                "controlDkShadow", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.BLACK, Color.BLACK), //NOI18N
-                "controlLtHighlight", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.WHITE, Color.WHITE), //NOI18N
-                "textText", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_FOREGROUND, Color.BLACK), //NOI18N
-                "text", new ThemeValue (ThemeValue.REGION_PANEL, ThemeValue.TEXT_BACKGROUND, Color.GRAY), //NOI18N
+                "controlHighlight", new ThemeValue (Region.PANEL, ThemeValue.LIGHT, Color.LIGHT_GRAY), //NOI18N
+                "controlShadow", new ThemeValue (Region.PANEL, ThemeValue.DARK, Color.DARK_GRAY), //NOI18N
+                "controlDkShadow", new ThemeValue (Region.PANEL, ThemeValue.BLACK, Color.BLACK), //NOI18N
+                "controlLtHighlight", new ThemeValue (Region.PANEL, ThemeValue.WHITE, Color.WHITE), //NOI18N
+                "textText", new ThemeValue (Region.PANEL, ColorType.TEXT_FOREGROUND, Color.BLACK), //NOI18N
+                "text", new ThemeValue (Region.PANEL, ColorType.TEXT_BACKGROUND, Color.GRAY), //NOI18N
                 
                 "tab_unsel_fill", control, //NOI18N
                  

@@ -509,4 +509,13 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     public FileSystemProvider.AccessCheckType getAccessCheckType(ExecutionEnvironment execEnv) {
         return RemoteFileSystemTransport.getAccessCheckType(execEnv);
     }
+
+    @Override
+    public FileSystemProvider.Stat getStat(FileObject fo) {
+        if (fo instanceof RemoteFileObject) {
+            RemoteFileObjectBase rfo = ((RemoteFileObject) fo).getImplementor();
+            return rfo.getStat();
+        }
+        return FileSystemProvider.Stat.createInvalid();
+    }
 }

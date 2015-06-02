@@ -374,6 +374,17 @@ public class CndFileSystemProviderImpl extends CndFileSystemProvider {
     }
 
     @Override
+    protected boolean isRemoteImpl(FileSystem fs) {
+        return FileSystemProvider.getExecutionEnvironment(fs).isRemote();
+    }
+
+    @Override
+    protected CndStatInfo getStatInfoImpl(FileObject fo) {
+       FileSystemProvider.Stat stat = FileSystemProvider.getStat(fo);
+       return stat.isValid() ? CndStatInfo.create(stat.device, stat.inode) : CndStatInfo.createInvalid();
+    }
+
+    @Override
     protected InputStream getInputStreamImpl(FileObject fo, int maxSize) throws IOException {
         return FileSystemProvider.getInputStream(fo, maxSize);
     }

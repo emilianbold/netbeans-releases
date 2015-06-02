@@ -124,19 +124,6 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         return null;
     }
     
-    @Override
-    protected ClasspathInfo getClasspathInfo(AbstractRefactoring refactoring) {
-        ClasspathInfo cpInfo;
-        Collection<? extends TreePathHandle> handles = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        if (!handles.isEmpty()) {
-            cpInfo = RefactoringUtils.getClasspathInfoFor(handles.toArray(new TreePathHandle[handles.size()]));
-        } else {
-            cpInfo = JavaRefactoringUtils.getClasspathInfoFor((FileObject)null);
-        }
-        refactoring.getContext().add(cpInfo);
-        return cpInfo;
-    }
-    
     private Set<FileObject> getRelevantFiles(final TreePathHandle tph) {
         Set<FileObject> fileSet;
         ClasspathInfo cp = getClasspathInfo(refactoring);

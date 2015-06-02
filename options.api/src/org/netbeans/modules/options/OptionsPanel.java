@@ -130,6 +130,7 @@ public class OptionsPanel extends JPanel {
     private JPanel quickSearch;
     private Color origForeground;
     private String hintText;
+    private boolean hintVisible = false;
     private JTextComponent searchTC;
     private String text2search = "";
     private boolean clearSearch = false;
@@ -455,6 +456,9 @@ public class OptionsPanel extends JPanel {
     }
     
     private void showHint (boolean showHint) {
+        if (hintVisible == showHint) {
+            return ;
+        }
         // remember orig color on first invocation
         if (origForeground == null) {
             origForeground = searchTC.getForeground();
@@ -466,6 +470,7 @@ public class OptionsPanel extends JPanel {
             searchTC.setForeground(origForeground);
             searchTC.setText(text2search);
         }
+        hintVisible = showHint;
     }
         
     private void computeOptionsWords() {
@@ -818,7 +823,17 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchCanceled() {
             clearAllinQS();
-            showHint(true);
+            if (searchTC.hasFocus()) {
+                showHint(false);
+            } else {
+                // Show the hint in the next EQ round to prevent from mutation in notification
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        showHint(true);
+                    }
+                });
+            }
         }
     }
 
