@@ -1284,7 +1284,8 @@ public final class Dbx extends CommonDbx {
     }
 
     @Override
-    protected final void proc_about_to_fork(int tid, int htid) {
+    protected final void proc_about_to_fork(int tid, int htid, String str) {
+        // non-null str means a process is about to spawn
 	debugger.stateSetRunning(false);
 	debugger.stateChanged();
 
