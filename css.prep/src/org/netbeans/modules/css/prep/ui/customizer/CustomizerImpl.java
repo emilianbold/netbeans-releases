@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.ui.customizer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -111,7 +112,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
     public synchronized OptionsPanel getOptionsPanel() {
         if (optionsPanel == null) {
             CssPreprocessorPreferences preferences = type.getPreferences();
-            optionsPanel = new OptionsPanel(type, preferences.isEnabled(project), preferences.getMappings(project),
+            optionsPanel = new OptionsPanel(type, project, preferences.isEnabled(project), preferences.getMappings(project),
                     preferences.getCompilerOptions(project));
         }
         assert optionsPanel != null;
@@ -157,7 +158,7 @@ public final class CustomizerImpl implements CssPreprocessorImplementation.Custo
         }
         // mappings
         List<Pair<String, String>> originalMappings = preferences.getMappings(project);
-        List<Pair<String, String>> mappings = getOptionsPanel().getMappings();
+        List<Pair<String, String>> mappings = new ArrayList<>(getOptionsPanel().getMappings());
         preferences.setMappings(project, mappings);
         // #230945
         mappings.removeAll(originalMappings);

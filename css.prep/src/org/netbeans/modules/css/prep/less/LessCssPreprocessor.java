@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssPreprocessorImplementation.class, path = CssPreprocessors.PREPROCESSORS_PATH, position = 200)
 public final class LessCssPreprocessor extends BaseCssPreprocessor {
 
-    private static final String IDENTIFIER = "LESS"; // NOI18N
+    public static final String IDENTIFIER = "LESS"; // NOI18N
 
 
     @Override
