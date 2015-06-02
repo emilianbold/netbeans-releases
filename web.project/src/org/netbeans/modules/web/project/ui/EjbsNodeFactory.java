@@ -188,8 +188,9 @@ public class EjbsNodeFactory implements NodeFactory {
                     } catch (ExecutionException ee) {
                         Exceptions.printStackTrace(ee);
                     }
-                            
-                    if (isEmpty^isViewEmpty){
+
+                    // #247325
+                    if (isEmpty != null && isEmpty ^ isViewEmpty){
                         isViewEmpty = isEmpty;
                         fireChange();
                     }
