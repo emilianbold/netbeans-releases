@@ -56,6 +56,7 @@ import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
@@ -2019,9 +2020,23 @@ public final class FileUtil extends Object {
      * @since org.openide.filesystems 7.8
      */
     public static File archiveOrDirForURL(URL entry) {
-        String u = entry.toString();
-        if (u.startsWith("jar:file:") && u.endsWith("!/")) { // NOI18N
-            return BaseUtilities.toFile(URI.create(u.substring(4, u.length() - 2)));
+        final String u = entry.toString();
+        if (isArchiveRoot(entry)) {
+            entry = getArchiveFile(entry);
+            try {
+                return u.endsWith("!/") && entry != null ?  //NOI18N
+                    BaseUtilities.toFile(entry.toURI()):
+                    null;
+            } catch (URISyntaxException e) {
+                LOG.log(
+                        Level.WARNING,
+                        "Invalid URI: {0} ({1})",   //NOI18N
+                        new Object[]{
+                            entry,
+                            e.getMessage()
+                        });
+                return null;
+            }
         } else if (u.startsWith("file:")) { // NOI18N
             return BaseUtilities.toFile(URI.create(u));
         } else {
