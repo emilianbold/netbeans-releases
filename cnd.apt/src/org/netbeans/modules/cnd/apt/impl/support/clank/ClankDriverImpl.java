@@ -138,13 +138,17 @@ public class ClankDriverImpl {
             settings.IncludeInfoCallbacks = fileTokensCallback;
             ClankCompilationDataBase db = APTToClankCompilationDB.convertPPHandler(ppHandler, path);
             Map<StringRef, MemoryBuffer> remappedBuffers = getRemappedBuffers();
+            MemoryBuffer fileContent;
+            StringRef file = new StringRef(path);
             if (fortranFlavor) {
-                StringRef file = new StringRef(path);
                 char[] chars = fixFortranTokens(buffer);
-                MemoryBuffer fileContent = MemoryBufferImpl.create(chars);
-                remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
-                remappedBuffers.put(file, fileContent);
+                fileContent = MemoryBufferImpl.create(chars);
+            } else {
+                char[] chars = buffer.getCharBuffer();
+                fileContent = MemoryBufferImpl.create(chars);
             }
+            remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
+            remappedBuffers.put(file, fileContent);
             ClankPreprocessorServices.preprocess(Collections.singleton(db), settings, remappedBuffers);
             return true;
         } catch (IOException ex) {
@@ -302,22 +306,24 @@ public class ClankDriverImpl {
             ByteBuffer bb = getUTF8Charset().encode(cb);
             // we need to add a trailing zero
             byte[] array;
+            int nullTermIndex = bb.limit();
             if (bb.limit() < bb.capacity()) {
-                int pos = bb.limit();
+                // expand existing to keep \0
                 bb.limit(bb.limit() + 1);
-                bb.position(pos);
-                bb.put((byte) 0);
+                bb.position(nullTermIndex);
+                bb.put((byte) '\0');
                 array = bb.array();
             } else {
-                array = new byte[bb.limit() + 1];
-                System.arraycopy(bb.array(), bb.position(), array, 0, bb.limit());
-                array[bb.limit()] = 0;
+                // have to create new to keep \0
+                array = new byte[nullTermIndex + 1];
+                System.arraycopy(bb.array(), 0, array, 0, nullTermIndex);
+                array[nullTermIndex] = (byte) '\0';
             }
             // NB: the above adds a treailing zero. If you don't want this, use Arrays.copyOfRange instead
             //byte[] res = copyOfRange(bb.array(), bb.position(), bb.limit());
             //return res;    
             char$ptr start = NativePointer.create_char$ptr(array);
-            char$ptr end = start.$add(bb.limit());
+            char$ptr end = start.$add(nullTermIndex);
             return new MemoryBufferImpl(start, end, true);
         }
 
