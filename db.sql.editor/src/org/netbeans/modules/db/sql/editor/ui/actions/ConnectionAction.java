@@ -70,6 +70,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
@@ -116,6 +118,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         @Override
         public Component getToolbarPresenter() {
             toolbarPresenter = new ToolbarPresenter(actionContext);
+            toolbarPresenter.setEnabled(this.isEnabled());
             toolbarPresenter.setSQLExecution(getSQLExecution());
             return toolbarPresenter;
         }
@@ -144,38 +147,27 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         }
     }
 
-    private static final class ToolbarPresenter extends JPanel {
+    /**
+     * Toolbar presenter for the connectionAction - displays the list of connections
+     * for the user to choose. Until the connection list is retrieved an
+     * informational message is presented to the user and the combobox is
+     * not editable.
+     */
+    private static final class ToolbarPresenter extends JPanel implements ListDataListener {
 
         private final Lookup actionContext;
+        private final DatabaseConnectionModel model = new DatabaseConnectionModel();
+        private boolean externalEnabled = true;
         private JComboBox combo;
         private JLabel comboLabel;
-        private DatabaseConnectionModel model;
-        private boolean waiting;
-        private SQLExecution waitingSQLExecution = null;
-        private static final RequestProcessor RP = new RequestProcessor(ToolbarPresenter.class);
+        private ListDataListener listDataListener;
 
         public ToolbarPresenter(final Lookup actionContext) {
+            assert SwingUtilities.isEventDispatchThread();
             initComponents();
-            waiting = true;
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    model = new DatabaseConnectionModel();
-                    if (waitingSQLExecution != null) {
-                        model.setSQLExecution(waitingSQLExecution);
-                        waitingSQLExecution = null;
-                    }
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            waiting = false;
-                            combo.setModel(model);
-                            setEnabled(true);
-                        }
-                    });
-                }
-            });
             this.actionContext = actionContext;
+            this.listDataListener = WeakListeners.create(ListDataListener.class, this, model);
+            model.addListDataListener(listDataListener);
         }
 
         @Override
@@ -186,11 +178,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
         }
 
         public void setSQLExecution(SQLExecution sqlExecution) {
-            if (model != null) {
-                model.setSQLExecution(sqlExecution);
-            } else {
-                waitingSQLExecution = sqlExecution;
-            }
+            model.setSQLExecution(sqlExecution);
         }
 
         private void initComponents() {
@@ -232,7 +220,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             combo.setOpaque(false);
             combo.setModel(new DefaultComboBoxModel(
                     new String[] { NbBundle.getMessage(ToolbarPresenter.class, "ConnectionAction.ToolbarPresenter.LoadingConnections") }));
-            setEnabled(false);
+
             combo.setRenderer(new DatabaseConnectionRenderer());
             String accessibleName = NbBundle.getMessage(ConnectionAction.class, "LBL_DatabaseConnection");
             combo.getAccessibleContext().setAccessibleName(accessibleName);
@@ -250,24 +238,90 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
         @Override
         public void setEnabled(boolean enabled) {
-            combo.setEnabled(enabled && ! waiting);
-            super.setEnabled(enabled && ! waiting);
+            externalEnabled = enabled;
+            updateState();
+        }
+
+        private void updateState() {
+            combo.setEnabled(externalEnabled && model.isInitialized());
+        }
+        
+        private void initialized() {
+            if (model.isInitialized()) {
+                model.removeListDataListener(listDataListener);
+                listDataListener = null;
+                combo.setModel(model);
+                updateState();
+            }
+        }
+        
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            initialized();
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+            initialized();
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            initialized();
         }
     }
 
+    /**
+     * DatabaseConnectionModel monitors the netbeans connection list and an
+     * SQLExecution. The list model reflects the connection of the SQLExecution
+     * as the selected value and dynamicly updates on connection and connection
+     * list changes.
+     * 
+     * The initialized flag is set as soon as the first connection list retrieval
+     * is done.
+     */
     private static final class DatabaseConnectionModel extends AbstractListModel implements ComboBoxModel, ConnectionListener, PropertyChangeListener {
-
-        private ConnectionListener listener;
-        private List<DatabaseConnection> connectionList; // must be ArrayList
+        private static final RequestProcessor RP = new RequestProcessor(ToolbarPresenter.class);
+        private static final Comparator dbconComparator = new Comparator<DatabaseConnection>() {
+            @Override
+            public int compare(DatabaseConnection o1, DatabaseConnection o2) {
+                return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+            }
+        };
+        private final ConnectionListener listener;
+        private List<DatabaseConnection> connectionList = new ArrayList<>(); // must be ArrayList
         private SQLExecution sqlExecution;
+        private boolean initialized = false;
+        
+        private final Runnable connectionUpdate = new Runnable() {
+            @Override
+            public void run() {
+                final ArrayList<DatabaseConnection> newList = new ArrayList<>(
+                        Arrays.asList(ConnectionManager.getDefault().getConnections()));
+                Collections.sort(newList, dbconComparator);
+
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectionList = newList;
+
+                        DatabaseConnection selectedItem = (DatabaseConnection) getSelectedItem();
+                        if (selectedItem != null && !connectionList.contains(selectedItem)) {
+                            setSelectedItem(null);
+                        }
+
+                        initialized = true;
+                        fireContentsChanged(this, 0, connectionList.size());
+                    }
+                });
+            }
+        };
 
         @SuppressWarnings("LeakingThisInConstructor")
         public DatabaseConnectionModel() {
-            listener = WeakListeners.create (ConnectionListener.class, this, ConnectionManager.getDefault ());
+            listener = WeakListeners.create (ConnectionListener.class, this, ConnectionManager.getDefault());
             ConnectionManager.getDefault().addConnectionListener(listener);
-            connectionList = new ArrayList<DatabaseConnection>();
-            connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
-            sortConnections();
+            RP.post(connectionUpdate);
         }
 
         @Override
@@ -300,7 +354,7 @@ public class ConnectionAction extends SQLExecutionBaseAction {
             if (this.sqlExecution != null) {
                 this.sqlExecution.addPropertyChangeListener(this);
             }
-            fireContentsChanged(this, 0, 0); // because the selected item might have changed
+            fireContentsChanged(this, 0, connectionList.size()); // because the selected item might have changed
         }
 
         @Override
@@ -310,37 +364,19 @@ public class ConnectionAction extends SQLExecutionBaseAction {
                 Mutex.EVENT.readAccess(new Runnable() {
                     @Override
                     public void run() {
-                        fireContentsChanged(this, 0, 0); // because the selected item might have changed
+                        fireContentsChanged(this, 0, connectionList.size()); // because the selected item might have changed
                     }
                 });
             }
         }
 
-        @Override
-        public void connectionsChanged() {
-            Mutex.EVENT.readAccess(new Runnable() {
-                @Override
-                public void run() {
-                    connectionList.clear();
-                    connectionList.addAll(Arrays.asList(ConnectionManager.getDefault().getConnections()));
-                    sortConnections();
-
-                    DatabaseConnection selectedItem = (DatabaseConnection)getSelectedItem();
-                    if (selectedItem != null && !connectionList.contains(selectedItem)) {
-                        setSelectedItem(null);
-                    }
-                    fireContentsChanged(this, 0, connectionList.size());
-                }
-            });
+        public boolean isInitialized() {
+            return initialized;
         }
 
-        void sortConnections() {
-            Collections.sort(connectionList, new Comparator<DatabaseConnection>() {
-                @Override
-                public int compare(DatabaseConnection o1, DatabaseConnection o2) {
-                    return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
-                }
-            });
+        @Override
+        public void connectionsChanged() {
+            RP.post(connectionUpdate);
         }
     }
 
@@ -348,14 +384,15 @@ public class ConnectionAction extends SQLExecutionBaseAction {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Object displayName = null;
-            String tooltipText = null;
+            Object displayName;
+            String tooltipText;
 
             if (value instanceof DatabaseConnection) {
                 DatabaseConnection dbconn = (DatabaseConnection)value;
                 tooltipText = dbconn.getDisplayName();
                 displayName = tooltipText;
             } else {
+                tooltipText = null;
                 displayName = value;
             }
             JLabel component = (JLabel)super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
