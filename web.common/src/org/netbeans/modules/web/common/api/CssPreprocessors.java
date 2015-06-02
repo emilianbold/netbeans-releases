@@ -151,6 +151,7 @@ public final class CssPreprocessors {
      * Category name is {@link #CUSTOMIZER_IDENT} ({@value #CUSTOMIZER_IDENT}).
      * <p>
      * Instance of this class can be registered for any project in its project customizer SFS folder.
+     * @return project customizer for CSS preprocessors
      * @see ProjectCustomizer.CompositeCategoryProvider.Registration
      * @since 1.40
      */
@@ -164,7 +165,7 @@ public final class CssPreprocessors {
      * Options category is {@link #OPTIONS_CATEGORY} ({@value #OPTIONS_CATEGORY}) and
      * subcategory is {@link #OPTIONS_SUBCATEGORY} ({@value #OPTIONS_SUBCATEGORY}). The whole
      * path is {@link #OPTIONS_PATH} ({@value #OPTIONS_PATH}).
-     * @return
+     * @return IDE Options for CSS preprocessors
      * @since 1.76
      */
     public OptionsPanelController createOptions() {
@@ -173,7 +174,7 @@ public final class CssPreprocessors {
 
     /**
      * Create provider of CSS preprocessors problems.
-     * @param support support for creating and solving problems
+     * @param project project to be created provider for
      * @return provider of CSS preprocessors problems
      * @since 1.51
      */
@@ -222,7 +223,7 @@ public final class CssPreprocessors {
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid file (or folder) to be processed
      * @param originalName original file name
-     * @param originalName original file extension
+     * @param originalExtension original file extension
      * @see #process(Project, FileObject)
      * @since 1.52
      */
@@ -257,7 +258,7 @@ public final class CssPreprocessors {
      * @param project project where the file belongs, can be {@code null} for file without a project
      * @param fileObject valid file (or folder) to be processed
      * @param originalName original file name
-     * @param originalName original file extension
+     * @param originalExtension original file extension
      * @see #process(CssPreprocessor, Project, FileObject)
      * @since 1.52
      */
