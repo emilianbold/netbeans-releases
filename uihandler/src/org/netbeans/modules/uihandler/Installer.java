@@ -2391,6 +2391,8 @@ public class Installer extends ModuleInstall implements Runnable {
                             browser.addHyperlinkListener(SubmitInteractive.this);
                         } catch (NullPointerException x) {
                             LOG.log(Level.WARNING, "Java bug #7050995?", x);
+                        } catch (ArrayIndexOutOfBoundsException x) {
+                            LOG.log(Level.WARNING, "Java bug ?", x);
                         }
                         JScrollPane p = new JScrollPane();
                         p.setViewportView(browser);
