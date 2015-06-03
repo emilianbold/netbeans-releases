@@ -1052,7 +1052,7 @@ public class MakeNBM extends Task {
         while (it.hasNext()) {
             String name = (String) it.next();
             if (name.matches("OpenIDE-Module(|-(Name|(Specification|Implementation)-Version|(Module|Package|Java|IDE)-Dependencies|" +
-                    "(Short|Long)-Description|Display-Category|Provides|Requires|Recommends|Needs))|AutoUpdate-(Show-In-Client|Essential-Module)")) {
+                    "(Short|Long)-Description|Display-Category|Provides|Requires|Recommends|Needs|Fragment-Host))|AutoUpdate-(Show-In-Client|Essential-Module)")) {
                 el.setAttribute(name, attr.getValue(name));
             }
         }

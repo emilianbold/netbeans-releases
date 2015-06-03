@@ -164,6 +164,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
     private static final String LICENSE_ATTR_URL = "url"; // NOI18N
     
     private static final String MANIFEST_ATTR_SPECIFICATION_VERSION = "OpenIDE-Module-Specification-Version"; // NOI18N
+    private static final String MANIFEST_ATTR_FRAGMENT_HOST = "OpenIDE-Module-Fragment-Host"; // NOI18N
     
     private static final String TIME_STAMP_FORMAT = "ss/mm/hh/dd/MM/yyyy"; // NOI18N
     
@@ -534,6 +535,8 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         private URI base;
         private String catalogDate;
         
+        private boolean forceRestart = false;
+        
         private static ModuleDescriptor md = null;
         
         private ModuleDescriptor () {}
@@ -567,7 +570,7 @@ public class AutoupdateCatalogParser extends DefaultHandler {
             String autoload = module.getValue (MODULE_ATTR_AUTOLOAD);
             String preferred = module.getValue(MODULE_ATTR_IS_PREFERRED_UPDATE);
                         
-            needsRestart = needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
+            needsRestart = forceRestart || needsrestart == null || needsrestart.trim ().length () == 0 ? null : Boolean.valueOf (needsrestart);
             isGlobal = global == null || global.trim ().length () == 0 ? null : Boolean.valueOf (global);
             isEager = Boolean.parseBoolean (eager);
             isAutoload = Boolean.parseBoolean (autoload);
@@ -583,6 +586,11 @@ public class AutoupdateCatalogParser extends DefaultHandler {
         
         public void appendManifest (Attributes manifest) {
             specVersion = manifest.getValue (MANIFEST_ATTR_SPECIFICATION_VERSION);
+            String fragmentHost = manifest.getValue(MANIFEST_ATTR_FRAGMENT_HOST);
+            forceRestart = fragmentHost != null && !fragmentHost.isEmpty();
+            if (forceRestart) {
+                needsRestart = true;
+            }
             mf = getManifest (manifest);
             id = moduleCodeName + '_' + specVersion; // NOI18N
         }
