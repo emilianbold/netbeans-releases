@@ -213,7 +213,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 confType = MakeConfiguration.TYPE_CUSTOM;
                 customizerId = atts.getValue(CUSTOMIZERID_ATTR);
             }
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType, customizerId);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), confType, customizerId, "true".equals(atts.getValue(PLATFORM_SPECIFIC_ATTR))); // NOI18N
 
             // switch out old decoders
             for (int dx = 0; dx < decoders.size(); dx++) {
@@ -232,9 +232,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 }
             }
         } else if (element.equals(NEO_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_APPLICATION, null);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_APPLICATION, null, "true".equals(atts.getValue(PLATFORM_SPECIFIC_ATTR))); // NOI18N
         } else if (element.equals(EXT_CONF_ELEMENT)) {
-            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE, null);
+            currentConf = createNewConfiguration(projectDirectory, atts.getValue(NAME_ATTR), MakeConfiguration.TYPE_MAKEFILE, null, "true".equals(atts.getValue(PLATFORM_SPECIFIC_ATTR))); // NOI18N
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
             currentFolder = new Folder(projectDescriptor, projectDescriptor.getLogicalFolders(), "ExternalFiles", "Important Files", false, Folder.Kind.IMPORTANT_FILES_FOLDER); // NOI18N
             projectDescriptor.setExternalFileItems(currentFolder);
@@ -1093,7 +1093,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         return path;
     }
 
-    private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType, String customizerId) {
+    private MakeConfiguration createNewConfiguration(FileObject projectDirectory, String value, int confType, String customizerId, boolean platformSpecific) {
         String host;
         // here we need to handle tags added between version.
         // becase such tags will not be handled in "endElement" callbacks
@@ -1108,7 +1108,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);
         }
-        MakeConfiguration makeConfiguration = MakeConfiguration.createConfiguration(fsPath, getString(value), confType, customizerId, host);
+        MakeConfiguration makeConfiguration = MakeConfiguration.createConfiguration(fsPath, getString(value), confType, customizerId, host, platformSpecific);
         return makeConfiguration;
     }
 
@@ -1129,6 +1129,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             xes.element(FIXED_SYNC_FACTORY_ELEMENT, fixedSyncFactory.getID());
         }
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
+        if (makeConfiguration.getPlatformSpecific().getValue()) {
+            xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getDevelopmentHost().getBuildPlatform()); // NOI18N
+        }
         if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
         }
