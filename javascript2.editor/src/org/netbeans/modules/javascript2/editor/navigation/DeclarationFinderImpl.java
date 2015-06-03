@@ -142,6 +142,44 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (location != null) {
                         return location;
                     }
+                    // get FQN of the object that we need resolved
+                    String fqn = object.getFullyQualifiedName();
+                    // we need all parts of FQN
+                    String[] fqnParts = fqn.split("\\.");
+                    // parent should contain the top object
+                    parent = object;
+                    while (parent != null  && !fqnParts[0].equals(parent.getFullyQualifiedName())) {
+                        parent  = parent.getParent();
+                    }
+                    int partIndex = 1;
+                    // find the last object that is defined in the file / model. The rest will be done through the index. 
+                    while (partIndex < fqnParts.length) {
+                        JsObject property = parent.getProperty(fqnParts[partIndex]);
+                        if (property != null && property.isDeclared()) {
+                            partIndex++;
+                            parent = property;
+                        } else {
+                            break;
+                        }
+                    }
+                    // build the FQN of the last defined property in the file / model
+                    String lastDefinedFQN = parent.getFullyQualifiedName();
+                    List<IndexResult> rItems = new ArrayList();
+                    // find the next property from FQN in the index for the defined property in the file / model
+                    rItems.addAll(findPropertyOfType(jsIndex, lastDefinedFQN.toString(), fqnParts[partIndex]));
+                    partIndex++;
+                    for (int i = partIndex; (!rItems.isEmpty()) && i < fqnParts.length; i++ ) {
+                        List<IndexResult> copy = new ArrayList(rItems);
+                        rItems.clear();
+                        // and for the found property find next property from the FQN
+                        for (IndexResult indexResult : copy) {
+                            rItems.addAll(findPropertyOfType(jsIndex, IndexedElement.getFQN(indexResult), fqnParts[i]));
+                        }
+                    }
+                    location = processIndexResult(rItems);
+                    if (location != null) {
+                        return location;
+                    }
                 } 
             } else {
                 FileObject fo = object.getFileObject();
@@ -204,10 +242,27 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
     
     private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName) {
-        Collection<? extends IndexResult> items = jsIndex.findByFqn(
-                fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+        return findPropertyOfType(jsIndex, fqn, propertyName, 0);
+    }
+    
+    private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName, int count) {
+        List<IndexResult> items = new ArrayList();
+        if (count > 5) {
+            return items;
+        }
+        items.addAll(jsIndex.findByFqn(
+                fqn + "." + propertyName, JsIndex.TERMS_BASIC_INFO)); // NOI18N
         if (items.isEmpty()) {
-            items = jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
+            items.addAll(jsIndex.findByFqn(fqn + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO)); // NOI18N
+        }
+        if (items.isEmpty()) {
+            Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn(fqn, JsIndex.TERMS_BASIC_INFO);
+            for (IndexResult indexResult : findByFqn) {
+            Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+                for (Type tmpType : assignments) {
+                    items.addAll(findPropertyOfType(jsIndex, getFQNFromType(tmpType), propertyName, count++));
+                }
+            }
         }
         return items;
     }

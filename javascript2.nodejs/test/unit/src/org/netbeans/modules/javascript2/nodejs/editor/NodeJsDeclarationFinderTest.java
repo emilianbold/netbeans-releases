@@ -42,15 +42,23 @@
 
 package org.netbeans.modules.javascript2.nodejs.editor;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.openide.filesystems.FileObject;
 import org.openide.util.test.MockLookup;
 import org.netbeans.modules.javascript2.nodejs.TestProjectSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -78,6 +86,28 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
 //        }
     }
     
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>();
+
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/TestNavigation/public_html/")));
+//        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/NodeJsRuntime/")));
+        return Collections.singletonMap(
+                JS_SOURCE_ID,
+                ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
+    }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
+
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
+    }
+    
     @Test
     public void testNavigation01() throws Exception {
         checkDeclaration("TestNavigation/public_html/js/foo.js", "var circle = require('./cir^cle.js');", "circle.js", 0);
@@ -93,5 +123,78 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
         checkDeclaration("TestNavigation/public_html/js/lib/testLib.js", "var bb = require ('./some_^lib');", "some-library.js", 0);
     }
     
+    @Test
+    public void testIssue247565_01() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o^1.obj.conf.a;", "issue247565.js", 4);
+    }
+    
+    @Test
+    public void testIssue247565_02() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.o^bj.conf.a;", "literal.js", 256);
+    }
 
+    @Test
+    public void testIssue247565_03() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.co^nf.a;", "literal.js", 114);
+    }
+    
+    @Test
+    public void testIssue247565_04() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.conf.a^;", "literal.js", 131);
+    }
+    
+    @Test
+    public void testIssue247565_05() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.pok^us.getDay();", "literal.js", 233);
+    }
+    
+    @Test
+    public void testIssue247565_06() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.do^b.getMilliseconds();", "literal.js", 49);
+    }
+    
+    @Test
+    public void testIssue247565_07() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.he^llo();", "literal.js", 76);
+    }
+    
+    @Test
+    public void testIssue247565_08() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o1.obj.ni^ck;", "literal.js", 29);
+    }
+    
+    @Test
+    public void testIssue247565_09() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.ob^j.conf.a;", "literalRef.js", 415);
+    }
+    
+    @Test
+    public void testIssue247565_10() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.co^nf.a;", "literalRef.js", 303);
+    }
+    
+    @Test
+    public void testIssue247565_11() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.conf.a^;", "literalRef.js", 320);
+    }
+    
+    @Test
+    public void testIssue247565_12() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.po^kus.getSeconds();", "literalRef.js", 392);
+    }
+    
+    @Test
+    public void testIssue247565_13() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.d^ob.getFullYear();", "literalRef.js", 238);
+    }
+    
+    @Test
+    public void testIssue247565_14() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.he^llo();", "literalRef.js", 265);
+    }
+    
+    @Test
+    public void testIssue247565_15() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.ni^ck;", "literalRef.js", 218);
+    }
 }
