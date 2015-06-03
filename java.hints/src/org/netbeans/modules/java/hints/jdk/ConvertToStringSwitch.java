@@ -68,6 +68,7 @@ import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.IntegerOption;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,9 +89,21 @@ import org.openide.util.NbBundle;
 public class ConvertToStringSwitch {
 
     static final boolean DEF_ALSO_EQ = true;
+    static final int DEF_THRESHOLD = 3;
     
     @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", defaultValue=DEF_ALSO_EQ)
     static final String KEY_ALSO_EQ = "also-equals";
+    
+    @IntegerOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_THRESHOLD", 
+            tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_THRESHOLD", defaultValue = DEF_THRESHOLD,
+            minValue = 2, step = 1)
+    static final String KEY_THRESHOLD = "threshold";
+    
+    public static final boolean DEFAULT_OPTION_GENERATE_EMPTY_DEFAULT = true;
+
+    @BooleanOption(displayName = "#OPT_ConvertIfToSwitch_EmptyDefault", tooltip = "#DESC_ConvertIfToSwitch_EmptyDefault",
+            defaultValue = DEFAULT_OPTION_GENERATE_EMPTY_DEFAULT)
+    public static final String OPTION_GENERATE_EMPTY_DEFAULT = "iftoswitch.generate.default"; // NOI18N
     
     private static final String[] INIT_PATTERNS = {
         "$c1.equals($c2)",
@@ -189,8 +202,8 @@ public class ConvertToStringSwitch {
         if (!eval.process(ctx.getVariables().get("$cond"))) {
             return null;
         }
-
-        if (eval.getNumberOfBranches() <= 1) {
+        int minBranches = ctx.getPreferences().getInt(KEY_THRESHOLD, DEF_THRESHOLD);
+        if (eval.getNumberOfBranches() < minBranches) {
             return null;
         }
         
@@ -209,7 +222,8 @@ public class ConvertToStringSwitch {
             return descs;
         }
 
-        Fix convert = eval.createFix(NbBundle.getMessage(ConvertToStringSwitch.class, "FIX_ConvertToStringSwitch"), false).toEditorFix(); // NOI18N
+        Fix convert = eval.createFix(NbBundle.getMessage(ConvertToStringSwitch.class, "FIX_ConvertToStringSwitch"),
+                ctx.getPreferences().getBoolean(OPTION_GENERATE_EMPTY_DEFAULT, DEFAULT_OPTION_GENERATE_EMPTY_DEFAULT)).toEditorFix(); // NOI18N
         ErrorDescription ed = ErrorDescriptionFactory.forName(ctx,
                                                               ctx.getPath(),
                                                               Bundle.TEXT_ConvertToSwitch(),

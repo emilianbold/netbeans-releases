@@ -78,8 +78,7 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
         if (context != null && context.getCurrentProject() != null) {
             prj = context.getCurrentProject();
         }
-        ClassPath[] cp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
-        OutputListener list = OutputUtils.matchStackTraceLine(line, ClassPathSupport.createProxyClassPath(cp));
+        OutputListener list = OutputUtils.matchStackTraceLine(line, prj);
         if (list != null) {
             visitor.setOutputListener(list);
         }
