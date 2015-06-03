@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.websvc.core.webservices.ui.panels;
 
+import java.awt.AWTEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
@@ -134,20 +135,17 @@ private String getTreeViewLabel(boolean dontCopy){
 }
 
 private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontCopyCBActionPerformed
-if(dontCopyCB.isSelected()){
-    descriptor.setValid(true);
-    treeView.setEnabled(false);
-    jLblTreeView.setText(getTreeViewLabel(true));
-}else if (getSelectedFile() == null){
-    descriptor.setValid(false);
-    treeView.setEnabled(true);
-    jLblTreeView.setText(getTreeViewLabel(false));
-}
-else{
-    descriptor.setValid(true);
-    treeView.setEnabled(true);
-    jLblTreeView.setText(getTreeViewLabel(false));
-}
+    if (dontCopyCB.isSelected()) {
+        descriptor.setValid(true);
+        treeView.setEnabled(false);
+        jLblTreeView.setText(getTreeViewLabel(true));
+        eventBlocker.setVisible(true);
+    } else {
+        descriptor.setValid(getSelectedFile() != null);
+        treeView.setEnabled(true);
+        jLblTreeView.setText(getTreeViewLabel(false));
+        eventBlocker.setVisible(false);
+    }
 }//GEN-LAST:event_dontCopyCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -158,19 +156,37 @@ else{
         treeView = new BeanTreeView();
         treeView.setRootVisible(false);
         treeView.setPopupAllowed(false);
+        treeView.setDefaultActionAllowed(false);
         treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        eventBlocker.setOpaque(false);
+        eventBlocker.setVisible(dontCopyCB.isSelected());
+        add(eventBlocker, gridBagConstraints);
         add(treeView, gridBagConstraints);
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
         treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
         treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
         dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"));
+    }
+
+    /** Component used to block mouse events to treeView when "Do not copy" check-box is selected. */
+    private final JPanel eventBlocker = new JPanel() {
+        {
+            enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+        }
+    };
+
+    // Needed because eventBlocker overlaps with treeView
+    @Override
+    public boolean isOptimizedDrawingEnabled() {
+        return false;
     }
 
     public ExplorerManager getExplorerManager() {
