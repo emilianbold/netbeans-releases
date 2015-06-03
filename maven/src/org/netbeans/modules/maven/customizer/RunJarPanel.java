@@ -243,7 +243,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             }
             if (params != null) {
                 oldAllParams = params;
-                oldVMParams = splitJVMParams(params);
+                oldVMParams = splitJVMParams(params, true);
                 if (oldVMParams != null && oldVMParams.contains("-classpath %classpath")) {
                     oldVMParams = oldVMParams.replace("-classpath %classpath", "");
                 }
@@ -459,7 +459,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         String origin = txtVMOptions.getText();
         try {
             String result = ProjectUISupport.showVMOptionCustomizer(SwingUtilities.getWindowAncestor(this), origin);
-            result = splitJVMParams(result);
+            result = splitJVMParams(result, true);
             txtVMOptions.setText(result);
         } catch (Exception e) {
             Logger.getLogger(RunJarPanel.class.getName()).log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
@@ -470,7 +470,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         String newMainClass = txtMainClass.getText().trim();
         String newParams = txtArguments.getText().trim();
         String newVMParams = txtVMOptions.getText().trim();
-        newParams = newParams.replace('\n', ' ');
+        newVMParams = newVMParams.replace('\n', ' ');
         String newWorkDir = txtWorkDir.getText().trim();
         ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         if (isCurrentRun || isCurrentDebug || isCurrentProfile) {
@@ -573,6 +573,10 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     }
     
     static String splitJVMParams(String line) {
+        return splitJVMParams(line, false);
+    }
+    
+    private static String splitJVMParams(String line, boolean newLines) {
         PropertySplitter ps = new PropertySplitter(line);
         ps.setSeparator(' '); //NOI18N
         String s = ps.nextPair();
@@ -582,7 +586,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 if(s.contains("%classpath")) {
                     jvms =  jvms + " " + s;
                 } else {
-                    jvms =  jvms + (jvms.isEmpty() ? "" : "\n") + s;
+                    jvms =  jvms + (jvms.isEmpty() ? "" : (newLines ? "\n" : " ")) + s;
                 }
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 break;
