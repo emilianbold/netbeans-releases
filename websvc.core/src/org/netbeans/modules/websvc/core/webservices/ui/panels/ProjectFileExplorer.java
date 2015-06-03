@@ -73,13 +73,13 @@ import org.openide.util.NbBundle;
 public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
 
     private DialogDescriptor descriptor;
-    private ExplorerManager manager;
+    private final ExplorerManager manager;
     private BeanTreeView treeView;
     private DataObject selectedFolder;
-    private Project[] projects;
-    private Children rootChildren;
-    private Node explorerClientRoot;
-    private List<Node> projectNodeList;
+    private final Project[] projects;
+    private final Children rootChildren;
+    private final Node explorerClientRoot;
+    private final List<Node> projectNodeList;
 
     public ProjectFileExplorer() {
         projects = OpenProjects.getDefault().getOpenProjects();
@@ -129,9 +129,9 @@ public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provi
 
 private String getTreeViewLabel(boolean dontCopy){
     if(dontCopy){
-        return NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP");
+        return NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"); // NOI18N
     }
-    return NbBundle.getMessage(ProjectFileExplorer.class, "LBL_SelectProjectLocation");
+    return NbBundle.getMessage(ProjectFileExplorer.class, "LBL_SelectProjectLocation"); // NOI18N
 }
 
 private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontCopyCBActionPerformed
@@ -171,9 +171,9 @@ private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         add(eventBlocker, gridBagConstraints);
         add(treeView, gridBagConstraints);
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
-        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
-        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
-        dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"));
+        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree")); // NOI18N
+        dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP")); // NOI18N
     }
 
     /** Component used to block mouse events to treeView when "Do not copy" check-box is selected. */
@@ -189,6 +189,7 @@ private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return false;
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -218,6 +219,7 @@ private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         descriptor.setValid(false);
     }
 
+    @Override
     public void removeNotify() {
         manager.removePropertyChangeListener(this);
         super.removeNotify();
@@ -248,6 +250,7 @@ private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
          return null;
      }
      
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == manager) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
