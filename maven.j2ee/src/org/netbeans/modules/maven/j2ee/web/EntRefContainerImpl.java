@@ -132,7 +132,10 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
         Project otherPrj = FileOwnerQuery.getOwner(ejbReferenceEjbClassFO);
         final NbMavenProject oprj = otherPrj.getLookup().lookup(NbMavenProject.class);
         String jarName = "";
-        if (oprj != null) {
+        
+        final boolean fromSameProject = (oprj != null && project.equals(otherPrj)) || oprj == null /** ant? */;
+        
+        if (!fromSameProject && oprj != null) {
             jarName = oprj.getMavenProject().getBuild().getFinalName();  //NOI18N
 
             final String grId = oprj.getMavenProject().getGroupId();
@@ -175,7 +178,9 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
             // EjbLocalRef can come from Ejb project
             try {
                 EjbLocalRef newRef = (EjbLocalRef)wApp.createBean("EjbLocalRef"); //NOI18N
-                newRef.setEjbLink(ejbLink);
+                if (fromSameProject) {
+                    newRef.setEjbLink(ejbLink);
+                }
                 newRef.setEjbRefName(refName);
                 newRef.setEjbRefType(ejbReference.getEjbRefType());
                 newRef.setLocal(ejbReference.getLocal());
