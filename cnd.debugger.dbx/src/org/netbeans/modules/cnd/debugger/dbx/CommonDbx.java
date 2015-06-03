@@ -1174,181 +1174,292 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	}
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void output(String str, boolean ready) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void dir_changed(String dir) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void ksh_notify(int argc, String argv[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void ksh_scmd_result(int rt, String result) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void jn_mode_update(int mode) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_finished(String progname) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_loading(String progname) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_loaded(String progname, boolean success) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_unloaded() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_visit(GPDbxLocation vl) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_runargs(int argc, String argv[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_redir(String infile, String outfile,
 				    boolean append) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prog_datamodel(int bit_width) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected int popup(int rt, String title, int nitems, String item[], boolean cancelable) {
 	return 0;
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected int popup2(int rt, String title, int nitems, String item[], boolean cancelable, boolean multiple_selection, String cookie) {
 	return 0;
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void clone(int argc, String argv[],
 			       boolean cloned_to_follow) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void busy(String with_what,
 			      boolean on_off,
 			      boolean block_input) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void capabilities(GPDbxCapabilities capabs) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void thread_capabilities(GPDbxThreadCapabilities thread_capabs) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void button(String label, String cmd, String option) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void unbutton(String label) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void env_changed(String name, String new_value) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean load_symbols(int rtRoutingToken) {
 	return false;
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean rcmd(String hostString, int pid, String cmdString) {
 	return false;
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rconnect(com.sun.tools.swdev.glue.NetAddr addrNetAddr, String hostnameString) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rgrab_attention() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rlist(GPDbxRList list) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean rswitch(String host, int pid) {
 	return false;
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rmove(boolean backward) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void manifest_mark(String mark, GPDbxLocation location) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void bpt_set(int id, String filename, int line, GPDbxLocation loc) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void bpt_del(int id) {
     }
 
-
+    // override GPDbxSurrogate
+    @Override
     protected void handler_new(GPDbxHandler h, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_replace(GPDbxHandler h, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_delete(int id, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_defunct(int id, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_undo_defunct(int id, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_enable(int id, boolean v) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_count(int id, int current, int limit) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_list(int count, GPDbxHandler list[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_batch_begin() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void handler_batch_end() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_item_new(int id, String plain_lhs, int rt, String qualified_lhs, String static_type, int is_a_pointer, String reevaluable_lhs, boolean unrestricted) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_item_new2(int rt, GPDbxDisplaySpec spec) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_item_dup(int rt, int id) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_item_delete(int id, int rt) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_update_0(int nitems, GPDbxDisplayItem0 items[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void display_update(int nitems, GPDbxDisplayItem items[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void disassembly(GStr regs_str) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void registers(GStr regs_str) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void memorys(GStr mem_str) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void locals(int nitems, GPDbxLocalItem items[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expanded_nodes(boolean is_local, int nitems, GPDbxLocalItem items[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_new(int rt, GPDbxVItemStatic sitem) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_replace(int rt, GPDbxVItemStatic sitem) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_add(GPDbxVItemStatic sitem, int id) {
     }
 
@@ -1366,188 +1477,294 @@ public abstract class CommonDbx extends GPDbxSurrogate {
      * when there is an explicit delete request.
      */
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_delete(int id, boolean proc_gone) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_update(int nitems, GPDbxVItemDynamic items[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_update_mode(int id, int new_mode) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void vitem_timer(float seconds) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prop_decl(int nprop, GPDbxPropDeclaration prop[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void prop_changed(String name, String new_value) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void signal_list(int count,
 				     GPDbxSignalInfoInit initial_signal_list[]){
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void signal_list_state(GPDbxSignalInfo updated_signal){
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void pathmap_list(int count,
 				      GPDbxPathMap updated_pathmap[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void intercept_list(boolean unhandled,
 					boolean unexpected,
 					int count, String typenames[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void intercept_except_list(int count, String typenames[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void loadobj_loading(String loadobj) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void loadobj_loaded(String loadobj, boolean success) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_new_from_prog(int pid, long ttydev) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_new_from_pid(int pid, long ttydev) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_new_from_core(String corefilename) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_visit(GPDbxLocation vl, int vframe) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_go() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_stopped(GPDbxLocation hl, int nevents, GPDbxEventRecord events[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_modified(GPDbxLocation hl) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_gone(String reason, int info) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void proc_thread(int tid, GPDbxLocation hl, GPDbxLocation vl, int htid) {
     }
 
-    // override Surrogate
+    // override GPDbxSurrogate
     @Override
     protected void proc_about_to_fork(int tid, int htid, String str) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_eval_result(int rt, String value) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_qualify_result(int rt, String expr,
 				       String qualified_expr,
 				       String reevaluable_expr,
 				       int error) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_heval_result(int rt, GPDbxHEvalResult result) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_type_result(int rt, String expr, String stype, String dtype) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_set_result(int rt, String value) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void type_info_result(int rt, String def) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_line_eval_result(int rt1, int rt2, int flags, String lhs, String rhs) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void expr_line_evalall_result(int rt1, int rt2, int flags, String lhs, String rhs, String type, String rhs_deref) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void stack(int nf, int vf, GPDbxFrame frame[], int flags) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void threads(int tot, int shown, GPDbxThread thread[], int flags) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void error(int rt, int nerr, GPDbxError errors[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void perf_file(String dir, String file, String group) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void perf_options(GPDbxPerfOptions options) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void perf_events_status(GPDbxPerfEventsStatus status) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void perf_open() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void perf_close() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rtc_state(GPDbxRtcState state) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rtc_patching(byte beginEnd, String label, String message,
 				int count, int total) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_state(GPDbxMprofState state) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void rtc_access_item(GPDbxRtcItem item) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_leak_report_begin(GPDbxMprofHeader header) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_leak_report_end() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_leak_report_stopped() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean mprof_leak_item(GPDbxMprofItem item) {
 	return true;    // wasn't interrupted, keep going
     }
 
-
-
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_use_report_begin(GPDbxMprofHeader header) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_use_report_end() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void mprof_use_report_stopped() {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean mprof_use_item(GPDbxMprofItem item) {
 	return true;    // wasn't interrupted, keep going
     }
 
-
-
+    // override GPDbxSurrogate
+    @Override
     protected void fix_start(String wd, String cmd, String file) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void fix_status(boolean succeeded, String errfile) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void fix_done(int attempted, int succeeded) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected void fix_pending_build(String target,
 					   int n, String file[]) {
     }
 
+    // override GPDbxSurrogate
+    @Override
     protected boolean save_file(String filename) {
 	return false;
     }
