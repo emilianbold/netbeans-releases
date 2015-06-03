@@ -320,10 +320,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 createConnectionPool(xmlFile, poolName, url, username, password, driver);
             }
             
-            // FIXME we generate the DS with the java:module namespace as
-            // it is close to the current behavior and it will work in both EAR
-            // and standalone module setup
-            String realJndi = getJndiName(jndiName, pair.second(), JndiNamespacesDefinition.MODULE_NAMESPACE);
+            String realJndi = getJndiName(jndiName, pair.second(), JndiNamespacesDefinition.APPLICATION_NAMESPACE);
 
             // create jdbc resource
             createJdbcResource(xmlFile, realJndi, poolName);
