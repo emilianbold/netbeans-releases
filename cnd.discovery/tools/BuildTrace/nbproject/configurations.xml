@@ -216,5 +216,23 @@
       <item path="execint.c" ex="false" tool="0" flavor2="9">
       </item>
     </conf>
+    <conf name="SunOS-Previse" type="2">
+      <toolsSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <architecture>2</architecture>
+          <commandLine>-xprevise -xannotate</commandLine>
+        </cTool>
+        <linkerTool>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+      <item path="execint.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
   </confs>
 </configurationDescriptor>

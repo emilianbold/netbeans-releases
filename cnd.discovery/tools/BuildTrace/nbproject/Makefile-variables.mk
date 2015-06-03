@@ -78,6 +78,14 @@ CND_ARTIFACT_PATH_Linux-sparc_64=dist/Linux-sparc_64/GNU-Linux-x86/libBuildTrace
 CND_PACKAGE_DIR_Linux-sparc_64=dist/Linux-sparc_64/GNU-Linux-x86/package
 CND_PACKAGE_NAME_Linux-sparc_64=libBuildTrace.so.tar
 CND_PACKAGE_PATH_Linux-sparc_64=dist/Linux-sparc_64/GNU-Linux-x86/package/libBuildTrace.so.tar
+# SunOS-Previse configuration
+CND_PLATFORM_SunOS-Previse=OracleSolarisStudio-Solaris-x86
+CND_ARTIFACT_DIR_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86
+CND_ARTIFACT_NAME_SunOS-Previse=libBuildTrace.so
+CND_ARTIFACT_PATH_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86/libBuildTrace.so
+CND_PACKAGE_DIR_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86/package
+CND_PACKAGE_NAME_SunOS-Previse=libBuildTrace.so.tar
+CND_PACKAGE_PATH_SunOS-Previse=dist/SunOS-Previse/OracleSolarisStudio-Solaris-x86/package/libBuildTrace.so.tar
 #
 # include compiler specific variables
 #

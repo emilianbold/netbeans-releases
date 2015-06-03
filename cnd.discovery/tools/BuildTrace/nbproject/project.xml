@@ -47,6 +47,10 @@
                     <name>Linux-sparc_64</name>
                     <type>2</type>
                 </confElem>
+                <confElem>
+                    <name>SunOS-Previse</name>
+                    <type>2</type>
+                </confElem>
             </confList>
             <formatting>
                 <project-formatting-style>false</project-formatting-style>
