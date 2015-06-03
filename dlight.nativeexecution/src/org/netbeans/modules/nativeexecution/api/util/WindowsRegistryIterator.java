@@ -209,7 +209,7 @@ public final class WindowsRegistryIterator implements Iterator<String[]> {
                 suffix.append(" /v ").append(valueName); // NOI18N
             }
             if (fullKey.indexOf(' ')>0) {
-                fullKey = "\""+fullKey+"\"";
+                fullKey = "\""+fullKey+"\""; // NOI18N
             }
             ProcessBuilder pb = new ProcessBuilder("cmd", "/C", reg_exe + " query " + fullKey + suffix.toString()); // NOI18N
             ProcessUtils.ExitStatus result = ProcessUtils.execute(pb);
