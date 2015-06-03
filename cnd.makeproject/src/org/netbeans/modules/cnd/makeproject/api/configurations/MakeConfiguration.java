@@ -163,41 +163,14 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     private boolean languagesDirty = true;
     private RemoteSyncFactory fixedRemoteSyncFactory;
     private CodeAssistanceConfiguration codeAssistanceConfiguration;
+    private BooleanConfiguration platformSpecificConfiguration;
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     
     private String customizerId = null;
 
-//    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
-//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue) {
-//        this(baseDir, name, configurationTypeValue, null);
-//    }
-//
-//    //XXX:fullRemote:fileSystem - should be removed (replaced with FSPath)
-//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID) {
-//        this(baseDir, name, configurationTypeValue, hostUID, null, true);
-//    }
-//
-//    public MakeConfiguration(String baseDir, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-//        this(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, configurationTypeValue, null, hostUID, hostCS, defaultToolCollection);
-//    }
-//    
-//    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue) {
-//        this(fsPath, name, configurationTypeValue, null);
-//    }
-//
-//    public MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID) {
-//        this(fsPath, name, configurationTypeValue, null, hostUID, null, true);
-//    }
-    
-    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID) {
-        this(fsPath, name, configurationTypeValue, customizerId, hostUID, null, true);
-    }
-    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
-        this(fsPath, name, configurationTypeValue, null, hostUID,  hostCS, defaultToolCollection);
-    }
-        
-
-    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue, String customizerId, String hostUID, CompilerSet hostCS, boolean defaultToolCollection) {
+    private MakeConfiguration(FSPath fsPath, String name, int configurationTypeValue,
+            String customizerId, String hostUID, CompilerSet hostCS,
+            boolean defaultToolCollection, boolean platformSpecific) {
         super(fsPath, name);
         hostUID = (hostUID == null) ? CppUtils.getDefaultDevelopmentHost(fsPath.getFileSystem()) : hostUID;
         if (configurationTypeValue == TYPE_MAKEFILE) {
@@ -252,6 +225,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
         developmentHost.addPropertyChangeListener(compilerSet);
         codeAssistanceConfiguration = new CodeAssistanceConfiguration(this);
+        platformSpecificConfiguration = new BooleanConfiguration(platformSpecific);
         initAuxObjects();
     }
     
@@ -264,26 +238,46 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
      * @return the MakeConfiguration
      */
     public static MakeConfiguration createDefaultHostMakefileConfiguration(String baseDir, String name) {
-        return new MakeConfiguration(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, MakeConfiguration.TYPE_MAKEFILE, null, null);
+        return new MakeConfiguration(new FSPath(CndFileUtils.getLocalFileSystem(), baseDir), name, MakeConfiguration.TYPE_MAKEFILE,
+                null, null, null,
+                true ,false);
     }
-    
     public static MakeConfiguration createMakefileConfiguration(FSPath baseDir, String name, String hostID) {
-        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE, null, hostID);
+        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE,
+                null, hostID, null,
+                true, false);
     }
     
-    public static MakeConfiguration createMakefileConfiguration(FSPath baseDir, String name, String hostID, CompilerSet hostCS, boolean defaultToolCollection) {
-        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE, null, hostID, hostCS, defaultToolCollection);
+    public static MakeConfiguration createMakefileConfiguration(FSPath baseDir, String name,
+            String hostID, CompilerSet hostCS,
+            boolean defaultToolCollection) {
+        return new MakeConfiguration(baseDir, name, MakeConfiguration.TYPE_MAKEFILE,
+                null, hostID, hostCS,
+                defaultToolCollection, false);
     }
     
     
-    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, int configurationType, String customizerID, String hostID) {
-        return new MakeConfiguration(baseDir, name, configurationType, customizerID, hostID);
+    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, int configurationType,
+            String customizerID, String hostID) {
+        return new MakeConfiguration(baseDir, name, configurationType,
+                customizerID, hostID, null,
+                true, false);
     }    
+
+    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, int configurationType,
+            String customizerID, String hostID,
+            boolean platformSpecific) {
+        return new MakeConfiguration(baseDir, name, configurationType,
+                customizerID, hostID, null,
+                true, platformSpecific);
+    }
     
-    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, 
-            int configurationType, String customizerID, String hostID, CompilerSet hostCS, boolean defaultToolCollection) {
-        return new MakeConfiguration(baseDir, 
-                name, configurationType, customizerID, hostID, hostCS, defaultToolCollection);
+    public static MakeConfiguration createConfiguration(FSPath baseDir, String name, int configurationType,
+            String customizerID, String hostID, CompilerSet hostCS,
+            boolean defaultToolCollection) {
+        return new MakeConfiguration(baseDir, name, configurationType,
+                customizerID, hostID, hostCS,
+                defaultToolCollection, false);
     }        
 
     public void setPreBuildConfiguration(PreBuildConfiguration makefileConfiguration) {
@@ -375,6 +369,14 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
     public void setAssemblerRequired(LanguageBooleanConfiguration assemblerRequired) {
         this.assemblerRequired = assemblerRequired;
+    }
+
+    public BooleanConfiguration getPlatformSpecific() {
+        return platformSpecificConfiguration;
+    }
+
+    public void setPlatformSpecificConfiguration(BooleanConfiguration platformSpecificConfiguration) {
+        this.platformSpecificConfiguration = platformSpecificConfiguration;
     }
 
     public PlatformInfo getPlatformInfo() {
@@ -749,7 +751,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
     @Override
     public MakeConfiguration clone() {
         MakeConfiguration clone = new MakeConfiguration(getBaseFSPath(), getName(),
-                getConfigurationType().getValue(), getCustomizerId(), getDevelopmentHost().getHostKey());
+                getConfigurationType().getValue(), getCustomizerId(), getDevelopmentHost().getHostKey(), null, true, getPlatformSpecific().getValue());
         super.cloneConf(clone);
         clone.setCloneOf(this);
 
