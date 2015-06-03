@@ -43,7 +43,8 @@
                    OpenIDE-Module-Recommends CDATA #IMPLIED
                    OpenIDE-Module-Needs CDATA #IMPLIED
                    AutoUpdate-Show-In-Client (true|false) #IMPLIED
-                   AutoUpdate-Essential-Module (true|false) #IMPLIED>
+                   AutoUpdate-Essential-Module (true|false) #IMPLIED
+                   OpenIDE-Module-Fragment-Host CDATA #IMPLIED>
 
 <!ELEMENT l10n EMPTY>
 <!ATTLIST l10n   langcode             CDATA #IMPLIED

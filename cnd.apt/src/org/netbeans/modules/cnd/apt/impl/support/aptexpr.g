@@ -84,15 +84,19 @@ options {
 }
 
 {
+    // value for ID with text "true" (i.e. it is 1 in C++ and 0 in C langs)
+    private long trueIDValue = 0;
+    private final static String TRUE = "true";// NOI18N
     private APTMacroCallback callback = null;
     private boolean bigValuesInUse = false;
     private static final long MAX_INT = (long)Integer.MAX_VALUE;
     private static final long MIN_INT = (long)Integer.MIN_VALUE;
 
-    public APTExprParser(TokenStream lexer, APTMacroCallback callback) {
+    public APTExprParser(TokenStream lexer, APTMacroCallback callback, long trueIDValue) {
         super(lexer, 1, 16);
         tokenNames = _tokenNames;
         this.callback = callback;
+        this.trueIDValue = trueIDValue;
     }
 
     private void checkBigValues(long r) {
@@ -213,6 +217,12 @@ options {
 
     private long evalID(Token id) {
         // each not expanded ID in expression is '0' by specification
+        // but 'true' can be treated differently:
+        //  in C++ as 1
+        //  in C as 0
+        if (id != null && TRUE.equals(id.getText())) {
+            return trueIDValue;
+        }
         return 0;
     }
 
