@@ -631,6 +631,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         getDebuggerChooserConfiguration().assign(makeConf.getDebuggerChooserConfiguration());
         getQmakeConfiguration().assign(makeConf.getQmakeConfiguration());
         getCodeAssistanceConfiguration().assign(makeConf.getCodeAssistanceConfiguration());
+        getPlatformSpecific().assign(makeConf.getPlatformSpecific());
 
         // do assign on all aux objects
         ConfigurationAuxObject[] auxs = getAuxObjects(); // from this profile
