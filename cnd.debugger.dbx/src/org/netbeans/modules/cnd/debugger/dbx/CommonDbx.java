@@ -1436,7 +1436,9 @@ public abstract class CommonDbx extends GPDbxSurrogate {
     protected void proc_thread(int tid, GPDbxLocation hl, GPDbxLocation vl, int htid) {
     }
 
-    protected void proc_about_to_fork(int tid, int htid) {
+    // override Surrogate
+    @Override
+    protected void proc_about_to_fork(int tid, int htid, String str) {
     }
 
     protected void expr_eval_result(int rt, String value) {
