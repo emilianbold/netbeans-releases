@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.websvc.core.webservices.ui.panels;
 
+import java.awt.AWTEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
@@ -72,13 +73,13 @@ import org.openide.util.NbBundle;
 public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provider, PropertyChangeListener {
 
     private DialogDescriptor descriptor;
-    private ExplorerManager manager;
+    private final ExplorerManager manager;
     private BeanTreeView treeView;
     private DataObject selectedFolder;
-    private Project[] projects;
-    private Children rootChildren;
-    private Node explorerClientRoot;
-    private List<Node> projectNodeList;
+    private final Project[] projects;
+    private final Children rootChildren;
+    private final Node explorerClientRoot;
+    private final List<Node> projectNodeList;
 
     public ProjectFileExplorer() {
         projects = OpenProjects.getDefault().getOpenProjects();
@@ -128,26 +129,23 @@ public class ProjectFileExplorer extends JPanel implements ExplorerManager.Provi
 
 private String getTreeViewLabel(boolean dontCopy){
     if(dontCopy){
-        return NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP");
+        return NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"); // NOI18N
     }
-    return NbBundle.getMessage(ProjectFileExplorer.class, "LBL_SelectProjectLocation");
+    return NbBundle.getMessage(ProjectFileExplorer.class, "LBL_SelectProjectLocation"); // NOI18N
 }
 
 private void dontCopyCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dontCopyCBActionPerformed
-if(dontCopyCB.isSelected()){
-    descriptor.setValid(true);
-    treeView.setEnabled(false);
-    jLblTreeView.setText(getTreeViewLabel(true));
-}else if (getSelectedFile() == null){
-    descriptor.setValid(false);
-    treeView.setEnabled(true);
-    jLblTreeView.setText(getTreeViewLabel(false));
-}
-else{
-    descriptor.setValid(true);
-    treeView.setEnabled(true);
-    jLblTreeView.setText(getTreeViewLabel(false));
-}
+    if (dontCopyCB.isSelected()) {
+        descriptor.setValid(true);
+        treeView.setEnabled(false);
+        jLblTreeView.setText(getTreeViewLabel(true));
+        eventBlocker.setVisible(true);
+    } else {
+        descriptor.setValid(getSelectedFile() != null);
+        treeView.setEnabled(true);
+        jLblTreeView.setText(getTreeViewLabel(false));
+        eventBlocker.setVisible(false);
+    }
 }//GEN-LAST:event_dontCopyCBActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -158,21 +156,40 @@ else{
         treeView = new BeanTreeView();
         treeView.setRootVisible(false);
         treeView.setPopupAllowed(false);
+        treeView.setDefaultActionAllowed(false);
         treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(11, 11, 0, 11);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        eventBlocker.setOpaque(false);
+        eventBlocker.setVisible(dontCopyCB.isSelected());
+        add(eventBlocker, gridBagConstraints);
         add(treeView, gridBagConstraints);
         jLblTreeView.setLabelFor(treeView.getViewport().getView());
-        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
-        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree"));
-        dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP"));
+        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ClientExplorerPanel.class, "ACSD_AvailableWebServicesTree")); // NOI18N
+        dontCopyCB.setToolTipText(NbBundle.getMessage(ProjectFileExplorer.class, "TXT_DONOTCOPY_TOOLTIP")); // NOI18N
     }
 
+    /** Component used to block mouse events to treeView when "Do not copy" check-box is selected. */
+    private final JPanel eventBlocker = new JPanel() {
+        {
+            enableEvents(AWTEvent.MOUSE_EVENT_MASK);
+        }
+    };
+
+    // Needed because eventBlocker overlaps with treeView
+    @Override
+    public boolean isOptimizedDrawingEnabled() {
+        return false;
+    }
+
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }
@@ -202,6 +219,7 @@ else{
         descriptor.setValid(false);
     }
 
+    @Override
     public void removeNotify() {
         manager.removePropertyChangeListener(this);
         super.removeNotify();
@@ -232,6 +250,7 @@ else{
          return null;
      }
      
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() == manager) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
