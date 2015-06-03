@@ -151,7 +151,7 @@ public class BootCPNodeFactory implements NodeFactory {
             if (root == BOOT) {
                 return new JRENode(p);
             } else {
-                return jarNode(p, root);
+                return jarNode(p, root, true);
             }
         }
 
@@ -201,7 +201,7 @@ public class BootCPNodeFactory implements NodeFactory {
         }
 
         @Override protected Node createNodeForKey(FileObject root) {
-            return jarNode(p, root);
+            return jarNode(p, root, false);
         }
 
         @Override public void propertyChange(PropertyChangeEvent evt) {
@@ -212,7 +212,10 @@ public class BootCPNodeFactory implements NodeFactory {
 
     }
 
-    private static Node jarNode(Project p, final FileObject root) {
+    private static Node jarNode(
+            final Project p,
+            final FileObject root,
+            final boolean includeEnclosingPath) {
         final Node delegate = PackageView.createPackageView(new SourceGroup() {
             @Override public FileObject getRootFolder() {
                 return root;
@@ -225,7 +228,9 @@ public class BootCPNodeFactory implements NodeFactory {
                 if (f != null) {
                     return f.getName();
                 } else {
-                    return FileUtil.getFileDisplayName(root);
+                    return includeEnclosingPath ?
+                            FileUtil.getFileDisplayName(root) :
+                            root.getNameExt();
                 }
             }
             @Override public Icon getIcon(boolean opened) {
