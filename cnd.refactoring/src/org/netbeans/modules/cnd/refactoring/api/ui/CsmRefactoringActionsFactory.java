@@ -50,6 +50,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.refactoring.actions.ChangeParametersAction;
 import org.netbeans.modules.cnd.refactoring.actions.EncapsulateFieldsAction;
+import org.netbeans.modules.cnd.refactoring.actions.InlineAction;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformer;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -109,5 +110,9 @@ public final class CsmRefactoringActionsFactory {
         } catch (BadLocationException ex) {
             ex.printStackTrace(System.err);
         }
+    }
+    
+    public static ContextAwareAction inlineAction() {
+        return InlineAction.findObject(InlineAction.class, true);
     }
 }

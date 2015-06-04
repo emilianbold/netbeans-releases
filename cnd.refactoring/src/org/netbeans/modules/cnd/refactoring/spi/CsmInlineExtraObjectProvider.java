@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,33 +24,30 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.refactoring.actions;
+package org.netbeans.modules.cnd.refactoring.spi;
+
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Danila Sergeyev
  */
-public enum RefactoringKind {
-    CHANGE_FUNCTION_PARAMETERS("change-function-parameters"), //NOI18N
-    ENCAPSULATE_FIELDS("encapsulate-fields"), //NOI18N
-
-    CREATE_VARIABLE("introduce-variable"), //NOI18N
-    CREATE_CONSTANT("introduce-constant"), //NOI18N
-    CREATE_FIELD("introduce-field"), //NOI18N
-    CREATE_METHOD("introduce-method"), //NOI18N
-    CREATE_PARAMETER("introduce-parameter"), //NOI18N
-    
-    INLINE_REFACTORING("inline-macro-refactoring"); //NOI18N
-
-    private final String key; //Action ID
-    private RefactoringKind(String key) {
-        this.key = key;
-    }
-    public String getKey() {
-        return key;
-    }
+public interface CsmInlineExtraObjectProvider {
+    Collection<CsmObject> getExtraObjects(CsmObject orig);
 }

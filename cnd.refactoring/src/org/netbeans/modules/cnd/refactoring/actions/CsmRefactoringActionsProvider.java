@@ -46,16 +46,22 @@ package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.util.Collection;
 import java.util.HashSet;
+import javax.swing.text.Document;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;
 import org.netbeans.modules.cnd.refactoring.ui.EncapsulateFieldUI;
+import org.netbeans.modules.cnd.refactoring.ui.InlineUI;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.nodes.Node;
@@ -70,6 +76,7 @@ import org.openide.util.Lookup;
 public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvider {
     private static final String CHANGE_PARAMETERS_TRACKING = "CHANGE_PARAMETERS"; // NOI18N
     private static final String ENCAPSULATE_FIELDS_TRACKING = "ENCAPSULATE_FIELDS"; // NOI18N
+    private static final String INLINE_TRACKING = "INLINE_REFACTORING"; // NOI18N
     
     public CsmRefactoringActionsProvider() {
     }
@@ -155,6 +162,46 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
                 protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
                     UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, ENCAPSULATE_FIELDS_TRACKING);
                     return EncapsulateFieldUI.create(selectedElement, null);
+                }
+            };
+        }
+        task.run();
+    }
+    
+    @Override
+    public boolean canPerformInlineRefactoring(Lookup lookup) {
+        Collection<? extends Node> nodes = new HashSet<>(lookup.lookupAll(Node.class));
+        if(nodes.size() != 1) {
+            return false;
+        }
+        CsmObject obj = CsmRefactoringUtils.findContextObject(lookup);
+        if (CsmKindUtilities.isOffsetable(obj)) {
+            Document doc = EditorRegistry.lastFocusedComponent().getDocument();
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, ((CsmOffsetable) obj).getStartOffset());
+            if (CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public void doInlineRefactoring(Lookup lookup) {
+        Runnable task;
+        if (RefactoringActionsProvider.isFromEditor(lookup)) {
+            task = new RefactoringActionsProvider.TextComponentTask(lookup) {
+                @Override
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement, CsmContext editorContext) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, INLINE_TRACKING, CsmRefactoringUtils.FROM_EDITOR_TRACKING);
+                    return InlineUI.create(selectedElement, editorContext);
+                }
+            };
+        } else {
+            task = new RefactoringActionsProvider.NodeToElementTask(lookup) {
+                @Override
+                protected RefactoringUI createRefactoringUI(CsmObject selectedElement) {
+                    UIGesturesSupport.submit(CsmRefactoringUtils.USG_CND_REFACTORING, INLINE_TRACKING);
+                    return InlineUI.create(selectedElement, null);
                 }
             };
         }
