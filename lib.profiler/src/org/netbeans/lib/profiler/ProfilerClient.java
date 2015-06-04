@@ -1537,7 +1537,7 @@ public class ProfilerClient implements CommonConstants {
         status.startupTimeMillis = resp.getStartupTimeMillis();
         status.startupTimeInCounts = resp.getStartupTimeInCounts();
 
-        if (!status.remoteProfiling) {
+        if (!status.remoteProfiling && settings.getTargetJDKVersionString() != CommonConstants.JDK_19_STRING) {
             settings.setWorkingDir(resp.getWorkingDir());
             settings.setVMClassPaths(resp.getJavaClassPath(), resp.getJavaExtDirs(), resp.getBootClassPath());
             ClassRepository.initClassPaths(settings.getWorkingDir(), settings.getVMClassPaths());

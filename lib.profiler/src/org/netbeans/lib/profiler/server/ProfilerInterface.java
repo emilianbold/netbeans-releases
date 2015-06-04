@@ -1398,7 +1398,7 @@ public class ProfilerInterface implements CommonConstants {
                     }
                 }
             }
-        } else if (status.remoteProfiling) {
+        } else if (status.remoteProfiling || Platform.getJDKVersionNumber() == Platform.JDK_19) {
             classFileBytes = ClassBytesLoader.getClassFileBytes(classURL);
         }
         return classFileBytes;
