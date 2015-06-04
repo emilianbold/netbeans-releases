@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -120,12 +121,15 @@ public class ProjectUtilities {
             }
             EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
             OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
+            Openable o = dobj.getLookup().lookup(Openable.class);
             if (ec != null) {
                 ec.edit();
             } else if (oc != null) {
                 oc.open();
+            } else if (o != null) {
+                o.open();
             } else {
-                ERR.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
+                ERR.log(Level.INFO, "No EditCookie nor OpenCookie nor Openable for {0}", dobj);
                 return false;
             }
             return true;
