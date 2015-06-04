@@ -197,7 +197,8 @@ public class ProjectUtilities {
                         assert pf != null;
                         URL u = pf.toURL();
                         assert u != null;
-                        pwnr.add(u.toExternalForm());
+                        String uex = u.toExternalForm();                        
+                        pwnr.add(uex);
                     }
                 } else {
                     ERR.log(Level.FINE, "#194243: no DataObject in lookup of {0} of {1}", new Object[] {tc.getName(), tc.getClass()});
