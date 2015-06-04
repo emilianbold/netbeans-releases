@@ -197,4 +197,9 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
     public void testIssue247565_15() throws Exception {
         checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.ni^ck;", "literalRef.js", 218);
     }
+    
+    @Test
+    public void testIssue249854_01() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/app/maingt.js", "p.b^ar();//gt;5;func.js;8;10", "func.js", 105);
+    }
 }
