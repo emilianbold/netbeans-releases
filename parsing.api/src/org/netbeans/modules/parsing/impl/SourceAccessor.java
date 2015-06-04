@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -226,6 +227,9 @@ public abstract class SourceAccessor {
 
     @NonNull
     public abstract ParserEventForward getParserEventForward(@NonNull Source source);
+
+    @CheckForNull
+    public abstract Source create(@NonNull FileObject file, @NonNull String mimeType, @NonNull Lookup context);
     
     public final void init() {
         Utilities.getEnvFactory().getSchedulers(Lookup.getDefault());
