@@ -64,7 +64,7 @@ public class Addressing10WsdlUsingAddressingImpl extends Addressing10ComponentIm
     }
 
     public void setOptional(boolean optional) {
-        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0), Boolean.toString(optional));
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_0), optional ? "true" : null); // NOI18N
     }
 
     public boolean isOptional() {
