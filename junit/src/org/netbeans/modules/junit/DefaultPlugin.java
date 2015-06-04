@@ -1193,6 +1193,11 @@ public final class DefaultPlugin extends JUnitPlugin {
             showSourceLevelReqs = !offerJUnit4;
         }
         loadJUnitToUseFromPropertiesFile(project);
+        if(junitVer == null) {
+            // probably new project after 8.1, since determining junitVer failed
+            // sofar, so as last resort default to 4.x
+            junitVer = JUnitVersion.JUNIT4;
+        }
         if ((junitVer != null) && storeSettings) {
             return storeProjectSettingsJUnitVer(project);
         }
