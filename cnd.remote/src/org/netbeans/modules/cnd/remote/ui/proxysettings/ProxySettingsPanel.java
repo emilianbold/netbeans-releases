@@ -43,8 +43,6 @@ package org.netbeans.modules.cnd.remote.ui.proxysettings;
 
 import java.awt.BorderLayout;
 import java.util.Iterator;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -67,7 +65,6 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
     static final String OD_LAYER_FOLDER_NAME = "OptionsDialog"; // NOI18N
     static final String CATEGORY_NAME = "General"; // NOI18N
     private OptionsPanelController controller = null;
-    private ScheduledFuture<?> stateQueryTask;
     private final JComponent origPanel;
     
     private static final RequestProcessor RP = new RequestProcessor("ProxySettingsPanel", 1); // NOI18N
@@ -83,9 +80,7 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
             hideUnwantedItems();
             proxySettingPanel.add(origPanel, BorderLayout.CENTER);
         } else {
-            stateQueryTask = null;
             proxySettingPanel.add(new JLabel(NbBundle.getMessage(ProxySettingsPanel.class, "ProxySettingsPanel.error.noProxySettings"))); // NOI18N
-            applyButton.setVisible(false);
         }
     }
 
@@ -95,30 +90,6 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
         }
 
         return controller.isValid();
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        if (controller != null) {
-
-            stateQueryTask = RP.scheduleAtFixedRate(new Runnable() {
-
-                @Override
-                public void run() {
-                    applyButton.setEnabled(controller.isChanged() && controller.isValid());
-                }
-            }, 0, 200, TimeUnit.MILLISECONDS);
-        }
-    }
-
-    @Override
-    public void removeNotify() {
-        if (stateQueryTask != null) {
-            stateQueryTask.cancel(false);
-            stateQueryTask = null;
-        }
-        super.removeNotify();
     }
 
     /**
@@ -131,45 +102,38 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         proxySettingPanel = new javax.swing.JPanel();
-        applyButton = new javax.swing.JButton();
 
         proxySettingPanel.setLayout(new java.awt.BorderLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(applyButton, org.openide.util.NbBundle.getMessage(ProxySettingsPanel.class, "ProxySettingsPanel.applyButton.text")); // NOI18N
-        applyButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                applyButtonActionPerformed(evt);
-            }
-        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(proxySettingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(0, 249, Short.MAX_VALUE)
-                .addComponent(applyButton))
+            .addComponent(proxySettingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 401, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(proxySettingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(applyButton))
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
-        controller.applyChanges();
-        controller.update();
-        applyButton.setEnabled(false);
-        hideUnwantedItems();
-    }//GEN-LAST:event_applyButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton applyButton;
     private javax.swing.JPanel proxySettingPanel;
     // End of variables declaration//GEN-END:variables
+
+    private void applyProxyChanges() {
+        controller.applyChanges();
+        controller.update();
+        hideUnwantedItems();
+    }
+
+    public void applyProxyChangesIfNeed() {
+        if (controller.isChanged() && controller.isValid()) {
+            applyProxyChanges();
+        }
+    }
 
     private JComponent findGeneralOptionsPanel() {
         Lookup lookup = Lookups.forPath(OD_LAYER_FOLDER_NAME);
