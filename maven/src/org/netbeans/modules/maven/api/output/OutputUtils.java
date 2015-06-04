@@ -42,11 +42,17 @@
 
 package org.netbeans.modules.maven.api.output;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -58,7 +64,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
-import static org.netbeans.modules.maven.api.output.Bundle.*;
 
 /**
  *
@@ -67,57 +72,129 @@ import static org.netbeans.modules.maven.api.output.Bundle.*;
 public final class OutputUtils {
     public static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((?:Native Method|(.*)\\.java\\:(\\d+))\\)"); //NOI18N
  
+    private static final Map<Project, StacktraceOutputListener> projectStacktraceListeners = new WeakHashMap<>();
+    private static final Map<FileObject, StacktraceOutputListener> fileStacktraceListeners = new WeakHashMap<>();
+    
     /** Creates a new instance of OutputUtils */
     private OutputUtils() {
     }
     
+    /**
+     * 
+     * @param line
+     * @param classPath
+     * @return 
+     * @deprecated use {@link #matchStackTraceLine(java.lang.String, org.openide.filesystems.FileObject)}  
+     *              or {@link #matchStackTraceLine(java.lang.String, org.netbeans.api.project.Project)} instead.
+     */
     public static OutputListener matchStackTraceLine(String line, ClassPath classPath) {
+        StacktraceAttributes sa = matchStackTraceLine(line);
+        return sa != null ? new ClassPathStacktraceOutputListener(classPath, sa) : null;
+    }
+    
+    /**
+     * 
+     * @param line
+     * @param project
+     * @return 
+     */
+    public static OutputListener matchStackTraceLine(String line, Project project) {
+        StacktraceAttributes sa = matchStackTraceLine(line);
+        if(sa != null) {
+            synchronized(projectStacktraceListeners) {
+                StacktraceOutputListener list = projectStacktraceListeners.get(project);
+                if(list == null) {
+                    list = new ProjectStacktraceOutputListener(project);
+                    projectStacktraceListeners.put(project, list);
+                }
+                return list;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 
+     * @param line
+     * @param fileObject
+     * @return 
+     */
+    public static OutputListener matchStackTraceLine(String line, FileObject fileObject) {
+        StacktraceAttributes sa = matchStackTraceLine(line);
+        if(sa != null) {
+            synchronized(fileStacktraceListeners) {
+                StacktraceOutputListener list = fileStacktraceListeners.get(fileObject);
+                if(list == null) {
+                    list = new FileObjectStacktraceOutputListener(fileObject);
+                    fileStacktraceListeners.put(fileObject, list);
+                }
+                return list;
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * 
+     * @param line
+     * @param classPath
+     * @return 
+     */
+    private static StacktraceAttributes matchStackTraceLine(String line) {
         Matcher match = linePattern.matcher(line);
-        OutputListener list = null;
         if (match.matches() && match.groupCount() == 3) {
             String method = match.group(1);
             String file = match.group(2);
             String lineNum = match.group(3);
             int index = file == null || file.isEmpty() ? -1 : method.indexOf(file);
             if (index > -1) {
-                return new StacktraceOutputListener(method, file, lineNum, classPath);
+                return new StacktraceAttributes(method, file, lineNum);
             }
         }
-        return list;
+        return null;
     }
     
-    
-    private static class StacktraceOutputListener implements OutputListener {
+    private static class StacktraceAttributes {
         private final String method;
         private final String file;
         private final String lineNum;
-        private final ClassPath classPath;
-        
-        private StacktraceOutputListener(String method, String file, String lineNum, ClassPath classPath) {
+        public StacktraceAttributes(String method, String file, String lineNum) {
             this.method = method;
             this.file = file;
             this.lineNum = lineNum;
-            this.classPath = classPath;
         }
+    }
+    
+    private static abstract class StacktraceOutputListener implements OutputListener {
+        
+        protected abstract ClassPath getClassPath();
+        
+        protected  StacktraceAttributes getStacktraceAttributes(String line) {
+            return matchStackTraceLine(line);
+        }
+
         @Override
         public void outputLineSelected(OutputEvent ev) {
-//            cookie.getLineSet().getCurrent(line).show(Line.SHOW_SHOW);
+    //            cookie.getLineSet().getCurrent(line).show(Line.SHOW_SHOW);
         }
-        
+
         /** Called when some sort of action is performed on a line.
          * @param ev the event describing the line
          */
         @Override
         @NbBundle.Messages({
             "# {0} - class name",
-            "OutputUtils_NotFound=Class \"{0}\" not found on classpath", 
+            "NotFound=Class \"{0}\" not found on classpath", 
             "# {0} - file name",
-            "OutputUtils_NoSource=Source file not found for \"{0}\""
+            "NoSource=Source file not found for \"{0}\""
         })
         public void outputLineAction(OutputEvent ev) {
-            int index = method.indexOf(file);
-            String packageName = method.substring(0, index).replace('.', '/'); //NOI18N
-            String resourceName = packageName + file + ".class"; //NOI18N
+            StacktraceAttributes sa = matchStackTraceLine(ev.getLine());
+            ClassPath classPath = getClassPath();
+
+            int index = sa.method.indexOf(sa.file);
+            String packageName = sa.method.substring(0, index).replace('.', '/'); //NOI18N
+            String resourceName = packageName + sa.file + ".class"; //NOI18N
             FileObject resource = classPath.findResource(resourceName);
             if (resource != null) {
                 FileObject root = classPath.findOwnerRoot(resource);
@@ -126,13 +203,13 @@ public final class OutputUtils {
                     SourceForBinaryQuery.Result res = SourceForBinaryQuery.findSourceRoots(url);
                     FileObject[] rootz = res.getRoots();
                     for (int i = 0; i < rootz.length; i++) {
-                        String path = packageName + file + ".java"; //NOI18N
+                        String path = packageName + sa.file + ".java"; //NOI18N
                         FileObject javaFo = rootz[i].getFileObject(path);
                         if (javaFo != null) {
                             try {
                                 DataObject obj = DataObject.find(javaFo);
                                 EditorCookie cookie = obj.getLookup().lookup(EditorCookie.class);
-                                int lineInt = Integer.parseInt(lineNum);
+                                int lineInt = Integer.parseInt(sa.lineNum);
                                 try {
                                     cookie.getLineSet().getCurrent(lineInt - 1).show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                                 } catch (IndexOutOfBoundsException x) { // #155880
@@ -144,20 +221,77 @@ public final class OutputUtils {
                             }
                         }
                     }
-                    StatusDisplayer.getDefault().setStatusText(OutputUtils_NoSource(file));
+                    StatusDisplayer.getDefault().setStatusText(Bundle.NoSource(sa.file));
                 }
             } else {
-                StatusDisplayer.getDefault().setStatusText(OutputUtils_NotFound(file));
+                StatusDisplayer.getDefault().setStatusText(Bundle.NotFound(sa.file));
             }
         }
-        
+
         /** Called when a line is cleared from the buffer of known lines.
          * @param ev the event describing the line
          */
         @Override
         public void outputLineCleared(OutputEvent ev) {
         }
-        
+    }
+    
+    private static class ProjectStacktraceOutputListener extends StacktraceOutputListener {
+        private final WeakReference<Project> ref;
+
+        public ProjectStacktraceOutputListener(Project project) {
+            this.ref = new WeakReference<>(project);
+        }
+
+        @Override
+        protected ClassPath getClassPath() {
+            Project prj = ref.get();
+            if(prj != null) {
+                ClassPath[] cp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
+                return ClassPathSupport.createProxyClassPath(cp);
+            }
+            return null;
+        }        
+    }
+    
+    private static class FileObjectStacktraceOutputListener extends StacktraceOutputListener {
+        private final WeakReference<FileObject> ref;
+
+        public FileObjectStacktraceOutputListener(FileObject file) {
+            this.ref = new WeakReference<>(file);
+        }
+
+        @Override
+        protected ClassPath getClassPath() {
+            FileObject fileObject = ref.get();
+            if(fileObject != null) {
+                return ClassPath.getClassPath(fileObject, ClassPath.EXECUTE);
+            }
+            return null;
+        }        
+    }
+    
+    /**
+     * Legacy
+     */
+    private static class ClassPathStacktraceOutputListener extends StacktraceOutputListener {
+        private final ClassPath classPath;
+        private final StacktraceAttributes sa;
+
+        public ClassPathStacktraceOutputListener(ClassPath classPath, StacktraceAttributes sa) {
+            this.classPath = classPath;
+            this.sa = sa;
+        }
+
+        @Override
+        protected ClassPath getClassPath() {
+            return classPath;
+        }        
+
+        @Override
+        protected StacktraceAttributes getStacktraceAttributes(String line) {
+            return sa;
+        }
     }
     
 }

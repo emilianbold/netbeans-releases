@@ -109,7 +109,7 @@ public class Lambda {
     @Messages({
         "DN_lambda2Class=Convert Lambda Expression to Anonymous Innerclass",
         "DESC_lambda2Class=Converts lambda expressions to anonymous inner classes",
-        "ERR_lambda2Class="
+        "ERR_lambda2Class=Anonymous class can be used"
     })
     @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)
     public static ErrorDescription lambda2Class(HintContext ctx) {
@@ -126,7 +126,7 @@ public class Lambda {
     @Messages({
         "DN_lambda2MemberReference=Convert Lambda Expression to Member Reference",
         "DESC_lambda2MemberReference=Converts lambda expressions to member references",
-        "ERR_lambda2MemberReference=",
+        "ERR_lambda2MemberReference=Member reference can be used",
         "FIX_lambda2MemberReference=Use member reference"
     })
     @TriggerTreeKind(Kind.LAMBDA_EXPRESSION)

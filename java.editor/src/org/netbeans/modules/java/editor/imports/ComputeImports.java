@@ -59,6 +59,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -102,7 +103,7 @@ import org.openide.util.Union2;
  *
  * @author Jan Lahoda
  */
-public class ComputeImports {
+public final class ComputeImports {
     
     private static final String ERROR = "<error>";
     
@@ -111,6 +112,28 @@ public class ComputeImports {
     }
     
     private boolean cancelled;
+
+    /**
+     * Candidate Elements, filtered according to visibility rules
+     */
+    Map<String, List<Element>> candidates = new HashMap<>();
+    
+    /**
+     * Candidate Elements, with no respect to visibility
+     */
+    Map<String, List<Element>> notFilteredCandidates = new HashMap<>();
+    
+    /**
+     * For each name, a possible FQNs for methods. Computed for each round
+     * of Hint processing
+     */
+    Map<String, Set<String>> possibleMethodFQNs = new HashMap<>();
+    
+    /**
+     * Index of possible elements of the same FQN. Computed for each round
+     * of Hint processing
+     */
+    Map<String, List<Element>> fqn2Methods = new HashMap<>();
     
     public synchronized void cancel() {
         cancelled = true;
@@ -119,26 +142,40 @@ public class ComputeImports {
             visitor.cancel();
     }
     
+    public Set<String> getMethodFQNs(String simpleName) {
+        return possibleMethodFQNs.get(simpleName);
+    }
+    
     private synchronized boolean isCancelled() {
         return cancelled;
     }
     
+    public List<Element> getCandidates(String simpleName) {
+        return candidates.get(simpleName);
+    }
+    
+    public List<Element> getRawCandidates(String simpleName) {
+        return notFilteredCandidates.get(simpleName);
+    }
+    
     private static final Object IMPORT_CANDIDATES_KEY = new Object();
     
+    public ComputeImports computeCandidatesEx(CompilationInfo info) {
+        ComputeImports cache = (ComputeImports)info.getCachedValue(IMPORT_CANDIDATES_KEY);
+        if (cache != null) {
+            return cache;
+        }
+        computeCandidates(info, Collections.<String>emptySet());
+        info.putCachedValue(IMPORT_CANDIDATES_KEY, this, CacheClearPolicy.ON_CHANGE);
+        return this;
+    }
+    
+    public Pair<Map<String, List<Element>>, Map<String, List<Element>>> getSimpleCandidates() {
+        return new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(candidates, notFilteredCandidates);
+    }
+    
     public Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info) {
-        Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = (Pair<Map<String, List<Element>>, Map<String, List<Element>>>) info.getCachedValue(IMPORT_CANDIDATES_KEY);
-        
-        if (result != null) {
-            return result;
-        }
-        
-        result = computeCandidates(info, Collections.<String>emptySet());
-        
-        if (!isCancelled() && result != null) {
-            info.putCachedValue(IMPORT_CANDIDATES_KEY, result, CacheClearPolicy.ON_CHANGE);
-        }
-        
-        return result;
+        return computeCandidatesEx(info).getSimpleCandidates();
     }
     
     private TreeVisitorImpl visitor;
@@ -148,15 +185,14 @@ public class ComputeImports {
     }
     
     Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info, Set<String> forcedUnresolved) {
-        Map<String, List<Element>> candidates = new HashMap<String, List<Element>>();
-        Map<String, List<Element>> notFilteredCandidates = new HashMap<String, List<Element>>();
         TreeVisitorImpl v = new TreeVisitorImpl(info);
 
         setVisitor(v);
-        
-        v.scan(info.getCompilationUnit(), new HashMap<String, Object>());
-        
-        setVisitor(null);
+        try {
+            v.scan(info.getCompilationUnit(), new HashMap<String, Object>());
+        } finally {
+            setVisitor(null);
+        }
         
         Set<String> unresolvedNames = new HashSet<String>(v.unresolved);
         
@@ -220,37 +256,100 @@ public class ComputeImports {
                 return new Pair(Collections.emptyMap(), Collections.emptyMap());
             
             wasChanged = false;
+            // reset possible FQNs, since the set of acessible stuff may have changed -> 
+            // collect again
+            possibleMethodFQNs.clear();
+            fqn2Methods.clear();
             
             for (Hint hint: v.hints) {
-                wasChanged |= hint.filter(info, notFilteredCandidates, candidates);
+                wasChanged |= hint.filter(info, this);
+            }
+        }
+        
+        // post processing: if some method hint was involved for a SN, we must retain ONLY
+        // such Elements, which correspond to at least 1 method reference in the text. 
+        for (String sn : possibleMethodFQNs.keySet()) {
+            Set<String> fqns = possibleMethodFQNs.get(sn);
+            
+            List<Element> cands = candidates.get(sn);
+            List<Element> rawCands = notFilteredCandidates.get(sn);
+            
+            if (cands != null) {
+                for (Iterator<Element> itE = cands.iterator(); itE.hasNext(); ) {
+                    Element x = itE.next();
+                    if (x.getKind() != ElementKind.METHOD) {
+                        continue;
+                    }
+                    String fq = info.getElementUtilities().getElementName(x, true).toString();
+                    if (!fqns.contains(fq)) {
+                        itE.remove();
+                    }
+                }
+            }
+            if (rawCands != null) {
+                for (Iterator<Element> itE = rawCands.iterator(); itE.hasNext(); ) {
+                    Element x = itE.next();
+                    if (x.getKind() != ElementKind.METHOD) {
+                        continue;
+                    }
+                    String fq = info.getElementUtilities().getElementName(x, true).toString();
+                    if (!fqns.contains(fq)) {
+                        itE.remove();
+                    }
+                }
             }
         }
             
         return new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(candidates, notFilteredCandidates);
     }
     
-    public static String displayNameForImport(@NonNull CompilationInfo info, @NonNull Element element) {
+    public void addMethodFqn(CompilationInfo info, Element el) {
+        if (el.getKind() != ElementKind.METHOD) {
+            return;
+        }
+        String fqn = info.getElementUtilities().getElementName(el, true).toString();
+        List<Element> els = fqn2Methods.get(fqn);
+        if (els == null) {
+            els = new ArrayList<>(2);
+            fqn2Methods.put(fqn, els);
+        }
+        els.add(el);
+        String simpleName = ((ExecutableElement)el).getSimpleName().toString();
+        Set<String> col = possibleMethodFQNs.get(simpleName);
+        if (col == null) {
+            col = new HashSet<>(3);
+            possibleMethodFQNs.put(simpleName, col);
+        }
+        col.add(fqn);
+    }
+    
+    public String displayNameForImport(@NonNull CompilationInfo info, @NonNull Element element) {
         if (element.getKind().isClass() || element.getKind().isInterface()) {
             return ((TypeElement) element).getQualifiedName().toString();
         }
         
         StringBuilder fqnSB = new StringBuilder();
-
-        fqnSB.append(((TypeElement) element.getEnclosingElement()).getQualifiedName());
-        fqnSB.append('.');
-        fqnSB.append(element.getSimpleName());
+        
+        fqnSB.append(info.getElementUtilities().getElementName(element, true));
 
         if (element.getKind() == ElementKind.METHOD) {
+            String fqn = fqnSB.toString();
             fqnSB.append('(');
-            boolean first = true;
-            for (VariableElement var : ((ExecutableElement) element).getParameters()) {
-                if (!first) {
-                    fqnSB.append(", ");
+            // check if there are no overloads, otherwise append just ellipsis:
+            Collection<Element> col = fqn2Methods.get(fqn);
+            if (col == null || col.size() == 1) {
+                boolean first = true;
+                for (VariableElement var : ((ExecutableElement) element).getParameters()) {
+                    if (!first) {
+                        fqnSB.append(", ");
+                    }
+                    fqnSB.append(info.getTypeUtilities().getTypeName(info.getTypes().erasure(var.asType())));
+                    first = false;
                 }
-                fqnSB.append(info.getTypeUtilities().getTypeName(info.getTypes().erasure(var.asType())));
-                first = false;
+            } else {
+                fqnSB.append("..."); // NOI18N
             }
-            fqnSB.append(')');
+            fqnSB.append(')'); // NOI18N
         }
         
         return fqnSB.toString();
@@ -586,7 +685,7 @@ public class ComputeImports {
     
     public static interface Hint {
         
-        public abstract boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates);
+        public abstract boolean filter(CompilationInfo info, ComputeImports state);
         
     }
     
@@ -600,7 +699,9 @@ public class ComputeImports {
             this.right = right;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+        public boolean filter(CompilationInfo info, ComputeImports state) {
+            Map<String, List<Element>> candidates = state.candidates;
+            
             List<Element> left = null;
             List<Element> right = null;
             boolean leftReadOnly = false;
@@ -651,7 +752,9 @@ public class ComputeImports {
             this.allowPrefix = allowPrefix;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+        public boolean filter(CompilationInfo info, ComputeImports state) {
+            Map<String, List<Element>> candidates = state.candidates;
+            
             List<Element> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
@@ -698,7 +801,10 @@ public class ComputeImports {
             this.notAcceptedKinds = notAcceptedKinds;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+        public boolean filter(CompilationInfo info, ComputeImports state) {
+            Map<String, List<Element>> rawCandidates = state.notFilteredCandidates;
+            Map<String, List<Element>> candidates = state.candidates;
+            
             // this is a hack, but if the kind does not match, we cannot offer the element even as 'not preferred'.
             // Better enable just for annotation types, otherwise we might stop offering e.g. interfaces in place where a class could be used (?)
             if (acceptedKinds.contains(ElementKind.ANNOTATION_TYPE) && acceptedKinds.size() == 1) {
@@ -741,7 +847,10 @@ public class ComputeImports {
             this.scope = scope;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+        public boolean filter(CompilationInfo info, ComputeImports state) {
+            Map<String, List<Element>> rawCandidates = state.notFilteredCandidates;
+            Map<String, List<Element>> candidates = state.candidates;
+            
             List<Element> cands = rawCandidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
@@ -774,16 +883,16 @@ public class ComputeImports {
             this.paramTypes = paramTypes;
         }
 
-        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
-            List<Element> rawCands = rawCandidates.get(simpleName);
-            List<Element> cands = candidates.get(simpleName);
+        public boolean filter(CompilationInfo info, ComputeImports state) {
+            List<Element> rawCands = state.notFilteredCandidates.get(simpleName);
+            List<Element> cands = state.candidates.get(simpleName);
             
             if (rawCands == null || cands == null) {
                 return false;
             }
 
             boolean modified = false;
-            
+            boolean someMatch = false;
             for (Element c : new ArrayList<Element>(rawCands)) {
                 if (c.getKind() != ElementKind.METHOD) {
                     rawCands.remove(c);
@@ -821,15 +930,21 @@ public class ComputeImports {
                     }
                     
                     matches &= real.hasNext() == formal.hasNext();
-
-                    if (!matches) {
-                        rawCands.remove(c);
-                        cands.remove(c);
-                        modified |= true;
+                    
+                    if (matches) {
+                        state.addMethodFqn(info, c);
+                        someMatch = true;
                     }
                 }
             }
-            
+            if (!someMatch) {
+                // sorry, no candidate matched the simple name -> remove all candidates
+                if (!rawCands.isEmpty()) {
+                    cands.clear();
+                    rawCands.clear();
+                    modified = true;
+                }
+            }
             return modified;
         }
         
@@ -845,5 +960,5 @@ public class ComputeImports {
             this.b = b;
         }
     }
-    
+
 }
