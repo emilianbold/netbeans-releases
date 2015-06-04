@@ -216,7 +216,7 @@ public class GulpOptionsPanel extends JPanel {
 
     private void installLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installLabelMousePressed
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://gulpjs.com/")); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md")); // NOI18N
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationMakefile
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.CompilerSetNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.DevelopmentHostNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformSpecificProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RemoteSyncFactoryNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.RequiredProjectsNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -225,7 +226,8 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
 
         developmentHost.addPropertyChangeListener(compilerSet);
         codeAssistanceConfiguration = new CodeAssistanceConfiguration(this);
-        platformSpecificConfiguration = new BooleanConfiguration(platformSpecific);
+        platformSpecificConfiguration = new BooleanConfiguration(false);
+        platformSpecificConfiguration.setValue(platformSpecific);
         initAuxObjects();
     }
     
@@ -828,6 +830,7 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
             set = Sheet.createExpertSet();
             set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
             set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
+            set.put(new PlatformSpecificProp(this, getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
             sheet.put(set);
         }
 

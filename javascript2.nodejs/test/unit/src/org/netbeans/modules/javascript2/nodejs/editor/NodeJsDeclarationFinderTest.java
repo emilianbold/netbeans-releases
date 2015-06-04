@@ -197,4 +197,24 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
     public void testIssue247565_15() throws Exception {
         checkDeclaration("TestNavigation/public_html/js/issue247565/issue247565.js", "o2.obj.ni^ck;", "literalRef.js", 218);
     }
+    
+    @Test
+    public void testIssue249854_01() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/app/maingt.js", "p.b^ar();//gt;5;func.js;8;10", "func.js", 105);
+    }
+    
+    @Test
+    public void testIssue249854_02() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/app/maingt.js", "console.log(p.getAtt^empt().aa);//gt;19;func.js;38;22", "func.js", 601);
+    }
+    
+    @Test
+    public void testIssue247727_01() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247727/issue247727.js", "o7.ma^rs.jejda;", "test247727.js", 148);
+    }
+    
+    @Test
+    public void testIssue247727_02() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/issue247727/issue247727.js", "o7.mars.jej^da;", "test247727.js", 75);
+    }
 }
