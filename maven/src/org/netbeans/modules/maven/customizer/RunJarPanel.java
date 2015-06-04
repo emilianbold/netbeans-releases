@@ -71,7 +71,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
@@ -244,7 +243,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             }
             if (params != null) {
                 oldAllParams = params;
-                oldVMParams = splitJVMParams(params);
+                oldVMParams = splitJVMParams(params, true);
                 if (oldVMParams != null && oldVMParams.contains("-classpath %classpath")) {
                     oldVMParams = oldVMParams.replace("-classpath %classpath", "");
                 }
@@ -384,8 +383,8 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                     .addComponent(lblMainClass))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(lblHint)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblHint)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -393,7 +392,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                             .addComponent(txtWorkDir, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtArguments, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtMainClass, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(comConfiguration, javax.swing.GroupLayout.Alignment.LEADING, 0, 230, Short.MAX_VALUE))
+                            .addComponent(comConfiguration, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnWorkDir, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -423,11 +422,11 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lblVMOptions)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(customizeOptionsButton))
+                    .addComponent(customizeOptionsButton)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 55, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblHint)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addGap(40, 40, 40))
         );
 
         txtMainClass.getAccessibleContext().setAccessibleDescription("Main class");
@@ -460,6 +459,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         String origin = txtVMOptions.getText();
         try {
             String result = ProjectUISupport.showVMOptionCustomizer(SwingUtilities.getWindowAncestor(this), origin);
+            result = splitJVMParams(result, true);
             txtVMOptions.setText(result);
         } catch (Exception e) {
             Logger.getLogger(RunJarPanel.class.getName()).log(Level.WARNING, "Cannot parse vm options.", e); // NOI18N
@@ -470,6 +470,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         String newMainClass = txtMainClass.getText().trim();
         String newParams = txtArguments.getText().trim();
         String newVMParams = txtVMOptions.getText().trim();
+        newVMParams = newVMParams.replace('\n', ' ');
         String newWorkDir = txtWorkDir.getText().trim();
         ActionToGoalMapping a2gm = handle.getActionMappings((ModelHandle2.Configuration) comConfiguration.getSelectedItem());
         if (isCurrentRun || isCurrentDebug || isCurrentProfile) {
@@ -572,13 +573,21 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     }
     
     static String splitJVMParams(String line) {
+        return splitJVMParams(line, false);
+    }
+    
+    private static String splitJVMParams(String line, boolean newLines) {
         PropertySplitter ps = new PropertySplitter(line);
         ps.setSeparator(' '); //NOI18N
         String s = ps.nextPair();
         String jvms = ""; //NOI18N
         while (s != null) {
             if (s.startsWith("-") || /* #199411 */s.startsWith("\"-") || s.contains("%classpath")) { //NOI18N
-                jvms = jvms + " " + s;
+                if(s.contains("%classpath")) {
+                    jvms =  jvms + " " + s;
+                } else {
+                    jvms =  jvms + (jvms.isEmpty() ? "" : (newLines ? "\n" : " ")) + s;
+                }
             } else if (s.equals("${packageClassName}") || s.matches("[\\w]+[\\.]{0,1}[\\w\\.]*")) { //NOI18N
                 break;
             }
