@@ -156,6 +156,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3144,20 +3145,32 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (vm == null) {
                 return null;
             }
-            if (type instanceof ByteType) {
-                return mirrorOf(vm, primValue.byteValue());
-            } else if (type instanceof CharType) {
-                return mirrorOf(vm, primValue.charValue());
-            } else if (type instanceof DoubleType) {
-                return mirrorOf(vm, primValue.doubleValue());
-            } else if (type instanceof FloatType) {
-                return mirrorOf(vm, primValue.floatValue());
-            } else if (type instanceof IntegerType) {
-                return mirrorOf(vm, primValue.intValue());
-            } else if (type instanceof LongType) {
-                return mirrorOf(vm, primValue.longValue());
+            if (type instanceof PrimitiveType) {
+                if (type instanceof ByteType) {
+                    return mirrorOf(vm, primValue.byteValue());
+                } else if (type instanceof CharType) {
+                    return mirrorOf(vm, primValue.charValue());
+                } else if (type instanceof DoubleType) {
+                    return mirrorOf(vm, primValue.doubleValue());
+                } else if (type instanceof FloatType) {
+                    return mirrorOf(vm, primValue.floatValue());
+                } else if (type instanceof IntegerType) {
+                    return mirrorOf(vm, primValue.intValue());
+                } else if (type instanceof LongType) {
+                    return mirrorOf(vm, primValue.longValue());
+                } else if (type instanceof ShortType) {
+                    return mirrorOf(vm, primValue.shortValue());
+                } else {
+                    Assert.error(arg0, "unknownType", type.toString());
+                }
+            } else if (type instanceof ReferenceType) {
+                // Box the primitive type:
+                List<Value> element = new LinkedList<>();
+                element.add(primValue);
+                autoboxElements(typeTree, (ReferenceType) type, element, evaluationContext);
+                expr = element.get(0);
             } else {
-                return mirrorOf(vm, primValue.shortValue());
+                Assert.error(arg0, "unknownType", type.toString());
             }
         }
         if (!instanceOf(((ObjectReference) expr).type(), (Type) type)) {
@@ -4064,22 +4077,22 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (!PRIMITIVE_CLASS_NAMES.contains(classType)) {
                 type = adjustBoxingType(type, (PrimitiveType) v.type(), evaluationContext);
             } else {
-                VirtualMachine vm = v.virtualMachine();
-                if (classType.equals("java.lang.Boolean") && !(v instanceof BooleanValue)) {
+                VirtualMachine vm = type.virtualMachine();
+                if (classType.equals("java.lang.Boolean") && (v instanceof ArtificialMirror || !(v instanceof BooleanValue))) {
                     v = vm.mirrorOf(v.booleanValue());
-                } else if (classType.equals("java.lang.Byte") && !(v instanceof ByteValue)) {
+                } else if (classType.equals("java.lang.Byte") && (v instanceof ArtificialMirror || !(v instanceof ByteValue))) {
                     v = vm.mirrorOf(v.byteValue());
-                } else if (classType.equals("java.lang.Character") && !(v instanceof CharValue)) {
+                } else if (classType.equals("java.lang.Character") && (v instanceof ArtificialMirror || !(v instanceof CharValue))) {
                     v = vm.mirrorOf(v.charValue());
-                } else if (classType.equals("java.lang.Short") && !(v instanceof ShortValue)) {
+                } else if (classType.equals("java.lang.Short") && (v instanceof ArtificialMirror || !(v instanceof ShortValue))) {
                     v = vm.mirrorOf(v.shortValue());
-                } else if (classType.equals("java.lang.Integer") && !(v instanceof IntegerValue)) {
+                } else if (classType.equals("java.lang.Integer") && (v instanceof ArtificialMirror || !(v instanceof IntegerValue))) {
                     v = vm.mirrorOf(v.intValue());
-                } else if (classType.equals("java.lang.Long") && !(v instanceof LongValue)) {
+                } else if (classType.equals("java.lang.Long") && (v instanceof ArtificialMirror || !(v instanceof LongValue))) {
                     v = vm.mirrorOf(v.longValue());
-                } else if (classType.equals("java.lang.Float") && !(v instanceof FloatValue)) {
+                } else if (classType.equals("java.lang.Float") && (v instanceof ArtificialMirror || !(v instanceof FloatValue))) {
                     v = vm.mirrorOf(v.floatValue());
-                } else if (classType.equals("java.lang.Double") && !(v instanceof DoubleValue)) {
+                } else if (classType.equals("java.lang.Double") && (v instanceof ArtificialMirror || !(v instanceof DoubleValue))) {
                     v = vm.mirrorOf(v.doubleValue());
                 }
             }
