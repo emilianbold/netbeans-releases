@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -75,12 +76,9 @@ import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 
 /**
  *
@@ -89,16 +87,10 @@ import org.openide.util.Pair;
 public class InlinePlugin extends CsmModificationRefactoringPlugin {
     private final InlineRefactoring refactoring;
     private Collection<CsmObject> referencedObjects;
-    private final String newText;
     
     public InlinePlugin(InlineRefactoring refactoring) {
         super(refactoring);
         this.refactoring = refactoring;
-        JTextComponent component = EditorRegistry.lastFocusedComponent();
-        final int caret = component.getCaretPosition();
-        Document doc = component.getDocument();
-        CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, caret);
-        newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
     }
     
     @Override
@@ -136,13 +128,15 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
     
     private void processRefactoredReferences(List<CsmReference> sortedRefs, CsmFile file, ModificationResult mr) {
         for (CsmReference ref : sortedRefs) {
-            String oldText = ref.getText().toString();
-            if (newText != null) {
-                String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
+            CsmObject obj = ref.getReferencedObject();
+            if (CsmKindUtilities.isMacro(obj)) {
+                CsmMacro macro = (CsmMacro) obj;
                 CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
-                CsmObject obj = ref.getReferencedObject();
-                if (CsmKindUtilities.isMacro(obj)) {
-                    CsmMacro macro = (CsmMacro) obj;
+                Document doc = CsmUtilities.openDocument(ces);
+                String oldText = ref.getText().toString();
+                String newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
+                if (newText != null) {
+                    String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
                     ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
                                                                                     , ref.getEndOffset() + getMacroParametersEndOffset(file, macro, ref.getEndOffset())
                                                                                     , ces
