@@ -28,6 +28,48 @@
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
+    <conf name="SunOS-sparc" type="2" platformSpecific="true">
+      <toolsSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+        <platform>0</platform>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>1</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+      <item path="execint.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
+    <conf name="SunOS-sparc_64" type="2" platformSpecific="true">
+      <toolsSet>
+        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+        <platform>0</platform>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>0</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+        </linkerTool>
+      </compileType>
+      <item path="execint.c" ex="false" tool="0" flavor2="0">
+      </item>
+    </conf>
     <conf name="SunOS-x86" type="2" platformSpecific="true">
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
@@ -70,46 +112,23 @@
       <item path="execint.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
-    <conf name="SunOS-sparc" type="2" platformSpecific="true">
+    <conf name="SunOS-Previse" type="2" platformSpecific="true">
       <toolsSet>
         <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
-        <platform>0</platform>
+        <platform>1</platform>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>0</developmentMode>
-          <stripSymbols>true</stripSymbols>
-          <architecture>1</architecture>
-        </cTool>
-        <linkerTool>
-          <stripSymbols>true</stripSymbols>
-          <linkerNorunpath>false</linkerNorunpath>
-        </linkerTool>
-      </compileType>
-      <item path="execint.c" ex="false" tool="0" flavor2="0">
-      </item>
-    </conf>
-    <conf name="SunOS-sparc_64" type="2" platformSpecific="true">
-      <toolsSet>
-        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
-        <platform>0</platform>
-        <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <developmentMode>0</developmentMode>
-          <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
+          <commandLine>-xprevise -xannotate</commandLine>
         </cTool>
         <linkerTool>
-          <stripSymbols>true</stripSymbols>
           <linkerNorunpath>false</linkerNorunpath>
         </linkerTool>
       </compileType>
-      <item path="execint.c" ex="false" tool="0" flavor2="0">
+      <item path="execint.c" ex="false" tool="0" flavor2="9">
       </item>
     </conf>
     <conf name="Linux-x86" type="2" platformSpecific="true">
@@ -160,6 +179,30 @@
       <item path="execint.c" ex="false" tool="0" flavor2="0">
       </item>
     </conf>
+    <conf name="Linux-sparc_64" type="2" platformSpecific="true">
+      <toolsSet>
+        <compilerSet>GNU|GNU</compilerSet>
+        <platform>2</platform>
+        <dependencyChecking>true</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <developmentMode>6</developmentMode>
+          <stripSymbols>true</stripSymbols>
+          <architecture>2</architecture>
+        </cTool>
+        <linkerTool>
+          <stripSymbols>true</stripSymbols>
+          <linkerNorunpath>false</linkerNorunpath>
+          <linkerLibItems>
+            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="execint.c" ex="false" tool="0" flavor2="9">
+      </item>
+    </conf>
     <conf name="MacOSX-x86" type="2" platformSpecific="true">
       <toolsSet>
         <compilerSet>GNU|GNU</compilerSet>
@@ -199,49 +242,6 @@
         </linkerTool>
       </compileType>
       <item path="execint.c" ex="false" tool="0" flavor2="0">
-      </item>
-    </conf>
-    <conf name="Linux-sparc_64" type="2" platformSpecific="true">
-      <toolsSet>
-        <compilerSet>GNU|GNU</compilerSet>
-        <platform>2</platform>
-        <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <developmentMode>6</developmentMode>
-          <stripSymbols>true</stripSymbols>
-          <architecture>2</architecture>
-        </cTool>
-        <linkerTool>
-          <stripSymbols>true</stripSymbols>
-          <linkerNorunpath>false</linkerNorunpath>
-          <linkerLibItems>
-            <linkerLibStdlibItem>DynamicLinking</linkerLibStdlibItem>
-          </linkerLibItems>
-        </linkerTool>
-      </compileType>
-      <item path="execint.c" ex="false" tool="0" flavor2="9">
-      </item>
-    </conf>
-    <conf name="SunOS-Previse" type="2" platformSpecific="true">
-      <toolsSet>
-        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
-        <platform>1</platform>
-        <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
-      </toolsSet>
-      <compileType>
-        <cTool>
-          <architecture>2</architecture>
-          <commandLine>-xprevise -xannotate</commandLine>
-        </cTool>
-        <linkerTool>
-          <linkerNorunpath>false</linkerNorunpath>
-        </linkerTool>
-      </compileType>
-      <item path="execint.c" ex="false" tool="0" flavor2="9">
       </item>
     </conf>
   </confs>
