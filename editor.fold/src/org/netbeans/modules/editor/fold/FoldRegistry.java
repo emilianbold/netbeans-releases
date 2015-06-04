@@ -290,7 +290,9 @@ public final class FoldRegistry  {
         
         
         Collection<? extends FoldTypeProvider> providers = r.allInstances();
-        Collection<? extends FoldTypeProvider> parentProvs = pr == null ? Collections.<FoldTypeProvider>emptySet() : pr.allInstances();
+        Collection<? extends FoldTypeProvider> parentProvs = pr == null ? 
+                Collections.<FoldTypeProvider>emptySet() : 
+                new ArrayList<>(pr.allInstances());
         
         for (Iterator<? extends FoldTypeProvider> it = parentProvs.iterator(); it.hasNext(); ) {
             FoldTypeProvider p = it.next();
