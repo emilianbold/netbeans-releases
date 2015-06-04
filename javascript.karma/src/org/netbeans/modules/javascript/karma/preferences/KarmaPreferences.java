@@ -65,7 +65,6 @@ public final class KarmaPreferences {
     public static final String CONFIG = "config"; // NOI18N
 
     private static final String ENABLED = "enabled"; // NOI18N
-    private static final String KARMA = "karma"; // NOI18N
     private static final String AUTOWATCH = "autowatch"; // NOI18N
     private static final String DEBUG = "debug"; // NOI18N
     private static final String DEBUG_BROWSER_ID = "debug.browser.id"; // NOI18N
@@ -82,15 +81,6 @@ public final class KarmaPreferences {
 
     public static void setEnabled(Project project, boolean enabled) {
         getPreferences(project).putBoolean(ENABLED, enabled);
-    }
-
-    @CheckForNull
-    public static String getKarma(Project project) {
-        return resolvePath(project, getPreferences(project).get(KARMA, null));
-    }
-
-    public static void setKarma(Project project, String karma) {
-        getPreferences(project).put(KARMA, relativizePath(project, karma));
     }
 
     @CheckForNull
@@ -161,22 +151,11 @@ public final class KarmaPreferences {
                 preferences = currentPreferences;
             } else {
                 // preferences put into cache, run autodetection
-                detectKarma(project);
                 detectConfig(project);
             }
         }
         assert preferences != null;
         return preferences;
-    }
-
-    private static void detectKarma(Project project) {
-        if (getKarma(project) != null) {
-            return;
-        }
-        File karma = KarmaUtils.findKarma(project);
-        if (karma != null) {
-            setKarma(project, karma.getAbsolutePath());
-        }
     }
 
     private static void detectConfig(Project project) {
