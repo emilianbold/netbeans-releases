@@ -131,20 +131,27 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
             CsmObject obj = ref.getReferencedObject();
             if (CsmKindUtilities.isMacro(obj)) {
                 CsmMacro macro = (CsmMacro) obj;
-                CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
-                Document doc = CsmUtilities.openDocument(ces);
-                String oldText = ref.getText().toString();
-                String newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
-                if (newText != null) {
-                    String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
-                    ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
-                                                                                    , ref.getEndOffset() + getMacroParametersEndOffset(file, macro, ref.getEndOffset())
-                                                                                    , ces
-                                                                                    , oldText
-                                                                                    , newText
-                                                                                    , descr);
-                    assert diff != null;
-                    mr.addDifference(file.getFileObject(), diff);
+                int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
+                int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, macro.getStartOffset())[0];
+                if (refLine == objLine && (ref.getContainingFile().equals(macro.getContainingFile()))) {
+                    continue;
+                } else {
+                    String oldText = ref.getText().toString();
+
+                    CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
+                    Document doc = CsmUtilities.openDocument(ces);
+                    String newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
+                    if (newText != null) {
+                        String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
+                        ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
+                                                                                        , ref.getEndOffset() + getMacroParametersEndOffset(file, macro, ref.getEndOffset())
+                                                                                        , ces
+                                                                                        , oldText
+                                                                                        , newText
+                                                                                        , descr);
+                        assert diff != null;
+                        mr.addDifference(file.getFileObject(), diff);
+                    }
                 }
             }
         }
