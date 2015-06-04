@@ -56,32 +56,32 @@
                   <Component id="lblConfiguration" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="comConfiguration" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtMainClass" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblArguments" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtArguments" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lblWorkDir" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="txtWorkDir" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="btnWorkDir" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="lblVMOptions" min="-2" max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" min="-2" pref="67" max="-2" attributes="0"/>
                   <Component id="customizeOptionsButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="jScrollPane1" alignment="0" pref="55" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="lblHint" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="91" max="32767" attributes="0"/>
+              <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
