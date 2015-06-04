@@ -202,4 +202,9 @@ public class NodeJsDeclarationFinderTest extends JsTestBase {
     public void testIssue249854_01() throws Exception {
         checkDeclaration("TestNavigation/public_html/js/app/maingt.js", "p.b^ar();//gt;5;func.js;8;10", "func.js", 105);
     }
+    
+    @Test
+    public void testIssue249854_02() throws Exception {
+        checkDeclaration("TestNavigation/public_html/js/app/maingt.js", "console.log(p.getAtt^empt().aa);//gt;19;func.js;38;22", "func.js", 601);
+    }
 }
