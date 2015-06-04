@@ -239,8 +239,7 @@ public class KarmaOptionsPanel extends JPanel {
 
     private void installLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installLabelMousePressed
         try {
-            // XXX https://github.com/karma-runner/karma-runner.github.com/issues/28
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://karma-runner.github.io/0.12/intro/installation.html")); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://karma-runner.github.io/latest/intro/installation.html")); // NOI18N
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
