@@ -133,14 +133,14 @@
     </conf>
     <conf name="Linux-x86" type="2" platformSpecific="true">
       <toolsSet>
-        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>0</developmentMode>
+          <developmentMode>6</developmentMode>
           <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
         </cTool>
@@ -157,14 +157,14 @@
     </conf>
     <conf name="Linux-x86_64" type="2" platformSpecific="true">
       <toolsSet>
-        <compilerSet>OracleSolarisStudio|OracleSolarisStudio</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
         <platform>2</platform>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
-          <developmentMode>0</developmentMode>
+          <developmentMode>6</developmentMode>
           <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
         </cTool>
