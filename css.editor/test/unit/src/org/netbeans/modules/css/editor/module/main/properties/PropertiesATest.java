@@ -2721,4 +2721,11 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "}";
         assertCssCode(code);
     }
+    
+    public void testMozBorderImageStandard() throws ParseException {
+        String code = ".test {\n"
+                + "  -moz-border-image: url('test.png') 8 fill;"
+                + "}";
+        assertCssCode(code);
+    }
 }
