@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -67,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.spi.ProjectMetadataFactory;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -206,6 +208,18 @@ public class ConfigurationXMLReader extends XMLDocReader {
             int activeIndex = ((MakeProject) project).getActiveConfigurationIndexFromPrivateXML();
             if (activeIndex >= 0) {
                 configurationDescriptor.getConfs().setActive(activeIndex);
+            } else {
+                PlatformInfo aDefault = PlatformInfo.getDefault(ExecutionEnvironmentFactory.getLocal());
+                int localPlatform = aDefault.getPlatform();
+                int i = 0;
+                for(Configuration conf : configurationDescriptor.getConfs().getConfigurations()) {
+                    MakeConfiguration mk = (MakeConfiguration)conf;
+                    if (localPlatform == mk.getDevelopmentHost().getBuildPlatform()) {
+                        configurationDescriptor.getConfs().setActive(i);
+                        break;
+                    }
+                    i++;
+                }
             }
         }
 

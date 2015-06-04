@@ -2700,6 +2700,7 @@ public class PropertiesATest extends CssModuleTestBase {
     public void testListInherit()  throws ParseException {
         String code = "ul {\n"
                 + "    list-style-position: inherit;\n"
+                + "    list-style: inherit\n"
                 + "}";
         assertCssCode(code);
     }
@@ -2710,6 +2711,20 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "  background: -o-linear-gradient(bottom right, red, blue); /* For Opera 11.1 to 12.0 */\n"
                 + "  background: -moz-linear-gradient(bottom right, red, blue); /* For Firefox 3.6 to 15 */\n"
                 + "  background: linear-gradient(to bottom right, red , blue); /* Standard syntax */\n"
+                + "}";
+        assertCssCode(code);
+    }
+    
+    public void testFirefoxAppearance() throws ParseException {
+        String code = ".test {\n"
+                + "  -moz-appearance: none"
+                + "}";
+        assertCssCode(code);
+    }
+    
+    public void testMozBorderImageStandard() throws ParseException {
+        String code = ".test {\n"
+                + "  -moz-border-image: url('test.png') 8 fill;"
                 + "}";
         assertCssCode(code);
     }
