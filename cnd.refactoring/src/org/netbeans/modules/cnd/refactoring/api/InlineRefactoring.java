@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.actions;
+package org.netbeans.modules.cnd.refactoring.api;
 
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.SetConfigurationAction;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author mtishkov
+ * @author Danila Sergeyev
  */
-public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
+public class InlineRefactoring extends AbstractRefactoring {
     
-
-    @Override
-    protected Action createDelegateAction(Project[] projects) {
-        return projects.length == 1 ? new SetConfigurationAction(projects[0]) : null;
-    }
-
-    @Override
-    protected boolean supportMultipleProjects() {
-        return false;
+    public enum Apply {
+        IN_PLACE,
+        IN_FILE,
+        IN_PROJECT
     }
     
-    @Override
-    public String getName() {
-        return NbBundle.getMessage( SetConfigurationAction.class, "LBL_SetConfigurationAction_Name");//NOI18N
+    private Apply place;
+    
+    public InlineRefactoring(CsmObject object, CsmContext editorContext) {
+        super(createLookup(object, editorContext));
     }
     
+    private static Lookup createLookup(CsmObject object, CsmContext editorContext) {
+        assert object != null || editorContext != null: "must be non null object to refactor";
+        if (editorContext == null) {
+            return Lookups.fixed(object);
+        } else if (object == null) {
+            return Lookups.fixed(editorContext);
+        } else {
+            return Lookups.fixed(object, editorContext);
+        }
+    }
+    
+    public Apply getApplyPlace() {
+        return place;
+    }
+    
+    public void setApplyPlace(Apply place) {
+        this.place = place;
+    }    
 }

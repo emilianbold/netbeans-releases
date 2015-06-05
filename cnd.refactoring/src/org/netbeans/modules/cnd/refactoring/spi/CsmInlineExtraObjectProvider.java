@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.actions;
+package org.netbeans.modules.cnd.refactoring.spi;
 
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.SetConfigurationAction;
-import org.openide.util.NbBundle;
+import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 
 /**
  *
- * @author mtishkov
+ * @author Danila Sergeyev
  */
-public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
-    
-
-    @Override
-    protected Action createDelegateAction(Project[] projects) {
-        return projects.length == 1 ? new SetConfigurationAction(projects[0]) : null;
-    }
-
-    @Override
-    protected boolean supportMultipleProjects() {
-        return false;
-    }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage( SetConfigurationAction.class, "LBL_SetConfigurationAction_Name");//NOI18N
-    }
-    
+public interface CsmInlineExtraObjectProvider {
+    Collection<CsmObject> getExtraObjects(CsmObject orig);
 }

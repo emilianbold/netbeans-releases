@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,46 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.actions;
+package org.netbeans.modules.cnd.refactoring.actions;
 
-import javax.swing.Action;
-import javax.swing.JMenuItem;
-import org.netbeans.api.project.Project;
-import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.Presenter;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author mtishkov
+ * @author Danila Sergeyev
  */
-abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareAction implements Presenter.Menu, Presenter.Popup{
+public class InlineAction extends CsmRefactoringGlobalAction {
     
-    private Action delegateAction;
-    
-    abstract protected Action createDelegateAction(Project[] projects);        
-    abstract protected boolean supportMultipleProjects();
-
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private InlineAction() {
+        super(RefactoringKind.INLINE_REFACTORING.getKey(), null);
+        putValue(NAME, RefactoringKind.INLINE_REFACTORING.getKey());
+        String displayText = NbBundle.getMessage(InlineAction.class, "LBL_InlineAction"); // NOI18N
+        putValue(SHORT_DESCRIPTION,displayText);
+        putValue(POPUP_TEXT,displayText);
+        putValue(MENU_TEXT,displayText);
     }
     
-    
+    @Override
+    public final void performAction(Lookup context) {
+        CsmActionsImplementationFactory.doInlineRefactoring(context);
+    }
     
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        //find projects
-        Project[] projects = getProjects(activatedNodes);
-        if (projects == null || projects.length == 0) {
-            delegateAction = null;
-            return false;
-        } else if (projects.length > 1 && ! supportMultipleProjects()) {
-            delegateAction = null;
-            return false;
-        }
-        delegateAction = createDelegateAction(projects);
-        return delegateAction != null;
+    public org.openide.util.HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return null;
+    protected boolean asynchronous() {
+        return false;
     }
-    
+
     @Override
-    public JMenuItem getPopupPresenter() {
-        if (delegateAction == null) {
-            return null;
-        }
-        if (Presenter.Popup.class.isAssignableFrom(delegateAction.getClass())) {
-            return ((Presenter.Popup)delegateAction).getPopupPresenter();
-        }
-        return null;
+    protected boolean applicable(Lookup context) {
+        return CsmActionsImplementationFactory.canPerformInlineRefactoring(context);
     }
-    
-    @Override
-    public JMenuItem getMenuPresenter() {
-        if (delegateAction == null) {
-            return null;
-        }        
-        if (Presenter.Menu.class.isAssignableFrom(delegateAction.getClass())) {
-            return ((Presenter.Menu)delegateAction).getMenuPresenter();
-        }
-        return null;
-    }      
-      
-    
 }

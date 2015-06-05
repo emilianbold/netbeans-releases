@@ -60,6 +60,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.actions.DebugTestAction;
@@ -68,6 +69,7 @@ import org.netbeans.modules.cnd.makeproject.actions.RunTestAction;
 import org.netbeans.modules.cnd.makeproject.actions.StepIntoTestAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.NodeActionFactory.RenameNodeAction;
@@ -395,6 +397,20 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     public void destroyImpl() throws IOException {
         final Folder aFolder = getFolder();
         if (!aFolder.isDiskFolder()) {
+            Folder parent = aFolder.getParent();
+            if (parent != null && provider != null) { // provider != null is probably a paranoia
+                MakeProject project = provider.getProject();
+                if (project != null) {                    
+                    ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (pdp != null) {
+                        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
+                        if (makeConfigurationDescriptor.okToChange()) {
+                            parent.removeFolderAction(folder);
+                            makeConfigurationDescriptor.save();
+                        }
+                    }                    
+                }
+            }            
             return;
         }
         String absPath = CndPathUtilities.toAbsolutePath(aFolder.getConfigurationDescriptor().getBaseDirFileObject(), aFolder.getRootPath());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui.actions;
+package org.netbeans.modules.cnd.makeproject.ui;
 
-import javax.swing.Action;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.SetConfigurationAction;
-import org.openide.util.NbBundle;
+import java.io.IOException;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
+import org.openide.explorer.ExtendedDelete;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 
 /**
  *
- * @author mtishkov
+ * @author vkvashin
  */
-public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
-    
+@org.openide.util.lookup.ServiceProvider(service = ExtendedDelete.class)
+public class LogicalFolderExtendedDelete implements ExtendedDelete {
 
     @Override
-    protected Action createDelegateAction(Project[] projects) {
-        return projects.length == 1 ? new SetConfigurationAction(projects[0]) : null;
-    }
-
-    @Override
-    protected boolean supportMultipleProjects() {
+    public boolean delete(Node[] nodes) throws IOException {
+        for (Node n : nodes) {
+            Object v = n.getValue("Folder");
+            if (!(v instanceof Folder)) {
+                return false;
+            }
+        }        
+        RemoveFolderAction action = SystemAction.get(RemoveFolderAction.class);
+        if (action != null) {
+            action.performAction(nodes);
+            return true;
+        }
         return false;
     }
-    
-    @Override
-    public String getName() {
-        return NbBundle.getMessage( SetConfigurationAction.class, "LBL_SetConfigurationAction_Name");//NOI18N
-    }
-    
 }

@@ -826,13 +826,13 @@ public final class MakeConfiguration extends Configuration implements Cloneable 
         set.put(new IntNodeProp(getConfigurationType(), true, "ConfigurationType", getString("ConfigurationTypeTxt"), getString("ConfigurationTypeHint"))); // NOI18N
         sheet.put(set);
 
+        set = Sheet.createExpertSet();
         if (isCompileConfiguration()) {
-            set = Sheet.createExpertSet();
             set.put(new BooleanNodeProp(getDependencyChecking(), true, "DependencyChecking", getString("DependencyCheckingTxt"), getString("DependencyCheckingHint"))); // NOI18N
             set.put(new BooleanNodeProp(getRebuildPropChanged(), true, "RebuildPropChanged", getString("RebuildPropChangedTxt"), getString("RebuildPropChangedHint"))); // NOI18N
-            set.put(new PlatformSpecificProp(this, getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
-            sheet.put(set);
         }
+        set.put(new PlatformSpecificProp(this, getPlatformSpecific(), true, "PlatformSpecific", getString("PlatformSpecificTxt"), getString("PlatformSpecificHint"))); // NOI18N
+        sheet.put(set);
 
         return sheet;
     }

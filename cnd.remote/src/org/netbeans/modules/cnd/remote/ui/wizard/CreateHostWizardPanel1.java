@@ -162,6 +162,9 @@ import org.openide.util.NbBundle;
 
     @Override
     public void validate() throws WizardValidationException {
+
+        component.applyProxyChangesIfNeed();
+
         String hostname = getComponent().getHostname();
         Integer port = getComponent().getPort();
 

@@ -106,4 +106,20 @@ public class CsmActionsImplementationProvider {
     public void doChangeParameters(Lookup lookup) {
         
     }
+    
+    /**
+     * @param lookup 
+     * @return true if provider can handle find usages
+     */
+    public boolean canPerformInlineRefactoring(Lookup lookup) {
+        return false;
+    }
+
+    /**
+     * implementation of "invoke Inline Refactoring"
+     * @param lookup 
+     */
+    public void doInlineRefactoring(Lookup lookup) {
+        
+    }
 }

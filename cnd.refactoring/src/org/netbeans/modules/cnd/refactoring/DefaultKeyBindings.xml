@@ -54,4 +54,5 @@ made subject to such option by the copyright holder.
     <bind actionName="introduce-field" key="OS-E"/>
     <bind actionName="introduce-variable" key="OS-V"/>
     
+    <bind actionName="inline-refactoring" key="OS-N" />
 </bindings>
