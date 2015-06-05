@@ -140,7 +140,13 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
             EAP6_PROFILES.add(Profile.JAVA_EE_6_WEB);
             EAP6_PROFILES.add(Profile.JAVA_EE_6_FULL);
         }
+        
+        private static final Set<Profile> WILDFLY_WEB_PROFILES = new HashSet<Profile>();
 
+        static {
+            WILDFLY_WEB_PROFILES.add(Profile.JAVA_EE_6_WEB);
+            WILDFLY_WEB_PROFILES.add(Profile.JAVA_EE_7_WEB);
+        }
         private LibraryImplementation[] libraries;
 
         private final WildFlyProperties properties;
@@ -152,6 +158,9 @@ public class WildflyJ2eePlatformFactory extends J2eePlatformFactory {
         @Override
         public Set<org.netbeans.api.j2ee.core.Profile> getSupportedProfiles() {
             if (this.properties.isWildfly()) {
+                if(this.properties.isServletOnly()) {
+                    return Collections.unmodifiableSet(WILDFLY_WEB_PROFILES);
+                }
                 return Collections.unmodifiableSet(WILDFLY_PROFILES);
             }
             return Collections.unmodifiableSet(EAP6_PROFILES);
