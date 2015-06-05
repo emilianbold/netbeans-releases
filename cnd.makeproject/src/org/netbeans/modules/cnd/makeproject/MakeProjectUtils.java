@@ -73,8 +73,13 @@ public class MakeProjectUtils {
         return env;
     }
     
+    @Deprecated
     public static boolean canChangeHost(Project project, MakeConfiguration mk) {
         return isFullRemote(project) ? FullRemoteExtension.canChangeHost(mk) : true;
+    }
+
+    public static boolean canChangeHost(Project project) {
+        return ! isFullRemote(project);
     }
 
     private static boolean isFullRemote(Project project) {
