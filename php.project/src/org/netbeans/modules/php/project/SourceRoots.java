@@ -411,7 +411,13 @@ public final class SourceRoots {
                     if (index < 0) {
                         index = 0;
                     }
-                    String name = segments.get(index);
+                    String name;
+                    if (index >= segments.size()) {
+                        // should not happen... corrupted metadata?
+                        name = "???"; // NOI18N
+                    } else {
+                        name = segments.get(index);
+                    }
                     int indexOf = Arrays.asList(names).indexOf(name);
                     if (indexOf != -1
                             && indexOf != i) {
