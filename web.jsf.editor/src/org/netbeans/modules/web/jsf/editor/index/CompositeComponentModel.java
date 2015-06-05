@@ -487,6 +487,9 @@ public class CompositeComponentModel extends JsfPageModel {
                 case '=':
                     out.append("\\e");
                     break;
+                case ';':
+                    out.append("\\m");
+                    break;
                 case '\\':
                     out.append("\\s");
                     break;
@@ -511,6 +514,9 @@ public class CompositeComponentModel extends JsfPageModel {
                         break;
                     case 'e':
                         out.append('=');
+                        break;
+                    case 'm':
+                        out.append(';');
                         break;
                     case 's':
                         out.append('\\');
