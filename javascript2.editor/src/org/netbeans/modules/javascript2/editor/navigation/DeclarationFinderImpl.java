@@ -61,6 +61,7 @@ import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -167,6 +168,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     List<IndexResult> rItems = new ArrayList();
                     // find the next property from FQN in the index for the defined property in the file / model
                     rItems.addAll(findPropertyOfType(jsIndex, lastDefinedFQN.toString(), fqnParts[partIndex]));
+                    parent = findPropertyOrParameterInModel(parent, fqnParts[partIndex]);
                     partIndex++;
                     for (int i = partIndex; (!rItems.isEmpty()) && i < fqnParts.length; i++ ) {
                         List<IndexResult> copy = new ArrayList(rItems);
@@ -174,6 +176,19 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         // and for the found property find next property from the FQN
                         for (IndexResult indexResult : copy) {
                             rItems.addAll(findPropertyOfType(jsIndex, IndexedElement.getFQN(indexResult), fqnParts[i]));
+                        }
+                        if (rItems.isEmpty() && parent != null) {
+                            // require js places parameter assignment only in the model. The assignments are not available in the indes
+                            Collection<? extends TypeUsage> assigns = parent.getAssignments();
+                            if (!assigns.isEmpty()) {
+                                for (Type type : assigns) {
+                                    String afqn = getFQNFromType(type);
+                                    rItems.addAll(findPropertyOfType(jsIndex, afqn, fqnParts[i]));
+                                }
+                            }
+                        }
+                        if (parent != null) {
+                            parent = findPropertyOrParameterInModel(parent, fqnParts[i]);
                         }
                     }
                     location = processIndexResult(rItems);
@@ -239,6 +254,14 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         return object.getDeclarationName() != null 
                 ? object.getDeclarationName().getOffsetRange().getStart()
                 : object.getOffset();
+    }
+    
+    private JsObject findPropertyOrParameterInModel(JsObject parent, String name) {
+        JsObject object = parent.getProperty(name);
+        if (object == null && parent instanceof JsFunction) {
+            object = ((JsFunction)parent).getParameter(name);
+        } 
+        return object;
     }
     
     private Collection<? extends IndexResult> findPropertyOfType(JsIndex jsIndex, String fqn, String propertyName) {
