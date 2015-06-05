@@ -87,13 +87,15 @@ public abstract class WildflyDeploymentConfiguration
     //support for message destination resources
     private MessageDestinationSupport destSupport;
 
+    protected boolean isWildFly;
     /**
      * Creates a new instance of JBDeploymentConfiguration
      */
-    public WildflyDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
+    public WildflyDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version, boolean isWildFly) {
         this.j2eeModule = j2eeModule;
         this.version = version;
         this.resourceDir = j2eeModule.getResourceDirectory();
+        this.isWildFly= isWildFly;
     }
 
 // -------------------------------------- ModuleConfiguration  -----------------------------------------
@@ -102,7 +104,7 @@ public abstract class WildflyDeploymentConfiguration
     }
 
     public boolean isWildfly() {
-        return version != null && WildflyPluginUtils.WILDFLY_8_0_0.compareTo(version) <= 0;
+        return isWildFly;
     }
 
     @Override
