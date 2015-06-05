@@ -199,14 +199,13 @@ fi
 #
 ###################################################################
 
-find $DIST/bundles -name "﻿netbeans-*-cpp-*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "﻿netbeans-*-html-*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "﻿netbeans-*-javaee-*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "﻿netbeans-*-php-*" | xargs -t -I [] rm -rf []
-find $DIST/bundles -name "﻿netbeans-*-php-*" | xargs -t -I [] rm -rf []
-rm -rf ﻿netbeans-jdk9branch-$NB_BUILD_NUMBER-linux.sh
-rm -rf ﻿netbeans-jdk9branch-$NB_BUILD_NUMBER-macosx.dmg
-rm -rf ﻿netbeans-jdk9branch-$NB_BUILD_NUMBER-windows.exe
+find $DIST/bundles -name "*cpp*" | xargs -t -I [] rm -rf []
+find $DIST/bundles -name "*html*" | xargs -t -I [] rm -rf []
+find $DIST/bundles -name "*javaee*" | xargs -t -I [] rm -rf []
+find $DIST/bundles -name "*php*" | xargs -t -I [] rm -rf []
+rm -rf ﻿$DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-linux.sh
+rm -rf ﻿$DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-macosx.dmg
+rm -rf ﻿$DIST/bundles/netbeans-jdk9branch-$BUILDNUMBER-windows.exe
 
 cd $DIST
 
