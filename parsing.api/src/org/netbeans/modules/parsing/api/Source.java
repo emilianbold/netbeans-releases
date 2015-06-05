@@ -83,6 +83,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.implspi.SchedulerControl;
 import org.netbeans.modules.parsing.implspi.SourceControl;
 import org.netbeans.modules.parsing.implspi.SourceEnvironment;
+import org.netbeans.modules.parsing.implspi.SourceFactory;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -164,7 +165,6 @@ public final class Source implements Lookup.Provider {
         if (!fileObject.isValid() || !fileObject.isData()) {
             return null;
         }
-        
         return _get(fileObject.getMIMEType(), fileObject, lkp);
     }
 
@@ -490,7 +490,6 @@ public final class Source implements Lookup.Provider {
 
     // -J-Dorg.netbeans.modules.parsing.api.Source.level=FINE
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
-    private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
     private static final ThreadLocal<Boolean> suppressListening = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -559,16 +558,8 @@ public final class Source implements Lookup.Provider {
             @NonNull final String mimeType,
             @NonNull final FileObject fileObject, 
             @NonNull final Lookup context) {
-        assert mimeType != null;
-        assert fileObject != null;
-
         synchronized (Source.class) {
-            final Reference<Source> sourceRef = instances.get(fileObject);
-            Source source = sourceRef == null ? null : sourceRef.get();
-            if (source == null || !mimeType.equals(source.getMimeType())) {
-                source = new Source(mimeType, null, fileObject, context);
-                instances.put(fileObject, new WeakReference<>(source));
-            }
+            final Source source = SourceFactory.getDefault().createSource(fileObject, mimeType, context);
             assert source.context == context;
             return source;
         }
@@ -611,15 +602,6 @@ public final class Source implements Lookup.Provider {
         } while (!sourceModificationEvent.compareAndSet(oldSourceModificationEvent, newSourceModificationEvent));
     }
 
-    private void mimeTypeMayChanged() {
-        final FileObject file = getFileObject();
-        if (file != null && !Objects.equals(getMimeType(), file.getMIMEType())) {
-            synchronized (Source.class) {
-                instances.remove(file);
-            }
-        }
-    }
-    
     private SourceCache getCache() {
         synchronized (TaskProcessor.INTERNAL_LOCK) {
             if (cache == null)
@@ -758,7 +740,12 @@ public final class Source implements Lookup.Provider {
         @Override
         public void mimeTypeMayChanged(@NonNull final Source source) {
             assert source != null;
-            source.mimeTypeMayChanged();
+            final FileObject file = source.getFileObject();
+            if (file != null && !Objects.equals(source.getMimeType(), file.getMIMEType())) {
+                synchronized (Source.class) {
+                    SourceFactory.getDefault().removeSource(file);
+                }
+            }
         }
 
         @Override
@@ -849,12 +836,9 @@ public final class Source implements Lookup.Provider {
 
         @Override
         public Source get(final FileObject file) {
-            assert file != null;
-            Reference<Source> ref;
             synchronized (Source.class) {
-                ref = instances.get(file);
+                return SourceFactory.getDefault().getSource(file);
             }
-            return ref == null ? null : ref.get();
         }
 
         @Override
@@ -897,6 +881,11 @@ public final class Source implements Lookup.Provider {
         @NonNull
         public ParserEventForward getParserEventForward(@NonNull final Source source) {
             return source.peFwd;
+        }
+
+        @Override
+        public Source create(@NonNull final FileObject file, @NonNull final String mimeType, @NonNull final Lookup context) {
+            return new Source(mimeType, null, file, context);
         }
     } // End of MySourceAccessor class
         
