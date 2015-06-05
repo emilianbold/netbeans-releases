@@ -59,9 +59,13 @@ public class MakeProjectBuildHostAction extends ContextAwareWrapperAction {
     }
 
     @Override
-    protected Action createDelegateAction(Project p) {
-        return new RemoteDevelopmentAction(p);
+    protected boolean supportMultipleProjects() {
+        return false;
     }
 
+    @Override
+    protected Action createDelegateAction(Project[] projects) {
+        return projects.length == 1 ? new RemoteDevelopmentAction(projects[0]) : null;
+    }
   
 }

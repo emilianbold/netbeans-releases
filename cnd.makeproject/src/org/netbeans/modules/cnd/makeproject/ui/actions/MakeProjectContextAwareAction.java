@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.actions;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.nodes.Node;
@@ -57,18 +59,30 @@ public abstract class MakeProjectContextAwareAction extends NodeAction {
         putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, Boolean.TRUE);
     }
     
-    
-    
+    protected final Project[] getProjects(Node[] activatedNodes) {
+        List<Project> projects = new ArrayList(activatedNodes.length);
+        for (Node node : activatedNodes) {
+            Project p = getProject(node);
+            if (p != null) {
+                projects.add(p);
+            }
+        }
+        return projects.toArray(new Project[projects.size()]);
+    }
+
     protected final Project getProject(Node[] activatedNodes) {
         if (activatedNodes.length != 1) {
             return null;
         }
-        Object project = activatedNodes[0].getValue("Project"); // NOI18N
+        return getProject(activatedNodes[0]);
+    }
+
+    private Project getProject(Node node) {
+        Object project = node.getValue("Project"); // NOI18N
         if (project == null || (!(project instanceof Project))) {
             return null;
         }
-        return (Project)project;
-
-    }    
+        return (Project) project;
+    }
     
 }

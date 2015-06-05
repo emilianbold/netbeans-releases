@@ -56,8 +56,9 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     private Action delegateAction;
     
-    abstract protected Action createDelegateAction(Project p);        
-    
+    abstract protected Action createDelegateAction(Project[] projects);        
+    abstract protected boolean supportMultipleProjects();
+
     @Override
     protected void performAction(Node[] activatedNodes) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -67,16 +68,18 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     @Override
     protected boolean enable(Node[] activatedNodes) {
-    //    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //find project
-        Project p = getProject(activatedNodes);
-        if (p == null) {
+        //find projects
+        Project[] projects = getProjects(activatedNodes);
+        if (projects == null || projects.length == 0) {
+            delegateAction = null;
+            return false;
+        } else if (projects.length > 1 && ! supportMultipleProjects()) {
+            delegateAction = null;
             return false;
         }
-        delegateAction = createDelegateAction(p);
-        return true;
+        delegateAction = createDelegateAction(projects);
+        return delegateAction != null;
     }
-
 
     @Override
     public HelpCtx getHelpCtx() {
