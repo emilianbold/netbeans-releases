@@ -57,15 +57,18 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.javascript.karma.browsers.Browser;
 import org.netbeans.modules.javascript.karma.browsers.Browsers;
-import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
+import org.netbeans.modules.javascript.karma.options.KarmaOptions;
+import org.netbeans.modules.javascript.karma.options.KarmaOptionsValidator;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferencesValidator;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.run.TestRunner;
 import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
+import org.netbeans.modules.javascript.karma.ui.options.KarmaOptionsPanelController;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
 import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.web.clientproject.api.jstesting.JsTestingProviders;
@@ -85,45 +88,63 @@ public class KarmaExecutable {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaExecutable.class.getName());
 
-    public static final String KARMA_NAME = "karma"; // NOI18N
-    public static final String KARMA_LONG_NAME = KARMA_NAME + FileUtils.getScriptExtension(true, true);
-    private static final String PROJECT_KARMA_BASE_PATH_1 = "node_modules/karma/bin/"; // NOI18N
-    private static final String PROJECT_KARMA_BASE_PATH_2 = "node_modules/.bin/"; // NOI18N
-    public static final String PROJECT_KARMA_PATH_1 = PROJECT_KARMA_BASE_PATH_1 + KARMA_NAME;
-    public static final String PROJECT_KARMA_LONG_PATH_1 = PROJECT_KARMA_BASE_PATH_1 + KARMA_LONG_NAME;
-    public static final String PROJECT_KARMA_PATH_2 = PROJECT_KARMA_BASE_PATH_2 + KARMA_NAME;
-    public static final String PROJECT_KARMA_LONG_PATH_2 = PROJECT_KARMA_BASE_PATH_2 + KARMA_LONG_NAME;
+    public static final String KARMA_NAME;
 
     private static final String START_COMMAND = "start";
     private static final String RUN_COMMAND = "run";
     private static final String PORT_PARAMETER = "--port";
 
-    protected final Project project;
     protected final String karmaPath;
+    protected final Project project;
 
 
-    KarmaExecutable(Project project) {
-        assert project != null;
-        this.project = project;
-        karmaPath = KarmaPreferences.getKarma(project);
+    static {
+        if (Utilities.isWindows()) {
+            KARMA_NAME = "karma.cmd"; // NOI18N
+        } else {
+            KARMA_NAME = "karma"; // NOI18N
+        }
+    }
+
+
+    KarmaExecutable(String karmaPath, Project project) {
         assert karmaPath != null;
+        assert project != null;
+        this.karmaPath = karmaPath;
+        this.project = project;
     }
 
     @CheckForNull
-    public static KarmaExecutable forProject(Project project, boolean showCustomizer) {
-        ValidationResult result = new KarmaPreferencesValidator()
+    public static KarmaExecutable getDefault(Project project, boolean showOptionsOrCustomizer) {
+        assert project != null;
+        // options
+        ValidationResult result = new KarmaOptionsValidator()
+                .validateKarma()
+                .getResult();
+        if (validateResult(result) != null) {
+            if (showOptionsOrCustomizer) {
+                OptionsDisplayer.getDefault().open(KarmaOptionsPanelController.OPTIONS_PATH);
+            }
+            return null;
+        }
+        // customizer
+        result = new KarmaPreferencesValidator()
                 .validate(project)
                 .getResult();
         if (validateResult(result) != null) {
-            if (showCustomizer) {
+            if (showOptionsOrCustomizer) {
                 project.getLookup().lookup(CustomizerProvider2.class).showCustomizer(JsTestingProviders.CUSTOMIZER_IDENT, null);
             }
             return null;
         }
+        return createExecutable(KarmaOptions.getInstance().getKarma(), project);
+    }
+
+    private static KarmaExecutable createExecutable(String karma, Project project) {
         if (Utilities.isMac()) {
-            return new MacKarmaExecutable(project);
+            return new MacKarmaExecutable(karma, project);
         }
-        return new KarmaExecutable(project);
+        return new KarmaExecutable(karma, project);
     }
 
     @NbBundle.Messages({
@@ -229,8 +250,8 @@ public class KarmaExecutable {
         private static final String BASH_COMMAND = "/bin/bash -lc"; // NOI18N
 
 
-        MacKarmaExecutable(Project project) {
-            super(project);
+        MacKarmaExecutable(String karmaPath, Project project) {
+            super(karmaPath, project);
         }
 
         @Override

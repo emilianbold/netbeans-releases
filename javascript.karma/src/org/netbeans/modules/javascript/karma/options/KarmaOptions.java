@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.javascript.karma.options;
 
-package org.netbeans.modules.javascript.karma.preferences;
-
-import org.netbeans.api.project.Project;
+import java.util.List;
+import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
-import org.netbeans.modules.web.common.api.ValidationResult;
-import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
-public final class KarmaPreferencesValidator {
+public final class KarmaOptions {
 
-    private final ValidationResult result = new ValidationResult();
+    private static final String KARMA_PATH = "karma.path"; // NOI18N
+
+    // Do not change arbitrary - consult with layer's folder OptionsExport
+    // Path to Preferences node for storing these preferences
+    private static final String PREFERENCES_PATH = "karma"; // NOI18N
+
+    private static final KarmaOptions INSTANCE = new KarmaOptions();
+
+    private final Preferences preferences;
+
+    private volatile boolean karmaSearched = false;
 
 
-    public ValidationResult getResult() {
-        return result;
+    private KarmaOptions() {
+        preferences = NbPreferences.forModule(KarmaOptions.class).node(PREFERENCES_PATH);
     }
 
-    public KarmaPreferencesValidator validate(Project project) {
-        validateConfig(KarmaPreferences.getConfig(project));
-        validateDebug(KarmaPreferences.isDebug(project), KarmaPreferences.getDebugBrowserId(project));
-        return this;
+    public static KarmaOptions getInstance() {
+        return INSTANCE;
     }
 
-    @NbBundle.Messages("KarmaPreferencesValidator.config.name=Configuration")
-    public KarmaPreferencesValidator validateConfig(String config) {
-        String warning = FileUtils.validateFile(Bundle.KarmaPreferencesValidator_config_name(), config, false);
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("config", warning)); // NOI18N
+    @CheckForNull
+    public String getKarma() {
+        String path = preferences.get(KARMA_PATH, null);
+        if (path == null
+                && !karmaSearched) {
+            karmaSearched = true;
+            List<String> files = FileUtils.findFileOnUsersPath(KarmaExecutable.KARMA_NAME);
+            if (!files.isEmpty()) {
+                path = files.get(0);
+                setKarma(path);
+            }
         }
-        return this;
+        return path;
     }
 
-    @NbBundle.Messages("KarmaPreferencesValidator.debug.browser=Browser for debugging must be set.")
-    public KarmaPreferencesValidator validateDebug(boolean debug, String debugBrowserId) {
-        if (debug
-                && debugBrowserId == null) {
-            result.addWarning(new ValidationResult.Message("debugBrowser", Bundle.KarmaPreferencesValidator_debug_browser())); // NOI18N
-        }
-        return this;
+    public void setKarma(String karma) {
+        preferences.put(KARMA_PATH, karma);
     }
 
 }

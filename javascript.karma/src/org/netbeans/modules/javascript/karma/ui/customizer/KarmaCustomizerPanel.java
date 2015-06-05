@@ -110,7 +110,6 @@ public final class KarmaCustomizerPanel implements CustomizerPanelImplementation
     public void save() {
         assert !EventQueue.isDispatchThread();
         assert customizerKarma != null;
-        KarmaPreferences.setKarma(project, customizerKarma.getKarma());
         KarmaPreferences.setConfig(project, customizerKarma.getConfig());
         KarmaPreferences.setAutowatch(project, customizerKarma.isAutowatch());
         KarmaPreferences.setDebug(project, customizerKarma.isDebug());
