@@ -116,7 +116,7 @@ public class CsmActionsImplementationProvider {
     }
 
     /**
-     * implementation of "invoke Change Parameters"
+     * implementation of "invoke Inline Refactoring"
      * @param lookup 
      */
     public void doInlineRefactoring(Lookup lookup) {

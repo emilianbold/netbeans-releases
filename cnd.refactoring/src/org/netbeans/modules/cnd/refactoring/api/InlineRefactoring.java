@@ -48,7 +48,7 @@ import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author toor
+ * @author Danila Sergeyev
  */
 public class InlineRefactoring extends AbstractRefactoring {
     

@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.refactoring.api.InlineRefactoring;
 
 /**
  *
- * @author toor
+ * @author Danila Sergeyev
  */
 public class InlinePanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 

@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author toor
+ * @author Danila Sergeyev
  */
 public class InlineUI implements RefactoringUI {
     

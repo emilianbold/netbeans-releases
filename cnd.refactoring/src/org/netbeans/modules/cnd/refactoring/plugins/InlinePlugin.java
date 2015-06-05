@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author toor
+ * @author Danila Sergeyev
  */
 public class InlinePlugin extends CsmModificationRefactoringPlugin {
     private final InlineRefactoring refactoring;
@@ -133,9 +133,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
                 CsmMacro macro = (CsmMacro) obj;
                 int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
                 int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, macro.getStartOffset())[0];
-                if (refLine == objLine && (ref.getContainingFile().equals(macro.getContainingFile()))) {
-                    continue;
-                } else {
+                if (!(refLine == objLine && (ref.getContainingFile().equals(macro.getContainingFile())))) {
                     String oldText = ref.getText().toString();
 
                     CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
