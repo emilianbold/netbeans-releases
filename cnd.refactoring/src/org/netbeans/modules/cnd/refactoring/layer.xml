@@ -92,7 +92,7 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
-                    <file name="IntroduceSeparator.instance">
+                    <file name="InlineSeparator.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
                     </file>
@@ -210,7 +210,7 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
-                    <file name="IntroduceSeparator.instance">
+                    <file name="InlineSeparator.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
                     </file>
@@ -338,7 +338,7 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
-                    <file name="IntroduceSeparator.instance">
+                    <file name="InlineSeparator.instance">
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1800"/>
                     </file>
