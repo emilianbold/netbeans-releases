@@ -54,8 +54,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
+import javax.xml.ws.Holder;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
@@ -104,7 +106,7 @@ public class RegisterDerby implements DatabaseRuntime {
     private static RegisterDerby reg=null;
     
     /** Derby server process */
-    static Process process = null;
+    private static Process process = null;
     
     /** Creates a new instance of RegisterDerby */
     private RegisterDerby() {}
@@ -218,7 +220,7 @@ public class RegisterDerby implements DatabaseRuntime {
                     } finally {
                         ph.finish();
                     }
-               } catch (Exception e) {
+               } catch (RuntimeException | DatabaseException | IOException e) {
                     LOGGER.log(Level.WARNING, null, e);
                     String message = NbBundle.getMessage(RegisterDerby.class, "ERR_CreateDatabase", e.getMessage());
                     Util.showInformation(message);
@@ -234,8 +236,9 @@ public class RegisterDerby implements DatabaseRuntime {
     
     private void createDerbyPropertiesFile() {
         File derbyProperties = new File(getDerbySystemHome(), "derby.properties");
-        if (derbyProperties.exists())
+        if (derbyProperties.exists()) {
             return;
+        }
         Properties derbyProps = new Properties();
         // fill it
         if (Utilities.isMac()) {
@@ -287,7 +290,7 @@ public class RegisterDerby implements DatabaseRuntime {
      *
      * @return true if the server is definitely started, false otherwise (the server is
      *         not started or the status is unknown). If <code>waitTime</code> was
-     *         less than or equal to zero, then always false.
+     *         less than zero, then always false.
      */
     private boolean start(int waitTime){
         if (process!=null){// seems to be already running?
@@ -297,9 +300,6 @@ public class RegisterDerby implements DatabaseRuntime {
             return false;
         }
         try {
-            ExecSupport ee= new ExecSupport();
-            ee.setStringToLookFor("" + getPort()); // NOI18N
-            addSecurityBugHandler(ee);
             String java = getJavaExecutable();
             
             // create the derby.properties file
@@ -315,7 +315,7 @@ public class RegisterDerby implements DatabaseRuntime {
               " org.apache.derby.drda.NetworkServerControl start" + startArgs()
             );
             if (LOG) {
-                LOGGER.log(Level.FINE, "Running " + desc.getProcessName() + " " + desc.getArguments());
+                LOGGER.log(Level.FINE, "Running {0} {1}", new Object[]{desc.getProcessName(), desc.getArguments()});
             }
             process = desc.exec (
                 null,
@@ -324,7 +324,10 @@ public class RegisterDerby implements DatabaseRuntime {
                 getInstallLocation()
             );
 
-            ee.displayProcessOutputs(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
+            ExecSupport ee = new ExecSupport(process,NbBundle.getMessage(StartAction.class, "LBL_outputtab"));
+            ee.setStringToLookFor("" + getPort()); // NOI18N
+            addSecurityBugHandler(ee);
+            ee.start();
             if (waitTime >= 0) {
                 // to make sure the server is up and running
                 boolean canStart = waitStart(ee, waitTime);
@@ -335,7 +338,7 @@ public class RegisterDerby implements DatabaseRuntime {
             } else {
                 return false;
             }
-        } catch (Exception e) {
+        } catch (IOException | RuntimeException e) {
             Util.showInformation(e.getLocalizedMessage());
             return false;
         } finally {
@@ -415,10 +418,12 @@ public class RegisterDerby implements DatabaseRuntime {
 
     private boolean waitStart(final ExecSupport execSupport, int waitTime) {
         boolean started = false;
+        final Holder<Boolean> forceExit = new Holder<>(false);
         String waitMessage = NbBundle.getMessage(RegisterDerby.class, "MSG_StartingDerby");
         ProgressHandle progress = ProgressHandleFactory.createHandle(waitMessage, new Cancellable() {
             @Override
             public boolean cancel() {
+                forceExit.value = true;
                 return execSupport.interruptWaiting();
             }
         });
@@ -427,15 +432,21 @@ public class RegisterDerby implements DatabaseRuntime {
             while (!started) {
                 started = execSupport.waitForMessage(waitTime * 1000);
                 if (!started) {
-                    String title = NbBundle.getMessage(RegisterDerby.class, "LBL_DerbyDatabase");
-                    String message = NbBundle.getMessage(RegisterDerby.class, "MSG_WaitStart", waitTime);
-                    NotifyDescriptor waitConfirmation = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
-                    if (DialogDisplayer.getDefault().notify(waitConfirmation) != NotifyDescriptor.YES_OPTION) {
+                    if (waitTime > 0 && (!forceExit.value)) {
+                        String title = NbBundle.getMessage(RegisterDerby.class, "LBL_DerbyDatabase");
+                        String message = NbBundle.getMessage(RegisterDerby.class, "MSG_WaitStart", waitTime);
+                        NotifyDescriptor waitConfirmation = new NotifyDescriptor.Confirmation(message, title, NotifyDescriptor.YES_NO_OPTION);
+                        if (DialogDisplayer.getDefault().notify(waitConfirmation)
+                                != NotifyDescriptor.YES_OPTION) {
+                            break;
+                        }
+                    } else {
                         break;
                     }
                 }
             }
             if (!started) {
+                execSupport.terminate();
                 LOGGER.log(Level.WARNING, "Derby server failed to start"); // NOI18N
             }
         } finally {
@@ -464,7 +475,7 @@ public class RegisterDerby implements DatabaseRuntime {
               " org.apache.derby.drda.NetworkServerControl shutdown"
             );
             if (LOG) {
-                LOGGER.log(Level.FINE, "Running " + desc.getProcessName() + " " + desc.getArguments());
+                LOGGER.log(Level.FINE, "Running {0} {1}", new Object[]{desc.getProcessName(), desc.getArguments()});
             }
             Process shutwownProcess = desc.exec (
                 null,
@@ -476,8 +487,7 @@ public class RegisterDerby implements DatabaseRuntime {
 
             process.destroy();
             disconnectAllDerbyConnections();
-        } 
-        catch (Exception e) {
+        } catch (IOException | InterruptedException | RuntimeException e) {
             Util.showInformation(e.getMessage());
         }
         finally {
@@ -487,7 +497,7 @@ public class RegisterDerby implements DatabaseRuntime {
 
     private static String getJavaExecutable() {
         File javaExe = new File(System.getProperty("java.home"), "/bin/java" + (Utilities.isWindows() ? ".exe" : "")); // NOI18N
-        assert javaExe != null && javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
+        assert javaExe.exists() && javaExe.canExecute() : javaExe + " exists and it's executable.";
         File javaExeNormalized = FileUtil.normalizeFile(javaExe);
         FileObject javaFO = FileUtil.toFileObject(javaExeNormalized);
         if (javaFO == null) {
