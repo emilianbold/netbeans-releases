@@ -59,7 +59,7 @@ public class MakeProjectBuildHostAction extends ContextAwareWrapperAction {
     }
 
     @Override
-    protected Action createDeligateAction(Project p) {
+    protected Action createDelegateAction(Project p) {
         return new RemoteDevelopmentAction(p);
     }
 

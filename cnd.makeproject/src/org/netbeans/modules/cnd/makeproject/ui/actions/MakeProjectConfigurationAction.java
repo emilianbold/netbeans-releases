@@ -54,7 +54,7 @@ public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
     
 
     @Override
-    protected Action createDeligateAction(Project p) {
+    protected Action createDelegateAction(Project p) {
         return new SetConfigurationAction(p);
     }
 
