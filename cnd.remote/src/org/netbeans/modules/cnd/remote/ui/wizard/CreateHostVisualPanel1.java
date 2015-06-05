@@ -241,4 +241,8 @@ import org.openide.util.NbBundle;
     boolean isProxyValid() {
         return proxySettingsPanel.isValidState();
     }
+
+    void applyProxyChangesIfNeed() {
+        proxySettingsPanel.applyProxyChangesIfNeed();
+    }
 }

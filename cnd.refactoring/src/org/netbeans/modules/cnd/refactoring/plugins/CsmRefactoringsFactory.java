@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.InlineRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.IntroduceMethodRefactoring;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
@@ -78,6 +79,8 @@ public class CsmRefactoringsFactory implements RefactoringPluginFactory {
                 return new EncapsulateFieldsPlugin((EncapsulateFieldsRefactoring) refactoring);
             } else if (refactoring instanceof IntroduceMethodRefactoring) {
                 return new IntroduceMethodPlugin((IntroduceMethodRefactoring) refactoring);
+            } else if (refactoring instanceof InlineRefactoring) {
+                return new InlinePlugin((InlineRefactoring) refactoring);
             }
         }
         return null;
