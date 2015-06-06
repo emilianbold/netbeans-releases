@@ -56,7 +56,7 @@ public class PauseAction extends Action {
     private static final String mainMenuPath =
             Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject")
             + "|"
-            + Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.Bundle", "CTL_Pause");
+            + Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_Pause_action_name");
 
     /** Creates new PauseAction instance. */
     public PauseAction() {

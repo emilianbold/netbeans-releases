@@ -53,6 +53,7 @@ import javax.swing.JViewport;
 import junit.framework.Test;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -88,7 +89,6 @@ import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import static org.netbeans.modules.debugger.jpda.ui.Utilities.debuggerConsoleTitle;
 import org.openide.util.Exceptions;
 
 /**
@@ -123,6 +123,10 @@ public class AntSanityTest extends JellyTestCase {
      * Name of tested project root node.
      */
     private static final String DEBUG_TEST_PROJECT_ANT = "debugTestProjectAnt";
+
+    private static final String BREAKPOINTS_VIEW = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Breakpoints_view");
+    private static final String VARIABLES_VIEW = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Variables_view");
+    private static final String DEBUGGER_CONSOLE = "Debugger Console";
 
     /**
      * Constructor required by JUnit.
@@ -209,7 +213,7 @@ public class AntSanityTest extends JellyTestCase {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         eo.setCaretPositionToLine(280);
         new ToggleBreakpointAction().perform();
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(BREAKPOINTS_VIEW));
         jTableOperator.waitCell("Line MemoryView.java:280", 1, 0);
         new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenu("Disable");
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
@@ -255,7 +259,7 @@ public class AntSanityTest extends JellyTestCase {
         waitThreadsNode("'AWT-EventQueue-0' at line breakpoint MemoryView.java : 141");
         new StepOverAction().perform();
         waitThreadsNode("'AWT-EventQueue-0' suspended at 'MemoryView.updateStatus:143'");
-        JTableOperator breakpoints = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+        JTableOperator breakpoints = new JTableOperator(new TopComponentOperator(BREAKPOINTS_VIEW));
         new JPopupMenuOperator(breakpoints.callPopupOnCell(1, 0)).pushMenu("Delete All");
     }
 
@@ -264,7 +268,7 @@ public class AntSanityTest extends JellyTestCase {
      */
     public void stepOverExpression() throws InterruptedException {
         new StepOverExpressionAction().perform();
-        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.variablesViewTitle));
+        JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(VARIABLES_VIEW));
         jTableOperator.waitCell("Before call to '<init>()'", 1, 0);
         jTableOperator.waitCell("Arguments", 2, 0);
         jTableOperator.selectCell(2, 0);
@@ -300,7 +304,7 @@ public class AntSanityTest extends JellyTestCase {
      */
     public void finishDebugger() {
         new FinishDebuggerAction().perform();
-        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        OutputTabOperator op = new OutputTabOperator(DEBUGGER_CONSOLE);
         assertEquals("User program finished", op.getLine(op.getLineCount() - 2));
     }
     
@@ -312,7 +316,8 @@ public class AntSanityTest extends JellyTestCase {
         Node testFile = new Node(new SourcePackagesNode(projectNode), "advanced|ApplyCodeChangesTest.java");
         new OpenAction().perform(testFile);
         EditorOperator eo = new EditorOperator("ApplyCodeChangesTest.java");
-        Utilities.toggleBreakpoint(eo, 50);
+        eo.setCaretPositionToLine(50);
+        new ToggleBreakpointAction().perform();
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         new DebugJavaFileAction().perform(testFile);
@@ -336,7 +341,7 @@ public class AntSanityTest extends JellyTestCase {
     public void takeGUISnapshot() throws InterruptedException {
         new Action("Debug|Debug Project (debugTestProjectAnt)", null).perform();
         Thread.sleep(3000); // Wait 3 seconds. Sometimes starting debugging session was slow.
-        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        OutputTabOperator op = new OutputTabOperator(DEBUGGER_CONSOLE);
         assertEquals("User program running", op.getLine(op.getLineCount() - 2));
         new TakeGUISnapshotAction().perform();
         TopComponentOperator guiSnapshot = new TopComponentOperator("Snapshot of \"Memory View\"");
@@ -354,7 +359,8 @@ public class AntSanityTest extends JellyTestCase {
         Node testFile = new Node(new SourcePackagesNode(projectNode), "advanced|VariablesTest.java");
         new OpenAction().perform(testFile);
         EditorOperator eo = new EditorOperator("VariablesTest.java");
-        Utilities.toggleBreakpoint(eo, 49);
+        eo.setCaretPositionToLine(49);
+        new ToggleBreakpointAction().perform();
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         new DebugJavaFileAction().perform(testFile);
