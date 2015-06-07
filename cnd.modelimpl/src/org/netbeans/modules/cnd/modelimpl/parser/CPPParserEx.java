@@ -75,6 +75,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -90,6 +92,10 @@ import org.openide.util.CharSequences;
  * I decided to use CPPParser for this purpose.
  */
 public class CPPParserEx extends CPPParser {
+
+    // defined in ClankToAPTToken
+    private static final int FAKE_LINE = 333;
+    private static final int FAKE_COLUMN = 111;
 
     private boolean lazyCompound = TraceFlags.EXCLUDE_COMPOUND;
     protected final CppParserActionEx action;
@@ -1225,6 +1231,22 @@ public class CPPParserEx extends CPPParser {
         if (delegate != null) {
             delegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.getLine(), e.getColumn(), e.getTokenText(), e instanceof NoViableAltException && APTUtils.isEOF(((NoViableAltException)e).token)));
         }
+    }
+
+    @Override
+    public void doReportError(RecognitionException e) {
+        if (e.line == FAKE_LINE && e.column == FAKE_COLUMN &&
+           (e instanceof NoViableAltException)) {
+            NoViableAltException ex = (NoViableAltException)e;
+            if ((ex.token instanceof APTToken) &&
+                (action.getCurrentFile() instanceof FileImpl)) {
+                FileImpl impl = (FileImpl)action.getCurrentFile();
+                int[] lineColumn = impl.getLineColumn(((APTToken)ex.token).getOffset());
+                ex.line = lineColumn[0];
+                ex.column = lineColumn[1];
+            }
+        }
+        super.doReportError(e);
     }
 }
 

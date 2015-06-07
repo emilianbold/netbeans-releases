@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.requirejs.editor;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -50,7 +51,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -209,6 +209,32 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                         }
                     }
                     
+                }
+
+                // if CommonJS packages are used, add its base folder
+                if (rIndex != null && project != null) {
+                    Map<String, String> packages = rIndex.getPackages();
+                    Collection<String> sourceRoots = rIndex.getSourceRoots();
+                    if (packages != null && sourceRoots != null && writtenPath.contains("/")) { //NOI18N
+                        String moduleName = writtenPath.substring(0, writtenPath.indexOf('/'));
+                        for (String sr : sourceRoots) {
+                            String modulePath = packages.get(moduleName);
+                            if (modulePath != null) {
+                                // split the module path/location
+                                List<String> pathParts = Arrays.asList(modulePath.split("/")); //NOI18N
+                                int moduleIndex = pathParts.indexOf(moduleName);
+                                StringBuilder sb = new StringBuilder();
+                                // use the folders before module name only
+                                for (int i = 0; i < moduleIndex; i++) {
+                                    sb.append(pathParts.get(i)).append('/');
+                                }
+                                FileObject targetFo = project.getProjectDirectory().getFileObject(sr + '/' + sb.toString());
+                                if (!relativeTo.contains(targetFo)) {
+                                    relativeTo.add(targetFo);
+                                }
+                            }
+                        }
+                    }
                 }
 
                 List<CompletionProposal> result = new ArrayList();

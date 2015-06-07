@@ -51,6 +51,8 @@ import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,6 +63,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -115,6 +118,7 @@ import static org.netbeans.api.java.classpath.ClassPath.COMPILE;
 import static org.netbeans.api.java.project.JavaProjectConstants.SOURCES_TYPE_JAVA;
 import org.netbeans.modules.gsf.testrunner.api.UnitTestsUsage;
 import org.netbeans.modules.java.testrunner.GuiUtils;
+import static org.netbeans.modules.java.testrunner.JavaUtils.PROP_JUNIT_SELECTED_VERSION;
 import org.netbeans.modules.junit.api.JUnitUtils;
 import static org.openide.ErrorManager.ERROR;
 import static org.openide.ErrorManager.WARNING;
@@ -123,6 +127,7 @@ import static org.openide.NotifyDescriptor.WARNING_MESSAGE;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
@@ -174,6 +179,8 @@ public final class DefaultPlugin extends JUnitPlugin {
             DefaultPlugin.class);
     
     private static boolean generatingIntegrationTest = false;
+    
+    private static final String PROJECT_PROPERTIES_PATH = "nbproject/project.properties";
     
     public static void logJUnitUsage(URI projectURI) {
         String version = "";
@@ -1153,7 +1160,7 @@ public final class DefaultPlugin extends JUnitPlugin {
                     } else if (sourceLevel == null) {
                         String msgKey
                             = "MSG_select_junit_version_srclvl_unknown";//NOI18N
-                        junitVer = askUserWhichJUnitToUse(msgKey, true, true);
+                        loadJUnitToUseFromPropertiesFile(project);
                         if ((junitVer != null) && storeSettings) {
                             return storeProjectSettingsJUnitVer(project);
                         }
@@ -1185,9 +1192,7 @@ public final class DefaultPlugin extends JUnitPlugin {
             offerJUnit4 = (sourceLevel.compareTo("1.5") >= 0);          //NOI18N
             showSourceLevelReqs = !offerJUnit4;
         }
-        junitVer = askUserWhichJUnitToUse(msgKey,
-                                          offerJUnit4,
-                                          showSourceLevelReqs);
+        loadJUnitToUseFromPropertiesFile(project);
         if ((junitVer != null) && storeSettings) {
             return storeProjectSettingsJUnitVer(project);
         }
@@ -1256,6 +1261,31 @@ public final class DefaultPlugin extends JUnitPlugin {
 //    private String getText(String bundleKey) {
 //        return NbBundle.getMessage(getClass(), bundleKey);
 //    }
+    
+    private Properties getProjectProperties(FileObject projectDir) throws IOException {
+            FileObject projectProperties = FileUtil.createData(projectDir, PROJECT_PROPERTIES_PATH);
+            InputStream propertiesIS = projectProperties.getInputStream();
+            Properties props = new Properties();
+            props.load(propertiesIS);
+            propertiesIS.close();
+            return props;
+        }
+    
+    private void loadJUnitToUseFromPropertiesFile(Project project) {
+        final FileObject projectDir = project.getProjectDirectory();
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Properties props = getProjectProperties(projectDir);
+                    String property = props.getProperty(PROP_JUNIT_SELECTED_VERSION);
+                    junitVer = property == null ? null : (property.equals("3") ? JUnitVersion.JUNIT3 : JUnitVersion.JUNIT4);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+    }
     
     /**
      */
@@ -1391,22 +1421,30 @@ public final class DefaultPlugin extends JUnitPlugin {
         final boolean hasJUnit3;
         final boolean hasJUnit4;
         final ClassPath classPath = getTestClassPath(project); //may throw ISE
-        if (classPath != null) {
-            hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
-            hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
-        } else {
-            hasJUnit3 = false;
-            hasJUnit4 = false;
-        }
+        
+        loadJUnitToUseFromPropertiesFile(project);
+        if (junitVer == null) {
+            if (classPath != null) {
+                hasJUnit3 = (classPath.findResource(JUNIT3_SPECIFIC) != null);
+                hasJUnit4 = (classPath.findResource(JUNIT4_SPECIFIC) != null);
+            } else {
+                hasJUnit3 = false;
+                hasJUnit4 = false;
+            }
 
-        if (hasJUnit3 != hasJUnit4) {
-            junitVer = hasJUnit3 ? JUnitVersion.JUNIT3
-                                 : JUnitVersion.JUNIT4;
+            if (hasJUnit3 != hasJUnit4) {
+                junitVer = hasJUnit3 ? JUnitVersion.JUNIT3
+                        : JUnitVersion.JUNIT4;
+                if (LOG_JUNIT_VER.isLoggable(FINEST)) {
+                    LOG_JUNIT_VER.finest(" - detected version " + junitVer);//NOI18N
+                }
+            } else {
+                LOG_JUNIT_VER.finest(" - no version detected");             //NOI18N
+            }
+        } else {
             if (LOG_JUNIT_VER.isLoggable(FINEST)) {
                 LOG_JUNIT_VER.finest(" - detected version " + junitVer);//NOI18N
             }
-        } else {
-            LOG_JUNIT_VER.finest(" - no version detected");             //NOI18N
         }
         return (classPath != null);
     }
@@ -1518,8 +1556,10 @@ public final class DefaultPlugin extends JUnitPlugin {
             } else {
                 verNumToAdd = null;
             }
-            String verNumToRemove = (junitVer == JUnitVersion.JUNIT3)
-                                    ? "4" : "3";                        //NOI18N
+            // junit-3.8.2 binaries were removed from standard build. User can 
+            // open legacy project with or create new testcases using junit 3.x
+            // style. This means only junit-3.x can be removed no matter what.
+            String verNumToRemove = "3";                        //NOI18N
             if (name.equals("junit")) {                                 //NOI18N
                 add    = (verNumToAdd    == "3");                       //NOI18N
                 remove = (verNumToRemove == "3");                       //NOI18N
@@ -1571,7 +1611,11 @@ public final class DefaultPlugin extends JUnitPlugin {
 
         final Library[] libsToAdd, libsToRemove;
         if (libraryToAdd != null) {
-            libsToAdd = ((junitVer == JUnitVersion.JUNIT4) && !hasJUnit4) ? new Library[] {libraryToAdd, libraryHamcrest} : new Library[] {libraryToAdd};
+            // junit-3.8.2 binaries were removed from standard build. User can 
+            // open legacy project with or create new testcases using junit 3.x
+            // style. junit-4.x and hamcrest binaries are added as test 
+            // dependencies for the project in those cases as well.
+            libsToAdd = new Library[] {libraryToAdd, libraryHamcrest};
         } else{
             libsToAdd = null;
         }

@@ -50,6 +50,7 @@ import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.APTDriverImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -100,6 +101,7 @@ public final class APTDriver {
     }
 
     public static APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
+        assert !APTTraceFlags.USE_CLANK;
         APTFile out = null;
         if (buffer instanceof APTFileCache) {
             out = ((APTFileCache)buffer).getCachedAPTLight();
@@ -111,6 +113,7 @@ public final class APTDriver {
     }
     
     public static APTFile findAPT(APTFileBuffer buffer, String lang, String flavor) throws IOException {
+        assert !APTTraceFlags.USE_CLANK;
         APTFile out = null;
         if (buffer instanceof APTFileCache) {
             out = ((APTFileCache) buffer).getCachedAPT();

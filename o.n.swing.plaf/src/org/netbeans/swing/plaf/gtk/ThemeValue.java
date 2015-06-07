@@ -44,14 +44,20 @@
 
 package org.netbeans.swing.plaf.gtk;
 
-import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import javax.swing.*;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.plaf.synth.ColorType;
+import javax.swing.plaf.synth.Region;
+import javax.swing.plaf.synth.SynthContext;
+import javax.swing.plaf.synth.SynthLookAndFeel;
+import javax.swing.plaf.synth.SynthStyle;
+import javax.swing.plaf.synth.SynthUI;
 import org.netbeans.swing.plaf.util.UIUtils;
 
 /**
@@ -61,8 +67,8 @@ import org.netbeans.swing.plaf.util.UIUtils;
  */
 final class ThemeValue implements UIDefaults.ActiveValue {
     private final Object fallback;
-    private final Object aRegion;
-    private Object aColorType = null;
+    private final Region aRegion;
+    private ColorType aColorType = null;
     private boolean darken = false;
     
     private Object value = null;
@@ -70,7 +76,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     private static Boolean functioning = null;
     
     /** Creates a new instance of GTKColor */
-    public ThemeValue(Object region, Object colorType, Object fallback) {
+    public ThemeValue(Region region, ColorType colorType, Object fallback) {
         this.fallback = fallback;
         this.aRegion = region;
         this.aColorType = colorType;
@@ -78,7 +84,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     }
 
     /** Creates a new instance of GTKColor */
-    public ThemeValue(Object region, Object colorType, Object fallback, boolean darken) {
+    public ThemeValue(Region region, ColorType colorType, Object fallback, boolean darken) {
         this.fallback = fallback;
         this.aRegion = region;
         this.aColorType = colorType;
@@ -86,7 +92,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
         register(this);
     }
     
-    public ThemeValue (Object region, Font fallback) {
+    public ThemeValue (Region region, Font fallback) {
         this.fallback = fallback;
         this.aRegion = region;
         register(this);
@@ -119,7 +125,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     }
     
     public Font getFont() {
-        Object style = getSynthStyle (aRegion);
+        SynthStyle style = getSynthStyle (aRegion);
         if (Boolean.TRUE.equals(functioning)) {
             try {
                 Font result = (Font) synthStyle_getFontForState.invoke (style,
@@ -144,7 +150,7 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     private static boolean log = Boolean.getBoolean ("themeValue.log");
 
     public Color getColor () {
-        Object style = getSynthStyle (aRegion);
+        SynthStyle style = getSynthStyle (aRegion);
         if (Boolean.TRUE.equals(functioning)) {
             try {
                 Color result = (Color) synthStyle_getColorForState.invoke (style,
@@ -180,73 +186,24 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     private static void checkFunctioning() {
         functioning = Boolean.FALSE;
         try {
-            gtkLookAndFeel = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKLookAndFeel"); //NOI18N
-            synthLookAndFeel = UIUtils.classForName ("javax.swing.plaf.synth.SynthLookAndFeel"); //NOI18N
-            region = UIUtils.classForName ("javax.swing.plaf.synth.Region"); //NOI18N
-            synthStyle = UIUtils.classForName ("javax.swing.plaf.synth.SynthStyle"); //NOI18N
-            synthContext = UIUtils.classForName ("javax.swing.plaf.synth.SynthContext"); //NOI18N
-            colorType = UIUtils.classForName ("javax.swing.plaf.synth.ColorType"); //NOI18N
             gtkColorType = UIUtils.classForName ("com.sun.java.swing.plaf.gtk.GTKColorType"); //NOI18N
-            try {
-                synthUI = UIUtils.classForName("javax.swing.plaf.synth.SynthUI"); //NOI18N
-            } catch (ClassNotFoundException x) {
-                synthUI = UIUtils.classForName("sun.swing.plaf.synth.SynthUI"); //NOI18N
-            }
 
-
-            synthContextConstructor = synthContext.getDeclaredConstructor(
-                JComponent.class,
-                region, synthStyle,
-                Integer.TYPE
-            );
-            synthContextConstructor.setAccessible(true);
-
-            synthStyle_getColorForState = synthStyle.getDeclaredMethod ("getColorForState",  //NOI18N
-                 synthContext, colorType );
+            synthStyle_getColorForState = SynthStyle.class.getDeclaredMethod ("getColorForState",  //NOI18N
+                 SynthContext.class, ColorType.class );
                  
             synthStyle_getColorForState.setAccessible(true);
             
-            synthStyle_getFontForState = synthStyle.getDeclaredMethod ("getFontForState", //NOI18N
-                synthContext );
+            synthStyle_getFontForState = SynthStyle.class.getDeclaredMethod ("getFontForState", //NOI18N
+                SynthContext.class );
                 
             synthStyle_getFontForState.setAccessible(true);
             
 
-            LIGHT = valueOfField (gtkColorType, "LIGHT"); //NOI18N
-            DARK = valueOfField (gtkColorType, "DARK"); //NOI18N
-            MID = valueOfField (gtkColorType, "MID"); //NOI18N
-            BLACK = valueOfField (gtkColorType, "BLACK"); //NOI18N
-            WHITE = valueOfField (gtkColorType, "WHITE"); //NOI18N
-            TEXT_FOREGROUND = valueOfField (colorType, "TEXT_FOREGROUND"); //NOI18N
-            TEXT_BACKGROUND = valueOfField (colorType, "TEXT_BACKGROUND"); //NOI18N
-            FOCUS = valueOfField (colorType, "FOCUS"); //NOI18N
-
-            try {
-                synthContext_getContext = synthContext.getDeclaredMethod ("getContext",
-                        new Class[] {
-                            Class.class, JComponent.class, region, synthStyle, Integer.TYPE
-                        });
-            } catch( Exception e ) {
-                //#247120 - JDK8 update 20
-                synthContext_getContext = synthContext.getDeclaredMethod ("getContext",
-                        new Class[] {
-                            JComponent.class, region, synthStyle, Integer.TYPE
-                        });
-            }
-            synthContext_getContext.setAccessible(true);
-
-            synthLookAndFeel_getStyle = synthLookAndFeel.getDeclaredMethod ("getStyle",
-                        JComponent.class, region
-                    );
-            synthLookAndFeel_getStyle.setAccessible (true);
-
-            REGION_BUTTON = valueOfField (region, "BUTTON"); //NOI18N
-            REGION_PANEL = valueOfField (region, "PANEL"); //NOI18N
-            REGION_SCROLLBAR_THUMB = valueOfField (region, "SCROLL_BAR_THUMB"); //NOI18N
-            REGION_TAB = valueOfField (region, "TABBED_PANE_TAB"); //NOI18N
-            REGION_INTFRAME = valueOfField (region, "INTERNAL_FRAME_TITLE_PANE"); //NOI18N
-
-            synthUI_getContext = synthUI.getDeclaredMethod ("getContext", JComponent.class ); //NOI18N
+            LIGHT = (ColorType) valueOfField (gtkColorType, "LIGHT"); //NOI18N
+            DARK = (ColorType) valueOfField (gtkColorType, "DARK"); //NOI18N
+            MID = (ColorType) valueOfField (gtkColorType, "MID"); //NOI18N
+            BLACK = (ColorType) valueOfField (gtkColorType, "BLACK"); //NOI18N
+            WHITE = (ColorType) valueOfField (gtkColorType, "WHITE"); //NOI18N
 
             functioning = Boolean.TRUE;
         } catch (Exception e) {
@@ -270,12 +227,13 @@ final class ThemeValue implements UIDefaults.ActiveValue {
     
     private static JButton dummyButton = null;
     
-    private static Object getSynthContext () {
+    private static SynthContext getSynthContext () {
         try {
             JButton dummyButton = getDummyButton();
             
-            if (synthUI.isAssignableFrom(dummyButton.getUI().getClass())) {
-                return synthUI_getContext.invoke (dummyButton.getUI(), new Object[] {dummyButton});
+            ButtonUI bui = dummyButton.getUI();
+            if (bui instanceof SynthUI) {
+                return ((SynthUI) bui).getContext(dummyButton);
             } else {
                throw new IllegalStateException ("I don't have a SynthButtonUI to play with"); //NOI18N
             }
@@ -288,16 +246,8 @@ final class ThemeValue implements UIDefaults.ActiveValue {
         }
     }
 
-    private static Object getSynthStyle (Object region) {
-        try {
-            return synthLookAndFeel_getStyle.invoke (null, new Object[] { getDummyButton(), region} );
-        } catch (Exception e) {
-            functioning = Boolean.FALSE;
-            if (log) {
-                e.printStackTrace();
-            }
-            return null;
-        }
+    private static SynthStyle getSynthStyle (Region region) {
+        return SynthLookAndFeel.getStyle(getDummyButton(), region);
     }
 
     private static Object valueOfField (Class clazz, String field) throws NoSuchFieldException, IllegalAccessException {
@@ -306,38 +256,16 @@ final class ThemeValue implements UIDefaults.ActiveValue {
         return f.get(null);
     }
 
-    private static Class<?> synthLookAndFeel = null;
-    private static Class<?> gtkLookAndFeel = null;
-    private static Class<?> colorType = null;
-    private static Class<?> region = null;
-    private static Class<?> synthStyle = null;
-    private static Class<?> synthContext = null;
     private static Class<?> gtkColorType = null;
-    private static Class<?> synthUI = null;
 
-    private static Constructor synthContextConstructor;
     private static Method synthStyle_getColorForState = null;
     private static Method synthStyle_getFontForState = null;
-    private static Method synthLookAndFeel_getStyle = null;
 
-    private static Method synthContext_getContext = null;
-    private static Method synthUI_getContext = null;
-
-    //XXX should be some to delete here once done experimenting
-    static Object /* <Region> */ REGION_BUTTON = null;
-    static Object /* <Region> */ REGION_PANEL = null;
-    static Object /* <Region> */ REGION_SCROLLBAR_THUMB = null;
-    static Object /* <Region> */ REGION_TAB = null;
-    static Object /* <Region> */ REGION_INTFRAME = null;
-
-    static Object /* <GTKColorType> */ LIGHT = null;
-    static Object /* <GTKColorType> */ DARK = null;
-    static Object /* <GTKColorType> */ BLACK = null;
-    static Object /* <GTKColorType> */ WHITE = null;
-    static Object /* <GTKColorType> */ MID = null;
-    static Object /* <ColorType> */ TEXT_FOREGROUND = null;
-    static Object /* <ColorType> */ TEXT_BACKGROUND = null;
-    static Object /* <ColorType> */ FOCUS = null;    
+    static ColorType /* <GTKColorType> */ LIGHT = null;
+    static ColorType /* <GTKColorType> */ DARK = null;
+    static ColorType /* <GTKColorType> */ BLACK = null;
+    static ColorType /* <GTKColorType> */ WHITE = null;
+    static ColorType /* <GTKColorType> */ MID = null;
     
     
     private static HashSet<ThemeValue> instances = null;

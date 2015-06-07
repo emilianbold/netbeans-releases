@@ -141,24 +141,14 @@ public class MissedGuardBlock extends AbstractCodeAudit {
                 try {
                     String message = NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.description"); // NOI18N
                     int start = moveBellowCommentsTask.get().get();
-                    int end = start;
-                    if (doc instanceof LineDocument) {
-                        end = LineDocumentUtils.getLineEnd((LineDocument) doc, start);
-                    }
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, null,
-                            new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, start, end));  // NOI18N
+                            new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
                     } else {
-                        response.addError(new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), message, severity, start, end));
+                        response.addError(new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), message, severity, start));
                     }
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (CancellationException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (ExecutionException ex) {
-                    ex.printStackTrace(System.err);
-                } catch (BadLocationException ex) {
+                } catch (InterruptedException | CancellationException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
                 }
             }
@@ -178,11 +168,13 @@ public class MissedGuardBlock extends AbstractCodeAudit {
     private static final class MissedGuardBlockErrorInfoImpl extends ErrorInfoImpl {
         private final BaseDocument doc;
         private final CsmFile file;
+        private final int insertionStart;
         
-        public MissedGuardBlockErrorInfoImpl(Document doc, CsmFile file, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset, int endOffset) {
-            super(providerName, audutName, message, severity, startOffset, endOffset);
+        public MissedGuardBlockErrorInfoImpl(Document doc, CsmFile file, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset) {
+            super(providerName, audutName, message, severity, 0, 0);
             this.doc = (BaseDocument) doc;
             this.file = file;
+            insertionStart = startOffset;
         }
     }
     
@@ -200,8 +192,8 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         private List<? extends Fix> createFixes(MissedGuardBlock.MissedGuardBlockErrorInfoImpl info) {
             try {
                 List<Fix> fixes = new ArrayList<>();
-                fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.getStartOffset()));
-                fixes.add(new MissedGuardBlock.AddPragmaOnce(info.doc, info.file, info.getStartOffset()));
+                fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.insertionStart));
+                fixes.add(new MissedGuardBlock.AddPragmaOnce(info.doc, info.file, info.insertionStart));
                 return fixes;
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
@@ -231,7 +223,8 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             final String defName = file.getFileObject().getName().toUpperCase() + "_H\n";  // NOI18N
             final String ifndefMacro = "#ifndef ";  // NOI18N
             final String defineMacro = "#define ";  // NOI18N
-            final String endifMacro = "#endif\n";  // NOI18N
+            final String endifMacro = "#endif\t// ";  // NOI18N
+            final String endifText = endifMacro + defName + "\n";  // NOI18N
             final String openGuardBlockText = ifndefMacro + defName + defineMacro + defName + "\n";  // NOI18N
             
             // offsets
@@ -243,17 +236,20 @@ public class MissedGuardBlock extends AbstractCodeAudit {
             Position ifndefPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
             doc.insertString(ifndefPosition.getOffset(), openGuardBlockText, null);
             Position endifPossition = NbDocument.createPosition(doc, file.getText().length(), Position.Bias.Backward);
-            doc.insertString(endifPossition.getOffset(), "\n"+endifMacro, null); // NOI18N
+            doc.insertString(endifPossition.getOffset(), "\n"+endifText, null); // NOI18N
             
             Position ifndefStart = NbDocument.createPosition(doc, ifndefStartPos, Position.Bias.Forward);
             Position ifndefEnd = NbDocument.createPosition(doc, ifndefEndPos-1, Position.Bias.Backward); // substracts 1 because of new line symols
             Position defineStart = NbDocument.createPosition(doc, defStartPos, Position.Bias.Forward);
             Position defineEnd = NbDocument.createPosition(doc, defEndPos-1, Position.Bias.Backward); // substracts 1 because of new line symols
+            Position endifStart = NbDocument.createPosition(doc, endifPossition.getOffset()+endifMacro.length()+1, Position.Bias.Forward);
+            Position endifEnd = NbDocument.createPosition(doc, endifPossition.getOffset()+endifMacro.length()+defName.length(), Position.Bias.Backward);
             
             final ChangeInfo changeInfo = new ChangeInfo();
             final FileObject fo = file.getFileObject();
             changeInfo.add(fo, ifndefStart, ifndefEnd);
             changeInfo.add(fo, defineStart, defineEnd);
+            changeInfo.add(fo, endifStart, endifEnd);
             CsmRefactoringActionsFactory.performInstantRenameAction(EditorRegistry.lastFocusedComponent(), changeInfo);
             return null;
         }

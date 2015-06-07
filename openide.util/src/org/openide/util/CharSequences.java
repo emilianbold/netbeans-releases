@@ -235,7 +235,7 @@ public final class CharSequences {
         }
         return new ByteBasedSequence(b);
     }
-    
+
     /**
      * Provides compact char sequence object like {@link String#String(char[], int, int)}
      */

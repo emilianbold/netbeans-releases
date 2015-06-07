@@ -90,7 +90,7 @@ public class DirEntryImpl extends DirEntry {
         
         return new DirEntryImpl(name, name, size,
                 lastModified, makeFlags(canRead, canWrite, canExec), fileTypeChar,
-                0, 0, linkTarget);
+                device, inode, linkTarget);
     }
     
     private static byte makeFlags(boolean canRead, boolean canWrite, boolean canExec) {

@@ -49,6 +49,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 
 /**
  *
@@ -82,7 +83,7 @@ public class IncludeStorageValidationTestCase  extends ModifyDocumentTestCaseBas
             assertTrue("have to have entries for " + project + " in " + includedPreprocStatePairs, includedPreprocStatePairs.containsKey(projUID));
             Collection<PreprocessorStatePair> pairs = includedPreprocStatePairs.get(projUID);
             assertEquals("pairs=" + pairs, 1, pairs.size());
-            FilePreprocessorConditionState golden = FilePreprocessorConditionState.Builder.build(fileToCheck.getAbsolutePath(), new int[]{});
+            FilePreprocessorConditionState golden = CsmCorePackageAccessor.get().createPCState(fileToCheck.getAbsolutePath(), new int[]{});
             for (PreprocessorStatePair preprocessorStatePair : pairs) {
                 assertTrue("pair=" + preprocessorStatePair, preprocessorStatePair.state.isValid());
                 assertTrue("pair=" + preprocessorStatePair, preprocessorStatePair.pcState.equals(golden));
@@ -109,7 +110,7 @@ public class IncludeStorageValidationTestCase  extends ModifyDocumentTestCaseBas
             PreprocessorStatePair included = pairs.iterator().next();
             assertEquals(golden.pcState, included.pcState);
             assertEquals(golden.state, included.state);
-            assertFalse(FilePreprocessorConditionState.Builder.getDeadBlocks(included.pcState).length == 1);
+            assertFalse(CsmCorePackageAccessor.get().getPCStateDeadBlocks(included.pcState).length == 1);
         }
 
         @Override

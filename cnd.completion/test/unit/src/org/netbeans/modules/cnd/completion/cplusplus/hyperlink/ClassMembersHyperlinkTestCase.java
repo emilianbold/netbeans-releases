@@ -1172,6 +1172,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug235102_3_BBB.cpp", 8, 12, "bug235102_3_BBB.cpp", 3, 5);
     }
     
+    public void testBug252581() throws Exception {
+        // Bug 252581 - Methods declared by 'using' statement in a public section are not listed
+        performTest("bug252581.cpp", 21, 16, "bug252581.cpp", 6, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -1068,6 +1068,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     }
                     if (srToSelect == null || srToSelect.isDeleted()) {
                         srToSelect = ServerList.getDefaultRecord();
+                        if (!records.contains(srToSelect) && !records.isEmpty()) {
+                            srToSelect = records.iterator().next();
+                        }
                     }
                     if (cs == null) {
                         CompilerSetManager csm;
