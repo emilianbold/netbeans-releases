@@ -675,19 +675,21 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)prj).findDeclarationsByPrefix(from);
             CsmFunctionDefinition candidate = null;
             for(CsmOffsetableDeclaration decl : decls){
-                CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
-                int candidateParamSize = def.getParameters().size();
-                if (!isVoid && parmSize == 0) {
-                    if (!Utils.isCppFile(decl.getContainingFile())){
-                        return def;
+                if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                    CsmFunctionDefinition def = (CsmFunctionDefinition) decl;
+                    int candidateParamSize = def.getParameters().size();
+                    if (!isVoid && parmSize == 0) {
+                        if (!Utils.isCppFile(decl.getContainingFile())){
+                            return def;
+                        }
                     }
-                }
-                if (parmSize == candidateParamSize) {
-                    // TODO check overloads
-                    if (candidate == null) {
-                        candidate = def;
-                    } else {
-//                        return null;
+                    if (parmSize == candidateParamSize) {
+                        // TODO check overloads
+                        if (candidate == null) {
+                            candidate = def;
+                        } else {
+//                          return null;
+                        }
                     }
                 }
             }
