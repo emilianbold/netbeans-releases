@@ -200,7 +200,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             + "\u2022 Your computer and iOS device are connected to the same WiFi network")
     public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
         final WebKitDebuggingSupport build = WebKitDebuggingSupport.getDefault();
-        assert build != null;
+        assert project != null && build != null;
         final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
         final String url1 = build.getUrl(project, context);
         FileObject f = build.getFile(project, context);

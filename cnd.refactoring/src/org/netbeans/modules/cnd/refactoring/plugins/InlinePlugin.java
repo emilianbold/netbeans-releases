@@ -48,13 +48,10 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -129,7 +126,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
     private void processRefactoredReferences(List<CsmReference> sortedRefs, CsmFile file, ModificationResult mr) {
         for (CsmReference ref : sortedRefs) {
             CsmObject obj = ref.getReferencedObject();
-            if (CsmKindUtilities.isMacro(obj)) {
+            if (CsmKindUtilities.isMacro(obj) && (!isInMacro(file, ref))) {
                 CsmMacro macro = (CsmMacro) obj;
                 int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
                 int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, macro.getStartOffset())[0];
@@ -153,6 +150,26 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
                 }
             }
         }
+    }
+    
+    private boolean isInMacro(CsmFile file, CsmReference reference) {
+        CsmFileInfoQuery fiq = CsmFileInfoQuery.getDefault();
+        int stopOffset = reference.getStartOffset();
+        int line = fiq.getLineColumnByOffset(file, stopOffset)[0];
+        int offset = (int) fiq.getOffset(file, line, 1);
+        CharSequence codeLine = file.getText(offset, stopOffset);
+        for (int i = 0, fin = codeLine.length(); i < fin; i++) {
+            char character = codeLine.charAt(i);
+            if (character == '#')
+            {
+                return true;
+            } else if (Character.isWhitespace(character)) {
+                continue;
+            } else {
+                break;
+            }
+        }
+        return false;
     }
     
     private int getMacroParametersEndOffset(CsmFile file, CsmMacro macro, int pos) {

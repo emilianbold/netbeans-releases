@@ -47,6 +47,7 @@ var NetBeansReporter = function(baseReporterDecorator) {
 
     this.BROWSER_START = '$NB$netbeans browserStart name=$NB$%s$NB$';
     this.BROWSER_END = '$NB$netbeans browserEnd name=$NB$%s$NB$';
+    this.BROWSER_ERROR = '$NB$netbeans browserError browser=$NB$%s$NB$ error=$NB$%s$NB$';
     this.SUITE_START = '$NB$netbeans suiteStart browser=$NB$%s$NB$ name=$NB$%s$NB$';
     this.SUITE_END = '$NB$netbeans suiteEnd browser=$NB$%s$NB$ name=$NB$%s$NB$';
     this.TEST_PASS = '$NB$netbeans testPass browser=$NB$%s$NB$ name=$NB$%s$NB$ duration=$NB$%s$NB$';
@@ -65,6 +66,10 @@ var NetBeansReporter = function(baseReporterDecorator) {
 
     this.onBrowserStart = function(browser) {
         this.initializeBrowserResult(this, browser);
+    };
+
+    this.onBrowserError = function(browser, error) {
+        this.printMessage(this.BROWSER_ERROR, browser, JSON.stringify(error));
     };
 
     this.initializeBrowserResult = function(self, browser) {
