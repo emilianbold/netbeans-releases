@@ -74,6 +74,7 @@ public class Util {
     public static final String PROTO_HTTP = "http";              //NOI18N
     public static final String PROTO_HTTPS = "https";            //NOI18N
     public static final String PROTO_FILE = "file";              //NOI18N
+    private static final String JFXRT_PATH = "lib/jfxrt.jar";    //NOI18N
 
     private Util () {
     }
@@ -96,6 +97,7 @@ public class Util {
 
     @CheckForNull
     static ClassPath createModulePath(@NonNull final Collection<FileObject> installFolders) {
+        final List<PathResourceImplementation> modules = new ArrayList<>();
         for (FileObject installFolder : installFolders) {
             final File installDir = FileUtil.toFile(installFolder);
             final URI imageURI = installDir == null ?
@@ -104,18 +106,26 @@ public class Util {
             if (imageURI != null) {
                 try {
                     final FileObject root = URLMapper.findFileObject(imageURI.toURL());
-                    final List<PathResourceImplementation> modules = new ArrayList<>();
                     for (FileObject module : root.getChildren()) {
                         modules.add(ClassPathSupport.createResource(module.toURL()));
                     }
-                    return ClassPathSupport.createClassPath(modules);
                 } catch (MalformedURLException e) {
                     Exceptions.printStackTrace(e);
-                    break;
                 }
+                break;
             }
         }
-        return null;
+        if (!modules.isEmpty()) {
+            //The jfxrt.jar is not modular but it's automatically added to ext
+            //class loader by java launcher
+            final PathResourceImplementation jfx = getJfxRt(installFolders);
+            if (jfx != null) {
+                modules.add(jfx);
+            }
+            return ClassPathSupport.createClassPath(modules);
+        } else {
+            return null;
+        }
     }
 
     // XXX this method could probably be removed... use standard FileUtil stuff
@@ -299,6 +309,17 @@ public class Util {
         }
         // Nothing decent in it at all; use zero.
         return new SpecificationVersion("0"); // NOI18N
+    }
+
+    @CheckForNull
+    private static PathResourceImplementation getJfxRt(@NonNull final Collection<? extends FileObject> installFolders) {
+        for (FileObject installFolder : installFolders) {
+            final FileObject jfxrt = installFolder.getFileObject(JFXRT_PATH);
+            if (jfxrt != null && FileUtil.isArchiveFile(jfxrt)) {
+                return ClassPathSupport.createResource(FileUtil.getArchiveRoot(jfxrt.toURL()));
+            }
+        }
+        return null;
     }
 
 }
