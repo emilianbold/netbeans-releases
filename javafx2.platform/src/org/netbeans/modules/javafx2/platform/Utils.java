@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
@@ -76,6 +77,7 @@ public final class Utils {
     private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
     private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
     private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
+    private static final String MODUL_PROTOCOL = "nbjrt";   //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
@@ -124,7 +126,7 @@ public final class Utils {
      */
     @NonNull
     public static String getJavaFxRuntimeSubDir(@NonNull final JavaPlatform platform) {
-        return JDK9.compareTo(platform.getSpecification().getVersion())  <= 0 ?
+        return JDK9.compareTo(platform.getSpecification().getVersion())  <= 0 && isModular(platform) ?
                 "":             //NOI18N
                 JDK_JRE_PATH;
     }
@@ -196,6 +198,17 @@ public final class Utils {
             }
         }
         return result;
+    }
+
+    private static boolean isModular(@NonNull final JavaPlatform platform) {
+        boolean modular = false;
+        for (ClassPath.Entry e : platform.getBootstrapLibraries().entries()) {
+            if (MODUL_PROTOCOL.equals(e.getURL().getProtocol())) {
+                modular = true;
+                break;
+            }
+        }
+        return modular;
     }
 
 }

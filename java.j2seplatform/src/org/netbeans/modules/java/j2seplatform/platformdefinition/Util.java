@@ -56,6 +56,7 @@ import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seplatform.platformdefinition.jrtfs.NBJRTUtil;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -82,16 +83,8 @@ public class Util {
     @NonNull
     static ClassPath createClassPath(@NonNull final String classpath) {
         Parameters.notNull("classpath", classpath);
-        StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
         List<PathResourceImplementation> list = new ArrayList<>();
-        while (tokenizer.hasMoreTokens()) {
-            String item = tokenizer.nextToken();
-            File f = FileUtil.normalizeFile(new File(item));
-            URL url = getRootURL (f);
-            if (url!=null) {
-                list.add(ClassPathSupport.createResource(url));
-            }
-        }
+        addPath(classpath, list);
         return ClassPathSupport.createClassPath(list);
     }
 
@@ -122,6 +115,7 @@ public class Util {
             if (jfx != null) {
                 modules.add(jfx);
             }
+            addPath(getExtensions(J2SEPlatformImpl.SYSPROP_JAVA_EXT_PATH), modules);
             return ClassPathSupport.createClassPath(modules);
         } else {
             return null;
@@ -320,6 +314,22 @@ public class Util {
             }
         }
         return null;
+    }
+
+    private static void addPath(
+            @NullAllowed final String path,
+            @NonNull final List<? super PathResourceImplementation> into) {
+        if (path != null && !path.isEmpty()) {
+            final StringTokenizer tokenizer = new StringTokenizer(path, File.pathSeparator);
+            while (tokenizer.hasMoreTokens()) {
+                String item = tokenizer.nextToken();
+                File f = FileUtil.normalizeFile(new File(item));
+                URL url = getRootURL (f);
+                if (url!=null) {
+                    into.add(ClassPathSupport.createResource(url));
+                }
+            }
+        }
     }
 
 }
