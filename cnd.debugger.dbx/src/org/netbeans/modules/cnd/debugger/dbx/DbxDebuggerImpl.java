@@ -2784,6 +2784,54 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
 
     // interface BreakpointProvider
     @Override
+    public void postActivateBreakpoints() {
+        final Handler[] handlers = bm().getHandlers();
+
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
+        }
+        
+        StringBuilder command = new StringBuilder();
+        command.append("handler -enable"); // NOI18N
+        
+        for (Handler h : handlers) {
+            if (h.breakpoint().isEnabled()) {
+                command.append(' ');
+                command.append(h.getId());
+            }
+        }
+        
+        breakpointsActivated = true;
+        dbx.sendCommandInt(0, 0, command.toString());
+    }
+
+    // interface BreakpointProvider
+    @Override
+    public void postDeactivateBreakpoints() {
+        final Handler[] handlers = bm().getHandlers();
+
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
+        }
+        
+        StringBuilder command = new StringBuilder();
+        command.append("handler -disable"); // NOI18N
+
+        for (Handler h : handlers) {
+            if (h.breakpoint().isEnabled()) {
+                command.append(' ');
+                command.append(h.getId());
+            }
+        }
+        
+        breakpointsActivated = false;
+        dbx.sendCommandInt(0, 0, command.toString());
+    }
+    
+    // interface BreakpointProvider
+    @Override
     public void postDeleteAllHandlersImpl() {
         dbx.sendCommandInt(0, 0, "delete all"); // NOI18N
     }

@@ -862,8 +862,13 @@ public final class Dbx extends CommonDbx {
     @Override
     protected final void handler_enable(int id, boolean v) {
 	Handler handler = debugger.bm().findHandler(id);
-	if (handler != null)
-	    handler.setEnabled(v);
+	if (handler != null) {
+            if (debugger.areBreakpointsActivated()) {
+                handler.setEnabled(v);
+            } else {
+                handler.breakpoint().update();
+            }
+        }
     }
 
     @Override
