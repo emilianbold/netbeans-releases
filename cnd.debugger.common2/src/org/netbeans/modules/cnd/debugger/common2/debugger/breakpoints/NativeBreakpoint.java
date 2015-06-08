@@ -2945,7 +2945,7 @@ public abstract class NativeBreakpoint
 
     private static final String icon_dir =
 	"org/netbeans/modules/cnd/debugger/common2/icons";       // NOI18N
-
+    
     public String getIconBase() {
 	// SHOULD merge this with annotation types?
 
@@ -2955,6 +2955,13 @@ public abstract class NativeBreakpoint
 	// StringBuffer name = new StringBuffer("viewBpt");
 
 	// texteditor glyph gutter icons
+        if (debugger != null && !debugger.areBreakpointsActivated()) {
+            if (isEnabled()) {
+                return debugger_icon_dir + "/DeactivatedBreakpoint";       // NOI18N
+            } else {
+                return debugger_icon_dir + "/DeactivatedDisabledBreakpoint";       // NOI18N
+            }
+        }
 	StringBuilder name = new StringBuilder();
         if (!isEnabled()) {
 	    name.append(DebuggerAnnotation.TYPE_BPTX_DISABLED);
