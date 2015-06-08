@@ -152,6 +152,7 @@ public class KnockoutPanel extends JPanel implements ExplorerManager.Provider {
         } else if ("Aqua".equals(lafId)) { // NOI18N
             toolBar.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
         }
+        toolBar.setVisible(false); // Unused Bindings no longer works
     }
 
     /**
