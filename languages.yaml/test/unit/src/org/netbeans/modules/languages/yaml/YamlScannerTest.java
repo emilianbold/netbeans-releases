@@ -163,9 +163,9 @@ public class YamlScannerTest extends YamlTestBase {
         checkFolds("testfiles/ordered.yaml");
     }
 
-    public void testErb1Folds() throws Exception {
-        checkFolds("testfiles/fixture.yml");
-    }
+//    public void testErb1Folds() throws Exception {
+//        checkFolds("testfiles/fixture.yml");
+//    }
 
     public void testErb2Folds() throws Exception {
         checkFolds("testfiles/fixture2.yml");
