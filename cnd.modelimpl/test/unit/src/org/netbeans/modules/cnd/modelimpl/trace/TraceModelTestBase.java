@@ -44,13 +44,21 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
@@ -84,7 +92,23 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     }
 
     protected void performTest(String source) throws Exception {
-        performTest(source, source + ".dat", source + ".err"); // NOI18N
+        String goldenDataFileName = null;
+        String goldenErrFileName = null;
+        if (APTTraceFlags.USE_CLANK) {
+            if (getGoldenFile(source + ".clank.dat").exists()) { // NOI18N
+                goldenDataFileName = source + ".clank.dat"; // NOI18N
+            }
+            if (getGoldenFile(source + ".clank.err").exists()) { // NOI18N
+                goldenErrFileName = source + ".clank.err"; // NOI18N
+            }
+        }
+        if (goldenDataFileName == null) {
+            goldenDataFileName = source + ".dat"; // NOI18N
+        }
+        if (goldenErrFileName == null) {
+            goldenErrFileName = source + ".err"; // NOI18N
+        }
+        performTest(source, goldenDataFileName, goldenErrFileName); // NOI18N
     }
 
     protected final ProjectBase getProject() {
@@ -224,8 +248,22 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         for (int i = 0; i < source.length; i++) {
             absFiles[i] = getDataFile(source[i]).getAbsolutePath();            
         }
-        String goldenDataFileName = goldenNameBase + ".dat";
-        String goldenErrFileName = goldenNameBase + ".err";
+        String goldenDataFileName = null;
+        String goldenErrFileName = null;
+        if (APTTraceFlags.USE_CLANK) {
+            if (getGoldenFile(goldenNameBase + ".clank.dat").exists()) { // NOI18N
+                goldenDataFileName = goldenNameBase + ".clank.dat"; // NOI18N
+            }
+            if (getGoldenFile(goldenNameBase + ".clank.err").exists()) { // NOI18N
+                goldenErrFileName = goldenNameBase + ".clank.err"; // NOI18N
+            }
+        }
+        if (goldenDataFileName == null) {
+            goldenDataFileName = goldenNameBase + ".dat"; // NOI18N
+        }
+        if (goldenErrFileName == null) {
+            goldenErrFileName = goldenNameBase + ".err"; // NOI18N
+        }
         performTest(absFiles, goldenDataFileName, goldenErrFileName, params);
     }
 
@@ -251,6 +289,11 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 // fake override to easy debug model tests
                 super.print(s);
             }
+
+            @Override
+            public void println(String s) {
+                super.println(s);
+            }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
         PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error) {
@@ -261,6 +304,15 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
                 super.print(s);
             }
 
+            @Override
+            public void println(String s) {
+                super.println(s);
+            }
+
+            @Override
+            public PrintStream printf(String format, Object... args) {
+                return super.printf(format, args); //To change body of generated methods, choose Tools | Templates.
+            }
         };
         try {
             doTest(args, streamOut, streamErr, params);
@@ -280,13 +332,11 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         if (goldenErrFileName != null && !Boolean.getBoolean("cnd.skip.err.check")) {
             goldenErrFile = getGoldenFile(goldenErrFileName);
             if (goldenErrFile.exists()) {
-                if (diffErrorFiles(error, goldenErrFile, null)) {
+                goldenErrFileCopy = copyGoldenErrFile(workDir, goldenErrFileName, goldenErrFile);
+                if (diffErrorFiles(error, goldenErrFileCopy, null)) {
                     errTheSame = false;
-                    // copy golden
-                    goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
-                    CndCoreTestUtils.copyToWorkDir(goldenErrFile, goldenErrFileCopy); // NOI18N
                     diffErrorFile = new File(workDir, goldenErrFileName + ".diff");
-                    diffErrorFiles(error, goldenErrFile, diffErrorFile);
+                    diffErrorFiles(error, goldenErrFileCopy, diffErrorFile);
                 }
             } else {
                 // golden err.file doesn't exist => err.file should be empty
@@ -327,5 +377,36 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             assertTrue(buf.toString(), false); // NOI18N
         }
         assertNoExceptions();
+    }
+
+    private File copyGoldenErrFile(File workDir, String goldenErrFileName, File goldenErrFile) throws IOException {
+        // copy golden
+        String golden = "goldenfiles";
+        String macro = "${origin}";
+        String origin = goldenErrFile.getAbsolutePath();
+        int i = origin.lastIndexOf(golden);
+        char separator = origin.charAt(i-1);
+        origin = origin.substring(0,i-1)+origin.substring(i+golden.length());
+        i = origin.lastIndexOf(separator);
+        origin = origin.substring(0, i);
+
+        File goldenErrFileCopy = new File(workDir, goldenErrFileName + ".golden");
+        BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(goldenErrFile), "UTF-8"));
+        BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(goldenErrFileCopy), "UTF-8"));
+        for (String line = br.readLine(); line != null; line = br.readLine()) {
+            i = line.indexOf(macro);
+            if (i >= 0) {
+                char currentSeparator = line.charAt(i+macro.length());
+                if (separator != currentSeparator) {
+                    line = line.replace(currentSeparator, separator);
+                }
+                line = line.replace(macro, origin);
+            }
+            wr.write(line);
+            wr.write('\n');
+        }
+        br.close();
+        wr.close();
+        return goldenErrFileCopy;
     }
 }

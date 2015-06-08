@@ -120,7 +120,7 @@ public final class KarmaServer implements PropertyChangeListener {
         }
         starting = true;
         fireChange();
-        KarmaExecutable karmaExecutable = KarmaExecutable.forProject(project, true);
+        KarmaExecutable karmaExecutable = KarmaExecutable.getDefault(project, true);
         if (karmaExecutable == null) {
             // some error
             starting = false;
@@ -154,7 +154,7 @@ public final class KarmaServer implements PropertyChangeListener {
             // some error
             return;
         }
-        KarmaExecutable karmaExecutable = KarmaExecutable.forProject(project, true);
+        KarmaExecutable karmaExecutable = KarmaExecutable.getDefault(project, true);
         assert karmaExecutable != null;
         karmaExecutable.runTests(port);
         if (isDebug()) {

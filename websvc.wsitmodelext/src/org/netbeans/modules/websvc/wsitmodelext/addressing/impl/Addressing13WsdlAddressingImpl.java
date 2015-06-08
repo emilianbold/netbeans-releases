@@ -63,10 +63,12 @@ public class Addressing13WsdlAddressingImpl extends Addressing13ComponentImpl im
         super(model, e);
     }
 
+    @Override
     public void setOptional(boolean optional) {
-        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3), Boolean.toString(optional));
+        setAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3), optional ? "true" : null); // NOI18N
     }
 
+    @Override
     public boolean isOptional() {
         return Boolean.parseBoolean(getAnyAttribute(PolicyQName.OPTIONAL.getQName(ConfigVersion.CONFIG_1_3)));
     }

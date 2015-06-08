@@ -65,43 +65,20 @@ public class ExecSupport {
     private Thread t;
     private Connect connect;
     private Map<String, Runnable> outputStringHandlers = null;
+    private String displayName;
+    private Process child;
 
     /** Creates a new instance of ExecSupport */
-    public ExecSupport() {
+    public ExecSupport(final Process child, String displayName) {
+        this.displayName = displayName;
+        this.child = child;
     }
 
-    public void setStringToLookFor(String lookFor) {
-        this.lookFor = lookFor;
-    }
-    
     /**
-     * Add an output string handler. If the specified string will be found in
-     * the output stream, the handler will be invoked.
-     *
-     * @param string
-     * @param handler
+     * Redirect the standard output and error streams of the child process to an
+     * output window.
      */
-    public void addOutputStringHandler(String string, Runnable handler) {
-        if (outputStringHandlers == null) {
-            outputStringHandlers = new HashMap<String, Runnable>();
-        }
-        outputStringHandlers.put(string, handler);
-    }
-
-    public boolean isStringFound() {
-        if (copyMakers == null)
-            return false;
-        return (copyMakers[0].stringFound() ||
-                copyMakers[1].stringFound() ||
-                copyMakers[2].stringFound());
-    }
-    
-    /**
-     * Redirect the standard output and error streams of the child
-     * process to an output window.
-     */
-    public void displayProcessOutputs(final Process child, String displayName)
-    throws IOException, InterruptedException {
+    public void start() {
         // Get a tab on the output window.  If this client has been
         // executed before, the same tab will be returned.
         InputOutput io = org.openide.windows.IOProvider.getDefault().getIO(
@@ -137,8 +114,33 @@ public class ExecSupport {
             }
         }.start();
     }
-       
     
+    public void setStringToLookFor(String lookFor) {
+        this.lookFor = lookFor;
+    }
+    
+    /**
+     * Add an output string handler. If the specified string will be found in
+     * the output stream, the handler will be invoked.
+     *
+     * @param string
+     * @param handler
+     */
+    public void addOutputStringHandler(String string, Runnable handler) {
+        if (outputStringHandlers == null) {
+            outputStringHandlers = new HashMap<>();
+        }
+        outputStringHandlers.put(string, handler);
+    }
+
+    public boolean isStringFound() {
+        if (copyMakers == null) {
+            return false;
+        }
+        return (copyMakers[0].stringFound() ||
+                copyMakers[1].stringFound() ||
+                copyMakers[2].stringFound());
+    }
     
     /** This thread simply reads from given Reader and writes read chars to given Writer. */
     static public  class OutputCopier extends Thread {
@@ -195,11 +197,12 @@ public class ExecSupport {
                     }
                     if (os!=null){
                         os.write(buff,0,read);
-                        if (autoflush) os.flush();
+                        if (autoflush) {
+                            os.flush();
+                        }
                     }
                 }
-            } catch (IOException ex) {
-            } catch (InterruptedException e) {
+            } catch (IOException | InterruptedException ex) {
             }
         }
 
@@ -241,7 +244,9 @@ public class ExecSupport {
         
         private int read(Reader is, char[] buff, int start, int count) throws InterruptedException, IOException {
             
-            while (!is.ready() && !done) sleep(100);
+            while (!is.ready() && !done) {
+                sleep(100);
+            }
             
             return is.read(buff, start, count);
         }
@@ -282,6 +287,10 @@ public class ExecSupport {
         }
     }
     
+    public void terminate() {
+        this.child.destroy();
+    }
+    
     private class Connect implements Runnable  {
 
         int retryTime;
@@ -296,6 +305,7 @@ public class ExecSupport {
             loop = false;
         }
 
+        @Override
         public void run() {
             while (loop) {
                 if (isStringFound()) {

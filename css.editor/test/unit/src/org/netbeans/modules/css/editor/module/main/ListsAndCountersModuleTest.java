@@ -70,7 +70,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
                 "!identifier","georgian","element","upper-alpha","armenian",
                 "upper-latin","linear-gradient","!string","image","decimal",
                 "upper-roman","!uri","cross-fade","radial-gradient","inside",
-                "decimal-leading-zero","square", "circle","none","symbols","outside", "initial");
+                "decimal-leading-zero","square", "circle","none","symbols","outside", "initial", "inherit");
     }
     
     public void testListStyleType() {

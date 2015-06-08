@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferencesValidator;
@@ -55,6 +56,7 @@ import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
+import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -65,6 +67,11 @@ import org.openide.util.NbBundle;
 public enum CssPreprocessorType {
 
     SASS() {
+        @Override
+        public String getIdentifier() {
+            return SassCssPreprocessor.IDENTIFIER;
+        }
+
         @Override
         public String getDisplayName() {
             return Bundle.CssPreprocessorType_sass_displayName();
@@ -98,6 +105,11 @@ public enum CssPreprocessorType {
     },
     LESS() {
         @Override
+        public String getIdentifier() {
+            return LessCssPreprocessor.IDENTIFIER;
+        }
+
+        @Override
         public String getDisplayName() {
             return Bundle.CssPreprocessorType_less_displayName();
         }
@@ -129,6 +141,7 @@ public enum CssPreprocessorType {
 
     };
 
+    public abstract String getIdentifier();
     public abstract String getDisplayName();
     public abstract String getDefaultDirectoryName();
     public abstract Collection<String> getMimeTypes();
@@ -157,6 +170,6 @@ public enum CssPreprocessorType {
         }
         return mime2filetypeMap.get(mimeType);
     }
-    
-    
+
+
 }

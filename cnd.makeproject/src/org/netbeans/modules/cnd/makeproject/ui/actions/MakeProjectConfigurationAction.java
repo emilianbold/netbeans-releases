@@ -54,10 +54,14 @@ public class MakeProjectConfigurationAction extends ContextAwareWrapperAction {
     
 
     @Override
-    protected Action createDeligateAction(Project p) {
-        return new SetConfigurationAction(p);
+    protected Action createDelegateAction(Project[] projects) {
+        return projects.length == 1 ? new SetConfigurationAction(projects[0]) : null;
     }
 
+    @Override
+    protected boolean supportMultipleProjects() {
+        return false;
+    }
     
     @Override
     public String getName() {

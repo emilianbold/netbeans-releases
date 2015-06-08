@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.karma.preferences;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.util.FileUtils;
-import org.netbeans.modules.web.common.api.ExternalExecutableValidator;
 import org.netbeans.modules.web.common.api.ValidationResult;
 import org.openide.util.NbBundle;
 
@@ -58,18 +57,8 @@ public final class KarmaPreferencesValidator {
     }
 
     public KarmaPreferencesValidator validate(Project project) {
-        validateKarma(KarmaPreferences.getKarma(project));
         validateConfig(KarmaPreferences.getConfig(project));
         validateDebug(KarmaPreferences.isDebug(project), KarmaPreferences.getDebugBrowserId(project));
-        return this;
-    }
-
-    @NbBundle.Messages("KarmaPreferencesValidator.karma.name=Karma")
-    public KarmaPreferencesValidator validateKarma(String karma) {
-        String warning = ExternalExecutableValidator.validateCommand(karma, Bundle.KarmaPreferencesValidator_karma_name());
-        if (warning != null) {
-            result.addWarning(new ValidationResult.Message("path", warning)); // NOI18N
-        }
         return this;
     }
 

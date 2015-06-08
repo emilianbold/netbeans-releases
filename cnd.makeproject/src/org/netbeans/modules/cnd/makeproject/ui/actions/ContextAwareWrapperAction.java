@@ -54,10 +54,11 @@ import org.openide.util.actions.Presenter;
  */
 abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareAction implements Presenter.Menu, Presenter.Popup{
     
-    private Action deligateAction;
+    private Action delegateAction;
     
-    abstract protected Action createDeligateAction(Project p);        
-    
+    abstract protected Action createDelegateAction(Project[] projects);        
+    abstract protected boolean supportMultipleProjects();
+
     @Override
     protected void performAction(Node[] activatedNodes) {
         //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -67,16 +68,18 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     @Override
     protected boolean enable(Node[] activatedNodes) {
-    //    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        //find project
-        Project p = getProject(activatedNodes);
-        if (p == null) {
+        //find projects
+        Project[] projects = getProjects(activatedNodes);
+        if (projects == null || projects.length == 0) {
+            delegateAction = null;
+            return false;
+        } else if (projects.length > 1 && ! supportMultipleProjects()) {
+            delegateAction = null;
             return false;
         }
-        deligateAction = createDeligateAction(p);
-        return true;
+        delegateAction = createDelegateAction(projects);
+        return delegateAction != null;
     }
-
 
     @Override
     public HelpCtx getHelpCtx() {
@@ -85,22 +88,22 @@ abstract public class ContextAwareWrapperAction extends MakeProjectContextAwareA
     
     @Override
     public JMenuItem getPopupPresenter() {
-        if (deligateAction == null) {
+        if (delegateAction == null) {
             return null;
         }
-        if (Presenter.Popup.class.isAssignableFrom(deligateAction.getClass())) {
-            return ((Presenter.Popup)deligateAction).getPopupPresenter();
+        if (Presenter.Popup.class.isAssignableFrom(delegateAction.getClass())) {
+            return ((Presenter.Popup)delegateAction).getPopupPresenter();
         }
         return null;
     }
     
     @Override
     public JMenuItem getMenuPresenter() {
-        if (deligateAction == null) {
+        if (delegateAction == null) {
             return null;
         }        
-        if (Presenter.Menu.class.isAssignableFrom(deligateAction.getClass())) {
-            return ((Presenter.Menu)deligateAction).getMenuPresenter();
+        if (Presenter.Menu.class.isAssignableFrom(delegateAction.getClass())) {
+            return ((Presenter.Menu)delegateAction).getMenuPresenter();
         }
         return null;
     }      

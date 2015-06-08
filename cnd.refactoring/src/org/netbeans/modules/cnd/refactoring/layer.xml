@@ -33,6 +33,10 @@
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                      
+                    <file name="InlineAction.instance">
+                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
@@ -88,6 +92,14 @@
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
                     </file>
+                    <file name="InlineSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="InlineAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c/Actions/InlineAction.instance"/>
+                        <attr name="position" intvalue="1850"/>
+                    </file>
                 </folder>
 
                 <folder name="CodeGeneratorContextProviders">
@@ -139,6 +151,10 @@
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                    
+                    <file name="InlineAction.instance">
+                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
@@ -193,6 +209,14 @@
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
+                    </file>
+                    <file name="InlineSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="InlineAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-c++/Actions/InlineAction.instance"/>
+                        <attr name="position" intvalue="1850"/>
                     </file>
                 </folder>
 
@@ -263,6 +287,10 @@
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethod"/>
                     </file>                      
+                    <file name="InlineAction.instance">
+                        <!-- <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.actions.InlineRefactoringAction.inlineMacro"/> -->
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory.inlineAction"/>
+                    </file>
                 </folder>
                 <folder name="Keybindings">
                     <folder name="NetBeans">
@@ -309,6 +337,14 @@
                     <file name="IntroduceMethodAction.instance">
                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.refactoring.introduce.IntroduceAction.createMethodGlobal"/>
                         <attr name="position" intvalue="1750"/>
+                    </file>
+                    <file name="InlineSeparator.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1800"/>
+                    </file>
+                    <file name="InlineAction.shadow">
+                        <attr name="originalFile" stringvalue="Editors/text/x-h/Actions/InlineAction.instance"/>
+                        <attr name="position" intvalue="1850"/>
                     </file>
                 </folder>
 

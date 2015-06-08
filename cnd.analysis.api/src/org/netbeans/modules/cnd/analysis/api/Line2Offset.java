@@ -104,4 +104,28 @@ public class Line2Offset {
         }
         return new int[]{0,1};
     }
+
+    public int getLineByOffset(int offset) {
+        int low = 0;
+        int high = lines.length - 1;
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            int midVal = lines[mid];
+            if (midVal < offset) {
+                if (low == high) {
+                    return low + 1;
+                }
+                low = mid + 1;
+            } else if (midVal > offset) {
+                if (low == high) {
+                    return low;
+                }
+                high = mid - 1;
+            } else {
+                return mid + 1;
+            }
+        }
+        return low;
+    }
+
 }

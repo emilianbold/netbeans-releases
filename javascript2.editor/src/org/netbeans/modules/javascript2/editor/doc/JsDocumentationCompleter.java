@@ -59,6 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.javascript2.editor.Utils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -231,11 +232,12 @@ public class JsDocumentationCompleter {
         SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
 
         Collection<? extends TypeUsage> assignments = jsObject.getAssignments();
+        Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(assignments, jsParserResult, true, true);
         StringBuilder types = new StringBuilder();
-        for (TypeUsage typeUsage : assignments) {
+        for (TypeUsage typeUsage : resolveTypes) {
             // name and type are equivalent in the case of assigning parrametrs like "this.name = name"
             if (!typeUsage.getType().equals(jsObject.getName())) {
-                types.append("|").append(typeUsage.getType());
+                types.append("|").append(Utils.getDisplayName(typeUsage));
             }
         }
         String type = types.length() == 0 ? null : types.toString().substring(1);

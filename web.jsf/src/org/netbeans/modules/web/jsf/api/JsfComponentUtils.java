@@ -62,6 +62,7 @@ import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
@@ -224,7 +225,15 @@ public class JsfComponentUtils {
      */
     public static boolean isMavenBased(@NonNull WebModule webModule) {
         Parameters.notNull("webModule", webModule); //NOI18N
-        Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        FileObject fo = webModule.getDocumentBase();
+        if (fo == null) {
+            // FIXME this is just best effort, perhaps there should be WebModule.getProject()
+            FileObject[] sources = webModule.getJavaSources();
+            if (sources.length > 0) {
+                fo = sources[0];
+            }
+        }
+        Project project = FileOwnerQuery.getOwner(fo);
         AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
         return antArtifactProvider == null;
     }

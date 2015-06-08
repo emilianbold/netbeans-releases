@@ -93,4 +93,22 @@ public final class CsmActionsImplementationFactory {
         }
     }
     
+    public static boolean canPerformInlineRefactoring(Lookup lookup) {
+        for (CsmActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canChangeParameters(lookup)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static void doInlineRefactoring(Lookup lookup) {
+        for (CsmActionsImplementationProvider rafi: implementations.allInstances()) {
+            if (rafi.canPerformInlineRefactoring(lookup)) {
+                rafi.doInlineRefactoring(lookup);
+                return;
+            }
+        }
+    }
+    
 }

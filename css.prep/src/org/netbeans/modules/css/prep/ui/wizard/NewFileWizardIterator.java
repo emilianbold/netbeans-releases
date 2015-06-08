@@ -326,7 +326,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             if (panel == null) {
                 assert EventQueue.isDispatchThread();
                 CssPreprocessorPreferences preferences = type.getPreferences();
-                panel = new OptionsPanel(type, preferences.isEnabled(project),
+                panel = new OptionsPanel(type, project, preferences.isEnabled(project),
                         preferences.getMappings(project), preferences.getCompilerOptions(project));
                 panel.showConfigureExecutableButton();
             }

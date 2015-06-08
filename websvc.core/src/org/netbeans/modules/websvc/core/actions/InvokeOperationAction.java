@@ -65,19 +65,24 @@ import org.openide.util.actions.NodeAction;
  * @author Peter Williams
  */
 public class InvokeOperationAction extends NodeAction {
+
+    @Override
     public String getName() {
         return NbBundle.getMessage(InvokeOperationAction.class, "LBL_CallWebServiceOperation"); // NOI18N
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         // If you will provide context help then use:
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1) {
             return false;
@@ -89,6 +94,7 @@ public class InvokeOperationAction extends NodeAction {
         return true;
     }
 
+    @Override
     protected void performAction(Node[] activatedNodes) {
         if(activatedNodes[0] != null) {
             FileObject currentFO = getCurrentFileObject(activatedNodes[0]);
@@ -109,6 +115,7 @@ public class InvokeOperationAction extends NodeAction {
                 serviceExplorer.addPropertyChangeListener(
                         InvokeOperationCookie.ClientSelectionPanel.PROPERTY_SELECTION_VALID,
                         new PropertyChangeListener() {
+                            @Override
                             public void propertyChange(PropertyChangeEvent evt) {
                                 descriptor.setValid(((Boolean)evt.getNewValue()));
                             }

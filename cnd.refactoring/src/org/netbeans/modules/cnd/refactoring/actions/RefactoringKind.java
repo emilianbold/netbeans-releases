@@ -42,7 +42,9 @@ public enum RefactoringKind {
     CREATE_CONSTANT("introduce-constant"), //NOI18N
     CREATE_FIELD("introduce-field"), //NOI18N
     CREATE_METHOD("introduce-method"), //NOI18N
-    CREATE_PARAMETER("introduce-parameter"); //NOI18N
+    CREATE_PARAMETER("introduce-parameter"), //NOI18N
+    
+    INLINE_REFACTORING("inline-refactoring"); //NOI18N
 
     private final String key; //Action ID
     private RefactoringKind(String key) {

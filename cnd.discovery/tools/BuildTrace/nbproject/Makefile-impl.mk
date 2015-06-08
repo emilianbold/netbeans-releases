@@ -27,11 +27,11 @@ CLEAN_SUBPROJECTS=${CLEAN_SUBPROJECTS_${SUBPROJECTS}}
 PROJECTNAME=BuildTrace
 
 # Active Configuration
-DEFAULTCONF=SunOS-x86
+DEFAULTCONF=SunOS-sparc
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=SunOS-x86 SunOS-x86_64 SunOS-sparc SunOS-sparc_64 Linux-x86 Linux-x86_64 MacOSX-x86 MacOSX-x86_64 Linux-sparc_64 
+ALLCONFS=SunOS-sparc SunOS-sparc_64 SunOS-x86 SunOS-x86_64 SunOS-Previse Linux-x86 Linux-x86_64 Linux-sparc_64 MacOSX-x86 MacOSX-x86_64 
 
 
 # build

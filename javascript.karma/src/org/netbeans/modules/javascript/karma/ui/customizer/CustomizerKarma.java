@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.javascript.karma.ui.customizer;
 
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -62,7 +61,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -157,7 +155,6 @@ public class CustomizerKarma extends JPanel {
     private void init() {
         assert EventQueue.isDispatchThread();
         // data
-        karmaTextField.setText(KarmaPreferences.getKarma(project));
         configTextField.setText(KarmaPreferences.getConfig(project));
         autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
         debugCheckBox.setSelected(KarmaPreferences.isDebug(project));
@@ -175,7 +172,6 @@ public class CustomizerKarma extends JPanel {
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ItemListener defaultItemListener = new DefaultItemListener();
         ActionListener defaultActionListener = new DefaultActionListener();
-        karmaTextField.getDocument().addDocumentListener(defaultDocumentListener);
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
         autowatchCheckBox.addItemListener(defaultItemListener);
         debugCheckBox.addItemListener(new DebugItemListener());
@@ -184,13 +180,11 @@ public class CustomizerKarma extends JPanel {
 
     void validateData() {
         assert EventQueue.isDispatchThread();
-        karma = karmaTextField.getText();
         config = configTextField.getText();
         debug = debugCheckBox.isSelected();
         autowatch = autowatchCheckBox.isSelected();
         selectedBrowserId = browserModel.getSelectedBrowserId();
         validationResult = new KarmaPreferencesValidator()
-                .validateKarma(karma)
                 .validateConfig(config)
                 .validateDebug(debug, selectedBrowserId)
                 .getResult();
@@ -212,10 +206,6 @@ public class CustomizerKarma extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        karmaLabel = new JLabel();
-        karmaTextField = new JTextField();
-        karmaBrowseButton = new JButton();
-        karmaSearchButton = new JButton();
         configLabel = new JLabel();
         configTextField = new JTextField();
         configBrowseButton = new JButton();
@@ -231,25 +221,6 @@ public class CustomizerKarma extends JPanel {
         coverageIstanbulInfoLabel = new JLabel();
         coverageConfigLabel = new JLabel();
         coverageDebugLabel = new JLabel();
-
-        karmaLabel.setLabelFor(karmaTextField);
-        Mnemonics.setLocalizedText(karmaLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaLabel.text")); // NOI18N
-
-        karmaTextField.setColumns(30);
-
-        Mnemonics.setLocalizedText(karmaBrowseButton, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaBrowseButton.text")); // NOI18N
-        karmaBrowseButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                karmaBrowseButtonActionPerformed(evt);
-            }
-        });
-
-        Mnemonics.setLocalizedText(karmaSearchButton, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.karmaSearchButton.text")); // NOI18N
-        karmaSearchButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                karmaSearchButtonActionPerformed(evt);
-            }
-        });
 
         configLabel.setLabelFor(configTextField);
         Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.configLabel.text")); // NOI18N
@@ -301,26 +272,15 @@ public class CustomizerKarma extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(configLabel)
-                    .addComponent(karmaLabel))
+                .addComponent(configLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(karmaTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(karmaBrowseButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(karmaSearchButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configBrowseButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configSearchButton))))
+                .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(configBrowseButton)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(configSearchButton))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(autowatchCheckBox)
@@ -346,20 +306,9 @@ public class CustomizerKarma extends JPanel {
                         .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configBrowseButton, karmaBrowseButton});
-
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configSearchButton, karmaSearchButton});
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(karmaLabel)
-                    .addComponent(karmaTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(karmaBrowseButton)
-                    .addComponent(karmaSearchButton))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(configLabel)
                     .addComponent(configTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -390,20 +339,6 @@ public class CustomizerKarma extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    @NbBundle.Messages("CustomizerKarma.chooser.karma=Select Karma file")
-    private void karmaBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaBrowseButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        File file = new FileChooserBuilder(CustomizerKarma.class)
-                .setTitle(Bundle.CustomizerKarma_chooser_karma())
-                .setFilesOnly(true)
-                .setDefaultWorkingDirectory(getProjectDirectory())
-                .forceUseOfDefaultWorkingDirectory(true)
-                .showOpenDialog();
-        if (file != null) {
-            karmaTextField.setText(file.getAbsolutePath());
-        }
-    }//GEN-LAST:event_karmaBrowseButtonActionPerformed
-
     @NbBundle.Messages("CustomizerKarma.chooser.config=Select Karma configuration file")
     private void configBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configBrowseButtonActionPerformed
         assert EventQueue.isDispatchThread();
@@ -417,18 +352,6 @@ public class CustomizerKarma extends JPanel {
             configTextField.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_configBrowseButtonActionPerformed
-
-    @NbBundle.Messages("CustomizerKarma.karma.none=No Karma executable was found. Perhaps add karma-cli NPM package as dependency?")
-    private void karmaSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_karmaSearchButtonActionPerformed
-        assert EventQueue.isDispatchThread();
-        File karmaExecutable = KarmaUtils.findKarma(project);
-        if (karmaExecutable != null) {
-            karmaTextField.setText(karmaExecutable.getAbsolutePath());
-            return;
-        }
-        // no karma found
-        StatusDisplayer.getDefault().setStatusText(Bundle.CustomizerKarma_karma_none());
-    }//GEN-LAST:event_karmaSearchButtonActionPerformed
 
     @NbBundle.Messages("CustomizerKarma.config.none=No Karma configuration was found.")
     private void configSearchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configSearchButtonActionPerformed
@@ -473,10 +396,6 @@ public class CustomizerKarma extends JPanel {
     private JLabel debugBrowserIdLabel;
     private JCheckBox debugCheckBox;
     private JLabel debugLabel;
-    private JButton karmaBrowseButton;
-    private JLabel karmaLabel;
-    private JButton karmaSearchButton;
-    private JTextField karmaTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

@@ -216,7 +216,7 @@ public class GruntOptionsPanel extends JPanel {
 
     private void installLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_installLabelMousePressed
         try {
-            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://gruntjs.com/")); // NOI18N
+            HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://gruntjs.com/getting-started")); // NOI18N
         } catch (MalformedURLException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
+import javax.swing.event.ChangeListener;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -64,8 +66,11 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -74,6 +79,8 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -133,7 +140,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   filterOutComments,
                   fileImpl, getFileContent(),
                   tokStreamCache.getFileIndex());
-          boolean tsFromClank = ClankDriver.preprocess(fileImpl.getBuffer(), ppHandler, callback, interrupter);
+          FileBuffer buffer = fileImpl.getBuffer();
+          if (getFixCode() != null) {
+              buffer = new FixedFileBuffer(buffer, getFixCode());
+          }
+          boolean tsFromClank = ClankDriver.preprocess(buffer, ppHandler, callback, interrupter);
           if (!tsFromClank) {
               return null;
           }
@@ -556,5 +567,116 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         public CharSequence getText() {
             throw new UnsupportedOperationException();
         }
+    }
+
+    private static final class FixedFileBuffer implements FileBuffer {
+        private final FileBuffer delegate;
+        private final FixCode fixCode;
+        private char[] res;
+        private Line2Offset lines;
+
+        private FixedFileBuffer(FileBuffer delegate, FixCode fixCode) {
+            this.delegate = delegate;
+            this.fixCode = fixCode;
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isFileBased() {
+            return delegate.isFileBased();
+        }
+
+        @Override
+        public FileObject getFileObject() {
+            return delegate.getFileObject();
+        }
+
+        @Override
+        public CharSequence getUrl() {
+            return delegate.getUrl();
+        }
+
+        @Override
+        public String getText(int start, int end) throws IOException {
+            return new String(getCharBuffer(), start, end - start);
+        }
+
+        @Override
+        public CharSequence getText() throws IOException {
+            return new FileBufferFile.MyCharSequence(getCharBuffer());
+        }
+
+        @Override
+        public long lastModified() {
+            return delegate.lastModified()+1;
+        }
+
+        @Override
+        public long getCRC() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int[] getLineColumnByOffset(int offset) throws IOException {
+            if (lines == null) {
+                lines = new Line2Offset(getCharBuffer());
+            }
+
+            return lines.getLineColumnByOffset(offset);
+        }
+
+        @Override
+        public int getLineCount() throws IOException {
+            if (lines == null) {
+                lines = new Line2Offset(getCharBuffer());
+            }
+            return lines.getLineCount();
+        }
+
+        @Override
+        public int getOffsetByLineColumn(int line, int column) throws IOException {
+            if (lines == null) {
+                lines = new Line2Offset(getCharBuffer());
+            }
+            return lines.getOffsetByLineColumn(line, column);
+        }
+
+        @Override
+        public CharSequence getAbsolutePath() {
+            return delegate.getAbsolutePath();
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
+            return delegate.getFileSystem();
+        }
+
+        @Override
+        public char[] getCharBuffer() throws IOException {
+            if (res == null) {
+                char[] charBuffer = delegate.getCharBuffer();
+                char[] patch = fixCode.getPatch().toCharArray();
+                res = new char[charBuffer.length-(fixCode.getEndOffset()-fixCode.getStartOffset())+patch.length];
+                System.arraycopy(charBuffer, 0, res, 0, fixCode.getStartOffset());
+                System.arraycopy(patch, 0, res, fixCode.getStartOffset(), patch.length);
+                System.arraycopy(charBuffer, fixCode.getEndOffset(), res, fixCode.getStartOffset()+patch.length, charBuffer.length - fixCode.getEndOffset());
+            }
+            return res;
+        }
+
+        @Override
+        public BufferType getType() {
+            return delegate.getType();
+        }
+
     }
 }

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,6 +95,8 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
                 };;
     private final AtomicBoolean prefChangeListenerSet = new AtomicBoolean(false);
     
+    private boolean displayNameRunning = false;
+    private String displayName;
 
     public Info(final Project project) {
         this.project = project;
@@ -109,24 +112,47 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
         return nb.getMavenProject().getId().replace(':', '_');
     }
 
-    @Messages({
+    @Override public @NonNull String getDisplayName() {
+        synchronized(displayNameTask) {
+            if(displayName == null) {
+                displayName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            }
+            if(!displayNameRunning) {
+                displayNameRunning = true;
+                if(Boolean.getBoolean("test.load.sync")) {
+                    displayNameTask.run();
+                } else {
+                    RP.schedule(displayNameTask, 100, TimeUnit.MILLISECONDS); // lots of repeating calls
+                }
+            }
+            return displayName;
+        }
+    }
+    
+    private final Runnable displayNameTask = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
+                if (!nb.isMavenProjectLoaded()) {                    
+                    nb.getMavenProject();
+                }
+                String s = getDisplayName(nb);            
+                if(!s.equals(displayName)) {
+                    displayName = s;
+                    pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
+                }
+            } finally {
+                displayNameRunning = false;
+            }
+        }
+    };
+    
+     @Messages({
         "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
         "# {0} - path to project", "TXT_Maven_project_at=Maven project at {0}"
     })
-    @Override public @NonNull String getDisplayName() {
-        final NbMavenProject nb = project.getLookup().lookup(NbMavenProject.class);
-        if (SwingUtilities.isEventDispatchThread() && !nb.isMavenProjectLoaded()) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    //assuming this takes long and hangs in sync.
-                    nb.getMavenProject();
-                    pcs.firePropertyChange(ProjectInformation.PROP_DISPLAY_NAME, null, null);
-                }
-            });
-            return FileUtil.getFileDisplayName(project.getProjectDirectory());
-        }
-        
+    private String getDisplayName(NbMavenProject nb) {
         MavenProject pr = nb.getMavenProject();
         if (NbMavenProject.isErrorPlaceholder(pr)) {
             return LBL_misconfigured_project(project.getProjectDirectory().getNameExt());

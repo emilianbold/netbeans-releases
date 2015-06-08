@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -92,6 +94,9 @@ import org.openide.util.Utilities;
  * @author Tomas Mysik, Radek Matous
  */
 public final class PhpProjectProperties implements ConfigManager.ConfigProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(PhpProjectProperties.class.getName());
+
     public static final int DEFAULT_DEBUG_PROXY_PORT = 9001;
 
     public static final String SRC_DIR = "src.dir"; // NOI18N
@@ -507,7 +512,14 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             List<String> values = new ArrayList<>();
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             for (String property : project.getTestRoots().getRootProperties()) {
-                values.add(properties.getProperty(property));
+                String value = properties.getProperty(property);
+                if (value != null) {
+                    values.add(value);
+                } else {
+                    // #250401
+                    LOGGER.log(Level.INFO, "Value must be found for property: {0}", property);
+                    assert false : String.valueOf(properties);
+                }
             }
             testDirectoriesListModel = PathUiSupport.createListModel(testDirectoriesPathSupport.itemsIterator(
                     values.toArray(new String[values.size()])));
@@ -528,7 +540,14 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             List<String> values = new ArrayList<>();
             EditableProperties properties = project.getHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             for (String property : project.getSeleniumRoots().getRootProperties()) {
-                values.add(properties.getProperty(property));
+                String value = properties.getProperty(property);
+                if (value != null) {
+                    values.add(value);
+                } else {
+                    // #250401
+                    LOGGER.log(Level.INFO, "Value must be found for property: {0}", property);
+                    assert false : String.valueOf(properties);
+                }
             }
             seleniumTestDirectoriesListModel = PathUiSupport.createListModel(seleniumTestDirectoriesPathSupport.itemsIterator(
                     values.toArray(new String[values.size()])));

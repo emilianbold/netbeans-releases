@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
 import javax.swing.JMenu;
@@ -71,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.Presenter;
 
@@ -79,16 +82,28 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     /** Key for remembering project in JMenuItem
      */
     private static final String HOST_ENV = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
-    private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
-    private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
+    private static final String DATA = "org.netbeans.modules.cnd.makeproject.ui.RemoteDevelopmentAction.Data"; // NOI18N
     private static final RequestProcessor RP = new RequestProcessor("RemoteDevelopmentAction", 1); // NOI18N
     private JMenu subMenu;
-    private final Project project;
+    private final Project[] projects;
 
-    public RemoteDevelopmentAction(Project project) {
+    /** 
+     * Factory method: returns RemoteDevelopmentAction or null if it's impossible to create it 
+     * (e. g. if one of the projects is full remote)
+     */
+    public static RemoteDevelopmentAction create(Project[] projects) {
+        for (Project p : projects) {
+            if (!MakeProjectUtils.canChangeHost(p)) {
+                return null;
+            }
+        }
+        return new RemoteDevelopmentAction(projects);
+    }
+    
+    private RemoteDevelopmentAction(Project[] projects) {
         super(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_RemoteDevelopmentAction_Name"), // NOI18N
                 null);
-        this.project = project;
+        this.projects = projects;
     }
 
     public void actionPerformed(java.awt.event.ActionEvent ev) {
@@ -112,32 +127,50 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         }
 
         subMenu.removeAll();
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null || pdp.getConfigurationDescriptor() == null || pdp.getConfigurationDescriptor().getActiveConfiguration() == null) {
-            return;
+        
+        // find out whether all projects are set to one and the same host;
+        // if yes, then we'll make it selected in submenu
+        ExecutionEnvironment currExecEnv = null;
+        boolean envsAreSame = true;
+        subMenu.setEnabled(true);
+        
+        final List<Pair<Project, MakeConfiguration>> projectsAndConfs = new ArrayList<>();
+        
+        for (Project project : projects) {
+            // paranoidal: should be already checked in create() factory method
+            if (!MakeProjectUtils.canChangeHost(project)) {
+                subMenu.setEnabled(false);
+                return;
+            }
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp == null || pdp.getConfigurationDescriptor() == null || pdp.getConfigurationDescriptor().getActiveConfiguration() == null) {
+                subMenu.setEnabled(false);
+                return;
+            }
+            final MakeConfiguration mconf = pdp.getConfigurationDescriptor().getActiveConfiguration();
+            if (mconf == null) {
+                subMenu.setEnabled(false);
+                return;
+            }
+            ExecutionEnvironment e = mconf.getDevelopmentHost().getExecutionEnvironment();
+            if (e != null && envsAreSame) {
+                if (currExecEnv == null) {
+                    currExecEnv = e;
+                } else if (!currExecEnv.equals(e)) {
+                    currExecEnv = null;
+                    envsAreSame = false;
+                }
+            }
+            projectsAndConfs.add(Pair.of(project, mconf));
         }
-        final MakeConfiguration mconf = pdp.getConfigurationDescriptor().getActiveConfiguration();
-        if (mconf == null) {
-            return;
-        }
-        ExecutionEnvironment currExecEnv = mconf.getDevelopmentHost().getExecutionEnvironment();
-        if (currExecEnv == null) {
-            return;
-        }
-        if (MakeProjectUtils.canChangeHost(project, mconf)) {
-            subMenu.setEnabled(true);
-        } else {
-            subMenu.setEnabled(false);
-            return;
-        }
+        
 
         ActionListener jmiActionListener = new MenuItemActionListener();
         for (ServerRecord record : ServerList.getRecords()) {
-            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getServerDisplayName(), currExecEnv.equals(record.getExecutionEnvironment()));
+            JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(record.getServerDisplayName(), record.getExecutionEnvironment().equals(currExecEnv));
             subMenu.add(jmi);
             jmi.putClientProperty(HOST_ENV, record.getExecutionEnvironment());
-            jmi.putClientProperty(CONF, mconf);
-            jmi.putClientProperty(PROJECT, project);
+            jmi.putClientProperty(DATA, projectsAndConfs);
             jmi.addActionListener(jmiActionListener);
         }
 
@@ -146,39 +179,45 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
         final JMenuItem managePlatformsItem = new JMenuItem(NbBundle.getMessage(RemoteDevelopmentAction.class, "LBL_ManagePlatforms_Name")); // NOI18N
         subMenu.add(managePlatformsItem);
         managePlatformsItem.addActionListener(new ActionListener() {
-            private final Project currProject = project;
+            @Override
             public void actionPerformed(ActionEvent event) {
                 AtomicReference<ExecutionEnvironment> selectedEnv = new AtomicReference<>();
                 if (ServerListUI.showServerListDialog(selectedEnv)) {
                     ExecutionEnvironment env = selectedEnv.get();
                     if (env != null) {
-                        setRemoteDevelopmentHost(managePlatformsItem, mconf, env, project);
+                        setRemoteDevelopmentHost(managePlatformsItem, env, projectsAndConfs);
                     }
                 }
             }
         });
     }
 
-    private static void setRemoteDevelopmentHost(final Object source, final MakeConfiguration mconf, final ExecutionEnvironment execEnv, final Project project) {
+    private static void setRemoteDevelopmentHost(final Object source, final ExecutionEnvironment execEnv, final List<Pair<Project, MakeConfiguration>> projectsAndConfs) {
         if (SwingUtilities.isEventDispatchThread()) {
             RP.post(new Runnable(){
                 public void run() {
-                    _setRemoteDevelopmentHost(source, mconf, execEnv, project);
+                    _setRemoteDevelopmentHost(source, execEnv, projectsAndConfs);
                 }
             });
         } else {
-            _setRemoteDevelopmentHost(source, mconf, execEnv, project);
+            _setRemoteDevelopmentHost(source, execEnv, projectsAndConfs);
+        }
+    }
+
+    private static void _setRemoteDevelopmentHost(Object source, ExecutionEnvironment execEnv, List<Pair<Project, MakeConfiguration>> projectsAndConfs) {
+        ServerRecord record = ServerList.get(execEnv);
+        if (!record.isSetUp()) {
+            if (!record.setUp()) {
+                return; //true;
+            }
+        }
+        for (Pair<Project, MakeConfiguration> pac : projectsAndConfs) {
+            _setRemoteDevelopmentHost(source, pac.second(), execEnv, pac.first());
         }
     }
 
     private static void _setRemoteDevelopmentHost(Object source, MakeConfiguration mconf, ExecutionEnvironment execEnv, Project project) {
         if (mconf != null && execEnv != null) {
-            ServerRecord record = ServerList.get(execEnv);
-            if (!record.isSetUp()) {
-                if (!record.setUp()) {
-                    return; //true;
-                }
-            }
             DevelopmentHostConfiguration dhc = new DevelopmentHostConfiguration(execEnv);
             DevelopmentHostConfiguration oldDhc = mconf.getDevelopmentHost();
             if (dhc.getExecutionEnvironment() == oldDhc.getExecutionEnvironment()) {
@@ -212,7 +251,6 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             configurationDescriptor.setModified();
             BrokenReferencesSupport.updateProblems(project);
         }
-        return; // false;
     }
 
     private static class MenuItemActionListener implements ActionListener {
@@ -221,9 +259,9 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
             if (e.getSource() instanceof JMenuItem) {
                 JMenuItem jmi = (JMenuItem) e.getSource();
                 ExecutionEnvironment execEnv = (ExecutionEnvironment) jmi.getClientProperty(HOST_ENV);
-                MakeConfiguration mconf = (MakeConfiguration) jmi.getClientProperty(CONF);
-                Project project = (Project) jmi.getClientProperty(PROJECT);
-                setRemoteDevelopmentHost(jmi, mconf, execEnv, project);
+                
+                List<Pair<Project, MakeConfiguration>> projectsAndConfs = (List<Pair<Project, MakeConfiguration>>) jmi.getClientProperty(DATA);
+                setRemoteDevelopmentHost(jmi, execEnv, projectsAndConfs);
             }
         }
     }

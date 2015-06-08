@@ -756,7 +756,34 @@ public class EvaluatorApp extends BaseClass {
         return (Runtime.getRuntime() instanceof Object);
     }
     
-    
+    public static int testOp37a() {
+        return ((Double) 5.0).intValue();
+    }
+
+    public static long testOp37b() {
+        return ((Double) 5.0).longValue();
+    }
+
+    public static double testOp37c() {
+        return ((Long) 50000000000005l).doubleValue();
+    }
+
+    public static char testOp37d() {
+        return ((Character) 'a').charValue();
+    }
+
+    public static short testOp37e() {
+        return ((Float) 55.5f).shortValue();
+    }
+
+    public static byte testOp37f() {
+        return ((Long) (long) 'a').byteValue();
+    }
+
+    public static float testOp37g() {
+        return ((Integer) (int) 59.89).floatValue();
+    }
+
     // Test operand priorities
     
     public static long testOpPrio1() {

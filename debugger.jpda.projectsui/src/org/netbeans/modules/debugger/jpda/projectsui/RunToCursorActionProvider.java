@@ -44,29 +44,33 @@
 
 package org.netbeans.modules.debugger.jpda.projectsui;
 
-import org.netbeans.modules.debugger.jpda.projectsui.MainProjectManager;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
-
-
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.debugger.ActionsProvider.Registration;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -76,9 +80,10 @@ import org.openide.util.WeakListeners;
 @Registration(actions={"runToCursor"}, activateForMIMETypes={"text/x-java"})
 public class RunToCursorActionProvider extends ActionsProviderSupport {
     
-    private EditorContextDispatcher editorContext;
-    private LineBreakpoint          breakpoint;
-    private static RequestProcessor RP = new RequestProcessor(RunToCursorActionProvider.class.getName());
+    private static final RequestProcessor RP = new RequestProcessor(RunToCursorActionProvider.class.getName());
+    
+    private final EditorContextDispatcher editorContext;
+    private final Map<Project, LineBreakpoint> projectBreakpoints = new HashMap<>();
     
     {
         editorContext = EditorContextDispatcher.getDefault();
@@ -107,14 +112,15 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     public void doAction (Object action) {
         
         // 1) set breakpoint
-        removeBreakpoint ();
-        createBreakpoint (LineBreakpoint.create (
-            editorContext.getCurrentURLAsString(),
-            editorContext.getCurrentLineNumber ()
-        ));
+        //removeBreakpoint ();
+        LineBreakpoint newBreakpoint = LineBreakpoint.create (
+                editorContext.getCurrentURLAsString(),
+                editorContext.getCurrentLineNumber ()
+            );
+        createBreakpoint (newBreakpoint);
         
         // 2) start debugging of project
-        invokeAction();
+        invokeAction(newBreakpoint);
     }
     
     @Override
@@ -123,17 +129,22 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             editorContext.getCurrentURLAsString(),
             editorContext.getCurrentLineNumber ()
         );
+        // Disable the action immediatelly, to prevent multiple action invocations.
+        setEnabled (
+            ActionsManager.ACTION_RUN_TO_CURSOR,
+            false
+        );
         RP.post(new Runnable() {
             @Override
             public void run() {
                 // 1) set breakpoint
-                removeBreakpoint ();
+                //removeBreakpoint ();
                 createBreakpoint (newBreakpoint);
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
                         public void run() {
-                            invokeAction();
+                            invokeAction(newBreakpoint);
                         }
                     });
                 } catch (InterruptedException iex) {
@@ -142,19 +153,47 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
                     ErrorManager.getDefault().notify(itex);
                 } finally {
                     actionPerformedNotifier.run();
+                    setEnabled (
+                        ActionsManager.ACTION_RUN_TO_CURSOR,
+                        shouldBeEnabled ()
+                    );
                 }
             }
         });
     }
     
-    private void invokeAction() {
-        debugProject(MainProjectManager.getDefault ().getMainProject ());
+    private void invokeAction(LineBreakpoint newBreakpoint) {
+        debugProject(MainProjectManager.getDefault().getMainProject(), newBreakpoint);
     }
 
-    private static void debugProject(Project p) {
+    private void debugProject(final Project p, LineBreakpoint newBreakpoint) {
+        synchronized (projectBreakpoints) {
+            projectBreakpoints.put(p, newBreakpoint);
+        }
+        ActionProgress progress = new ActionProgress() {
+
+            @Override
+            protected void started() {
+            }
+
+            @Override
+            public void finished(boolean success) {
+                LineBreakpoint lb;
+                synchronized (projectBreakpoints) {
+                    lb = projectBreakpoints.remove(p);
+                }
+                if (lb != null) {
+                    removeBreakpoint(lb);
+                }
+                setEnabled (
+                    ActionsManager.ACTION_RUN_TO_CURSOR,
+                    shouldBeEnabled ()
+                );
+            }
+        };
         p.getLookup ().lookup(ActionProvider.class).invokeAction (
                 ActionProvider.COMMAND_DEBUG,
-                p.getLookup ()
+                new ProxyLookup(Lookups.fixed(progress), p.getLookup ())
             );
     }
 
@@ -171,6 +210,12 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         Project p = MainProjectManager.getDefault ().getMainProject ();
         if (p == null) {
             return false;
+        }
+        synchronized (projectBreakpoints) {
+            if (projectBreakpoints.containsKey(p)) {
+                // Already debugging this project
+                return false;
+            }
         }
         ActionProvider actionProvider = (ActionProvider) p.getLookup ().
             lookup (ActionProvider.class);
@@ -198,17 +243,19 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     private void createBreakpoint (LineBreakpoint breakpoint) {
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
-        this.breakpoint = breakpoint;
     }
     
-    private void removeBreakpoint () {
+    private void removeBreakpoint (LineBreakpoint breakpoint) {
         if (breakpoint != null) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
-            breakpoint = null;
         }
     }
     
     private class Listener extends DebuggerManagerAdapter {
+        
+        private final Map<JPDADebugger, Pair<LineBreakpoint, Project>> debuggerBreakpoints = new HashMap<>();
+        private final Map<JPDADebugger, Integer> debuggerEngines = new HashMap<>();
+        
         @Override
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
@@ -216,7 +263,17 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
                 if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
                      (state == JPDADebugger.STATE_STOPPED)
                 ) {
-                    removeBreakpoint ();
+                    JPDADebugger debugger = (JPDADebugger) e.getSource();
+                    Pair<LineBreakpoint, Project> lbp;
+                    synchronized (debuggerBreakpoints) {
+                        lbp = debuggerBreakpoints.remove(debugger);
+                    }
+                    if (lbp != null) {
+                        removeBreakpoint(lbp.first());
+                        synchronized (projectBreakpoints) {
+                            projectBreakpoints.put(lbp.second(), null);
+                        }
+                    }
                 }
                 return;
             }
@@ -232,6 +289,40 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             if (debugger == null) {
                 return;
             }
+            Integer num;
+            synchronized (debuggerEngines) {
+                num = debuggerEngines.get(debugger);
+                if (num != null) {
+                    debuggerEngines.put(debugger, num+1);
+                    return ;
+                } else {
+                    debuggerEngines.put(debugger, 1);
+                }
+            }
+            //Project p = debuggedProject;
+            Map setupMap = engine.lookupFirst(null, Map.class);
+            if (setupMap != null) {
+                File baseDir = (File) setupMap.get("baseDir");
+                if (baseDir != null) {
+                    Project prj = null;
+                    LineBreakpoint lb = null;
+                    synchronized (projectBreakpoints) {
+                        for (Project p : projectBreakpoints.keySet()) {
+                            if (baseDir.equals(FileUtil.toFile(p.getProjectDirectory()))) {
+                                prj = p;
+                                lb = projectBreakpoints.get(p);
+                                break;
+                            }
+                        }
+                    }
+                    if (lb != null) {
+                        synchronized (debuggerBreakpoints) {
+                            debuggerBreakpoints.put(debugger, Pair.of(lb, prj));
+                        }
+                    }
+                }
+            }
+            //debuggingProjects.put(p, debugger);
             debugger.addPropertyChangeListener (
                 JPDADebugger.PROP_STATE,
                 this
@@ -243,6 +334,17 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
             if (debugger == null) {
                 return;
+            }
+            synchronized (debuggerEngines) {
+                Integer num = debuggerEngines.get(debugger);
+                if (num != null) {
+                    if (num > 1) {
+                        debuggerEngines.put(debugger, num-1);
+                        return ;
+                    } else {
+                        debuggerEngines.remove(debugger);
+                    }
+                }
             }
             debugger.removePropertyChangeListener (
                 JPDADebugger.PROP_STATE,

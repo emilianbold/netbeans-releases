@@ -227,6 +227,7 @@ public final class NodeJsPathPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - version",
         "NodeJsPathPanel.sources.exists=Sources for version {0} already exist. Download again?",
+        "NodeJsPathPanel.sources.downloading=Downloading...",
         "NodeJsPathPanel.download.success=Node.js sources downloaded successfully.",
         "# {0} - file URL",
         "NodeJsPathPanel.download.failure=File {0} cannot be downloaded.",
@@ -251,6 +252,7 @@ public final class NodeJsPathPanel extends JPanel {
                 return;
             }
         }
+        sourcesTextField.setText(Bundle.NodeJsPathPanel_sources_downloading());
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -389,14 +391,6 @@ public final class NodeJsPathPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(versionInfoLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(downloadSourcesButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(selectSourcesButton))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(nodeTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(nodeBrowseButton)
@@ -406,9 +400,13 @@ public final class NodeJsPathPanel extends JPanel {
                         .addComponent(nodeHintLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(nodeInstallLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addComponent(versionInfoLabel)
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(sourcesTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
-                        .addGap(201, 201, 201))))
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(downloadSourcesButton)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(selectSourcesButton))))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()

@@ -50,13 +50,10 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.exec.KarmaExecutable;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 public final class KarmaUtils {
 
@@ -165,67 +162,6 @@ public final class KarmaUtils {
             return config;
         }
         return firstConfig;
-    }
-
-    /**
-     * Tries to find the "best" Karma file (first project one, then a system one).
-     */
-    @CheckForNull
-    public static File findKarma(Project project) {
-        // first, project karma
-        FileObject projectKarma = findValidFile(project.getProjectDirectory(), getProjectKarmas());
-        if (projectKarma != null) {
-            return FileUtil.toFile(projectKarma);
-        }
-        // search on user's PATH
-        List<String> karmas = FileUtils.findFileOnUsersPath(getGlobalKarmas());
-        if (!karmas.isEmpty()) {
-            return new File(karmas.get(0));
-        }
-        return null;
-    }
-
-    @CheckForNull
-    private static FileObject findValidFile(FileObject dir, String... names) {
-        assert dir.isFolder() : dir;
-        for (String name : names) {
-            FileObject fo = dir.getFileObject(name);
-            if (fo != null
-                    && fo.isValid()
-                    && fo.isData()) {
-                return fo;
-            }
-        }
-        return null;
-    }
-
-    // #247302
-    private static String[] getProjectKarmas() {
-        if (Utilities.isWindows()) {
-            return new String[] {
-                KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
-                KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
-            };
-        }
-        return new String[] {
-            KarmaExecutable.PROJECT_KARMA_LONG_PATH_1,
-            KarmaExecutable.PROJECT_KARMA_LONG_PATH_2,
-            KarmaExecutable.PROJECT_KARMA_PATH_1,
-            KarmaExecutable.PROJECT_KARMA_PATH_2,
-        };
-    }
-
-    // #247302
-    private static String[] getGlobalKarmas() {
-        if (Utilities.isWindows()) {
-            return new String[] {
-                KarmaExecutable.KARMA_LONG_NAME,
-            };
-        }
-        return new String[] {
-            KarmaExecutable.KARMA_LONG_NAME,
-            KarmaExecutable.KARMA_NAME,
-        };
     }
 
 }

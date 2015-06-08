@@ -100,6 +100,11 @@ import org.openide.util.Exceptions;
  * 
  * Change History:
  * 
+ * V97 - NB 8.1
+ *    Store target platform in public configurations.xml
+ *    if configuration is marked as platform specific.
+ *    It prevent treat all configuration's platforms as current platform.
+ *    By default configuration is not platform specific.
  * V96 - NB 8.1
  *    Introduce pre-build step
  * V95 - NB 8.0.1
@@ -293,7 +298,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 96;
+    public final static int CURRENT_VERSION = 97;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -452,6 +457,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
     public final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
+    protected final static String PLATFORM_SPECIFIC_ATTR = "platformSpecific"; // NOI18N
     protected final static String CUSTOMIZERID_ATTR = "customizerid"; // NOI18N
     protected final static String KIND_ATTR = "kind"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
@@ -538,12 +544,20 @@ public abstract class CommonConfigurationXMLCodec
                             new AttrValuePair(CUSTOMIZERID_ATTR, "" + makeConfiguration.getCustomizerId()), // NOI18N
                         });
             } else {
-                xes.elementOpen(CONF_ELEMENT,
-                        new AttrValuePair[]{
-                            new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
-                            new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
-                        });
-
+                if (makeConfiguration.getPlatformSpecific().getValue()) {
+                    xes.elementOpen(CONF_ELEMENT,
+                            new AttrValuePair[]{
+                                new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+                                new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
+                                new AttrValuePair(PLATFORM_SPECIFIC_ATTR, "" + makeConfiguration.getPlatformSpecific().getValue()), // NOI18N
+                            });
+                } else {
+                    xes.elementOpen(CONF_ELEMENT,
+                            new AttrValuePair[]{
+                                new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+                                new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
+                            });
+                }
             }
 
             writeToolsSetBlock(xes, makeConfiguration);
