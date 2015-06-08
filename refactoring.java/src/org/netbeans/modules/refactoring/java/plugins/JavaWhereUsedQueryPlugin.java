@@ -49,6 +49,8 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -89,7 +91,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean fromLibrary;
     private final WhereUsedQuery refactoring;
     
-    private static final boolean FULL_INDEX = Boolean.getBoolean("org.netbeans.modules.java.source.usages.BinaryAnalyser.fullIndex");     //NOI18N
+    private static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
     
     private volatile CancellableTask queryTask;
 
@@ -351,12 +353,17 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         }
         Set<FileObject> result = sourceSet;
         // filter out files that are not on source path
+        for (FileObject fileObject : result) {
+            LOG.fine(fileObject.getNameExt());
+        }
         if(!isIncludeDependencies) {
             Set<FileObject> filteredSources = new HashSet<>(sourceSet.size());
             ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
             for (FileObject fo : sourceSet) {
                 if (cp.contains(fo)) {
                     filteredSources.add(fo);
+                } else {
+                    LOG.log(Level.FINE, "Filtered out: {0}", fo.getNameExt());
                 }
                 if (cancel != null && cancel.get()) {
                     return Collections.<FileObject>emptySet();
@@ -365,6 +372,11 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             result = filteredSources;
         }
         return result;
+    }
+    private static final Logger LOG = Logger.getLogger(JavaWhereUsedQueryPlugin.class.getName());
+    
+    static {
+        LOG.setLevel(Level.ALL);
     }
     
     private static Collection<FileObject> getImplementorsRecursive(ClassIndex idx, ClasspathInfo cpInfo, TypeElement el, AtomicBoolean cancel) {
@@ -485,13 +497,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_comment.png", false));
         filtersDescription.addFilter(JavaWhereUsedFilters.SOURCEFILE.getKey(), "Source filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_source.png", false));
-        if(FULL_INDEX) {
+        if(DEPENDENCIES) {
             filtersDescription.addFilter(JavaWhereUsedFilters.BINARYFILE.getKey(), "Binary filter", true,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/clazz.png", false));
         }
         filtersDescription.addFilter(JavaWhereUsedFilters.TESTFILE.getKey(), "Test filter", true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_test.png", false));
-        if(FULL_INDEX) {
+        if(DEPENDENCIES) {
             filtersDescription.addFilter(JavaWhereUsedFilters.DEPENDENCY.getKey(), "Dependency filter", true,
                     ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/found_item_binary.gif", false));
             filtersDescription.addFilter(JavaWhereUsedFilters.PLATFORM.getKey(), "Platform filter", true,
