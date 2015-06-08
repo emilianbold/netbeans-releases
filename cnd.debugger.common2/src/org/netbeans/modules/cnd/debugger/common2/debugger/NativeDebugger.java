@@ -59,11 +59,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.RegistersWind
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.MemoryWindow;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointManager;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointProvider;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Context;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.spi.viewmodel.ModelListener;
 
-public interface NativeDebugger {
+public interface NativeDebugger extends BreakpointProvider {
     public interface QualifiedExprListener {
 	public void qualifiedExpr(String qualifiedForm, boolean ok);
     };

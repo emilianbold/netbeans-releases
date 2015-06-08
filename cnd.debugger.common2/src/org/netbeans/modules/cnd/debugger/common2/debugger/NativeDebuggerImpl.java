@@ -129,6 +129,7 @@ import org.openide.util.actions.SystemAction;
 public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointProvider {
 
     private final BreakpointManager bm;
+    protected volatile boolean breakpointsActivated = true;
 
     protected final ContextProvider ctxProvider;	// for lookup
     protected final DebuggerEngine debuggerEngine;	// corresponding engine
@@ -244,6 +245,10 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         return manager().currentNativeDebugger() == this;
     }
 
+    @Override
+    public boolean areBreakpointsActivated() {
+        return breakpointsActivated;
+    }
 
     // interface NativeDebugger
     @Override

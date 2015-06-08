@@ -5244,6 +5244,70 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     @Override
+    public void postActivateBreakpoints() {
+        final Handler[] handlers = bm().getHandlers();
+
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
+        }
+
+        StringBuilder command = new StringBuilder();
+        command.append("-break-enable"); // NOI18N
+
+        for (Handler h : handlers) {
+            if (h.breakpoint().isEnabled()) {
+                command.append(' ');
+                command.append(h.getId());
+            }
+        }
+        
+        MICommand cmd = new MIBreakCommand(0, command.toString()) {
+            @Override
+            protected void onDone(MIRecord record) {
+                breakpointsActivated = true;
+                for (Handler h : handlers) {
+                    h.breakpoint().update();
+                }
+                finish();
+            }
+        };
+        sendCommandInt(cmd);
+    }
+
+    @Override
+    public void postDeactivateBreakpoints() {
+        final Handler[] handlers = bm().getHandlers();
+
+        // no need to enable/disable if there is no handlers
+        if (handlers.length == 0) {
+            return;
+        }
+
+        StringBuilder command = new StringBuilder();
+        command.append("-break-disable"); // NOI18N
+
+        for (Handler h : handlers) {
+            if (h.breakpoint().isEnabled()) {
+                command.append(' ');
+                command.append(h.getId());
+            }
+        }
+        
+        MICommand cmd = new MIBreakCommand(0, command.toString()) {
+            @Override
+            protected void onDone(MIRecord record) {
+                breakpointsActivated = false;
+                for (Handler h : handlers) {
+                    h.breakpoint().update();
+                }
+                finish();
+            }
+        };
+        sendCommandInt(cmd);
+    }
+    
+    @Override
     public void postDeleteAllHandlersImpl() {
         final Handler[] handlers = bm().getHandlers();
 
