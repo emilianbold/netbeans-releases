@@ -74,6 +74,7 @@ import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.LocalVariable;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
@@ -355,7 +356,10 @@ public class JSJavaBreakpointsManager extends DebuggerManagerAdapter {
 //                                              break;
                         }
                     }
-                    sourceVar = csf.getThisVariable().getField("source");
+                    This thisVariable = csf.getThisVariable();
+                    if (thisVariable != null) {
+                        sourceVar = thisVariable.getField("source");
+                    }
                 } catch (AbsentInformationException aiex) {
                 }
                 
