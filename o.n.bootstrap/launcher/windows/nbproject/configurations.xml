@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="94">
+<configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
@@ -52,8 +52,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.7.0_67/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.7.0_67/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.8.0_40/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.8.0_40/include/win32</pElem>
           </incDir>
           <commandLine>-mno-cygwin</commandLine>
           <preprocessorList>
@@ -124,8 +124,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>2</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.7.0_67/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.7.0_67/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.8.0_40/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.8.0_40/include/win32</pElem>
           </incDir>
           <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>
