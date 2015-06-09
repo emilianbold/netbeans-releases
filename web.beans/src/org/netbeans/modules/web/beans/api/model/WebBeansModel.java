@@ -174,7 +174,11 @@ public final class WebBeansModel {
     public List<Element> getNamedElements(){
         return getProvider().getNamedElements( new AtomicBoolean(false) );
     }
-    
+
+    public boolean isCdi11OrLater() {
+        return getProvider().isCdi11OrLater();
+    }
+
     /**
      * Returns name of element if it annotated with @Named.
      * Otherwise returns null.

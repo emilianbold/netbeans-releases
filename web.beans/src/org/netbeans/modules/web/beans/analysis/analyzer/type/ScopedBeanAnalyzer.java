@@ -197,7 +197,8 @@ public class ScopedBeanAnalyzer extends AbstractScopedAnalyzer
                 element.getEnclosedElements());
         for (VariableElement field : fields) {
             Set<Modifier> modifiers = field.getModifiers();
-            if ( modifiers.contains(Modifier.PUBLIC )){
+            if ( modifiers.contains(Modifier.PUBLIC )
+                    && (!modifiers.contains(Modifier.STATIC) || !model.isCdi11OrLater())){
                 result.addError(element, model ,  
                         NbBundle.getMessage(ScopedBeanAnalyzer.class,
                             "ERR_IcorrectScopeWithPublicField", 
