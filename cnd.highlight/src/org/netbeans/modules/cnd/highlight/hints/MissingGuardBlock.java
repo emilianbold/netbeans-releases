@@ -52,8 +52,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.document.LineDocument;
-import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -82,9 +80,9 @@ import org.openide.filesystems.FileObject;
  * @author Danila Sergeyev
  */
 
-public class MissedGuardBlock extends AbstractCodeAudit {
+public class MissingGuardBlock extends AbstractCodeAudit {
     
-    private MissedGuardBlock(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    private MissingGuardBlock(String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
     }
 
@@ -139,14 +137,14 @@ public class MissedGuardBlock extends AbstractCodeAudit {
                 doc.render(moveBellowCommentsTask);
                 
                 try {
-                    String message = NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.description"); // NOI18N
+                    String message = NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.description"); // NOI18N
                     int start = moveBellowCommentsTask.get().get();
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, null,
-                            new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
+                            new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
                     } else {
-                        response.addError(new MissedGuardBlock.MissedGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), message, severity, start));
+                        response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), message, severity, start));
                     }
                 } catch (InterruptedException | CancellationException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
@@ -159,18 +157,18 @@ public class MissedGuardBlock extends AbstractCodeAudit {
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
-            String id = NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.name");  // NOI18N
-            String description = NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.description");  // NOI18N
-            return new MissedGuardBlock(id, id, description, "warning", true, preferences);  // NOI18N
+            String id = NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.name");  // NOI18N
+            String description = NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.description");  // NOI18N
+            return new MissingGuardBlock(id, id, description, "warning", true, preferences);  // NOI18N
         }
     }
     
-    private static final class MissedGuardBlockErrorInfoImpl extends ErrorInfoImpl {
+    private static final class MissingGuardBlockErrorInfoImpl extends ErrorInfoImpl {
         private final BaseDocument doc;
         private final CsmFile file;
         private final int insertionStart;
         
-        public MissedGuardBlockErrorInfoImpl(Document doc, CsmFile file, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset) {
+        public MissingGuardBlockErrorInfoImpl(Document doc, CsmFile file, String providerName, String audutName, String message, CsmErrorInfo.Severity severity, int startOffset) {
             super(providerName, audutName, message, severity, 0, 0);
             this.doc = (BaseDocument) doc;
             this.file = file;
@@ -179,21 +177,21 @@ public class MissedGuardBlock extends AbstractCodeAudit {
     }
     
     @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
-    public static final class MissedGuardBlockFixProvider extends CsmErrorInfoHintProvider {
+    public static final class MissingGuardBlockFixProvider extends CsmErrorInfoHintProvider {
 
         @Override
         protected List<Fix> doGetFixes(CsmErrorInfo info, List<Fix> alreadyFound) {
-            if (info instanceof MissedGuardBlock.MissedGuardBlockErrorInfoImpl) {
-                alreadyFound.addAll(createFixes((MissedGuardBlock.MissedGuardBlockErrorInfoImpl) info));
+            if (info instanceof MissingGuardBlock.MissingGuardBlockErrorInfoImpl) {
+                alreadyFound.addAll(createFixes((MissingGuardBlock.MissingGuardBlockErrorInfoImpl) info));
             }
             return alreadyFound;
         }
         
-        private List<? extends Fix> createFixes(MissedGuardBlock.MissedGuardBlockErrorInfoImpl info) {
+        private List<? extends Fix> createFixes(MissingGuardBlock.MissingGuardBlockErrorInfoImpl info) {
             try {
                 List<Fix> fixes = new ArrayList<>();
-                fixes.add(new MissedGuardBlock.AddGuardBlock(info.doc, info.file, info.insertionStart));
-                fixes.add(new MissedGuardBlock.AddPragmaOnce(info.doc, info.file, info.insertionStart));
+                fixes.add(new MissingGuardBlock.AddGuardBlock(info.doc, info.file, info.insertionStart));
+                fixes.add(new MissingGuardBlock.AddPragmaOnce(info.doc, info.file, info.insertionStart));
                 return fixes;
             } catch (BadLocationException ex) {
                 return Collections.emptyList();
@@ -214,7 +212,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         
         @Override
         public String getText() {
-            return NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.fix.block"); // NOI18N
+            return NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.fix.block"); // NOI18N
         }
         
         @Override
@@ -268,7 +266,7 @@ public class MissedGuardBlock extends AbstractCodeAudit {
         
         @Override
         public String getText() {
-            return NbBundle.getMessage(MissedGuardBlock.class, "MissedGuardBlock.fix.pragma"); // NOI18N
+            return NbBundle.getMessage(MissingGuardBlock.class, "MissingGuardBlock.fix.pragma"); // NOI18N
         }
         
         @Override
