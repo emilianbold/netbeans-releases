@@ -444,6 +444,12 @@ public class JSTestDriverSupport {
                 return null;
             }
             int ue = line.indexOf(' ', u1);
+            int uee = line.indexOf('\n', u1);
+            if (uee != -1
+                    && uee < ue) {
+                // #236037
+                ue = uee;
+            }
             if (ue < 0) {
                 ue = line.length();
             }
