@@ -58,8 +58,10 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmExpressionResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
+import org.netbeans.modules.cnd.api.model.services.CsmStatementKindResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -135,8 +137,8 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
 
                     CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
                     Document doc = CsmUtilities.openDocument(ces);
-                    String newText = CsmMacroExpansion.expand(doc, ref.getStartOffset(), ref.getEndOffset());
-                    if (newText != null) {
+                    String newText = CsmMacroExpansion.expand(doc, file, ref.getStartOffset(), ref.getEndOffset(), false);
+                    if (newText != null && (!newText.isEmpty())) {
                         String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
                         ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
                                                                                         , ref.getEndOffset() + getMacroParametersEndOffset(file, macro, ref.getEndOffset())
@@ -160,8 +162,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
         CharSequence codeLine = file.getText(offset, stopOffset);
         for (int i = 0, fin = codeLine.length(); i < fin; i++) {
             char character = codeLine.charAt(i);
-            if (character == '#')
-            {
+            if (character == '#') {
                 return true;
             } else if (Character.isWhitespace(character)) {
                 continue;
