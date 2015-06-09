@@ -123,7 +123,21 @@ public class JsDocParser {
         while (ets.moveNext()) {
             token = ets.token();
             if (!isTextToken(token)) {
-                continue;
+                boolean isAsterixType = false; 
+                if (token.id() == JsDocumentationTokenId.ASTERISK) {   
+                    // we need to check type {*}
+                    String currentText = sb.toString();
+                    int curlyOpen = currentText.lastIndexOf('{');
+                    if (curlyOpen > -1) {
+                        String afterText = currentText.substring(curlyOpen + 1);
+                        if (afterText.trim().isEmpty() && afterText.indexOf('\n') == -1) {
+                            isAsterixType = true;
+                        }
+                    }
+                }
+                if (!isAsterixType) {
+                    continue;
+                }
             }
 
             JsDocElementType elementType = getJsDocKeywordType(CharSequenceUtilities.toString(token.text()));
