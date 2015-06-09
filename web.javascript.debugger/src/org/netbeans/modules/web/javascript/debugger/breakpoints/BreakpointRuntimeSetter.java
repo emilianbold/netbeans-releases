@@ -95,7 +95,12 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
         d = lookupProvider.lookupFirst(null, Debugger.class);
         wd = lookupProvider.lookupFirst(null, WebKitDebugging.class);
         pc = lookupProvider.lookupFirst(null, ProjectContext.class);
-        projectSourceRoots = getProjectSourceRoots(pc.getProject());
+        Project prj = pc.getProject();
+        if (prj == null) {
+            projectSourceRoots = null;
+        } else {
+            projectSourceRoots = getProjectSourceRoots(prj);
+        }
         DebuggerManager.getDebuggerManager().addDebuggerListener(this);
         createBreakpointImpls();
     }
@@ -287,6 +292,9 @@ public class BreakpointRuntimeSetter extends LazyActionsManagerListener
             return true;
         }
         if (FileUtil.toFile(fo) == null) {
+            return true;
+        }
+        if (projectSourceRoots == null) {
             return true;
         }
         boolean isInPrjSources = false;
