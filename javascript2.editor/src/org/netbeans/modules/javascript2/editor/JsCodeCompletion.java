@@ -59,6 +59,12 @@ import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagType;
 import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.JsCompletionItem.CompletionRequest;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCodeCompletion;
@@ -134,6 +140,7 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             request.info = info;
             request.prefix = pref;
             request.completionContext = context;
+            request.addHtmlTagAttributes = false;
         
         jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
@@ -227,7 +234,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             }
         }
         JsCompletionItem.Factory.create(added, request, resultList);
-        
+        if (request.addHtmlTagAttributes) {
+            completeTagAttributes(request, resultList);
+        }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
         for (CompletionProvider interceptor : EditorExtender.getDefault().getCompletionProviders()) {
@@ -328,6 +337,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             return documentation != null ? Documentation.create(documentation) : null;
         }
         
+        if (element instanceof JsCompletionItem.SimpleDocElement) {
+            String documentation = ((JsCompletionItem.SimpleDocElement) element).getDocumentation();
+            return documentation != null ? Documentation.create(documentation) : null;
+        }
         if (OffsetRange.NONE.equals(element.getOffsetRange(info))) {
             return Documentation.create(NbBundle.getMessage(JsCodeCompletion.class, "MSG_ItemFromUsageDoc"));
         }
@@ -1095,6 +1108,15 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         }
     }
     
+    private void completeTagAttributes(CompletionRequest request,  List<CompletionProposal> resultList) {
+        
+        for(HtmlTagAttribute attribute: getAllAttributes())  {
+            if (attribute.getName().startsWith(request.prefix)) {
+                resultList.add(new JsCompletionItem.JsHtmlAttributeItem(attribute, request));
+            }
+        }
+    }
+    
     private void completeTagIds(CompletionRequest request, List<CompletionProposal> resultList) {
         FileObject fo = request.result.getSnapshot().getSource().getFileObject();
         if (fo == null) {
@@ -1231,6 +1253,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
                 }
             }
         }
+        if (fqn.equals("Element")) {
+            request.addHtmlTagAttributes = true;
+        }
     }
     
     private void addPropertyToMap(CompletionRequest request, Map<String, List<JsElement>> addedProperties, JsElement property) {    
@@ -1304,6 +1329,22 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         // for file code completion
         int slashIndex = prefix.lastIndexOf('/') + 1; //NOI18N
         return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, Math.max(parenIndex,Math.max(columnIndex, Math.max(bracketIndex, Math.max(spaceIndex, slashIndex))))))));
+    }
+    
+    
+    private Collection<HtmlTagAttribute> getAllAttributes() {
+        HtmlModel htmlModel = HtmlModelFactory.getModel(HtmlVersion.HTML5);
+        Map<String, HtmlTagAttribute> result = new HashMap<String, HtmlTagAttribute>();
+        for (HtmlTag htmlTag : htmlModel.getAllTags()) {
+            for (HtmlTagAttribute htmlTagAttribute : htmlTag.getAttributes()) {
+                // attributes can probably differ per tag so we can just offer some of them,
+                // at least for the CC purposes it should be complete list of attributes for unknown tag
+                if (!result.containsKey(htmlTagAttribute.getName())) {
+                    result.put(htmlTagAttribute.getName(), htmlTagAttribute);
+                }
+            }
+        }
+        return result.values();
     }
 
 }
