@@ -380,7 +380,7 @@ public class JSTestDriverSupport {
         }
 
         // XXX: exact this algorithm is also in 
-        // web.javascript.debugger/src/org/netbeans/modules/web/javascript/debugger/console/BrowserConsoleLogger.java
+        // org.netbeans.modules.web.webkit.tooling.console.BrowserConsoleLogger.java
         // keep them in sync
         @Override
         public List<ConvertedLine> convert(String line) {
