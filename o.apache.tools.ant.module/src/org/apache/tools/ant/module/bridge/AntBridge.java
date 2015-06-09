@@ -46,6 +46,7 @@ package org.apache.tools.ant.module.bridge;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -702,16 +703,28 @@ public final class AntBridge {
 
     private static final class AddJavacClassLoader extends ClassLoader {
         private static final Iterable<? extends String> javacPackages = Arrays.asList(
+                "com.sun.jarsigner.",               //NOI18N
                 "com.sun.javadoc.",                 //NOI18N
+                "com.sun.mirror.",                  //NOI18N
                 "com.sun.source.",                  //NOI18N
+                "com.sun.tools.",                   //NOI18N
                 "javax.annotation.processing.",     //NOI18N
                 "javax.lang.model.",                //NOI18N
                 "javax.tools.",                     //NOI18N
-                "com.sun.tools.javac.",             //NOI18N
-                "com.sun.tools.javadoc.",           //NOI18N
-                "com.sun.tools.classfile.");        //NOI18N
+                "sun.rmi.",                         //NOI18N
+                "sun.security.",                    //NOI18N
+                "sun.tools.");                      //NOI18N
+
+
+
+
+
+        private static final int INITIAL_BUFSIZ = 1<<14;
 
         private final ClassLoader contextClassLoader;
+        //@GuardedBy("getClassLoadingLock()")
+        private byte[] buffer;
+
         public AddJavacClassLoader(
                 @NonNull final ClassLoader parentClassLoader,
                 @NonNull final ClassLoader contextClassLoader) {
@@ -722,7 +735,44 @@ public final class AntBridge {
         @Override
         protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if (isFromContextClassLoader(name, true)) {
-                return contextClassLoader.loadClass(name);
+                try {
+                    synchronized (getClassLoadingLock(name)) {
+                        Class<?> c = findLoadedClass(name);
+                        if (c == null) {
+                            InputStream in = contextClassLoader.getResourceAsStream(
+                                    name.replace('.', '/').concat(".class"));    //NOI18N
+                            if (in != null) {
+                                try {
+                                    in = new BufferedInputStream(in, INITIAL_BUFSIZ);
+                                    final int len = readFully(in);
+                                    final int lastDot = name.lastIndexOf('.');   //NOI18N
+                                    if (lastDot >= 0) {
+                                        final String pack = name.substring(0, lastDot);
+                                        if (getPackage(pack) == null) {
+                                            definePackage(pack, null, null, null, null, null, null, null);
+                                        }
+                                    }
+                                    c = defineClass(name, buffer, 0, len);
+                                } finally {
+                                    in.close();
+                                }
+                            } else {
+                                throw new ClassNotFoundException(String.format(
+                                        "The class: %s is not found in %s", //NOI18N
+                                        name,
+                                        contextClassLoader));
+                            }
+                        }
+                        if (resolve) {
+                            resolveClass(c);
+                        }
+                        return c;
+                    }
+                } catch (final IOException ioe) {
+                    throw new ClassNotFoundException(String.format(
+                            "IO Error while loading: %s", name),
+                            ioe);
+                }
             }
             return super.loadClass(name, resolve);
         }
@@ -748,10 +798,10 @@ public final class AntBridge {
         private static boolean isFromContextClassLoader(
                 @NonNull String name,
                 final boolean pkg) {
-            //the 5-th letter of all interesting packages is either 's' or 'x'
+            //the 5-th letter of all interesting packages is either 's','x','r','t'
             //using that to prevent (possibly expensive) loop through javacPackages:
             char f = name.length() > 4 ? name.charAt(4) : '\0';
-            if (f == 'x' || f == 's') { //NOI18N
+            if (f == 'x' || f == 's' || f == 'r' || f =='t') { //NOI18N
                 if (!pkg) {
                     name = name.replace('/', '.');  //NOI18N
                 }
@@ -762,6 +812,26 @@ public final class AntBridge {
                 }
             }
             return false;
+        }
+
+        private int readFully(@NonNull final InputStream in) throws IOException {
+            if (buffer == null) {
+                buffer = new byte[INITIAL_BUFSIZ];
+            }
+            int capacity = buffer.length;
+            int nread = 0, n;
+            while (true) {
+                while ((n = in.read(buffer, nread, capacity - nread)) > 0) {
+                    nread += n;
+                }
+                if (n < 0 || (n = in.read()) < 0) {
+                    break;
+                }
+                capacity = capacity << 1;
+                buffer = Arrays.copyOf(buffer, capacity);
+                buffer[nread++] = (byte)n;
+            }
+            return nread;
         }
 
     }
