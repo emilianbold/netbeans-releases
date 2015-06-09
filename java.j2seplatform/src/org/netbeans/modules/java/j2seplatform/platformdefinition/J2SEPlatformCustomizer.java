@@ -50,6 +50,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.beans.BeanInfo;
 import java.beans.Customizer;
 import java.io.File;
 import java.util.Collection;
@@ -67,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -81,6 +83,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileStateInvalidException;
@@ -97,9 +100,13 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataFolder;
 import org.openide.modules.SpecificationVersion;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Pair;
@@ -784,14 +791,20 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
     static class PathRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Icon icon = null;
             if (value instanceof URL) {
-                value = getDisplayName((URL)value);
+                Pair<String,Icon> p = getDisplayName((URL)value);
+                value = p.first();
+                icon = p.second();
             }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            final Component res = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            setIcon(icon);
+            return res;
         }
 
         @NonNull
-        private static String getDisplayName(@NonNull URL url) {
+        private static Pair<String,Icon> getDisplayName(@NonNull URL url) {
+            IconKind iconKind = IconKind.UNKNOWN;
             try {
                 final Pair<URL,String> parsed = NBJRTUtil.parseURI(url.toURI());
                 if (parsed != null) {
@@ -799,26 +812,34 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     if (moduleName.endsWith(URL_SEPARATOR)) {
                         moduleName = moduleName.substring(0, moduleName.length() - URL_SEPARATOR.length());
                     }
-                    return moduleName;
+                    iconKind = IconKind.MODULE;
+                    return Pair.<String,Icon>of(moduleName, iconKind.getIcon());
                 }
             } catch (URISyntaxException e) {
                 //pass
             }
             if ("jar".equals(url.getProtocol())) {      //NOI18N
+                iconKind = IconKind.ARCHVIVE;
                 URL fileURL = FileUtil.getArchiveFile (url);
                 if (FileUtil.getArchiveRoot(fileURL).equals(url)) {
                     // really the root
                     url = fileURL;
                 } else {
                     // some subdir, just show it as is
-                    return url.toExternalForm();
+                    return Pair.of(url.toExternalForm(), iconKind.getIcon());
                 }
             }
             if ("file".equals(url.getProtocol())) { //NOI18N
-                File f = Utilities.toFile(URI.create(url.toExternalForm()));
-                return f.getAbsolutePath();
+                if (iconKind == IconKind.UNKNOWN) {
+                    iconKind = IconKind.FOLDER;
+                }
+                final File f = Utilities.toFile(URI.create(url.toExternalForm()));
+                return Pair.of(f.getAbsolutePath(), iconKind.getIcon());
             } else {
-                return url.toExternalForm();
+                if (url.getProtocol().startsWith("http") || url.getProtocol().startsWith("ftp")) {  //NOI18N
+                    iconKind = IconKind.NET;
+                }
+                return Pair.of(url.toExternalForm(), iconKind.getIcon());
             }
         }
     }
@@ -858,5 +879,64 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
         }
     }
 
+    private static enum IconKind {
+        ARCHVIVE {
+            @Override
+            protected Icon createIcon() {
+                return ImageUtilities.loadImageIcon(RES_ARCHIVE, false);
+            }
+        },
+        FOLDER {
+            @Override
+            protected Icon createIcon() {
+                return ImageUtilities.image2Icon(DataFolder.findFolder(
+                        FileUtil.getConfigRoot()).getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+            }
+        },
+        NET {
+            @Override
+            protected Icon createIcon() {
+                return ImageUtilities.loadImageIcon(RES_NET, false);
+            }
+        },
+        MODULE {
+            @Override
+            protected Icon createIcon() {
+                return ImageUtilities.loadImageIcon(RES_MODULE, false);
+            }
+        },
+        UNKNOWN {
+            @Override
+            protected Icon createIcon() {
+                return ImageUtilities.loadImageIcon(RES_EMPTY, false);
+            }
+        };
+
+        @StaticResource
+        private static final String RES_ARCHIVE = "org/netbeans/modules/java/j2seplatform/resources/jar.png";       //NOI18N
+        @StaticResource
+        private static final String RES_NET = "org/netbeans/modules/java/j2seplatform/resources/web.gif";       //NOI18N
+        @StaticResource
+        private static final String RES_MODULE = "org/netbeans/modules/java/j2seplatform/resources/package.png";    //NOI18N
+        @StaticResource
+        private static final String RES_EMPTY = "org/netbeans/modules/java/j2seplatform/resources/empty.png";       //NOI18N
+
+        private static Icon[] iconCache;
+
+        @NonNull
+        public Icon getIcon() {
+            if (iconCache == null) {
+                iconCache = new Icon[values().length];
+            }
+            Icon icon = iconCache[ordinal()];
+            if (icon == null) {
+                icon = createIcon();
+                iconCache[ordinal()] = icon;
+            }
+            return icon;
+        }
+
+        protected abstract Icon createIcon();
+    }
 
 }
