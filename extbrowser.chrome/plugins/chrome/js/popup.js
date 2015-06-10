@@ -55,9 +55,10 @@ NetBeans_PresetMenu._container = null;
 // menu presets
 NetBeans_PresetMenu._presets = null;
 // show the menu
-NetBeans_PresetMenu.show = function(presets) {
-    this._init();
+NetBeans_PresetMenu.show = function(presets, activeTab) {
+    this._init(activeTab);
     this._initSelectionMode();
+    this._initDebugInNetBeans();
     this._presets = presets;
     this._putPresets(this._presets);
 };
@@ -82,12 +83,12 @@ NetBeans_PresetMenu.setAutoPresetActive = function() {
 };
 /*** ~Private ***/
 // menu init
-NetBeans_PresetMenu._init = function() {
+NetBeans_PresetMenu._init = function(activeTab) {
     if (this._container !== null) {
         return;
     }
     this._container = document.getElementById('presetMenu');
-    this._registerEvents();
+    this._registerEvents(activeTab);
 };
 // selection mode init
 NetBeans_PresetMenu._initSelectionMode = function() {
@@ -101,8 +102,18 @@ NetBeans_PresetMenu._initSelectionMode = function() {
         selectionModeSeparator.style.display = display;
     }
 };
+// Debug in NetBeans init
+NetBeans_PresetMenu._initDebugInNetBeans = function() {
+    var menu = document.getElementById('debugInNetBeansMenu');
+    var display = NetBeans.debuggedTab ? 'none' : 'block';
+    menu.style.display = display;
+    var separator = document.getElementById('debugInNetBeansSeparator');
+    if (separator) {
+        separator.style.display = display;
+    }
+};
 // register events
-NetBeans_PresetMenu._registerEvents = function() {
+NetBeans_PresetMenu._registerEvents = function(activeTab) {
     var that = this;
     document.getElementById('autoPresetMenu').addEventListener('click', function() {
         that.resetPage();
@@ -112,6 +123,9 @@ NetBeans_PresetMenu._registerEvents = function() {
     }, false);
     document.getElementById('selectionModeMenu').addEventListener('click', function(event) {
         that._updateSelectionMode(event.target.id !== 'selectionModeCheckBox');
+    }, false);
+    document.getElementById('debugInNetBeansMenu').addEventListener('click', function() {
+        that._debugInNetBeans(activeTab);
     }, false);
 };
 // clean and put presets to the menu
@@ -191,14 +205,32 @@ NetBeans_PresetMenu._updateSelectionMode = function(switchCheckBoxValue) {
     this.hide();
 };
 
+NetBeans_PresetMenu._debugInNetBeans = function(activeTab) {
+    NetBeans.sendMessage({
+        message: 'inspect',
+        tabId: activeTab.id,
+        url: activeTab.url
+    });
+    this.hide();
+};
+
 // run!
 window.addEventListener('load', function() {
     NetBeans.detectViewPort(function() {
         NetBeans.getWindowInfo(function(window) {
+            var activeTab = null;
+            var i;
+            for (i=0; i<window.tabs.length; i++) {
+                var tab = window.tabs[i];
+                if (tab.active) {
+                    activeTab = tab;
+                    break;
+                }
+            }
+            NetBeans_PresetMenu.show(NetBeans_Presets.getPresets(), activeTab);
             if (window.state === 'maximized') {
                 NetBeans_PresetMenu.setAutoPresetActive();
             }
         });
-        NetBeans_PresetMenu.show(NetBeans_Presets.getPresets());
     });
 }, false);
