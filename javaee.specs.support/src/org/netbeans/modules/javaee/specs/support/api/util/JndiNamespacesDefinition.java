@@ -44,6 +44,8 @@ package org.netbeans.modules.javaee.specs.support.api.util;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Provides the utilities to deal with JNDI namespace as defined in
@@ -102,5 +104,19 @@ public final class JndiNamespacesDefinition {
             return jndi;
         }
         return defaultNamespace == null ? DEFAULT_PREFIX + jndi : defaultNamespace + "/" + jndi; // NOI18N
+    }
+
+    @CheckForNull
+    public static String getNamespace(@NonNull String jndi) {
+        for (String p : PREFIXES) {
+            if (jndi.startsWith(p)) {
+                return p.substring(0, p.length() - 1);
+            }
+        }
+        // FIXME ugly hack for additional JBoss namespaces
+        if (jndi.startsWith("java:/") || jndi.startsWith("java:jboss/")) { // NOI18N
+            return jndi.substring(0, jndi.indexOf('/'));
+        }
+        return null;
     }
 }
