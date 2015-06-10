@@ -133,8 +133,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final AppliedFilters<CategoryNode> appliedCategoryFilters;
     private final AppliedFilters<RepositoryNode> appliedRepositoryFilters;
     private int taskHits;
-    private Set<TreeListNode> expandedNodes;
-    private boolean persistExpanded = true;
+    private final Map<TreeListNode, Boolean> expandedNodes;
+//    private boolean persistExpanded = true;
     private TreeListNode activeTaskNode;
     public static final Logger LOG = Logger.getLogger(DashboardViewer.class.getName());
     private final ModelListener modelListener;
@@ -143,7 +143,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private boolean categoriesLoaded = false;
 
     private DashboardViewer() {
-        expandedNodes = new HashSet<TreeListNode>();
+        expandedNodes = new HashMap<TreeListNode, Boolean>();
         dashboardComponent = new JScrollPane() {
             @Override
             public void requestFocus() {
@@ -308,6 +308,36 @@ public final class DashboardViewer implements PropertyChangeListener {
         todayCategoryNode.setExpanded(true);
     }
 
+    public void saveExpandedState() {
+        expandedNodes.clear();
+        for(CategoryNode node : categoryNodes) {
+            expandedNodes.put(node, node.isExpanded());
+        }
+        for(RepositoryNode node : repositoryNodes) {
+            for(TreeListNode n : node.getChildren()) {
+                expandedNodes.put(n, n.isExpanded());
+            }    
+        }
+    }
+
+    public void resetExpandedState() {
+        for(CategoryNode node : categoryNodes) {            
+            Boolean state = expandedNodes.get(node);
+            if(state != null) {
+                node.setExpanded(state);
+            }
+        }
+        for(RepositoryNode node : repositoryNodes) {
+            for(TreeListNode n : node.getChildren()) {
+                Boolean state = expandedNodes.get(n);
+                if(state != null) {
+                    n.setExpanded(state);
+                }    
+            }    
+        }        
+        expandedNodes.clear();        
+    }
+    
     private static class Holder {
 
         private static final DashboardViewer theInstance = new DashboardViewer();
@@ -853,9 +883,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private int manageRemoveFilter(boolean refresh, boolean wasForceExpand) {
         if (refresh) {
             taskHits = 0;
-            persistExpanded = !wasForceExpand;
             updateContent(false);
-            persistExpanded = true;
             return taskHits;
         } else {
             return -1;
@@ -884,7 +912,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (expandNodes()) {
             return true;
         }
-        return expandedNodes.remove(node);
+        Boolean state = expandedNodes.get(node);
+        return state != null ? state : false;
     }
 
     public List<TreeListNode> getSelectedNodes() {
@@ -1219,28 +1248,10 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void addRootToModel(final int index, final TreeListNode node) {
-        if (!(node instanceof RepositoryNode) && node.isExpandable()) {
-            node.setExpanded(expandNodes() || expandedNodes.remove(node));
-        }
         model.addRoot(index, node);
     }
 
     private void removeRootFromModel(final TreeListNode node) {
-        if (persistExpanded) {
-            expandedNodes.remove(node);
-            if (node.isExpanded()) {
-                if (node instanceof RepositoryNode) {
-                    List<TreeListNode> children = node.getChildren();
-                    for (TreeListNode query : children) {
-                        if (query.isExpanded()) {
-                            expandedNodes.add(query);
-                        }
-                    }
-                } else {
-                    expandedNodes.add(node);
-                }
-            }
-        }
         model.removeRoot(node);
     }
 
