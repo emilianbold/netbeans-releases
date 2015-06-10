@@ -61,6 +61,7 @@ import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -71,6 +72,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
@@ -103,13 +105,16 @@ public class ConvertToARM {
 
     private static final Logger LOG = Logger.getLogger(ConvertToARMFix.class.getName());
     private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N
+    private static final SpecificationVersion JDK_19 = new SpecificationVersion("1.9"); //NOI18N
     
     private static final String AUTO_CLOSEABLE = "java.lang.AutoCloseable"; //NOI18N
     
     private static final String PTR_ENC_NONE_NO_TRY = "$CV $var = $init; $stms$; $var.close();";    //NOI18N
     private static final String PTR_ENC_NONE_NO_TRY_FIN = "final $CV $var = $init; $stms$; $var.close();";  //NOI18N
+    private static final String PTR_ENC_NONE_NO_TRY_EFIN = "$stms$; $var.close();";  //NOI18N
     private static final String PTR_ENC_NONE_TRY = "$CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}";  //NOI18N
     private static final String PTR_ENC_NONE_TRY_FIN = "final $CV $var = $init; try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
+    private static final String PTR_ENC_NONE_TRY_EFIN = "try { $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL2 = "$CV $var = null; try { $var = $init; $stms$; } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_NONE_TRY_NULL2_SHADOW = "$CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}"; //NOI18N
@@ -132,10 +137,14 @@ public class ConvertToARM {
     private static final String PTR_ENC_OUT_NO_TRY_SHADOW = "$CV_x $var_x = $init_x; try($armres_x$) {$stms_x$;} $var_s.close();";    //NOI18N
     private static final String PTR_ENC_OUT_NO_TRY_FIN = "final $CV $var = $init; try($armres$) {$stms$;} $var.close();";  //NOI18N
     private static final String PTR_ENC_OUT_NO_TRY_FIN_SHADOW = "final $CV_x $var_x = $init_x; try($armres_x$) {$stms_x$;} $var_x.close();";  //NOI18N
+    private static final String PTR_ENC_OUT_NO_TRY_EFIN = "try($armres$) {$stms$;} $var.close();";  //NOI18N
+    private static final String PTR_ENC_OUT_NO_TRY_EFIN_SHADOW = "try($armres_x$) {$stms_x$;} $var_x.close();";  //NOI18N
     private static final String PTR_ENC_OUT_TRY = "$CV $var = $init; try { try($armres$) {$stms$;} } catch $catches$ finally {$var.close(); $finstms$;}";  //NOI18N
     private static final String PTR_ENC_OUT_TRY_SHADOW = "$CV_x $var_x = $init_x; try { try($armres_x$) {$stms_x$;} } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}";  //NOI18N
     private static final String PTR_ENC_OUT_TRY_FIN = "final $CV $var = $init; try { try($armres$) {$stms$;} } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_OUT_TRY_FIN_SHADOW = "final $CV_x $var_x = $init_x; try { try($armres_x$) {$stms_x$;} } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}"; //NOI18N
+    private static final String PTR_ENC_OUT_TRY_EFIN = "try { try($armres$) {$stms$;} } catch $catches$ finally {$var.close(); $finstms$;}"; //NOI18N
+    private static final String PTR_ENC_OUT_TRY_EFIN_SHADOW = "try { try($armres_x$) {$stms_x$;} } catch $catches_x$ finally {$var_x.close(); $finstms_x$;}"; //NOI18N
     private static final String PTR_ENC_OUT_TRY_NULL = "$CV $var = null; try { $var = $init; try($armres$) {$stms$;} } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_OUT_TRY_NULL_SHADOW = "$CV_x $var_x = null; try { $var_x = $init_x; try($armres_x$) {$stms_x$;} } catch $catches_x$ finally {if ($var_x != null) $var_x.close(); $finstms_x$;}"; //NOI18N
        
@@ -145,16 +154,24 @@ public class ConvertToARM {
     private static final String PTR_ENC_IN_NO_TRY2_SHADOW = "try($armres_x$) {$CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$ finally {$finstms_x$;}";
     private static final String PTR_ENC_IN_NO_TRY_FIN = "try($armres$) {final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$";
     private static final String PTR_ENC_IN_NO_TRY_FIN_SHADOW = "try($armres_x$) {final $CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$";
+    private static final String PTR_ENC_IN_NO_TRY_EFIN = "try($armres$) {$stms$; $var.close(); $suff$;} catch $catches$";
+    private static final String PTR_ENC_IN_NO_TRY_EFIN_SHADOW = "try($armres_x$) {$stms_x$; $var_x.close();} catch $catches_x$";
     private static final String PTR_ENC_IN_NO_TRY2_FIN = "try($armres$) {final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
     private static final String PTR_ENC_IN_NO_TRY2_FIN_SHADOW = "try($armres_x$) {$CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$ finally {$finstms_x$;}";
+    private static final String PTR_ENC_IN_NO_TRY2_EFIN = "try($armres$) {$stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
+    private static final String PTR_ENC_IN_NO_TRY2_EFIN_SHADOW = "try($armres_x$) {$stms_x$; $var_x.close();} catch $catches_x$ finally {$finstms_x$;}";
     private static final String PTR_ENC_IN_TRY = "try($armres$) { $CV $var = $init; try { $stms$; } finally {$var.close();}} catch $catches$";  //NOI18N
     private static final String PTR_ENC_IN_TRY_SHADOW = "try($armres_x$) { $CV_x $var_x = $init_x; try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$";  //NOI18N
     private static final String PTR_ENC_IN_TRY2 = "try($armres$) { $CV $var = $init; try { $stms$; } finally {$var.close();}} catch $catches$ finally {$finstms$;}";  //NOI18N
     private static final String PTR_ENC_IN_TRY2_SHADOW = "try($armres_x$) { $CV_x $var_x = $init_x; try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$ finally {$finstms_x$;}";  //NOI18N    
     private static final String PTR_ENC_IN_TRY_FIN = "try($armres$) { final $CV $var = $init; try { $stms$; } finally {$var.close();}} catch $catches$";  //NOI18N
     private static final String PTR_ENC_IN_TRY_FIN_SHADOW = "try($armres_x$) { final $CV_x $var_x = $init_x; try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$";  //NOI18N
+    private static final String PTR_ENC_IN_TRY_EFIN = "try($armres$) {try { $stms$; } finally {$var.close();}} catch $catches$";  //NOI18N
+    private static final String PTR_ENC_IN_TRY_EFIN_SHADOW = "try($armres_x$) {try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$";  //NOI18N
     private static final String PTR_ENC_IN_TRY2_FIN = "try($armres$) { final $CV $var = $init; try { $stms$; } finally {$var.close();}} catch $catches$ finally {$finstms$;}";  //NOI18N
     private static final String PTR_ENC_IN_TRY2_FIN_SHADOW = "try($armres_x$) { final $CV_x $var_x = $init_x; try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$ finally {$finstms_x$;}";  //NOI18N    
+    private static final String PTR_ENC_IN_TRY2_EFIN = "try($armres$) {try { $stms$; } finally {$var.close();}} catch $catches$ finally {$finstms$;}";  //NOI18N
+    private static final String PTR_ENC_IN_TRY2_EFIN_SHADOW = "try($armres_x$) {try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$ finally {$finstms_x$;}";  //NOI18N    
     private static final String PTR_ENC_IN_TRY_NULL = "try($armres$) { $CV $var = null; try { $var = $init; $stms$; } finally {if ($var != null) $var.close();}} catch $catches$"; //NOI18N
     private static final String PTR_ENC_IN_TRY_NULL_SHADOW = "try($armres_x$) { $CV_x $var_x = null; try { $var_x = $init_x; $stms_x$; } finally {if ($var_x != null) $var_x.close();}} catch $catches_x$"; //NOI18N
     private static final String PTR_ENC_IN_TRY_NULL2 = "try($armres$) { $CV $var = null; try { $var = $init; $stms$; } finally {if ($var != null) $var.close();}} catch $catches$ finally {$finstms$;}"; //NOI18N
@@ -188,8 +205,10 @@ public class ConvertToARM {
         {
             @TriggerPattern(value=PTR_ENC_NONE_NO_TRY),
             @TriggerPattern(value=PTR_ENC_NONE_NO_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_NONE_NO_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_NONE_TRY),
             @TriggerPattern(value=PTR_ENC_NONE_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_NONE_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_NONE_TRY_NULL)
         }
     )
@@ -213,17 +232,29 @@ public class ConvertToARM {
     public static List<ErrorDescription> hint1Impl(HintContext ctx, boolean secondRule, String fixKey) {
         if (!MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_SHADOW)     &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_FIN_SHADOW) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_NO_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_OUT_NO_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx)) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_SHADOW) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_FIN_SHADOW) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_OUT_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx)) &&
             !MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_OUT_TRY_NULL_SHADOW) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath().getParentPath(), PTR_ENC_IN_NO_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_NO_TRY2_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath().getParentPath(), PTR_ENC_IN_NO_TRY2_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath().getParentPath(), PTR_ENC_IN_TRY_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_FIN_SHADOW) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY2_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
+            !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath().getParentPath(), PTR_ENC_IN_TRY2_EFIN_SHADOW) && isEffectivelyFinal(ctx) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL_SHADOW) && insideARM(ctx)) &&
             !(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), PTR_ENC_IN_TRY_NULL2_SHADOW) && insideARM(ctx))) {
             if (!secondRule && MatcherUtilities.matches(ctx, ctx.getPath(), PTR_ENC_NONE_TRY_NULL2_SHADOW)) {
@@ -242,8 +273,10 @@ public class ConvertToARM {
         {
             @TriggerPattern(value=PTR_ENC_OUT_NO_TRY),
             @TriggerPattern(value=PTR_ENC_OUT_NO_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_OUT_NO_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_OUT_TRY),
             @TriggerPattern(value=PTR_ENC_OUT_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_OUT_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_OUT_TRY_NULL)
         }
     )
@@ -256,11 +289,15 @@ public class ConvertToARM {
             @TriggerPattern(value=PTR_ENC_IN_NO_TRY),
             @TriggerPattern(value=PTR_ENC_IN_NO_TRY2),
             @TriggerPattern(value=PTR_ENC_IN_NO_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_IN_NO_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_IN_NO_TRY2_FIN),
+            @TriggerPattern(value=PTR_ENC_IN_NO_TRY2_EFIN),
             @TriggerPattern(value=PTR_ENC_IN_TRY),
             @TriggerPattern(value=PTR_ENC_IN_TRY2),
             @TriggerPattern(value=PTR_ENC_IN_TRY_FIN),
+            @TriggerPattern(value=PTR_ENC_IN_TRY_EFIN),
             @TriggerPattern(value=PTR_ENC_IN_TRY2_FIN),
+            @TriggerPattern(value=PTR_ENC_IN_TRY2_EFIN),
             @TriggerPattern(value=PTR_ENC_IN_TRY_NULL),
             @TriggerPattern(value=PTR_ENC_IN_TRY_NULL2)
         }
@@ -276,49 +313,60 @@ public class ConvertToARM {
     private static List<ErrorDescription> hintImpl(final HintContext ctx, final NestingKind nestingKind, String key) {
         Parameters.notNull("ctx", ctx); //NOI18N        
         final Map<String,TreePath> vars = ctx.getVariables();
-        final TreePath varVar = vars.get("$var");    //NOI18N
+        final TreePath varVar = vars.get("$var"); //NOI18N
         assert varVar != null;
-        final TreePath typeVar = vars.get("$CV");    //NOI18N
-        assert typeVar != null;
-        final CompilationInfo info = ctx.getInfo();        
-        final TypeMirror type = info.getTrees().getTypeMirror(typeVar);
-        final List<ErrorDescription> result = new ArrayList<ErrorDescription>(1);
+        final CompilationInfo info = ctx.getInfo();
+        final Trees trees = info.getTrees();
+        final TypeMirror type = trees.getTypeMirror(varVar);
+        final List<ErrorDescription> result = new ArrayList<>(1);
         if (type != null && type.getKind() == TypeKind.DECLARED) {
             final Element autoCloseable = info.getElements().getTypeElement(AUTO_CLOSEABLE);
-            if (isSupportedSourceLevel(ctx.getInfo().getFileObject())  && (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType())))) {
-                final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
-                final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
-                final Trees trees = ctx.getInfo().getTrees();
-                final VariableElement resElement = (VariableElement) trees.getElement(varVar);
-                if (resElement != null && !stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
-                    final Collection<? extends TreePath> tail;
-                    
-                    if (multiVars.containsKey("$suff$")) {
-                        tail = multiVars.get("$suff$"); // NOI18N
-                    } else {
-                        tail = multiVars.get("$$2$");  //NOI18N
-                    }
-                    final Collection<? extends TreePath> usages = findResourceUsagesAfterClose(resElement, tail, varVar.getCompilationUnit(), trees);
-                    final Collection<TreePath> cleanUpStatements = new LinkedList<TreePath>();
-                    if (!hasNonCleanUpUsages(usages, cleanUpStatements) && !splitVariablesClash(stms, tail, trees)) {
-                        result.add(ErrorDescriptionFactory.forName(
-                            ctx,
-                            varVar,
-                            NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
-                        new ConvertToARMFix(
-info,
-key,
-ctx.getPath(),
-nestingKind,
-varVar,
-vars.get("$init"),              //NOI18N
-multiVars.get("$armres$"),      //NOI18N
-stms,
-multiVars.get("$catches$"),     //NOI18N
-multiVars.get("$finstms$"),     //NOI18N
-tail,
-cleanUpStatements).toEditorFix()
-                        ));
+            if (isSupportedSourceLevel(info.getFileObject(), JDK_17)  && (!checkAutoCloseable || (autoCloseable != null && info.getTypes().isSubtype(type, autoCloseable.asType())))) {
+                final Element element = trees.getElement(varVar);
+                if (element != null && EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER, ElementKind.LOCAL_VARIABLE).contains(element.getKind())) {
+                    final TreePath typeVar = vars.get("$CV"); //NOI18N
+                    final VariableElement resElement = (VariableElement) element;
+                    if (typeVar != null || isSupportedSourceLevel(info.getFileObject(), JDK_19) && resElement.getKind() != ElementKind.LOCAL_VARIABLE && info.getElementUtilities().isEffectivelyFinal(resElement)) {
+                        final Map<String,Collection<? extends TreePath>> multiVars = ctx.getMultiVariables();
+                        final Collection<? extends TreePath> stms = multiVars.get("$stms$");    //NOI18N
+                        if (!stms.isEmpty() && !isAssigned(resElement, stms, trees)) {
+                            final Collection<? extends TreePath> tail;
+
+                            if (multiVars.containsKey("$suff$")) {
+                                tail = multiVars.get("$suff$"); // NOI18N
+                            } else {
+                                tail = multiVars.get("$$2$");  //NOI18N
+                            }
+                            final Collection<? extends TreePath> usages = findResourceUsages(resElement, tail, trees);
+                            final Collection<TreePath> cleanUpStatements = new LinkedList<>();
+                            if (!hasNonCleanUpUsages(usages, cleanUpStatements) && !splitVariablesClash(stms, tail, trees)) {
+                                TreePath path = varVar;
+                                if (typeVar == null) {
+                                    final Iterator<? extends TreePath> paths = findResourceUsages(resElement, stms, trees).iterator();
+                                    if (paths.hasNext()) {
+                                        path = paths.next();
+                                    }
+                                }
+                                result.add(ErrorDescriptionFactory.forName(
+                                    ctx,
+                                    path,
+                                    NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
+                                    new ConvertToARMFix(
+                                        info,
+                                        key,
+                                        ctx.getPath(),
+                                        nestingKind,
+                                        varVar,
+                                        vars.get("$init"),              //NOI18N
+                                        multiVars.get("$armres$"),      //NOI18N
+                                        stms,
+                                        multiVars.get("$catches$"),     //NOI18N
+                                        multiVars.get("$finstms$"),     //NOI18N
+                                        tail,
+                                        cleanUpStatements).toEditorFix()
+                                    ));
+                            }
+                        }
                     }
                 }
             }
@@ -404,12 +452,8 @@ cleanUpStatements).toEditorFix()
         @Override
         protected void performRewrite(TransformationContext ctx) {
             final WorkingCopy wc = ctx.getWorkingCopy();
-            final TreePath tp = ctx.getPath();
-            final TreePath init = this.initHandle.resolve(wc);
-            if (init == null) {
-                LOG.log(Level.FINE, "Cannot resolve TreePathHandle: {0}", this.initHandle.toString());
-                return ;
-            }
+            TreePath tp = ctx.getPath();
+            final TreePath init = this.initHandle != null ? this.initHandle.resolve(wc) : null;
             final TreePath var = this.varHandle.resolve(wc);
             if (var == null) {
                 LOG.log(Level.FINE, "Cannot resolve TreePathHandle: {0}", this.varHandle.toString());
@@ -465,34 +509,49 @@ cleanUpStatements).toEditorFix()
                 final List<StatementTree> filteredStatements = new LinkedList<StatementTree>(statements);
                 filteredStatements.removeAll(removedVars);
                 final BlockTree block = tm.Block(filteredStatements, false);
-                final VariableTree varTree = addInit(wc,
-                        removeFinal(wc, (VariableTree)var.getLeaf()),
-                        (ExpressionTree)init.getLeaf());
+                final Tree resTree = var.getLeaf().getKind() == Tree.Kind.VARIABLE
+                        ? addInit(wc, removeFinal(wc, (VariableTree)var.getLeaf()),(ExpressionTree)init.getLeaf())
+                        : var.getLeaf();
                 final TryTree tryTree = tm.Try(
-                        Collections.singletonList(varTree),
+                        Collections.singletonList(resTree),
                         block,
                         ConvertToARMFix.<CatchTree>asList(catchesPaths),
                         rewriteFinallyBlock(tm,finStatementsPath));
+                StatementTree stat = null;
+                if (tp.getLeaf().getKind() == Tree.Kind.TRY) {
+                    stat = (StatementTree) tp.getLeaf();
+                    tp = tp.getParentPath();
+                } else if (var.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                    stat = (StatementTree)var.getLeaf();
+                }
                 rewriteCopyComments(wc, tp.getLeaf(), rewriteOwnerBlock(gen, 
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
-                        (StatementTree)var.getLeaf(),
+                        stat,
                         additionalVars,
                         tryTree,
                         statements,
                         nonNeededStms));
             } else if (nestingKind == NestingKind.OUT) {
+                StatementTree stat = null;
+                if (tp.getLeaf().getKind() == Tree.Kind.TRY) {
+                    stat = (StatementTree) tp.getLeaf();
+                    tp = tp.getParentPath();
+                } else if (var.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                    stat = (StatementTree)var.getLeaf();
+                }
                 final TryTree oldTry = findNestedARM(
                         ((BlockTree)tp.getLeaf()).getStatements(),
-                        (StatementTree)var.getLeaf());
+                        stat);
                 if (oldTry == null) {
                     return;
                 }
                 final List<Tree> arm = new ArrayList<Tree>();                
-                arm.add(addInit(wc,
-                        removeFinal(wc, (VariableTree)var.getLeaf()),
-                        (ExpressionTree)init.getLeaf()));
-                arm.addAll(removeFinal(wc, ConvertToARMFix.<Tree>asList(armPaths)));                
+                final Tree resTree = var.getLeaf().getKind() == Tree.Kind.VARIABLE
+                        ? addInit(wc, removeFinal(wc, (VariableTree)var.getLeaf()),(ExpressionTree)init.getLeaf())
+                        : var.getLeaf();
+                arm.add(resTree);
+                arm.addAll(removeFinal(wc, ConvertToARMFix.<Tree>asList(armPaths)));
                 final TryTree newTry = tm.Try(
                         arm,
                         oldTry.getBlock(),
@@ -501,7 +560,7 @@ cleanUpStatements).toEditorFix()
                 rewriteCopyComments(wc, tp.getLeaf(), rewriteOwnerBlock(gen, 
                         tm,
                         ((BlockTree)tp.getLeaf()).getStatements(),
-                        (StatementTree)var.getLeaf(),
+                        stat,
                         Collections.<VariableTree>emptyList(),
                         newTry,
                         ConvertToARMFix.<StatementTree>asList(statementsPaths),
@@ -514,9 +573,10 @@ cleanUpStatements).toEditorFix()
                 final TryTree oldTry = (TryTree)oldTryPath.getLeaf();
                 Tree rewriteTree = oldTry;
                 final List<Tree> arm = new ArrayList<Tree>(removeFinal(wc, oldTry.getResources()));
-                arm.add(addInit(wc,
-                        removeFinal(wc, (VariableTree)var.getLeaf()),
-                        (ExpressionTree)init.getLeaf()));
+                final Tree resTree = var.getLeaf().getKind() == Tree.Kind.VARIABLE
+                        ? addInit(wc, removeFinal(wc, (VariableTree)var.getLeaf()),(ExpressionTree)init.getLeaf())
+                        : var.getLeaf();
+                arm.add(resTree);
                 final TryTree newTry = tm.Try(
                         arm,
                         tm.Block(ConvertToARMFix.<StatementTree>asList(statementsPaths), false),
@@ -572,7 +632,7 @@ cleanUpStatements).toEditorFix()
                 final List<? extends StatementTree> oldStms,
                 final Set<? extends StatementTree> removeStms) {
             final List<StatementTree> statements = new ArrayList<StatementTree>(originalStatements.size());
-            int state = 0;  //0 - ordinary,1 - replace by try, 2 - remove 
+            int state = var != null ? 0 : 1;  //0 - ordinary,1 - replace by try, 2 - remove 
             final Set<Tree> toRemove = new HashSet<Tree>(oldStms);
             for (StatementTree statement : originalStatements) {
                 if (removeStms.contains(statement)) {
@@ -580,8 +640,27 @@ cleanUpStatements).toEditorFix()
                 }
                 if (var == statement) {
                     statements.addAll(preVarDecls);
-                    state = 1;
-                    continue;
+                    if (var.getKind() == Kind.TRY) {
+                        gen.copyComments(statement, newTry, true);
+                        gen.copyComments(statement, newTry, false);
+                        if (statement.getKind() == Kind.TRY) {
+                            // copy over the comments for the finally block, it has been regenerated
+                            TryTree tt = (TryTree)statement;
+                            if (tt.getFinallyBlock() != null) {
+                                Tree nt = newTry.getFinallyBlock();
+                                if (nt == null) {
+                                    nt = newTry;
+                                }
+                                gen.copyComments(tt.getFinallyBlock(), nt, true);
+                                gen.copyComments(tt.getFinallyBlock(), nt, false);
+                            }
+                        }
+                        statement = newTry;
+                        state = 0;
+                    } else {
+                        state = 1;
+                        continue;
+                    }
                 } else if (state == 1) {
                     state =  toRemove.contains(statement) || 
                             (statement.getKind() == Kind.TRY && 
@@ -673,11 +752,12 @@ cleanUpStatements).toEditorFix()
     private static TryTree findNestedARM(
             final Collection<? extends StatementTree> stms,
             final StatementTree var) {
-        int state = 0;
+        int state = var != null ? 0 : 1;
         for (StatementTree stm : stms) {
             if (stm == var) {
                 state = 1;
-            } else if (state == 1) {
+            }
+            if (state == 1) {
                 if (stm.getKind() == Kind.TRY) {
                     final TryTree tryTree = (TryTree)stm;
                     if (tryTree.getResources() != null && !tryTree.getResources().isEmpty()) {
@@ -698,33 +778,64 @@ cleanUpStatements).toEditorFix()
                         }
                     }
                 }
-                break;
+                if (stm != var) {
+                    break;
+                }
             }
         }
         return null;
     }
     
-    private static TryTree findEnclosingARM(final TreePath varPath) {
-        TreePath path = findEnclosingARMPath(varPath);
-        return path == null ? null : (TryTree)path.getLeaf();
+    private static TreePath findEnclosingARMPath(final TreePath varPath) {
+        if (varPath == null) {
+            return null;
+        }
+        if (varPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+            TreePath path = findEnclosingTryPath(varPath);
+            return  path != null && ((TryTree)path.getLeaf()).getResources() != null
+                    && !((TryTree)path.getLeaf()).getResources().isEmpty()
+                    ? path : null;
+        }
+        TreePath path = varPath;        
+        while (path != null && !(path.getLeaf() instanceof StatementTree)) {
+            path = path.getParentPath();
+        }
+        path = findEnclosingTryPath(path); //NOI18N
+        if (path != null && ((TryTree)path.getLeaf()).getResources() != null
+                && !((TryTree)path.getLeaf()).getResources().isEmpty()) {
+            return path;
+        }
+        path = findEnclosingTryPath(path);
+        return  path != null && ((TryTree)path.getLeaf()).getResources() != null
+                && !((TryTree)path.getLeaf()).getResources().isEmpty()
+                ? path : null;
     }
-            
-    private static TreePath findEnclosingARMPath(
-            final TreePath varPath) {
-        TreePath parent = varPath.getParentPath();
+    
+    private static TreePath findEnclosingTryPath(final TreePath path) {
+        TreePath parent = path.getParentPath();
         if (parent == null || parent.getLeaf().getKind() != Kind.BLOCK) {
             return null;
         }
         parent = parent.getParentPath();
         if (parent == null || parent.getLeaf().getKind() != Kind.TRY) {
             return null;
-        }        
+        }
         return parent;
     }
     
+    private static boolean isEffectivelyFinal(final HintContext ctx) {
+        if (isSupportedSourceLevel(ctx.getInfo().getFileObject(), JDK_19)) {
+            TreePath var = ctx.getVariables().get("$var");
+            if (var != null) {
+                Element el = ctx.getInfo().getTrees().getElement(var);
+                return el != null && EnumSet.of(ElementKind.FIELD, ElementKind.PARAMETER).contains(el.getKind()) && ctx.getInfo().getElementUtilities().isEffectivelyFinal((VariableElement)el);
+            }
+        }
+        return false;
+    }
+    
     private static boolean insideARM(final HintContext ctx) {
-        final TryTree enc = findEnclosingARM(ctx.getVariables().get("$var"));   //NOI18N
-        return enc != null && enc.getResources() != null && !enc.getResources().isEmpty();  
+        return findEnclosingARMPath(ctx.getVariables().get("$var")) != null;
     }
 
     private static Collection<VariableTree> findVariableDecls(
@@ -768,12 +879,11 @@ cleanUpStatements).toEditorFix()
         return vars;
     }
 
-    private static Collection<? extends TreePath> findResourceUsagesAfterClose(
+    private static Collection<? extends TreePath> findResourceUsages(
             final VariableElement resource,
             final Collection<? extends TreePath> statements,
-            final CompilationUnitTree cu,
             final Trees trees) {
-        final List<TreePath> usages = new LinkedList<TreePath>();
+        final List<TreePath> usages = new LinkedList<>();
         if (statements != null) {
             final TreePathScanner<List<TreePath>,List<TreePath>> scanner = new TreePathScanner<List<TreePath>, List<TreePath>>() {
                 @Override
@@ -882,7 +992,7 @@ cleanUpStatements).toEditorFix()
         return scanner.scan(statements, null) == Boolean.TRUE;
     }
 
-    private static boolean isSupportedSourceLevel(final FileObject file) {
+    private static boolean isSupportedSourceLevel(final FileObject file, final SpecificationVersion ver) {
         if (file == null) {
             return false;
         }
@@ -890,7 +1000,7 @@ cleanUpStatements).toEditorFix()
         if (sl == null) {
             return false;
         }
-        return JDK_17.compareTo(new SpecificationVersion(sl)) <= 0;
+        return ver.compareTo(new SpecificationVersion(sl)) <= 0;
     }
     
     private enum NestingKind {
