@@ -227,7 +227,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @throws DatasourceAlreadyExistsException if the required data source
      *         already exists in resource file.
      */
-    private static Pair<File, Boolean> resourceFileForDSCreation(
+    private static ResourceFileDescription resourceFileForDSCreation(
             final String jndiName, final String url, final String username,
             final String password, final String driver, final J2eeModule module,
             final GlassFishVersion version,final ConnectionPoolFinder cpFinder
@@ -237,9 +237,18 @@ public class Hk2DatasourceManager implements DatasourceManager {
         if (file != null && file.exists()) {
             final DuplicateJdbcResourceFinder jdbcFinder
                     = new DuplicateJdbcResourceFinder(jndiName);
+            final JndiNamespaceFinder namespaceFinder = new JndiNamespaceFinder();
             List<TreeParser.Path> pathList = new ArrayList<>();
-            pathList.add(new TreeParser.Path("/resources/jdbc-resource", jdbcFinder));
-            pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool", cpFinder));
+            pathList.add(new TreeParser.Path("/resources/jdbc-resource",
+                    new ProxyNodeReader(jdbcFinder, namespaceFinder))); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/jdbc-connection-pool",
+                    new ProxyNodeReader(cpFinder, namespaceFinder))); // NOI18N
+
+            pathList.add(new TreeParser.Path("/resources/custom-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/mail-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/admin-object-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/connector-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/connector-connection-pool", namespaceFinder)); // NOI18N
             try {
                 TreeParser.readXml(file, pathList);
                 if(jdbcFinder.isDuplicate()) {
@@ -251,9 +260,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         Level.INFO, ex.getLocalizedMessage(), ex);
                 throw new ConfigurationException(ex.getLocalizedMessage(), ex);
             }
+            return new ResourceFileDescription(file, pair.second(), namespaceFinder.getNamespaces());
         }
-        return pair != null
-                ? pair : GlassfishConfiguration.getNewResourceFile(module, version);
+        pair = GlassfishConfiguration.getNewResourceFile(module, version);
+        return new ResourceFileDescription(pair.first(), pair.second(), Collections.<String>emptySet());
     }
     
     /**
@@ -281,10 +291,12 @@ public class Hk2DatasourceManager implements DatasourceManager {
         SunDatasource ds;
         ConnectionPoolFinder cpFinder = new ConnectionPoolFinder();
         
-        Pair<File, Boolean> pair = resourceFileForDSCreation(
+        ResourceFileDescription fileDesc = resourceFileForDSCreation(
                 jndiName, url, username, password, driver, module, version, cpFinder);
+        
+        String realJndiName = getJndiName(jndiName, fileDesc);
 
-        File xmlFile = pair == null ? null : pair.first();
+        File xmlFile = fileDesc.getFile();
         try {
             String vendorName = VendorNameMgr.vendorNameFromDbUrl(url);
             if(vendorName == null) {
@@ -319,13 +331,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
                 poolName = defaultPool == null ? defaultPoolName : generateUniqueName(defaultPoolName, pools.keySet());
                 createConnectionPool(xmlFile, poolName, url, username, password, driver);
             }
-            
-            String realJndi = getJndiName(jndiName, pair.second(), JndiNamespacesDefinition.APPLICATION_NAMESPACE);
 
             // create jdbc resource
-            createJdbcResource(xmlFile, realJndi, poolName);
+            createJdbcResource(xmlFile, realJndiName, poolName);
             
-            ds = new SunDatasource(realJndi, url, username, password, driver, pair.second());
+            ds = new SunDatasource(realJndiName, url, username, password, driver, fileDesc.isIsApplicationScoped());
         } catch(IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new ConfigurationException(ex.getLocalizedMessage(), ex);
@@ -359,16 +369,26 @@ public class Hk2DatasourceManager implements DatasourceManager {
             final List<JdbcResource> jdbcResources = new LinkedList<>();
             final Map<String, ConnectionPool> connectionPoolMap = new HashMap<>();
 
+            final JndiNamespaceFinder namespaceFinder = new JndiNamespaceFinder();
             final List<TreeParser.Path> pathList = new ArrayList<>();
-            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource", new JdbcReader(jdbcResources)));
-            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool", new ConnectionPoolReader(connectionPoolMap)));
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-resource",
+                    new ProxyNodeReader(new JdbcReader(jdbcResources), namespaceFinder)));
+            pathList.add(new TreeParser.Path(xPathPrefix + "resources/jdbc-connection-pool",
+                    new ProxyNodeReader(new ConnectionPoolReader(connectionPoolMap), namespaceFinder)));
 
+            pathList.add(new TreeParser.Path("/resources/custom-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/mail-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/admin-object-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/connector-resource", namespaceFinder)); // NOI18N
+            pathList.add(new TreeParser.Path("/resources/connector-connection-pool", namespaceFinder)); // NOI18N
             try {
                 TreeParser.readXml(xmlFile, pathList);
             } catch(IllegalStateException ex) {
                 Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             }
 
+            ResourceFileDescription fileDesc = new ResourceFileDescription(
+                    xmlFile, applicationScoped, namespaceFinder.getNamespaces());
             for (JdbcResource jdbc : jdbcResources) {
                 final ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
                 if (pool != null) {
@@ -382,8 +402,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         final String driverClassName = pool.getProperty("driverClass"); //NOI18N
                         // FIXME for existing unprefixed JNDI names we assume it
                         // is java:app in most cases (except module inside war) :(
-                        String jndi = getJndiName(jdbc.getJndiName(), applicationScoped,
-                                JndiNamespacesDefinition.APPLICATION_NAMESPACE);
+                        String jndi = getJndiName(jdbc.getJndiName(), fileDesc);
                         final SunDatasource dataSource = new SunDatasource(
                                 jndi, url, username, password, driverClassName, applicationScoped);
                         dataSources.add(dataSource);
@@ -405,11 +424,26 @@ public class Hk2DatasourceManager implements DatasourceManager {
         return dataSources;
     }
 
-    private static String getJndiName(String jndiName, boolean applicationScoped, String namespace) {
-        if (!applicationScoped) {
+    private static String getJndiName(String jndiName, ResourceFileDescription fileDesc) {
+        if (!fileDesc.isIsApplicationScoped()) {
             return jndiName;
         }
-        return JndiNamespacesDefinition.normalize(jndiName, namespace);
+
+        String realJndiName = jndiName;
+        Set<String> ns = fileDesc.getNamespaces();
+        if (ns.isEmpty()) {
+            // XXX show dialog
+            realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
+        } else if (ns.size() == 1) {
+            realJndiName = JndiNamespacesDefinition.normalize(realJndiName, ns.iterator().next());
+        } else {
+            if (ns.contains(JndiNamespacesDefinition.MODULE_NAMESPACE)) {
+                realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.MODULE_NAMESPACE);
+            } else {
+                realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
+            }
+        }
+        return realJndiName;
     }
 
     private static class JdbcResource {
@@ -871,7 +905,35 @@ public class Hk2DatasourceManager implements DatasourceManager {
             }
         });
     }
-    
+
+    // XXX move this to a generic location ?
+    private static class ResourceFileDescription {
+
+        private final File file;
+
+        private final boolean isApplicationScoped;
+
+        private final Set<String> namespaces;
+
+        public ResourceFileDescription(File file, boolean isApplicationScoped, Set<String> namespaces) {
+            this.file = file;
+            this.isApplicationScoped = isApplicationScoped;
+            this.namespaces = namespaces;
+        }
+
+        public File getFile() {
+            return file;
+        }
+
+        public boolean isIsApplicationScoped() {
+            return isApplicationScoped;
+        }
+
+        public Set<String> getNamespaces() {
+            return namespaces;
+        }
+    }
+
     private static class DuplicateJdbcResourceFinder extends TreeParser.NodeReader {
         
         private final String targetJndiName;
@@ -1019,7 +1081,67 @@ public class Hk2DatasourceManager implements DatasourceManager {
         }
         
     }
-    
+
+    private static class JndiNamespaceFinder extends TreeParser.NodeReader {
+
+        private final Set<String> namespaces = new HashSet<>();
+
+        @Override
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
+            String jndiName = attributes.getValue("jndi-name");
+            if (jndiName == null) {
+                jndiName = attributes.getValue("name");
+            }
+            if (jndiName != null) {
+                String ns = JndiNamespacesDefinition.getNamespace(jndiName);
+                if (ns != null) {
+                    namespaces.add(ns);
+                }
+            }
+        }
+
+        public Set<String> getNamespaces() {
+            return namespaces;
+        }
+    }
+
+    private static class ProxyNodeReader extends TreeParser.NodeReader {
+
+        private final TreeParser.NodeReader[] readers;
+
+        public ProxyNodeReader(TreeParser.NodeReader... readers) {
+            this.readers = readers;
+        }
+
+        @Override
+        public void endNode(String qname) throws SAXException {
+            for (TreeParser.NodeReader r : readers) {
+                r.endNode(qname);
+            }
+        }
+
+        @Override
+        public void readCData(String qname, char[] ch, int start, int length) throws SAXException {
+            for (TreeParser.NodeReader r : readers) {
+                r.readCData(qname, ch, start, length);
+            }
+        }
+
+        @Override
+        public void readChildren(String qname, Attributes attributes) throws SAXException {
+            for (TreeParser.NodeReader r : readers) {
+                r.readChildren(qname, attributes);
+            }
+        }
+
+        @Override
+        public void readAttributes(String qname, Attributes attributes) throws SAXException {
+            for (TreeParser.NodeReader r : readers) {
+                r.readAttributes(qname, attributes);
+            }
+        }
+    }
+
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;
         static synchronized DDResolver getInstance() {
