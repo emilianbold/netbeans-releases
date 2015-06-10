@@ -259,6 +259,12 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             if ( dobj != null) {
                 // DataObject found => we'll use the parent folder
                 preselectedFolder = dobj.getFolder();
+            } else {
+                // fallback
+                FileObject fo = context.lookup(FileObject.class);
+                if(fo != null) {
+                    preselectedFolder = DataFolder.findFolder(fo);
+                }
             }
         }
 
