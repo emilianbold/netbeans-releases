@@ -471,6 +471,11 @@ public class CallModelImpl implements CallModel {
                         }
                     }
                 }
+            } else if (CsmKindUtilities.isVariableDeclaration(element)) {
+                CsmVariable var = (CsmVariable) element;
+                if (var.getUniqueName().equals(declarationUin)) {
+                    return (CsmOffsetableDeclaration) var;
+                }
             }
             return null;
         }
