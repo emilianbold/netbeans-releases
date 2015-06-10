@@ -97,6 +97,8 @@ public class BeansModelImpl implements BeansModel {
     private static final String WEB_INF = "WEB-INF";       //NOI18N
     
     private BeanArchiveType beanArchType = null;
+
+    private Boolean isCdi11OrLater = null;
     
     public BeansModelImpl( ModelUnit unit ){
         myUnit = unit;
@@ -217,6 +219,25 @@ public class BeansModelImpl implements BeansModel {
             }
         }
         return beanArchType;
+    }
+
+    @Override
+    public boolean isCdi11OrLater() {
+        if (isCdi11OrLater == null) {
+            Project project = getUnit().getProject();
+            if (project != null) {
+                CdiUtil lookup = project.getLookup().lookup(CdiUtil.class);
+                if (lookup == null) {
+                    isCdi11OrLater = CdiUtil.isCdiEnabled(project) && CdiUtil.isCdi11OrLater(project);
+                } else {
+                    isCdi11OrLater = lookup.isCdiEnabled() && lookup.isCdi11OrLater();
+                }
+            } else {
+                // there is no perfect solution. may happens in tests and may be in stand alone file opening, default as in cdi1.0
+                isCdi11OrLater = false;
+            }
+        }
+        return isCdi11OrLater;
     }
     
     private void registerChangeListeners() {
