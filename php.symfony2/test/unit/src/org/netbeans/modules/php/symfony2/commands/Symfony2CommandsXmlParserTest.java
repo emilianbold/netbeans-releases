@@ -145,6 +145,33 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
         assertEquals("twig:lint", command.getCommand());
     }
 
+    public void testIssue252901() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "issue252901.xml")));
+
+        List<Symfony2CommandVO> commands = new ArrayList<>();
+        Symfony2CommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(50, commands.size());
+
+        Symfony2CommandVO command = commands.get(0);
+        assertEquals("help", command.getCommand());
+        assertEquals("Displays help for a command", command.getDescription());
+
+        command = commands.get(8);
+        assertEquals("debug:config", command.getCommand());
+        assertEquals("<html>Usage:<br>"
+                + "<i>debug:config [&lt;name&gt;]</i><br>"
+                + "<i>config:debug</i><br><br>"
+                + "The <i>debug:config</i> command dumps the current configuration for an<br> extension/bundle.<br><br>"
+                + " Either the extension alias or bundle name can be used:<br><br>"
+                + "   <i>php /home/gapon/NetBeansProjects/symfony2/app/console debug:config framework</i><br>"
+                + "   <i>php /home/gapon/NetBeansProjects/symfony2/app/console debug:config FrameworkBundle</i>", command.getHelp());
+
+        command = commands.get(49);
+        assertEquals("translation:update", command.getCommand());
+    }
+
     private Symfony2CommandVO findCommand(List<Symfony2CommandVO> commands, String commandName) {
         for (Symfony2CommandVO command : commands) {
             if (command.getCommand().equals(commandName)) {

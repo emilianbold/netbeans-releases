@@ -174,7 +174,7 @@ NetBeans.showInfoBar = function(tabId) {
     });
 };
 NetBeans.getWindowInfo = function(callback) {
-    chrome.windows.getLastFocused(callback);
+    chrome.windows.getLastFocused({ populate: true }, callback);
 };
 NetBeans.detectViewPort = function(callback) {
     if (NetBeans.debuggedTab === null) {

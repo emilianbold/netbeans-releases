@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -206,7 +207,7 @@ public class JsCompletionItem implements CompletionProposal {
     @Override
     public int getSortPrioOverride() {
         int order = 100;
-        if (element != null) {
+        if (element != null && element instanceof JsElement) {
             if (((JsElement)element).isPlatform()) {
                 if (ModelUtils.PROTOTYPE.equals(element.getName())) { //NOI18N
                     order = 1;
@@ -245,6 +246,7 @@ public class JsCompletionItem implements CompletionProposal {
         public ParserResult info;
         public String prefix;
         public CompletionContext completionContext;
+        public boolean addHtmlTagAttributes;
     }
     
     private static  ImageIcon priviligedIcon = null;
@@ -639,6 +641,68 @@ public class JsCompletionItem implements CompletionProposal {
         
     }
     
+    public static class JsHtmlAttributeItem extends JsCompletionItem {
+        
+        private final HtmlTagAttribute attr;
+        
+        public JsHtmlAttributeItem(HtmlTagAttribute attr, CompletionRequest request) {
+            super(new HtmlAttrElement(attr), request);
+            this.attr = attr;
+        }
+        
+        @Override
+        public String getName() {
+            return attr.getName();
+        }
+        
+        @Override
+        public String getInsertPrefix() {
+            return getName();
+        }
+        
+        @Override
+        public String getLhsHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendText(getName());
+            return formatter.getText();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.ATTRIBUTE;
+        }
+
+        @Messages("JsCompletionItem.lbl.html.attribute=HTML Attribute")
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            formatter.reset();
+            formatter.appendHtml("<font color=#999999>");
+            formatter.appendText(Bundle.JsCompletionItem_lbl_html_attribute());
+            formatter.appendHtml("</font>");
+            return formatter.getText();
+        }
+        
+        private static class HtmlAttrElement extends SimpleDocElement {
+            private final HtmlTagAttribute attribute;
+            
+            public HtmlAttrElement(HtmlTagAttribute attribute) {
+                super(attribute.getName(), ElementKind.ATTRIBUTE);
+                this.attribute = attribute;
+            }
+
+            @Override
+            public String getDocumentation() {
+                String content = attribute.getHelp().getHelpContent();
+                if (content == null) {
+                    if (attribute.getHelp().getHelpResolver() != null && attribute.getHelp().getHelpURL() != null) {
+                        content = attribute.getHelp().getHelpResolver().getHelpContent(attribute.getHelp().getHelpURL());
+                    }
+                }
+                return content;
+            }
+        }
+    }
+    
     public static class JsPropertyCompletionItem extends JsCompletionItem {
 
         private final Set<String> resolvedTypes;
@@ -834,5 +898,59 @@ public class JsCompletionItem implements CompletionProposal {
             }
             return sb.toString();
         }
+    }
+    
+    public abstract static class SimpleDocElement implements ElementHandle {
+
+        private final String name;
+        private final ElementKind kind;
+
+        public SimpleDocElement(String name, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+        
+        
+        @Override
+        public FileObject getFileObject() {
+            return null;
+        }
+
+        @Override
+        public String getMimeType() {
+            return "";
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getIn() {
+            return "";
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.<Modifier>emptySet();
+        }
+
+        @Override
+        public boolean signatureEquals(ElementHandle handle) {
+            return false;
+        }
+
+        @Override
+        public OffsetRange getOffsetRange(ParserResult result) {
+            return OffsetRange.NONE;
+        }
+        
+        abstract public String getDocumentation();
     }
 }

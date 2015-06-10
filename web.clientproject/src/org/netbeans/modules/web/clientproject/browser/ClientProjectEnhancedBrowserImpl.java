@@ -96,8 +96,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         if (val != null) {
             return Boolean.parseBoolean(val);
         } else {
-            // if browserIntegration is available then default is true for HighlightSelectionEnabled
-            return browser.hasNetBeansIntegration();
+            return true;
         }
     }
 

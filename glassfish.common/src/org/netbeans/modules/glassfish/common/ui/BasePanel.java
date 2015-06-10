@@ -63,50 +63,65 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
-abstract public class BasePanel extends JPanel {
+public abstract class BasePanel extends JPanel {
 
-    abstract protected String getPrefix();
+    protected abstract String getPrefix();
 
-    abstract protected List<Component> getDataComponents();
+    protected abstract List<Component> getDataComponents();
+
+    public final void initializeUI() {
+        for (Component c : getDataComponents()) {
+            c.setEnabled(false);
+        }
+    }
 
     /** this is likely to be called off the awt thread
      *
      * @param name
      * @param data
      */
-    public void initializeData(String name, Map<String, String> data) {
-        for (Component c : getDataComponents()) {
-            // fill in the blanks...
-            String compName = c.getName();
-            if (compName != null) {
-                // construct the key
-                String key = getPrefix() + name + "." + compName;
-                String value = data.get(key);
-                if (null == value) {
-                    value = NbBundle.getMessage(this.getClass(), "ERR_DATA_NOT_FOUND", key);
-                } else {
-                    c.setName(key); // for writing the field value back to the server
-                }
-                if (c instanceof JComboBox) {
-                    final JComboBox jcb = (JComboBox) c;
-                    SwingUtilities.invokeLater(new ComboBoxSetter(jcb, value, data));
-                } else if (c instanceof JTextComponent) {
-                    final JTextComponent jtc = (JTextComponent) c;
-                    SwingUtilities.invokeLater(new TextFieldSetter(jtc, value));
-                } else if (c instanceof AbstractButton) {
-                    AbstractButton ab = (AbstractButton) c;
-                    SwingUtilities.invokeLater(new ButtonSetter(ab, value));
-                } else if (c instanceof JTable) {
-                    JTable table = (JTable) c;
-                    SwingUtilities.invokeLater(new TableSetter(name,table, data));
+    public void initializeData(final String name, final Map<String, String> data) {
+        Mutex.EVENT.readAccess(new Runnable(){
+
+            @Override
+            public void run() {
+                for (Component c : getDataComponents()) {
+                    c.setEnabled(true);
+                    // fill in the blanks...
+                    String compName = c.getName();
+                    if (compName != null) {
+                        // construct the key
+                        String key = getPrefix() + name + "." + compName;
+                        String value = data.get(key);
+                        if (null == value) {
+                            value = NbBundle.getMessage(this.getClass(), "ERR_DATA_NOT_FOUND", key);
+                        } else {
+                            c.setName(key); // for writing the field value back to the server
+                        }
+                        if (c instanceof JComboBox) {
+                            final JComboBox jcb = (JComboBox) c;
+                            new ComboBoxSetter(jcb, value, data).run();
+                        } else if (c instanceof JTextComponent) {
+                            final JTextComponent jtc = (JTextComponent) c;
+                            new TextFieldSetter(jtc, value).run();
+                        } else if (c instanceof AbstractButton) {
+                            AbstractButton ab = (AbstractButton) c;
+                            new ButtonSetter(ab, value).run();
+                        } else if (c instanceof JTable) {
+                            JTable table = (JTable) c;
+                            new TableSetter(name, table, data).run();
+                        }
+                    }
                 }
             }
-        }
+        });
+
     }
 
-    public Map<String,String> getData() {
+    public final Map<String,String> getData() {
         Map<String,String> retVal = new HashMap<String,String>(getDataComponents().size());
         for (Component c : getDataComponents()) {
             // fill in the blanks...
