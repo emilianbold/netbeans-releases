@@ -296,6 +296,11 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
     public BeanArchiveType getBeanArchiveType() {
         return getModel().getBeansModel().getBeanArchiveType();
     }
+
+    @Override
+    public boolean isCdi11OrLater() {
+        return getModel().getBeansModel().isCdi11OrLater();
+    }
     
     public static List<AnnotationMirror> getAllStereotypes( Element element ,
             AnnotationHelper helper  ) 

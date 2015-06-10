@@ -108,9 +108,19 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
         this.delegate = delegate;
         this.enhancedMode = enhancedMode;
     }
-    
+
     public boolean hasEnhancedMode() {
-        return enhancedMode;
+        return enhancedMode || temporaryEnhancedMode;
+    }
+
+    private boolean temporaryEnhancedMode = false;
+    public void setTemporaryEnhancedMode(boolean mode) {
+        temporaryEnhancedMode = mode;
+        lookup = null;
+    }
+
+    public boolean hasTemporaryEnhancedMode() {
+        return temporaryEnhancedMode;
     }
 
     @Override

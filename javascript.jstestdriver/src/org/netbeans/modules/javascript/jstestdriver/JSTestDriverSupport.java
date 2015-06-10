@@ -380,7 +380,7 @@ public class JSTestDriverSupport {
         }
 
         // XXX: exact this algorithm is also in 
-        // web.javascript.debugger/src/org/netbeans/modules/web/javascript/debugger/console/BrowserConsoleLogger.java
+        // org.netbeans.modules.web.webkit.tooling.console.BrowserConsoleLogger.java
         // keep them in sync
         @Override
         public List<ConvertedLine> convert(String line) {
@@ -444,6 +444,12 @@ public class JSTestDriverSupport {
                 return null;
             }
             int ue = line.indexOf(' ', u1);
+            int uee = line.indexOf('\n', u1);
+            if (uee != -1
+                    && uee < ue) {
+                // #236037
+                ue = uee;
+            }
             if (ue < 0) {
                 ue = line.length();
             }

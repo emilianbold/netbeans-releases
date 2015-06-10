@@ -166,29 +166,31 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     // build the FQN of the last defined property in the file / model
                     String lastDefinedFQN = parent.getFullyQualifiedName();
                     List<IndexResult> rItems = new ArrayList();
-                    // find the next property from FQN in the index for the defined property in the file / model
-                    rItems.addAll(findPropertyOfType(jsIndex, lastDefinedFQN.toString(), fqnParts[partIndex]));
-                    parent = findPropertyOrParameterInModel(parent, fqnParts[partIndex]);
-                    partIndex++;
-                    for (int i = partIndex; (!rItems.isEmpty()) && i < fqnParts.length; i++ ) {
-                        List<IndexResult> copy = new ArrayList(rItems);
-                        rItems.clear();
-                        // and for the found property find next property from the FQN
-                        for (IndexResult indexResult : copy) {
-                            rItems.addAll(findPropertyOfType(jsIndex, IndexedElement.getFQN(indexResult), fqnParts[i]));
-                        }
-                        if (rItems.isEmpty() && parent != null) {
-                            // require js places parameter assignment only in the model. The assignments are not available in the indes
-                            Collection<? extends TypeUsage> assigns = parent.getAssignments();
-                            if (!assigns.isEmpty()) {
-                                for (Type type : assigns) {
-                                    String afqn = getFQNFromType(type);
-                                    rItems.addAll(findPropertyOfType(jsIndex, afqn, fqnParts[i]));
+                    if (partIndex < fqnParts.length) {
+                        // find the next property from FQN in the index for the defined property in the file / model
+                        rItems.addAll(findPropertyOfType(jsIndex, lastDefinedFQN.toString(), fqnParts[partIndex]));
+                        parent = findPropertyOrParameterInModel(parent, fqnParts[partIndex]);
+                        partIndex++;
+                        for (int i = partIndex; (!rItems.isEmpty()) && i < fqnParts.length; i++ ) {
+                            List<IndexResult> copy = new ArrayList(rItems);
+                            rItems.clear();
+                            // and for the found property find next property from the FQN
+                            for (IndexResult indexResult : copy) {
+                                rItems.addAll(findPropertyOfType(jsIndex, IndexedElement.getFQN(indexResult), fqnParts[i]));
+                            }
+                            if (rItems.isEmpty() && parent != null) {
+                                // require js places parameter assignment only in the model. The assignments are not available in the indes
+                                Collection<? extends TypeUsage> assigns = parent.getAssignments();
+                                if (!assigns.isEmpty()) {
+                                    for (Type type : assigns) {
+                                        String afqn = getFQNFromType(type);
+                                        rItems.addAll(findPropertyOfType(jsIndex, afqn, fqnParts[i]));
+                                    }
                                 }
                             }
-                        }
-                        if (parent != null) {
-                            parent = findPropertyOrParameterInModel(parent, fqnParts[i]);
+                            if (parent != null) {
+                                parent = findPropertyOrParameterInModel(parent, fqnParts[i]);
+                            }
                         }
                     }
                     location = processIndexResult(rItems);
