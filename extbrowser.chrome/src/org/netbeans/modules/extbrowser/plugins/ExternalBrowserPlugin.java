@@ -64,6 +64,7 @@ import org.netbeans.modules.netserver.api.WebSocketServer;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
+import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.ExternalModificationsSupport;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -540,7 +541,7 @@ public final class ExternalBrowserPlugin {
                 }
                 if (browserTab == null) {
                     // Tab not opened from the IDE => using a dummy ExtBrowserImpl
-                    ChromeBrowserImpl impl = new ChromeBrowserImpl(null, true) {
+                    ChromeBrowserImpl impl = new ChromeBrowserImpl(null, false) {
                         @Override
                         public void setURL(URL url) {
                             throw new UnsupportedOperationException();
@@ -550,20 +551,21 @@ public final class ExternalBrowserPlugin {
                         }
                     };
                     browserTab = new BrowserTabDescriptor(tabId, impl);
+                    impl.setBrowserTabDescriptor(browserTab);
+                    impl.initialize(new WebBrowserFeatures());
                     knownBrowserTabs.add(browserTab);
                 }
-                browserTab.registerKeyForFeature(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, key);
-                final Lookup context = browserTab.browserImpl.getLookup();
-                final Lookup projectContext = browserTab.browserImpl.getProjectContext();
-                RemoteScriptExecutor executor = context.lookup(RemoteScriptExecutor.class);
-                if (executor != null) {
-                    executor.activate();
-                }
+                final ChromeBrowserImpl browserImpl = browserTab.browserImpl;
+                final BrowserTabDescriptor tab = browserTab;
                 // Do not block WebSocket thread
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        inspector.inspectPage(new ProxyLookup(context, projectContext));
+                        if (!browserImpl.hasEnhancedMode()) {
+                            browserImpl.setTemporaryEnhancedMode(true);
+                            tab.init();
+                        }
+                        inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
                     }
                 });
             }
@@ -899,6 +901,9 @@ public final class ExternalBrowserPlugin {
             }
             webkitDebugger.reset();
             transport.detach();
+            if (browserImpl.hasTemporaryEnhancedMode()) {
+                browserImpl.setTemporaryEnhancedMode(false);
+            }
         }
 
         /**
