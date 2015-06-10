@@ -5,7 +5,6 @@
 package org.netbeans.modules.cnd.callgraph.impl;
 
 import java.awt.BasicStroke;
-import java.awt.Color;
 import org.netbeans.modules.cnd.callgraph.support.HorizontalHierarchicalLayout;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -226,6 +225,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
             SwingUtilities.invokeLater(run);
         }
     }
+    
     public void addFunctionToScene(final Function element) {
         Runnable run = new Runnable() {
             @Override
