@@ -283,9 +283,16 @@ public final class ServerConnection {
         byte[] bytes = text.getBytes(CHAR_SET);
         String contentLength = CONTENT_LENGTH_STR+bytes.length + EOL_STR + EOL_STR;
         synchronized (outLock) {
+            if (clientOut == null) {
+                throw new IOException("No client connection is opened.");
+            }
             clientOut.write(contentLength.getBytes(CHAR_SET));
             clientOut.write(bytes);
         }
+    }
+    
+    public boolean isConnected() {
+        return currentSocket != null && clientOut != null;
     }
     
     /**

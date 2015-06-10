@@ -368,7 +368,11 @@ public class JSONWriter {
                 SetBreakpoint.ResponseBody sbrb = (SetBreakpoint.ResponseBody) body;
                 obj.put(TYPE, sbrb.getType().toString());
                 obj.put(BREAK_POINT, sbrb.getBreakpoint());
-                storeIf(sbrb.getScriptName(), obj, SCRIPT_NAME);
+                if (V8Breakpoint.Type.scriptId.equals(sbrb.getType())) {
+                    storeIf(sbrb.getScriptName(), obj, SCRIPT_ID);
+                } else {
+                    storeIf(sbrb.getScriptName(), obj, SCRIPT_NAME);
+                }
                 obj.put(LINE, getLongOrNull(sbrb.getLine()));
                 obj.put(COLUMN, getLongOrNull(sbrb.getColumn()));
                 obj.put(BREAK_ACTUAL_LOCATIONS, store(sbrb.getActualLocations()));
