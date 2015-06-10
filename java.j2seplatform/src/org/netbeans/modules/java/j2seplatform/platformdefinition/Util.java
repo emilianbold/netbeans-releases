@@ -98,7 +98,7 @@ public class Util {
                     NBJRTUtil.getImageURI(installDir);
             if (imageURI != null) {
                 try {
-                    final FileObject root = URLMapper.findFileObject(imageURI.toURL());
+                    final FileObject root = getModulesRoot(URLMapper.findFileObject(imageURI.toURL()));
                     for (FileObject module : root.getChildren()) {
                         modules.add(ClassPathSupport.createResource(module.toURL()));
                     }
@@ -330,6 +330,16 @@ public class Util {
                 }
             }
         }
+    }
+
+    @NonNull
+    private static FileObject getModulesRoot(@NonNull final FileObject jrtRoot) {
+        final FileObject modules = jrtRoot.getFileObject("modules");    //NOI18N
+        //jimage v1 - modules are located in the root
+        //jimage v2 - modules are located in "modules" folder
+        return modules == null ?
+            jrtRoot :
+            modules;
     }
 
 }

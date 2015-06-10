@@ -809,9 +809,12 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 final Pair<URL,String> parsed = NBJRTUtil.parseURI(url.toURI());
                 if (parsed != null) {
                     String moduleName = parsed.second();
-                    if (moduleName.endsWith(URL_SEPARATOR)) {
-                        moduleName = moduleName.substring(0, moduleName.length() - URL_SEPARATOR.length());
-                    }
+                    final int end = moduleName.endsWith(URL_SEPARATOR) ?
+                            moduleName.length() - URL_SEPARATOR.length() :
+                            moduleName.length();
+                    int start = end == 0 ? -1 : moduleName.lastIndexOf(URL_SEPARATOR, end - 1);
+                    start = start < 0 ? 0 : start + URL_SEPARATOR.length();
+                    moduleName = moduleName.substring(start, end);
                     iconKind = IconKind.MODULE;
                     return Pair.<String,Icon>of(moduleName, iconKind.getIcon());
                 }
