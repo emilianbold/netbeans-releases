@@ -215,8 +215,9 @@ public class BootCPNodeFactory implements NodeFactory {
     private static Node jarNode(
             final Project p,
             final FileObject root,
-            final boolean includeEnclosingPath) {
+            final boolean includeEnclosingArchivePath) {
         final Node delegate = PackageView.createPackageView(new SourceGroup() {
+            private final boolean isJar = "jar".equals(root.toURL().getProtocol()); //NOI18N
             @Override public FileObject getRootFolder() {
                 return root;
             }
@@ -228,13 +229,14 @@ public class BootCPNodeFactory implements NodeFactory {
                 if (f != null) {
                     return f.getName();
                 } else {
-                    return includeEnclosingPath ?
+                    return includeEnclosingArchivePath ?
                             FileUtil.getFileDisplayName(root) :
                             root.getNameExt();
                 }
             }
             @Override public Icon getIcon(boolean opened) {
-                return ImageUtilities.loadImageIcon("org/netbeans/modules/java/api/common/project/ui/resources/jar.gif", true);
+                return isJar ? ImageUtilities.loadImageIcon("org/netbeans/modules/java/api/common/project/ui/resources/jar.gif", true):
+                        null;
             }
             @Override public boolean contains(FileObject file) {
                 return true;
