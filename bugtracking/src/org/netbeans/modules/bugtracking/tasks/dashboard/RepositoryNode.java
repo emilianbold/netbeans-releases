@@ -179,13 +179,13 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
             }
             DashboardViewer dashboard = DashboardViewer.getInstance();
             if (!filteredQueryNodes.isEmpty()) {
-                List<QueryNode> children = filteredQueryNodes;
-                for (QueryNode queryNode : children) {
+                List<QueryNode> filteredNodes = filteredQueryNodes;
+                for (QueryNode queryNode : filteredNodes) {
                     boolean expand = dashboard.isNodeExpanded(queryNode);
                     queryNode.setExpanded(expand);
                 }
-                Collections.sort(children);
-                return new ArrayList<TreeListNode>(children);
+                Collections.sort(filteredNodes);
+                return new ArrayList<TreeListNode>(filteredNodes);
             } else {
                 List<TreeListNode> children = new ArrayList<TreeListNode>();
                 children.add(new EmptyContentNode(this, NbBundle.getMessage(RepositoryNode.class, "LBL_NoQuery")));
@@ -290,10 +290,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
         synchronized (LOCK) {
             return filteredQueryNodes != null ? filteredQueryNodes.size() : 0;
         }
-    }
-
-    public void setFilteredQueryNodes(List<QueryNode> filteredQueryNodes) {
-        this.filteredQueryNodes = filteredQueryNodes;
     }
 
     public int getFilterHits() {
