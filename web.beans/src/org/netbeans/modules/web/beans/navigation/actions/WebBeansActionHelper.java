@@ -159,16 +159,15 @@ public class WebBeansActionHelper {
     }
     
     public static boolean isEnabled() {
-        if (EditorRegistry.lastFocusedComponent() == null
-                || !EditorRegistry.lastFocusedComponent().isShowing())
+        JTextComponent c = EditorRegistry.lastFocusedComponent();
+        if (c == null || !c.isShowing())
         {
             return false;
         }
         if ( OpenProjects.getDefault().getOpenProjects().length == 0 ){
             return false;
         }
-        final FileObject fileObject = NbEditorUtilities.getFileObject( 
-                EditorRegistry.lastFocusedComponent().getDocument());
+        final FileObject fileObject = NbEditorUtilities.getFileObject(c.getDocument());
         return isEnabled( fileObject );
         /*WebModule webModule = WebModule.getWebModule(fileObject);
         if ( webModule == null ){
