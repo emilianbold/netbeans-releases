@@ -10,7 +10,7 @@ import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
 import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
-import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
+//import com.tasktop.c2c.server.profile.service.ActivityServiceClient;
 import com.tasktop.c2c.server.profile.service.ProfileWebServiceClient;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.service.ScmServiceClient;
@@ -18,6 +18,7 @@ import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import com.tasktop.c2c.server.tasks.service.TaskServiceClient;
 import java.net.PasswordAuthentication;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,7 +37,7 @@ public class ODCSClientImpl implements ODCSClient {
     private final HttpClient httpClient = new HttpClient(WebUtil.getConnectionManager());
     
     private final static Logger LOG = Logger.getLogger(ODCSClient.class.getName());
-    private ActivityServiceClient actvityServiceClient;
+//    private ActivityServiceClient actvityServiceClient;
     private ProfileWebServiceClient profileServiceClient;
     private ScmServiceClient scmServiceClient;
     private TaskServiceClient tasksServiceClient;
@@ -113,7 +114,7 @@ public class ODCSClientImpl implements ODCSClient {
                 return mockDelegate.getRecentActivities(projectId);
             }
             originalContextCL = setupContextClassLoader();
-            return getActivityClient().getRecentActivity(projectId);
+            return Collections.emptyList(); // getActivityClient().getRecentActivity(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
         } catch(RuntimeException e) {
@@ -131,7 +132,7 @@ public class ODCSClientImpl implements ODCSClient {
                 return mockDelegate.getRecentShortActivities(projectId);
             }
             originalContextCL = setupContextClassLoader();
-            return getActivityClient().getShortActivityList(projectId);
+            return Collections.emptyList(); // return getActivityClient().getShortActivityList(projectId);
         } catch (WrappedCheckedException e) {
             throw new ODCSException(e.getCause());
         } catch(RuntimeException e) {
@@ -314,15 +315,15 @@ public class ODCSClientImpl implements ODCSClient {
         }
     }
 
-    private ActivityServiceClient getActivityClient() {
-        if (actvityServiceClient == null) {
-            actvityServiceClient = new ActivityServiceClient();
-            actvityServiceClient.setBaseUrl(url + "api/activity/");
-            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
-            actvityServiceClient.setRestClientDelegate(delegate);
-        }
-        return actvityServiceClient;
-    }
+//    private ActivityServiceClient getActivityClient() {
+//        if (actvityServiceClient == null) {
+//            actvityServiceClient = new ActivityServiceClient();
+//            actvityServiceClient.setBaseUrl(url + "api/activity/");
+//            ApacheHttpRestClientDelegate delegate = new ApacheHttpRestClientDelegate(pa.getUserName(), new String(pa.getPassword()));
+//            actvityServiceClient.setRestClientDelegate(delegate);
+//        }
+//        return actvityServiceClient;
+//    }
     
     private ProfileWebServiceClient getProfileClient() {
         if (profileServiceClient == null) {
