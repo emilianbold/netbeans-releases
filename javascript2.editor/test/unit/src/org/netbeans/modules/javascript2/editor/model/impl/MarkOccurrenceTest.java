@@ -1535,6 +1535,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/jsdoc/parser/issue252873.js", "return !Breeze.isUndefined(variable) && var^iable !== null;", true);
     }
     
+    public void testIssue237914_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue237914.js", "j^ob.a = 3;", true);
+    }
+    
+    public void testIssue237914_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue237914.js", "return jo^b;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
