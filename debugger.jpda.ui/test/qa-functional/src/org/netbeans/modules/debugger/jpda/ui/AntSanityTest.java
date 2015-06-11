@@ -390,6 +390,7 @@ public class AntSanityTest extends JellyTestCase {
         new Action("Debug|Evaluate Expression...", null).perform();
         TopComponentOperator expressionEvaluator = new TopComponentOperator("Evaluate Expression");
         JEditorPaneOperator expressionEditor = new JEditorPaneOperator(expressionEvaluator);
+        new EventTool().waitNoEvent(1000);
         expressionEditor.setText("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)");
         JPanel buttonsPanel = (JPanel) expressionEvaluator.getComponent(2);
         JButton expressionEvaluatorButton = (JButton) buttonsPanel.getComponent(1);
@@ -397,7 +398,7 @@ public class AntSanityTest extends JellyTestCase {
         expressionEvaluatorButton.doClick();
         JTableOperator variablesTable = new JTableOperator(evaluationResultView);
         assertValue(variablesTable, 0, 2, "\"If n is: 50, then n + 1 is: 51\"");
-        assertEquals("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)", variablesTable.getValueAt(0, 0).toString());
+        assertEquals("\"If n is: \" + n + \", then n + 1 is: \" + (n + 1)", variablesTable.getValueAt(0, 0).toString().trim());
     }
     
     /**
