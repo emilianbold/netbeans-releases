@@ -49,12 +49,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,6 +78,10 @@ public final class RemoteUtils {
 
 
     private RemoteUtils() {
+    }
+
+    public static JComboBox.KeySelectionManager createRemoteConfigurationKeySelectionManager() {
+        return new RemoteConfigurationKeySelectionManager();
     }
 
     public static boolean allFilesFetched(boolean remote) {
@@ -341,5 +348,22 @@ public final class RemoteUtils {
         }
 
     }
+
+    private static final class RemoteConfigurationKeySelectionManager implements JComboBox.KeySelectionManager {
+
+        @Override
+        public int selectionForKey(char key, ComboBoxModel model) {
+            char firstChar = ("" + key).toLowerCase().charAt(0); // NOI18N
+            for (int i = 0; i < model.getSize(); ++i) {
+                RemoteConfiguration configuration = (RemoteConfiguration) model.getElementAt(i);
+                if (configuration.getDisplayName().charAt(0) == firstChar) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+
+    }
+
 
 }

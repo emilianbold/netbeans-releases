@@ -121,6 +121,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         populateRemoteConnectionComboBox();
         remoteConnectionComboBox.setRenderer(new RemoteConnectionRenderer());
+        remoteConnectionComboBox.setKeySelectionManager(RemoteUtils.createRemoteConfigurationKeySelectionManager());
         for (UploadFiles uploadFiles : UploadFiles.values()) {
             uploadFilesComboBox.addItem(uploadFiles);
         }
