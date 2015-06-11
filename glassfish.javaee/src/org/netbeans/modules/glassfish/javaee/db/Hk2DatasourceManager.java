@@ -56,11 +56,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.common.parser.TreeParser;
 import org.netbeans.modules.glassfish.eecommon.api.UrlData;
@@ -77,11 +79,14 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.DatasourceManager;
 import org.netbeans.modules.j2ee.sun.dd.api.RootInterface;
 import org.netbeans.modules.javaee.specs.support.api.util.JndiNamespacesDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Attr;
@@ -100,7 +105,9 @@ import org.xml.sax.SAXException;
  * @author Peter Williams, Tomas Kraus
  */
 public class Hk2DatasourceManager implements DatasourceManager {
-    
+
+    private static final Map<J2eeModule, String> NAMESPACES_CACHE = new WeakHashMap<J2eeModule, String>();
+
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
@@ -162,7 +169,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             // XXX This won't read app scoped DS. This does not seem to be a problem.
             File domainXml = new File(domainsDir, domainName + File.separatorChar + DOMAIN_XML_PATH);
             return readDatasources(
-                    domainXml, "/domain/", server.getVersion(), false);
+                    domainXml, "/domain/", null, server.getVersion(), false);
         } else {
             return Collections.EMPTY_SET;
         }
@@ -195,7 +202,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             final J2eeModule module, final GlassFishVersion version) {
         Pair<File, Boolean> result = GlassfishConfiguration.getExistingResourceFile(module, version);
         if (result != null) {
-            return readDatasources(result.first(), "/", version, result.second());
+            return readDatasources(result.first(), "/", module, version, result.second());
         } else {
             return new HashSet<>();
         }
@@ -283,6 +290,8 @@ public class Hk2DatasourceManager implements DatasourceManager {
      * @throws DatasourceAlreadyExistsException if the required data source
      *         already exists in resource file.
      */
+    @NbBundle.Messages("MSG_CreatedNS=The created resource will use the application scope however there is no JNDI namespace defined."
+            + " The proper namespace depends on the deployment packaging. Is this module used as part of the EAR archive?")
     public static Datasource createDataSource(
             final String jndiName, final String url, final String username,
             final String password, final String driver,
@@ -293,7 +302,10 @@ public class Hk2DatasourceManager implements DatasourceManager {
         
         ResourceFileDescription fileDesc = resourceFileForDSCreation(
                 jndiName, url, username, password, driver, module, version, cpFinder);
-        
+
+        // we need to check and possibly ask for jndi namespace
+        fileDesc = checkNamespaces(module, fileDesc, JndiNamespacesDefinition.getNamespace(jndiName), Bundle.MSG_CreatedNS());
+
         String realJndiName = getJndiName(jndiName, fileDesc);
 
         File xmlFile = fileDesc.getFile();
@@ -335,7 +347,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
             // create jdbc resource
             createJdbcResource(xmlFile, realJndiName, poolName);
             
-            ds = new SunDatasource(realJndiName, url, username, password, driver, fileDesc.isIsApplicationScoped());
+            ds = new SunDatasource(realJndiName, url, username, password, driver, fileDesc.isIsApplicationScoped(), null);
         } catch(IOException ex) {
             Logger.getLogger("glassfish-javaee").log(Level.INFO, ex.getLocalizedMessage(), ex);
             throw new ConfigurationException(ex.getLocalizedMessage(), ex);
@@ -360,9 +372,11 @@ public class Hk2DatasourceManager implements DatasourceManager {
      *                     new data source shall be added.
      * @return Data sources found in resource file.
      */
+    @NbBundle.Messages("MSG_ExistingNS=The module uses the application scoped resources however it uses the unprefixed names."
+            + " The proper namespace depends on the deployment packaging. Is this module used as part of the EAR archive?")
     private static Set<Datasource> readDatasources(
             final File xmlFile, final String xPathPrefix,
-            final GlassFishVersion version, boolean applicationScoped) {
+            final J2eeModule module, final GlassFishVersion version, boolean applicationScoped) {
         final Set<Datasource> dataSources = new HashSet<>();
 
         if (xmlFile.canRead()) {
@@ -389,6 +403,7 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
             ResourceFileDescription fileDesc = new ResourceFileDescription(
                     xmlFile, applicationScoped, namespaceFinder.getNamespaces());
+            JndiNameResolver resolver = applicationScoped && module != null ? new UserResolver(module, fileDesc) : null;
             for (JdbcResource jdbc : jdbcResources) {
                 final ConnectionPool pool = connectionPoolMap.get(jdbc.getPoolName());
                 if (pool != null) {
@@ -400,18 +415,16 @@ public class Hk2DatasourceManager implements DatasourceManager {
                         final String username = pool.getProperty("User"); //NOI18N
                         final String password = pool.getProperty("Password"); //NOI18N
                         final String driverClassName = pool.getProperty("driverClass"); //NOI18N
-                        // FIXME for existing unprefixed JNDI names we assume it
-                        // is java:app in most cases (except module inside war) :(
-                        String jndi = getJndiName(jdbc.getJndiName(), fileDesc);
+
                         final SunDatasource dataSource = new SunDatasource(
-                                jndi, url, username, password, driverClassName, applicationScoped);
+                                jdbc.getJndiName(), url, username, password, driverClassName, applicationScoped, resolver);
                         dataSources.add(dataSource);
                         // Add Java EE 7 comp/DefaultDataSource data source
                         // as jdbc/__default clone (since GF 4).
                         if (version != null && version.ordinal()
                                 >= GlassFishVersion.GF_4.ordinal()
                                 && DataSourcesReader.DEFAULT_DATA_SOURCE
-                                .equals(dataSource.getJndiName()) ) {
+                                .equals(jdbc.getJndiName()) ) {
                             dataSources.add(dataSource.copy(
                                     DataSourcesReader.DEFAULT_DATA_SOURCE_EE7));
                         }
@@ -424,6 +437,41 @@ public class Hk2DatasourceManager implements DatasourceManager {
         return dataSources;
     }
 
+    @NbBundle.Messages("LBL_NamespaceDefinition=JNDI Namespace Definition")
+    private static ResourceFileDescription checkNamespaces(J2eeModule module, ResourceFileDescription fileDesc, String namespace, String message) {
+        // we need to check and possibly ask for jndi namespace
+        if (fileDesc.isIsApplicationScoped() && namespace == null) {
+            Set<String> ns = fileDesc.getNamespaces();
+            if (!ns.contains(JndiNamespacesDefinition.APPLICATION_NAMESPACE)
+                    && !ns.contains(JndiNamespacesDefinition.MODULE_NAMESPACE)) {
+                synchronized (Hk2DatasourceManager.class) {
+                    String cached = NAMESPACES_CACHE.get(module);
+                    if (cached != null) {
+                        return new ResourceFileDescription(fileDesc.getFile(), fileDesc.isIsApplicationScoped(), Collections.singleton(cached));
+                    }
+                }
+                NotifyDescriptor descriptor = new NotifyDescriptor(
+                        message, Bundle.LBL_NamespaceDefinition(),
+                        NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[]{NotifyDescriptor.YES_OPTION,
+                            NotifyDescriptor.NO_OPTION}, NotifyDescriptor.NO_OPTION);
+
+                Object result = DialogDisplayer.getDefault().notify(descriptor);
+                Set<String> customNamespace;
+                if (result == NotifyDescriptor.YES_OPTION) {
+                    customNamespace = Collections.singleton(JndiNamespacesDefinition.MODULE_NAMESPACE);
+                } else {
+                    customNamespace = Collections.singleton(JndiNamespacesDefinition.APPLICATION_NAMESPACE);
+                }
+                synchronized (Hk2DatasourceManager.class) {
+                    NAMESPACES_CACHE.put(module, customNamespace.iterator().next());
+                }
+                return new ResourceFileDescription(fileDesc.getFile(), fileDesc.isIsApplicationScoped(), customNamespace);
+            }
+        }
+        return fileDesc;
+    }
+
     private static String getJndiName(String jndiName, ResourceFileDescription fileDesc) {
         if (!fileDesc.isIsApplicationScoped()) {
             return jndiName;
@@ -432,15 +480,16 @@ public class Hk2DatasourceManager implements DatasourceManager {
         String realJndiName = jndiName;
         Set<String> ns = fileDesc.getNamespaces();
         if (ns.isEmpty()) {
-            // XXX show dialog
-            realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
-        } else if (ns.size() == 1) {
-            realJndiName = JndiNamespacesDefinition.normalize(realJndiName, ns.iterator().next());
+            // should not happen
+            realJndiName = JndiNamespacesDefinition.normalize(
+                    realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
         } else {
             if (ns.contains(JndiNamespacesDefinition.MODULE_NAMESPACE)) {
-                realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.MODULE_NAMESPACE);
+                realJndiName = JndiNamespacesDefinition.normalize(
+                        realJndiName, JndiNamespacesDefinition.MODULE_NAMESPACE);
             } else {
-                realJndiName = JndiNamespacesDefinition.normalize(realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
+                realJndiName = JndiNamespacesDefinition.normalize(
+                        realJndiName, JndiNamespacesDefinition.APPLICATION_NAMESPACE);
             }
         }
         return realJndiName;
@@ -931,6 +980,27 @@ public class Hk2DatasourceManager implements DatasourceManager {
 
         public Set<String> getNamespaces() {
             return namespaces;
+        }
+    }
+
+    private static class UserResolver implements JndiNameResolver {
+
+        private final J2eeModule module;
+
+        private ResourceFileDescription fileDesc;
+
+        public UserResolver(J2eeModule module, ResourceFileDescription fileDesc) {
+            this.module = module;
+            this.fileDesc = fileDesc;
+        }
+
+        @Override
+        public synchronized String resolveJndiName(String jndiName) {
+            fileDesc = checkNamespaces(module, fileDesc,
+                    JndiNamespacesDefinition.getNamespace(jndiName),
+                    Bundle.MSG_ExistingNS());
+            String jndi = getJndiName(jndiName, fileDesc);
+            return jndi;
         }
     }
 
