@@ -1058,8 +1058,9 @@ public class ProjectTab extends TopComponent
                 if( selectedNodes.length > 1 ) {
                     for ( int i = 1; i < selectedNodes.length; i ++) {
                         selectedNode = selectedNodes[i];
-                        while ( !selectedNode.getParentNode().equals(rootNode) ) {
-                            selectedNode = selectedNode.getParentNode();
+                        Node parentNode = selectedNode.getParentNode();
+                        while ( !parentNode.equals(rootNode) ) {
+                            selectedNode = parentNode;
                         }
                         if ( !projectNode.equals(selectedNode) ) {
                             projectNode = null;
