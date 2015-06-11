@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import com.tasktop.c2c.server.profile.domain.activity.BuildActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails.BuildResult;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -51,13 +48,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
+import org.netbeans.modules.bugtracking.commons.TextUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
@@ -70,16 +71,22 @@ import org.openide.util.NbBundle;
 
 public class BuildActivityDisplayer extends ActivityDisplayer {
 
-    private final BuildActivity activity;
-    private final ProjectHandle<ODCSProject> projectHandle;
+    private static final String PROP_RESULT = "result"; // NOI18N
+    private static final String PROP_DURATION = "duration"; // NOI18N
+    private static final String PROP_NUMBER = "number"; // NOI18N
+    private static final String PROP_JOB_NAME = "jobName"; // NOI18N
+
+    final Activity activity;
+    final ProjectHandle<ODCSProject> projectHandle;
+
     private Action openJobIDEAction;
     private Action openBuildIDEAction;
     private LinkLabel linkBuildNumber;
     private LinkLabel linkJobName;
     private ProjectPropertyListener projectPropertyListener;
 
-    public BuildActivityDisplayer(BuildActivity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
-        super(activity.getActivityDate(), maxWidth);
+    public BuildActivityDisplayer(Activity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
+        super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
         this.projectHandle = projectHandle;
         projectPropertyListener = new ProjectPropertyListener();
@@ -87,59 +94,33 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public JComponent getTitleComponent() {
-        BuildDetails buildDetails = activity.getBuildDetails();
-        JPanel panel = new JPanel(new GridBagLayout());
-
-        linkBuildNumber = new LinkLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Build") + " " + buildDetails.getNumber()) { //NOI18N
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Action openAction = getOpenBuildIDEAction(false);
-                if (openAction == null || !openAction.isEnabled()) {
-                    openAction = getOpenBrowserAction(getBuildUrl());
-                }
-                openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
-            }
-        };
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(0, 3, 0, 0);
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-        panel.add(linkBuildNumber, gbc);
-
-        panel.add(new JLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Of")), gbc); //NOI18N
-
-        linkJobName = new LinkLabel(activity.getJobSummary().getName()) {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Action openAction = getOpenJobIDEAction(false);
-                if (openAction == null || !openAction.isEnabled()) {
-                    openAction = getOpenBrowserAction(getJobUrl());
-                }
-                openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
-            }
-        };
+        String buildNumber = activity.getProperty(PROP_NUMBER);
+        String jobName = activity.getProperty(PROP_JOB_NAME);
+        JComponent comp = createMultipartTextComponent("FMT_Build", createBuildLink(buildNumber), createJobLink(jobName)); // NOI18N
         setPopupAction();
-        panel.add(linkJobName, gbc);
-        panel.add(new JLabel(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Resulted", getResultText())), gbc); //NOI18N
-
-        return panel;
+        return comp;
     }
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        BuildDetails buildDetails = activity.getBuildDetails();
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.insets = new Insets(0, 0, 0, 0);
         gbc.gridheight = GridBagConstraints.REMAINDER;
 
-        JLabel lblCause = new JLabel(buildDetails.getCause() + "."); //NOI18N
-        panel.add(lblCause, gbc);
+        String result = activity.getProperty(PROP_RESULT);
+        JLabel resultLabel = new JLabel();
+        try {
+            resultLabel.setText(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Build_"+result)); // NOI18N
+        } catch (MissingResourceException ex) {
+            resultLabel.setText(NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_BuildUnknown")); // NOI18N
+        }
+        panel.add(resultLabel, gbc);
 
-        JLabel lblTime = new JLabel(getBuildDurationText(buildDetails.getDuration()));
-        gbc.insets = new Insets(0, 5, 0, 0);
-        panel.add(lblTime, gbc);
+        JLabel durationLabel = new JLabel(getBuildDurationText());
+        gbc.insets = new Insets(0, 10, 0, 0);
+        panel.add(durationLabel, gbc);
 
         gbc = new GridBagConstraints();
         gbc.weightx = 1.0;
@@ -155,7 +136,7 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public Icon getActivityIcon() {
-        String iconSuffix = getResultText();
+        String iconSuffix = activity.getProperty(PROP_RESULT).toLowerCase();
         Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_build_" + iconSuffix + ".png", true); //NOI18N
         if (icon == null) {
             icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_build_unknown.png", true); //NOI18N
@@ -163,7 +144,50 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         return icon;
     }
 
-    private String getBuildDurationText(Long duration) {
+    LinkLabel createBuildLink(String buildNumber) {
+        if (linkBuildNumber == null) {
+            linkBuildNumber = new LinkLabel(buildNumber) {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    Action openAction = getOpenBuildIDEAction(false);
+                    if (openAction == null || !openAction.isEnabled()) {
+                        openAction = getOpenBrowserAction(getBuildUrl());
+                    }
+                    openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                }
+            };
+        }
+        return linkBuildNumber;
+    }
+
+    LinkLabel createJobLink(String jobName) {
+        if (linkJobName == null) {
+            int i = jobName != null ? jobName.indexOf('.') : -1;
+            if (i > 0) {
+                jobName = jobName.substring(i+1);
+            }
+            linkJobName = new LinkLabel(jobName) {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    Action openAction = getOpenJobIDEAction(false);
+                    if (openAction == null || !openAction.isEnabled()) {
+                        openAction = getOpenBrowserAction(getJobUrl());
+                    }
+                    openAction.actionPerformed(new ActionEvent(BuildActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                }
+            };
+        }
+        return linkJobName;
+    }
+
+    private String getBuildDurationText() {
+        String durationStr = activity.getProperty(PROP_DURATION);
+        long duration;
+        try {
+            duration = Long.parseLong(durationStr);
+        } catch (Exception ex) {
+            return NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_DurationUnknown"); // NOI18N
+        }
         double dur = (double) duration / (double) 1E3;
         String units;
         if (dur <= 120.0) {
@@ -172,7 +196,7 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
             dur = dur / 60.0;
             units = NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_Minute"); //NOI18N
         }
-        return NbBundle.getMessage(BuildActivityDisplayer.class, "LBL_BuildDuration", (int) dur, units); //NOI18N
+        return NbBundle.getMessage(BuildActivityDisplayer.class, "FMT_BuildDuration", (int) dur, units); //NOI18N
     }
 
     @Override
@@ -180,21 +204,12 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
         return "";
     }
 
-    private String getResultText() {
-        BuildResult result = activity.getBuildDetails().getResult();
-        String resultName = "unknown";
-        if (result != null) {
-            resultName = result.name().toLowerCase();
-        }
-        return resultName;
-    }
-
     private Action getOpenJobIDEAction(boolean force) {
         if (openJobIDEAction == null || force) {
             BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
             final Action action;
             if (buildAccessor != null) {
-                JobHandle job = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName());
+                JobHandle job = buildAccessor.getJob(projectHandle, activity.getProperty(PROP_JOB_NAME));
                 action = job != null ? job.getDefaultAction() : null;
             } else {
                 action = null;
@@ -221,9 +236,9 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
             Action a = null;
             BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
             if (buildAccessor != null) {
-                JobHandle job = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName());
+                JobHandle job = buildAccessor.getJob(projectHandle, activity.getProperty(PROP_JOB_NAME));
                 if (job != null) {
-                    String buildId = Integer.toString(activity.getBuildDetails().getNumber());
+                    String buildId = activity.getProperty(PROP_NUMBER);
                     BuildHandle build = job.getBuild(buildId);
                     if (build != null) {
                         a = build.getDefaultAction();
@@ -249,11 +264,14 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
     }
 
     private String getJobUrl() {
-        return activity.getJobSummary().getUrl();
+        String jobName = TextUtils.encodeURL(activity.getProperty(PROP_JOB_NAME));
+        return projectHandle.getTeamProject().getWebUrl() + "/build/job/" + jobName; // NOI18N
     }
 
     private String getBuildUrl() {
-        return activity.getBuildDetails().getUrl();
+        String jobName = TextUtils.encodeURL(activity.getProperty(PROP_JOB_NAME));
+        String buildNumber = activity.getProperty(PROP_NUMBER);
+        return projectHandle.getTeamProject().getWebUrl() + "/build/job/" + jobName + "/build/" + buildNumber; // NOI18N
     }
 
     private void setPopupAction() {

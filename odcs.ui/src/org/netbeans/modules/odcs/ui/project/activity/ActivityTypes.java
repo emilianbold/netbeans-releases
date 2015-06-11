@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,66 +37,19 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.odcs.ui.project.activity;
 
-package org.netbeans.modules.odcs.ui;
-
-import com.tasktop.c2c.server.tasks.domain.TaskActivity;
-import com.tasktop.c2c.server.wiki.domain.WikiActivity;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.odcs.ui.utils.Utils;
-
-/**
- *
- * @author tomas
- */
-public class ODCSUtilTest extends NbTestCase {
-
-    public ODCSUtilTest(String arg0) {
-        super(arg0);
-    }
+public interface ActivityTypes {
     
-    public static Test suite() {
-        TestSuite suite = new NbTestSuite();
-        for(TaskActivity.Type type : TaskActivity.Type.values()) {
-            suite.addTest(new TaskActivityNameCoveredTestCase(type));
-        }
-        for(WikiActivity.Type type : WikiActivity.Type.values()) {
-            suite.addTest(new WikiActivityNameCoveredTestCase(type));
-        }
-        return suite;
-    }
-    
-    public static class TaskActivityNameCoveredTestCase extends NbTestCase {
-        private final TaskActivity.Type type;
+    public static final String SCM_COMMIT = "SCM_COMMIT"; // NOI18N
+    public static final String SCM_REPO = "SCM_REPO"; // NOI18N
+    public static final String REVIEW = "REVIEW"; // NOI18N
+    public static final String TASK = "TASK"; // NOI18N
+    public static final String WIKI = "WIKI"; // NOI18N
+    public static final String BUILD = "BUILD"; // NOI18N
+    public static final String DEPLOYMENT = "DEPLOYMENT"; // NOI18N
+    public static final String RSS = "RSS"; // NOI18N
 
-        public TaskActivityNameCoveredTestCase(TaskActivity.Type type) {
-            super("test" + type.name());
-            this.type = type;
-        }
-
-        @Override
-        protected void runTest() throws Throwable {
-            assertNotNull(Utils.getActivityName(type));
-        }
-    }
-    
-    public static class WikiActivityNameCoveredTestCase extends NbTestCase {
-        private final WikiActivity.Type type;
-
-        public WikiActivityNameCoveredTestCase(WikiActivity.Type type) {
-            super("test" + type.name());
-            this.type = type;
-        }
-
-        @Override
-        protected void runTest() throws Throwable {
-            assertNotNull(Utils.getActivityName(type));
-        }
-    }
-    
 }

@@ -41,85 +41,159 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import com.tasktop.c2c.server.profile.domain.activity.ScmActivity;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
+import oracle.clouddev.server.profile.activity.client.api.Author;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.SourceHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class ScmActivityDisplayer extends ActivityDisplayer {
+public final class ScmActivityDisplayer extends ActivityDisplayer implements ActivityTypes {
 
-    private ScmActivity activity;
+    private final Activity activity;
     private final String scmUrl;
     private final ProjectHandle<ODCSProject> projectHandle;
     private Action openAction;
 
-    public ScmActivityDisplayer(ScmActivity activity, ProjectHandle<ODCSProject> projectHandle, String scmUrl, int maxWidth) {
-        super(activity.getActivityDate(), maxWidth);
+    private static final String PROP_SHA = "sha"; // commit ID // NOI18N
+    private static final String PROP_COMMIT_REPOSITORY = "repository"; // NOI18N
+    private static final String PROP_COMMENT = "comment"; // NOI18N
+    private static final String PROP_USERNAME = "commitLogFullName"; // NOI18N
+
+    private static final String PROP_REPO_NAME = "repoName"; // NOI18N
+    private static final String PROP_REPO_DESC = "repoDescription"; // NOI18N
+    private static final String PROP_REPO_OPERATION_TYPE = "type"; // NOI18N
+    private static final String REPO_CREATED = "CREATED"; // NOI18N
+    private static final String REPO_DELETED = "DELETED"; // NOI18N
+
+    public ScmActivityDisplayer(Activity activity, ProjectHandle<ODCSProject> projectHandle, String scmUrl, int maxWidth) {
+        super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
         this.projectHandle = projectHandle;
         this.scmUrl = scmUrl;
     }
 
+    private boolean isRepoActivity() {
+        return activity.getType().equals(SCM_REPO);
+    }
+
     @Override
     public JComponent getTitleComponent() {
         JComponent titlePanel = super.getTitleComponent();
+        if (isRepoActivity()) {
+            return titlePanel;
+        }
+        // This is a SCM commit activity
+        String repository = activity.getProperty(PROP_COMMIT_REPOSITORY);
+        Component[] components;
+        if (repository != null) {
+            LinkLabel linkCommit = new LinkLabel(getMinimizedCommitId()) {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    Action action = getOpenIDEAction();
+                    if (action == null || !action.isEnabled()) {
+                        action = getOpenBrowserAction(getCommitUrl());
+                    }
+                    action.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                }
+            };
+            linkCommit.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getCommitUrl()));
+
+            components = createMultipartTextComponents("FMT_Committed", linkCommit, repository); // NOI18N
+        } else { // the commit activity may come with null repository (perhaps when the repository is later deleted)
+            components = new Component[] { new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "FMT_CommittedNoRepo", getMinimizedCommitId())) }; // NOI18N
+        }
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.anchor = GridBagConstraints.LINE_START;
         gbc.insets = new Insets(0, 5, 0, 0);
         gbc.gridheight = GridBagConstraints.REMAINDER;
-        titlePanel.add(new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_Committed")), gbc); //NOI18N
-        LinkLabel linkCommit = new LinkLabel(activity.getCommit().getMinimizedCommitId()) {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Action action = getOpenIDEAction();
-                if (action == null || !action.isEnabled()) {
-                    action = getOpenBrowserAction(getCommitUrl());
-                }
-                action.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
-            }
-        };
-        linkCommit.setPopupActions(getOpenIDEAction(), getOpenBrowserAction(getCommitUrl()));
-        titlePanel.add(linkCommit, gbc);
-        JLabel lblRepository = new JLabel(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_Repository", activity.getCommit().getRepository()));
-        titlePanel.add(lblRepository, gbc);
+        for (Component comp : components) {
+            titlePanel.add(comp, gbc);
+        }
         return titlePanel;
     }
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        JLabel lblCause = new JLabel("<html>" + activity.getCommit().getComment() + "</html>"); //NOI18N
-        return lblCause;
+        if (isRepoActivity()) {
+            String type = activity.getProperty(PROP_REPO_OPERATION_TYPE);
+            final String repoName = activity.getProperty(PROP_REPO_NAME);
+            if (REPO_DELETED.equals(type)) {
+                return createMultipartTextComponent("FMT_RepositoryDeleted", repoName); // NOI18N
+            } else {
+                LinkLabel linkRepo = new LinkLabel(repoName) {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        Action action = getOpenBrowserAction(getRepositoryUrl());
+                        action.actionPerformed(new ActionEvent(ScmActivityDisplayer.this, ActionEvent.ACTION_PERFORMED, null));
+                    }
+                };
+                Action cloneAction = getCloneSourcesAction();
+                if (cloneAction != null) {
+                    linkRepo.setPopupActions(getOpenBrowserAction(getRepositoryUrl()), cloneAction);
+                }
+                if (REPO_CREATED.equals(type)) {
+                    return createMultipartTextComponent("FMT_RepositoryCreated", linkRepo); // NOI18N
+                } else {
+                    return createMultipartTextComponent("FMT_RepositoryModified", linkRepo); // NOI18N
+                }
+            }
+        } else { // SCM commit
+            return new JLabel("<html>" + activity.getProperty(PROP_COMMENT) + "</html>"); // NOI18N
+        }
     }
 
     @Override
     public JComponent getDetailsComponent() {
+        if (isRepoActivity()) {
+            String description = activity.getProperty(PROP_REPO_DESC);
+            if (description != null && description.length() > 0) {
+                return new JLabel("<html>" + description + "</html>"); // NOI18N
+            }
+        }
         return null;
     }
 
     @Override
     String getUserName() {
-        return activity.getCommit().getAuthor().toFullName();
+        if (isRepoActivity()) {
+            Author author = activity.getAuthor();
+            return author != null ? author.getFullname() : "SYSTEM"; // NOI18N
+        } else {
+            return activity.getProperty(PROP_USERNAME);
+        }
     }
 
     @Override
     public Icon getActivityIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_commit.png", true); //NOI18N
+        return ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_commit.png", true); // NOI18N
+        // TODO need a different icon for repository activities
+    }
+
+    private String getMinimizedCommitId() {
+        String commitId = activity.getProperty(PROP_SHA);
+        if (commitId != null && commitId.length() > 7) {
+            return commitId.substring(0, 7);
+        }
+        return commitId;
     }
 
     private String getCommitUrl() {
@@ -127,13 +201,22 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         if (!url.endsWith("/")) { //NOI18N
             url += "/"; //NOI18N
         }
-        url += activity.getCommit().getRepository() + "/commit/" + activity.getCommit().getCommitId(); //NOI18N
+        url += activity.getProperty(PROP_COMMIT_REPOSITORY) + "/commit/" + activity.getProperty(PROP_SHA); // NOI18N
+        return url;
+    }
+
+    private String getRepositoryUrl() {
+        String url = Utils.getWebUrl(scmUrl);
+        if (!url.endsWith("/")) { //NOI18N
+            url += "/"; //NOI18N
+        }
+        url += activity.getProperty(PROP_REPO_NAME) + "/tree?revision=master"; // NOI18N
         return url;
     }
 
     private Action getOpenIDEAction() {
         if (openAction == null) {
-            openAction = new OpenAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE"));
+            openAction = new OpenAction(NbBundle.getMessage(ScmActivityDisplayer.class, "LBL_OpenIDE")); // NOI18N
         }
         return openAction;
     }
@@ -154,8 +237,8 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
                     @Override
                     public void run() {
                         Action action = accessor.getOpenHistoryAction(projectHandle,
-                                                                      activity.getCommit().getRepository(),
-                                                                      activity.getCommit().getCommitId());
+                                                                      activity.getProperty(PROP_COMMIT_REPOSITORY),
+                                                                      activity.getProperty(PROP_SHA));
                         if (action == null) {
                             action = getOpenBrowserAction(getCommitUrl());
                         }
@@ -175,5 +258,17 @@ public class ScmActivityDisplayer extends ActivityDisplayer {
         public boolean isEnabled() {
             return accessor != null;
         }
+    }
+
+    private Action getCloneSourcesAction() {
+        String repoName = activity.getProperty(PROP_REPO_NAME);
+        VCSAccessor accessor = org.netbeans.modules.odcs.ui.spi.VCSAccessor.getDefault();
+        List<SourceHandle> sources = accessor.getSources(projectHandle);
+        for (SourceHandle sh : sources) {
+            if (sh.getDisplayName().equals(repoName)) {
+                return accessor.getOpenSourcesAction(sh);
+            }
+        }
+        return null;
     }
 }

@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.odcs.ui.utils;
 
-import com.tasktop.c2c.server.tasks.domain.TaskActivity;
-import com.tasktop.c2c.server.wiki.domain.WikiActivity;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.event.ActionEvent;
@@ -187,44 +185,6 @@ public class Utils {
         return RP;
     }
 
-    @NbBundle.Messages({"LBL_CreatedTask=Created",
-                        "LBL_Commented=Commented on",
-                        "LBL_LoggedTime=Logged time on",
-                        "LBL_Attached=Attached to",
-                        "LBL_UpdatedTask=Updated"})
-    public static String getActivityName(TaskActivity.Type taskActivityType) {
-        switch(taskActivityType) {
-            case ATTACHED:
-                return Bundle.LBL_Attached();
-            case COMMENTED:
-                return Bundle.LBL_Commented();
-            case CREATED:
-                return Bundle.LBL_CreatedTask();
-            case LOGGED_TIME:
-                return Bundle.LBL_LoggedTime();
-            case UPDATED:
-                return Bundle.LBL_UpdatedTask();
-            default:
-                throw new IllegalStateException("unexpected TaskActivity.Type value [" + taskActivityType + "]"); // NOI18N
-        }
-    }
-    
-    @NbBundle.Messages({"LBL_CreatedPage=Created Page",
-                        "LBL_DeletedPage=Deleted Page",
-                        "LBL_UpdatedPage=Updated Page"})
-    public static String getActivityName(WikiActivity.Type wikiActivityType) {
-        switch(wikiActivityType) {
-            case CREATED:
-                return Bundle.LBL_CreatedPage();
-            case DELETED:
-                return Bundle.LBL_DeletedPage();
-            case UPDATED:
-                return Bundle.LBL_UpdatedPage();
-            default:
-                throw new IllegalStateException("unexpected WikiActivity.Type value [" + wikiActivityType + "]"); // NOI18N
-        }
-    }
-    
     @Messages({
         "MSG_Error=Following error occurred:",
         "CTL_CommandReport_OK=OK",
@@ -250,7 +210,8 @@ public class Utils {
         private static final String SHOW_WIKI = "odcs.ui.show_wiki";
         private static final String SHOW_RSS = "odcs.ui.show_rss";
         private static final String SHOW_BUILDS = "odcs.ui.show_builds";
-        private static final String SHOW_BUILDS_UNWATCHED = "odcs.ui.show_builds_unwatched";
+        private static final String SHOW_REVIEWS = "odcs.ui.show_reviews";
+        private static final String SHOW_DEPLOYMENTS = "odcs.ui.show_deployments";
 
         public static boolean isShowTasks() {
             return getPreferences().getBoolean(SHOW_TASKS, true);
@@ -292,12 +253,20 @@ public class Utils {
             getPreferences().putBoolean(SHOW_BUILDS, showBuilds);
         }
 
-        public static boolean isShowBuildsUnwatched() {
-            return getPreferences().getBoolean(SHOW_BUILDS_UNWATCHED, true);
+        public static boolean isShowReviews() {
+            return getPreferences().getBoolean(SHOW_REVIEWS, true);
         }
 
-        public static void setShowBuildsUnwatched(boolean showBuilds) {
-            getPreferences().putBoolean(SHOW_BUILDS_UNWATCHED, showBuilds);
+        public static void setShowReviews(boolean showBuilds) {
+            getPreferences().putBoolean(SHOW_REVIEWS, showBuilds);
+        }
+
+        public static boolean isShowDeployments() {
+            return getPreferences().getBoolean(SHOW_DEPLOYMENTS, true);
+        }
+
+        public static void setShowDeployments(boolean showBuilds) {
+            getPreferences().putBoolean(SHOW_DEPLOYMENTS, showBuilds);
         }
 
         private static Preferences getPreferences() {
