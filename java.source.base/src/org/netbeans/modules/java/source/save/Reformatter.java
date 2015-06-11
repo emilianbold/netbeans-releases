@@ -693,7 +693,7 @@ public class Reformatter implements ReformatTask {
                         accept(INTERFACE);
                     space();
                     if (!ERROR.contentEquals(node.getSimpleName()))
-                        accept(IDENTIFIER);
+                        accept(IDENTIFIER, UNDERSCORE);
                     List<? extends TypeParameterTree> tparams = node.getTypeParameters();
                     if (tparams != null && !tparams.isEmpty()) {
                         if (LT == accept(LT))
@@ -952,7 +952,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (isEnumerator(node)) {
                     continuationIndent = true;
-                    accept(IDENTIFIER);
+                    accept(IDENTIFIER, UNDERSCORE);
                     ExpressionTree init = node.getInitializer();
                     if (init != null && init.getKind() == Tree.Kind.NEW_CLASS) {
                         NewClassTree nct = (NewClassTree)init;
@@ -997,7 +997,7 @@ public class Reformatter implements ReformatTask {
                             spaces(1, fieldGroup);
                         }
                         if (!ERROR.contentEquals(node.getName()))
-                            accept(IDENTIFIER);
+                            accept(IDENTIFIER, UNDERSCORE);
                     }
                     ExpressionTree init = node.getInitializer();
                     if (init != null) {
@@ -1084,7 +1084,7 @@ public class Reformatter implements ReformatTask {
                     spaces(1, true);
                 }
                 if (!ERROR.contentEquals(node.getName()))
-                    accept(IDENTIFIER);
+                    accept(IDENTIFIER, UNDERSCORE);
                 continuationIndent = true;
                 spaces(cs.spaceBeforeMethodDeclParen() ? 1 : 0);
                 accept(LPAREN);
@@ -1272,7 +1272,7 @@ public class Reformatter implements ReformatTask {
                             lastBlankLinesTokenIndex = -1;
                             lastBlankLinesDiff = null;
                         } else {
-                            accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+                            accept(IDENTIFIER, UNDERSCORE, STAR, THIS, SUPER, CLASS);
                         }
                         return true;
                     case ARRAY_TYPE:
@@ -1315,7 +1315,7 @@ public class Reformatter implements ReformatTask {
                 space();
             }
             if (!ERROR.contentEquals(node.getName()))
-                accept(IDENTIFIER);
+                accept(IDENTIFIER, UNDERSCORE);
             List<? extends Tree> bounds = node.getBounds();
             if (bounds != null && !bounds.isEmpty()) {
                 space();
@@ -1658,7 +1658,7 @@ public class Reformatter implements ReformatTask {
                 lastBlankLinesDiff = null;
             } else {
                 accept(DOT);
-                accept(IDENTIFIER, STAR, THIS, SUPER, CLASS);
+                accept(IDENTIFIER, UNDERSCORE, STAR, THIS, SUPER, CLASS);
             }
             return true;
         }
@@ -1726,7 +1726,7 @@ public class Reformatter implements ReformatTask {
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
             } else {
-                accept(IDENTIFIER, NEW);
+                accept(IDENTIFIER, UNDERSCORE, NEW);
             }
             return true;
         }
@@ -1734,7 +1734,7 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitLambdaExpression(LambdaExpressionTree node, Void p) {
             List<? extends VariableTree> params = node.getParameters();
-            JavaTokenId accepted = params != null && params.size() == 1 ? accept(LPAREN, IDENTIFIER) : accept(LPAREN);
+            JavaTokenId accepted = params != null && params.size() == 1 ? accept(LPAREN, IDENTIFIER, UNDERSCORE) : accept(LPAREN);
             if (accepted == LPAREN) {
                 boolean old = continuationIndent;
                 try {
@@ -2410,7 +2410,7 @@ public class Reformatter implements ReformatTask {
             Name label = node.getLabel();
             if (label != null) {
                 space();
-                accept(IDENTIFIER);
+                accept(IDENTIFIER, UNDERSCORE);
             }
             accept(SEMICOLON);
             return true;
@@ -2422,7 +2422,7 @@ public class Reformatter implements ReformatTask {
             Name label = node.getLabel();
             if (label != null) {
                 space();
-                accept(IDENTIFIER);
+                accept(IDENTIFIER, UNDERSCORE);
             }
             accept(SEMICOLON);
             return true;
@@ -2521,16 +2521,16 @@ public class Reformatter implements ReformatTask {
             int index = tokens.index();
             int c = col;
             Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-            JavaTokenId id = accept(LBRACKET, ELLIPSIS, IDENTIFIER);
+            JavaTokenId id = accept(LBRACKET, ELLIPSIS, IDENTIFIER, UNDERSCORE);
             if (id == ELLIPSIS)
                 return ret;
-            if (id != IDENTIFIER) {
+            if (id != IDENTIFIER && id != UNDERSCORE) {
                 accept(RBRACKET);
                 return ret;
             }
             rollback(index, c, d);
             spaces(1, fieldGroup);
-            accept(IDENTIFIER);
+            accept(IDENTIFIER, UNDERSCORE);
             accept(LBRACKET);
             accept(RBRACKET);
             return false;
@@ -2670,7 +2670,7 @@ public class Reformatter implements ReformatTask {
 
         @Override
         public Boolean visitIdentifier(IdentifierTree node, Void p) {
-            accept(IDENTIFIER, THIS, SUPER);
+            accept(IDENTIFIER, UNDERSCORE, THIS, SUPER);
             return true;
         }
 
@@ -2791,7 +2791,7 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitLabeledStatement(LabeledStatementTree node, Void p) {
             if (!ERROR.contentEquals(node.getLabel()))
-                accept(IDENTIFIER);            
+                accept(IDENTIFIER, UNDERSCORE);            
             accept(COLON);
             int old = indent;
             if (!cs.absoluteLabelIndent()) {
@@ -4000,7 +4000,7 @@ public class Reformatter implements ReformatTask {
                     }
                 }
             }
-            accept(IDENTIFIER, THIS, SUPER);
+            accept(IDENTIFIER, UNDERSCORE, THIS, SUPER);
             spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);
             accept(LPAREN);
             boolean old = continuationIndent;

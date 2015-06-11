@@ -118,6 +118,8 @@ public enum JavaTokenId implements TokenId {
     THROWS("throws", "keyword"),
     TRANSIENT("transient", "keyword"),
     TRY("try", "keyword-directive"),
+    /**@since 1.30*/
+    UNDERSCORE("_", "keyword"),
     VOID("void", "keyword"),
     VOLATILE("volatile", "keyword"),
     WHILE("while", "keyword-directive"),
