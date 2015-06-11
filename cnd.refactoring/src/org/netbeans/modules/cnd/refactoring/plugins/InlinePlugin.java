@@ -171,7 +171,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
         return false;
     }
     
-    private int getMacroParametersEndOffset(CsmFile file, CsmMacro macro, int pos) {
+    public static int getMacroParametersEndOffset(CsmFile file, CsmMacro macro, int pos) {
         if (macro.getParameters() != null && (!macro.getParameters().isEmpty())) {
             int offset = 0;
             int bracketCount = 0;
