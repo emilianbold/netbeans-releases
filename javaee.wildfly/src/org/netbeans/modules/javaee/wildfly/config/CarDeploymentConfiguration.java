@@ -86,12 +86,12 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     private JbossClient jbossClient;
 
     public CarDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null);
+        this(j2eeModule, null, true);
     }
 
     /** Creates a new instance of CarDeploymentConfiguration */
-    public CarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
-        super(j2eeModule, version);
+    public CarDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version, boolean isWildFly) {
+        super(j2eeModule, version, isWildFly);
         jbossClientFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss-client.xml"); // NOI18N
         getJbossClient();
         if (deploymentDescriptorDO == null) {

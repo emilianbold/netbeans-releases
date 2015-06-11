@@ -562,8 +562,9 @@ public final class ExternalBrowserPlugin {
                     public void run() {
                         if (!browserImpl.hasEnhancedMode()) {
                             browserImpl.setTemporaryEnhancedMode(true);
-                            tab.init();
                         }
+                        tab.reEnableReInitialization();
+                        tab.init();
                         inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
                     }
                 });
