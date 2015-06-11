@@ -102,11 +102,8 @@ public final class ODCSServer {
     private final Map<String, List<ODCSProject>> watchedProjectsCache = new WeakHashMap<String, List<ODCSProject>>();
 
     private ODCSServer(String displayName, String url) throws MalformedURLException {
-        while (url.endsWith("/")) { //NOI18N
-            url = url.substring(0, url.length() - 1);
-        }
         this.displayName = displayName;
-        this.url = new URL(url);
+        setUrl(url);
     }
 
     static ODCSServer createInstance(String displayName, String url) throws MalformedURLException {
@@ -114,7 +111,7 @@ public final class ODCSServer {
     }
 
     public void setUrl(String url) throws MalformedURLException {
-        this.url = new URL(url);
+        this.url = new URL(patchUrl(url));
     }
 
     public void setDisplayName(String name) {
@@ -403,5 +400,12 @@ public final class ODCSServer {
 
     private ODCSClient createClient () {
         return ODCSFactory.getInstance().createClient(getUrl().toString(), getPasswordAuthentication());
+    }
+    
+    private static String patchUrl(String u) {
+        while (u.endsWith("/")) { // NOI18N
+            u = u.substring(0, u.length() - 1);
+        }
+        return u;
     }
 }

@@ -1,8 +1,6 @@
 package org.netbeans.modules.odcs.client;
 
 import com.tasktop.c2c.server.cloud.domain.ServiceType;
-import com.tasktop.c2c.server.common.service.WrappedCheckedException;
-import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
@@ -11,7 +9,6 @@ import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.scm.domain.ScmType;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.openide.util.Exceptions;
@@ -84,17 +82,9 @@ public class MockUpODCSClient implements ODCSClient {
     }
 
     @Override
-    public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
+    public List<Activity> getRecentActivities(String projectId) throws ODCSException {
         waitAMoment(800);
-        throwExIfGiven("getRecentActivities:String");
-        
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
-    public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
-        waitAMoment(800);
-        throwExIfGiven("getRecentShortActivities:String");
+        throwExIfGiven("getActivities:String");
         
         return Collections.EMPTY_LIST;
     }

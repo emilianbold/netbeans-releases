@@ -1,1 +1,0 @@
-OpenIDE-Module: oracle.clouddev.server.profile.rsshandler.api
