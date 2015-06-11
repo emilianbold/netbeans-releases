@@ -47,7 +47,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.openide.filesystems.FileObject;
@@ -92,7 +91,7 @@ public abstract class SourceFactory {
 
     private static class DefaultSourceFactory extends SourceFactory {
 
-        private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<>();
+        private final Map<FileObject, Reference<Source>> instances = new WeakHashMap<>();
 
         @Override
         public Source createSource(
