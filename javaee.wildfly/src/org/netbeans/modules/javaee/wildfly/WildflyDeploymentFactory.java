@@ -246,33 +246,38 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
             File wildfly = new File(org, "wildfly");
             File as = new File(jboss, "as");
 
-            urlList.add(new File(serverRoot, "jboss-modules.jar").toURI().toURL());
-            urlList.add(new File(serverRoot, "bin" + sep + "client" + sep + "jboss-client.jar").toURI().toURL());
-
+            final File jbossModules = new File(serverRoot, "jboss-modules.jar");
+            if(jbossModules.exists()) {
+                urlList.add(jbossModules.toURI().toURL());
+            }
+            final File jbossClient = new File(serverRoot, "bin" + sep + "client" + sep + "jboss-client.jar");
+            if(jbossClient.exists()) {
+                urlList.add(jbossClient.toURI().toURL());
+            }
             addUrl(urlList, jboss, "dmr" + sep + "main", Pattern.compile("jboss-dmr-.*.jar"));
             addUrl(urlList, jboss, "logging" + sep + "main", Pattern.compile("jboss-logging-.*.jar"));
             addUrl(urlList, jboss, "marshalling" + sep + "main", Pattern.compile("jboss-marshalling-.*.jar"));
             addUrl(urlList, jboss, "marshalling" + sep + "river" + sep + "main", Pattern.compile("jboss-marshalling-river-.*.jar"));
             addUrl(urlList, jboss, "remoting" + sep + "main", Pattern.compile("jboss-remoting-.*.jar"));
-            addUrl(urlList, jboss, "sals" + sep + "main", Pattern.compile("jboss-sasl-.*.jar"));
+            addUrl(urlList, jboss, "sasl" + sep + "main", Pattern.compile("jboss-sasl-.*.jar"));
             addUrl(urlList, jboss, "threads" + sep + "main", Pattern.compile("jboss-threads-.*.jar"));
+            addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
+            addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
             addUrl(urlList, as, "controller" + sep + "main", Pattern.compile("wildfly-controller-.*.jar"));
             addUrl(urlList, as, "controller" + sep + "main", Pattern.compile("jboss-as-controller-.*.jar"));
             addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("jboss-as-controller-client-.*.jar"));
             addUrl(urlList, as, "controller-client" + sep + "main", Pattern.compile("wildfly-controller-client-.*.jar"));
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("wildfly-protocol-.*.jar"));
             addUrl(urlList, as, "protocol" + sep + "main", Pattern.compile("jboss-as-protocol-.*.jar"));
-            addUrl(urlList, jboss, "xnio" + sep + "main", Pattern.compile("xnio-api-.*.jar"));
-            addUrl(urlList, jboss, "xnio" + sep + "nio" + sep + "main", Pattern.compile("xnio-nio-.*.jar"));
 
             //CLI GUI
-            addUrl(urlList, jboss, "aesh" + sep + "main", Pattern.compile("aesh-.*.jar"));
-            addUrl(urlList, jboss, "staxmapper" + sep + "main", Pattern.compile("staxmapper-.*.jar"));
-            addUrl(urlList, wildfly, "security" + sep + "manager" + sep + "main", Pattern.compile("wildfly-security-manager-.*.jar"));
-            addUrl(urlList, jboss, "remoting-jmx" + sep + "main", Pattern.compile("remoting-jmx-.*.jar"));
-            addUrl(urlList, jboss, "vfs" + sep + "main", Pattern.compile("jboss-vfs-.*.jar"));
-            addUrl(urlList, org, "picketbox" + sep + "main", Pattern.compile("picketbox-.*.jar"));
-            addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
+//            addUrl(urlList, jboss, "aesh" + sep + "main", Pattern.compile("aesh-.*.jar"));
+//            addUrl(urlList, jboss, "staxmapper" + sep + "main", Pattern.compile("staxmapper-.*.jar"));
+//            addUrl(urlList, wildfly, "security" + sep + "manager" + sep + "main", Pattern.compile("wildfly-security-manager-.*.jar"));
+//            addUrl(urlList, jboss, "remoting-jmx" + sep + "main", Pattern.compile("remoting-jmx-.*.jar"));
+//            addUrl(urlList, jboss, "vfs" + sep + "main", Pattern.compile("jboss-vfs-.*.jar"));
+//            addUrl(urlList, org, "picketbox" + sep + "main", Pattern.compile("picketbox-.*.jar"));
+//            addUrl(urlList, as, "cli" + sep + "main", Pattern.compile("wildfly-cli-.*.jar"));
             File serverPath = new File(serverRoot);
             Version version = WildflyPluginUtils.getServerVersion(serverPath);
             boolean shouldPatchXnio = WildflyPluginUtils.WILDFLY_8_0_0.compareToIgnoreUpdate(version) <= 0 && WildflyPluginUtils.isWildFly(serverPath);
@@ -287,19 +292,21 @@ public class WildflyDeploymentFactory implements DeploymentFactory {
 
     private static void addUrl(List<URL> result, File root, String path, final Pattern pattern) {
         File folder = new File(root, path);
-        File[] children = folder.listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return pattern.matcher(name).matches();
-            }
-        });
-        if (children != null) {
-            for (File child : children) {
-                try {
-                    result.add(child.toURI().toURL());
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
+        if(folder.exists() && folder.isDirectory()) {
+            File[] children = folder.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return pattern.matcher(name).matches();
+                }
+            });
+            if (children != null) {
+                for (File child : children) {
+                    try {
+                        result.add(child.toURI().toURL());
+                        LOGGER.log(Level.INFO, "Adding {0} to the classpath", child.getAbsolutePath());
+                    } catch (MalformedURLException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    }
                 }
             }
         }

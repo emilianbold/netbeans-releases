@@ -125,14 +125,14 @@ implements ModuleConfiguration, DatasourceConfiguration, DeploymentPlanConfigura
     private String tempEjbName;
 
     public EjbDeploymentConfiguration(J2eeModule j2eeModule) {
-        this(j2eeModule, null);
+        this(j2eeModule, null, true);
     }
 
     /**
      * Creates a new instance of EjbDeploymentConfiguration
      */
-    public EjbDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version) {
-        super(j2eeModule, version);
+    public EjbDeploymentConfiguration(J2eeModule j2eeModule, WildflyPluginUtils.Version version, boolean isWildFly) {
+        super(j2eeModule, version, isWildFly);
         this.jbossFile = j2eeModule.getDeploymentConfigurationFile("META-INF/jboss.xml"); // NOI18N;
         getJboss();
         if (deploymentDescriptorDO == null) {
