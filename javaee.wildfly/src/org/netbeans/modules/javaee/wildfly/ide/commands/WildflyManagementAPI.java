@@ -47,6 +47,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,13 +60,19 @@ import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
  * @author Emmanuel Hugonnet (ehsavoie) <ehsavoie@netbeans.org>
  */
 public class WildflyManagementAPI {
+    
+    private static final String SASL_DISALLOWED_MECHANISMS = "SASL_DISALLOWED_MECHANISMS";
+    private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
+
+    private static final Map<String, String> DISABLED_LOCAL_AUTH = Collections.singletonMap(SASL_DISALLOWED_MECHANISMS, JBOSS_LOCAL_USER);
+    private static final Map<String, String> ENABLED_LOCAL_AUTH = Collections.emptyMap();
 
     static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, final String serverAddress, final int serverPort,
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, NoSuchAlgorithmException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
-        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000);
+        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
+        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000, ENABLED_LOCAL_AUTH);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
