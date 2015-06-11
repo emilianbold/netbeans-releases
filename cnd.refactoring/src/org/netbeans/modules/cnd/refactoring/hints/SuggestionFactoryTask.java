@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +54,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
@@ -66,6 +65,9 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.StatementResult;
 import org.netbeans.modules.cnd.refactoring.hints.StatementFinder.AddMissingCasesFixImpl;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -86,7 +88,6 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -156,6 +157,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         boolean introduce = false;
         boolean assign = false;
         boolean cases = false;
+        boolean inline = false;
         for(CodeAudit audit : audits) {
             if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
                 introduce = true;
@@ -163,7 +165,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 assign = true;
             } else if (AddMissingCases.ID.equals(audit.getID()) && audit.isEnabled()) {
                 cases = true;
-            } 
+            } else if (InstantInline.ID.equals(audit.getID()) && audit.isEnabled()) {
+                inline = true;
+            }
         }
         if (assign || introduce) {
             detectIntroduceVariable(file, caretOffset, selectionStart, selectionEnd, doc, canceled, assign, fileObject, introduce, comp);
@@ -181,6 +185,20 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                         }
                     }
                 } catch (BadLocationException ex) {
+                }
+            }
+        }
+        if (inline) {
+            CsmReference ref = CsmReferenceResolver.getDefault().findReference(doc, caretOffset);
+            if (ref == null) {
+                return;
+            }
+            if (CsmKindUtilities.isMacro(ref.getReferencedObject())) {
+                String replacement = CsmMacroExpansion.expand(doc, file, ref.getStartOffset(), ref.getEndOffset(), false);
+                int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
+                int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ((CsmMacro) ref.getReferencedObject()).getStartOffset())[0];
+                if (replacement != null && (!replacement.isEmpty()) && (refLine != objLine)) {
+                    createInstantInlineHint(ref, doc, file, fileObject, replacement);
                 }
             }
         }
@@ -243,6 +261,15 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
                         st.getStartOffset(), st.getStartOffset()));
+        HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
+    }
+    
+    private void createInstantInlineHint(CsmReference ref, Document doc, CsmFile file, FileObject fo, String replacement) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new InlineFix(ref, doc, file, replacement));
+        String description = NbBundle.getMessage(SuggestionFactoryTask.class, "InstantInline.name"); //NOI18N
+        List<ErrorDescription> hints = Collections.singletonList(
+                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
+                        ref.getStartOffset(), ref.getStartOffset()));
         HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
     }
     
@@ -341,6 +368,33 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         public AbstractCodeAudit create(AuditPreferences preferences) {
             String name = NbBundle.getMessage(SuggestionFactoryTask.class, "AddMissingCases.name"); // NOI18N
             String description = NbBundle.getMessage(SuggestionFactoryTask.class, "AddMissingCases.description"); // NOI18N
+            return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    public static final class InstantInline implements CodeAuditFactory {
+        private static final String ID = "InstantInline"; // NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String name = NbBundle.getMessage(InstantInline.class, "InstantInline.name"); // NOI18N
+            String description = NbBundle.getMessage(InstantInline.class, "InstantInline.description"); // NOI18N
             return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
 
                 @Override
