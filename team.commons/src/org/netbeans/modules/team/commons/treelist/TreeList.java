@@ -51,6 +51,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -220,10 +221,11 @@ public class TreeList extends JList {
      * Determines if popup was called for one of the selected nodes
      */
     private boolean isPopupForSelected(TreeListNode node) {
-        Object[] selectedValues = getSelectedValues();
-        for (int i = 0; i < selectedValues.length; i++) {
-            Object selectedNode = selectedValues[i];
-            if (selectedNode.equals(node)) {
+        List selectedValues = getSelectedValuesList();
+        for (Object selectedNode : selectedValues) {            
+            if (selectedNode != null && // issue #252821 
+                selectedNode.equals(node)) 
+            {
                 return true;
             }
         }
