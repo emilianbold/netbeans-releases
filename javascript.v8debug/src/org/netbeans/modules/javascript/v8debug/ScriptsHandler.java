@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.v8debug;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,12 +92,14 @@ public class ScriptsHandler {
     @NullAllowed
     private final String[] serverPathPrefixes;
     private final char serverPathSeparator;
+    private final String remotePathPrefix;
     private final V8Debugger dbg;
     
     ScriptsHandler(@NullAllowed List<String> localPaths,
                    @NullAllowed List<String> serverPaths,
                    Collection<String> localPathExclusionFilters,
                    V8Debugger dbg) {
+        this.remotePathPrefix = dbg.getHost()+"_"+dbg.getPort()+"/";
         if (!localPaths.isEmpty() && !serverPaths.isEmpty()) {
             this.doPathTranslation = true;
             int n = localPaths.size();
@@ -226,6 +229,31 @@ public class ScriptsHandler {
         return false;
     }
     
+    public boolean containsRemoteFile(URL url) {
+        if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+            return false;
+        }
+        String path;
+        try {
+            path = url.toURI().getPath();
+        } catch (URISyntaxException usex) {
+            return false;
+        }
+
+        int l = path.length();
+        int index = 0;
+        while (index < l && path.charAt(index) == '/') {
+            index++;
+        }
+        int begin = path.indexOf('/', index);
+        if (begin > 0) {
+            // path.substring(begin + 1).startsWith(remotePathPrefix)
+            return path.regionMatches(begin + 1, remotePathPrefix, 0, remotePathPrefix.length());
+        } else {
+            return false;
+        }
+    }
+    
     @CheckForNull
     public FileObject getFile(long scriptId) {
         V8Script script = getScript(scriptId);
@@ -266,6 +294,8 @@ public class ScriptsHandler {
         if (name == null) {
             name = "unknown.js";
         }
+        // prepend <host>_<port>/ to the name.
+        name = remotePathPrefix + name;
         String content = script.getSource();
         URL sourceURL;
         if (content != null) {
@@ -284,9 +314,78 @@ public class ScriptsHandler {
      * @param scriptURL Script's URL returned by {@link #getFile(org.netbeans.lib.v8debug.V8Script)}
      * @return the script or <code>null</code> when not found.
      */
-    public V8Script findScript(URL scriptURL) {
+    @CheckForNull
+    public V8Script findScript(@NonNull URL scriptURL) {
         synchronized (scriptsByURL) {
             return scriptsByURL.get(scriptURL);
+        }
+    }
+    
+    @CheckForNull
+    public String getServerPath(@NonNull FileObject fo) {
+        String serverPath;
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String localPath = file.getAbsolutePath();
+            try {
+                serverPath = getServerPath(localPath);
+            } catch (ScriptsHandler.OutOfScope oos) {
+                serverPath = null;
+            }
+        } else {
+            URL url = fo.toURL();
+            V8Script script = findScript(url);
+            if (script != null) {
+                serverPath = script.getName();
+            } else if (SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+                String path = fo.getPath();
+                int begin = path.indexOf('/');
+                if (begin > 0) {
+                    path = path.substring(begin + 1);
+                    // subtract <host>_<port>/ :
+                    if (path.startsWith(remotePathPrefix)) {
+                        serverPath = path.substring(remotePathPrefix.length());
+                    } else {
+                        serverPath = null;
+                    }
+                } else {
+                    serverPath = null;
+                }
+            } else {
+                serverPath = null;
+            }
+        }
+        return serverPath;
+    }
+    
+    @CheckForNull
+    public String getServerPath(@NonNull URL url) {
+        if (!SourceFilesCache.URL_PROTOCOL.equals(url.getProtocol())) {
+            return null;
+        }
+        String path;
+        try {
+            path = url.toURI().getPath();
+        } catch (URISyntaxException usex) {
+            return null;
+        }
+        int l = path.length();
+        int index = 0;
+        while (index < l && path.charAt(index) == '/') {
+            index++;
+        }
+        int begin = path.indexOf('/', index);
+        if (begin > 0) {
+            // path.substring(begin + 1).startsWith(remotePathPrefix)
+            if (path.regionMatches(begin + 1, remotePathPrefix, 0, remotePathPrefix.length())) {
+                path = path.substring(begin + 1 + remotePathPrefix.length());
+                return path;
+            } else {
+                // Path with a different prefix
+                return null;
+            }
+        } else {
+            return null;
         }
     }
     
