@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,72 +34,18 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
-package org.netbeans.api.debugger.jpda;
-
+package org.netbeans.modules.glassfish.javaee.db;
 
 /**
- * Notification about bad expression.
  *
- * @author   Jan Jancura
+ * @author Petr Hejl
  */
-public class InvalidExpressionException extends Exception {
+public interface JndiNameResolver {
 
-    private final String message;
-
-    /**
-     * Constructs a InvalidExpressionException with given message.
-     *
-     * @param message a exception message
-     */
-    public InvalidExpressionException (String message) {
-        super (message);
-        this.message = message;
-    }
-
-    /**
-     * Constructs a InvalidExpressionException for a given target exception.
-     *
-     * @param t a target exception
-     */
-    public InvalidExpressionException (Throwable t) {
-        super (t);
-        this.message = null;
-    }
-    
-    /**
-     * Constructs a InvalidExpressionException with given message and target exception.
-     *
-     * @param message a exception message
-     * @param t a target exception
-     * @since 3.1
-     */
-    public InvalidExpressionException (String message, Throwable t) {
-        super(message, t);
-        this.message = message;
-    }
-
-    @Override
-    public String getMessage() {
-        Throwable cause = getCause();
-        if (cause != null &&
-            (message == null || message.trim().isEmpty())) {
-            
-            return cause.getMessage();
-        }
-        return message;
-    }
-    
-    
-    
-    /**
-     * Get the thrown target exception.
-     *
-     * @return the thrown target exception
-     */
-    public Throwable getTargetException () {
-        return getCause();
-    }
+    String resolveJndiName(String jndiName);
 }
-
