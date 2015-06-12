@@ -87,11 +87,11 @@ public class WildflyModuleConfigurationFactory implements ModuleConfigurationFac
             WildflyDeploymentManager dm = (WildflyDeploymentManager) WildflyDeploymentFactory.getInstance().getDisconnectedDeploymentManager(instanceUrl);
             Version version = dm.getServerVersion();
             if (J2eeModule.Type.WAR.equals(j2eeModule.getType())) {
-                return new WarDeploymentConfiguration(j2eeModule, version);
+                return new WarDeploymentConfiguration(j2eeModule, version, dm.isWildfly());
             } else if (J2eeModule.Type.EJB.equals(j2eeModule.getType())) {
-                return new EjbDeploymentConfiguration(j2eeModule, version);
+                return new EjbDeploymentConfiguration(j2eeModule, version, dm.isWildfly());
             } else if (J2eeModule.Type.EAR.equals(j2eeModule.getType())) {
-                return new EarDeploymentConfiguration(j2eeModule, version);
+                return new EarDeploymentConfiguration(j2eeModule, version, dm.isWildfly());
             }
         } catch (DeploymentManagerCreationException ex) {
             return create(j2eeModule);

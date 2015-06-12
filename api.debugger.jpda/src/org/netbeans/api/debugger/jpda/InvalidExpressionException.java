@@ -52,6 +52,8 @@ package org.netbeans.api.debugger.jpda;
  */
 public class InvalidExpressionException extends Exception {
 
+    private final String message;
+
     /**
      * Constructs a InvalidExpressionException with given message.
      *
@@ -59,6 +61,7 @@ public class InvalidExpressionException extends Exception {
      */
     public InvalidExpressionException (String message) {
         super (message);
+        this.message = message;
     }
 
     /**
@@ -68,6 +71,7 @@ public class InvalidExpressionException extends Exception {
      */
     public InvalidExpressionException (Throwable t) {
         super (t);
+        this.message = null;
     }
     
     /**
@@ -79,16 +83,16 @@ public class InvalidExpressionException extends Exception {
      */
     public InvalidExpressionException (String message, Throwable t) {
         super(message, t);
+        this.message = message;
     }
 
     @Override
     public String getMessage() {
-        String message = super.getMessage();
         Throwable cause = getCause();
         if (cause != null &&
             (message == null || message.trim().isEmpty())) {
             
-            message = cause.getMessage();
+            return cause.getMessage();
         }
         return message;
     }

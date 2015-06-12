@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.javaee.db;
 
+import org.netbeans.modules.glassfish.javaee.ApplicationScopedResourcesUtils.JndiNameResolver;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 
 /**
