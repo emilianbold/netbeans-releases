@@ -74,6 +74,7 @@ import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import junit.framework.Test;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -226,13 +227,13 @@ public class ODCSClientTest extends NbTestCase  {
         ODCSClient client = getClient();
         Project project = client.getProjectById(MY_PROJECT);
         
-        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
+        List<Activity> activities = client.getRecentActivities(project.getIdentifier());
         assertNotNull(activities);
         assertTrue(activities.size() > 0);
         
-        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
-        assertNotNull(shortActivities);
-        assertTrue(shortActivities.size() > 0);
+//        shortActivities = client.getRecentShortActivities(project.getIdentifier());
+//        assertNotNull(shortActivities);
+//        assertTrue(shortActivities.size() > 0);
         
         
         // lets not compare the arrays for now. short activities seem to skip some ...
