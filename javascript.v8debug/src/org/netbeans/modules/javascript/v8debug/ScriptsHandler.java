@@ -77,6 +77,7 @@ public class ScriptsHandler {
     private static final Logger LOG = Logger.getLogger(ScriptsHandler.class.getName());
 
     private final Map<Long, V8Script> scriptsById = new HashMap<>();
+    private final Map<URL, V8Script> scriptsByURL = new HashMap<>();
 
     private final boolean doPathTranslation;
     private final int numPrefixes;
@@ -169,8 +170,19 @@ public class ScriptsHandler {
     }
     
     void remove(long scriptId) {
+        V8Script removed;
         synchronized (scriptsById) {
-            V8Script removed = scriptsById.remove(scriptId);
+            removed = scriptsById.remove(scriptId);
+        }
+        if (removed != null) {
+            synchronized (scriptsByURL) {
+                for (Map.Entry<URL, V8Script> entry : scriptsByURL.entrySet()) {
+                    if (removed == entry.getValue()) {
+                        scriptsByURL.remove(entry.getKey());
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -244,6 +256,9 @@ public class ScriptsHandler {
             if (localFile != null) {
                 FileObject fo = FileUtil.toFileObject(localFile);
                 if (fo != null) {
+                    synchronized (scriptsByURL) {
+                        scriptsByURL.put(fo.toURL(), script);
+                    }
                     return fo;
                 }
             }
@@ -258,7 +273,21 @@ public class ScriptsHandler {
         } else {
             sourceURL = SourceFilesCache.getDefault().getSourceFile(name, 1234, new ScriptContentLoader(script, dbg));
         }
+        synchronized (scriptsByURL) {
+            scriptsByURL.put(sourceURL, script);
+        }
         return URLMapper.findFileObject(sourceURL);
+    }
+    
+    /**
+     * Find a known script by it's actual URL.
+     * @param scriptURL Script's URL returned by {@link #getFile(org.netbeans.lib.v8debug.V8Script)}
+     * @return the script or <code>null</code> when not found.
+     */
+    public V8Script findScript(URL scriptURL) {
+        synchronized (scriptsByURL) {
+            return scriptsByURL.get(scriptURL);
+        }
     }
     
     public String getLocalPath(@NonNull String serverPath) throws OutOfScope {

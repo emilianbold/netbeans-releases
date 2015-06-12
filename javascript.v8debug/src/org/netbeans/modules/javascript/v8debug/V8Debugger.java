@@ -94,6 +94,7 @@ import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -705,16 +706,22 @@ public final class V8Debugger {
         if (fo == null) {
             return ;
         }
-        File file = FileUtil.toFile(fo);
-        if (file == null) {
-            return ;
-        }
-        String localPath = file.getAbsolutePath();
         String serverPath;
-        try {
-            serverPath = scriptsHandler.getServerPath(localPath);
-        } catch (ScriptsHandler.OutOfScope oos) {
-            return ;
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            String localPath = file.getAbsolutePath();
+            try {
+                serverPath = scriptsHandler.getServerPath(localPath);
+            } catch (ScriptsHandler.OutOfScope oos) {
+                return ;
+            }
+        } else {
+            V8Script script = scriptsHandler.findScript(fo.toURL());
+            if (script != null) {
+                serverPath = script.getName();
+            } else {
+                return ;
+            }
         }
         SetBreakpoint.Arguments args = new SetBreakpoint.Arguments(
                 V8Breakpoint.Type.scriptName,
