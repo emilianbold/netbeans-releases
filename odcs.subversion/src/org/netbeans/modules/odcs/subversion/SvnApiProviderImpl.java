@@ -45,9 +45,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.odcs.versioning.spi.VCSProvider;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -73,9 +74,9 @@ public class SvnApiProviderImpl implements VCSProvider {
         try {
             cloneDest = Subversion.openCheckoutWizard(repositoryUrl, true);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(SvnApiProviderImpl.class.getName()).log(Level.WARNING, repositoryUrl, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(SvnApiProviderImpl.class.getName()).log(Level.WARNING, repositoryUrl, ex);
         }
         return cloneDest;
     }
