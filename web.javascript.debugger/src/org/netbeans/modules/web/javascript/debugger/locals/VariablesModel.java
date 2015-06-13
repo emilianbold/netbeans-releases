@@ -229,6 +229,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         } else if (node instanceof ScopedRemoteObject) {
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (var != null && var.getType() == RemoteObject.Type.OBJECT) {
+                if (RemoteObject.SubType.ERROR.equals(var.getSubType())) {
+                    // Do not expand errors
+                    return true;
+                }
                 if (var.hasFetchedProperties()) {
                     return var.getProperties().isEmpty();
                 } else {

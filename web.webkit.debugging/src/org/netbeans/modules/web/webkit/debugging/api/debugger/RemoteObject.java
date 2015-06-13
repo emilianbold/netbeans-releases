@@ -92,7 +92,8 @@ public class RemoteObject extends AbstractObject {
         DATE,
         NODE,
         NULL,
-        REGEXP
+        REGEXP,
+        ERROR
     }
         
     private JSONObject property;
@@ -138,6 +139,7 @@ public class RemoteObject extends AbstractObject {
             case "node"  : return SubType.NODE;
             case "null"  : return SubType.NULL;
             case "regexp": return SubType.REGEXP;
+            case "error" : return SubType.ERROR;
             default:
                 assert false: "Unknown sub type: '"+st+"'";
                 return null;

@@ -43,18 +43,15 @@
 package org.netbeans.modules.javascript.v8debug;
 
 import java.awt.Color;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -65,13 +62,11 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.Session;
 import org.netbeans.lib.v8debug.PropertyBoolean;
 import org.netbeans.lib.v8debug.V8Arguments;
 import org.netbeans.lib.v8debug.V8Breakpoint;
 import org.netbeans.lib.v8debug.V8Command;
 import org.netbeans.lib.v8debug.V8Event;
-import org.netbeans.lib.v8debug.V8Frame;
 import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.V8Script;
@@ -87,19 +82,16 @@ import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.lib.v8debug.events.CompileErrorEventBody;
 import org.netbeans.lib.v8debug.events.ExceptionEventBody;
 import org.netbeans.lib.v8debug.events.ScriptCollectedEventBody;
-import org.netbeans.lib.v8debug.vars.V8Value;
 import org.netbeans.modules.javascript.v8debug.api.Connector;
 import org.netbeans.modules.javascript.v8debug.breakpoints.BreakpointsHandler;
 import org.netbeans.modules.javascript.v8debug.frames.CallFrame;
 import org.netbeans.modules.javascript.v8debug.frames.CallStack;
 import org.netbeans.modules.javascript.v8debug.sources.ChangeLiveSupport;
 import org.netbeans.modules.javascript.v8debug.vars.VarValuesLoader;
-import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -705,15 +697,8 @@ public final class V8Debugger {
         if (fo == null) {
             return ;
         }
-        File file = FileUtil.toFile(fo);
-        if (file == null) {
-            return ;
-        }
-        String localPath = file.getAbsolutePath();
-        String serverPath;
-        try {
-            serverPath = scriptsHandler.getServerPath(localPath);
-        } catch (ScriptsHandler.OutOfScope oos) {
+        String serverPath = scriptsHandler.getServerPath(fo);
+        if (serverPath == null) {
             return ;
         }
         SetBreakpoint.Arguments args = new SetBreakpoint.Arguments(

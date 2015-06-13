@@ -50,10 +50,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.CompilationController;
 
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationHelper;
@@ -112,24 +116,26 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
                 helper = new AnnotationHelper(model.getCompilationController());
             }
             for (TypeElement interceptor : interceptors) {
-                Collection<AnnotationMirror> interceptorBindings = model
-                    .getInterceptorBindings(interceptor);
-                for (AnnotationMirror annotationMirror : interceptorBindings) {
-                    Element iBinding = model.getCompilationController().getTypes().
-                        asElement( annotationMirror.getAnnotationType() );
-                    if ( !( iBinding instanceof TypeElement )) {
-                        continue;
-                    }
-                    Set<ElementType> declaredTargetTypes = TargetAnalyzer.
-                        getDeclaredTargetTypes(helper, (TypeElement)iBinding);
-                    if ( declaredTargetTypes.size() != 1 || 
-                            !declaredTargetTypes.contains(ElementType.TYPE))
-                    {
-                        result.addError(element, model,  
-                                    NbBundle.getMessage(InterceptedMethodAnalyzer.class,
-                                    "ERR_LifecycleInterceptorTarget" ,      // NOI18N
-                                    interceptor.getQualifiedName().toString(), 
-                                    ((TypeElement)iBinding).getQualifiedName().toString())); 
+                if (isLifecycleCallbackInterceptor(interceptor, model.getCompilationController())) {
+                    Collection<AnnotationMirror> interceptorBindings = model
+                        .getInterceptorBindings(interceptor);
+                    for (AnnotationMirror annotationMirror : interceptorBindings) {
+                        Element iBinding = model.getCompilationController().getTypes().
+                            asElement( annotationMirror.getAnnotationType() );
+                        if ( !( iBinding instanceof TypeElement )) {
+                            continue;
+                        }
+                        Set<ElementType> declaredTargetTypes = TargetAnalyzer.
+                            getDeclaredTargetTypes(helper, (TypeElement)iBinding);
+                        if ( declaredTargetTypes.size() != 1 ||
+                                !declaredTargetTypes.contains(ElementType.TYPE))
+                        {
+                            result.addError(element, model,
+                                        NbBundle.getMessage(InterceptedMethodAnalyzer.class,
+                                        "ERR_LifecycleInterceptorTarget" ,      // NOI18N
+                                        interceptor.getQualifiedName().toString(),
+                                        ((TypeElement)iBinding).getQualifiedName().toString()));
+                        }
                     }
                 }
             }
@@ -185,4 +191,22 @@ public class InterceptedMethodAnalyzer extends AbstractInterceptedElementAnalyze
         return iBindings;
     }
 
+    private static boolean isLifecycleCallbackInterceptor(TypeElement interceptor, CompilationController info) {
+        for (Element e : interceptor.getEnclosedElements()) {
+            if (e.getKind() == ElementKind.METHOD && e instanceof ExecutableElement) {
+                if (AnnotationUtil.isLifecycleCallback((ExecutableElement) e, info)) {
+                    return true;
+                }
+            }
+        }
+        TypeMirror tm = interceptor.getSuperclass();
+        if (tm.getKind() == TypeKind.DECLARED) {
+            Element e = info.getTypes().asElement(tm);
+            if (e instanceof TypeElement) {
+                return isLifecycleCallbackInterceptor((TypeElement) e, info);
+            }
+        }
+
+        return false;
+    }
 }
