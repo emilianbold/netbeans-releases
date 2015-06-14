@@ -111,19 +111,13 @@ public final class APTConditionResolver {
     }
 
     private static final CharSequence __CPLUSPLUS = CharSequences.create("__cplusplus"); // NOI18N
-    private static final CharSequence __SUNPRO_CC = CharSequences.create("__SUNPRO_CC"); // NOI18N
-    private static final CharSequence __SUNPRO_C = CharSequences.create("__SUNPRO_C"); // NOI18N
+
     private static Boolean evaluate(APTIfCondition apt, APTMacroCallback callback, boolean bigIntegers) throws TokenStreamException {
         TokenStream expr = apt.getCondition();
         Boolean res;
         TokenStream expandedTS = expandTokenStream(expr, callback);
+        // in C++ mode #if true means 1 for PP expression, all other IDs are 0
         boolean treatTrueIDAsValueOne = callback.isDefined(__CPLUSPLUS);
-        if (treatTrueIDAsValueOne) {
-            // SunStudio compiler does not treat true as 1
-            if (callback.isDefined(__SUNPRO_CC) || callback.isDefined(__SUNPRO_C)) {
-                treatTrueIDAsValueOne = false;
-            }
-        }
         try {
             if (bigIntegers) {
                 APTBigIntegerExprParser parser = new APTBigIntegerExprParser(expandedTS, callback, treatTrueIDAsValueOne ? BigInteger.ONE : BigInteger.ZERO);
