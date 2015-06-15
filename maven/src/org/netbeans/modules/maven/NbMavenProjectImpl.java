@@ -963,10 +963,6 @@ public final class NbMavenProjectImpl implements Project {
             this.filesToWatch = new ArrayList(Arrays.asList(fileProvider.getFiles()));
             
             filesToWatch.addAll(getParents()); 
-            System.out.println(" ++++++++++++ ");
-            for (File file : filesToWatch) {
-                System.out.println(" +++ " + file);
-            }
             Collections.sort(filesToWatch);
             for (File file : filesToWatch) {
                 try {

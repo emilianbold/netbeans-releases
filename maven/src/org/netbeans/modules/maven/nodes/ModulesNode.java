@@ -158,14 +158,25 @@ public class ModulesNode extends AbstractNode {
         }
          
         @Override
-        protected boolean createKeys(final List<Wrapper> modules) {
+        protected boolean createKeys(final List<Wrapper> modules) {                                    
             for (String module : project.getOriginalMavenProject().getModules()) {
-            File base = project.getOriginalMavenProject().getBasedir();
+                File base = project.getOriginalMavenProject().getBasedir();
                 File projDir = FileUtil.normalizeFile(new File(base, module));
                 FileObject fo = FileUtil.toFileObject(projDir);
                 if (fo != null) {
                     try {
                         Project prj = ProjectManager.getDefault().findProject(fo);
+                        if(prj == null) {
+                            // issue #242542
+                            // the projects pom might be already cached by ProjectManager as NO_SUCH_PROJECT, 
+                            // we have to get rid of that cached value.
+                            // Would prefer a better place to call .clearNonProjectCache after a project was created,
+                            // unfortunatelly .createKeys is invoked by a chain of events triggered by the poms save document
+                            // - not sure how to hook before that, so that we can ensure that it isn't cached anymore.
+                            // - on the other hand lets not clear the ProjectManager cache on each Node refresh.
+                            ProjectManager.getDefault().clearNonProjectCache();
+                            prj = ProjectManager.getDefault().findProject(fo);
+                        }
                         if (prj != null && prj.getLookup().lookup(NbMavenProjectImpl.class) != null) {
                             Wrapper wr = new Wrapper();
                             wr.proj = (NbMavenProjectImpl) prj;
