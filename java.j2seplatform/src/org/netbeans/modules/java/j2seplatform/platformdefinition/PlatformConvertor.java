@@ -77,6 +77,7 @@ import org.xml.sax.*;
 
 import org.netbeans.api.java.platform.*;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
 
 /**
@@ -210,9 +211,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
     }
     
-    JavaPlatform createPlatform(H handler) {
+    JavaPlatform createPlatform(H handler) throws IOException {
         JavaPlatform p;
-        
         if (handler.isDefault) {
             p = DefaultPlatformImpl.create (handler.properties, handler.sources, handler.javadoc);
             defaultPlatform = true;
@@ -220,6 +220,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             p = new J2SEPlatformImpl(handler.name,handler.installFolders, handler.properties, handler.sysProperties,handler.sources, handler.javadoc);
             defaultPlatform = false;
         }
+        validate(p);
         p.addPropertyChangeListener(this);
         return p;
     }
@@ -387,6 +388,16 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     public static String createName (String platName, String propType) {
         return "platforms." + platName + "." + propType;        //NOI18N
+    }
+
+    private void validate(@NonNull JavaPlatform plat) throws IOException {
+        final SpecificationVersion ver = plat.getSpecification().getVersion();
+        if (ver.compareTo(SourceLevelQuery.MINIMAL_SOURCE_LEVEL) < 0) {
+            final IOException veto = new IOException(String.format(
+                "Unsupported platform source level: %s",
+                ver));
+            throw Exceptions.attachSeverity(veto, Level.FINEST);
+        }
     }
 
     private static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {

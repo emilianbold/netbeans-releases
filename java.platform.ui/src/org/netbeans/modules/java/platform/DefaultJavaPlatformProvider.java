@@ -82,10 +82,10 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
         final List<JavaPlatform> platforms = new ArrayList<JavaPlatform>();
         final FileObject storage = getStorage();
         if (storage != null) {
-            try {
-                for (FileObject platformDefinition : storage.getChildren()) {
-                    DataObject dobj = DataObject.find(platformDefinition);
-                    InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
+            for (FileObject platformDefinition : storage.getChildren()) {
+                try {
+                    final DataObject dobj = DataObject.find(platformDefinition);
+                    final InstanceCookie ic = dobj.getCookie(InstanceCookie.class);
                     if (ic == null) {
                         LOG.log(
                             Level.WARNING,
@@ -112,12 +112,9 @@ public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileCh
                                 platformDefinition.getNameExt());
                         }
                     }
+                } catch (ClassNotFoundException | IOException e) {
+                    Exceptions.printStackTrace(e);
                 }
-            }catch (ClassNotFoundException cnf) {
-                Exceptions.printStackTrace(cnf);
-            }
-            catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
             }
         }
         return platforms.toArray(new JavaPlatform[platforms.size()]);
