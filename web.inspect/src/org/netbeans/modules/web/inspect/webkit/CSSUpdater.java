@@ -193,7 +193,9 @@ public class CSSUpdater {
      * @param snapshot 
      */
     synchronized void update(FileObject fileObject, String content) {
-        assert webKit != null: "webKit not initialized"; // NOI18N
+        if (webKit == null) {
+            return;
+        }
         Project owner = FileOwnerQuery.getOwner(fileObject);
         if (owner == null) {
             return;

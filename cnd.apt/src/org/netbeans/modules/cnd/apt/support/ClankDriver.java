@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -170,14 +171,20 @@ public final class ClankDriver {
     ////////////////////////////////////////////////////////////////////////////
     // state/cache related methods
     public static void invalidate(APTFileBuffer buffer) {
-        ClankDriverImpl.invalidateImpl(buffer);
+        if (APTTraceFlags.USE_CLANK) {
+            ClankDriverImpl.invalidateImpl(buffer);
+        }
     }
 
     public static void invalidateAll() {
-        ClankDriverImpl.invalidateAllImpl();
+        if (APTTraceFlags.USE_CLANK) {
+            ClankDriverImpl.invalidateAllImpl();
+        }
     }
 
     public static void close() {
-        invalidateAll();
+        if (APTTraceFlags.USE_CLANK) {
+            invalidateAll();
+        }
     }
 }
