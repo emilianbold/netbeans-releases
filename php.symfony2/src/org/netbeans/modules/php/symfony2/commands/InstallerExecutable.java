@@ -63,6 +63,7 @@ import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.symfony2.options.Symfony2Options;
 import org.netbeans.modules.php.symfony2.options.Symfony2OptionsValidator;
 import org.netbeans.modules.php.symfony2.ui.options.Symfony2OptionsPanelController;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 public final class InstallerExecutable {
@@ -182,6 +183,7 @@ public final class InstallerExecutable {
                     LOGGER.log(Level.INFO, "Cannot create TMP dir {0}", workDir);
                 }
             }
+            FileUtil.refreshFor(workDir);
         }
         return workDir;
     }
