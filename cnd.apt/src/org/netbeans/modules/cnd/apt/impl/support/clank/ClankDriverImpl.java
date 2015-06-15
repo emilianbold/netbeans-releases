@@ -98,13 +98,17 @@ public class ClankDriverImpl {
     }
 
     public static void invalidateImpl(APTFileBuffer buffer) {
-        // TODO: split by file system?
-        invalidateImpl(buffer.getAbsolutePath());
+        if (APTTraceFlags.USE_CLANK) {
+            // TODO: split by file system?
+            invalidateImpl(buffer.getAbsolutePath());
+        }
     }
 
     public static void invalidateAllImpl() {
-        // TODO: split by file system?
-        ClankPreprocessorServices.invalidateAll();
+        if (APTTraceFlags.USE_CLANK) {
+            // TODO: split by file system?
+            ClankPreprocessorServices.invalidateAll();
+        }
     }
 
     public static boolean preprocessImpl(APTFileBuffer buffer,
