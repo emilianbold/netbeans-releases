@@ -63,6 +63,8 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.ListModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.View;
 import org.netbeans.modules.javascript.cdnjs.Library;
 import org.netbeans.modules.javascript.cdnjs.LibraryProvider;
@@ -84,6 +86,7 @@ class SearchPanel extends javax.swing.JPanel {
      */
     SearchPanel() {
         initComponents();
+        initDocumentListener();
         librariesList.setCellRenderer(new LibraryRenderer());
         libraryInfoPanel.setPreferredSize(librariesScrollPane.getPreferredSize());
         versionComboBox.setRenderer(new LibraryVersionRenderer());
@@ -105,6 +108,27 @@ class SearchPanel extends javax.swing.JPanel {
      */
     final void deactivate() {
         LibraryProvider.getInstance().removePropertyChangeListener(listener);
+    }
+
+    private void initDocumentListener() {
+        searchField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processEvent(e);
+            }
+            private void processEvent(DocumentEvent e) {
+                String text = searchField.getText();
+                searchButton.setEnabled(text != null && text.trim().length() != 0);
+            }
+        });
     }
 
     /**
@@ -148,8 +172,12 @@ class SearchPanel extends javax.swing.JPanel {
         "SearchPanel.message.searching=Looking for \"{0}\" libraries"
     })
     private void startSearch() {
+        String searchTerm = searchField.getText().trim();
+        if (searchTerm.length() == 0) {
+            return;
+        }
         librarySelected(null);
-        lastSearchTerm = searchField.getText().trim();
+        lastSearchTerm = searchTerm;
         Library[] libraries = LibraryProvider.getInstance().findLibraries(lastSearchTerm, Thread.MAX_PRIORITY);
         if (libraries == null) {
             messageLabel.setText(Bundle.SearchPanel_message_searching(lastSearchTerm));
@@ -440,6 +468,7 @@ class SearchPanel extends javax.swing.JPanel {
         searchField.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(SearchPanel.class, "SearchPanel.searchButton.text")); // NOI18N
+        searchButton.setEnabled(false);
         searchButton.addActionListener(formListener);
 
         messageLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
