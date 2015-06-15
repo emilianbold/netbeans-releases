@@ -963,6 +963,10 @@ public final class NbMavenProjectImpl implements Project {
             this.filesToWatch = new ArrayList(Arrays.asList(fileProvider.getFiles()));
             
             filesToWatch.addAll(getParents()); 
+            System.out.println(" ++++++++++++ ");
+            for (File file : filesToWatch) {
+                System.out.println(" +++ " + file);
+            }
             Collections.sort(filesToWatch);
             for (File file : filesToWatch) {
                 try {
@@ -1009,8 +1013,9 @@ public final class NbMavenProjectImpl implements Project {
             while(true) {
                 try {
                     MavenProject parent = loadParentOf(getEmbedder(), project);
-                    if(parent != null) {
-                        ret.add(parent.getFile());
+                    File parentFile = parent != null ? parent.getFile() : null;
+                    if(parentFile != null) {
+                        ret.add(parentFile);
                         project = parent;
                     } else {
                         break;

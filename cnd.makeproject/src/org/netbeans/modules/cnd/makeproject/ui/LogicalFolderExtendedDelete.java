@@ -58,7 +58,7 @@ public class LogicalFolderExtendedDelete implements ExtendedDelete {
     @Override
     public boolean delete(Node[] nodes) throws IOException {
         for (Node n : nodes) {
-            Object v = n.getValue("Folder");
+            Object v = n.getValue("Folder"); // NOI18N
             if (!(v instanceof Folder)) {
                 return false;
             }
