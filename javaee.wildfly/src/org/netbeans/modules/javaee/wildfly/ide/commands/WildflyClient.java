@@ -136,6 +136,7 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagement
 import static org.netbeans.modules.javaee.wildfly.ide.commands.WildflyManagementAPI.setModelNodeChildString;
 
 import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginProperties;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDatasourceNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyDestinationNode;
 import org.netbeans.modules.javaee.wildfly.nodes.WildflyEarApplicationNode;
@@ -173,6 +174,7 @@ public class WildflyClient {
     private final CallbackHandler handler;
     private final InstanceProperties ip;
     private Object client;
+    private final Version version;
 
     /**
      * Get the value of serverPort
@@ -201,18 +203,20 @@ public class WildflyClient {
         return serverAddress;
     }
 
-    public WildflyClient(InstanceProperties ip, String serverAddress, int serverPort) {
+    public WildflyClient(InstanceProperties ip, Version version, String serverAddress, int serverPort) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.ip = ip;
+        this.version = version;
         handler = new Authentication().getCallbackHandler();
     }
 
-    public WildflyClient(InstanceProperties ip, String serverAddress, int serverPort, String login,
+    public WildflyClient(InstanceProperties ip, Version version, String serverAddress, int serverPort, String login,
             String password) {
         this.serverAddress = serverAddress;
         this.serverPort = serverPort;
         this.ip = ip;
+        this.version = version;
         handler = new Authentication(login, password.toCharArray()).getCallbackHandler();
     }
 
@@ -220,7 +224,7 @@ public class WildflyClient {
     private synchronized Object getClient(WildflyDeploymentFactory.WildFlyClassLoader cl) {
         if (client == null) {
             try {
-                this.client = createClient(cl, serverAddress, serverPort, handler);
+                this.client = createClient(cl, version, serverAddress, serverPort, handler);
             } catch (Throwable ex) {
                 LOGGER.log(Level.WARNING, null, ex);
                 return null;

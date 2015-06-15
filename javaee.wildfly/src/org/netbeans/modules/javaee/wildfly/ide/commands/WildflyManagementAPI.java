@@ -54,6 +54,8 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 import org.netbeans.modules.javaee.wildfly.WildflyDeploymentFactory;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils;
+import org.netbeans.modules.javaee.wildfly.ide.ui.WildflyPluginUtils.Version;
 
 /**
  *
@@ -66,13 +68,18 @@ public class WildflyManagementAPI {
 
     private static final Map<String, String> DISABLED_LOCAL_AUTH = Collections.singletonMap(SASL_DISALLOWED_MECHANISMS, JBOSS_LOCAL_USER);
     private static final Map<String, String> ENABLED_LOCAL_AUTH = Collections.emptyMap();
+    private static final int TIMEOUT = 1000;
 
-    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, final String serverAddress, final int serverPort,
+    static Object createClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Version version, final String serverAddress, final int serverPort,
             final CallbackHandler handler) throws ClassNotFoundException, NoSuchMethodException,
             IllegalAccessException, InvocationTargetException, NoSuchAlgorithmException {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
-        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
-        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000, ENABLED_LOCAL_AUTH);
+        if (version.compareTo(WildflyPluginUtils.WILDFLY_9_0_0) >= 0) {
+            Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
+            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000, ENABLED_LOCAL_AUTH);
+        }
+        Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
+        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,

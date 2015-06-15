@@ -129,9 +129,9 @@ public class WildflyDeploymentManager implements DeploymentManager2 {
             controllerPort = Integer.parseInt(this.instanceProperties.getProperty(PROPERTY_ADMIN_PORT));
         }
         if (username != null && password != null) {
-            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort, username, password);
+            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort, username, password);
         } else {
-            this.client = new WildflyClient(instanceProperties, getHost(), controllerPort);
+            this.client = new WildflyClient(instanceProperties, version, getHost(), controllerPort);
         }
         ChangelogWildflyPlugin.showChangelog();
     }
