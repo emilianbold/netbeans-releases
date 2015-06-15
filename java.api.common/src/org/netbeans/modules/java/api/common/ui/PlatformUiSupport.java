@@ -339,7 +339,9 @@ public final class PlatformUiSupport {
         // JDK 1.4            1.4        1.4
         // JDK 5              1.5        1.5
         // JDK 6              1.6        1.6  - java 1.6 brings JLS changes - @Override, encoding
-        // JDK 7              1.7        1.7  - should bring a new language features
+        // JDK 7              1.7        1.7  - coin
+        // JDK 8              1.8        1.8  - lambdas
+        // JDK 9              1.9        1.9  - jigsaw
         if (jdk13.compareTo(sourceLevel) >= 0) {
             javacTarget = "1.1"; //NOI18N
         }
@@ -835,7 +837,7 @@ public final class PlatformUiSupport {
         private static final long serialVersionUID = 1L;
 
         private static final String VERSION_PREFIX = "1."; // the version prefix // NOI18N
-        private static final int INITIAL_VERSION_MINOR = 2; // 1.2
+        private static final int INITIAL_VERSION_MINOR = minor(SourceLevelQuery.MINIMAL_SOURCE_LEVEL);
 
         private final ComboBoxModel platformComboBoxModel;
         private final SpecificationVersion minimalSpecificationVersion;
@@ -978,7 +980,7 @@ public final class PlatformUiSupport {
                 SpecificationVersion min = new SpecificationVersion(
                             VERSION_PREFIX + Integer.toString(index));
                 while (min.compareTo(platformVersion) <= 0) {
-                    if (min.equals(minimalSpecificationVersion)) {
+                    if (min.compareTo(minimalSpecificationVersion) >= 0) {
                         return index;
                     }
                     min = new SpecificationVersion(
@@ -1006,6 +1008,12 @@ public final class PlatformUiSupport {
                         NotifyDescriptor.CANCEL_OPTION
                     },
                     changeOption)) == changeOption;
+        }
+
+        private static int minor(@NonNull final SpecificationVersion specVer) {
+            final String s = specVer.toString();
+            final int split = s.indexOf('.');
+            return Integer.parseInt(split < 0 ? s : s.substring(split+1));
         }
     }
 
