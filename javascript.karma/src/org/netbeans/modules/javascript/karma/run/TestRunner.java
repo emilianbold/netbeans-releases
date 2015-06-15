@@ -151,12 +151,18 @@ public final class TestRunner {
         return Bundle.TestRunner_runner_title(sb.toString());
     }
 
-    private void sessionStarted(String line) {
-        assert testSession == null;
+    private void initTestSession() {
+        if (testSession != null) {
+            return;
+        }
         Manager.getInstance().setNodeFactory(new KarmaTestRunnerNodeFactory(new CallStackCallback(karmaRunInfo.getProject())));
         testSession = new TestSession(getOutputTitle(), karmaRunInfo.getProject(), TestSession.SessionType.TEST);
         testSession.setRerunHandler(karmaRunInfo.getRerunHandler());
         getManager().testStarted(testSession);
+    }
+
+    private void sessionStarted(String line) {
+        initTestSession();
     }
 
     @NbBundle.Messages({
@@ -191,7 +197,7 @@ public final class TestRunner {
         "TestRunner.browser.error=[{0}] ERROR:",
     })
     private void browserError(String line) {
-        assert testSession != null;
+        initTestSession();
         hasErrors = true;
         Matcher matcher = BROWSER_ERROR_PATTERN.matcher(line);
         if (matcher.find()) {

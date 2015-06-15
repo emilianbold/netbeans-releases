@@ -57,8 +57,8 @@ NetBeans_PresetMenu._presets = null;
 // show the menu
 NetBeans_PresetMenu.show = function(presets, activeTab) {
     this._init(activeTab);
-    this._initSelectionMode();
-    this._initDebugInNetBeans();
+    this._initSelectionMode(activeTab);
+    this._initDebugInNetBeans(activeTab);
     this._presets = presets;
     this._putPresets(this._presets);
 };
@@ -91,11 +91,11 @@ NetBeans_PresetMenu._init = function(activeTab) {
     this._registerEvents(activeTab);
 };
 // selection mode init
-NetBeans_PresetMenu._initSelectionMode = function() {
+NetBeans_PresetMenu._initSelectionMode = function(activeTab) {
     var selectionMode = document.getElementById('selectionModeCheckBox');
     selectionMode.checked = NetBeans.getSelectionMode();
     var selectionModeMenu = document.getElementById('selectionModeMenu');
-    var display = NetBeans.debuggedTab ? 'block' : 'none';
+    var display = NetBeans.debuggedTab === activeTab.id ? 'block' : 'none';
     selectionModeMenu.style.display = display;
     var selectionModeSeparator = document.getElementById('selectionModeSeparator');
     if (selectionModeSeparator) {
@@ -103,9 +103,9 @@ NetBeans_PresetMenu._initSelectionMode = function() {
     }
 };
 // Debug in NetBeans init
-NetBeans_PresetMenu._initDebugInNetBeans = function() {
+NetBeans_PresetMenu._initDebugInNetBeans = function(activeTab) {
     var menu = document.getElementById('debugInNetBeansMenu');
-    var display = NetBeans.debuggedTab ? 'none' : 'block';
+    var display = NetBeans.debuggedTab === activeTab.id ? 'none' : 'block';
     menu.style.display = display;
     var separator = document.getElementById('debugInNetBeansSeparator');
     if (separator) {
