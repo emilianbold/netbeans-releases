@@ -269,7 +269,7 @@ public class DependenciesNode extends AbstractNode {
             // lets fix the values necessary for an imutable hasCode, equals 
             // and compare computation. The Dependency nodes seem to get recreated 
             // on relevant changes anyway ...
-            artifactId = getArtifactId();
+            artifactId = artifact.getArtifactId();
             artifactString = artifact.toString();
             StringBuilder sb = new StringBuilder();
             List<String> dependencyTrail = artifact.getDependencyTrail();
