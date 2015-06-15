@@ -78,7 +78,7 @@ public class J2SEProjectConfigurationsTest extends NbTestCase {
         clearWorkDir();
         MockLookup.setLayersAndInstances();
         
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.5"));
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));
         AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "TestProject", null, "manifest.mf", null, false);
         
         Project prj = ProjectManager.getDefault().findProject(aph.getProjectDirectory());

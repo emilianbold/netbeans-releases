@@ -91,7 +91,7 @@ public class SourcePathImplementationTest extends NbTestCase {
         super.setUp();
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         MockLookup.setLayersAndInstances();
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);

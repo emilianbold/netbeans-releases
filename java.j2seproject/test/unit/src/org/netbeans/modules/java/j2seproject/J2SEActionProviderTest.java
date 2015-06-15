@@ -124,7 +124,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         MockLookup.setLayersAndInstances(new SimplePlatformProvider());
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf",null, false); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.put(ProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079       

@@ -97,7 +97,7 @@ public class AppletSupportTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         FileObject folderWithSpaces = scratch.createFolder("Folder With Spaces");
         projdir = folderWithSpaces.createFolder("proj");
-        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
+        J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.6"));   //NOI18N
         helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null, false); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         Project p = ProjectManager.getDefault().findProject(projdir);
