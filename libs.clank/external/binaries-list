@@ -1,6 +1,6 @@
-#changeset:   15178:4a260a8fd3c8
+#changeset:   15189:8f9cdeb134d9
 #user:        Ilia Gromov <ilia@netbeans.org>
-#date:        Mon Jun 15 16:44:51 2015 +0400
-#summary:     org.clang.frontend fix
+#date:        Wed Jun 17 00:52:01 2015 +0400
+#summary:     org.clang.frontend reconverting
 
-9ECBC27AB8AB49F7EF0694F1F8C760733CD26A0D clank_0.3.6.zip
+4C887D71C3E281E552FA33270BD7EDB4C231E071 clank_0.3.6.zip
