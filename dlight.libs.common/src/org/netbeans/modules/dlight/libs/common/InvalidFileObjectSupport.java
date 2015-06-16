@@ -82,11 +82,12 @@ public class InvalidFileObjectSupport {
     }
 
     public static FileObject getInvalidFileObject(File file) {
+        file = FileUtil.normalizeFile(file);
         return getInvalidFileObject(getFileSystem(file), file.getAbsolutePath());
     }
     
     private static FileSystem getFileSystem(File file) {
-        file = FileUtil.normalizeFile(file);
+        // NB: file should be normalized!
 //        while (file != null) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
@@ -111,11 +112,14 @@ public class InvalidFileObjectSupport {
     }
 
     private FileObject getInvalidFileObject(CharSequence path) {
+        // From performance perspective it's a pity that we need to use toString()
+        // But anyhow InvalidFileObject will do so, so it does not matter here
+        String normPath = PathUtilities.normalizeUnixPath(path.toString().replace('\\', '/')); // NOI18N
         synchronized (this) {
-            if (DLightLibsCommonLogger.isDebugMode() && new File(path.toString()).exists()) {
+            if (DLightLibsCommonLogger.isDebugMode() && new File(normPath.toString()).exists()) {
                 DLightLibsCommonLogger.getInstance().log(Level.INFO, "Creating an invalid file object for existing file {0}", path);
             }
-            FileObject fo = fileObjects.putIfAbsent(new InvalidFileObject(fileSystem, path));
+            FileObject fo = fileObjects.putIfAbsent(new InvalidFileObject(fileSystem, normPath));
             return fo;
         }
     }
@@ -156,9 +160,9 @@ public class InvalidFileObjectSupport {
         private final String path;
         private static Date lastModifiedDate = new Date();
 
-        public InvalidFileObject(FileSystem fileSystem, CharSequence path) {
+        public InvalidFileObject(FileSystem fileSystem, String path) {
             this.fileSystem = (fileSystem == null) ? dummyFileSystem : fileSystem;
-            this.path = path.toString().replace('\\', '/'); // NOI18N;
+            this.path = path;
         }
 
         @Override
