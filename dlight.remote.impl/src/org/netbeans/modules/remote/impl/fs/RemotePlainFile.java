@@ -49,11 +49,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
@@ -61,6 +63,7 @@ import java.util.logging.Level;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -224,9 +227,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         private final InputStream is;
         private boolean closed;
+        private final Runnable postClose;
 
-        public InputStreamWrapper(InputStream is) {
+        public InputStreamWrapper(InputStream is, Runnable postClose) {
             this.is = is;
+            this.postClose = postClose;
         }
 
         @Override
@@ -248,7 +253,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 is.close();
                 closed = true;
             } finally {
-                rwl.readUnlock();
+                postClose.run();
             }
         }
 
@@ -330,12 +335,37 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 new Exception("Shouldn't come here in MIME resolved mode " + this).printStackTrace(System.err); //NOI18N
             }
 
-            RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
-
             if (!checkLock) {
-                return new FileInputStream(getCache());
+                // we can NOT call ensureChildSync without a lock - this leads to #248449
+                // and can eventually cause user data loss
+                File cache = getCache();
+                if (cache.exists()) {
+                    return new FileInputStream(cache);
+                } else {
+                    // Should we just return an empty stream?
+                    final File tmpCache = File.createTempFile(getName().length() < 3 ? getName() + "___" : getName(), getExt()); //NOI18N
+                    StringWriter errorWriter = new StringWriter();
+                    Future<Integer> task = CommonTasksSupport.downloadFile(getPath(), getExecutionEnvironment(), tmpCache.getAbsolutePath(), errorWriter);
+                    int rc = task.get().intValue();
+                    if (rc != 0) {
+                        throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                                "EXC_CanNotDownload", getDisplayName(tmpCache.getAbsolutePath()), errorWriter.toString())); //NOI18N
+                    }
+                    return new InputStreamWrapper(new FileInputStream(tmpCache), new Runnable() {
+                        @Override
+                        public void run() {
+                            tmpCache.delete();
+                        }
+                    });
+                }
             } else if (rwl.tryReadLock()) {
-                return new InputStreamWrapper(new FileInputStream(getCache()));
+                RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
+                return new InputStreamWrapper(new FileInputStream(getCache()), new Runnable() {
+                    @Override
+                    public void run() {
+                        rwl.readUnlock();
+                    }
+                });
             } else {
                 throw new FileAlreadyLockedException("Cannot read from locked file: " + this);  //NOI18N
             }
@@ -532,6 +562,11 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         @Override
         public void write(byte[] b, int off, int len) throws IOException {
             delegate.write(b, off, len);
+        }
+
+        @Override
+        public void write(byte[] b) throws IOException {
+            delegate.write(b);
         }
 
         @Override
