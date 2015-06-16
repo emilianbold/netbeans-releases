@@ -45,8 +45,6 @@ package org.netbeans.test.junit.junit4;
 import org.netbeans.jellytools.modules.junit.testcases.ExtJellyTestCaseForJunit4;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import javax.swing.ListModel;
 import javax.swing.tree.TreePath;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -60,36 +58,31 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.junit.utils.Utilities;
 
 public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
+
+    public static String[] testNames = new String[]{
+        "testCreateJUnit4Project",
+        "testAddLibrary",
+        "testGeneratedProjectSuiteFile",
+        "testGeneratedMainTestFile"
+    };
 
     public CreateProjectTest(String testName) {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(suite());
-    }
-
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateProjectTest.class).addTest(
-            "testCreateJUnit4Project",
-            "testAddLibrary",
-            "testGeneratedProjectSuiteFile",
-            "testGeneratedMainTestFile").enableModules(".*").clusters(".*"));
+        return createModuleTest(CreateProjectTest.class, testNames);
     }
         
     public void testCreateJUnit4Project() {
         
-        Utilities.deleteDirectory(new File(Utilities.pathToProject(TEST_PROJECT_NAME)));
+        Utilities.deleteDirectory(new File(Utilities.pathToProjects() + File.separator + TEST_PROJECT_NAME));
         
         // create anagram project
         new Action("File|New Project", null).perform();
@@ -98,8 +91,9 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         newOp.selectProject("Java Application");
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
+        new JTextFieldOperator(newOp, 1).setText(Utilities.pathToProjects());
         newOp.finish();
-        new EventTool().waitNoEvent(5000);
+        new EventTool().waitNoEvent(1000);
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -110,12 +104,12 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         node.select();
 
         // create test
-        new ActionNoBlock(null,"Tools|Create JUnit Test").perform(node);
+        new ActionNoBlock(null,"Tools|Create/Update Tests").perform(node);
 
         // select junit version
-        NbDialogOperator versionOp = new NbDialogOperator("Select jUnit Version");        
+/*        NbDialogOperator versionOp = new NbDialogOperator("Select jUnit Version");        
         new JRadioButtonOperator(versionOp, 1).setSelected(true);
-        new JButtonOperator(versionOp,"Select").clickMouse();
+        new JButtonOperator(versionOp,"Select").clickMouse();*/
 
         NbDialogOperator newTestOp = new NbDialogOperator("Create Tests");
         new JButtonOperator(newTestOp, "OK").clickMouse();
@@ -146,7 +140,7 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("import org.junit.");
         lines.add("@RunWith(Suite.class)");
-        lines.add("@Suite.SuiteClasses({Junit4testprojectSuite.class})");
+        lines.add("@Suite.SuiteClasses({junit4testproject.Junit4testprojectSuite.class})");
         lines.add("public static void tearDownClass() throws Exception");
         lines.add("@Before");
         
@@ -162,10 +156,10 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("import org.junit.");
-        lines.add("@Suite.SuiteClasses({junit4testproject.MainTest.class})");
+        lines.add("@Suite.SuiteClasses({junit4testproject.JUnit4TestProjectTest.class})");
         lines.add("@RunWith(Suite.class)");
-//        lines.add("public static void tearDownClass() throws Exception");
-//        lines.add("@Before");
+        lines.add("public static void tearDownClass() throws Exception");
+        lines.add("@Before");
         
         findInCode(lines,new EditorOperator("Junit4testprojectSuite.java"));
     }
@@ -174,17 +168,17 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         ProjectRootNode prn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
         OpenAction openAc = new OpenAction();
 
-        // testing MainTest.java
-        openAc.perform(new Node(prn, "Test Packages|junit4testproject|MainTest.java"));
+        // testing JUnit4TestProjectTest.java
+        openAc.perform(new Node(prn, "Test Packages|junit4testproject|JUnit4TestProjectTest.java"));
         
         ArrayList<String> lines = new ArrayList<String>();
         lines.add("import org.junit.");        
         lines.add("import static org.junit.Assert.*;");
         lines.add("@Test");
+        lines.add("public void testMain() {");
         lines.add("@BeforeClass");
         lines.add("@AfterClass");
         
-        findInCode(lines,new EditorOperator("MainTest.java"));
-        Utilities.deleteDirectory(new File(Utilities.pathToProject(TEST_PROJECT_NAME)));
+        findInCode(lines,new EditorOperator("JUnit4TestProjectTest.java"));
     }
 }
