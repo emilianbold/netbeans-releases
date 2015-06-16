@@ -53,7 +53,7 @@ public class WritingModesModuleTest extends CssModuleTestBase {
     
     public void testProperties() {
         assertPropertyValues("direction", "ltr", "rtl");
-        assertPropertyValues("column-width", "10px", "20%", "max-content");
+//        assertPropertyValues("column-width", "10px", "20%", "max-content");
         assertPropertyValues("unicode-bidi", "normal", "isolate", "isolate plaintext");
     }
     
