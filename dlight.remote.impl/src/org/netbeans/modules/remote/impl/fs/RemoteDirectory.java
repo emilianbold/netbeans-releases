@@ -1575,7 +1575,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (rc == 0) {
                 getFileSystem().incrementFileCopyCount();
             } else {
-                RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
+                throw RemoteExceptions.createIOException(NbBundle.getMessage(RemoteDirectory.class,
                         "EXC_CanNotDownload", getDisplayName(child.getPath()), errorWriter.toString())); //NOI18N
             }
         } catch (InterruptedException | ExecutionException ex) {
