@@ -51,22 +51,6 @@ public class GlobalOutputProcessorTest extends TestCase {
         super(testName);
     }
 
-    public void testDownloadPattern() {
-        String[] lines = {
-            "51521/?", "11/12K", "11/12M", "51521/120000b",
-            "51521/? 12/25K", "34/263M 464/500b",
-            "51521/? 13/25K 4034/4640M",
-            // #189465: M3 ConsoleMavenTransferListener.doProgress
-            "59/101 KB    ", "1/3 B  ", "55 KB", "300 B  ",
-            "10/101 KB   48/309 KB   ", // sometimes seems to jam
-        };
-        for (String line : lines) {
-            if (!GlobalOutputProcessor.DOWNLOAD.matcher(line).matches()) {
-                fail("Line " + line + " not skipped");
-            }
-        }
-    }
-
     public void testModelProblemPattern() {
         Matcher m = GlobalOutputProcessor.MODEL_PROBLEM.matcher("[WARNING] 'reporting.plugins.plugin.version' for org.apache.maven.plugins:maven-plugin-plugin is missing. @ line 60, column 21");
         assertTrue(m.matches());
