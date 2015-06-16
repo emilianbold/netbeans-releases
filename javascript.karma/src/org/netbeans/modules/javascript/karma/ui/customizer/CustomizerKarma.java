@@ -89,6 +89,7 @@ public class CustomizerKarma extends JPanel {
     private volatile String karma;
     private volatile String config;
     private volatile boolean autowatch;
+    private volatile boolean failOnError;
     private volatile boolean debug;
     private volatile String selectedBrowserId;
 
@@ -128,6 +129,10 @@ public class CustomizerKarma extends JPanel {
         return autowatch;
     }
 
+    public boolean isFailOnBrowserError() {
+        return failOnError;
+    }
+
     public boolean isDebug() {
         return debug;
     }
@@ -157,6 +162,7 @@ public class CustomizerKarma extends JPanel {
         // data
         configTextField.setText(KarmaPreferences.getConfig(project));
         autowatchCheckBox.setSelected(KarmaPreferences.isAutowatch(project));
+        failOnErrorCheckBox.setSelected(KarmaPreferences.isFailOnBrowserError(project));
         debugCheckBox.setSelected(KarmaPreferences.isDebug(project));
         debugBrowserIdComboBox.setModel(browserModel);
         debugBrowserIdComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
@@ -174,6 +180,7 @@ public class CustomizerKarma extends JPanel {
         ActionListener defaultActionListener = new DefaultActionListener();
         configTextField.getDocument().addDocumentListener(defaultDocumentListener);
         autowatchCheckBox.addItemListener(defaultItemListener);
+        failOnErrorCheckBox.addItemListener(defaultItemListener);
         debugCheckBox.addItemListener(new DebugItemListener());
         debugBrowserIdComboBox.addActionListener(defaultActionListener);
     }
@@ -183,6 +190,7 @@ public class CustomizerKarma extends JPanel {
         config = configTextField.getText();
         debug = debugCheckBox.isSelected();
         autowatch = autowatchCheckBox.isSelected();
+        failOnError = failOnErrorCheckBox.isSelected();
         selectedBrowserId = browserModel.getSelectedBrowserId();
         validationResult = new KarmaPreferencesValidator()
                 .validateConfig(config)
@@ -211,6 +219,7 @@ public class CustomizerKarma extends JPanel {
         configBrowseButton = new JButton();
         configSearchButton = new JButton();
         autowatchCheckBox = new JCheckBox();
+        failOnErrorCheckBox = new JCheckBox();
         debugLabel = new JLabel();
         debugCheckBox = new JCheckBox();
         debugBrowserIdLabel = new JLabel();
@@ -242,6 +251,8 @@ public class CustomizerKarma extends JPanel {
         });
 
         Mnemonics.setLocalizedText(autowatchCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.autowatchCheckBox.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(failOnErrorCheckBox, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.failOnErrorCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(debugLabel, NbBundle.getMessage(CustomizerKarma.class, "CustomizerKarma.debugLabel.text")); // NOI18N
 
@@ -282,15 +293,6 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(configSearchButton))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(autowatchCheckBox)
-                    .addComponent(coverageLabel)
-                    .addComponent(debugLabel)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(debugCheckBox)))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -305,6 +307,16 @@ public class CustomizerKarma extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(debugBrowserIdComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(autowatchCheckBox)
+                    .addComponent(coverageLabel)
+                    .addComponent(debugLabel)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(debugCheckBox))
+                    .addComponent(failOnErrorCheckBox))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -316,6 +328,8 @@ public class CustomizerKarma extends JPanel {
                     .addComponent(configSearchButton))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(autowatchCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(failOnErrorCheckBox)
                 .addGap(18, 18, 18)
                 .addComponent(debugLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -335,7 +349,8 @@ public class CustomizerKarma extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(coverageConfigLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(coverageDebugLabel))
+                .addComponent(coverageDebugLabel)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -396,6 +411,7 @@ public class CustomizerKarma extends JPanel {
     private JLabel debugBrowserIdLabel;
     private JCheckBox debugCheckBox;
     private JLabel debugLabel;
+    private JCheckBox failOnErrorCheckBox;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

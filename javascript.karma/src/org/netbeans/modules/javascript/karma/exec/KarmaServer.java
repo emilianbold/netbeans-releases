@@ -314,6 +314,7 @@ public final class KarmaServer implements PropertyChangeListener {
                 .setProjectConfigFile(projectConfig.getAbsolutePath())
                 .setNbConfigFile(getNetBeansKarmaConfig().getAbsolutePath())
                 .setRerunHandler(new RerunHandlerImpl(this))
+                .setFailOnBrowserError(KarmaPreferences.isFailOnBrowserError(project))
                 .addEnvVars(getEnvVars(projectConfig))
                 .build();
     }

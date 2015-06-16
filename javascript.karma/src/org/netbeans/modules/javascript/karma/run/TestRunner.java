@@ -43,6 +43,10 @@
 package org.netbeans.modules.javascript.karma.run;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -70,6 +74,7 @@ public final class TestRunner {
     public static final String NB_LINE = "$NB$netbeans "; // NOI18N
 
     private static final String NEW_LINE_REGEX = "\\s*\\\\n\\s*"; // NOI18N
+    private static final String UNCAUGHT_ERROR_PREFIX = "Uncaught Error: "; // NOI18N
     private static final String BROWSER_START = "$NB$netbeans browserStart"; // NOI18N
     private static final String BROWSER_END = "$NB$netbeans browserEnd"; // NOI18N
     private static final String BROWSER_ERROR = "$NB$netbeans browserError"; // NOI18N
@@ -95,12 +100,12 @@ public final class TestRunner {
 
     private final KarmaRunInfo karmaRunInfo;
     private final AtomicLong browserCount = new AtomicLong();
+    private final Map<String, List<String>> browserErrors = new HashMap<>();
 
     private TestSession testSession;
     private TestSuite testSuite;
     private long testSuiteRuntime = 0;
     private boolean hasTests = false;
-    private boolean hasErrors = false;
 
 
     public TestRunner(KarmaRunInfo karmaRunInfo) {
@@ -177,7 +182,8 @@ public final class TestRunner {
             // can happen for qunit
             suiteFinished(null);
         }
-        if (hasErrors) {
+        if (!browserErrors.isEmpty()) {
+            processErrors();
             getManager().displayOutput(testSession, Bundle.TestRunner_tests_error(), true);
             getManager().displayOutput(testSession, Bundle.TestRunner_output_verify(), true);
         } else if (!hasTests) {
@@ -189,21 +195,23 @@ public final class TestRunner {
         getManager().sessionFinished(testSession);
         testSession = null;
         hasTests = false;
-        hasErrors = false;
+        browserErrors.clear();
     }
 
     @NbBundle.Messages({
         "# {0} - browser name",
         "TestRunner.browser.error=[{0}] ERROR:",
+        "TestRunner.browser.unknown=Unknown",
     })
     private void browserError(String line) {
         initTestSession();
-        hasErrors = true;
         Matcher matcher = BROWSER_ERROR_PATTERN.matcher(line);
+        String browser = null;
+        String error = null;
         if (matcher.find()) {
-            String browser = matcher.group(1);
+            browser = matcher.group(1);
             getManager().displayOutput(testSession, Bundle.TestRunner_browser_error(browser), true);
-            String error = matcher.group(2);
+            error = matcher.group(2);
             if (error.startsWith("\"")) { // NOI18N
                 error = error.substring(1);
                 if (error.endsWith("\"")) { // NOI18N
@@ -217,9 +225,52 @@ public final class TestRunner {
         } else {
             LOGGER.log(Level.FINE, "Unexpected browser error line: {0}", line);
             getManager().displayOutput(testSession, line, true);
+            browser = Bundle.TestRunner_browser_unknown();
+            error = line;
             assert false : line;
         }
         getManager().displayOutput(testSession, "", false); // NOI18N
+        List<String> errors = browserErrors.get(browser);
+        if (errors == null) {
+            errors = new ArrayList<>();
+            browserErrors.put(browser, errors);
+        }
+        errors.add(error);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - browser name",
+        "TestRunner.error.suite=[{0}] Uncaught Errors",
+    })
+    private void processErrors() {
+        if (!karmaRunInfo.isFailOnBrowserError()) {
+            return;
+        }
+        for (Map.Entry<String, List<String>> entry : browserErrors.entrySet()) {
+            // suite
+            TestSuite errorTestSuite = new TestSuite(Bundle.TestRunner_error_suite(entry.getKey()));
+            testSession.addSuite(errorTestSuite);
+            getManager().displaySuiteRunning(testSession, errorTestSuite.getName());
+            // tests
+            for (String info : entry.getValue()) {
+                String[] details = processDetails(info);
+                String name = details[0];
+                if (name.startsWith(UNCAUGHT_ERROR_PREFIX)) {
+                    name = name.substring(UNCAUGHT_ERROR_PREFIX.length()).trim();
+                    if (!StringUtils.hasText(name)) {
+                        name = details[0];
+                    }
+                }
+                Trouble trouble = new Trouble(true);
+                if (details.length > 1) {
+                    String[] stackTrace = new String[details.length - 1];
+                    System.arraycopy(details, 1, stackTrace, 0, stackTrace.length);
+                    trouble.setStackTrace(stackTrace);
+                }
+                addTestCase(name, Status.ERROR, 0, trouble);
+            }
+            getManager().displayReport(testSession, testSession.getReport(0), true);
+        }
     }
 
     @NbBundle.Messages({
