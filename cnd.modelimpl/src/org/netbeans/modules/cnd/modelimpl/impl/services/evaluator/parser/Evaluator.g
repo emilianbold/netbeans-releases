@@ -46,6 +46,17 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.evaluator.VariableProvid
     private int safeMul(int first, int second) {
         return checkParams(first, second) ? first * second : Integer.MAX_VALUE;
     }
+
+    private int safeParseInt(String text) {
+        if (text != null) {
+            try {
+              return Integer.parseInt(text.replaceAll("[a-z,A-Z,_].*", ""));
+            } catch (NumberFormatException ex) {
+              return Integer.MAX_VALUE;
+            }
+        }
+        return 0;
+    }
 }
 
 prog: expr;
@@ -76,7 +87,7 @@ unaryExpr returns [int value]
 
 atom returns [int value]
     :   
-        DECIMALINT {$value = (($DECIMALINT.text) == null) ? 0 : Integer.parseInt(($DECIMALINT.text).replaceAll("[a-z,A-Z,_].*", "")) ;}
+        DECIMALINT {$value = safeParseInt($DECIMALINT.text); }
     |   (function_call) => function_call {$value = $function_call.value;}
     |   variable {$value = $variable.value;}
     |   LPAREN expr RPAREN {$value = $expr.value;}
