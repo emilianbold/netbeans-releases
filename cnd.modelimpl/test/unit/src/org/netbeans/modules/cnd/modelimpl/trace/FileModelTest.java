@@ -136,7 +136,9 @@ public class FileModelTest extends TraceModelTestBase {
     }
 
     public void testPreProcTrueKeywordID_Studio() throws Exception {
-        if (!APTTraceFlags.USE_CLANK) {
+        // "true" in preprocessor for C++ mode was fixed in OSS (21194403)
+        // hack was removed as rev http://hg.netbeans.org/cnd-main/rev/9c543f5a42d3
+        if (false) {
             // clank doesn't have this specific of Studio compiler
             performTest("check.true.studio.cc");
         }
