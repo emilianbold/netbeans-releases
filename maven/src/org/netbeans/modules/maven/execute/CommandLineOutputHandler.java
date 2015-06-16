@@ -98,6 +98,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final RequestProcessor PROCESSOR = new RequestProcessor("Maven ComandLine Output Redirection", Integer.getInteger("maven.concurrent.builds", 16) * 2); //NOI18N
     private static final Logger LOG = Logger.getLogger(CommandLineOutputHandler.class.getName());
     private InputOutput inputOutput;
+    /*test*/ static final Pattern DOWNLOAD = Pattern.compile("^(\\d+(/\\d*)? ?(M|K|b|KB|B|\\?)\\s*)+$"); //NOI18N
     private static final Pattern linePattern = Pattern.compile("\\[(DEBUG|INFO|WARNING|ERROR|FATAL)\\] (.*)"); // NOI18N
     public static final Pattern startPatternM2 = Pattern.compile("\\[INFO\\] \\[([\\w]*):([\\w]*)[ ]?.*\\]"); // NOI18N
     public static final Pattern startPatternM3 = Pattern.compile("\\[INFO\\] --- (\\S+):\\S+:(\\S+)(?: [(]\\S+[)])? @ \\S+ ---"); // ExecutionEventLogger.mojoStarted NOI18N
@@ -259,6 +260,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 }
                 if (char1[0] == '\r') { //NOI18N
                     skipLF = true;
+                    buf.append(char1[0]);
                     return buf.toString();
                 }
                 buf.append(char1[0]);
@@ -338,23 +340,35 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
                         checkSleepiness();
                     }
-                    Matcher match = linePattern.matcher(line);
-                    if (match.matches()) {
-                        String levelS = match.group(1);
-                        Level level = Level.valueOf(levelS);
-                        String text = match.group(2);
-                        updateFoldForException(text);
-                        processLine(MavenSettings.getDefault().isShowLoggingLevel() ? line : text, stdOut, level);
-                        if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
-                            checkProgress(text);
+                    
+                    boolean isDownloadProgress = false;
+                    if(line.charAt(line.length() - 1) == '\r') {
+                        // issue #252514
+                        if (DOWNLOAD.matcher(line).matches()) {
+                            isDownloadProgress = true;
+                        } else {
+                            line = line.substring(0, line.length() - 2);
                         }
-                    } else {
-                        // oh well..
-                        updateFoldForException(line);
-                        processLine(line, stdOut, Level.INFO);
+                    }
+                    if(!isDownloadProgress) {
+                        Matcher match = linePattern.matcher(line);
+                        if (match.matches()) {
+                            String levelS = match.group(1);
+                            Level level = Level.valueOf(levelS);
+                            String text = match.group(2);
+                            updateFoldForException(text);
+                            processLine(MavenSettings.getDefault().isShowLoggingLevel() ? line : text, stdOut, level);
+                            if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
+                                checkProgress(text);
+                            }
+                        } else {
+                            // oh well..
+                            updateFoldForException(line);
+                            processLine(line, stdOut, Level.INFO);
+                        }
                     }
                     if (contextImpl == null && firstFailure == null) {
-                        match = reactorFailure.matcher(line);
+                        Matcher match = reactorFailure.matcher(line);
                         if (match.matches()) {
                             firstFailure = match.group(1);
                         }
