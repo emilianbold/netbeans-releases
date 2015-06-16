@@ -98,8 +98,13 @@ public class ScriptsHandler {
     ScriptsHandler(@NullAllowed List<String> localPaths,
                    @NullAllowed List<String> serverPaths,
                    Collection<String> localPathExclusionFilters,
-                   V8Debugger dbg) {
-        this.remotePathPrefix = dbg.getHost()+"_"+dbg.getPort()+"/";
+                   @NullAllowed V8Debugger dbg) {
+        if (dbg != null) {
+            this.remotePathPrefix = dbg.getHost()+"_"+dbg.getPort()+"/";
+        } else {
+            // dbg can be null in tests
+            this.remotePathPrefix = "";
+        }
         if (!localPaths.isEmpty() && !serverPaths.isEmpty()) {
             this.doPathTranslation = true;
             int n = localPaths.size();
@@ -140,7 +145,7 @@ public class ScriptsHandler {
                 if (localRoot != null) {
                     lpefs[i++] = localRoot;
                 } else {
-                    Arrays.copyOf(lpefs, lpefs.length - 1);
+                    lpefs = Arrays.copyOf(lpefs, lpefs.length - 1);
                 }
             }
             this.localPathExclusionFilters = (lpefs.length > 0) ? lpefs : null;

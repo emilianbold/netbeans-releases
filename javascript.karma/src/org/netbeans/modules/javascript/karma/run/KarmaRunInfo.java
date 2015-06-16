@@ -57,6 +57,7 @@ public final class KarmaRunInfo {
     private final String nbConfigFile;
     private final String projectConfigFile;
     private final String testFile;
+    private final boolean failOnBrowserError;
     private final Map<String, String> envVars = new ConcurrentHashMap<>();
 
     private volatile boolean absoluteUrls = false;
@@ -73,6 +74,7 @@ public final class KarmaRunInfo {
         nbConfigFile = builder.nbConfigFile;
         projectConfigFile = builder.projectConfigFile;
         testFile = builder.testFile;
+        failOnBrowserError = builder.failOnBrowserError;
         envVars.putAll(builder.envVars);
     }
 
@@ -95,6 +97,10 @@ public final class KarmaRunInfo {
     @CheckForNull
     public String getTestFile() {
         return testFile;
+    }
+
+    public boolean isFailOnBrowserError() {
+        return failOnBrowserError;
     }
 
     public Map<String, String> getEnvVars() {
@@ -125,6 +131,7 @@ public final class KarmaRunInfo {
         String nbConfigFile;
         String projectConfigFile;
         String testFile;
+        boolean failOnBrowserError;
         Map<String, String> envVars = new HashMap<>();
 
 
@@ -152,6 +159,11 @@ public final class KarmaRunInfo {
 
         public Builder setTestFile(@NullAllowed String testFile) {
             this.testFile = testFile;
+            return this;
+        }
+
+        public Builder setFailOnBrowserError(boolean failOnBrowserError) {
+            this.failOnBrowserError = failOnBrowserError;
             return this;
         }
 
