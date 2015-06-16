@@ -112,6 +112,7 @@ public final class KarmaCustomizerPanel implements CustomizerPanelImplementation
         assert customizerKarma != null;
         KarmaPreferences.setConfig(project, customizerKarma.getConfig());
         KarmaPreferences.setAutowatch(project, customizerKarma.isAutowatch());
+        KarmaPreferences.setFailOnBrowserError(project, customizerKarma.isFailOnBrowserError());
         KarmaPreferences.setDebug(project, customizerKarma.isDebug());
         KarmaPreferences.setDebugBrowserId(project, customizerKarma.getSelectedBrowserId());
     }
