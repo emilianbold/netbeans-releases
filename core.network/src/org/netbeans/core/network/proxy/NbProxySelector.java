@@ -44,8 +44,11 @@
 
 package org.netbeans.core.network.proxy;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
+import java.io.InputStream;
 import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -67,7 +70,7 @@ public final class NbProxySelector extends ProxySelector {
     
     private final ProxySelector original;
     private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
-    private static Object useSystemProxies;
+    private static Boolean useSystemProxies;
     private static final String DEFAULT_PROXY_SELECTOR_CLASS_NAME = "sun.net.spi.DefaultProxySelector";
     private static final RequestProcessor RP = new RequestProcessor(NbProxySelector.class.getName(), 5);
     private static final int DNS_TIMEOUT = 10000;
@@ -419,18 +422,46 @@ public final class NbProxySelector extends ProxySelector {
         return dontUseProxy;
     }
     
-    // NetProperties is JDK vendor specific, access only by reflection
-    static boolean useSystemProxies () {
+    static boolean useSystemProxies() {
         if (useSystemProxies == null) {
-            try {
-                Class<?> clazz = Class.forName ("sun.net.NetProperties");
-                Method getBoolean = clazz.getMethod ("getBoolean", String.class);
-                useSystemProxies = getBoolean.invoke (null, "java.net.useSystemProxies");
-            } catch (Exception x) {
-                LOG.log (Level.FINEST, "Cannot get value of java.net.useSystemProxies bacause " + x.getMessage(), x);
+            final String netPropertiesFN = "net.properties"; // NOL10N
+            final String propertyKey = "java.net.useSystemProxies"; // NOL10N
+
+            Properties props = new Properties();
+            String fname = System.getProperty("java.home");
+
+            if (fname == null) {
+                return false;
             }
+            
+            try {
+                // JDK 8 and older
+                File folder = new File(fname, "lib");
+                File netProperties = new File(folder, netPropertiesFN);
+
+                if (!netProperties.exists()) {
+                    // JDK 9 and newer
+                    folder = new File(fname, "conf");
+                    netProperties = new File(folder, netPropertiesFN);
+                }
+
+                fname = netProperties.getCanonicalPath();
+                InputStream in = new FileInputStream(fname);
+                BufferedInputStream bin = new BufferedInputStream(in);
+                props.load(bin);
+                bin.close();
+
+                String val = props.getProperty(propertyKey);
+                val = System.getProperty(propertyKey, val);
+                
+                useSystemProxies = Boolean.valueOf(val);
+            } catch (Exception e) {
+                // set default value
+                useSystemProxies = false;
+            }           
         }
-        return useSystemProxies != null && "true".equalsIgnoreCase (useSystemProxies.toString ());
+        
+        return useSystemProxies;
     }
     
     static boolean usePAC() {
