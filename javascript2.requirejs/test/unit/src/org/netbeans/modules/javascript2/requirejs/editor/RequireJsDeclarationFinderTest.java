@@ -110,7 +110,7 @@ public class RequireJsDeclarationFinderTest extends JsTestBase {
     }
     
     public void testNavigationThroughProjectProperties03() throws Exception {
-        checkDeclaration("TestProject1/js/main.js", "'lib/api/v0.1/OMe^ssages'", "OMessages.js", 0);
+        checkDeclaration("TestProject1/js/main.js", "'lib2/api/v0.1/OMe^ssages'", "OMessages.js", 0);
     }
     
     public void testIssue251646() throws Exception {
