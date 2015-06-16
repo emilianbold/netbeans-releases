@@ -342,12 +342,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                     }
                     
                     boolean isDownloadProgress = false;
-                    if(line.charAt(line.length() - 1) == '\r') {
+                    if(line.length() > 0 && line.charAt(line.length() - 1) == '\r') {
                         // issue #252514
                         if (DOWNLOAD.matcher(line).matches()) {
                             isDownloadProgress = true;
                         } else {
-                            line = line.substring(0, line.length() - 2);
+                            line = line.substring(0, line.length() - 1);
                         }
                     }
                     if(!isDownloadProgress) {
