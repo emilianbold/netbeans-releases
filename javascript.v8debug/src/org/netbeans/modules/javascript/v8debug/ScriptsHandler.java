@@ -145,7 +145,7 @@ public class ScriptsHandler {
                 if (localRoot != null) {
                     lpefs[i++] = localRoot;
                 } else {
-                    Arrays.copyOf(lpefs, lpefs.length - 1);
+                    lpefs = Arrays.copyOf(lpefs, lpefs.length - 1);
                 }
             }
             this.localPathExclusionFilters = (lpefs.length > 0) ? lpefs : null;
