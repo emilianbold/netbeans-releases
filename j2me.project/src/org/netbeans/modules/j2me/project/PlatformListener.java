@@ -98,10 +98,10 @@ final class PlatformListener implements Runnable, PropertyChangeListener {
                     updateIfNeeded();
                 }
             });
-        } else if (ProjectManager.mutex().isWriteAccess()) {
-            updateIfNeeded();
         } else if (ProjectManager.mutex().isReadAccess()) {
             RP.execute(this);
+        } else if (ProjectManager.mutex().isWriteAccess()) {
+            updateIfNeeded();
         } else {
             ProjectManager.mutex().writeAccess(this);
         }
