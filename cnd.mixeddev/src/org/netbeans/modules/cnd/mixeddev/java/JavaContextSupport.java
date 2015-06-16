@@ -91,7 +91,7 @@ import org.openide.util.Pair;
 public final class JavaContextSupport {
     
     public static <T> T resolveContext(FileObject fObj, ResolveJavaContextTask<T> task) {
-        if (fObj != null) {
+        if (fObj != null && fObj.isValid() && fObj.isData()) {
             JavaSource js = JavaSource.forFileObject(fObj);
             if (js == null) {
                 return null;
