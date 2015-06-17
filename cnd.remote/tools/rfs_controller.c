@@ -179,8 +179,9 @@ static void serve_connection(void* data) {
                     case COPIED:    // fall through
                     case UNCONTROLLED:
                     case MODIFIED:
+                    case INEXISTENT:
                         response[0] = response_ok;
-                        trace("File %s state %c - uncontrolled/modified/copied, replying %s\n", filename, (char) fd->state,  response);
+                        trace("File %s state %c - uncontrolled/modified/copied/inexistent, replying %s\n", filename, (char) fd->state,  response);
                         break;
                     case ERROR:
                         response[0] = response_failure;
