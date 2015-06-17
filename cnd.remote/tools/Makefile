@@ -127,6 +127,7 @@ INSTALLDIR=../../nbbuild/netbeans/cnd/bin
 all: build_impl install
 
 install: build_impl
+	mkdir -p ${INSTALLDIR}
 	cp -r ${DIST} ${INSTALLDIR}
 
 build_impl: check init ${DIST}/rfs_preload.so ${DIST}/rfs_controller ${DIST}/rfs_test_env
