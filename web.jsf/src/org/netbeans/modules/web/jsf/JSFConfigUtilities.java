@@ -151,7 +151,8 @@ public class JSFConfigUtilities {
                     if (ddRoot != null) {
                         InitParam[] parameters = ddRoot.getContextParam();
                         for (InitParam param: parameters) {
-                            if (param.getParamName().startsWith(FACES_PARAM)) {
+                            String paramName = param.getParamName();
+                            if (paramName != null && paramName.startsWith(FACES_PARAM)) {
                                 return true;
                             }
                         }
