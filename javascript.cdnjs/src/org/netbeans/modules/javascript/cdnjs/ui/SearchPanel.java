@@ -52,6 +52,8 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -204,10 +206,29 @@ class SearchPanel extends javax.swing.JPanel {
             messageLabel.setText(NbBundle.getMessage(SearchPanel.class, "SearchPanel.messageLabel.text")); // NOI18N
             showComponent(messageLabel);
         } else {
+            Arrays.sort(libraries, new LibraryComparator());
             librariesList.setModel(libraryListModelFor(libraries));
-            librariesList.setSelectedIndex(0);
+            preSelectSearchedLibrary(libraries);
             showComponent(searchPanel);
         }
+    }
+
+    /**
+     * Attempts to pre-select the library whose name matches the last search term.
+     * Selects the first library otherwise.
+     * 
+     * @param libraries latest search result.
+     */
+    private void preSelectSearchedLibrary(Library[] libraries) {
+        int index = 0;
+        String term = lastSearchTerm == null ? "" : lastSearchTerm.toLowerCase(); // NOI18N
+        for (int i=0; i<libraries.length; i++) {
+            if (libraries[i].getName().toLowerCase().equals(term)) {
+                index = i;
+                break;
+            }
+        }
+        librariesList.setSelectedIndex(index);
     }
 
     /**
@@ -656,6 +677,18 @@ class SearchPanel extends javax.swing.JPanel {
             }
             return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
+    }
+
+    /**
+     * Comparator for sorting of libraries in libraries list.
+     */
+    static class LibraryComparator implements Comparator<Library> {
+
+        @Override
+        public int compare(Library library1, Library library2) {
+            return library1.getName().toLowerCase().compareTo(library2.getName().toLowerCase());
+        }
+
     }
 
 }

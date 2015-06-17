@@ -75,12 +75,12 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     }
     
     public void testPropertiesWithExceptionInAnchorName() {
-        assertPropertyHelpSnipped("transform");
+        assertPropertyHelpSnipped("line-break");
     }
     
     public void testRubyProperties() {
         //ruby specification doesn't use "dfn" tag for property refs but "a" tag 
-        assertPropertyHelpSnipped("ruby-overhang");
+        assertPropertyHelpSnipped("ruby-merge");
         assertPropertyHelpSnipped("ruby-align");
     }
     

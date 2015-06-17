@@ -153,11 +153,11 @@ public enum ServerDetails {
     ),
     
     /**
-     * details for an instance of GlassFish Server 4.0.1
+     * details for an instance of GlassFish Server 4.1 and dev 4.2
      */
     GLASSFISH_SERVER_4_1(NbBundle.getMessage(ServerDetails.class, "STR_41_SERVER_NAME", new Object[]{}), // NOI18N
         "deployer:gfv3ee6wc", // NOI18N
-        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.1"}, // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.[12]"}, // NOI18N
         new String[0],
         410,
         "http://download.java.net/glassfish/4.1/release/glassfish-4.1.zip?nbretriever=fallback", // NOI18N

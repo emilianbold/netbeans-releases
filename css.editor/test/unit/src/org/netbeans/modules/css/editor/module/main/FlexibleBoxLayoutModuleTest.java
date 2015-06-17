@@ -52,8 +52,12 @@ public class FlexibleBoxLayoutModuleTest extends CssModuleTestBase {
     }
     
     public void testProperties() {
-        assertPropertyValues("flex-align", "baseline");
-        assertPropertyValues("flex-order", "10");
+        assertPropertyValues("align-self", "baseline");
+        assertPropertyValues("order", "10");
+        assertPropertyValues("flex-direction", "row");
+        assertPropertyValues("flex-direction", "column");
+        assertPropertyValues("flex-wrap", "nowrap");
+        assertPropertyValues("align-content", "flex-start");
     }
     
 }
