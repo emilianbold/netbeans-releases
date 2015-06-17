@@ -53,7 +53,10 @@ NetBeans.serverURL = function() {
 NetBeans.DEBUG = true;
 NetBeans.INFOBAR = false;
 
-NetBeans.VERSION = "1.7.4";
+// Version that the extension reports to the IDE in 'init' message
+NetBeans.VERSION = "1.8.1";
+// The last version that the IDE reported to the extension
+NetBeans.ideVersion = null;
 
 NetBeans.managedTabs = new Object();
 
@@ -265,6 +268,7 @@ NetBeans.processInitMessage = function(message) {
         } else if (tabInfo.status === this.STATUS_UNCONFIRMED) {
             if (message.status === 'accepted') {
                 // Tab should be managed
+                NetBeans.ideVersion = message.version;
                 if (tabInfo.closed) {
                     // Delayed confirmation request for already closed tab;
                     // for a tab whose URL changed

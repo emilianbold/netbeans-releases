@@ -406,7 +406,7 @@ public final class ExternalBrowserPlugin {
          * @return version of NetBeans.
          */
         private String getNetBeansVersion() {
-            return "7.4"; // NOI18N
+            return "8.1"; // NOI18N
         }
 
         private void handleDebuggerDetached(Message message) {

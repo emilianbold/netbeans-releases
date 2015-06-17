@@ -105,7 +105,7 @@ NetBeans_PresetMenu._initSelectionMode = function(activeTab) {
 // Debug in NetBeans init
 NetBeans_PresetMenu._initDebugInNetBeans = function(activeTab) {
     var menu = document.getElementById('debugInNetBeansMenu');
-    var display = NetBeans.debuggedTab === activeTab.id ? 'none' : 'block';
+    var display = NetBeans.ideVersion === "7.4" || NetBeans.debuggedTab === activeTab.id ? 'none' : 'block';
     menu.style.display = display;
     var separator = document.getElementById('debugInNetBeansSeparator');
     if (separator) {
