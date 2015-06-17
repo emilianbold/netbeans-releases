@@ -341,6 +341,76 @@ public final class ProxyFileManager implements JavaFileManager {
 
     @Override
     @CheckForNull
+    public Location getModuleLocation(Location location, String moduleName) throws IOException {
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (location);
+            for (JavaFileManager fm : fms) {
+                Location result = fm.getModuleLocation(location, moduleName);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        } finally {
+            clearOwnerThread();
+        }
+    }
+
+    @Override
+    @CheckForNull
+    public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (location);
+            for (JavaFileManager fm : fms) {
+                Location result = fm.getModuleLocation(location, fo, pkgName);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        } finally {
+            clearOwnerThread();
+        }
+    }
+    
+    @Override
+    @CheckForNull
+    public String inferModuleName(@NonNull final Location location) throws IOException {
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (location);
+            for (JavaFileManager fm : fms) {
+                String result = fm.inferModuleName(location);
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        } finally {
+            clearOwnerThread();
+        }
+    }
+    
+    @Override
+    @NonNull
+    public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
+        checkSingleOwnerThread();
+        try {
+            JavaFileManager[] fms = getFileManagers (location);
+            List<Iterable<Set<Location>>> iterables = new ArrayList<>(fms.length);
+            for (JavaFileManager fm : fms) {
+                iterables.add(fm.listModuleLocations(location));
+            }
+            return Iterators.chained(iterables);
+        } finally {
+            clearOwnerThread();
+        }
+    }
+    
+    @Override
+    @CheckForNull
     public JavaFileObject getJavaFileForInput (
             @NonNull final Location l,
             @NonNull final String className,

@@ -427,7 +427,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         private Type delegate = null;
         
         public PlaceholderType() {
-            this(TypeMetadata.empty);
+            this(TypeMetadata.EMPTY);
         }       
 
         public PlaceholderType(TypeMetadata md) {
@@ -440,7 +440,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         }
 
         @Override
-        public Type clone(TypeMetadata md) {
+        public Type cloneWithMetadata(TypeMetadata md) {
             PlaceholderType out = new PlaceholderType(md);
             out.delegate = delegate;
             return out;
