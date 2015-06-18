@@ -141,6 +141,7 @@ import static org.netbeans.modules.parsing.impl.indexing.Debug.printMimeTypes;
 import org.netbeans.modules.parsing.impl.indexing.implspi.CacheFolderProvider;
 import org.netbeans.modules.parsing.impl.indexing.implspi.ContextProvider;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProviders;
 /**
  *
  * @author Tomas Zezula
@@ -6246,7 +6247,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             }
         }
 
-        @ServiceProvider(service=IndexingBridge.Ordering.class)
+        @ServiceProviders ({
+            @ServiceProvider(service=IndexingBridge.Ordering.class),
+            @ServiceProvider(service = IndexingBridge.class)
+        })
         public static final class IndexingBridgeImpl extends IndexingBridge.Ordering {
             @Override
             protected void enterProtectedMode() {
