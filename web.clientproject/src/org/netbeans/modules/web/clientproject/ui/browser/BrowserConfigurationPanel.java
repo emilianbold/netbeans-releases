@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.web.clientproject.ui.browser;
 
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -57,7 +59,11 @@ public class BrowserConfigurationPanel extends javax.swing.JPanel {
     public BrowserConfigurationPanel(ClientSideProject project, ClientProjectEnhancedBrowserImpl cfg, WebBrowser browser) {
         initComponents();
         if (!browser.hasNetBeansIntegration()) {
-            jAutoRefreshCheckBox.setVisible(false);
+            if (browser.getBrowserFamily() == BrowserFamilyId.CHROME) {
+                jAutoRefreshCheckBox.setText(NbBundle.getMessage(BrowserConfigurationPanel.class, "BrowserConfigurationPanel.jAutoRefreshCheckBox.chrome.text")); // NOI18N
+            } else {
+                jAutoRefreshCheckBox.setVisible(false);
+            }
             jHighlightSelectionCheckBox.setVisible(false);
         }
         jAutoRefreshCheckBox.setSelected(cfg.isAutoRefresh());
