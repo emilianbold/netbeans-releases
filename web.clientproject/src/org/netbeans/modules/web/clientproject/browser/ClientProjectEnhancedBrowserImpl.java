@@ -80,6 +80,7 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
         }
     }
 
+    @Override
     public boolean isAutoRefresh() {
         String val = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_AUTO_REFRESH+"."+browser.getId()); //NOI18N
         if (val != null) {
