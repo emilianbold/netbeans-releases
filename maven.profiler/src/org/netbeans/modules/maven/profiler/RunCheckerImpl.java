@@ -43,21 +43,21 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Launcher;
 import org.netbeans.modules.profiler.nbimpl.actions.ProfilerLauncher.Session;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.InputOutput;
 
 /**
@@ -154,12 +154,9 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
             }
             final ProfilerLauncher.Session s = session;
             // Attach profiler engine (in separate thread) to profiled process
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    Profiler.getDefault().connectToStartedApp(s.getProfilingSettings(), s.getSessionSettings());
-                }
-            });
+            if (!NetBeansProfiler.getDefaultNB().startEx(s.getProfilingSettings(), s.getSessionSettings(), new AtomicBoolean())) {
+                return false;
+            }
         }
         
         return true;
