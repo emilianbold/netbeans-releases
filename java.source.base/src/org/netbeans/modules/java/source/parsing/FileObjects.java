@@ -1453,10 +1453,12 @@ public class FileObjects {
             Path file = fileCache;
             if (file == null) {
                 final char sep = root.getFileSystem().getSeparator().charAt(0);
-                final StringBuilder relPath = new StringBuilder().
-                        append(convertPackage2Folder(pkgName,sep)).
-                        append(sep).
-                        append(nameWithoutExt).
+                final StringBuilder relPath = new StringBuilder();
+                if (!pkgName.isEmpty()) {
+                    relPath.append(convertPackage2Folder(pkgName,sep)).
+                            append(sep);
+                }
+                relPath.append(nameWithoutExt).
                         append('.').
                         append(ext);
                 file = fileCache = root.resolve(relPath.toString());
@@ -1471,10 +1473,12 @@ public class FileObjects {
                 return resolvePath().toUri();
             }
             final StringBuilder sb = new StringBuilder().
-                    append(rootUri).
-                    append(convertPackage2Folder(pkgName)).
-                    append(NBFS_SEPARATOR_CHAR).
-                    append(nameWithoutExt).
+                    append(rootUri);
+            if (!pkgName.isEmpty()) {
+                sb.append(convertPackage2Folder(pkgName)).
+                        append(NBFS_SEPARATOR_CHAR);
+            }
+            sb.append(nameWithoutExt).
                     append('.').    //NOI18N
                     append(ext);
             return URI.create(sb.toString());
