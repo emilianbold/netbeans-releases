@@ -78,13 +78,15 @@ static void __logprint(const char* fname, char *const argv[], ...) {
         LOG("\nBuildTrace ERROR: __CND_TOOLS__ is not set!!!\n");
         return;
     }
+    char* filters = strdup(tools);
 
     char* log = getenv("__CND_BUILD_LOG__");
     if (log == NULL) {
         LOG("\nBuildTrace ERROR: __CND_BUILD_LOG__ is not set!!!\n");
+        free(filters);
         return;
     }
-    LOG("\nBuildTrace: TOOLS=%s\n\t    LOG=%s\n", tools, log);
+    LOG("\nBuildTrace: TOOLS=%s\n\t    LOG=%s\n", filters, log);
 
     int shortName = 0;
     const char* key = strrchr(fname, '/');
@@ -96,7 +98,6 @@ static void __logprint(const char* fname, char *const argv[], ...) {
     }
     LOG("\nBuildTrace: key = %s\n", key);
 
-    char* filters = strdup(tools);
     int found = 0;
     char* token;
     for(token = strtok(filters, ":"); token; token = strtok(NULL, ":")) {
