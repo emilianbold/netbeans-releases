@@ -386,7 +386,15 @@ public class TreeFactory {
            errors.append((JCTree)t);
         return make.at(NOPOS).Erroneous(errors.toList());
     }
-    
+
+    public ExportsTree Exports(ExpressionTree qualId, List<? extends ExpressionTree> moduleNames) {
+        ListBuffer<JCExpression> names = new ListBuffer<>();
+        for (ExpressionTree name : moduleNames) {
+            names.add((JCExpression) name);
+        }
+        return make.at(NOPOS).Exports((JCExpression) qualId, names.toList());
+    }
+
     public ExpressionStatementTree ExpressionStatement(ExpressionTree expression) {
         return make.at(NOPOS).Exec((JCExpression)expression);
     }
@@ -547,6 +555,13 @@ public class TreeFactory {
         return make.at(NOPOS).Reference(refMode, names.fromString(name.toString()), (JCExpression) expression, targs != null ? targs.toList() : null);
     }
     
+    public ModuleTree Module(ExpressionTree qualid, List<? extends DirectiveTree> directives) {
+        ListBuffer<JCDirective> dircts = new ListBuffer<>();
+        for (DirectiveTree t : directives)
+            dircts.append((JCDirective)t);
+        return make.at(NOPOS).ModuleDef((JCExpression)qualid, dircts.toList());
+    }
+    
     public ModifiersTree Modifiers(Set<Modifier> flagset, List<? extends AnnotationTree> annotations) {
         return Modifiers(modifiersToFlags(flagset), annotations);
     }
@@ -676,7 +691,15 @@ public class TreeFactory {
         }
         return make.at(NOPOS).TypeIdent(typetag);
     }
-    
+
+    public ProvidesTree Provides(ExpressionTree serviceName, ExpressionTree implName) {
+        return make.at(NOPOS).Provides((JCExpression) serviceName, (JCExpression)implName);
+    }
+
+    public RequiresTree Requires(boolean isPublic, ExpressionTree qualId) {
+        return make.at(NOPOS).Requires(isPublic, (JCExpression)qualId);
+    }
+
     public ExpressionTree QualIdentImpl(Element element) {
         return make.at(NOPOS).QualIdent((Symbol) element);
     }
@@ -809,7 +832,11 @@ public class TreeFactory {
         }
         return make.at(NOPOS).Unary(op, (JCExpression)arg);
     }
-    
+
+    public UsesTree Uses(ExpressionTree qualId) {
+        return make.at(NOPOS).Uses((JCExpression) qualId);
+    }
+
     public VariableTree Variable(ModifiersTree modifiers,
                                  CharSequence name,
                                  Tree type,

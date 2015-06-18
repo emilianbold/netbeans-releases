@@ -401,6 +401,7 @@ public final class ClasspathInfo {
                             siblings.getProvider(),
                             fmTx) : null,
                 this.memoryFileManager,
+                new ModuleFileManager(archiveProvider, bootClassPath, true),
                 this.pgTx,
                 siblings);
         return fileManager;
