@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 
@@ -54,13 +55,22 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Theofanis Oikonomou
  */
-public class ProtractorPreferences {
+@ProjectServiceProvider(service = ProtractorPreferences.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+public final class ProtractorPreferences {
 
     public static final String USER_CONFIGURATION_FILE = "user.configuration.file"; // NOI18N
     public static final String ENABLED = "enabled"; // NOI18N
     private static final String PROTRACTOR = "protractor"; // NOI18N
 
-    private ProtractorPreferences() {
+    private final Project project;
+
+    // @GuardedBy("this")
+    private Preferences preferences;
+
+
+    public ProtractorPreferences(Project project) {
+        assert project != null;
+        this.project = project;
     }
 
     public static boolean isEnabled(Project project) {
@@ -99,7 +109,16 @@ public class ProtractorPreferences {
 
     private static Preferences getPreferences(final Project project) {
         assert project != null;
-        return ProjectUtils.getPreferences(project, ProtractorPreferences.class, false);
+        return project.getLookup()
+                .lookup(ProtractorPreferences.class)
+                .getPreferences();
+    }
+
+    synchronized Preferences getPreferences() {
+        if (preferences == null) {
+            preferences = ProjectUtils.getPreferences(project, ProtractorPreferences.class, false);
+        }
+        return preferences;
     }
 
     private static String relativizePath(Project project, String filePath) {

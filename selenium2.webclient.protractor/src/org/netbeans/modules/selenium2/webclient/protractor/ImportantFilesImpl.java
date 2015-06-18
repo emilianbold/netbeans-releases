@@ -58,26 +58,32 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.WeakListeners;
 
+@ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
 public final class ImportantFilesImpl implements ImportantFilesImplementation, PreferenceChangeListener {
 
     private final Project project;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    // @GuardedBy("this")
+    private boolean listening = false;
 
-    private ImportantFilesImpl(Project project) {
+
+    public ImportantFilesImpl(Project project) {
         assert project != null;
         this.project = project;
     }
 
-    @ProjectServiceProvider(service = ImportantFilesImplementation.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
-    public static ImportantFilesImplementation createImportantFiles(Project project) {
-        ImportantFilesImpl importantFiles = new ImportantFilesImpl(project);
-        ProtractorPreferences.addPreferenceChangeListener(project, WeakListeners.create(PreferenceChangeListener.class, importantFiles, ProtractorPreferences.class));
-        return importantFiles;
+    private synchronized void addListener(Project project) {
+        if (listening) {
+            return;
+        }
+        ProtractorPreferences.addPreferenceChangeListener(project, WeakListeners.create(PreferenceChangeListener.class, this, ProtractorPreferences.class));
+        listening = true;
     }
 
     @Override
     public Collection<FileInfo> getFiles() {
+        addListener(project);
         if (!ProtractorPreferences.isEnabled(project)) {
             return Collections.emptyList();
         }
