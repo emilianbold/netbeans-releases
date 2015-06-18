@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.selenium2.webclient.protractor.preferences;
 
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
@@ -53,11 +54,11 @@ import org.openide.filesystems.FileUtil;
  * @author Theofanis Oikonomou
  */
 public class ProtractorPreferences {
-    
-    private static final String ENABLED = "enabled"; // NOI18N
+
+    public static final String USER_CONFIGURATION_FILE = "user.configuration.file"; // NOI18N
+    public static final String ENABLED = "enabled"; // NOI18N
     private static final String PROTRACTOR = "protractor"; // NOI18N
-    private static final String USER_CONFIGURATION_FILE = "user.configuration.file"; // NOI18N
-    
+
     private ProtractorPreferences() {
     }
 
@@ -86,7 +87,15 @@ public class ProtractorPreferences {
     public static void setUserConfigurationFile(Project project, String userConfigurationFile) {
         getPreferences(project).put(USER_CONFIGURATION_FILE, userConfigurationFile);
     }
-    
+
+    public static void addPreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).addPreferenceChangeListener(listener);
+    }
+
+    public static void removePreferenceChangeListener(Project project, PreferenceChangeListener listener) {
+        getPreferences(project).removePreferenceChangeListener(listener);
+    }
+
     private static Preferences getPreferences(final Project project) {
         assert project != null;
         return ProjectUtils.getPreferences(project, ProtractorPreferences.class, false);
@@ -99,5 +108,5 @@ public class ProtractorPreferences {
         }
         return PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), filePath).getAbsolutePath();
     }
-    
+
 }
