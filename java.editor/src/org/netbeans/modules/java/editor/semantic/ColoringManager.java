@@ -107,6 +107,7 @@ public final class ColoringManager {
         put("mod-undefined", UNDEFINED);
         put("mod-unused", UNUSED);
         put("javadoc-identifier", JAVADOC_IDENTIFIER);
+        put("mod-keyword", KEYWORD);
     }
     
     private static void put(String coloring, ColoringAttributes... attributes) {
