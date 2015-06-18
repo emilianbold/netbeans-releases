@@ -272,6 +272,7 @@ public abstract class ProjectBasedTestCase extends ModelBasedTestCase {
         sysIncludes.clear();
         usrIncludes.clear();
         projectDependencies.clear();
+        projectHelpers.clear();
         assertTrue("unexpected exception " + CndUtils.getLastAssertion(), CndUtils.getLastAssertion() == null);
     }
 
