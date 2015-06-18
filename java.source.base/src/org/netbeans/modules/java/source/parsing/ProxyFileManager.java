@@ -119,6 +119,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NullAllowed final JavaFileManager aptSources,
             @NullAllowed final JavaFileManager outputhPath,
             @NullAllowed final MemoryFileManager memoryFileManager,
+            @NullAllowed final JavaFileManager platformModules,
             @NonNull final ProcessorGenerated processorGeneratedFiles,
             @NonNull final SiblingSource siblings) {
         assert processorGeneratedFiles != null;
@@ -129,7 +130,8 @@ public final class ProxyFileManager implements JavaFileManager {
                 sourcePath,
                 aptSources,
                 outputhPath,
-                memoryFileManager);
+                memoryFileManager,
+                platformModules);
         this.processorGeneratedFiles = processorGeneratedFiles;
         this.siblings = siblings;
     }
@@ -344,14 +346,10 @@ public final class ProxyFileManager implements JavaFileManager {
     public Location getModuleLocation(Location location, String moduleName) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = getFileManagers (location);
-            for (JavaFileManager fm : fms) {
-                Location result = fm.getModuleLocation(location, moduleName);
-                if (result != null) {
-                    return result;
-                }
-            }
-            return null;
+            final JavaFileManager[] jfms = getFileManagers(location);
+            return jfms.length == 0 ?
+                    null :
+                    jfms[0].getModuleLocation(location, moduleName);
         } finally {
             clearOwnerThread();
         }
@@ -362,14 +360,10 @@ public final class ProxyFileManager implements JavaFileManager {
     public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = getFileManagers (location);
-            for (JavaFileManager fm : fms) {
-                Location result = fm.getModuleLocation(location, fo, pkgName);
-                if (result != null) {
-                    return result;
-                }
-            }
-            return null;
+            final JavaFileManager[] jfms = getFileManagers(location);
+            return jfms.length == 0 ?
+                    null :
+                    jfms[0].getModuleLocation(location, fo, pkgName);
         } finally {
             clearOwnerThread();
         }
@@ -380,14 +374,10 @@ public final class ProxyFileManager implements JavaFileManager {
     public String inferModuleName(@NonNull final Location location) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = getFileManagers (location);
-            for (JavaFileManager fm : fms) {
-                String result = fm.inferModuleName(location);
-                if (result != null) {
-                    return result;
-                }
-            }
-            return null;
+            final JavaFileManager[] jfms = getFileManagers(location);
+            return jfms.length == 0 ?
+                    null :
+                    jfms[0].inferModuleName(location);
         } finally {
             clearOwnerThread();
         }
@@ -398,12 +388,10 @@ public final class ProxyFileManager implements JavaFileManager {
     public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = getFileManagers (location);
-            List<Iterable<Set<Location>>> iterables = new ArrayList<>(fms.length);
-            for (JavaFileManager fm : fms) {
-                iterables.add(fm.listModuleLocations(location));
-            }
-            return Iterators.chained(iterables);
+            final JavaFileManager[] jfms = getFileManagers(location);
+            return jfms.length == 0 ?
+                    Collections.<Set<Location>>emptySet() :
+                    jfms[0].listModuleLocations(location);
         } finally {
             clearOwnerThread();
         }
@@ -556,7 +544,11 @@ public final class ProxyFileManager implements JavaFileManager {
                 (T) FileObjects.nullWriteFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
-    private JavaFileManager[] getFileManagers (final Location location) {
+    @CheckForNull
+    private JavaFileManager[] getFileManagers (Location location) {
+        if (location.getClass() == ModuleLocation.class) {
+            location = ((ModuleLocation)location).getBaseLocation();
+        }
         final JavaFileManager[] result = fileManagers.get(location);
         return result != null ? result : new JavaFileManager[0];
     }
@@ -621,7 +613,8 @@ public final class ProxyFileManager implements JavaFileManager {
             @NullAllowed final JavaFileManager sourcePath,
             @NullAllowed final JavaFileManager aptSources,
             @NullAllowed final JavaFileManager outputhPath,
-            @NullAllowed final MemoryFileManager memoryFileManager) {
+            @NullAllowed final MemoryFileManager memoryFileManager,
+            @NullAllowed final JavaFileManager platformModules) {
         assert bootPath != null;
         assert classPath != null;
         assert memoryFileManager == null || sourcePath != null;
@@ -660,7 +653,12 @@ public final class ProxyFileManager implements JavaFileManager {
                 new JavaFileManager[0]:
                 new JavaFileManager[] {sourcePath}
              );
-
+        result.put(
+             StandardLocation.SYSTEM_MODULE_PATH,
+             platformModules == null ?
+                new JavaFileManager[0]:
+                new JavaFileManager[] {platformModules}
+        );
         final Set<JavaFileManager> all = Collections.newSetFromMap(new IdentityHashMap<JavaFileManager,Boolean>());
         for (JavaFileManager[] jfmsForLoc : result.values()) {
             Collections.addAll(all, jfmsForLoc);
