@@ -58,7 +58,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -250,27 +249,25 @@ public final class ModificationResult {
         Source source = Source.create(fo);
         if (source != null && out == null) {
             final Document doc = source.getDocument(false);
-            if (doc instanceof StyledDocument) {
-                final IOException[] exceptions = new IOException [1];
-                LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
-                    public void run () {
-                        try {
-                            commit2 ((StyledDocument)doc, differences, out);
-                        } catch (IOException ex) {
-                            exceptions [0] = ex;
-                        }
+            final IOException[] exceptions = new IOException [1];
+            LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
+                public void run () {
+                    try {
+                        commit2 (doc, differences, out);
+                    } catch (IOException ex) {
+                        exceptions [0] = ex;
                     }
-                });
-                if (exceptions [0] != null) {
-                    LOG.log(Level.INFO, "ModificationResult commit failed with an exception: ", exceptions[0]);
-                    int s = lastCommitted.size();
-                    for (Throwable t : lastCommitted) {
-                        LOG.log(Level.INFO, "Previous commit number " + s--, t);
-                    }
-                    throw exceptions [0];
                 }
-                return;
+            });
+            if (exceptions [0] != null) {
+                LOG.log(Level.INFO, "ModificationResult commit failed with an exception: ", exceptions[0]);
+                int s = lastCommitted.size();
+                for (Throwable t : lastCommitted) {
+                    LOG.log(Level.INFO, "Previous commit number " + s--, t);
+                }
+                throw exceptions [0];
             }
+            return;
         }
         Reader in = null;
         Writer out2 = out;
@@ -345,7 +342,7 @@ public final class ModificationResult {
         }            
     }
 
-    private static void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
+    private static void commit2 (final Document doc, final List<Difference> differences, Writer out) throws IOException {
         for (Difference diff : differences) {
             if (diff.isExcluded())
                 continue;
@@ -362,7 +359,7 @@ public final class ModificationResult {
         }
     }
     
-    private static void processDocument(final StyledDocument doc, final Difference diff) throws IOException {
+    private static void processDocument(final Document doc, final Difference diff) throws IOException {
         final BadLocationException[] blex = new BadLocationException[1];
         Runnable task = new Runnable() {
 
