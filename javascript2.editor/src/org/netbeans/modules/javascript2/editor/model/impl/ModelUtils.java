@@ -815,11 +815,19 @@ public class ModelUtils {
                             localObjects.add(localObject);
                         }
                     } else {
+                        boolean canBeWindowsProp = true;
                         for (JsObject object : model.getVariables(offset)) {
                             if (object.getName().equals(name)) {
                                 localObjects.add(object);
                                 localObject = object;
                                 break;
+                            }
+                        }
+                        if (localObject != null && localObject.getJSKind().isFunction() && i - 2 > -1) {
+                            JsFunction localFunc = (JsFunction)localObject;
+                            String paramName = exp.get(i - 2);
+                            if (localFunc.getParameter(paramName) != null) {
+                                canBeWindowsProp = false;
                             }
                         }
 
@@ -833,7 +841,7 @@ public class ModelUtils {
                                 }
                             }
                         }
-                        if (jsIndex != null) {
+                        if (jsIndex != null && canBeWindowsProp) {
                             Collection<TypeUsage> windowProperty = tryResolveWindowProperty(model, jsIndex, name);
                             if (windowProperty != null && !windowProperty.isEmpty()) {
                                 lastResolvedTypes.addAll(windowProperty);
