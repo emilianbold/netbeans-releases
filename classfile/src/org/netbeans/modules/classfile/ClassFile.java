@@ -70,6 +70,7 @@ public class ClassFile {
     String sourceFileName;
     InnerClass[] innerClasses;
     BootstrapMethod[] bootstrapMethods;
+    Module module;
     private AttributeMap attributes;
     private Map<ClassName,Annotation> annotations;
     short majorVersion;
@@ -436,6 +437,29 @@ public class ClassFile {
 		bootstrapMethods = new BootstrapMethod[0];
 	}
         return Arrays.asList(bootstrapMethods);
+    }
+
+    /**
+     * Returns the content of the <code>Module</code> attribute.
+     * @return the {@link Module} or null when there is no <code>Module</code> attribute.
+     * @since 1.47
+     */
+    public final Module getModule() {
+        if (module == null) {
+            final DataInputStream in = attributes.getStream("Module");  //NOI18N
+            if (in != null) {
+                try {
+                    try {
+                        module = new Module (in, constantPool);
+                    } finally {
+                        in.close();
+                    }
+                } catch (IOException e) {
+                    throw new InvalidClassFileAttributeException("invalid InnerClasses attribute", e);
+                }
+            }
+        }
+        return module;
     }
 
     /**
