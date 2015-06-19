@@ -242,6 +242,12 @@ public class TraceModel extends TraceModelBase {
         }
     };
 
+    @Override
+    protected void shutdown(boolean clearCache) {
+        super.shutdown(clearCache); 
+        states.clear();
+    }
+
     public interface ErrorListener {
         void error(String text, int line, int column);
     }
