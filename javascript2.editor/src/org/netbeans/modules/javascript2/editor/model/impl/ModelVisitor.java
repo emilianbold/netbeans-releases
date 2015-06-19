@@ -1102,6 +1102,15 @@ public class ModelVisitor extends PathNodeVisitor {
 //                }
                 
                 if (fqName != null) {
+                    if ("this".equals(fqName.get(0).getName())) {
+                        parent = resolveThis(modelBuilder.getCurrentObject());
+                        fqName.remove(0);
+                        JsObject tmpObject = parent;
+                        while (tmpObject.getParent() != null) {
+                            fqName.add(0, tmpObject.getDeclarationName());
+                            tmpObject = tmpObject.getParent();
+                        }
+                    }
                     array = ModelElementFactory.create(parserResult, aNode, fqName, modelBuilder, isDeclaredInParent, parent);
                     if (array != null && isPrivate) {
                         array.getModifiers().remove(Modifier.PUBLIC);
