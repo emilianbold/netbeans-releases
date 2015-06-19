@@ -1861,4 +1861,12 @@ public class Css3ParserScssTest extends CssTestBase {
     assertParses("$fa-css-prefix : test;\n"
                 + ".#{$fa-css-prefix}-2x { font-size: 2em; }");
     }
+    
+    public void testAmpColonInterpolation() {
+        assertParses("a {\n"
+                + "    &:#{$state}{\n"
+                + "        color: black\n"
+                + "    }\n"
+                + "}");
+    }
 }
