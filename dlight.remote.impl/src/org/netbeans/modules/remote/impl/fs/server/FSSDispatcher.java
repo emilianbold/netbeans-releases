@@ -211,7 +211,7 @@ import org.openide.util.RequestProcessor;
     }
 
     private static FileSystemProvider.AccessCheckType restoreAccessCheckType() {
-        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FULL;
+        FileSystemProvider.AccessCheckType result = FileSystemProvider.AccessCheckType.FAST;
         String name = NbPreferences.forModule(FSSDispatcher.class).get("accessCheckType", result.name()); // NOI18N
         if (name != null) {
             try {
