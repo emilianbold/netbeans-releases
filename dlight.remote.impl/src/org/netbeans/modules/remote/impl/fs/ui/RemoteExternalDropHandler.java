@@ -87,7 +87,7 @@ public class RemoteExternalDropHandler extends ExternalDropHandler {
     private static DataFlavor createDataObjectFlavuor() {
         DataFlavor flavour;
         try {
-            flavour = new DataFlavor("application/x-java-openide-dataobjectdnd;class=org.openide.loaders.DataObject");
+            flavour = new DataFlavor("application/x-java-openide-dataobjectdnd;class=org.openide.loaders.DataObject"); // NOI18N
         } catch (ClassNotFoundException ex) {
             flavour = null;
             RemoteLogger.info(ex);
