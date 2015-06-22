@@ -73,7 +73,7 @@ import org.openide.util.BaseUtilities;
  */
 public class OutputFileManager extends CachingFileManager {
 
-    private static final String OUTPUT_ROOT = "output-root";   //NOI18N
+    static final String OUTPUT_ROOT = "output-root";   //NOI18N
     private static final Logger LOG = Logger.getLogger(OutputFileManager.class.getName());
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)

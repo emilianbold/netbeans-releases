@@ -128,7 +128,7 @@ public final class ProxyFileManager implements JavaFileManager {
             final boolean recurse) throws IOException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] fms = cfg.getFileManagers (l);
+            final JavaFileManager[] fms = cfg.getFileManagers (l, null);
             List<Iterable<JavaFileObject>> iterables = new ArrayList<>(fms.length);
             for (JavaFileManager fm : fms) {
                 iterables.add(fm.list(l, packageName, kinds, recurse));
@@ -164,7 +164,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final String relativeName) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = cfg.getFileManagers(l);
+            JavaFileManager[] fms = cfg.getFileManagers(l, null);
             for (JavaFileManager fm : fms) {
                 FileObject result = fm.getFileForInput(l, packageName, relativeName);
                 if (result != null) {
@@ -189,7 +189,8 @@ public final class ProxyFileManager implements JavaFileManager {
         try {
             JavaFileManager[] fms = cfg.getFileManagers(
                     l == StandardLocation.SOURCE_PATH ?
-                        SOURCE_PATH_WRITE : l);
+                        SOURCE_PATH_WRITE : l,
+                    null);
             assert fms.length <= 1;
             if (fms.length == 0) {
                 throw new UnsupportedOperationException("No JavaFileManager for location: " + l);  //NOI18N
@@ -218,7 +219,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public void flush() throws IOException {
         checkSingleOwnerThread();
         try {
-            for (JavaFileManager fm : cfg.getFileManagers(ALL)) {
+            for (JavaFileManager fm : cfg.getFileManagers(ALL, null)) {
                 fm.flush();
             }
         } finally {
@@ -230,7 +231,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public void close() throws IOException {
         checkSingleOwnerThread();
         try {
-            for (JavaFileManager fm : cfg.getFileManagers(ALL)) {
+            for (JavaFileManager fm : cfg.getFileManagers(ALL, null)) {
                 fm.close();
             }
         } finally {
@@ -302,7 +303,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 return true;
             }
             final Collection<String> defensiveCopy = copy(remains);
-            for (JavaFileManager m : cfg.getFileManagers(ALL)) {
+            for (JavaFileManager m : cfg.getFileManagers(ALL, current)) {
                 if (m.handleOption(current, defensiveCopy.iterator())) {
                     return true;
                 }
@@ -328,7 +329,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public Location getModuleLocation(Location location, String moduleName) throws IOException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] jfms = cfg.getFileManagers(location);
+            final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     null :
                     jfms[0].getModuleLocation(location, moduleName);
@@ -342,7 +343,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public Location getModuleLocation(Location location, JavaFileObject fo, String pkgName) throws IOException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] jfms = cfg.getFileManagers(location);
+            final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     null :
                     jfms[0].getModuleLocation(location, fo, pkgName);
@@ -356,7 +357,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public String inferModuleName(@NonNull final Location location) throws IOException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] jfms = cfg.getFileManagers(location);
+            final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     null :
                     jfms[0].inferModuleName(location);
@@ -370,7 +371,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public Iterable<Set<Location>> listModuleLocations(@NonNull final Location location) throws IOException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] jfms = cfg.getFileManagers(location);
+            final JavaFileManager[] jfms = cfg.getFileManagers(location, null);
             return jfms.length == 0 ?
                     Collections.<Set<Location>>emptySet() :
                     jfms[0].listModuleLocations(location);
@@ -387,7 +388,7 @@ public final class ProxyFileManager implements JavaFileManager {
             @NonNull final JavaFileObject.Kind kind) throws IOException {
         checkSingleOwnerThread();
         try {
-            JavaFileManager[] fms = cfg.getFileManagers (l);
+            JavaFileManager[] fms = cfg.getFileManagers (l, null);
             for (JavaFileManager fm : fms) {
                 JavaFileObject result = fm.getJavaFileForInput(l,className,kind);
                 if (result != null) {
@@ -410,7 +411,7 @@ public final class ProxyFileManager implements JavaFileManager {
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] fms = cfg.getFileManagers (l);
+            final JavaFileManager[] fms = cfg.getFileManagers (l, null);
             assert fms.length <= 1;
             if (fms.length == 0) {
                 throw new UnsupportedOperationException("No JavaFileManager for location: " + l);  //NOI18N
@@ -449,7 +450,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 }
             }
             //Ask delegates to infer the binary name
-            JavaFileManager[] fms = cfg.getFileManagers (location);
+            JavaFileManager[] fms = cfg.getFileManagers (location, null);
             for (JavaFileManager fm : fms) {
                 result = fm.inferBinaryName (location, javaFileObject);
                 if (result != null && result.length() > 0) {
@@ -468,7 +469,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public boolean isSameFile(FileObject fileObject, FileObject fileObject0) {
         checkSingleOwnerThread();
         try {
-            final JavaFileManager[] fms = cfg.getFileManagers(ALL);
+            final JavaFileManager[] fms = cfg.getFileManagers(ALL, null);
             for (JavaFileManager fm : fms) {
                 if (fm.isSameFile(fileObject, fileObject0)) {
                     return true;
@@ -667,11 +668,15 @@ public final class ProxyFileManager implements JavaFileManager {
         }
 
         @NonNull
-        JavaFileManager[] getFileManagers(@NonNull Location location) {
+        JavaFileManager[] getFileManagers(@NonNull Location location, @NullAllowed String hint) {
             if (location.getClass() == ModuleLocation.class) {
                 location = ((ModuleLocation)location).getBaseLocation();
             }
             if (location == ALL) {
+                //Todo: create factories with options when there are more than one option.
+                if (OutputFileManager.OUTPUT_ROOT.equals(hint)) {
+                    createOutputFileManager();
+                }
                 final List<JavaFileManager> res = new ArrayList<>(emitted.length);
                 for (JavaFileManager jfm : emitted) {
                     if (emitted != null) {
