@@ -49,7 +49,7 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Tomas Zezula
  */
-public final class ModuleLocation implements Location {
+final class ModuleLocation implements Location {
 
     private final Location base;
     private final String name;

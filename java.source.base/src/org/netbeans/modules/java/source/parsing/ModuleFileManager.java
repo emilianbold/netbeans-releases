@@ -68,7 +68,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public final class ModuleFileManager implements JavaFileManager {
+final class ModuleFileManager implements JavaFileManager {
 
     private final CachingArchiveProvider provider;
     private final Collection<? extends URL> moduleRoots;
