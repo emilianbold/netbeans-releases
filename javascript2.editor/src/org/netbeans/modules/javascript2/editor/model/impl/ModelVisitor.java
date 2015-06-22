@@ -1107,7 +1107,8 @@ public class ModelVisitor extends PathNodeVisitor {
                         fqName.remove(0);
                         JsObject tmpObject = parent;
                         while (tmpObject.getParent() != null) {
-                            fqName.add(0, tmpObject.getDeclarationName());
+                            Identifier dName = tmpObject.getDeclarationName();
+                            fqName.add(0, dName != null ? tmpObject.getDeclarationName() : new IdentifierImpl(tmpObject.getName(), OffsetRange.NONE));
                             tmpObject = tmpObject.getParent();
                         }
                     }

@@ -1099,6 +1099,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                             return idx;
                         }
                         int d = getDistance(part.toLowerCase(), prefLC);
+                        if (isSmart) {
+                            d -= 1000;
+                        }
                         if (d < distance) {
                             distance = d;
                             closestIdx = idx;
