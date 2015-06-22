@@ -249,25 +249,27 @@ public final class ModificationResult {
         Source source = Source.create(fo);
         if (source != null && out == null) {
             final Document doc = source.getDocument(false);
-            final IOException[] exceptions = new IOException [1];
-            LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
-                public void run () {
-                    try {
-                        commit2 (doc, differences, out);
-                    } catch (IOException ex) {
-                        exceptions [0] = ex;
+            if (doc != null) {
+                final IOException[] exceptions = new IOException [1];
+                LineDocumentUtils.asRequired(doc, AtomicLockDocument.class).runAtomic(new Runnable () {
+                    public void run () {
+                        try {
+                            commit2 (doc, differences, out);
+                        } catch (IOException ex) {
+                            exceptions [0] = ex;
+                        }
                     }
+                });
+                if (exceptions [0] != null) {
+                    LOG.log(Level.INFO, "ModificationResult commit failed with an exception: ", exceptions[0]);
+                    int s = lastCommitted.size();
+                    for (Throwable t : lastCommitted) {
+                        LOG.log(Level.INFO, "Previous commit number " + s--, t);
+                    }
+                    throw exceptions [0];
                 }
-            });
-            if (exceptions [0] != null) {
-                LOG.log(Level.INFO, "ModificationResult commit failed with an exception: ", exceptions[0]);
-                int s = lastCommitted.size();
-                for (Throwable t : lastCommitted) {
-                    LOG.log(Level.INFO, "Previous commit number " + s--, t);
-                }
-                throw exceptions [0];
-            }
             return;
+            }
         }
         Reader in = null;
         Writer out2 = out;
