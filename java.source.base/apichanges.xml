@@ -52,12 +52,14 @@ made subject to such option by the copyright holder.
     <change id="classindex.resources.binaryroots">
         <api name="javasource_base"/>
         <summary>ClassIndex returns resources from binaryroots</summary>
-        <version major="1" minor="2.2"/>
+        <version major="1" minor="2.5"/>
         <date day="7" month="5" year="2015"/>
         <author login="ralphbenjamin"/>
         <compatibility addition="yes" binary="compatible" source="compatible"/>
         <description>
-            ClassIndex returns a set of source files containing reference(s) to given type element. If the source file is not found in one of the sourceroots, it will fallback to the binaryroots.
+            ClassIndex holds information from different types of roots. Added a
+            parameter to ClassIndex#getResources to specify which roots to use
+            for its results.
         </description>
         <class name="ClassIndex" package="org.netbeans.api.java.source"/>
         <issue number="XXX"/>

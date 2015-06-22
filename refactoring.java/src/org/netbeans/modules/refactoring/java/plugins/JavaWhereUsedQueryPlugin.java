@@ -61,6 +61,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.ClassIndex.ResourceType;
 import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
@@ -234,6 +235,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         final ClassIndex idx = cpInfo.getClassIndex();
         final Set<FileObject> sourceSet = new TreeSet<>(new FileComparator());
         final Set<NonRecursiveFolder> packages = (folders == null)? Collections.<NonRecursiveFolder>emptySet() : folders;
+        final Set<ResourceType> resourceType = isIncludeDependencies? EnumSet.of(ResourceType.SOURCE, ResourceType.BINARY) : EnumSet.of(ResourceType.SOURCE);
         
         final FileObject file = tph.getFileObject();
         JavaSource source;
@@ -281,20 +283,20 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 }
                 if (el.getKind().isField()) {
                     //get field references from index
-                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, !isIncludeDependencies));
+                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
                         if (isFindDirectSubclassesOnly) {
                             //get direct implementors from index
                             EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
-                            sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType, !isIncludeDependencies));
+                            sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType, resourceType));
                         } else {
                             //itererate implementors recursively
                             sourceSet.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement) el, cancel));
                         }
                     } else {
                         //get type references from index
-                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, !isIncludeDependencies));
+                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, resourceType));
                     }
                 } else if (el.getKind() == ElementKind.METHOD) {
                     ExecutableElement method = (ExecutableElement) el;
@@ -330,16 +332,16 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                                 if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
                                     for (ExecutableElement executableElement : methods) {
                                         if (info.getElements().overrides((ExecutableElement) e, executableElement, te)) {
-                                            sourceSet.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, !isIncludeDependencies));
+                                            sourceSet.addAll(idx.getResources(ElementHandle.create(te), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, resourceType));
                                         }
                                     }
                                 }
                             }
                         }
-                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, !isIncludeDependencies)); //?????
+                        sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType, resourceType)); //?????
                     }
                 } else if (el.getKind() == ElementKind.CONSTRUCTOR) {
-                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, !isIncludeDependencies));
+                    sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.TYPE_REFERENCES, ClassIndex.SearchKind.IMPLEMENTORS), searchScopeType, resourceType));
                 } else if((el.getKind().equals(ElementKind.LOCAL_VARIABLE) || el.getKind().equals(ElementKind.PARAMETER))
                         || el.getModifiers().contains(Modifier.PRIVATE)) {
                     sourceSet.add(file);

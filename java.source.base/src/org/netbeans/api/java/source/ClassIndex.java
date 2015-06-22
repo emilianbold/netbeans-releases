@@ -247,6 +247,23 @@ public final class ClassIndex {
     };
 
     /**
+     * ResourceType used by {@link ClassIndex#getResources} to get results in
+     * @since 2.5
+     */
+    public static enum ResourceType {
+
+        /**
+         * Resources from a source root.
+         */
+        SOURCE,
+
+        /**
+         * Resources from a binary root.
+         */
+        BINARY;
+    }
+
+    /**
      * Scope used by {@link ClassIndex} to search in
      * @since 0.82
      */
@@ -410,7 +427,7 @@ public final class ClassIndex {
      * @param element the {@link ElementHandle} of a {@link TypeElement} for which usages should be found
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
-     * @param sources true if references should be from a source root
+     * @param resourceType to return resource in, {@see ResourceType}
      * @return set of {@link FileObject}s containing the reference(s)
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
@@ -420,7 +437,7 @@ public final class ClassIndex {
             final @NonNull ElementHandle<TypeElement> element,
             final @NonNull Set<SearchKind> searchKind,
             final @NonNull Set<? extends SearchScopeType> scope,
-            final boolean sources) {
+            final @NonNull Set<ResourceType> resourceType) {
         return searchImpl(
             element,
             searchKind,
@@ -429,13 +446,23 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
-                    final FileObject[] sourceRoots = p.getSourceRoots();
-                    if(sources) {
-                        return DocumentUtil.fileObjectConvertor (sourceRoots);
+                    FileObject[] roots = {};
+                    for (ResourceType type : resourceType) {
+                        FileObject[] root = null;
+                        switch (type) {
+                            case SOURCE:
+                                root = p.getSourceRoots();
+                                break;
+                            case BINARY:
+                                root = p.getBinaryRoots();
+                                break;
+                        }
+                        if(root != null) {
+                            int prevSize = roots.length;
+                            roots = Arrays.copyOf(root, prevSize + root.length);
+                            System.arraycopy(root, 0, roots, prevSize, root.length);
+                        }
                     }
-                    final FileObject[] binaryRoots = p.getBinaryRoots();
-                    FileObject[] roots = Arrays.copyOf(sourceRoots, sourceRoots.length + binaryRoots.length);
-                    System.arraycopy(binaryRoots, 0, roots, sourceRoots.length, binaryRoots.length);
                     return DocumentUtil.fileObjectConvertor (roots);
                 }
             });
