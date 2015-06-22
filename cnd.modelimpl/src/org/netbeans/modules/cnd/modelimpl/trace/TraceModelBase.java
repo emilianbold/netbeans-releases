@@ -92,7 +92,7 @@ public class TraceModelBase {
         this.libProjectsPaths = libProjectsPaths;
     }
 
-    protected final void shutdown(boolean clearCache) {
+    protected void shutdown(boolean clearCache) {
         model.shutdown();
         if (clearCache){
             RepositoryTestUtils.deleteDefaultCacheLocation();

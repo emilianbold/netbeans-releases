@@ -302,7 +302,6 @@ public class KarmaExecutable {
     private static final class ServerLineConvertor implements LineConvertor {
 
         private static final String NB_BROWSERS = "$NB$netbeans browsers "; // NOI18N
-        private static final String NB_ABSOLUTE_URLS = "$NB$netbeans absoluteUrls"; // NOI18N
         private static final String KARMA_ERROR = "[31mERROR ["; // NOI18N
         private static final String KARMA_WARN = "[33mWARN ["; // NOI18N
 
@@ -336,11 +335,6 @@ public class KarmaExecutable {
             }
             // startup
             if (browsers == null) {
-                // absolute urls?
-                if (line.equals(NB_ABSOLUTE_URLS)) {
-                    karmaRunInfo.setAbsoluteUrls(true);
-                    return Collections.emptyList();
-                }
                 // server start
                 if (line.startsWith(NB_BROWSERS)) {
                     List<String> allBrowsers = StringUtils.explode(line.substring(NB_BROWSERS.length()), ","); // NOI18N

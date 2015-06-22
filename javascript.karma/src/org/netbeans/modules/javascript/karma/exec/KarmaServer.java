@@ -64,6 +64,7 @@ import org.netbeans.modules.javascript.karma.coverage.CoverageWatcher;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
+import org.netbeans.modules.javascript.karma.util.KarmaUtils;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
@@ -101,6 +102,9 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile File netBeansKarmaConfig = null;
     private volatile URL debugUrl = null;
     private volatile KarmaRunInfo karmaRunInfo = null;
+
+    // @GuardedBy("this")
+    private Boolean absoluteUrls = null;
 
 
     KarmaServer(int port, Project project) {
@@ -215,11 +219,11 @@ public final class KarmaServer implements PropertyChangeListener {
         return project;
     }
 
-    public boolean isAbsoluteUrls() {
-        if (karmaRunInfo == null) {
-            return false;
+    public synchronized boolean isAbsoluteUrls() {
+        if (absoluteUrls == null) {
+            absoluteUrls = KarmaUtils.useAbsoluteUrls(getDebugUrl());
         }
-        return karmaRunInfo.isAbsoluteUrls();
+        return absoluteUrls;
     }
 
     private synchronized void openDebugUrl() {

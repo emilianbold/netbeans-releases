@@ -549,21 +549,6 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
     }
 
-    private static final Collection<String> AUTO_MOUNTS;
-    static {
-        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
-        String t = System.getProperty("remote.autofs.list"); //NOI18N
-        if (t != null) {
-            String[] paths = t.split(","); //NOI18N
-            for (String p : paths) {
-                if (p.startsWith("/")) { //NOI18N
-                    list.add(p);
-                }
-            }
-        }
-        AUTO_MOUNTS = Collections.unmodifiableList(list);
-    }
-
     private boolean isProhibited() {
         final String path = getPath();
         if (path.equals("/proc") || getPath().equals("/dev")) { //NOI18N
@@ -714,8 +699,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     private boolean isAutoMount() {
-        String path = getPath();
-        return AUTO_MOUNTS.contains(path);
+        return getFileSystem().isAutoMount(getPath());
     }
 
     private boolean canLs() {

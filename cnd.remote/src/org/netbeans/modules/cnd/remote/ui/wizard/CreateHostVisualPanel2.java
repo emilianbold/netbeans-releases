@@ -83,7 +83,7 @@ import org.openide.util.RequestProcessor;
         initComponents();
         
         cbACL.setEnabled(true);
-        cbACL.setSelected(true);
+        cbACL.setSelected(false );
         
         textLoginName.setText(System.getProperty("user.name"));
 

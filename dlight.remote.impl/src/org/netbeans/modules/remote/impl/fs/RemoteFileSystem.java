@@ -145,6 +145,16 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     private final RequestProcessor.Task connectionTask;
 
+    /** 
+     * ConnectionTaskLock is now scheduled not only upon connection change, but from ctor as well
+     * (in order to get auto mounts). 
+     * The connectionChanged distinguishes these two cases
+     */
+    private volatile boolean connectionChanged;
+
+    /** @guarded by self */
+    private final List<String> autoMounts;
+
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
         this.execEnv = execEnv;
@@ -190,8 +200,31 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         });
         connectionTask = new RequestProcessor("Connection and R/W change", 1).create(new ConnectionChangeRunnable()); //NOI18N;
+        connectionChanged = false; // volatile
+        connectionTask.schedule(0);
         ConnectionManager.getInstance().addConnectionListener(RemoteFileSystem.this);
         remoteFileZipper = new RemoteFileZipper(execEnv);
+        autoMounts = getFixedAutoMounts();
+    }
+
+    private List<String> getFixedAutoMounts() {
+        List<String> list = new ArrayList<>(Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade", "/workspace")); //NOI18N
+        String t = System.getProperty("remote.autofs.list"); //NOI18N
+        if (t != null) {
+            String[] paths = t.split(","); //NOI18N
+            for (String p : paths) {
+                if (p.startsWith("/")) { //NOI18N
+                    list.add(p);
+                }
+            }
+        }
+        return list;
+    }
+
+    /*package*/ boolean isAutoMount(String path) {
+        synchronized (autoMounts) {
+            return autoMounts.contains(path);
+        }
     }
 
     public boolean isInsideVCS() {
@@ -234,11 +267,36 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
         @Override
         public void run() {
-            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                refreshManager.scheduleRefreshOnConnect();
+            if (connectionChanged) {
+                if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                    refreshManager.scheduleRefreshOnConnect();
+                }
+                for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
+                    fo.connectionChanged();
+                }
             }
-            for (RemoteFileObjectBase fo : factory.getCachedFileObjects()) {
-                fo.connectionChanged();
+            if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                maintainAutoMounts();
+            }
+        }
+
+        private void maintainAutoMounts() {
+            long time = System.currentTimeMillis();
+            RemoteLogger.fine("Getting automount list for {0}...", execEnv); //NOI18N
+            AutoMountsProvider amp = new AutoMountsProvider(execEnv);
+            if (amp.analyze()) {
+                List<String> newAutoMounts = amp.getAutoMounts();
+                synchronized (autoMounts) {
+                    autoMounts.clear();
+                    autoMounts.addAll(newAutoMounts);
+                }
+                if (RemoteLogger.isLoggable(Level.FINE)) {
+                    RemoteLogger.fine("Getting automount list for {0} took {1} ms", //NOI18N
+                            execEnv, System.currentTimeMillis() - time);
+                    for (String path : newAutoMounts) {
+                        RemoteLogger.fine("\t{0}", path);
+                    }
+                }
             }
         }
     }
@@ -247,6 +305,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void connected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
+            connectionChanged = true; // volatile
             connectionTask.schedule(0);
         }
     }
@@ -255,6 +314,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     public void disconnected(ExecutionEnvironment env) {
         if (execEnv.equals(env)) {
             readOnlyConnectNotification.compareAndSet(true, false);
+            connectionChanged = true; // volatile
             connectionTask.schedule(0);
         }
         if (ATTR_STATS) { dumpAttrStat(); }
