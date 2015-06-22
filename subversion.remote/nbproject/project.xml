@@ -203,7 +203,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0.41</specification-version>
+                        <specification-version>1.0.42</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
