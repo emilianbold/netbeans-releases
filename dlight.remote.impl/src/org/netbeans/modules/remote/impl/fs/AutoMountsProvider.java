@@ -45,15 +45,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -157,7 +153,10 @@ public class AutoMountsProvider {
             if (l.startsWith("/")) { //NOI18N
                 String[] words = l.split("\\s+");
                 if (words.length > 0) {
-                    autoMounts.add(words[0]);
+                    String path = words[0];
+                    if (!path.equals("/-")) {
+                        autoMounts.add(path);
+                    }
                 }
             }
         }
@@ -167,7 +166,7 @@ public class AutoMountsProvider {
                 String[] words = l.split("\\s+");
                 if (words.length > 1) {
                     String path = words[1];
-                    if (!containsParent(path)) {
+                    if (!path.equals("/-") && !containsParent(path)) {
                         autoMounts.add(path);
                     }
                 }
