@@ -1,6 +1,6 @@
-#changeset:   15189:8f9cdeb134d9
-#user:        Ilia Gromov <ilia@netbeans.org>
-#date:        Wed Jun 17 00:52:01 2015 +0400
-#summary:     org.clang.frontend reconverting
+#changeset:   15192:e05e2e72232a
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Thu Jun 18 14:42:16 2015 -0700
+#summary:     give enough memory and use 64-bit mode for 12 levels of expansion
 
-4C887D71C3E281E552FA33270BD7EDB4C231E071 clank_0.3.6.zip
+DCEB25B6EFD00ACA34415DB1B93D2F1107C34006 clank_0.3.6.zip

@@ -84,7 +84,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 isDeclared, offsetRange, modifiers, mimeType, sourceLabel);
         this.declarationName = name;
         this.parent = parent;
-        this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
+        this.hasName = !OffsetRange.NONE.equals(name.getOffsetRange()) && (name.getOffsetRange().getStart() != name.getOffsetRange().getEnd());
         this.kind = null;
         this.isVirtual = false;
     }
