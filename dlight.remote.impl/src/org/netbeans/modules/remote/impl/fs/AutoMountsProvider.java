@@ -45,15 +45,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.rmi.server.ExportException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -121,7 +117,7 @@ public class AutoMountsProvider {
             }
             if (Boolean.getBoolean("remote.dump.automounts")) {
                 StringBuilder sb = new StringBuilder("AutoMounts analyzer: the content of "); //NOI18N
-                sb.append(env).append(':').append(path).append(" [comments filtered out]:");
+                sb.append(env).append(':').append(path).append(" [comments filtered out]:"); // NOI18N
                 for (String l : result) {
                     if (!l.startsWith("#")) { //NOI18N
                         sb.append('\n').append(l);
@@ -139,10 +135,10 @@ public class AutoMountsProvider {
         List<String> lines = readFile("/etc/auto.master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
-                String[] words = l.split("\\s+");
+                String[] words = l.split("\\s+"); // NOI18N
                 if (words.length > 0) {
                     String path = words[0];
-                    if (!path.equals("/-")) {
+                    if (!path.equals("/-")) { // NOI18N
                         autoMounts.add(path);
                     }
                 }
@@ -155,19 +151,22 @@ public class AutoMountsProvider {
         List<String> lines = readFile("/etc/auto_master"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("/")) { //NOI18N
-                String[] words = l.split("\\s+");
+                String[] words = l.split("\\s+"); // NOI18N
                 if (words.length > 0) {
-                    autoMounts.add(words[0]);
+                    String path = words[0];
+                    if (!path.equals("/-")) { // NOI18N
+                        autoMounts.add(path);
+                    }
                 }
             }
         }
         lines = readFile("/etc/mnttab"); //NOI18N
         for (String l : lines) {
             if (l.startsWith("auto_")) { //NOI18N
-                String[] words = l.split("\\s+");
+                String[] words = l.split("\\s+"); // NOI18N
                 if (words.length > 1) {
                     String path = words[1];
-                    if (!containsParent(path)) {
+                    if (!path.equals("/-") && !containsParent(path)) { // NOI18N
                         autoMounts.add(path);
                     }
                 }

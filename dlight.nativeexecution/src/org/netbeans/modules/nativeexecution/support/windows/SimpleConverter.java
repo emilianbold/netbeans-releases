@@ -42,10 +42,13 @@
 package org.netbeans.modules.nativeexecution.support.windows;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.Shell;
 import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
+import org.netbeans.modules.nativeexecution.support.Logger;
 import org.openide.util.Exceptions;
 
 /**
@@ -140,6 +143,8 @@ public final class SimpleConverter implements PathConverter {
                     cygwinPrefix = output.substring(0, output.length() - 1);
                 }
             }
+        } catch (IOException | InterruptedException ex) {
+            Logger.getInstance().log(Level.FINE, "Exception when initializing Cygwin prefix", ex); //NOI18N
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }

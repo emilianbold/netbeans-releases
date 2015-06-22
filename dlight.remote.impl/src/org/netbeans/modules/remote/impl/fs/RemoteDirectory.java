@@ -1084,6 +1084,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             if (trace) { trace("returning cached storage"); } // NOI18N
             return storage;
         }
+        if (childName != null && RemoteFileSystem.isSniffing(childName)) {
+            if (isAutoMount() || getFileSystem().isDirectAutoMountChild(getPath())) {
+                return DirectoryStorage.EMPTY;
+            }
+        }
         // neither memory nor disk cache helped or was request to force refresh
         // proceed with reading remote content
 
@@ -1113,6 +1118,11 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 }
             }
             if (trace) { trace("synchronizing"); } // NOI18N
+
+            if (childName != null && RemoteLogger.isLoggable(Level.FINEST)) {
+                RemoteLogger.finest("{0} is asked for child {1} while not having cache", getPath(), childName);
+            }
+
             Exception problem = null;
             Map<String, DirEntry> newEntries = Collections.emptyMap();
             try {

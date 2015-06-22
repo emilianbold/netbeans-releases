@@ -83,6 +83,7 @@ import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptor
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
+import org.netbeans.modules.remote.spi.RemoteFileSystemHintsProvider;
 import org.openide.actions.FileSystemRefreshAction;
 import org.openide.filesystems.*;
 import org.openide.filesystems.FileObject;
@@ -221,10 +222,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         return list;
     }
 
-    /*package*/ boolean isAutoMount(String path) {
+    public boolean isAutoMount(String path) {
         synchronized (autoMounts) {
             return autoMounts.contains(path);
         }
+    }
+
+    public boolean isDirectAutoMountChild(String path) {
+        String parent = PathUtilities.getDirName(path);
+        if (parent != null && ! parent.isEmpty()) {
+            return isAutoMount(parent);
+        }
+        return false;
+    }
+
+    public static boolean isSniffing(String childName) {
+        if (childName != null) {
+            for (RemoteFileSystemHintsProvider hp : Lookup.getDefault().lookupAll(RemoteFileSystemHintsProvider.class)) {
+                if (hp.isSniffing(childName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public boolean isInsideVCS() {
