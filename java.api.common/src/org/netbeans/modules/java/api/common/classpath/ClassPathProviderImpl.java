@@ -43,7 +43,9 @@
  */
 package org.netbeans.modules.java.api.common.classpath;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Map;
@@ -66,9 +68,11 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 import org.openide.util.Union2;
+import org.openide.util.WeakListeners;
 
 /**
  * Defines the various class paths for a J2SE project.
@@ -94,6 +98,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private final String[] runTestClasspath;
     private final String[] endorsedClasspath;
     private final Union2<String,String[]> platform;
+    private final String javacSource;
     /**
      * ClassPaths cache
      * Index -> CP mapping
@@ -198,7 +203,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             runClasspath,
             runTestClasspath,
             endorsedClasspath,
-            Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE));
+            Union2.<String,String[]>createFirst(CommonProjectUtils.J2SE_PLATFORM_TYPE),
+            Builder.DEFAULT_JAVAC_SOURCE);
     }
 
     private ClassPathProviderImpl(
@@ -215,7 +221,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         @NonNull final String[] runClasspath,
         @NonNull final String[] runTestClasspath,
         @NonNull final String[] endorsedClasspath,
-        @NonNull final Union2<String,String[]> platform) {
+        @NonNull final Union2<String,String[]> platform,
+        @NonNull final String javacSource) {
         Parameters.notNull("helper", helper);   //NOI18N
         Parameters.notNull("evaluator", evaluator); //NOI18N
         Parameters.notNull("sourceRoots", sourceRoots); //NOI18N
@@ -230,6 +237,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         Parameters.notNull("runTestClasspath", runTestClasspath);   //NOI18N
         Parameters.notNull("endorsedClasspath", endorsedClasspath); //NOI18N
         Parameters.notNull("platform", platform); //NOI18N
+        Parameters.notNull("javacSource", javacSource); //NOI18N
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert this.projectDirectory != null;
@@ -246,6 +254,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         this.runTestClasspath = runTestClasspath;
         this.endorsedClasspath = endorsedClasspath;
         this.platform = platform;
+        this.javacSource = javacSource;
     }
 
     /**
@@ -263,6 +272,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private static final String[] DEFAULT_RUN_CLASS_PATH = new String[]{"run.classpath"};    //NOI18N
         private static final String[] DEFAULT_RUN_TEST_CLASS_PATH = new String[]{"run.test.classpath"};  //NOI18N
         private static final String[] DEFAULT_ENDORSED_CLASSPATH = new String[]{ProjectProperties.ENDORSED_CLASSPATH};  //NOI18N
+        private static final String DEFAULT_JAVAC_SOURCE = ProjectProperties.JAVAC_SOURCE;
 
         private final AntProjectHelper helper;
         private final PropertyEvaluator evaluator;
@@ -280,6 +290,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         private String[] runTestClasspath = DEFAULT_RUN_TEST_CLASS_PATH;
         private String[] endorsedClasspath = DEFAULT_ENDORSED_CLASSPATH;
         private String[] bootClasspathProperties;
+        private String javacSource = DEFAULT_JAVAC_SOURCE;
 
         private Builder(
             @NonNull final AntProjectHelper helper,
@@ -433,6 +444,18 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             return this;
         }
 
+        /**
+         * Sets javac source level property.
+         * @param javacSource the name of the property containing the javac source level
+         * @return {@link Builder}
+         * @since 1.76
+         */
+        @NonNull
+        public Builder setJavacSourceProperty(@NonNull final String javacSource) {
+            Parameters.notNull("javacSource", javacSource); //NOI18N
+            this.javacSource = javacSource;
+            return this;
+        }
 
         /**
          * Creates a configured {@link ClassPathProviderImpl}.
@@ -458,7 +481,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                 runClasspath,
                 runTestClasspath,
                 endorsedClasspath,
-                platform);
+                platform,
+                javacSource);
         }
 
         @NonNull
@@ -729,6 +753,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                             evaluator,
                             platform.second())));
             }
+            final ClassPath moduleSytemPath = ClassPathFactory.createClassPath(new ModuleClassPathImplementation(
+                    sourceRoots,
+                    evaluator));
+            cp = ClassPathFactory.createClassPath(new MuxClassPathImplementation(
+                    new ClassPath[]{
+                        cp,
+                        moduleSytemPath
+                    },
+                    new SourceLevelSelector(
+                        evaluator,
+                        javacSource)));
             cache[7] = cp;
         }
         return cp;
@@ -880,5 +915,68 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         }
         return null;
     }
-    
+
+    private static final class SourceLevelSelector implements MuxClassPathImplementation.Selector, PropertyChangeListener {
+
+        private static final SpecificationVersion JDK9 = new SpecificationVersion("1.9");   //NOI18N
+
+        private final PropertyEvaluator eval;
+        private final String sourceLevelPropName;
+        private final PropertyChangeSupport listeners;
+        private volatile int active;
+
+
+        SourceLevelSelector(
+                @NonNull final PropertyEvaluator eval,
+                @NonNull final String sourceLevelPropName) {
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("sourceLevelPropName", sourceLevelPropName); //NOI18N
+            this.eval = eval;
+            this.sourceLevelPropName = sourceLevelPropName;
+            this.active = -1;
+            this.listeners = new PropertyChangeSupport(this);
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+        }
+
+        @Override
+        public int getActiveIndex() {
+            int res = active;
+            if (res == -1) {
+                res = 0;
+                final String sl = eval.getProperty(this.sourceLevelPropName);
+                if (sl != null) {
+                    try {
+                        if (JDK9.compareTo(new SpecificationVersion(sl)) <= 0) {
+                            res = 1;
+                        }
+                    } catch (NumberFormatException e) {
+                        //pass
+                    }
+                }
+                active = res;
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent evt) {
+            final String propName = evt.getPropertyName();
+            if (propName == null || sourceLevelPropName.equals(propName)) {
+                this.active = -1;
+                this.listeners.firePropertyChange(PROP_ACTIVE_INDEX, null, null);
+            }
+        }
+    }
 }
