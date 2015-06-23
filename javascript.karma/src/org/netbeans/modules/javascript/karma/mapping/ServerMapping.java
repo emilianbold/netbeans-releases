@@ -113,8 +113,9 @@ public final class ServerMapping {
             return null;
         }
         assert serverUrl.endsWith("/") : serverUrl;
-        if (KarmaServers.getInstance().isAbsoluteUrls(project)) {
-            return createAbsoluteUrl(serverUrl, projectFile);
+        URL absoluteUrl = createAbsoluteUrl(serverUrl, projectFile);
+        if (KarmaServers.getInstance().serversUrl(project, absoluteUrl)) {
+            return absoluteUrl;
         }
         FileObject projectDirectory = project.getProjectDirectory();
         // try relative first
@@ -126,7 +127,7 @@ public final class ServerMapping {
         // web root first
         for (FileObject webRoot : ProjectWebRootQuery.getWebRoots(project)) {
             if (isUnderneath(webRoot, projectFile)) {
-                return createAbsoluteUrl(serverUrl, projectFile);
+                return absoluteUrl;
             }
         }
         // now tests
@@ -140,7 +141,7 @@ public final class ServerMapping {
             return null;
         }
         if (isUnderneath(testsFolder, projectFile)) {
-            return createAbsoluteUrl(serverUrl, projectFile);
+            return absoluteUrl;
         }
         return null;
     }
