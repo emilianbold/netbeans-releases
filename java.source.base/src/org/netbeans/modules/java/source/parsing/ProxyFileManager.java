@@ -679,7 +679,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 }
                 final List<JavaFileManager> res = new ArrayList<>(emitted.length);
                 for (JavaFileManager jfm : emitted) {
-                    if (emitted != null) {
+                    if (jfm != null) {
                         res.add(jfm);
                     }
                 }
