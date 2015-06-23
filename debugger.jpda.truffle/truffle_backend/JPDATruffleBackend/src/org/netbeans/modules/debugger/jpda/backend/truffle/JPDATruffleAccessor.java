@@ -72,6 +72,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.script.ScriptEngine;
 
 /**
@@ -190,10 +192,10 @@ public class JPDATruffleAccessor extends Object {
             case Int:       return FrameUtil.getIntSafe(frame, slot);
             case Long:      return FrameUtil.getLongSafe(frame, slot);
             case Object:    Object obj = FrameUtil.getObjectSafe(frame, slot);
-                            ExecutionContext context = debugManager.getContext();
+                            Visualizer visualizer = debugManager.getVisualizer();
                             //return context.getVisualizer().displayValue(context, obj);
-                            String name = context.getVisualizer().displayIdentifier(slot);
-                            TruffleObject to = new TruffleObject(context, name, obj);
+                            String name = visualizer.displayIdentifier(slot);
+                            TruffleObject to = new TruffleObject(visualizer, name, obj);
                             //System.err.println("TruffleObject: "+to);
                             //System.err.println("  children Generic = "+Arrays.toString(to.getChildrenGeneric()));
                             //System.err.println("  children JS = "+Arrays.toString(to.getChildrenJS()));
@@ -225,7 +227,7 @@ public class JPDATruffleAccessor extends Object {
      * an array of code contents.
      */
     static Object[] getFramesInfo(FrameInstance[] frames) {
-        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        Visualizer visualizer = debugManager.getVisualizer();
         int n = frames.length;
         //TruffleFrame[] frameInfos = new TruffleFrame[n];
         StringBuilder frameInfos = new StringBuilder();
@@ -368,13 +370,18 @@ public class JPDATruffleAccessor extends Object {
     static String evaluateToStr(String expression) {
         //System.err.println("evaluate("+expression+")");
         final Source source = Source.fromText(expression, "EVAL");
-        Object value = debugManager.eval(source);
+        Object value;
+        try {
+            value = debugManager.eval(source);
+        } catch (DebugException ex) {
+            return "> "+ex.getLocalizedMessage()+" <";
+        }
         //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
-        Visualizer visualizer = debugManager.getContext().getVisualizer();
-        String strValue = visualizer.displayValue(debugManager.getContext(), value, TruffleObject.DISPLAY_TRIM);
+        Visualizer visualizer = debugManager.getVisualizer();
+        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
         //System.err.println("evaluate("+expression+") = "+strValue);
         return strValue;
     }
@@ -382,15 +389,19 @@ public class JPDATruffleAccessor extends Object {
     static Object evaluate(String expression) {
         //System.err.println("evaluate("+expression+")");
         final Source source = Source.fromText(expression, "EVAL");
-        Object value = debugManager.eval(source);
+        Object value;
+        try {
+            value = debugManager.eval(source);
+        } catch (DebugException ex) {
+            return new TruffleObject(debugManager.getVisualizer(), ex.getLocalizedMessage(), ex);
+        }
         //System.err.println("  value = "+value);
         if (value == null) {
             return null;
         }
-        ExecutionContext context = debugManager.getContext();
-        Visualizer visualizer = context.getVisualizer();
-        String strValue = visualizer.displayValue(context, value, TruffleObject.DISPLAY_TRIM);
-        TruffleObject to = new TruffleObject(context, strValue, value);
+        Visualizer visualizer = debugManager.getVisualizer();
+        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
+        TruffleObject to = new TruffleObject(visualizer, strValue, value);
         return to;
     }
     
@@ -398,14 +409,18 @@ public class JPDATruffleAccessor extends Object {
         FrameInstance fi = (FrameInstance) frameInstance;
         MaterializedFrame frame = fi.getFrame(FrameInstance.FrameAccess.MATERIALIZE, true).materialize();
         final Source source = Source.fromText(expression, "EVAL");
-        Object value = debugManager.getDebugger().eval(source, fi.getCallNode(), frame);
+        Object value;
+        try {
+            value = debugManager.getDebugger().eval(source, fi.getCallNode(), frame);
+        } catch (DebugException ex) {
+            return new TruffleObject(debugManager.getVisualizer(), ex.getLocalizedMessage(), ex);
+        }
         if (value == null) {
             return null;
         }
-        ExecutionContext context = debugManager.getContext();
-        Visualizer visualizer = context.getVisualizer();
-        String strValue = visualizer.displayValue(context, value, TruffleObject.DISPLAY_TRIM);
-        TruffleObject to = new TruffleObject(context, strValue, value);
+        Visualizer visualizer = debugManager.getVisualizer();
+        String strValue = visualizer.displayValue(value, TruffleObject.DISPLAY_TRIM);
+        TruffleObject to = new TruffleObject(visualizer, strValue, value);
         return to;
     }
     
@@ -427,7 +442,7 @@ public class JPDATruffleAccessor extends Object {
         FrameSlot[] frameSlots = slotsArr.toArray(new FrameSlot[]{});
         String[] slotNames = new String[slots.length];
         String[] slotTypes = new String[slots.length];
-        Visualizer visualizer = debugManager.getContext().getVisualizer();
+        Visualizer visualizer = debugManager.getVisualizer();
         for (int i = 0; i < frameSlots.length; i++) {
             slotNames[i] = visualizer.displayIdentifier(frameSlots[i]);// slots[i].getIdentifier().toString();
             slotTypes[i] = frameSlots[i].getKind().toString();
