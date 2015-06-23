@@ -216,12 +216,12 @@ public final class KarmaServers {
         return karmaServer.getServerUrl(path);
     }
 
-    public boolean serversUrl(Project project, URL url) {
+    public boolean servesUrl(Project project, URL url) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {
             return false;
         }
-        return karmaServer.serversUrl(url);
+        return karmaServer.servesUrl(url);
     }
 
     public void closeDebugUrl(Project project) {
