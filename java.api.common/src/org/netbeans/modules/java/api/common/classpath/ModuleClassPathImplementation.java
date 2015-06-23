@@ -42,12 +42,16 @@
 package org.netbeans.modules.java.api.common.classpath;
 
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.RequiresTree;
+import com.sun.source.tree.ModuleTree;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.code.Directive;
+import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.tree.JCTree;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +59,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -78,6 +85,7 @@ import org.openide.util.WeakListeners;
  */
 final class ModuleClassPathImplementation  implements ClassPathImplementation, PropertyChangeListener {
 
+    private static final Logger LOG = Logger.getLogger(ModuleClassPathImplementation.class.getName());
     private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     private static final String MODULE_INFO = "module-info.java";   //NOI18N
     private static final String PLATFORM_ANT_NAME = "platform.ant.name";    //NOI18N
@@ -128,14 +136,14 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
                                     public void run(CompilationController cc) throws Exception {
                                         cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                                         final CompilationUnitTree cu = cc.getCompilationUnit();
-                                        final Set<String> requires = new HashSet<>();
-                                        cu.accept(new TreeScanner<Void, Collection<? super String>>() {
+                                        //Todo: No API in Javac yet.
+                                        final Symbol.ModuleSymbol root = cu.accept(new TreeScanner<Symbol.ModuleSymbol, Void>() {
                                             @Override
-                                            public Void visitRequires(RequiresTree node, Collection<? super String> p) {
-                                                p.add(node.getModuleName().toString());
-                                                return super.visitRequires(node, p);
+                                            public Symbol.ModuleSymbol visitModule(ModuleTree node, Void p) {
+                                                return ((JCTree.JCModuleDecl)node).sym;
                                             }
-                                        }, requires);
+                                        },null);
+                                        Set<URL> requires = collectRequiredModules(root, true);
                                         resInOut.set(0, filterModules(resInOut.get(0), requires));
                                     }
                                 }, true);
@@ -202,25 +210,56 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
     }
 
     @NonNull
+    private static Set<URL> collectRequiredModules(Symbol.ModuleSymbol module, boolean transitive) {
+        final Set<URL> res = new HashSet<>();
+        collectRequiredModulesImpl(module, transitive, res);
+        return res;
+    }
+
+    private static void collectRequiredModulesImpl(Symbol.ModuleSymbol module, boolean transitive, Collection<? super URL> c) {
+        for (Directive.RequiresDirective req : module.requires) {
+            if (transitive) {
+                collectRequiredModulesImpl(req.module, transitive, c);
+            }
+            final JavaFileObject jfo = req.module.module_info.classfile != null ?
+                    req.module.module_info.classfile :
+                    req.module.module_info.sourcefile;
+            if (jfo != null) {
+                try {
+                    c.add(moduleURL(jfo));
+                } catch (MalformedURLException e) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL: {0}, reason: {1}",    //NOI18N
+                        new Object[]{
+                            jfo.toUri(),
+                            e.getMessage()
+                        });
+                }
+            }
+        }
+    }
+
+    @NonNull
+    private static URL moduleURL(@NonNull final JavaFileObject jfo) throws MalformedURLException {
+        String uri = jfo.toUri().toString();
+        uri = uri.substring(0, uri.lastIndexOf('/')+1); //NOI18N
+        return new URL(uri);
+    }
+
+    @NonNull
     private static List<PathResourceImplementation> filterModules(
             @NonNull List<PathResourceImplementation> modules,
-            @NonNull Set<String> requires) {
+            @NonNull Set<URL> requires) {
         final List<PathResourceImplementation> res = new ArrayList<>(modules.size());
         for (PathResourceImplementation pr : modules) {
             for (URL url : pr.getRoots()) {
-                if (requires.contains(getModuleName(url))) {
+                if (requires.contains(url)) {
                     res.add(pr);
                 }
             }
         }
         return res;
-    }
-
-    @NonNull
-    private static String getModuleName(@NonNull final URL url) {
-        final String path = url.getPath();
-        final int start = path.lastIndexOf('/', path.length()-2);   //NOI18N
-        return path.substring(start+1, path.length()-1);
     }
 
 }
