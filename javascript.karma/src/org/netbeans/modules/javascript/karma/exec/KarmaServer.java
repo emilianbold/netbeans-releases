@@ -47,7 +47,9 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
@@ -55,6 +57,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
 import org.netbeans.modules.gsf.testrunner.api.RerunType;
@@ -65,6 +68,7 @@ import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
 import org.netbeans.modules.javascript.karma.run.KarmaRunInfo;
 import org.netbeans.modules.javascript.karma.ui.KarmaErrorsDialog;
 import org.netbeans.modules.javascript.karma.util.KarmaUtils;
+import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.jstesting.Coverage;
@@ -80,6 +84,8 @@ import org.openide.util.NbBundle;
 public final class KarmaServer implements PropertyChangeListener {
 
     static final Logger LOGGER = Logger.getLogger(KarmaServer.class.getName());
+
+    private static final String SERVER_URL = "http://localhost:%d/"; // NOI18N
 
     private final int port;
     private final Project project;
@@ -104,7 +110,7 @@ public final class KarmaServer implements PropertyChangeListener {
     private volatile KarmaRunInfo karmaRunInfo = null;
 
     // @GuardedBy("this")
-    private Boolean absoluteUrls = null;
+    private List<String> scriptFiles = null;
 
 
     KarmaServer(int port, Project project) {
@@ -219,11 +225,34 @@ public final class KarmaServer implements PropertyChangeListener {
         return project;
     }
 
-    public synchronized boolean isAbsoluteUrls() {
-        if (absoluteUrls == null) {
-            absoluteUrls = KarmaUtils.useAbsoluteUrls(getDebugUrl());
+    public String getServerUrl(@NullAllowed String path) {
+        assert path == null || !path.startsWith("/") : path;
+        String url = SERVER_URL;
+        if (StringUtils.hasText(path)) {
+            url += path;
         }
-        return absoluteUrls;
+        return String.format(url, getPort());
+    }
+
+    public boolean serversUrl(URL url) {
+        String externalForm = url.toExternalForm();
+        String serverUrl = getServerUrl(null);
+        if (externalForm.startsWith(serverUrl)) {
+            externalForm = externalForm.substring(serverUrl.length() - 1); // keep the leading "/"
+        }
+        for (String scriptFile : getScriptFiles()) {
+            if (scriptFile.contains(externalForm)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> getScriptFiles() {
+        if (scriptFiles == null) {
+            scriptFiles = KarmaUtils.readScriptFiles(getDebugUrl());
+        }
+        return Collections.unmodifiableList(scriptFiles);
     }
 
     private synchronized void openDebugUrl() {
