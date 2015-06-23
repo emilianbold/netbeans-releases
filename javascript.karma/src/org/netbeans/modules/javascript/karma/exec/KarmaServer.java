@@ -234,7 +234,7 @@ public final class KarmaServer implements PropertyChangeListener {
         return String.format(url, getPort());
     }
 
-    public boolean serversUrl(URL url) {
+    public boolean servesUrl(URL url) {
         String externalForm = url.toExternalForm();
         String serverUrl = getServerUrl(null);
         if (externalForm.startsWith(serverUrl)) {
