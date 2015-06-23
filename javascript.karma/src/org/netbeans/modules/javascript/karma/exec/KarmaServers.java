@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.javascript.karma.exec;
 
+import java.net.URL;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,15 +51,13 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.karma.util.StringUtils;
 import org.openide.util.RequestProcessor;
 
 public final class KarmaServers {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaServers.class.getName());
-
-    private static final String SERVER_URL = "http://localhost:%d/"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(KarmaServers.class.getName(), 1); // #244536
     private static final KarmaServers INSTANCE = new KarmaServers();
@@ -208,26 +207,21 @@ public final class KarmaServers {
     }
 
     @CheckForNull
-    public String getServerUrl(Project project, String path) {
-        assert path == null || !path.startsWith("/") : path;
+    public String getServerUrl(Project project, @NullAllowed String path) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {
             // karma not running
             return null;
         }
-        String url = SERVER_URL;
-        if (StringUtils.hasText(path)) {
-            url += path;
-        }
-        return String.format(url, karmaServer.getPort());
+        return karmaServer.getServerUrl(path);
     }
 
-    public boolean isAbsoluteUrls(Project project) {
+    public boolean servesUrl(Project project, URL url) {
         KarmaServer karmaServer = getKarmaServer(project);
         if (karmaServer == null) {
             return false;
         }
-        return karmaServer.isAbsoluteUrls();
+        return karmaServer.servesUrl(url);
     }
 
     public void closeDebugUrl(Project project) {
