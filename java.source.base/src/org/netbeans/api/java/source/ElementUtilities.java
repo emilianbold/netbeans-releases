@@ -501,6 +501,18 @@ public final class ElementUtilities {
         }
 
         @Override
+        public StringBuilder visitVariable(VariableElement e, Boolean p) {
+            if (p != Boolean.TRUE || e.getEnclosingElement() == null) {
+                return DEFAULT_VALUE.append(e.getSimpleName());
+            } else {
+                return e.getEnclosingElement().accept(this, p).
+                    append(".").
+                    append(e.getSimpleName());
+            }
+        }
+
+        
+        @Override
         public StringBuilder visitPackage(PackageElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
         }
