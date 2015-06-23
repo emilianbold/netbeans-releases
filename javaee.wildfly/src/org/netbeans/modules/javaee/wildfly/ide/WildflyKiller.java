@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.openide.util.BaseUtilities;
 
 /**
  *
@@ -70,11 +71,10 @@ public class WildflyKiller {
     public boolean killServers() {
         //server is running and port is open.
         Runtime rt = Runtime.getRuntime();
-        if (System.getProperty("os.name").toLowerCase().indexOf("windows") > -1) {
+        if (BaseUtilities.isWindows()) {
             return killWindows(rt);
-        } else {
-            return killLinux(rt);
         }
+        return killLinux(rt);
     }
 
     private String getJStackPath() {
