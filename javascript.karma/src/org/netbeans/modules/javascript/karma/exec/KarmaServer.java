@@ -248,7 +248,7 @@ public final class KarmaServer implements PropertyChangeListener {
         return false;
     }
 
-    private List<String> getScriptFiles() {
+    private synchronized List<String> getScriptFiles() {
         if (scriptFiles == null) {
             scriptFiles = KarmaUtils.readScriptFiles(getDebugUrl());
         }
