@@ -102,6 +102,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -193,19 +194,58 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                 NodeList lst = el.getChildNodes();
                 if (lst.getLength() > 0) {
                     if ("artifactId".equals(el.getNodeName())) { //NOI18N
-                        holder.setArtifactId(lst.item(0).getNodeValue());
+                        holder.setArtifactId(getNodeValue(lst.item(0).getNodeValue(), owner.getLookup().lookup(NbMavenProject.class)));
                     }
                     if ("groupId".equals(el.getNodeName())) { //NOI18N
-                        holder.setGroupId(lst.item(0).getNodeValue());
+                        holder.setGroupId(getNodeValue(lst.item(0).getNodeValue(), owner.getLookup().lookup(NbMavenProject.class)));
                     }
                     if ("version".equals(el.getNodeName())) { //NOI18N
-                        holder.setVersion(lst.item(0).getNodeValue());
+                        holder.setVersion(getNodeValue(lst.item(0).getNodeValue(), owner.getLookup().lookup(NbMavenProject.class)));
                     }
                 }
             }
             previous = previous.getPreviousSibling();
         }
         return holder;
+    }
+    
+    static String getNodeValue(String value, NbMavenProject prj) {
+        StringBuilder sb = new StringBuilder();
+        Properties props = prj.getMavenProject().getProperties();
+            
+        int idxLeft = value.indexOf("${"); // NOI18N
+        if(idxLeft < 0) {
+            return value;
+        } else if(idxLeft > 0) {
+            sb.append(value.substring(0, idxLeft));
+        } 
+        int idxRight = 0;
+        while(idxLeft > -1) {
+            idxRight = value.indexOf("}", idxLeft + 2); // NOI18N
+            if(idxRight > -1) {
+                String propName = value.substring(idxLeft + 2, idxRight);
+                String prop = props.getProperty(propName);
+                if(prop != null) {
+                    sb.append(prop);
+                } else {
+                    // something is wrong; return the original value and hope for the best
+                    return value;
+                }
+            } else {
+                // something is wrong; return the original value and hope for the best
+                return value;
+            }
+            idxLeft = value.indexOf("${", idxRight); // NOI18N
+            if(idxRight < value.length()) {
+                if(idxLeft > idxRight) {                    
+                    sb.append(value.substring(idxRight + 1, idxLeft));
+                } else {
+                    sb.append(value.substring(idxRight + 1, value.length()));
+                }
+            }             
+            idxRight++;
+        }        
+        return sb.toString();
     }
     
     private ArtifactInfoHolder findPluginInfo(Node previous, MavenEmbedder embedder, boolean checkLocalRepo) {
