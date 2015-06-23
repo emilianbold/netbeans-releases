@@ -57,6 +57,7 @@ import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.nodes.Node;
 import com.oracle.truffle.api.source.Source;
 import com.oracle.truffle.api.source.SourceSection;
+import com.oracle.truffle.api.vm.TruffleVM;
 import com.oracle.truffle.tools.debug.engine.DebugClient;
 import com.oracle.truffle.tools.debug.engine.DebugEngine;
 import com.oracle.truffle.tools.debug.engine.DebugException;
@@ -70,7 +71,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.script.ScriptEngine;
 import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSDebugProber;
-import org.netbeans.modules.debugger.jpda.backend.truffle.js.JPDAJSSourceExecution;
 
 /**
  *
@@ -83,7 +83,7 @@ class JPDATruffleDebugManager {
     private final ScriptEngine engine;
     private final ExecutionContext context;
     private final TopFrameHolder topFrameHolder;
-    private final JPDAJSSourceExecution sourceExecution;
+    private final TruffleVM.Language language;
     private final DebugEngine debugger;
 
     public JPDATruffleDebugManager(ScriptEngine engine, ExecutionContext context, DebugClient dbgClient) {
@@ -92,8 +92,9 @@ class JPDATruffleDebugManager {
         this.context = context;
         this.topFrameHolder = new TopFrameHolder();
         ((JPDADebugClient) dbgClient).setTopFrameHolder(topFrameHolder);
-        this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
-        this.debugger = DebugEngine.create(dbgClient, sourceExecution);
+        //this.sourceExecution = new JPDAJSSourceExecution((TruffleJSEngine) engine);
+        language = getLanguage(engine);
+        this.debugger = DebugEngine.create(dbgClient, language);
         /*
         startExecution(null);
         prepareContinue();
@@ -106,7 +107,7 @@ class JPDATruffleDebugManager {
     static JPDATruffleDebugManager setUp() {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         //TruffleJSEngineFactory.addNodeProber(nodeProberDelegate);
-        Probe.registerASTProber(new JPDAJSDebugProber());
+        //Probe.registerASTProber(new JPDAJSDebugProber());
         return null; // Initialize TruffleJSEngine class only.
     }
 
@@ -114,19 +115,31 @@ class JPDATruffleDebugManager {
         //System.err.println("JPDATruffleDebugManager.setUp()");
         JSContext jsContext = ((TruffleJSEngine) engine).getJSContext();
         //ScriptContext context = engine.getContext();
-        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(engine, jsContext, new JPDADebugClient(jsContext));
+        JPDATruffleDebugManager debugManager = new JPDATruffleDebugManager(
+                engine, jsContext, new JPDADebugClient(getLanguage(engine)));
         //jsContext.setDebugContext(new JPDADebugContext(jsContext, debugManager));
         //jsContext.addNodeProber(new JPDAJSNodeProber(jsContext, debugManager, ));
         //System.err.println("SET UP of JPDATruffleDebugManager = "+debugManager+" for "+engine+" and prober to "+jsContext);
         return debugManager;
     }
     
+    private static TruffleVM.Language getLanguage(ScriptEngine engine) {
+        Map<String, TruffleVM.Language> languages = TruffleVM.newVM().build().getLanguages();
+        List<String> languageMIMETypes = engine.getFactory().getMimeTypes();
+        TruffleVM.Language language = languages.get(languageMIMETypes.get(0));
+        return language;
+    }
+
     ExecutionContext getContext() {
         return context;
     }
     
     DebugEngine getDebugger() {
         return debugger;
+    }
+    
+    Visualizer getVisualizer() {
+        return language.getToolSupport().getVisualizer();
     }
     
     /*
@@ -179,7 +192,7 @@ class JPDATruffleDebugManager {
     }
     */
     
-    Object eval(Source source) {
+    Object eval(Source source) throws DebugException {
         return debugger.eval(source, topFrameHolder.currentNode, topFrameHolder.currentTopFrame);
     }
     
@@ -263,11 +276,11 @@ class JPDATruffleDebugManager {
     
     private static class JPDADebugClient implements DebugClient {
         
-        private final ExecutionContext context;
+        private final TruffleVM.Language language;
         private TopFrameHolder topFrameHolder;
         
-        public JPDADebugClient(ExecutionContext context) {
-            this.context = context;
+        public JPDADebugClient(TruffleVM.Language language) {
+            this.language = language;
         }
 
         @Override
@@ -276,7 +289,7 @@ class JPDATruffleDebugManager {
             topFrameHolder.currentTopFrame = frame;
             topFrameHolder.currentNode = astNode;
             SourcePosition position = getPosition(astNode);
-            Visualizer visualizer = context.getVisualizer();
+            Visualizer visualizer = language.getToolSupport().getVisualizer();
             
             FrameInfo fi = new FrameInfo(frame, visualizer, astNode);
             
@@ -286,14 +299,14 @@ class JPDATruffleDebugManager {
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
                         fi.stackTrace, fi.topFrame,
-                        new TruffleObject(context, "this", fi.thisObject));
+                        new TruffleObject(visualizer, "this", fi.thisObject));
             } else {
                 JPDATruffleAccessor.executionHalted(astNode, frame,
                         position.id, position.name, position.path,
                         position.line, position.code,
                         fi.slots, fi.slotNames, fi.slotTypes,
                         fi.stackTrace, fi.topFrame,
-                        new TruffleObject(context, "this", fi.thisObject));
+                        new TruffleObject(visualizer, "this", fi.thisObject));
             }
             
             topFrameHolder.currentTopFrame = null;
@@ -305,8 +318,8 @@ class JPDATruffleDebugManager {
         }
 
         @Override
-        public ExecutionContext getExecutionContext() {
-            return context;
+        public TruffleVM.Language getLanguage() {
+            return language;
         }
 
     }
