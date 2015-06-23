@@ -260,6 +260,11 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             }
         }
         
+        Coloring kwc = collection2Coloring(EnumSet.of(ColoringAttributes.KEYWORD));
+        for (Token kw : v.contextKeywords) {
+            newColoring.put(kw, kwc);
+        }
+        
         if (cancel.get())
             return true;
         
@@ -343,6 +348,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         private Map<Element, List<Use>> type2Uses;
         
         private Map<Tree, Token> tree2Token;
+        private List<Token> contextKeywords;
         private TokenList tl;
         private long memberSelectBypass = -1;
         
@@ -357,6 +363,7 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
             type2Uses = new HashMap<Element, List<Use>>();
             
             tree2Token = new IdentityHashMap<Tree, Token>();
+            contextKeywords = new ArrayList<>();
             
             tl = new TokenList(info, doc, cancel);
             
@@ -366,6 +373,10 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         
         private void firstIdentifier(String name) {
             tl.firstIdentifier(getCurrentPath(), name, tree2Token);
+        }
+        
+        private Token firstIdentifierToken(String name) {
+            return tl.firstIdentifier(getCurrentPath(), name);
         }
         
         @Override
@@ -1085,40 +1096,62 @@ public abstract class SemanticHighlighterBase extends JavaParserResultTask {
         @Override
         public Void visitModule(ModuleTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
-            firstIdentifier("module"); //NOI18N
-            addUse(null, EnumSet.noneOf(UseTypes.class), getCurrentPath(), EnumSet.of(ColoringAttributes.KEYWORD));
+            Token t = firstIdentifierToken("module"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
             return super.visitModule(tree, d);
         }
 
         @Override
         public Void visitExports(ExportsTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
-            firstIdentifier("exports"); //NOI18N
-            addUse(null, EnumSet.noneOf(UseTypes.class), getCurrentPath(), EnumSet.of(ColoringAttributes.KEYWORD));
-            return super.visitExports(tree, d);
+            Token t = firstIdentifierToken("exports"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            scan(tree.getExportName(), d);
+            tl.moveToOffset(sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getExportName()));
+            t = firstIdentifierToken("to"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return scan(tree.getModuleNames(), d);
         }
 
         @Override
         public Void visitProvides(ProvidesTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
-            firstIdentifier("provides"); //NOI18N
-            addUse(null, EnumSet.noneOf(UseTypes.class), getCurrentPath(), EnumSet.of(ColoringAttributes.KEYWORD));
-            return super.visitProvides(tree, d);
+            Token t = firstIdentifierToken("provides"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            scan(tree.getServiceName(), d);
+            tl.moveToOffset(sourcePositions.getEndPosition(info.getCompilationUnit(), tree.getServiceName()));
+            t = firstIdentifierToken("with"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
+            return scan(tree.getImplementationName(), d);
         }
 
         @Override
         public Void visitRequires(RequiresTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
-            firstIdentifier("requires"); //NOI18N
-            addUse(null, EnumSet.noneOf(UseTypes.class), getCurrentPath(), EnumSet.of(ColoringAttributes.KEYWORD));
+            Token t = firstIdentifierToken("requires"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
             return super.visitRequires(tree, d);
         }
 
         @Override
         public Void visitUses(UsesTree tree, EnumSet<UseTypes> d) {
             tl.moveToOffset(sourcePositions.getStartPosition(info.getCompilationUnit(), tree));
-            firstIdentifier("requires"); //NOI18N
-            addUse(null, EnumSet.noneOf(UseTypes.class), getCurrentPath(), EnumSet.of(ColoringAttributes.KEYWORD));
+            Token t = firstIdentifierToken("uses"); //NOI18N
+            if (t != null) {
+                contextKeywords.add(t);
+            }
             return super.visitUses(tree, d);
         }
                 
