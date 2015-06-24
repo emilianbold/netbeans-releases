@@ -637,6 +637,31 @@ public class RenameTest extends RefactoringTestBase {
 
     }
     
+    public void test253063() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A implements ATest {\n"
+                + "    AAA { void foo() { } }\n"
+                + "}"),
+                new File("t/ATest.java", "package t;\n"
+                + "\n"
+                + "public interface ATest {\n"
+                + "    void foo();\n"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        performRename(src.getFileObject("t/ATest.java"), 0, -1, "foos", props, false, new Problem(false, "ERR_IsOverridden"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public enum A implements ATest {\n"
+                + "    AAA { void foos() { } }\n"
+                + "}"),
+                new File("t/ATest.java", "package t;\n"
+                + "\n"
+                + "public interface ATest {\n"
+                + "    void foos();\n"
+                + "}"));
+    }
+    
     public void test234094() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

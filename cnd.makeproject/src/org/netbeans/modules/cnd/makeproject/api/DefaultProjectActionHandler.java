@@ -323,13 +323,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             buf.append(commandLine);
             npb.setCommandLine(commandLine);
         } else {
-            String exe = pae.getExecutable();
-            if (isCygwinCompilerSet(cs)) {
-                String cygwinBasePath = WindowsSupport.getInstance().convertToWindowsPath(CompilerSetUtils.getCygwinBase());
-                if (!exe.contains(cygwinBasePath)) {
-                    exe = cygwinBasePath + "\\bin\\" + exe; // NOI18N
-                }
-            }
+            String exe = getExecutable(cs);
             
             if (args == null) {
                 args = pae.getArguments();
@@ -434,6 +428,15 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 pae.getActionName());
 
         executorTask = es.run();
+    }
+    
+    private String getExecutable(CompilerSet cs) {
+        if (pae.getExecutable().contains("cmake")) { // NOI18N
+            if (isCygwinCompilerSet(cs)) {
+                return PreBuildSupport.getCmakePath(cs);
+            }
+        }
+        return pae.getExecutable();
     }
 
     @Override

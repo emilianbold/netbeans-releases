@@ -2728,4 +2728,12 @@ public class PropertiesATest extends CssModuleTestBase {
                 + "}";
         assertCssCode(code);
     }
+    
+    public void testTransition()  throws ParseException {
+        String code = ".test {\n"
+                + "-o-transition: .6s ease-in-out left;\n"
+                + "transition: .6s ease-in-out left;\n"
+                + "}";
+        assertCssCode(code);
+    }
 }
