@@ -141,6 +141,10 @@ public final class PreBuildSupport {
         return command;
     }
     
+    public static String getCmakePath(CompilerSet cs) {
+        return getToolPath(cs, PredefinedToolKind.CMakeTool);
+    }
+    
     private static String getDefaultC(CompilerSet compilerSet){
         String cCompiler = getToolPath(compilerSet, PredefinedToolKind.CCompiler);
         if (cCompiler != null) {
