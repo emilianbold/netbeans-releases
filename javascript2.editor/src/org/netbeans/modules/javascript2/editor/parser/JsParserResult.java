@@ -84,6 +84,7 @@ public class JsParserResult extends ParserResult {
                 JsTokenId.JAVASCRIPT_MIME_TYPE,
                 JsTokenId.GULP_MIME_TYPE,
                 JsTokenId.GRUNT_MIME_TYPE,
+                JsTokenId.KARMACONF_MIME_TYPE,
                 JsTokenId.JSON_MIME_TYPE,
                 JsTokenId.PACKAGE_JSON_MIME_TYPE,
                 JsTokenId.BOWER_JSON_MIME_TYPE,
