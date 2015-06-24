@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -193,9 +194,12 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public Set<Modifier> getModifiers() {
-        Set<Modifier> emptyModifiers = Collections.emptySet();
-        ElementHandle handle = getElement();
-        return (handle != null) ? handle.getModifiers() : emptyModifiers;
+        Set<Modifier> modifiers = (getElement() == null || getElement().getModifiers().isEmpty() ? Collections.EMPTY_SET : EnumSet.copyOf(getElement().getModifiers()));
+        if (modifiers.contains(Modifier.PRIVATE) && (modifiers.contains(Modifier.PUBLIC) || modifiers.contains(Modifier.PROTECTED))) {
+            modifiers.remove(Modifier.PUBLIC);
+            modifiers.remove(Modifier.PROTECTED);
+        }
+        return modifiers;
     }
 
     @Override
