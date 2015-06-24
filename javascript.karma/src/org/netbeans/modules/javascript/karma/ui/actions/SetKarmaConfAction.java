@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.karma.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javascript.karma.preferences.KarmaPreferences;
@@ -68,7 +69,9 @@ import org.openide.util.NbBundle;
 })
 public final class SetKarmaConfAction extends AbstractAction implements ContextAwareAction {
 
+    @NullAllowed
     private final Project project;
+    @NullAllowed
     private final FileObject karmaConfJs;
 
 
