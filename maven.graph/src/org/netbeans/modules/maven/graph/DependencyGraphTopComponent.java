@@ -116,6 +116,7 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     private static final Logger LOG = Logger.getLogger(DependencyGraphTopComponent.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(DependencyGraphTopComponent.class);
     private boolean everDisplayed;
+    private boolean needsRefresh;
     private final RequestProcessor.Task task_reload = RP.create(new Runnable() {
         @Override
         public void run() {
@@ -129,12 +130,13 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
                         return;
                     }
                     if (prj != null) {
-                        if (prj.getArtifacts().size() < COMPLEXITY_LIMIT) {
+                        if (isVisible() || prj.getArtifacts().size() < COMPLEXITY_LIMIT) {
                             btnGraphActionPerformed(null);
                             return;
+                        } else {
+                            needsRefresh = true;
                         }
                     }
-                    waitForApproval();
                 }
             });
         }
@@ -332,6 +334,10 @@ public class DependencyGraphTopComponent extends TopComponent implements LookupL
     @Override
     public void componentActivated() {
         super.componentActivated();
+        if(needsRefresh) {
+            needsRefresh = false;
+            btnGraphActionPerformed(null);
+        }
     }
 
     @Override
