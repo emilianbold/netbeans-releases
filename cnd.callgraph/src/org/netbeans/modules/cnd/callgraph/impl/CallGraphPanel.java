@@ -991,7 +991,7 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
             @Override
             public Action getPreferredAction() {
-                return null;
+                return new GoToOccurrenceAction(occurrence);
             }
 
             @Override
