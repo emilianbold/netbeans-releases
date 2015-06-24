@@ -768,7 +768,7 @@ public class ModelUtils {
                 if ("this".equals(name)) {
                     JsObject thisObject = ModelUtils.findJsObject(model, offset);
                     JsObject first = thisObject;
-                    while (thisObject != null && thisObject.getParent() != null
+                    while (thisObject != null && thisObject.getParent() != null && thisObject.getParent().getJSKind() != JsElement.Kind.FILE
                             && thisObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                             && thisObject.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
                             && thisObject.getJSKind() != JsElement.Kind.OBJECT_LITERAL) {

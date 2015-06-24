@@ -2450,8 +2450,7 @@ public class ModelVisitor extends PathNodeVisitor {
             for (JsModifier jsModifier : modifiers) {
                 switch (jsModifier) {
                     case PRIVATE:
-                        object.getModifiers().remove(Modifier.PROTECTED);
-                        object.getModifiers().remove(Modifier.PUBLIC);
+                        // if the modifier from doc is PRIVATE, keep information about the privilaged or public method anyway.
                         object.getModifiers().add(Modifier.PRIVATE);
                         break;
                     case PUBLIC:
