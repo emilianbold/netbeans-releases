@@ -146,12 +146,15 @@ public class SBHomeFactory {
         @Override
         public Home defaultHome() {
             Home h = null;
-            for(String ver : VER_CURRENT) {
+            for (String ver : VER_CURRENT) {
                 for (String path : WKIP) {
                     if (Utilities.isWindows() && path.contains("AppData")) { //NOI18N
                         // issue #251710 - Gluon SceneBuilder by default installs to ﻿C:\Users\<username>\AppData\Local\SceneBuilder
-                        final FileObject appDataFo = FileUtil.toFileObject(new File(System.getenv("AppData"))).getParent(); //NOI18N
-                        h = loadHome(path.replace(VER_DELIMITER, ver).replace(APPDATA_DELIMITER, appDataFo.getPath()));
+                        final String appDataPath = System.getenv("AppData"); //NOI18N
+                        if (appDataPath != null) {
+                            final FileObject appDataFo = FileUtil.toFileObject(new File(appDataPath)).getParent();
+                            h = loadHome(path.replace(VER_DELIMITER, ver).replace(APPDATA_DELIMITER, appDataFo.getPath()));
+                        }
                     } else {
                         h = loadHome(path.replace(VER_DELIMITER, ver), ver);
                     }
@@ -159,7 +162,7 @@ public class SBHomeFactory {
                         return h;
                     }
                 }
-            }            
+            }
             return h;
         }
 

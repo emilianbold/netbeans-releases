@@ -422,11 +422,26 @@ public class WildflyClient {
                 // ModelNode
                 Object result = readResult(cl, response);
                 String applicationName = modelNodeAsString(cl, getModelNodeChild(cl, result, NAME));
-                if (applicationName.endsWith(".war")) {
+                if (applicationName.endsWith(".war")) { // NOI18N
                     // ModelNode
                     Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, result, SUBSYSTEM), WEB_SUBSYSTEM);
                     if (modelNodeIsDefined(cl, deployment)) {
-                        return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root"));
+                        return "http://" + serverAddress + ':' + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root")); // NOI18N
+                    }
+                } else if (applicationName.endsWith(".ear")) { // NOI18N
+                    Object subdeployment = getModelNodeChild(cl, result, Constants.SUBDEPLOYMENT);
+                    if (modelNodeIsDefined(cl, subdeployment)) {
+                        // ModelNode
+                        for (Object node : modelNodeAsList(cl, subdeployment)) {
+                            Object child = getModelNodeChildAtIndex(cl, node, 0);
+                            if (modelNodeIsDefined(cl, child)) {
+                                Object deployment = getModelNodeChild(cl, getModelNodeChild(cl, child, SUBSYSTEM), WEB_SUBSYSTEM);
+                                if (modelNodeIsDefined(cl, deployment)) {
+                                    return "http://" + serverAddress + ':' // NOI18N
+                                            + httpPort + modelNodeAsString(cl, getModelNodeChild(cl, deployment, "context-root")); // NOI18N
+                                }
+                            }
+                        }
                     }
                 }
             }

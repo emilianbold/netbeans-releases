@@ -319,6 +319,26 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     @Override
+    public Node leave(BinaryNode binaryNode) {
+        Node lhs = binaryNode.lhs();
+        Node rhs = binaryNode.rhs();
+        if (lhs instanceof IdentNode && rhs instanceof BinaryNode) {
+            Node rlhs = ((BinaryNode)rhs).lhs();
+            if (rlhs instanceof IdentNode) {
+                JsObject origFunction = modelBuilder.getCurrentDeclarationFunction().getProperty(((IdentNode)rlhs).getName());
+                if (origFunction != null && origFunction.getJSKind().isFunction()) {
+                    JsObject refFunction = modelBuilder.getCurrentDeclarationFunction().getProperty(((IdentNode)lhs).getName());
+                    if (refFunction != null && !refFunction.getJSKind().isFunction()) {
+                        JsFunctionReference newReference = new JsFunctionReference(refFunction.getParent(), refFunction.getDeclarationName(), (JsFunction)origFunction, true, origFunction.getModifiers());
+                        refFunction.getParent().addProperty(newReference.getName(), newReference);
+                    }
+                }
+            }
+        }
+        return super.leave(binaryNode); 
+    }
+    
+    @Override
     public Node enter(CallNode callNode) {
         functionArgumentStack.push(new ArrayList<JsObjectImpl>(3));
         if (callNode.getFunction() instanceof IdentNode) {
@@ -2430,8 +2450,7 @@ public class ModelVisitor extends PathNodeVisitor {
             for (JsModifier jsModifier : modifiers) {
                 switch (jsModifier) {
                     case PRIVATE:
-                        object.getModifiers().remove(Modifier.PROTECTED);
-                        object.getModifiers().remove(Modifier.PUBLIC);
+                        // if the modifier from doc is PRIVATE, keep information about the privilaged or public method anyway.
                         object.getModifiers().add(Modifier.PRIVATE);
                         break;
                     case PUBLIC:

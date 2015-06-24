@@ -43,7 +43,6 @@
 package org.netbeans.modules.javascript.karma.util;
 
 import java.awt.EventQueue;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -64,11 +63,14 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 
+@MIMEResolver.Registration(displayName = "karma.conf.js", resource = "../resources/karmaconf-resolver.xml", position = 126)
 public final class KarmaUtils {
 
     private static final Logger LOGGER = Logger.getLogger(KarmaUtils.class.getName());
 
+    private static final String SCRIPT_PREFIX = "<script type=\"text/javascript\" src=\""; // NOI18N
     private static final FilenameFilter KARMA_CONFIG_FILTER = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -87,23 +89,22 @@ public final class KarmaUtils {
     private KarmaUtils() {
     }
 
-    public static boolean useAbsoluteUrls(URL debugUrl) {
+    public static List<String> readScriptFiles(URL url) {
         assert !EventQueue.isDispatchThread();
+        List<String> scripts = Collections.emptyList();
         try {
-            Path tmpFile = Files.createTempFile("nb-karma-debug-", ".html"); // NOI18N
+            Path tmpFile = Files.createTempFile("nb-karma-url-", ".html"); // NOI18N
             try {
-                NetworkSupport.download(debugUrl.toExternalForm(), tmpFile.toFile());
-                try (BufferedReader reader = Files.newBufferedReader(tmpFile, StandardCharsets.UTF_8)) {
-                    for (;;) {
-                        String line = reader.readLine();
-                        if (line == null) {
-                            break;
+                NetworkSupport.download(url.toExternalForm(), tmpFile.toFile());
+                for (String line : Files.readAllLines(tmpFile, StandardCharsets.UTF_8)) {
+                    if (line.trim().contains(SCRIPT_PREFIX)) {
+                        if (scripts.isEmpty()) {
+                            scripts = new ArrayList<>();
                         }
-                        if (line.contains("src=\"/absolute")) { // NOI18N
-                            return true;
-                        }
+                        scripts.add(line);
                     }
                 }
+                return scripts;
             } finally {
                 Files.delete(tmpFile);
             }
@@ -112,7 +113,7 @@ public final class KarmaUtils {
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        return false;
+        return scripts;
     }
 
     public static List<WebBrowser> getDebugBrowsers() {
