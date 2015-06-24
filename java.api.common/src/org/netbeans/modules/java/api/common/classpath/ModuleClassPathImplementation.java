@@ -50,11 +50,15 @@ import com.sun.tools.javac.tree.JCTree;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,7 +78,13 @@ import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.BaseUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
@@ -83,7 +93,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-final class ModuleClassPathImplementation  implements ClassPathImplementation, PropertyChangeListener {
+final class ModuleClassPathImplementation  implements ClassPathImplementation, PropertyChangeListener, FileChangeListener {
 
     private static final Logger LOG = Logger.getLogger(ModuleClassPathImplementation.class.getName());
     private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
@@ -94,8 +104,12 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
     private final SourceRoots sources;
     private final PropertyEvaluator eval;
     private final PropertyChangeSupport listeners;
-    private final AtomicReference<List<PathResourceImplementation>> cache;
-    private final ThreadLocal<List<PathResourceImplementation>> pastNaGibona;
+    private final ThreadLocal<Object[]> selfRes;
+
+    //@GuardedBy("this")
+    private List<PathResourceImplementation> cache;
+    //@GuardedBy("this")
+    private Collection<File> moduleInfos;
 
     ModuleClassPathImplementation(
             @NonNull final SourceRoots sources,
@@ -105,8 +119,8 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
         this.sources = sources;
         this.eval = eval;
         this.listeners = new PropertyChangeSupport(this);
-        this.cache = new AtomicReference<>();
-        this.pastNaGibona = new ThreadLocal<>();
+        this.selfRes = new ThreadLocal<>();
+        this.moduleInfos = Collections.emptyList();
         this.sources.addPropertyChangeListener(WeakListeners.propertyChange(this, this.sources));
         this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
     }
@@ -114,53 +128,94 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
     @Override
     @NonNull
     public List<? extends PathResourceImplementation> getResources() {
-        List<PathResourceImplementation> res = cache.get();
-        if (res == null) {
-            List<? extends PathResourceImplementation> bestSoFar = pastNaGibona.get();
-            if (bestSoFar != null) {
-                return bestSoFar;
-            }
-            res = getAllModules();
-            pastNaGibona.set(res);
-            try {
-                for (FileObject root : sources.getRoots()) {
-                    final FileObject modules = root.getFileObject(MODULE_INFO);
-                    if (modules != null) {
-                        final JavaSource src = JavaSource.forFileObject(modules);
-                        if (src != null) {
-                            try {
-                                final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
-                                resInOut.add(res);
-                                src.runUserActionTask(new Task<CompilationController>() {
-                                    @Override
-                                    public void run(CompilationController cc) throws Exception {
-                                        cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                                        final CompilationUnitTree cu = cc.getCompilationUnit();
-                                        //Todo: No API in Javac yet.
-                                        final Symbol.ModuleSymbol root = cu.accept(new TreeScanner<Symbol.ModuleSymbol, Void>() {
-                                            @Override
-                                            public Symbol.ModuleSymbol visitModule(ModuleTree node, Void p) {
-                                                return ((JCTree.JCModuleDecl)node).sym;
-                                            }
-                                        },null);
-                                        Set<URL> requires = collectRequiredModules(root, true);
-                                        resInOut.set(0, filterModules(resInOut.get(0), requires));
-                                    }
-                                }, true);
-                                res = resInOut.get(0);
-                            } catch (IOException ioe) {
-                                Exceptions.printStackTrace(ioe);
+        List<PathResourceImplementation> res;
+        synchronized (this) {
+            res = cache;
+        }
+        if (res != null) {
+            return res;
+        }
+        final Object[] bestSoFar = selfRes.get();
+        if (bestSoFar != null) {
+            bestSoFar[1] = Boolean.TRUE;
+            return (List<? extends PathResourceImplementation>) bestSoFar[0];
+        }
+        final Collection<File> newModuleInfos = new ArrayDeque<>();
+        boolean needToFire;
+        res = getAllModules();
+        selfRes.set(new Object[]{res, Boolean.FALSE});
+        try {
+            boolean found = false;
+            for (URL root : sources.getRootURLs()) {
+                try {
+                    final File moduleInfo = FileUtil.normalizeFile(new File(BaseUtilities.toFile(root.toURI()),MODULE_INFO));
+                    newModuleInfos.add(moduleInfo);
+                    if (!found) {
+                        final FileObject modules = FileUtil.toFileObject(moduleInfo);
+                        if (modules != null) {
+                            found = true;
+                            final JavaSource src = JavaSource.forFileObject(modules);
+                            if (src != null) {
+                                try {
+                                    final List<List<PathResourceImplementation>> resInOut = new ArrayList<>(1);
+                                    resInOut.add(res);
+                                    src.runUserActionTask(new Task<CompilationController>() {
+                                        @Override
+                                        public void run(CompilationController cc) throws Exception {
+                                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                                            final CompilationUnitTree cu = cc.getCompilationUnit();
+                                            //Todo: No API in Javac yet.
+                                            final Symbol.ModuleSymbol root = cu.accept(new TreeScanner<Symbol.ModuleSymbol, Void>() {
+                                                @Override
+                                                public Symbol.ModuleSymbol visitModule(ModuleTree node, Void p) {
+                                                    return ((JCTree.JCModuleDecl)node).sym;
+                                                }
+                                            },null);
+                                            Set<URL> requires = collectRequiredModules(root, true);
+                                            resInOut.set(0, filterModules(resInOut.get(0), requires));
+                                        }
+                                    }, true);
+                                    res = resInOut.get(0);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
                             }
                         }
                     }
+                } catch (URISyntaxException e) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Invalid URL: {0}, reason: {1}",    //NOI18N
+                        new Object[]{
+                            root,
+                            e.getMessage()
+                        });
                 }
-            } finally {
-                pastNaGibona.remove();
             }
+        } finally {
+            needToFire = selfRes.get()[1] == Boolean.TRUE;
+            selfRes.remove();
+        }
+        synchronized (this) {
             assert res != null;
-            if (!cache.compareAndSet(null, res)) {
-                res = cache.get();
+            if (cache == null) {
+                cache = res;
+                final Collection<File> added = new ArrayList<>(newModuleInfos);
+                added.removeAll(moduleInfos);
+                final Collection<File> removed = new ArrayList<>(moduleInfos);
+                removed.removeAll(newModuleInfos);
+                for (File f : removed) {
+                    FileUtil.removeFileChangeListener(this, f);
+                }
+                for (File f : added) {
+                    FileUtil.addFileChangeListener(this, f);
+                }
+                moduleInfos = newModuleInfos;
+            } else {
+                res = cache;
             }
+        }
+        if (needToFire) {
             this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
         }
         return res;
@@ -186,8 +241,38 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
         }
     }
 
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        reset();
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        reset();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        reset();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        reset();
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
     private void reset() {
-        this.cache.set(null);
+        synchronized (this) {
+            this.cache = null;
+        }
         this.listeners.firePropertyChange(PROP_RESOURCES, null, null);
     }
 
