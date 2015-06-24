@@ -153,10 +153,12 @@ class WildflyStartRunnable implements Runnable {
         // set the JAVA_OPTS value
         String javaOpts = properties.getJavaOpts();
         StringBuilder javaOptsBuilder = new StringBuilder(javaOpts);
-        String logManagerJar = findLogManager(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
-        if(!logManagerJar.isEmpty()) {
-            javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
-                    .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+        if (startServer.getMode() == WildflyStartServer.MODE.PROFILE) {
+            String logManagerJar = findLogManager(ip.getProperty(WildflyPluginProperties.PROPERTY_ROOT_DIR));
+            if (!logManagerJar.isEmpty()) {
+                javaOptsBuilder.append(" -Xbootclasspath/p:").append(logManagerJar)
+                        .append(" -Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+            }
         }
         if(platform.getSpecification().getVersion().compareTo(JDK_18) < 0) {
             javaOptsBuilder.append(" -XX:MaxPermSize=256m");
