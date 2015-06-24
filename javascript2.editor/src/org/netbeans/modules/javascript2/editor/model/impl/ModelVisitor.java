@@ -1936,7 +1936,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 // -> in the model, just change  the f1 from private to privilaged. 
                 String lastName = fqn.get(1).getName();
                 JsObjectImpl property = (JsObjectImpl)object.getProperty(lastName);
-                if (property != null && lastName.equals(property.getName()) && property.getModifiers().contains(Modifier.PRIVATE)) {
+                if (property != null && lastName.equals(property.getName()) && (property.getModifiers().contains(Modifier.PRIVATE) && property.getModifiers().size() == 1)) {
                     property.getModifiers().remove(Modifier.PRIVATE);
                     property.getModifiers().add(Modifier.PROTECTED);
                 }
