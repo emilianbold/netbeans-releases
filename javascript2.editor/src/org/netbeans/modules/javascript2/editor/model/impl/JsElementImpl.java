@@ -187,7 +187,7 @@ public abstract class JsElementImpl implements JsElement {
     
     @Override
     public Set<Modifier> getModifiers() {
-        return modifiers;
+         return modifiers;
     }
 
     @Override
