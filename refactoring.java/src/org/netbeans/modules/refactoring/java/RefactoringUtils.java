@@ -195,7 +195,27 @@ public class RefactoringUtils {
 //                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file + " Classpath: " + info.getClasspathInfo());
 //                }
             }
-            for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
+            List<ExecutableElement> methods = new LinkedList<>(ElementFilter.methodsIn(type.getEnclosedElements()));
+            // #253063 - Anonymous classes of enum constants are not returned by index, need to get them manually
+            if(type.getKind() == ElementKind.ENUM) {
+                for (VariableElement variableElement : ElementFilter.fieldsIn(type.getEnclosedElements())) {
+                    TreePath varPath = info.getTrees().getPath(variableElement);
+                    if(varPath != null && varPath.getLeaf().getKind() == Tree.Kind.VARIABLE) {
+                        ExpressionTree initializer = ((VariableTree)varPath.getLeaf()).getInitializer();
+                        if(initializer != null && initializer.getKind() == Tree.Kind.NEW_CLASS) {
+                            NewClassTree ncTree = (NewClassTree) initializer;
+                            ClassTree classBody = ncTree.getClassBody();
+                            if(classBody != null) {
+                                Element anonEl = info.getTrees().getElement(new TreePath(varPath, classBody));
+                                if(anonEl != null) {
+                                    methods.addAll(ElementFilter.methodsIn(anonEl.getEnclosedElements()));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            for (ExecutableElement method : methods) {
                 if (info.getElements().overrides(method, e, type)) {
                     result.add(method);
                 }
