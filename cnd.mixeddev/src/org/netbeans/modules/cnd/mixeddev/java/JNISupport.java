@@ -145,7 +145,7 @@ public final class JNISupport {
      * @return possible C++ signatures for a JNI method
      */
     public static String[] getCppMethodSignatures(JavaMethodInfo methodInfo) {
-        String exception = getExceptionalMethodCppName(methodInfo);
+        String exception = getExceptionalMethodCppSignature(methodInfo);
         if (exception != null) {
             return new String[]{exception};
         } else {
@@ -258,7 +258,7 @@ public final class JNISupport {
         Pair.of("void", "V") // NOI18N
     );
     
-    private static final Map<String, String> javaExceptionalMethodNames = createMapping(
+    private static final Map<String, String> javaExceptionalMethodSignatures = createMapping(
         Pair.of("java/lang/Object/hashCode", "JVM_IHashCode"), // NOI18N
         Pair.of("java/lang/Object/clone", "JVM_Clone"), // NOI18N
         Pair.of("java/lang/Object/notify", "JVM_MonitorNotify"), // NOI18N
@@ -266,9 +266,9 @@ public final class JNISupport {
         Pair.of("java/lang/Object/wait", "JVM_MonitorWait") // NOI18N
     );
     
-    private static String getExceptionalMethodCppName(JavaMethodInfo methodInfo) {
+    private static String getExceptionalMethodCppSignature(JavaMethodInfo methodInfo) {
         String qualName = methodInfo.getQualifiedName().toString();
-        return javaExceptionalMethodNames.get(qualName);
+        return javaExceptionalMethodSignatures.get(qualName);
     }
     
     private static String getCppSignature(JavaMethodInfo methodInfo, boolean full) {
