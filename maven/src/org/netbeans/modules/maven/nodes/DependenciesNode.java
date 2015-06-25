@@ -272,7 +272,7 @@ public class DependenciesNode extends AbstractNode {
             artifactId = artifact.getArtifactId();
             artifactString = artifact.toString();
             StringBuilder sb = new StringBuilder();
-            List<String> dependencyTrail = artifact.getDependencyTrail();
+            List<String> dependencyTrail = new ArrayList<>(artifact.getDependencyTrail());
             Collections.sort(dependencyTrail);
             dependencyTrailSize = dependencyTrail.size();
             Iterator<String> it = dependencyTrail.iterator();
