@@ -80,6 +80,7 @@ import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphUI;
 import org.netbeans.modules.cnd.callgraph.api.ui.Catalog;
 import org.netbeans.modules.cnd.callgraph.api.ui.CallGraphActionEDTRunnable;
 import org.netbeans.modules.cnd.callgraph.impl.CallGraphScene.LayoutKind;
+import org.netbeans.modules.cnd.callgraph.support.ExportXmlAction;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -152,8 +153,11 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         if (showGraph) {
             scene = new CallGraphScene();
             ExportAction exportAction = new ExportAction(scene, this);
+            ExportXmlAction exportXmlAction = new ExportXmlAction(scene, this);
             actions.add(exportAction);
+            actions.add(exportXmlAction);
             scene.setExportAction(exportAction);
+            scene.setExportXmlAction(exportXmlAction);
         }
         actions.add(null);
         actions.add(new ExpandAction());
@@ -470,6 +474,10 @@ private void overridingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
         updateButtons();
         update();
+    }
+    
+    public CallModel getModel() {
+        return model;
     }
            
     private synchronized void update() {

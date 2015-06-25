@@ -76,7 +76,7 @@ public abstract class AbstractJNIAction extends NodeAction {
     protected boolean enable(Node[] activatedNodes) {
         Pair<Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
-            return isEnabled(context.first(), context.second());
+            return isEnabledAtPosition(context.first(), context.second());
         }
         return false;
     }
@@ -108,5 +108,5 @@ public abstract class AbstractJNIAction extends NodeAction {
         return (doc != null && caret >= 0) ? Pair.of(doc, caret) : null;
     }
     
-    protected abstract boolean isEnabled(Document doc, int caret);
+    protected abstract boolean isEnabledAtPosition(Document doc, int caret);
 }
