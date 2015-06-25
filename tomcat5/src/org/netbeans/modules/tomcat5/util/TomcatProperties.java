@@ -120,6 +120,7 @@ public class TomcatProperties {
     private static final String PROP_INSTANCE_ID   = "instance_id";     // NOI18N
     public  static final String PROP_AUTOREGISTERED = "autoregistered"; // NOI18N
     private static final String PROP_DRIVER_DEPLOYMENT = "driverDeploymentEnabled"; // NOI18N
+    public  static final String PROP_SERVER_HEADER = "server_header";
     
     
     // default values
@@ -550,6 +551,19 @@ public class TomcatProperties {
     /** this needs to be kept in sync with value in the server.xml conf file */
     public void setServerPort(int port) {
         ip.setProperty(PROP_SERVER_PORT, Integer.toString(port));
+    }
+
+    public String getServerHeader() {
+        String val = ip.getProperty(PROP_SERVER_HEADER);
+        if (val != null) {
+            return val;
+        }
+        return "Apache-Coyote/1.1"; // NOI18N
+    }
+
+    /** this needs to be kept in sync with value in the server.xml conf file */
+    public void setServerHeader(String serverHeader) {
+        ip.setProperty(PROP_SERVER_HEADER, serverHeader);
     }
     
     public int getShutdownPort() {
