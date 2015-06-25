@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.mixeddev;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +105,7 @@ public final class MixedDevUtils {
         for (Pair<K, V> pair : pairs) {
             mapping.put(pair.first(), pair.second());
         }
-        return mapping;
+        return Collections.unmodifiableMap(mapping);
     }    
     
     public static interface Converter<F, T> {

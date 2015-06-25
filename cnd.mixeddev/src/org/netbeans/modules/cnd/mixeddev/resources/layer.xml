@@ -9,6 +9,7 @@
                 <folder name="Popup">
                     <folder name="MixedDevelopment">
                         <attr name="position" intvalue="0"/>
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.mixeddev.Bundle"/>
                     </folder>
                 </folder>
 -->

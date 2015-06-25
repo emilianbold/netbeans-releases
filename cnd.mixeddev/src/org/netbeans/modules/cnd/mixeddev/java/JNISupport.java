@@ -145,7 +145,7 @@ public final class JNISupport {
      * @return possible C++ signatures for a JNI method
      */
     public static String[] getCppMethodSignatures(JavaMethodInfo methodInfo) {
-        String exception = getExceptionalMethodCppSignature(methodInfo);
+        String exception = getExceptionalMethodCppSignature(methodInfo.getQualifiedName());
         if (exception != null) {
             return new String[]{exception};
         } else {
@@ -156,6 +156,21 @@ public final class JNISupport {
             // Method is not overloaded. Search with the short signature first, then with the long one
             return new String[]{getCppSignature(methodInfo, false), getCppSignature(methodInfo, true)};
         }
+    }
+    
+    /**
+     * Returns cpp signature using only Java Qualified Name.
+     * @param qualifiedName
+     * @return cpp signature
+     * 
+     * @deprecated because it is impossible to find out completely correct signature
+     *              using only qualified name. So it is a hack which must be removed 
+     *              as soon as possible
+     */
+    @Deprecated
+    public static String getCppMethodSignature(String qualifiedName) {
+        String exception = getExceptionalMethodCppSignature(qualifiedName);
+        return exception != null ? exception : JNI_QN_PREFIX.concat(escape(qualifiedName));
     }
     
     /**
@@ -266,9 +281,8 @@ public final class JNISupport {
         Pair.of("java/lang/Object/wait", "JVM_MonitorWait") // NOI18N
     );
     
-    private static String getExceptionalMethodCppSignature(JavaMethodInfo methodInfo) {
-        String qualName = methodInfo.getQualifiedName().toString();
-        return javaExceptionalMethodSignatures.get(qualName);
+    private static String getExceptionalMethodCppSignature(CharSequence qualName) {
+        return javaExceptionalMethodSignatures.get(qualName.toString());
     }
     
     private static String getCppSignature(JavaMethodInfo methodInfo, boolean full) {

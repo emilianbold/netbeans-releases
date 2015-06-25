@@ -67,7 +67,7 @@ import org.openide.util.Pair;
  */
 // Temporary disabled
 //@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions", category = "MixedDevelopment")
-//@ActionRegistration(displayName = "#LBL_Action_IntroduceMissingJNIMethods", lazy = true)
+//@ActionRegistration(displayName = "#LBL_Action_IntroduceMissingJNIMethods", lazy = false)
 //@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=20)})
 //@NbBundle.Messages({"LBL_Action_IntroduceMissingJNIMethods=Introduce Missing JNI Methods"})
 public class IntroduceMissingJNIMethodsAction extends AbstractJNIAction {
@@ -78,7 +78,7 @@ public class IntroduceMissingJNIMethodsAction extends AbstractJNIAction {
     }
 
     @Override
-    protected boolean isEnabled(Document doc, int caret) {
+    protected boolean isEnabledAtPosition(Document doc, int caret) {
         return JNISupport.isJNIClass(doc, caret);
     }
 
