@@ -71,7 +71,7 @@ public class LessPreferencesValidator implements CssPreprocessorPreferencesValid
     @Override
     public LessPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
-            result.merge(new CssPreprocessorUtils.MappingsValidator()
+            result.merge(new CssPreprocessorUtils.MappingsValidator("less") // NOI18N
                     .validate(root, mappings)
                     .getResult());
         }
