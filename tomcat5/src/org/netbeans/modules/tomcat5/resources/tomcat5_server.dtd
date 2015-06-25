@@ -58,6 +58,9 @@ each forwarding to the associated Engine to perform request processing and creat
 <!ATTLIST Connector protocol CDATA #IMPLIED>
 <!ATTLIST Connector debug CDATA #IMPLIED>
 <!ATTLIST Connector URIEncoding CDATA #IMPLIED>
+<!-- TomEE attributes -->
+<!ATTLIST Connector server CDATA #IMPLIED>
+<!ATTLIST Connector xpoweredBy CDATA #IMPLIED>
 
 <!--
 The Engine element represents the entire request processing machinery associated with a particular Catalina Service. It receives and processes all requests from one or more Connectors, and returns the completed response to the Connector for ultimate transmission back to the client.

@@ -92,6 +92,7 @@ public class TomcatInstallUtil {
     private static final String ATTR_AUTO_DEPLOY = "autoDeploy";    // NOI18N
     private static final String ATTR_SCHEME = "scheme";             // NOI18N
     private static final String ATTR_SECURE = "secure";             // NOI18N
+    private static final String ATTR_SERVER = "server"; // NOI18N
     
     private static final String PROP_CONNECTOR = "Connector"; // NOI18N
     
@@ -130,6 +131,30 @@ public class TomcatInstallUtil {
         
         port = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_PORT);
         return port;
+    }
+
+    public static String getServerHeader(Server server) {
+
+        Service service = server.getService(0);
+
+        int defCon = -1;
+        String serverHeader;
+        for (int i=0; i<service.sizeConnector(); i++) {
+            String protocol = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_PROTOCOL);
+            String scheme = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SCHEME);
+            String secure = service.getAttributeValue(PROP_CONNECTOR, i, ATTR_SECURE);
+            if (isHttpConnector(protocol, scheme, secure)) {
+                defCon = i;
+                break;
+            }
+        }
+
+        if (defCon==-1 && service.sizeConnector() > 0) {
+            defCon=0;
+        }
+
+        serverHeader = service.getAttributeValue(PROP_CONNECTOR, defCon, ATTR_SERVER);
+        return serverHeader;
     }
     
     public static String getHost(Server server) {

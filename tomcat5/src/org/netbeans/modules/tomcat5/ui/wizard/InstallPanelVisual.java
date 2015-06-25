@@ -91,6 +91,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private String serverPort;
     private String shutdownPort;
+    private String serverHeader;
     
     private RequestProcessor.Task validationTask;
     
@@ -364,8 +365,11 @@ class InstallPanelVisual extends javax.swing.JPanel {
     public java.util.Properties getProperties() {
         Properties p = new Properties();
         p.put(TomcatProperties.PROP_SERVER_PORT, serverPort);
-        p.put(TomcatProperties.PROP_SHUTDOWN,    shutdownPort);
-        p.put(TomcatProperties.PROP_MONITOR,     "false"); // NOI18N
+        p.put(TomcatProperties.PROP_SHUTDOWN, shutdownPort);
+        p.put(TomcatProperties.PROP_MONITOR, "false"); // NOI18N
+        if (serverHeader != null) {
+            p.put(TomcatProperties.PROP_SERVER_HEADER, serverHeader);
+        }
         return p;
     }
     
@@ -452,6 +456,7 @@ class InstallPanelVisual extends javax.swing.JPanel {
             Server server = Server.createGraph(file);
             serverPort = TomcatInstallUtil.getPort(server);
             shutdownPort = TomcatInstallUtil.getShutdownPort(server);
+            serverHeader = TomcatInstallUtil.getServerHeader(server);
             if (serverPort != null && shutdownPort != null) {
                 // test whether it's parseable
                 Integer.parseInt(serverPort);
