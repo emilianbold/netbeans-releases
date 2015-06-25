@@ -46,9 +46,10 @@ package org.netbeans.modules.debugger.jpda.backend.truffle;
 
 import com.oracle.truffle.api.ExecutionContext;
 import com.oracle.truffle.api.frame.FrameSlotKind;
-import com.oracle.truffle.js.runtime.objects.JSObject;
+import com.oracle.truffle.api.instrument.Visualizer;
 import com.oracle.truffle.api.object.DynamicObject;
 import com.oracle.truffle.api.object.Property;
+import com.oracle.truffle.js.runtime.objects.JSObject;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,18 +61,18 @@ public class TruffleObject {
     
     static final int DISPLAY_TRIM = 1000;
     
-    final ExecutionContext context;
+    final Visualizer visualizer;
     final String name;
     final String type;
     final Object object;
     final String displayValue;
     final boolean leaf;
     
-    public TruffleObject(ExecutionContext context, String name, Object object) {
-        this.context = context;
+    public TruffleObject(Visualizer visualizer, String name, Object object) {
+        this.visualizer = visualizer;
         this.name = name;
         this.object = object;
-        this.displayValue = context.getVisualizer().displayValue(context, object, DISPLAY_TRIM);
+        this.displayValue = visualizer.displayValue(object, DISPLAY_TRIM);
         if (object instanceof String) {
             this.type = String.class.getSimpleName();
         } else if (object instanceof Number) {
@@ -125,7 +126,7 @@ public class TruffleObject {
                 String name = p.getKey().toString();
                 Object obj = JSObject.getProperty(dobj, name);
                 //Object obj = p.get(dobj, );//jso.getProperty((JSContext) context, name);
-                ch.add(new TruffleObject(context, name, obj));
+                ch.add(new TruffleObject(visualizer, name, obj));
             }
             return ch.toArray();
         } else {
@@ -143,7 +144,7 @@ public class TruffleObject {
             for (int i = 0; i < n; i++) {
                 String name = props.get(i).getKey().toString();
                 Object obj = props.get(i).get(dobj, true);
-                ch[i] = new TruffleObject(context, name, obj);
+                ch[i] = new TruffleObject(visualizer, name, obj);
             }
             return ch;
         } else {
