@@ -50,20 +50,20 @@ import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.repeat;
  */
 public final class JavaTypeInfo implements JavaEntityInfo {
     
-    private final CharSequence fullQualifiedName;
+    private final CharSequence qualifiedName;
     
     private final CharSequence name;
     
     private final int array;
 
     public JavaTypeInfo(CharSequence fullQualifiedName, CharSequence name, int array) {
-        this.fullQualifiedName = fullQualifiedName;
+        this.qualifiedName = fullQualifiedName;
         this.name = name;
         this.array = array;
     }
 
-    public CharSequence getFullQualifiedName() {
-        return fullQualifiedName;
+    public CharSequence getQualifiedName() {
+        return qualifiedName;
     }
 
     public CharSequence getName() {

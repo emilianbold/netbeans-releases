@@ -385,6 +385,9 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         String macro = "${origin}";
         String origin = goldenErrFile.getAbsolutePath();
         int i = origin.lastIndexOf(golden);
+        if (i < 1) { // this happens, for example, when running ReopenBrokenRepositoryValidationTest
+            return goldenErrFile;
+        }
         char separator = origin.charAt(i-1);
         origin = origin.substring(0,i-1)+origin.substring(i+golden.length());
         i = origin.lastIndexOf(separator);

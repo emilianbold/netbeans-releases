@@ -71,7 +71,7 @@ public final class SassPreferencesValidator implements CssPreprocessorPreference
     @Override
     public SassPreferencesValidator validateMappings(@NullAllowed FileObject root, boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
-            result.merge(new CssPreprocessorUtils.MappingsValidator()
+            result.merge(new CssPreprocessorUtils.MappingsValidator("scss") // NOI18N
                     .validate(root, mappings)
                     .getResult());
         }

@@ -76,6 +76,7 @@ public final class CssPreprocessorUtils {
     static final String MAPPING_DELIMITER = ":"; // NOI18N
 
     private static final String WEB_ROOT_PARAM = "${web.root}"; // NOI18N
+    private static final String CSS_EXTENSION = "css"; // NOI18N
 
 
     private CssPreprocessorUtils() {
@@ -115,7 +116,7 @@ public final class CssPreprocessorUtils {
     }
 
     public static List<Pair<String, String>> getDefaultMappings(CssPreprocessorType type) {
-        return Collections.singletonList(Pair.of("/" + type.getDefaultDirectoryName(), "/css")); // NOI18N
+        return Collections.singletonList(Pair.of("/" + type.getDefaultDirectoryName(), "/" + CSS_EXTENSION)); // NOI18N
     }
 
     private static boolean askUser(String title, String question) {
@@ -196,20 +197,12 @@ public final class CssPreprocessorUtils {
 
     @CheckForNull
     public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, FileObject source) {
-        File root = FileUtil.toFile(webRoot);
-        File file = FileUtil.toFile(source);
-        return resolveTarget(root, mappings, file, source.getName());
+        return resolveTarget(FileUtil.toFile(webRoot), mappings, FileUtil.toFile(source));
     }
 
     @CheckForNull
     public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, File source) {
-        File root = FileUtil.toFile(webRoot);
-        String name = source.getName();
-        String extension = FileUtil.getExtension(name);
-        if (!extension.isEmpty()) {
-            name = name.substring(0, name.length() - (extension.length() + 1));
-        }
-        return resolveTarget(root, mappings, source, name);
+        return resolveTarget(FileUtil.toFile(webRoot), mappings, source);
     }
 
     public static File resolveInput(FileObject webRoot, Pair<String, String> mapping) {
@@ -217,27 +210,56 @@ public final class CssPreprocessorUtils {
     }
 
     @CheckForNull
-    static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
+    static File resolveTarget(File root, List<Pair<String, String>> mappings, File file) {
+        String name = file.getName();
+        String extension = FileUtil.getExtension(name);
+        if (!extension.isEmpty()) {
+            name = name.substring(0, name.length() - (extension.length() + 1));
+        }
         for (Pair<String, String> mapping : mappings) {
             File from = resolveFile(root, mapping.first());
+            if (from.equals(file)) {
+                // exact file match
+                File to = resolveFile(root, mapping.second());
+                if (isFileMapping(to, CSS_EXTENSION)) {
+                    // 'to' is file
+                    return to;
+                }
+                // 'to' is directory
+                return resolveFile(to, makeCssFilename(name));
+            } else if (isFileMapping(from, extension)) {
+                continue;
+            }
+            // 'from' is directory
             String relpath;
             try {
                 relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
             } catch (IllegalArgumentException ex) {
                 // #237525
-                LOGGER.log(Level.INFO, "Incorrect mapping [existing file set]", ex);
-                return null;
+                LOGGER.log(Level.INFO, "Incorrect mapping [input is existing file but directory expected]", ex);
+                continue;
             }
-            if (relpath != null
-                    && !relpath.startsWith("..")) { // NOI18N
-                // path match
-                File to = resolveFile(root, mapping.second());
-                to = PropertyUtils.resolveFile(to, relpath);
-                return resolveFile(to, makeCssFilename(name));
+            if (relpath == null
+                    || relpath.startsWith("..")) { // NOI18N
+                // unrelated
+                continue;
             }
+            File to = PropertyUtils.resolveFile(resolveFile(root, mapping.second()), relpath);
+            assert !isFileMapping(to, CSS_EXTENSION) : to;
+            return resolveFile(to, makeCssFilename(name));
         }
         // no mapping
         return null;
+    }
+
+    static boolean isFileMapping(File file, String extension) {
+        if (file.isFile()) {
+            return true;
+        }
+        if (file.isDirectory()) {
+            return false;
+        }
+        return file.getName().toLowerCase().endsWith("." + extension); // NOI18N
     }
 
     static File resolveFile(File directory, String subpath) {
@@ -249,7 +271,7 @@ public final class CssPreprocessorUtils {
     }
 
     private static String makeCssFilename(String name) {
-        return name + ".css"; // NOI18N
+        return name + "." + CSS_EXTENSION; // NOI18N
     }
 
     //~ Inner classes
@@ -258,8 +280,14 @@ public final class CssPreprocessorUtils {
 
         private static final Pattern MAPPING_PATTERN = Pattern.compile("[^" + MAPPING_DELIMITER + "]+"); // NOI18N
 
+        private final String extension;
         private final ValidationResult result = new ValidationResult();
 
+
+        public MappingsValidator(String extension) {
+            assert extension != null;
+            this.extension = extension;
+        }
 
         public ValidationResult getResult() {
             return result;
@@ -287,10 +315,9 @@ public final class CssPreprocessorUtils {
             "MappingsValidator.warning.input.format=Input path \"{0}\" is incorrect.",
             "# {0} - mapping",
             "MappingsValidator.warning.output.format=Output path \"{0}\" is incorrect.",
-            "# {0} - mapping",
-            "MappingsValidator.warning.input.file=Input path \"{0}\" is existing file but directory expected.",
-            "# {0} - mapping",
-            "MappingsValidator.warning.output.file=Output path \"{0}\" is existing file but directory expected.",
+            "# {0} - directory mapping",
+            "# {1} - file mapping",
+            "MappingsValidator.warning.io.conflict=Directory \"{0}\" cannot be mapped to file \"{1}\".",
         })
         private MappingsValidator validateMappings(@NullAllowed File root, List<Pair<String, String>> mappings) {
             if (root == null) {
@@ -306,9 +333,6 @@ public final class CssPreprocessorUtils {
                     result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(input).matches()) {
                     result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_format(input))); // NOI18N
-                } else if (root != null
-                        && resolveFile(root, input).isFile()) {
-                    result.addError(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_file(input))); // NOI18N
                 }
                 // output
                 String output = mapping.second();
@@ -316,9 +340,15 @@ public final class CssPreprocessorUtils {
                     result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_empty())); // NOI18N
                 } else if (!MAPPING_PATTERN.matcher(output).matches()) {
                     result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_format(output))); // NOI18N
-                } else if (root != null
-                        && resolveFile(root, output).isFile()) {
-                    result.addError(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_file(output))); // NOI18N
+                }
+                // dir -> file?
+                if (root != null) {
+                    File inputFile = resolveFile(root, input);
+                    File outputFile = resolveFile(root, output);
+                    if (!isFileMapping(inputFile, extension)
+                            && isFileMapping(outputFile, CSS_EXTENSION)) {
+                        result.addError(new ValidationResult.Message("mapping.io." + output, Bundle.MappingsValidator_warning_io_conflict(input, output))); // NOI18N
+                    }
                 }
             }
             return this;
