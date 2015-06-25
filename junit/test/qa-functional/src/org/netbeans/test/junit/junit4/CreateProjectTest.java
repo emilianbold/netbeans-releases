@@ -93,7 +93,7 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
         new JTextFieldOperator(newOp, 1).setText(Utilities.pathToProjects());
         newOp.finish();
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(5000);
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -105,12 +105,6 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
 
         // create test
         new ActionNoBlock(null,"Tools|Create/Update Tests").perform(node);
-
-        // select junit version
-/*        NbDialogOperator versionOp = new NbDialogOperator("Select jUnit Version");        
-        new JRadioButtonOperator(versionOp, 1).setSelected(true);
-        new JButtonOperator(versionOp,"Select").clickMouse();*/
-
         NbDialogOperator newTestOp = new NbDialogOperator("Create Tests");
         new JButtonOperator(newTestOp, "OK").clickMouse();
         
