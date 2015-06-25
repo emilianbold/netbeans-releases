@@ -39,47 +39,25 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java.model.jni;
 
-package org.netbeans.modules.cnd.mixeddev.java.model;
-
-import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.repeat;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class JavaTypeInfo implements JavaEntityInfo {
+public final class JNIClass {
     
-    private final CharSequence qualifiedName;
-    
-    private final CharSequence name;
-    
-    private final int array;
+    private final List<JavaMethodInfo> jniMethods;
 
-    public JavaTypeInfo(CharSequence fullQualifiedName, CharSequence name, int array) {
-        this.qualifiedName = fullQualifiedName;
-        this.name = name;
-        this.array = array;
-    }
-
-    public CharSequence getQualifiedName() {
-        return qualifiedName;
-    }
-
-    public CharSequence getName() {
-        return name;
+    public JNIClass(List<JavaMethodInfo> jniMethods) {
+        this.jniMethods = jniMethods;
     }
     
-    public CharSequence getText() {
-        return (name != null ? name.toString() : "<null>") + (array > 0 ? repeat("[]", array) : ""); // NOI18N
-    }
-    
-    public int getArrayDepth() {
-        return array;
-    }    
-
-    @Override
-    public String toString() {
-        return getText().toString();
+    public List<JavaMethodInfo> getJNIMethods() {
+        return Collections.unmodifiableList(jniMethods);
     }
 }

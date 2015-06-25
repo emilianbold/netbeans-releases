@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.findCppSymbol;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
@@ -68,34 +69,23 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
     }
 
     @Override
-    protected String getCppName(Document doc, int offset) {
-        String cppName = null;
+    protected String[] getCppNames(Document doc, int offset) {
+        String cppNames[] = null;
         for (NativeNameProvider provider : NativeNameProviders.values()) {
-            String nativeName = provider.getNativeName(doc, offset);
-            if (nativeName != null) {
-                cppName = nativeName;
+            String nativeNames[] = provider.getNativeNames(doc, offset);
+            if (nativeNames != null) {
+                cppNames = nativeNames;
                 break;
             }
         }      
-        return cppName;
+        return cppNames;
     }
 
     @Override
     protected boolean navigate(Document doc, int offset) {
-        String cppName = getCppName(doc, offset);
-        if (cppName != null) {
-            Project[] projects = OpenProjects.getDefault().getOpenProjects();
-            for (Project prj : projects) {
-                NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
-                if (nativeProject != null) {
-                    Collection<CsmOffsetable> candidates = CsmSymbolResolver.resolveSymbol(nativeProject, cppName);
-                    if (!candidates.isEmpty()) {
-                        CsmOffsetable candidate = candidates.iterator().next();
-                        CsmUtilities.openSource(tryGetDefinition(candidate));
-                        break;
-                    }
-                }
-            }
+        String cppNames[] = getCppNames(doc, offset);
+        if (cppNames != null) {
+            CsmUtilities.openSource(tryGetDefinition(findCppSymbol(cppNames)));
             return true; // anyway it has to be java to c++ hyperlink
         }
         return false;
@@ -103,7 +93,7 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
     
     private static interface NativeNameProvider {
         
-        String getNativeName(Document doc, int offset);
+        String[] getNativeNames(Document doc, int offset);
         
     }
     
@@ -111,13 +101,13 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
         JNI {
 
             @Override
-            public String getNativeName(Document doc, int offset) {
-                String cppName = null;
+            public String[] getNativeNames(Document doc, int offset) {
+                String cppNames[] = null;
                 JavaEntityInfo entity = JNISupport.getJNIMethod(doc, offset);
                 if (entity instanceof JavaMethodInfo) {
-                    cppName = JNISupport.getCppMethodSignature((JavaMethodInfo) entity);
+                    cppNames = JNISupport.getCppMethodSignatures((JavaMethodInfo) entity);
                 }
-                return cppName;
+                return cppNames;
             }
             
         },
@@ -125,13 +115,13 @@ public class JavaToCppHyperlinkProvider extends AbstractJavaToCppHyperlinkProvid
         JNA {
             
             @Override
-            public String getNativeName(Document doc, int offset) {
+            public String[] getNativeNames(Document doc, int offset) {
                 String cppName = null;
                 JavaEntityInfo entity = JNASupport.getJNAEntity(doc, offset);
                 if (entity instanceof JavaMethodInfo) {
                     cppName = JNASupport.getCppMethodSignature((JavaMethodInfo) entity);
                 }
-                return cppName;
+                return cppName != null ? new String[]{cppName} : null;
             }            
             
         }

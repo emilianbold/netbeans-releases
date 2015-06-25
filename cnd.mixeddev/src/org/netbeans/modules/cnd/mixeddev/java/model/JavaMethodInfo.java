@@ -52,29 +52,38 @@ public final class JavaMethodInfo implements JavaEntityInfo {
     
     private final CharSequence name;
     
-    private final List<QualifiedNamePart> fullQualifiedName;
+    private final CharSequence qualifiedName;
     
     private final List<JavaTypeInfo> parameters;
     
     private final JavaTypeInfo returnType;
     
     private final boolean overloaded;
+    
+    private final boolean staticMethod;
 
-    public JavaMethodInfo(CharSequence name, List<QualifiedNamePart> fullQualifiedName, List<JavaTypeInfo> parameters, JavaTypeInfo returnType, boolean overloaded) {
+    public JavaMethodInfo(CharSequence name, 
+                            CharSequence qualifiedName, 
+                            List<JavaTypeInfo> parameters, 
+                            JavaTypeInfo returnType, 
+                            boolean overloaded,
+                            boolean staticMethod) 
+    {
         this.name = name;
-        this.fullQualifiedName = fullQualifiedName;
+        this.qualifiedName = qualifiedName;
         this.parameters = parameters;
         this.returnType = returnType;
         this.overloaded = overloaded;
+        this.staticMethod = staticMethod;
     }
     
     public CharSequence getName() {
         return name;
     }    
 
-    public List<QualifiedNamePart> getFullQualifiedName() {
-        return fullQualifiedName;
-    }    
+    public CharSequence getQualifiedName() {
+        return qualifiedName;
+    }
 
     public List<JavaTypeInfo> getParameters() {
         return parameters;
@@ -86,5 +95,9 @@ public final class JavaMethodInfo implements JavaEntityInfo {
 
     public boolean isOverloaded() {
         return overloaded;
+    }
+    
+    public boolean isStatic() {
+        return staticMethod;
     }
 }

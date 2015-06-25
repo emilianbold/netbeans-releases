@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +66,23 @@ import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.*;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils.Converter;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isClass;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart;
+import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
 import org.openide.filesystems.FileObject;
+import org.openide.util.CharSequences;
 import org.openide.util.Pair;
 
 /**
@@ -79,15 +90,47 @@ import org.openide.util.Pair;
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JNISupport {
+    
+    /**
+     * Checks if class in java file at the given offset has JNI methods
+     * @param doc
+     * @param caret
+     * @return true if it is a class and it has JNI methods, false otherwise
+     */
+    public static boolean isJNIClass(Document doc, int caret) {
+        Boolean res = JavaContextSupport.resolveContext(doc, new IsJNIClassTask(caret));
+        return res != null ? res : false;
+    }
+    
+    /**
+     * 
+     * @param doc
+     * @param caret
+     * @return JNI class or null if there caret is not denoting JNI class
+     */
+    public static JNIClass getJNIClass(Document doc, int caret) {
+        return JavaContextSupport.resolveContext(doc, new GetJNIClassTask(caret));
+    }
 
-    public static List<String> getJNIClasses(FileObject fObj) {
-        return JavaContextSupport.resolveContext(fObj, new GetJavaJNIClassesTask());
+    /**
+     * Finds JNI Classes in java file.
+     * @param fObj
+     * @return qualified names of all classes with JNI methods in fObj
+     */
+    public static List<String> getJNIClassNames(FileObject fObj) {
+        return JavaContextSupport.resolveContext(fObj, new GetJavaJNIClassesNamesTask());
     }    
     
-    public static List<String> getJNIClasses(Document doc) {
-        return JavaContextSupport.resolveContext(doc, new GetJavaJNIClassesTask());
+    public static List<String> getJNIClassNames(Document doc) {
+        return JavaContextSupport.resolveContext(doc, new GetJavaJNIClassesNamesTask());
     }    
     
+    /**
+     * Finds JNI method in java file at the given offset.
+     * @param fObj
+     * @param offset
+     * @return method if there is one or null
+     */
     public static JavaMethodInfo getJNIMethod(FileObject fObj, int offset) {
         return JavaContextSupport.resolveContext(fObj, new ResolveJNIMethodTask(offset));
     }    
@@ -96,45 +139,91 @@ public final class JNISupport {
         return JavaContextSupport.resolveContext(doc, new ResolveJNIMethodTask(offset));
     }
     
-    public static String getCppMethodSignature(JavaMethodInfo methodInfo) {
-        if (methodInfo == null) {
-            return null;
-        }
-        StringBuilder method = new StringBuilder();
-        
-        // Add method name
-        method.append(QN_PREFIX + "_").append(stringize(transform(methodInfo.getFullQualifiedName(), new QualNameToCppStringConverter()), "_")); // NOI18N
-        
-        if (methodInfo.isOverloaded()) {
-            // Ambiguity!
-            method.append(PARAMS_SIGNATURE_PREFIX);
-            for (JavaTypeInfo param : methodInfo.getParameters()) {
-                method.append(getTypeSignature(param));
+    /**
+     * 
+     * @param methodInfo
+     * @return possible C++ signatures for a JNI method
+     */
+    public static String[] getCppMethodSignatures(JavaMethodInfo methodInfo) {
+        String exception = getExceptionalMethodCppName(methodInfo);
+        if (exception != null) {
+            return new String[]{exception};
+        } else {
+            if (methodInfo.isOverloaded()) {
+                // Ambiguity! Search only with long signature
+                return new String[]{getCppSignature(methodInfo, true)};
             }
+            // Method is not overloaded. Search with the short signature first, then with the long one
+            return new String[]{getCppSignature(methodInfo, false), getCppSignature(methodInfo, true)};
         }
-        
-        // Add parameters
-        List<String> cppTypes = new ArrayList<String>();
-        cppTypes.addAll(IMPLICIT_PARAMS);
-        cppTypes.addAll(transform(methodInfo.getParameters(), JavaCppTypeConverter.INSTANCE));        
-        method.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
-        
-        return method.toString();
+    }
+    
+    /**
+     * 
+     * @param javaType
+     * @return type signature
+     */
+    public static String getTypeSignature(JavaTypeInfo javaType) {
+        if (javaType.getArrayDepth() > 0) {
+            return "[" + getTypeSignature( // NOI18N
+                new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
+            );
+        } else {
+            String typeName = javaType.getText().toString();
+            if (javaToSignatures.containsKey(typeName)) {
+                return javaToSignatures.get(typeName);
+            }
+            return "L"  // NOI18N
+                + javaType.getQualifiedName()
+                + ";"; // NOI18N
+        }
+    }
+    
+    /**
+     * 
+     * @param methodInfo
+     * @return type signature
+     */
+    public static String getTypeSignature(JavaMethodInfo methodInfo) {
+        StringBuilder signature = new StringBuilder();
+        signature.append("("); // NOI18N
+        for (JavaTypeInfo param : methodInfo.getParameters()) {
+            signature.append(getTypeSignature(param));
+        }
+        signature.append(")"); // NOI18N
+        signature.append(getTypeSignature(methodInfo.getReturnType()));
+        return signature.toString();
     }
     
 //<editor-fold defaultstate="collapsed" desc="Implementation">    
-    private static final String QN_PREFIX = "Java"; // NOI18N
+    private static final String JNI_QN_PREFIX = "Java_"; // NOI18N
     
-    private static final String PARAMS_SIGNATURE_PREFIX = "__"; // NOI18N
+    private static final String JNI_PARAMS_SIGNATURE_PREFIX = "__"; // NOI18N
     
-    private static final String JNIENV = "JNIEnv";  // NOI18N
+    private static final String JNI_JNIENV = "JNIEnv";  // NOI18N
     
-    private static final String JOBJECT = "jobject";    // NOI18N
+    private static final String JNI_JOBJECT = "jobject";    // NOI18N
     
-    // 0x00024 is '$' sign
-    private static final String NETSED_PREFIX = "00024"; // NOI18N 
+    private static final String JNI_JCLASS = "jclass";    // NOI18N
     
-    private static final List<String> IMPLICIT_PARAMS = Arrays.asList(JNIENV + POINTER, JOBJECT);
+    private static final List<String> JNI_REGULAR_IMPLICIT_PARAMS = Arrays.asList(JNI_JNIENV + POINTER, JNI_JOBJECT);
+    
+    private static final List<String> JNI_STATIC_IMPLICIT_PARAMS = Arrays.asList(JNI_JNIENV + POINTER, JNI_JCLASS);
+    
+    // "."
+    private static final String JNI_DOT = "_"; // NOI18N
+    
+    // "/"
+    private static final String JNI_SLASH = "_"; // NOI18N 
+    
+    // "_"
+    private static final String JNI_UNDERSCORE = "_1"; // NOI18N 
+    
+    // ";"
+    private static final String JNI_SEMICOLON = "_2"; // NOI18N 
+    
+    // "["
+    private static final String JNI_LBRACKET = "_3"; // NOI18N 
     
     private static final Map<String, String> javaToCppTypes = createMapping(
         Pair.of("boolean", "jboolean"), // NOI18N 
@@ -169,6 +258,83 @@ public final class JNISupport {
         Pair.of("void", "V") // NOI18N
     );
     
+    private static final Map<String, String> javaExceptionalMethodNames = createMapping(
+        Pair.of("java/lang/Object/hashCode", "JVM_IHashCode"), // NOI18N
+        Pair.of("java/lang/Object/clone", "JVM_Clone"), // NOI18N
+        Pair.of("java/lang/Object/notify", "JVM_MonitorNotify"), // NOI18N
+        Pair.of("java/lang/Object/notifyAll", "JVM_MonitorNotifyAll"), // NOI18N
+        Pair.of("java/lang/Object/wait", "JVM_MonitorWait") // NOI18N
+    );
+    
+    private static String getExceptionalMethodCppName(JavaMethodInfo methodInfo) {
+        String qualName = methodInfo.getQualifiedName().toString();
+        return javaExceptionalMethodNames.get(qualName);
+    }
+    
+    private static String getCppSignature(JavaMethodInfo methodInfo, boolean full) {
+        if (methodInfo == null) {
+            return null;
+        }
+        StringBuilder signature = new StringBuilder();
+        
+        // Add method name
+        signature.append(JNI_QN_PREFIX).append(escape(methodInfo.getQualifiedName()));
+        
+        if (full) {
+            signature.append(JNI_PARAMS_SIGNATURE_PREFIX);
+            for (JavaTypeInfo param : methodInfo.getParameters()) {
+                signature.append(escape(getTypeSignature(param)));
+            }
+        }
+        
+        // Add parameters
+        List<String> cppTypes = new ArrayList<String>();
+        cppTypes.addAll(methodInfo.isStatic() ? JNI_STATIC_IMPLICIT_PARAMS : JNI_REGULAR_IMPLICIT_PARAMS);
+        cppTypes.addAll(transform(methodInfo.getParameters(), JavaTypeToCppTypeConverter.INSTANCE));        
+        signature.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
+        
+        return signature.toString();
+    }
+    
+    private static String escape(CharSequence text) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char chr = text.charAt(i);
+            if (needEscape(chr)) {
+                sb.append(escape(chr));
+            } else {
+                sb.append(chr);
+            }
+        }
+        return sb.toString();
+    }
+    
+    private static boolean needEscape(char codepoint) {
+        boolean validCodePoint = (codepoint >= '0' && codepoint <= '9')  // NOI18N
+            || (codepoint >= 'a' && codepoint <= 'z')  // NOI18N
+            || (codepoint >= 'A' && codepoint <= 'Z'); // NOI18N
+        return !validCodePoint;
+    }
+    
+    private static String escape(char chr) {
+        assert needEscape(chr);
+        switch (chr) {
+            case '/': // NOI18N
+                return JNI_SLASH;
+            case '_': // NOI18N
+                return JNI_UNDERSCORE;
+            case ';': // NOI18N
+                return JNI_SEMICOLON;
+            case '[': // NOI18N
+                return JNI_LBRACKET;
+            case '.': // NOI18N
+                return JNI_DOT;
+            default:
+                String hex = Integer.toHexString(chr);
+                return "_0" + repeat("0", 4 - hex.length()) + hex; // NOI18N
+        }
+    }
+    
     private static String getCppType(JavaTypeInfo javaType) {
         String typeName = javaType.getText().toString();
         if (javaToCppTypes.containsKey(typeName)) {
@@ -177,17 +343,36 @@ public final class JNISupport {
         return javaType.getArrayDepth() > 0 ? "jobjectArray" : "jobject"; // NOI18N
     }
     
-    private static String getTypeSignature(JavaTypeInfo javaType) {
-        String typeName = javaType.getText().toString();
-        if (javaToSignatures.containsKey(typeName)) {
-            return javaToSignatures.get(typeName);
-        }
-        return javaType.getName().toString();
+    private static boolean isJNIMethod(MethodTree mtd) {
+        return mtd.getModifiers().getFlags().contains(Modifier.NATIVE);
     }
     
-    private final static class JavaCppTypeConverter implements Converter<JavaTypeInfo, String> {
+    private static boolean hasJniMethods(ClassTree clsTree) {
+        for (Tree memberTree : clsTree.getMembers()) {
+            if (memberTree.getKind() == Tree.Kind.METHOD) {
+                if (isJNIMethod((MethodTree) memberTree)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static List<MethodTree> getJniMethods(ClassTree clsTree) {
+        List<MethodTree> methods = new ArrayList<>();
+        for (Tree memberTree : clsTree.getMembers()) {
+            if (memberTree.getKind() == Tree.Kind.METHOD) {
+                if (isJNIMethod((MethodTree) memberTree)) {
+                    methods.add((MethodTree) memberTree);
+                }
+            }
+        }
+        return methods;
+    }
+    
+    private final static class JavaTypeToCppTypeConverter implements Converter<JavaTypeInfo, String> {
         
-        public static final JavaCppTypeConverter INSTANCE = new JavaCppTypeConverter();
+        public static final JavaTypeToCppTypeConverter INSTANCE = new JavaTypeToCppTypeConverter();
         
         @Override
         public String convert(JavaTypeInfo from) {
@@ -195,14 +380,36 @@ public final class JNISupport {
         }
     }
     
-    private static final class ResolveJNIMethodTask implements ResolveJavaContextTask<JavaMethodInfo> {
+    private final static class MethodTreeToJavaMethodInfoConverter implements Converter<MethodTree, JavaMethodInfo> {
         
-        private final int offset;
+        private final CompilationController controller;
+
+        public MethodTreeToJavaMethodInfoConverter(CompilationController controller) {
+            this.controller = controller;
+        }
+
+        @Override
+        public JavaMethodInfo convert(MethodTree from) {
+            return JavaContextSupport.createMethodInfo(
+                controller, 
+                controller.getTrees().getPath(controller.getCompilationUnit(), from)
+            );
+        }
+    }
+    
+    private abstract static class AbstractJNIContextTask<T> implements ResolveJavaContextTask<T> {
         
-        private JavaMethodInfo result;
+        protected final int offset;
         
-        public ResolveJNIMethodTask(int offset) {
+        protected T result;
+        
+        public AbstractJNIContextTask(int offset) {
+            this(offset, null);
+        }
+
+        public AbstractJNIContextTask(int offset, T defaultResult) {
             this.offset = offset;
+            this.result = defaultResult;
         }
         
         @Override
@@ -211,7 +418,7 @@ public final class JNISupport {
         }
         
         @Override
-        public JavaMethodInfo getResult() {
+        public T getResult() {
             return result;
         }
         
@@ -219,15 +426,31 @@ public final class JNISupport {
         public void cancel() {
             // Do nothing
         }
-        
+
         @Override
-        public void run(CompilationController controller) throws Exception {
+        public final void run(CompilationController controller) throws Exception {
             if (controller == null || controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
                 return;
             }
-            // Looking for current element
+            // Look for current element
             TreePath tp = controller.getTreeUtilities().pathFor(offset);
-            if (tp != null && tp.getLeaf() != null && tp.getLeaf().getKind() == Tree.Kind.METHOD) {
+            if (tp != null) {
+                resolve(controller, tp);
+            }
+        }
+        
+        protected abstract void resolve(CompilationController controller, TreePath tp);
+    }
+    
+    private static final class ResolveJNIMethodTask extends AbstractJNIContextTask<JavaMethodInfo> {
+        
+        public ResolveJNIMethodTask(int offset) {
+            super(offset);
+        }
+
+        @Override
+        protected void resolve(CompilationController controller, TreePath tp) {
+            if (tp.getLeaf() != null && tp.getLeaf().getKind() == Tree.Kind.METHOD) {
                 if (((MethodTree) tp.getLeaf()).getModifiers().getFlags().contains(Modifier.NATIVE)) {
                     result = validateMethodInfo(createMethodInfo(controller, tp));
                 }
@@ -240,11 +463,6 @@ public final class JNISupport {
                     return null;
                 }
             }
-            for (QualifiedNamePart namePart : mtdInfo.getFullQualifiedName()) {
-                if (namePart.getText() == null || namePart.getText().length() == 0) {
-                    return null;
-                }
-            }
             if (mtdInfo.getReturnType() == null || mtdInfo.getReturnType().getName() == null) {
                 return null;
             }
@@ -252,7 +470,39 @@ public final class JNISupport {
         }
     }
     
-    private static final class GetJavaJNIClassesTask implements ResolveJavaContextTask<List<String>> {
+    private static final class IsJNIClassTask extends AbstractJNIContextTask<Boolean> {
+        
+        public IsJNIClassTask(int offset) {
+            super(offset);
+        }
+
+        @Override
+        protected void resolve(CompilationController controller, TreePath tp) {
+            if (tp.getLeaf() != null && tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                result = hasJniMethods((ClassTree) tp.getLeaf());
+            }
+        }
+    }
+    
+    private static final class GetJNIClassTask extends AbstractJNIContextTask<JNIClass> {
+        
+        public GetJNIClassTask(int offset) {
+            super(offset);
+        }
+
+        @Override
+        protected void resolve(CompilationController controller, TreePath tp) {
+            if (tp.getLeaf() != null && tp.getLeaf().getKind() == Tree.Kind.CLASS) {
+                ClassTree clsTree = (ClassTree) tp.getLeaf();
+                if (hasJniMethods(clsTree)) {
+                    List<MethodTree> jniMethods = getJniMethods(clsTree);
+                    result = new JNIClass(MixedDevUtils.transform(jniMethods, new MethodTreeToJavaMethodInfoConverter(controller)));
+                }
+            }
+        }
+    }
+    
+    private static final class GetJavaJNIClassesNamesTask implements ResolveJavaContextTask<List<String>> {
         
         private final List<String> result = new ArrayList<String>();
         
@@ -281,43 +531,10 @@ public final class JNISupport {
             for (Tree topLevelDecl : topLevelDecls) {
                 if (topLevelDecl.getKind() == Tree.Kind.CLASS) {
                     if (hasJniMethods((ClassTree) topLevelDecl)) {
-                        result.add(stringize(transform(JavaContextSupport.getQualifiedName(controller, topLevelDecl), new QualNameToJavaStringConverter()), DOT));
+                        result.add(JavaContextSupport.renderQualifiedName(JavaContextSupport.getQualifiedName(controller, topLevelDecl)));
                     }
                 }
             }
-        }
-        
-        private boolean hasJniMethods(ClassTree clsTree) {
-            for (Tree memberTree : clsTree.getMembers()) {
-                if (memberTree.getKind() == Tree.Kind.METHOD) {
-                    if (((MethodTree) memberTree).getModifiers().getFlags().contains(Modifier.NATIVE)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-    }
-    
-    private static class QualNameToCppStringConverter implements Converter<QualifiedNamePart, String> {
-        
-        @Override
-        public String convert(QualifiedNamePart from) {
-            switch (from.getKind()) {
-                case NESTED_CLASS:
-                    return NETSED_PREFIX + from.getText();
-                    
-                default:
-                    return from.getText().toString();
-            }
-        }
-    }
-    
-    private static class QualNameToJavaStringConverter implements Converter<QualifiedNamePart, String> {
-        
-        @Override
-        public String convert(QualifiedNamePart from) {
-            return from.getText().toString();
         }
     }
     

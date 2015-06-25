@@ -39,47 +39,74 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
 
-package org.netbeans.modules.cnd.mixeddev.java.model;
-
-import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.repeat;
+import javax.swing.JEditorPane;
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
+import org.openide.cookies.EditorCookie;
+import org.openide.nodes.Node;
+import org.openide.text.NbDocument;
+import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
+import org.openide.util.Pair;
+import org.openide.util.actions.NodeAction;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class JavaTypeInfo implements JavaEntityInfo {
+public abstract class AbstractJNIAction extends NodeAction {
     
-    private final CharSequence qualifiedName;
-    
-    private final CharSequence name;
-    
-    private final int array;
-
-    public JavaTypeInfo(CharSequence fullQualifiedName, CharSequence name, int array) {
-        this.qualifiedName = fullQualifiedName;
-        this.name = name;
-        this.array = array;
+    public AbstractJNIAction() {
+        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
     }
-
-    public CharSequence getQualifiedName() {
-        return qualifiedName;
-    }
-
-    public CharSequence getName() {
-        return name;
-    }
-    
-    public CharSequence getText() {
-        return (name != null ? name.toString() : "<null>") + (array > 0 ? repeat("[]", array) : ""); // NOI18N
-    }
-    
-    public int getArrayDepth() {
-        return array;
-    }    
 
     @Override
-    public String toString() {
-        return getText().toString();
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
     }
+    
+    @Override
+    public boolean asynchronous() {
+        return false;
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        Pair<Document, Integer> context = extractContext(activatedNodes);
+        if (context != null) {
+            return isEnabled(context.first(), context.second());
+        }
+        return false;
+    }
+    
+    protected final Pair<Document, Integer> extractContext(Node[] activatedNodes) {
+        final Node activeNode = activatedNodes[0];
+        final Document doc;
+        final int caret;
+        
+        final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
+        if (ec != null) {
+            JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                @Override
+                public JEditorPane run() {
+                    return NbDocument.findRecentEditorPane(ec);
+                }
+            });
+            if (pane != null) {
+                doc = pane.getDocument();
+                caret = pane.getCaret().getDot();
+            } else {
+                doc = null;
+                caret = -1;
+            }
+        } else {
+            doc = null;
+            caret = -1;
+        }
+        return (doc != null && caret >= 0) ? Pair.of(doc, caret) : null;
+    }
+    
+    protected abstract boolean isEnabled(Document doc, int caret);
 }

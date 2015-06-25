@@ -48,6 +48,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.services.CsmSymbolResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Pair;
 
 /**
@@ -119,6 +128,45 @@ public final class MixedDevUtils {
         }
         return to;
     }    
+    
+    public static CsmOffsetable findCppSymbol(String cppNames[]) {
+        if (cppNames != null) {
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            for (Project prj : projects) {
+                NativeProject nativeProject = prj.getLookup().lookup(NativeProject.class);
+                if (nativeProject != null) {
+                    for (String cppName : cppNames) {
+                        Collection<CsmOffsetable> candidates = CsmSymbolResolver.resolveSymbol(nativeProject, cppName);
+                        if (!candidates.isEmpty()) {
+                            return candidates.iterator().next();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static Pair<Pair<Integer, String>, Pair<Integer, String>> getAppropriatePlacement(CsmScope scope) {
+        // Hope they are sorted by offset
+//        CsmScopeElement prev = null;
+//        CsmScopeElement last = null;
+//        for (CsmScopeElement elem : scope.getScopeElements()) {
+//            prev = last;
+//            last = elem;
+//        }
+//        
+//        if (last != null) {
+//            if (prev != null) {
+//                
+//            } else {
+//                
+//            }
+//        }
+//        int tabulation = 0;
+//        int emptyLines = 1;
+        throw new UnsupportedOperationException("Not supproted yet."); // NOI18N
+    }
 
     private MixedDevUtils() {
         throw new AssertionError("Not instantiable");
