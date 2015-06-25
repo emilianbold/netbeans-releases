@@ -78,6 +78,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
     private WidgetAction popupAction = ActionFactory.createPopupMenuAction(new MyPopupMenuProvider());
     private Font defaultItalicFont;
     private Action exportAction;
+    private Action exportXmlAction;
 
     private CallGraphState callModel;
 
@@ -314,6 +315,10 @@ public class CallGraphScene extends GraphScene<Function,Call> {
 
     public void setExportAction(Action exportAction) {
         this.exportAction = exportAction;
+    }
+    
+    public void setExportXmlAction(Action exportXmlAction) {
+        this.exportXmlAction = exportXmlAction;
     }
 
     private static class NodeEditProvider implements EditProvider {
@@ -609,6 +614,7 @@ public class CallGraphScene extends GraphScene<Function,Call> {
                 menu.add(new HorizontalAction().getPopupPresenter());
                 menu.add(new JSeparator());
                 menu.add(((Presenter.Popup)exportAction).getPopupPresenter());
+                menu.add(((Presenter.Popup)exportXmlAction).getPopupPresenter());
             }
             return menu;
         }
