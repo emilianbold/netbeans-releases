@@ -475,7 +475,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         }
         boolean fetchFailed = false;
         long t = System.currentTimeMillis();
-        final RemoteIndexTransferListener listener = new RemoteIndexTransferListener(repo);
+        RemoteIndexTransferListener listener = null;
         try {
             IndexingContext indexingContext = getIndexingContexts().get(repo.getId());
             if (indexingContext == null) {
@@ -484,6 +484,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
             }
             if (repo.isRemoteDownloadable()) {
                 LOGGER.log(Level.FINE, "Indexing Remote Repository: {0}", repo.getId());
+                listener = new RemoteIndexTransferListener(repo);
                 try {
                     String protocol = URI.create(indexingContext.getIndexUpdateUrl()).getScheme();
                     SettingsDecryptionResult settings = embedder.lookup(SettingsDecrypter.class).decrypt(new DefaultSettingsDecryptionRequest(EmbedderFactory.getOnlineEmbedder().getSettings()));
@@ -569,7 +570,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 noSpaceLeftMsg = Bundle.MSG_NoSpace(repo.getName());
             }
             
-            long downloaded = listener.getUnits() * 1024;
+            long downloaded = listener != null ? listener.getUnits() * 1024 : -1;
             long usableSpace = -1;
             File tmpFolder = new File(System.getProperty("java.io.tmpdir"));
             try {
