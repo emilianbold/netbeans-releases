@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,85 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java.model.jni;
 
-package org.netbeans.test.junit.testcreation.test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
 /**
  *
- * @author Theofanis Oikonomou
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class TestClass {
+public final class JNIClass {
     
-    /**
-     * Creates a new instance of TestClass
-     */
-    public TestClass() {
-    }
-    
-    /**
-     * public method
-     */
-    public int add(int a, int b) {
-        return a + b;
+    private final List<JavaMethodInfo> jniMethods;
+
+    public JNIClass(List<JavaMethodInfo> jniMethods) {
+        this.jniMethods = jniMethods;
     }
     
-    /**
-     * protected method
-     */
-    protected int arrayListCount(ArrayList a) {
-        return a.size();
-    }
-    
-    /**
-     * private method
-     * should not be included in any test
-     */
-    private int subs(int a, int b) {
-        return a - b;
-    }
-    
-    /**
-     * friendly (pacakge private) method
-     */ 
-    double sqr(double a) {
-        return Math.pow(a, 2);
-    }
-    
-    /**
-     * static friendly method
-     */ 
-    static double thirdPow(double a) {
-        return Math.pow(a, 3);
-    }
-
-    public static List <String> getStrings(T arg){
-        return new ArrayList<String>();
-    }
-
-    public Map <String, T> getString2T(){
-        return new HashMap<String, T>();
-    }
-
-    public Map <? extends TT, String> getTT2Strings(){
-        return new HashMap<T, String>();
-    }
-
-    protected class T extends TT {
-
-	public T() {
-	}
-    }
-
-    class TT {
-
-	public TT() {
-	}
+    public List<JavaMethodInfo> getJNIMethods() {
+        return Collections.unmodifiableList(jniMethods);
     }
 }
