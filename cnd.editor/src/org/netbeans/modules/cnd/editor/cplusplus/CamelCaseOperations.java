@@ -101,7 +101,17 @@ import org.netbeans.editor.Utilities;
                     int length = image.length();
                     int offsetInImage = offset - ts.offset();
                     int start = offsetInImage + 1;
-                    if (Character.isUpperCase(image.charAt(offsetInImage))) {
+                    char charAt = image.charAt(offsetInImage);
+                    if (charAt == '_') {
+                        // if starting from a _ char, first skip over follwing _ chars
+                        for (int i = start; i < length; i++) {
+                            char charAtI = image.charAt(i);
+                            if (charAtI != '_') {
+                                break;
+                            }
+                            start++;
+                        }
+                    } else if (Character.isUpperCase(charAt)) {
                         // if starting from a Uppercase char, first skip over follwing upper case chars
                         for (int i = start; i < length; i++) {
                             char charAtI = image.charAt(i);
@@ -113,7 +123,7 @@ import org.netbeans.editor.Utilities;
                     }
                     for (int i = start; i < length; i++) {
                         char charAtI = image.charAt(i);
-                        if (Character.isUpperCase(charAtI)) {
+                        if (Character.isUpperCase(charAtI) || charAtI == '_') {
                             // return offset of next uppercase char in the identifier
                             return ts.offset() + i;
                         }
@@ -179,17 +189,30 @@ import org.netbeans.editor.Utilities;
                     // go back to the first upper case character
                     int upperCaseOffset = offsetInImage - 1;
                     for (; upperCaseOffset > 0; upperCaseOffset--) {
-                        if (Character.isUpperCase(image.charAt(upperCaseOffset))) {
+                        char charAt = image.charAt(upperCaseOffset);
+                        if (Character.isUpperCase(charAt) || charAt == '_') {
                             break;
                         }
                     }
-                    if (upperCaseOffset > 0 && Character.isUpperCase(image.charAt(upperCaseOffset))) {
-                        // skip over previous uppercase chars in the identifier
-                        for (int i = upperCaseOffset - 1; i >= 0; i--) {
-                            char charAtI = image.charAt(i);
-                            if (!Character.isUpperCase(charAtI)) {
-                                // return offset of previous uppercase char in the identifier
-                                return ts.offset() + i + 1;
+                    if (upperCaseOffset > 0) {
+                        char charAt = image.charAt(upperCaseOffset);
+                        if (charAt == '_') {
+                            // skip over previous _ chars in the identifier
+                            for (int i = upperCaseOffset - 1; i >= 0; i--) {
+                                char charAtI = image.charAt(i);
+                                if (charAtI != '_') {
+                                    // return offset of previous _ char in the identifier
+                                    return ts.offset() + i + 1;
+                                }
+                            }
+                        } else if(Character.isUpperCase(charAt)) {
+                            // skip over previous uppercase chars in the identifier
+                            for (int i = upperCaseOffset - 1; i >= 0; i--) {
+                                char charAtI = image.charAt(i);
+                                if (!Character.isUpperCase(charAtI)) {
+                                    // return offset of previous uppercase char in the identifier
+                                    return ts.offset() + i + 1;
+                                }
                             }
                         }
                     }
