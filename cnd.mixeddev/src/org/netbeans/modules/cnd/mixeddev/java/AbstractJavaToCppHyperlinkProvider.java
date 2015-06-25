@@ -65,7 +65,7 @@ public abstract class AbstractJavaToCppHyperlinkProvider implements HyperlinkPro
     private static HyperlinkProviderExt delegate;        
     
     
-    protected abstract String getCppName(Document doc, int offset);
+    protected abstract String[] getCppNames(Document doc, int offset);
     
     protected abstract boolean navigate(Document doc, int offset);    
     
@@ -105,10 +105,19 @@ public abstract class AbstractJavaToCppHyperlinkProvider implements HyperlinkPro
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        String cppName = getCppName(doc, offset);
-        if (cppName != null) {
+        String cppNames[] = getCppNames(doc, offset);
+        if (cppNames != null && cppNames.length > 0) {
             String msg = NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.search_for_msg"); // NOI18N
-            return MessageFormat.format(msg, new Object[]{cppName});
+            StringBuilder sb = new StringBuilder();
+            if (cppNames.length > 1) {
+                for (String cppName : cppNames) {
+                    sb.append("<br>"); // NOI18N
+                    sb.append(cppName);
+                }
+            } else {
+                sb.append(cppNames[0]);
+            }
+            return MessageFormat.format(msg, new Object[]{sb.toString()});
         }
         HyperlinkProviderExt defaultProvider = getDelegate();
         if (defaultProvider != null) {

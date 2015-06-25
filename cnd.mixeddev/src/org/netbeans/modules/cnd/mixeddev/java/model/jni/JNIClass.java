@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java.model.jni;
 
-package org.netbeans.modules.cnd.makefile.editor;
-
-import javax.swing.Action;
-import javax.swing.text.Document;
-import javax.swing.text.TextAction;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorKit;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
 /**
- * Forces Unix-style end-of-line for Makefiles.
  *
- * @author Alexey Vladykin
+ * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class MakefileKit extends NbEditorKit {
-    private static final String COMMENT_LINE = "#"; //NOI18N
+public final class JNIClass {
+    
+    private final List<JavaMethodInfo> jniMethods;
 
-    @Override
-    public Document createDefaultDocument() {
-        Document doc = super.createDefaultDocument();
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
-        return doc;
+    public JNIClass(List<JavaMethodInfo> jniMethods) {
+        this.jniMethods = jniMethods;
     }
-
-    @Override
-    public String getContentType() {
-        return MIMENames.MAKEFILE_MIME_TYPE;
-    }
-
-    @Override
-    protected Action[] createActions() {
-        Action[] superActions = super.createActions();
-        Action[] ccActions = new Action[]{
-            new CommentAction(COMMENT_LINE),
-            new UncommentAction(COMMENT_LINE),
-            new ToggleCommentAction(COMMENT_LINE)};
-        ccActions = TextAction.augmentList(superActions, ccActions);
-
-        return ccActions;
+    
+    public List<JavaMethodInfo> getJNIMethods() {
+        return Collections.unmodifiableList(jniMethods);
     }
 }

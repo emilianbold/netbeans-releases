@@ -167,6 +167,27 @@ public final class JavaContextSupport {
         return ret[0];
     }    
     
+    public static boolean isMethod(TreePath path) {
+        return path != null &&
+            path.getLeaf().getKind() == Tree.Kind.METHOD;
+    }
+    
+    public static boolean isClass(TreePath path) {
+        return path != null && 
+               path.getLeaf() != null &&
+               path.getLeaf().getKind() == Tree.Kind.CLASS;
+    }
+    
+    public static boolean isInterface(TreePath path) {
+        return path != null && 
+               path.getLeaf() != null &&
+               path.getLeaf().getKind() == Tree.Kind.INTERFACE;
+    }    
+    
+    public static boolean isClassOrInterface(TreePath path) {
+        return isClass(path) || isInterface(path);
+    }
+    
     public static JavaMethodInfo createMethodInfo(CompilationController controller, TreePath mtdTreePath) {
         assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;            
 
@@ -181,10 +202,11 @@ public final class JavaContextSupport {
 
         return new JavaMethodInfo(
             simpleName, 
-            qualifiedName, 
+            renderQualifiedName(qualifiedName), 
             parameters, 
             createTypeInfo(controller, mtdTree.getReturnType()), 
-            isOverloaded(mtdTreePath, simpleName)
+            isOverloaded(mtdTreePath, simpleName),
+            isStatic(mtdTreePath)
         );
     }    
 
@@ -214,7 +236,7 @@ public final class JavaContextSupport {
             case ARRAY_TYPE: {
                 ArrayTypeTree arrayType = (ArrayTypeTree) type;
                 JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
-                return new JavaTypeInfo(inner.getFullQualifiedName(), inner.getName(), inner.getArrayDepth() + 1);
+                return new JavaTypeInfo(inner.getQualifiedName(), inner.getName(), inner.getArrayDepth() + 1);
             }
 
             default:
@@ -260,6 +282,32 @@ public final class JavaContextSupport {
             }
         } while ((currentPath = currentPath.getParentPath()) != null);
         return qualifiedName;
+    }
+    
+    /*package*/ static String renderQualifiedName(List<QualifiedNamePart> qualName) {
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (QualifiedNamePart part : qualName) {
+            if (!first) {
+                switch (part.getKind()) {
+                    case PACKAGE:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case CLASS:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case METHOD:
+                        sb.append("/"); // NOI18N
+                        break;
+                    case NESTED_CLASS:
+                        sb.append("$"); // NOI18N
+                        break;
+                }
+            }
+            sb.append(part.getText());
+            first = false;
+        }
+        return sb.toString();
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -349,6 +397,14 @@ public final class JavaContextSupport {
                     return true;
                 }
             }           
+        }
+        return false;
+    }
+    
+    private static boolean isStatic(TreePath mtdTreePath) {
+        if (Tree.Kind.METHOD.equals(mtdTreePath.getLeaf().getKind())) {
+            MethodTree method = (MethodTree) mtdTreePath.getLeaf();
+            return method.getModifiers().getFlags().contains(Modifier.STATIC);
         }
         return false;
     }
