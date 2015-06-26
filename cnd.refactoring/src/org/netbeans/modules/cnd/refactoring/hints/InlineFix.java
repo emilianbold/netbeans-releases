@@ -47,12 +47,9 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.refactoring.plugins.InlinePlugin;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
@@ -91,7 +88,15 @@ public class InlineFix implements Fix {
                                                                ,ref.getEndOffset() + InlinePlugin.getMacroParametersEndOffset(file, (CsmMacro) ref.getReferencedObject(), ref.getEndOffset())
                                                                ,Position.Bias.Backward);
                     doc.remove(startPos.getOffset(), endPos.getOffset()-startPos.getOffset());
-                    doc.insertString(startPos.getOffset(), replacement, null);
+                    final int start = startPos.getOffset();
+                    doc.insertString(start, replacement, null);
+                    Reformat format = Reformat.get(doc);
+                    format.lock();
+                    try {
+                        format.reformat(start, start + replacement.length() + 1);
+                    } finally {
+                        format.unlock();
+                    }                    
                 } catch (BadLocationException ex) {
                     ex.printStackTrace(System.err);
                 }
