@@ -80,6 +80,9 @@ import org.openide.util.lookup.Lookups;
  */
 public class BreadCrumbsTask extends ElementScanningTask {
 
+    public BreadCrumbsTask() {
+    }
+
     private static final RequestProcessor WORKER = new RequestProcessor(BreadCrumbsTask.class.getName(), 1, false, false);
     
     @Override
@@ -95,36 +98,42 @@ public class BreadCrumbsTask extends ElementScanningTask {
     private final AtomicLong requestId = new AtomicLong();
     
     @Override
-    public void run(ParserResult result, SchedulerEvent event) {
-        final long id = requestId.incrementAndGet();
-        
-        final Document doc = result.getSnapshot().getSource().getDocument(false);
-        
-        if (doc == null || !BreadcrumbsController.areBreadCrumsEnabled(doc)) return ;
-        
-        final int caret;
-        
-        if (event instanceof CursorMovedSchedulerEvent) {
-            caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-        } else {
-            //XXX: outside AWT!
-            JTextComponent c = EditorRegistry.focusedComponent();
-            
-            if (c != null && c.getDocument() == doc)
-                caret = c.getCaretPosition();
-            else
-                caret = (-1);
-        }
-        
-        if (caret == (-1)) return ;
-        
-        final StructureItem structureRoot = computeStructureRoot(result.getSnapshot().getSource());
-        
-        if (structureRoot == null) return ;
-        
-        WORKER.post(new Runnable() {
-            @Override public void run() {
-                selectNode(doc, structureRoot, id, caret);
+    public void run(final ParserResult result, final SchedulerEvent event) {
+        runWithCancelService(new Runnable() {
+            @Override
+            public void run() {
+                resume();
+                final long id = requestId.incrementAndGet();
+
+                final Document doc = result.getSnapshot().getSource().getDocument(false);
+
+                if (doc == null || !BreadcrumbsController.areBreadCrumsEnabled(doc)) return ;
+
+                final int caret;
+
+                if (event instanceof CursorMovedSchedulerEvent) {
+                    caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+                } else {
+                    //XXX: outside AWT!
+                    JTextComponent c = EditorRegistry.focusedComponent();
+
+                    if (c != null && c.getDocument() == doc)
+                        caret = c.getCaretPosition();
+                    else
+                        caret = (-1);
+                }
+
+                if (caret == (-1)) return ;
+
+                final StructureItem structureRoot = computeStructureRoot(result.getSnapshot().getSource());
+
+                if (structureRoot == null) return ;
+
+                WORKER.post(new Runnable() {
+                    @Override public void run() {
+                        selectNode(doc, structureRoot, id, caret);
+                    }
+                });
             }
         });
     }

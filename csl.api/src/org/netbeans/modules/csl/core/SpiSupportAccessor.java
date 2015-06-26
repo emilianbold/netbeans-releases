@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,60 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.csl.core;
 
-package org.netbeans.modules.csl.navigation;
-
-import org.netbeans.modules.csl.core.SpiSupportAccessor;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.*;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.support.CancelSupport;
+import org.openide.util.Parameters;
 
 /**
- * This file is originally from Retouche, the Java Support
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible.
- * <p>
- * This task is called every time the caret position changes in a GSF editor.
- * It delegates to the navigator to show the current selection.
+ *
+ * @author Tomas Zezula
  */
-public final class CaretListeningTask extends IndexingAwareParserResultTask<ParserResult> {
-    
-    private final CancelSupport cancel = CancelSupport.create(this);
-    
-    CaretListeningTask() {
-        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
-    }
-    
-    public @Override void run(ParserResult result, SchedulerEvent event) {
+public abstract class SpiSupportAccessor {
+    private static volatile SpiSupportAccessor instance;
 
-        boolean navigatorShouldUpdate = ClassMemberPanel.getInstance() != null; // XXX set by navigator visible
-        if (cancel.isCancelled() || (!navigatorShouldUpdate) || !(event instanceof CursorMovedSchedulerEvent)) {
-            return;
-        }
-
-        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
-        try {
-            int offset = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-            if (offset != -1) {
-                ClassMemberPanel.getInstance().selectElement(result, offset);
+    @NonNull
+    public static synchronized SpiSupportAccessor getInstance() {
+        if (instance == null) {
+            try {
+                Class.forName(org.netbeans.modules.csl.spi.support.CancelSupport.class.getName(), true, SpiSupportAccessor.class.getClassLoader());
+                assert instance != null;
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
-        } finally {
-            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
+        return instance;
     }
 
-
-    @Override
-    public final synchronized void cancel() {
+    public static void setInstance(@NonNull final SpiSupportAccessor inst) {
+        Parameters.notNull("inst", inst);   //NOI18N
+        instance = inst;
     }
-
-    public @Override int getPriority() {
-        return Integer.MAX_VALUE;
-    }
-
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
-        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
-    }
+    public abstract void setCancelSupport(@NonNull CancelSupport cancelSupport);
+    public abstract void removeCancelSupport(@NonNull CancelSupport cancelSupport);
 }

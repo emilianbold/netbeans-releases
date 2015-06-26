@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -66,6 +67,7 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -75,10 +77,10 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Tor Norbye
  */
-public class SuggestionsTask extends ParserResultTask<ParserResult> {
+public final class SuggestionsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SuggestionsTask.class.getName());
-    private volatile boolean cancelled = false;
+    private final CancelSupport cancel = CancelSupport.create(this);
 
     /**
      * Tracks the HintsProvider being executed, so it can be cancelled.
@@ -89,95 +91,99 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
     }
     
     public @Override void run(ParserResult result, SchedulerEvent event) {
-        resume();
-        
+
         final FileObject fileObject = result.getSnapshot().getSource().getFileObject();
-        if (fileObject == null || isCancelled()) {
+        if (fileObject == null || cancel.isCancelled()) {
             return;
         }
 
-        if (!(event instanceof CursorMovedSchedulerEvent) || isCancelled()) {
+        if (!(event instanceof CursorMovedSchedulerEvent) || cancel.isCancelled()) {
             return;
         }
 
-        // Do we have a selection? If so, don't do suggestions
-        CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) event;
-        int[] range = new int [] {
-            Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
-            Math.max(evt.getMarkOffset(), evt.getCaretOffset())
-        };
-        if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
-            HintsController.setErrors(fileObject, SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
-            return;
-        }
-
-        final int pos = evt.getCaretOffset();
-        if (pos == -1 || isCancelled()) {
-            return;
-        }
-        
+        SpiSupportAccessor.getInstance().setCancelSupport(cancel);
         try {
-            ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
-                public @Override void run(ResultIterator resultIterator) throws Exception {
-                    Parser.Result r = resultIterator.getParserResult(pos);
-                    if(!(r instanceof ParserResult)) {
-                        return ;
-                    }
-                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(r.getSnapshot().getMimeType());
-                    if (language == null || isCancelled()) {
-                        return;
-                    }
+            // Do we have a selection? If so, don't do suggestions
+            CursorMovedSchedulerEvent evt = (CursorMovedSchedulerEvent) event;
+            int[] range = new int [] {
+                Math.min(evt.getMarkOffset(), evt.getCaretOffset()),
+                Math.max(evt.getMarkOffset(), evt.getCaretOffset())
+            };
+            if (range != null && range.length == 2 && range[0] != -1 && range[1] != -1 && range[0] != range[1]) {
+                HintsController.setErrors(fileObject, SuggestionsTask.class.getName(), Collections.<ErrorDescription>emptyList());
+                return;
+            }
 
-                    HintsProvider provider = language.getHintsProvider();
-                    if (provider == null || isCancelled()) {
-                        return;
-                    }
-                    GsfHintsManager manager = language.getHintsManager();
-                    if (manager == null || isCancelled()) {
-                        return;
-                    }
-                    RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, pos, -1, -1);
-                    if (ruleContext == null || isCancelled()) {
-                        return;
-                    }
-                    List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
-                    List<Hint> hints = new ArrayList<Hint>();
+            final int pos = evt.getCaretOffset();
+            if (pos == -1 || cancel.isCancelled()) {
+                return;
+            }
 
-                    OffsetRange linerange = findLineBoundaries(resultIterator.getSnapshot().getText(), pos);
-                    try {
-                        synchronized (this) {
-                            pendingProvider = provider;
-                            if (isCancelled()) {
-                                return;
-                            }
+            try {
+                ParserManager.parse(Collections.singleton(result.getSnapshot().getSource()), new UserTask() {
+                    public @Override void run(ResultIterator resultIterator) throws Exception {
+                        Parser.Result r = resultIterator.getParserResult(pos);
+                        if(!(r instanceof ParserResult)) {
+                            return ;
                         }
-                        provider.computeSuggestions(manager, ruleContext, hints, pos);                        
-                    } finally {
-                        pendingProvider = null;
-                    }
-
-                    for (int i = 0; i < hints.size(); i++) {
-                        Hint hint = hints.get(i);
-                        if (isCancelled()) {
+                        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(r.getSnapshot().getMimeType());
+                        if (language == null || cancel.isCancelled()) {
                             return;
                         }
-                        // #224654 - suggestions may be returned for text unrelated to caret position
-                        if (linerange != OffsetRange.NONE && !overlaps(linerange, hint.getRange())) {
-                            continue;
+
+                        HintsProvider provider = language.getHintsProvider();
+                        if (provider == null || cancel.isCancelled()) {
+                            return;
                         }
-                        ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
-                        descriptions.add(desc);
-                    }
+                        GsfHintsManager manager = language.getHintsManager();
+                        if (manager == null || cancel.isCancelled()) {
+                            return;
+                        }
+                        RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, pos, -1, -1);
+                        if (ruleContext == null || cancel.isCancelled()) {
+                            return;
+                        }
+                        List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
+                        List<Hint> hints = new ArrayList<Hint>();
 
-                    if (isCancelled()) {
-                        return;
-                    }
+                        OffsetRange linerange = findLineBoundaries(resultIterator.getSnapshot().getText(), pos);
+                        try {
+                            synchronized (this) {
+                                pendingProvider = provider;
+                                if (cancel.isCancelled()) {
+                                    return;
+                                }
+                            }
+                            provider.computeSuggestions(manager, ruleContext, hints, pos);
+                        } finally {
+                            pendingProvider = null;
+                        }
 
-                    HintsController.setErrors(r.getSnapshot().getSource().getFileObject(), SuggestionsTask.class.getName(), descriptions);
-                }
-            });
-        } catch (ParseException e) {
-            LOG.log(Level.WARNING, null, e);
+                        for (int i = 0; i < hints.size(); i++) {
+                            Hint hint = hints.get(i);
+                            if (cancel.isCancelled()) {
+                                return;
+                            }
+                            // #224654 - suggestions may be returned for text unrelated to caret position
+                            if (linerange != OffsetRange.NONE && !overlaps(linerange, hint.getRange())) {
+                                continue;
+                            }
+                            ErrorDescription desc = manager.createDescription(hint, ruleContext, false, i == hints.size()-1);
+                            descriptions.add(desc);
+                        }
+
+                        if (cancel.isCancelled()) {
+                            return;
+                        }
+
+                        HintsController.setErrors(r.getSnapshot().getSource().getFileObject(), SuggestionsTask.class.getName(), descriptions);
+                    }
+                });
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        } finally {
+            SpiSupportAccessor.getInstance().removeCancelSupport(cancel);
         }
     }
     
@@ -215,20 +221,9 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
     }
 
     public @Override void cancel() {
-        synchronized (this) {
-            cancelled = true;
-        }
-        HintsProvider p = pendingProvider;
+        final HintsProvider p = pendingProvider;
         if (p != null) {
             p.cancel();
         }
-    }
-
-    private synchronized void resume() {
-        cancelled = false;
-    }
-
-    private synchronized boolean isCancelled() {
-        return cancelled;
     }
 }

@@ -88,6 +88,7 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -97,6 +98,7 @@ import org.netbeans.modules.parsing.spi.*;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.csl.editor.fold.Bundle.*;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -345,56 +347,62 @@ public class GsfFoldManager implements FoldManager {
         
         public void run(final ParserResult info, SchedulerEvent event) {
             cancelled.set(false);
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.log(Level.FINER, "GSF fold task {0} called for: {1}", new Object[] { this, info.getSnapshot().getSource()});
-            }
-            final Object mgrs = findLiveManagers();
-            
-            if (mgrs == null) {
-                LOG.log(Level.FINE, "No live FoldManagers found for {0}", this);
-                return;
-            }
-            
-            long startTime = System.currentTimeMillis();
-
-            // Don't update folds, if there is an invalid result
-            // It should be solved per lenguages, but then there has to be remembered
-            // lates folds and transformed to the new possition.
-            if (hasErrors(info)) {
-                LOG.log(Level.FINE, "File has errors, not updating: {0}", this);
-                return;
-            }
-
-            final Collection<FoldInfo> folds = new HashSet<FoldInfo>();
-            final Document doc = info.getSnapshot().getSource().getDocument(false);
-            if (doc == null) {
-                LOG.log(Level.FINE, "Could not open document: {0}", this);
-                return;
-            }
-            boolean success = gsfFoldScan(doc, info, folds);
-            if (!success || cancelled.get()) {
-                LOG.log(Level.FINER, "Fold scan cancelled or unsuccessful: {0}, {1}", new Object[] {
-                    success, cancelled.get()
-                });
-                return;
-            }
-            
-            // pending: refactor!!
-            if (mgrs instanceof GsfFoldManager) {
-                ((GsfFoldManager)mgrs).new CommitFolds(folds, 
-                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
-            } else {
-                Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
-                for (GsfFoldManager jefm : jefms) {
-                    jefm.new CommitFolds(folds, 
-                        initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
+            final CancelSupport cs = CancelSupport.create(this);
+            SpiSupportAccessor.getInstance().setCancelSupport(cs);
+            try {
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "GSF fold task {0} called for: {1}", new Object[] { this, info.getSnapshot().getSource()});
                 }
+                final Object mgrs = findLiveManagers();
+
+                if (mgrs == null) {
+                    LOG.log(Level.FINE, "No live FoldManagers found for {0}", this);
+                    return;
+                }
+
+                long startTime = System.currentTimeMillis();
+
+                // Don't update folds, if there is an invalid result
+                // It should be solved per lenguages, but then there has to be remembered
+                // lates folds and transformed to the new possition.
+                if (hasErrors(info)) {
+                    LOG.log(Level.FINE, "File has errors, not updating: {0}", this);
+                    return;
+                }
+
+                final Collection<FoldInfo> folds = new HashSet<FoldInfo>();
+                final Document doc = info.getSnapshot().getSource().getDocument(false);
+                if (doc == null) {
+                    LOG.log(Level.FINE, "Could not open document: {0}", this);
+                    return;
+                }
+                boolean success = gsfFoldScan(doc, info, folds);
+                if (!success || cancelled.get()) {
+                    LOG.log(Level.FINER, "Fold scan cancelled or unsuccessful: {0}, {1}", new Object[] {
+                        success, cancelled.get()
+                    });
+                    return;
+                }
+
+                // pending: refactor!!
+                if (mgrs instanceof GsfFoldManager) {
+                    ((GsfFoldManager)mgrs).new CommitFolds(folds,
+                            initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
+                } else {
+                    Collection<GsfFoldManager> jefms = (Collection<GsfFoldManager>)mgrs;
+                    for (GsfFoldManager jefm : jefms) {
+                        jefm.new CommitFolds(folds,
+                            initComment, imports, doc, info.getSnapshot().getSource(), cancelled).run();
+                    }
+                }
+
+                long endTime = System.currentTimeMillis();
+
+                Logger.getLogger("TIMER").log(Level.FINE, "Folds - 1", //NOI18N
+                        new Object[] {info.getSnapshot().getSource().getFileObject(), endTime - startTime});
+            } finally {
+                SpiSupportAccessor.getInstance().removeCancelSupport(cs);
             }
-            
-            long endTime = System.currentTimeMillis();
-            
-            Logger.getLogger("TIMER").log(Level.FINE, "Folds - 1", //NOI18N
-                    new Object[] {info.getSnapshot().getSource().getFileObject(), endTime - startTime});
         }
         
         /**

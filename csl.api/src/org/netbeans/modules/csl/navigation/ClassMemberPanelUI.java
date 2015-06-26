@@ -220,17 +220,21 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             public @Override Class<? extends Scheduler> getSchedulerClass() {
                 return CSLNavigatorScheduler.class;
             }
-            @Override public void run(ParserResult result, SchedulerEvent event) {
-                resume();
-                
-                StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
-                FileObject file = result.getSnapshot().getSource().getFileObject();
+            @Override public void run(final ParserResult result, final SchedulerEvent event) {
+                runWithCancelService(new Runnable() {
+                    @Override
+                    public void run() {
+                        resume();
+                        StructureItem root = computeStructureRoot(result.getSnapshot().getSource());
+                        FileObject file = result.getSnapshot().getSource().getFileObject();
 
-                if (root != null && file != null) {
-                    Document doc = result.getSnapshot().getSource().getDocument(false);
-                    BaseDocument bd = doc instanceof BaseDocument ? (BaseDocument)doc : null;
-                    refresh(root, file, bd);
-                }
+                        if (root != null && file != null) {
+                            Document doc = result.getSnapshot().getSource().getDocument(false);
+                            BaseDocument bd = doc instanceof BaseDocument ? (BaseDocument)doc : null;
+                            refresh(root, file, bd);
+                        }
+                    }
+                });
             }
         };
         
