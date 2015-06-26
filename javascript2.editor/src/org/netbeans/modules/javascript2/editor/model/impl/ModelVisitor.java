@@ -620,7 +620,9 @@ public class ModelVisitor extends PathNodeVisitor {
                                 }
                             }
                         }
-                        name = getName((BinaryNode)node, parserResult);
+                        if (bNode.isAssignment()) {
+                            name = getName((BinaryNode)node, parserResult);
+                        }
                     }
                 } else if (node instanceof VarNode) {
                    name = getName((VarNode)node, parserResult);
@@ -1629,6 +1631,30 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (oldVariable != null) {
                             for(Occurrence occurrence : oldVariable.getOccurrences()) {
                                variable.addOccurrence(occurrence.getOffsetRange());
+                            }
+                        }
+                    }
+                } else {
+                    if (init instanceof BinaryNode) {
+                        init.accept(this);
+                        JsObjectImpl function = modelBuilder.getCurrentDeclarationFunction();
+                        JsObject oldVariable = function.getProperty(varNode.getName().getName());
+                        if ((oldVariable != null && !(oldVariable instanceof JsFunctionReference)) || oldVariable == null) {
+                            Node lhs = ((BinaryNode)init).lhs();
+                            if (lhs instanceof IdentNode)  {
+                                JsObject previousRef = function.getProperty(((IdentNode)lhs).getName());
+                                if (previousRef != null) {
+                                    Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
+                                    JsFunction origFunction = previousRef instanceof JsFunctionReference ? ((JsFunctionReference)previousRef).getOriginal() : (JsFunction)previousRef;
+                                    JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
+                                            oldVariable != null ? oldVariable.getModifiers() : null );
+                                    function.addProperty(variable.getName(), variable);
+                                    if (oldVariable != null) {
+                                        for(Occurrence occurrence : oldVariable.getOccurrences()) {
+                                           variable.addOccurrence(occurrence.getOffsetRange());
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
