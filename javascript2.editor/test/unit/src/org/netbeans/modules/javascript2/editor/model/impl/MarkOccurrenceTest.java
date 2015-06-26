@@ -1547,6 +1547,25 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/completion/general/issue237421.js", "var foo2 = this.getT^est().m;", true);
     }
     
+    public void testIssue253129_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f^1 = f2 = function () {", true);
+    }
+    
+    public void testIssue253129_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f1 = f^2 = function () {", true);
+    }
+    
+    public void testIssue253129_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f5 = f3 = f^4 = function (){", true);
+    }
+    
+    public void testIssue253129_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "f^3();", true);
+    }
+    
+    public void testIssue253129_05() throws Exception {
+        checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f^5 = f3 = f4 = function (){", true);
+    }
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

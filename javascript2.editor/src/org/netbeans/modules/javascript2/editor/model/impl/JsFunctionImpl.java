@@ -131,7 +131,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 if (property.isDeclared() 
                         && (property.getModifiers().contains(Modifier.PROTECTED)
                         || (property.getModifiers().contains(Modifier.PUBLIC) &&  !property.getModifiers().contains(Modifier.STATIC)))
-                        && !isAnonymous() && !property.isAnonymous()) {
+                        && !isAnonymous() && !property.isAnonymous()
+                        && (property.getDeclarationName() != null && property.getDeclarationName().getOffsetRange().getStart() < property.getDeclarationName().getOffsetRange().getEnd())) {
                     if(!ModelUtils.PROTOTYPE.equals(getParent().getName())) {
                         return JsElement.Kind.CONSTRUCTOR;
                     }
@@ -140,7 +141,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     prototype = property;
                 }
             }
-            if (prototype != null && !prototype.getProperties().isEmpty()) {
+            if (prototype != null /*&& !prototype.getProperties().isEmpty()*/) {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }
