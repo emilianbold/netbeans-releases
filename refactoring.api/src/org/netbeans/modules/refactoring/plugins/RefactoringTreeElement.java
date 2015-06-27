@@ -48,6 +48,7 @@ import javax.swing.Icon;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
 import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -66,7 +67,10 @@ public class RefactoringTreeElement implements TreeElement {
     @Override
     public TreeElement getParent(boolean isLogical) {
         if (isLogical) {
-            Object composite = element.getLookup().lookup(Object.class);
+            Object composite = element.getLookup().lookup(FileObject.class);
+            if (composite==null) {
+                composite = element.getLookup().lookup(Object.class);
+            }
             if (composite!=null) {
                 return TreeElementFactory.getTreeElement(composite);
             }

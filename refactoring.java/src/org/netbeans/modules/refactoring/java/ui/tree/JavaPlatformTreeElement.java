@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,63 +40,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.refactoring.java.spi;
+
+package org.netbeans.modules.refactoring.java.ui.tree;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.refactoring.spi.ui.TreeElement;
+import org.openide.util.ImageUtilities;
 
 /**
- * Filters used by Java Find Usages plugins.
- * 
- * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
- * @since 1.39
+ *
+ * @author Ralph Benjamin Ruijs
  */
-public enum JavaWhereUsedFilters {
+public class JavaPlatformTreeElement implements TreeElement {
+    
+    private final JavaPlatform platform;
+    private final Icon icon;
+    private final String displayName;
+    
+    private static final String PLATFORM_ICON = "org/netbeans/modules/java/platform/resources/platform.gif"; //NOI18N
+//    private static String PACKAGE_BADGE = "org/netbeans/spi/java/project/support/ui/packageBadge.gif"; // NOI18N
 
-    IMPORT("filter-import"),
-    COMMENT("filter-comment"),
-    TESTFILE("filter-testfile"),
-    /**
-     * @since 1.54
-     */
-    SOURCEFILE("filter-sourcefile"),
-    /**
-     * @since 1.55
-     */
-    BINARYFILE("filter-binaryfile"),
-    /**
-     * @since 1.55
-     */
-    DEPENDENCY("filter-dependencyfile"),
-    /**
-     * @since 1.55
-     */
-    PLATFORM("filter-platformfile");
-    private final String key;
+    JavaPlatformTreeElement(JavaPlatform platform) {
+        this.platform = platform;
 
-    private JavaWhereUsedFilters(String key) {
-        this.key = key;
+        icon = new ImageIcon(ImageUtilities.loadImage(PLATFORM_ICON));
+        displayName = platform.getDisplayName();
     }
 
-    public String getKey() {
-        return key;
+    @Override
+    public TreeElement getParent(boolean isLogical) {
+        return null;
     }
 
-    public static enum ReadWrite {
+    @Override
+    public Icon getIcon() {
+        return icon;
+    }
 
-        READ("filter-read"),
-        WRITE("filter-write"),
-        READ_WRITE("filter-readwrite");
-        private final String key;
+    @Override
+    public String getText(boolean isLogical) {
+        return displayName;
+    }
 
-        private ReadWrite(String key) {
-            this.key = key;
-        }
-
-        public String getKey() {
-            return key;
-        }
+    @Override
+    public Object getUserObject() {
+        return platform;
     }
 }
+

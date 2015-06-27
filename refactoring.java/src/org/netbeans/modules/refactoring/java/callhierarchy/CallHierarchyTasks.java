@@ -351,7 +351,7 @@ final class CallHierarchyTasks {
                 Set<FileObject> relevantFiles = null;
                 if (!isCanceled()) {
                     relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                            sourceToQuery, cpInfo, false, false, false, false, true, null, isCanceled);
+                        sourceToQuery, cpInfo, false, false, false, false, true, false, null, isCanceled);
                     if (SourceUtils.isScanInProgress()) {
                         elmDesc.setIncomplete(true);
                     }
