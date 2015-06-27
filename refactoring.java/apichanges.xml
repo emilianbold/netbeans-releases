@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
             <api name="JavaRefactoringAPI"/>
             <summary>Added BINARYFILE, DEPENDENCY, PLATFORM constants to JavaWhereUsedFilters.</summary>
             <version major="1" minor="55"/>
-            <date day="7" month="5" year="2015"/>
+            <date day="27" month="6" year="2015"/>
             <author login="ralphbenjamin"/>
             <compatibility addition="yes"/>
             <description>
@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
                 </p>    
             </description>
             <class package="org.netbeans.modules.refactoring.java.spi" name="JavaWhereUsedFilters"/>
-            <issue number="XXX"/>
+            <issue number="252994"/>
         </change>
         <change id="FilterSourcePackages">
             <api name="JavaRefactoringAPI"/>
