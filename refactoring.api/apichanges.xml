@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
         <api name="refactoring"/>
         <summary>Let ScopeProvider report a Problem.</summary>
         <version major="1" minor="44"/>
-        <date day="8" month="6" year="2015"/>
+        <date day="27" month="6" year="2015"/>
         <author login="ralphbenjamin"/>
         <compatibility addition="yes"/>
         <description>
@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
         </description>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopeProvider"/>
         <class package="org.netbeans.modules.refactoring.spi.ui" name="ScopePanel"/>
-        <issue number="XXX"/>
+        <issue number="252993"/>
     </change>
     <change id="ScopeDependencies">
         <api name="refactoring"/>
