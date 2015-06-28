@@ -89,6 +89,16 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
      */
     public static final String DEFAULT_LINE_SEPARATOR_ATTR = "default-line-separator"; //NOI18N
 
+    /**
+     * Name of default path name separator attribute.
+     * File object can provide default separator if it differs from
+     * <code>File.separator</code>. Call
+     * <code>fo.getAttribute(DEFAULT_PATHNAME_SEPARATOR_ATTR)</code> returns string with
+     * default separator.
+     * @since 9.6
+     */
+    public static final String DEFAULT_PATHNAME_SEPARATOR_ATTR = "default-pathname-separator"; //NOI18N
+
     /** generated Serialized Version UID */
     static final long serialVersionUID = 85305031923497718L;
     
