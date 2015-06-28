@@ -28,7 +28,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   getNameByAlias:METHOD:[PUBLIC]:ESCAPED{getNameByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.aliasToNameESCAPED{|}String</font>:
   getNameByAlternate:METHOD:[PUBLIC]:ESCAPED{getNameByAlternate}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alternate}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.alternateToNameESCAPED{|}String</font>:
   getNamesByExpression:METHOD:[PUBLIC]:ESCAPED{getNamesByExpression}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{expression}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.getNamesByExpression.namesESCAPED{|}String[]ESCAPED{|}getNamesByExpression.names</font>:
-  instantiate:METHOD:[PROTECTED]:ESCAPED{instantiate}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@call;@call;getInstantiator</font>:
+  instantiate:METHOD:[PRIVATE]:ESCAPED{instantiate}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@call;@call;getInstantiator</font>:
   instantiateByAlias:METHOD:[PUBLIC]:ESCAPED{instantiateByAlias}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Object</font>:
   instantiators:FIELD:[PUBLIC]:ESCAPED{instantiators}<font color="#999999">ESCAPED{ : }Array</font>:
   isCreated:METHOD:[PUBLIC]:ESCAPED{isCreated}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }Boolean</font>:
@@ -44,7 +44,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
     listener:CLASS:[PRIVATE]:ESCAPED{listener}:
       fn:FIELD:[PUBLIC]:ESCAPED{fn}:
       scope:FIELD:[PUBLIC]:ESCAPED{scope}:
-  parseNamespace:METHOD:[PROTECTED]:ESCAPED{parseNamespace}ESCAPED{(}ESCAPED{namespace}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.parseNamespace.partsESCAPED{|}Manager.namespaceParseCacheESCAPED{|}parseNamespace.parts</font>:
+  parseNamespace:METHOD:[PRIVATE]:ESCAPED{parseNamespace}ESCAPED{(}ESCAPED{namespace}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.parseNamespace.partsESCAPED{|}Manager.namespaceParseCacheESCAPED{|}parseNamespace.parts</font>:
   postprocessors:CLASS:[PUBLIC]:ESCAPED{postprocessors}:
   processCreate:METHOD:[PUBLIC]:ESCAPED{processCreate}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{cls}ESCAPED{, }ESCAPED{clsData}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   registerPostprocessor:METHOD:[PRIVATE]:ESCAPED{registerPostprocessor}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }ESCAPED{fn}ESCAPED{, }ESCAPED{properties}ESCAPED{, }ESCAPED{position}ESCAPED{, }ESCAPED{relativeTo}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager</font>:
