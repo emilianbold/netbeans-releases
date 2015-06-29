@@ -315,7 +315,8 @@ final class WrapInfoUpdater {
         wrapLine.startPart = part;
         wrapLineX += part.width;
         if (logMsgBuilder != null) {
-            logMsgBuilder.append("  startPart set"); // NOI18N
+            logMsgBuilder.append("  startPart set<").append(part.view.getStartOffset()). // NOI18N
+                            append(",").append(part.view.getEndOffset()).append(">"); // NOI18N
             logWrapLineAndX();
         }
     }
@@ -336,7 +337,8 @@ final class WrapInfoUpdater {
         wrapLine.endPart = part;
         wrapLineX += part.width;
         if (logMsgBuilder != null) {
-            logMsgBuilder.append("  endPart set"); // NOI18N
+            logMsgBuilder.append("  endPart set<").append(part.view.getStartOffset()). // NOI18N
+                            append(",").append(part.view.getEndOffset()).append(">"); // NOI18N
             logWrapLineAndX();
         }
     }
@@ -412,6 +414,11 @@ final class WrapInfoUpdater {
         wrapLine.startPart = null;
         wrapLineX = 0f;
         wrapLineNonEmpty = false;
+        
+        // Start view of this line was obtained by breaking a
+        // view at (firstViewIndex - 1), need to go back to that view.
+        double startChildX = pView.children.startVisualOffset(wrapLine.firstViewIndex - 1);
+        initChildVars(wrapLine.firstViewIndex - 1, startChildX);
         if (logMsgBuilder != null) {
             logMsgBuilder.append("  Removed startPart."); // NOI18N
         }
