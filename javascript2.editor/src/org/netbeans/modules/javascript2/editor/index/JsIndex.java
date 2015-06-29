@@ -76,6 +76,10 @@ public class JsIndex {
 
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     /**
+     * The same as FIELD_BASE_NAME, but case insensitive. 
+     */
+    public static final String FIELD_BASE_NAME_INSENSITIVE = "bni"; // NOI18N
+    /**
      * In this field is in the lucene also coded, whether the object is anonymous (last char is 'A')
      * or normal object (last char is 'O'). If someone needs to access this field
      * directly, then has to be count with this.
