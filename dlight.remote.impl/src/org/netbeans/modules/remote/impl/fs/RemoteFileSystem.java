@@ -618,6 +618,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }
         if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
             return "\n"; // NOI18N
+        } else if (attrName.equals(FileObject.DEFAULT_PATHNAME_SEPARATOR_ATTR)) {
+            return "/"; // NOI18N
         } else if (attrName.equals(READONLY_ATTRIBUTES)) {
             return Boolean.FALSE;
         } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
