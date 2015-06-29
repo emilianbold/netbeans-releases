@@ -177,7 +177,7 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
     private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String ERR_NAME = "<error>";
     
-    public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, TreePath path, boolean elseSection) {
+    public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, final TreePath path, boolean elseSection) {
         final Trees trees = info.getTrees();
         final SourcePositions sp = trees.getSourcePositions();
         int[] pos = new int[] {(int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf()), (int) sp.getEndPosition(path.getCompilationUnit(), path.getLeaf())};
@@ -277,20 +277,21 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                 case IF:
                     sb = new StringBuilder(""); //NOI18N
                     Tree last = leaf;
-                    while (path != null && path.getLeaf().getKind() == Kind.IF) {
+                    TreePath tempPath = path;
+                    while (tempPath != null && tempPath.getLeaf().getKind() == Kind.IF) {
                         StringBuilder temp = new StringBuilder(""); //NOI18N
                         temp.append("if "); //NOI18N
                         temp.append("<font color=").append(COLOR).append(">"); // NOI18N
-                        temp.append(escape(((IfTree) path.getLeaf()).getCondition().toString()));
+                        temp.append(escape(((IfTree) tempPath.getLeaf()).getCondition().toString()));
                         temp.append("</font>"); //NOI18N
                         
-                        if (((IfTree) path.getLeaf()).getElseStatement() == last || (path.getLeaf() == leaf && elseSection)) {
+                        if (((IfTree) tempPath.getLeaf()).getElseStatement() == last || (tempPath.getLeaf() == leaf && elseSection)) {
                             temp.append(" else");
                         }
                         temp.append(" ");
                         sb.insert(0, temp.toString());
-                        last = path.getLeaf();
-                        path = path.getParentPath();
+                        last = tempPath.getLeaf();
+                        tempPath = tempPath.getParentPath();
                     }
                     sb.delete(sb.length() - 1, sb.length());
                     IfTree it = (IfTree) leaf;
