@@ -83,7 +83,6 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
@@ -123,9 +122,6 @@ final class MultiPassCompileWorker extends CompileWorker {
         }
         
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
-
-        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
-
         final DiagnosticListenerImpl diagnosticListener = new DiagnosticListenerImpl();
         final LinkedList<CompileTuple> bigFiles = new LinkedList<CompileTuple>();
         JavacTaskImpl jt = null;
@@ -133,7 +129,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         boolean aptEnabled = false;
         int state = 0;
         boolean isBigFile = false;
-
+        boolean[] flm = null;
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
             if (context.isCancelled()) {
                 return null;
@@ -145,9 +141,8 @@ final class MultiPassCompileWorker extends CompileWorker {
             }
             try {
                 try {
-                    if (mem.isLowMemory()) {
+                    if (isLowMemory(flm)) {
                         dumpSymFiles(jt, previous.createdFiles, context);
-                        mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         if ((state & MEMORY_LOW) != 0) {
@@ -155,7 +150,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             state |= MEMORY_LOW;
                         }
-                        mem.free();
+                        freeMemory(true);
                         continue;
                     }
                     if (active == null) {
@@ -167,6 +162,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             active = bigFiles.removeFirst();
                             isBigFile = true;
+                            if (flm == null) {
+                                flm = new boolean[] {true};
+                            }
                         }
                     }
                     if (jt == null) {
@@ -179,7 +177,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                                 javaContext.getFQNs(),
                                 new CancelService() {
                                     public @Override boolean isCanceled() {
-                                        return context.isCancelled() || (checkForMemLow && mem.isLowMemory());
+                                        return context.isCancelled() || (checkForMemLow && isLowMemory(null));
                                     }
                                 },
                                 active.aptGenerated ? null : APTUtils.get(context.getRoot()));
@@ -190,9 +188,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                         }
                     }
                     Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
-                    if (mem.isLowMemory()) {
+                    if (isLowMemory(flm)) {
                         dumpSymFiles(jt, previous.createdFiles, context);
-                        mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
@@ -207,7 +204,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             state |= MEMORY_LOW;
                         }
-                        mem.free();
+                        freeMemory(true);
                         continue;
                     }
                     Iterable<? extends TypeElement> types;
@@ -248,9 +245,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                             continue;
                         }
                     }
-                    if (mem.isLowMemory()) {
+                    if (isLowMemory(flm)) {
                         dumpSymFiles(jt, previous.createdFiles, context);
-                        mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
@@ -266,16 +262,15 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             state |= MEMORY_LOW;
                         }
-                        mem.free();
+                        freeMemory(true);
                         continue;
                     }
                     jt.analyze(types);
                     if (aptEnabled) {
                         JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
                     }
-                    if (mem.isLowMemory()) {
+                    if (isLowMemory(flm)) {
                         dumpSymFiles(jt, previous.createdFiles, context);
-                        mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         trees = null;
@@ -291,7 +286,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             state |= MEMORY_LOW;
                         }
-                        mem.free();
+                        freeMemory(true);
                         continue;
                     }
                     javaContext.getFQNs().set(types, active.indexable.getURL());
@@ -321,9 +316,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                     active = null;
                     state  = 0;
                 } catch (CancelAbort ca) {
-                    if (mem.isLowMemory()) {
+                    if (isLowMemory(flm)) {
                         dumpSymFiles(jt, previous.createdFiles, context);
-                        mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
                         if ((state & MEMORY_LOW) != 0) {
@@ -337,7 +331,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         } else {
                             state |= MEMORY_LOW;
                         }
-                        mem.free();
+                        freeMemory(true);
                     } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                         JavaIndex.LOG.log(Level.FINEST, "OnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
                     }

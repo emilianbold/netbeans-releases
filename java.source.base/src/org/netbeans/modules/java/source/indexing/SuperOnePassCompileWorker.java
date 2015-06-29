@@ -78,7 +78,6 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
@@ -106,7 +105,6 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final Set<javax.tools.FileObject> aptGenerated = previous != null ? previous.aptGenerated : new HashSet<javax.tools.FileObject>();
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(file2FQNs);
 
-        final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         final LinkedList<CompilationUnitTree> trees = new LinkedList<CompilationUnitTree>();
         Map<CompilationUnitTree, CompileTuple> units = new IdentityHashMap<CompilationUnitTree, CompileTuple>();
@@ -116,6 +114,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final SuspendStatus suspendStatus = context.getSuspendStatus();
         final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files, suspendStatus);
         try {
+            final boolean flm[] = {true};
             while (sourcePrefetcher.hasNext())  {
                 final CompileTuple tuple = sourcePrefetcher.next();
                 try {
@@ -125,11 +124,11 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             return null;
                         }
                         try {
-                            if (mem.isLowMemory()) {
+                            if (isLowMemory(flm)) {
                                 jt = null;
                                 units = null;
                                 dc.cleanDiagnostics();
-                                mem.free();
+                                freeMemory(false);
                             }
                             if (jt == null) {
                                 jt = JavacParser.createJavacTask(
@@ -141,7 +140,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                                     javaContext.getFQNs(),
                                     new CancelService() {
                                         public @Override boolean isCanceled() {
-                                            return context.isCancelled() || mem.isLowMemory();
+                                            return context.isCancelled() || isLowMemory(null);
                                         }
                                     },
                                     tuple.aptGenerated ? null : APTUtils.get(context.getRoot()));
@@ -174,12 +173,11 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             }
                             if (t instanceof ThreadDeath) {
                                 throw (ThreadDeath) t;
-                            }
-                            else {
+                            } else {
                                 jt = null;
                                 units = null;
                                 dc.cleanDiagnostics();
-                                mem.free();
+                                freeMemory(false);
                             }
                         }
                     }
@@ -203,9 +201,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         if (context.isCancelled()) {
             return null;
         }
-        if (mem.isLowMemory()) {
+        if (isLowMemory(null)) {
             units = null;
-            mem.free();
+            freeMemory(false);
             return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
         }
         Iterable<? extends Processor> processors = jt.getProcessors();
@@ -215,9 +213,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             if (context.isCancelled()) {
                 return null;
             }
-            if (mem.isLowMemory()) {
+            if (isLowMemory(null)) {
                 units = null;
-                mem.free();
+                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             final Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
@@ -234,9 +232,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             if (context.isCancelled()) {
                 return null;
             }
-            if (mem.isLowMemory()) {
+            if (isLowMemory(null)) {
                 units = null;
-                mem.free();
+                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
@@ -268,9 +266,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             if (context.isCancelled()) {
                 return null;
             }
-            if (mem.isLowMemory()) {
+            if (isLowMemory(null)) {
                 units = null;
-                mem.free();
+                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
             final JavacTaskImpl jtFin = jt;
@@ -330,9 +328,9 @@ final class SuperOnePassCompileWorker extends CompileWorker {
             }
             JavaCustomIndexer.brokenPlatform(context, files, mpe.getDiagnostic());
         } catch (CancelAbort ca) {
-            if (mem.isLowMemory()) {
+            if (isLowMemory(null)) {
                 units = null;
-                mem.free();
+                freeMemory(false);
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             } else if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
                 JavaIndex.LOG.log(Level.FINEST, "SuperOnePassCompileWorker was canceled in root: " + FileUtil.getFileDisplayName(context.getRoot()), ca);  //NOI18N
