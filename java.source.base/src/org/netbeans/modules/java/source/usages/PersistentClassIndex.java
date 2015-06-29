@@ -182,6 +182,15 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
 
     @Override
+    public FileObject[] getBinaryRoots() {
+        FileObject[] rootFos = new FileObject[0];
+        if(getType() == Type.BINARY) {
+            rootFos = new FileObject[] {URLMapper.findFileObject (this.root)};
+        }
+        return rootFos;
+    }
+    
+    @Override
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
         try {
             final Query q = DocumentUtil.binaryNameQuery(binaryName);
