@@ -70,6 +70,99 @@ public class RenameTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void testStaticImport() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.util.Collection;\n"
+                + "import java.util.Arrays;\n"
+                + "import static t.A.Length.of;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    static class Length {\n"
+                + "        static int of(String in) {\n"
+                + "            return in.length();\n"
+                + "        }\n"
+                + "\n"
+                + "        static int of(Collection<?> collection) {\n"
+                + "            return collection.size();\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(final String[] args) {\n"
+                + "        int i = of(\"jfgdksjgfkds\");\n"
+                + "        int j = of(Arrays.asList(\"a\", \"b\"));\n"
+                + "    }"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        performRename(src.getFileObject("t/A.java"), 1, 2, "fooBar", props, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.util.Collection;\n"
+                + "import java.util.Arrays;\n"
+                + "import static t.A.Length.fooBar;\n"
+                + "import static t.A.Length.of;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    static class Length {\n"
+                + "        static int of(String in) {\n"
+                + "            return in.length();\n"
+                + "        }\n"
+                + "\n"
+                + "        static int fooBar(Collection<?> collection) {\n"
+                + "            return collection.size();\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(final String[] args) {\n"
+                + "        int i = of(\"jfgdksjgfkds\");\n"
+                + "        int j = fooBar(Arrays.asList(\"a\", \"b\"));\n"
+                + "    }"
+                + "}"));
+    }
+    
+    public void testStaticImport2() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.util.Collection;\n"
+                + "import java.util.Arrays;\n"
+                + "import static t.A.Length.of;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    static class Length {\n"
+                + "        static int of(Collection<?> collection) {\n"
+                + "            return collection.size();\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(final String[] args) {\n"
+                + "        int j = of(Arrays.asList(\"a\", \"b\"));\n"
+                + "    }"
+                + "}"));
+        JavaRenameProperties props = new JavaRenameProperties();
+        performRename(src.getFileObject("t/A.java"), 1, 1, "fooBar", props, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "import java.util.Collection;\n"
+                + "import java.util.Arrays;\n"
+                + "import static t.A.Length.fooBar;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    static class Length {\n"
+                + "        static int fooBar(Collection<?> collection) {\n"
+                + "            return collection.size();\n"
+                + "        }\n"
+                + "    }\n"
+                + "\n"
+                + "    public static void main(final String[] args) {\n"
+                + "        int j = fooBar(Arrays.asList(\"a\", \"b\"));\n"
+                + "    }"
+                + "}"));
+    }
+    
     public void testJavadocMethodRef() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
