@@ -266,7 +266,7 @@ public class FindUsagesFilterTest extends RefactoringTestBase {
                 Element el = javac.getTrees().getElement(tp);
                 AtomicBoolean isCancelled = new AtomicBoolean();
                 AtomicBoolean inImport = new AtomicBoolean();
-                r[0] = new FindUsagesVisitor(javac, isCancelled, searchInComments, false, false, inImport);
+                r[0] = new FindUsagesVisitor(javac, isCancelled, searchInComments, false, false, false, false, inImport);
                 r[0].scan(cut, el);
             }
         }, true);

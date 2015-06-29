@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
     <apidef name="javasource_base">Java Source API</apidef>
 </apidefs>
 <changes>
+    <change id="classindex.resources.binaryroots">
+        <api name="javasource_base"/>
+        <summary>ClassIndex returns resources from binaryroots</summary>
+        <version major="1" minor="2.6"/>
+        <date day="27" month="6" year="2015"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            ClassIndex holds information from different types of roots. Added a
+            parameter to ClassIndex#getResources to specify which roots to use
+            for its results.
+        </description>
+        <class name="ClassIndex" package="org.netbeans.api.java.source"/>
+        <issue number="252992"/>
+    </change>
     <change id="generator.sort.dependencies">
         <api name="javasource_base"/>
         <summary>Code Generator uses dependencies between fields</summary>

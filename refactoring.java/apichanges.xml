@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
+        <change id="FilterDependency">
+            <api name="JavaRefactoringAPI"/>
+            <summary>Added BINARYFILE, DEPENDENCY, PLATFORM constants to JavaWhereUsedFilters.</summary>
+            <version major="1" minor="55"/>
+            <date day="27" month="6" year="2015"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    To support filtering of results from dependencies, the constants
+                    BINARYFILE, DEPENDENCY and PLATFORM are added to the enum
+                    JavaWhereUsedFilters.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.spi" name="JavaWhereUsedFilters"/>
+            <issue number="252994"/>
+        </change>
         <change id="FilterSourcePackages">
             <api name="JavaRefactoringAPI"/>
             <summary>Added SOURCEFILE constant to JavaWhereUsedFilters.</summary>

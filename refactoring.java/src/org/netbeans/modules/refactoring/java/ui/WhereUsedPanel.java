@@ -58,7 +58,9 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
+import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Pair;
@@ -116,13 +118,24 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         return new WhereUsedPanel(name, e, panel, parent);
     }
     
-    public Scope getCustomScope() {
+    public ScopeProvider getCustomScope() {
         if(!enableScope) {
-            FileObject file = WhereUsedPanel.this.element.getFileObject();
-            return Scope.create(null, null, Arrays.asList(file));
+            final FileObject file = WhereUsedPanel.this.element.getFileObject();
+            return new ScopeProvider() {
+
+                @Override
+                public boolean initialize(Lookup context, AtomicBoolean cancel) {
+                    return true;
+                }
+
+                @Override
+                public Scope getScope() {
+                    return Scope.create(null, null, Arrays.asList(file));
+                }
+            };
         }
 
-        return scope.getSelectedScope();
+        return scope.getSelectedScopeProvider();
     }
 
     private boolean initialized = false;
@@ -158,7 +171,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
                         || element.getModifiers().contains(Modifier.PRIVATE)) {
                     enableScope = false;
                 } else {
-                    enableScope = scope.initialize(Lookups.fixed(WhereUsedPanel.this.element.getFileObject(), WhereUsedPanel.this.element), new AtomicBoolean());
+                    enableScope = scope.initialize(Lookups.fixed(WhereUsedPanel.this.element.getFileObject(), WhereUsedPanel.this.element, element), new AtomicBoolean());
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
@@ -216,7 +229,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
 
         buttonGroup = new javax.swing.ButtonGroup();
         innerPanel = new javax.swing.JPanel();
-        scope = new org.netbeans.modules.refactoring.spi.ui.ScopePanel(WhereUsedPanel.class.getCanonicalName().replace('.', '-'), NbPreferences.forModule(WhereUsedPanel.class), "whereUsed.scope");
+        scope = new org.netbeans.modules.refactoring.spi.ui.ScopePanel(WhereUsedPanel.class.getCanonicalName().replace('.', '-'), NbPreferences.forModule(WhereUsedPanel.class), "whereUsed.scope", parent);
         jLabel1 = new javax.swing.JLabel();
 
         innerPanel.setLayout(new java.awt.BorderLayout());

@@ -41,36 +41,50 @@
  */
 package org.netbeans.modules.refactoring.java.ui.scope;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
+
 
 /**
  *
  * @author Ralph Benjamin Ruijs <ralphbenjamin@netbeans.org>
  */
-@NbBundle.Messages("LBL_AllProjects=Open Projects")
-@ScopeProvider.Registration(id = "all-projects", displayName = "#LBL_AllProjects", position = 100, iconBase = "org/netbeans/modules/refactoring/java/resources/all_projects.png")
+@NbBundle.Messages("LBL_Dependencies=Open Projects & Dependencies")
+@ScopeProvider.Registration(id = "all-projects-dependencies", displayName = "#LBL_Dependencies", position = 50, iconBase = "org/netbeans/modules/refactoring/java/resources/found_item_binary.gif")
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
-public class OpenProjectsScopeProvider extends ScopeProvider {
+public class DependenciesScopeProvider extends ScopeProvider {
+
+    private static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
+    private static final EnumSet<Modifier> CONSTANT = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
+
     private Scope scope;
+    private Problem problem;
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
+        if(!DEPENDENCIES) {
+            return false;
+        }
         Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
         
         Project[] projects;
@@ -96,13 +110,23 @@ public class OpenProjectsScopeProvider extends ScopeProvider {
         if(srcRoots.isEmpty()) {
             return false;
         }
-        scope = Scope.create(srcRoots, null, null);
-
+        scope = Scope.create(srcRoots, null, null, true);
+        Element element = context.lookup(Element.class);
+        if (element != null) {
+            if (element.getModifiers().containsAll(CONSTANT)) {
+                problem = new Problem(false, WRN_FIELDCONSTANTS());
+            }
+        }
         return true;
     }
 
     @Override
     public Scope getScope() {
         return scope;
+    }
+
+    @Override
+    public Problem getProblem() {
+        return problem;
     }
 }

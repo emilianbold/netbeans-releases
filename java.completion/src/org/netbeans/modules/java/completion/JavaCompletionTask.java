@@ -1082,12 +1082,10 @@ public final class JavaCompletionTask<T> extends BaseTask {
             switch (ts.token().id()) {
                 case EXTENDS:
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    env.addToExcludes(controller.getTrees().getElement(path.getParentPath()));
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, ANNOTATION_TYPE), null);
                     break;
                 case AMP:
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    env.addToExcludes(controller.getTrees().getElement(path.getParentPath()));
                     addTypes(env, EnumSet.of(INTERFACE, ANNOTATION_TYPE), null);
                     break;
                 case IDENTIFIER:
