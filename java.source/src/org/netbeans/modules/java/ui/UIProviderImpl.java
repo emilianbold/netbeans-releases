@@ -69,6 +69,20 @@ public class UIProviderImpl implements UIProvider {
 
     @StaticResource
     private static final String WARNING_ICON = "org/netbeans/modules/java/source/resources/icons/warning.png"; //NOI18N
+    private static final NotificationDisplayer.Priority DEFAULT_PRIORITY = NotificationDisplayer.Priority.SILENT;
+    private static final NotificationDisplayer.Priority PRIORITY;
+    static {
+        final String val = System.getProperty("UIProviderImpl.mem.priority");   //NOI18N
+        if ("high".equals(val)) {   //NOI18N
+            PRIORITY = NotificationDisplayer.Priority.HIGH;
+        } else if ("silent".equals(val)) {  //NOI18N
+            PRIORITY = NotificationDisplayer.Priority.SILENT;
+        } else if ("hidden".equals(val)) {  //NOI18N
+            PRIORITY = null;
+        } else {
+            PRIORITY = DEFAULT_PRIORITY;
+        }
+    }
 
     @Override
     public boolean warnContainsErrors(Preferences pref) {
@@ -105,22 +119,24 @@ public class UIProviderImpl implements UIProvider {
 
     @Override
     public void notifyLowMemory(String rootName) {
-        NotificationDisplayer.getDefault().notify(
-                NbBundle.getMessage(UIProviderImpl.class, "TITLE_LowMemory"),
-                ImageUtilities.loadImageIcon(WARNING_ICON, false),
-                NbBundle.getMessage(UIProviderImpl.class, "MSG_LowMemory", rootName),
-                new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        try {
-                            final URL url = new URL(NbBundle.getMessage(UIProviderImpl.class, "URL_LowMemory"));
-                            HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
-                        } catch (MalformedURLException ex) {
-                            Exceptions.printStackTrace(ex);
+        if (PRIORITY != null) {
+            NotificationDisplayer.getDefault().notify(
+                    NbBundle.getMessage(UIProviderImpl.class, "TITLE_LowMemory"),
+                    ImageUtilities.loadImageIcon(WARNING_ICON, false),
+                    NbBundle.getMessage(UIProviderImpl.class, "MSG_LowMemory", rootName),
+                    new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            try {
+                                final URL url = new URL(NbBundle.getMessage(UIProviderImpl.class, "URL_LowMemory"));
+                                HtmlBrowser.URLDisplayer.getDefault().showURLExternal(url);
+                            } catch (MalformedURLException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
-                    }
-                },
-                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.ERROR);
+                    },
+                    PRIORITY, NotificationDisplayer.Category.ERROR);
+        }
 
     }
 }
