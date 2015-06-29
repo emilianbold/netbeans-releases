@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser.Changes;
