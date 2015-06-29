@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.index;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -57,27 +55,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -86,6 +75,10 @@ import org.openide.util.Lookup;
 public class JsIndex {
 
     public static final String FIELD_BASE_NAME = "bn"; //NOI18N
+    /**
+     * The same as FIELD_BASE_NAME, but case insensitive. 
+     */
+    public static final String FIELD_BASE_NAME_INSENSITIVE = "bni"; // NOI18N
     /**
      * In this field is in the lucene also coded, whether the object is anonymous (last char is 'A')
      * or normal object (last char is 'O'). If someone needs to access this field
