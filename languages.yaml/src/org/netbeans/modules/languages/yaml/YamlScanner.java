@@ -81,6 +81,9 @@ import org.openide.xml.XMLUtil;
 public class YamlScanner implements StructureScanner {
     private static final Logger LOGGER = Logger.getLogger(YamlScanner.class.getName());
 
+    // tests
+    static boolean assertDocument = false;
+
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
         YamlParserResult result = (YamlParserResult) info;
@@ -117,6 +120,10 @@ public class YamlScanner implements StructureScanner {
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("tags", codeblocks); // NOI18N
         BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
+
+        if (assertDocument) {
+            assert doc != null : "Document is null in tests";
+        }
 
         if (doc != null) {
             for (StructureItem item : items) {

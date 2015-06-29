@@ -47,6 +47,18 @@ package org.netbeans.modules.languages.yaml;
  */
 public class YamlScannerTest extends YamlTestBase {
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        YamlScanner.assertDocument = true;
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        YamlScanner.assertDocument = false;
+        super.tearDown();
+    }
+
     public YamlScannerTest(String testName) {
         super(testName);
     }
@@ -163,9 +175,9 @@ public class YamlScannerTest extends YamlTestBase {
         checkFolds("testfiles/ordered.yaml");
     }
 
-//    public void testErb1Folds() throws Exception {
-//        checkFolds("testfiles/fixture.yml");
-//    }
+    public void testErb1Folds() throws Exception {
+        checkFolds("testfiles/fixture.yml");
+    }
 
     public void testErb2Folds() throws Exception {
         checkFolds("testfiles/fixture2.yml");

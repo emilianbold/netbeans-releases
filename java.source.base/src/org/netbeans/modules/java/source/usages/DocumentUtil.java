@@ -492,6 +492,9 @@ public class DocumentUtil {
                 if (FileObjects.JAVA.equalsIgnoreCase(child.getExt()) && name.equals(child.getName())) {
                     return child;
                 }
+                if (FileObjects.CLASS.equalsIgnoreCase(child.getExt()) && name.equals(child.getName())) {
+                    return child;
+                }
             }
             return null;
         }

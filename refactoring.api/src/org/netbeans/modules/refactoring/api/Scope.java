@@ -63,14 +63,16 @@ import org.openide.filesystems.FileObject;
  */
 public final class Scope {
 
+    private final boolean dependencies;
     private final Set<FileObject> sourceRoots;
     private final Set<NonRecursiveFolder> folders;
     private final Set<FileObject> files;
 
-    private Scope() {
-        folders = new HashSet<NonRecursiveFolder>();
-        sourceRoots = new HashSet<FileObject>();
-        files = new HashSet<FileObject>();
+    private Scope(boolean dependencies) {
+        this.folders = new HashSet<>();
+        this.sourceRoots = new HashSet<>();
+        this.files = new HashSet<>();
+        this.dependencies = dependencies;
     }
 
     /**
@@ -98,6 +100,15 @@ public final class Scope {
     }
     
     /**
+     * Search in dependent libraries.
+     * @return if true search in done in dependent libraries
+     * @since 1.43
+     */
+    public boolean isDependencies() {
+        return dependencies;
+    }
+    
+    /**
      * Creates a new scope.
      * A custom scope can be any combination of source roots, folders and files.
      *
@@ -108,7 +119,19 @@ public final class Scope {
     public static @NonNull Scope create(@NullAllowed Collection<FileObject> sourceRoots,
                                         @NullAllowed Collection<NonRecursiveFolder> folders,
                                         @NullAllowed Collection<FileObject> files) {
-        Scope scope = new Scope();
+        return create(sourceRoots, folders, files, false);
+    }
+
+    /**
+     * Creates a new scope.A custom scope can be any combination of source roots, folders and files.
+     * @param sourceRoots the source roots to include in this scope
+     * @param folders the non recursive folders to include in this scope
+     * @param files the files to include in this scope
+     * @param dependencies true if dependencies of the scope should be included
+     * @since 1.43
+     */
+    public static @NonNull Scope create(@NullAllowed Collection<FileObject> sourceRoots, @NullAllowed Collection<NonRecursiveFolder> folders, @NullAllowed Collection<FileObject> files, boolean dependencies) {
+        Scope scope = new Scope(dependencies);
         if (files != null) {
             scope.files.addAll(files);
         }
