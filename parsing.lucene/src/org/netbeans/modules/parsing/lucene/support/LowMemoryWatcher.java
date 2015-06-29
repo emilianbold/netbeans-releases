@@ -49,6 +49,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.parsing.lucene.CacheCleaner;
 import org.openide.util.Exceptions;
 
 /**
@@ -64,17 +65,17 @@ public final class LowMemoryWatcher {
             String.format("%s.logger_rate",LowMemoryWatcher.class.getName()),   //NOI18N
             1000);   //1s
 
-    
+
     //@GuardedBy("LowMemoryWatcher.class")
     private static LowMemoryWatcher instance;
 
     private final Callable<Boolean> strategy;
-    private final AtomicBoolean testEnforcesLowMemory = new AtomicBoolean();    
+    private final AtomicBoolean testEnforcesLowMemory = new AtomicBoolean();
 
     private LowMemoryWatcher () {
         this.strategy = new DefaultStrategy();
     }
-    
+
     /**
      * Returns true if the application is in low memory condition.
      * This information can be used by batch file processing.
@@ -91,12 +92,24 @@ public final class LowMemoryWatcher {
             return false;
         }
     }
-    
+
     /**
      * Tries to free memory.
      * @since 2.12
      */
     public void free() {
+        free(false);
+    }
+
+    /**
+     * Tries to free memory including Lucene caches.
+     * @param freeCaches should the Lucene caches be cleaned.
+     * @since 2.32
+     */
+    public void free(final boolean freeCaches) {
+        if (freeCaches) {
+            CacheCleaner.clean();
+        }
         final Runtime rt = Runtime.getRuntime();
         rt.gc();
         rt.runFinalization();
@@ -107,7 +120,7 @@ public final class LowMemoryWatcher {
     /*test*/ void setLowMemory(final boolean lowMemory) {
         this.testEnforcesLowMemory.set(lowMemory);
     }
-    
+
     /**
      * Returns an instance of {@link LowMemoryWatcher}
      * @return the {@link LowMemoryWatcher}
@@ -159,5 +172,5 @@ public final class LowMemoryWatcher {
             return false;
         }
     }
-    
+
 }

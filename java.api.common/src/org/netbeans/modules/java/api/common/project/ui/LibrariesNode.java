@@ -479,6 +479,27 @@ public final class LibrariesNode extends AbstractNode {
         return image;        
     }
 
+    private static void handlePCPMUnsupported (
+            @NonNull final SourceRoots sourceRoots,
+            @NonNull final UnsupportedOperationException e) {
+        final FileObject[] roots = sourceRoots.getRoots();
+        if (roots.length == 0) {
+            return;
+        }
+        final StringBuilder sb = new StringBuilder().
+                append("roots: ").
+                append(Arrays.toString(roots)).
+                append("\n").
+                append("urls: ").
+                append(Arrays.toString(sourceRoots.getRootURLs())).
+                append("\n").
+                append("props: ").
+                append(Arrays.toString(sourceRoots.getRootProperties())).
+                append("\n");
+        Exceptions.printStackTrace(
+            Exceptions.attachMessage(e, sb.toString()));
+    }
+
     //Static inner classes
     private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener {
 
@@ -975,6 +996,8 @@ public final class LibrariesNode extends AbstractNode {
                         projectSourcesArtifact, ClassPath.COMPILE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
+            } catch (UnsupportedOperationException e) {
+                handlePCPMUnsupported(sources, e);
             }
         }
     }
@@ -1019,9 +1042,10 @@ public final class LibrariesNode extends AbstractNode {
                         projectSourcesArtifact, ClassPath.COMPILE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
+            } catch (UnsupportedOperationException e) {
+                handlePCPMUnsupported(sourceRoots, e);
             }
         }
-        
     }
 
     private static class AddFolderAction extends AbstractAction {

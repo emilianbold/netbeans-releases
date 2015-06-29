@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.lucene;
 
-package org.netbeans.modules.parsing.spi;
+import java.net.URI;
 
 /**
- * A service providing information about
- * low memory condition.
  *
- * @since 1.2
  * @author Tomas Zezula
  */
-public final class LowMemoryWatcher {
+public class CacheCleaner {
 
-    //@GuardedBy("LowMemoryWatcher.class")
-    private static LowMemoryWatcher instance;
-
-    private final org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher delegate;
-
-    private LowMemoryWatcher () {
-        this.delegate = org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher.getInstance();
-    }
-
-    /**
-     * Returns true if the application is in low memory condition.
-     * This information can be used by batch file processing.
-     * @return true if nearly whole memory is used
-     */
-    public boolean isLowMemory () {
-        return delegate.isLowMemory();
-    }
-
-    /**
-     * Tries to free memory.
-     * @since 2.12
-     */
-    public void free() {
-        delegate.free();
-    }
-
-    /**
-     * Returns an instance of {@link LowMemoryWatcher}
-     * @return the {@link LowMemoryWatcher}
-     */
-    public static synchronized LowMemoryWatcher getInstance() {
-        if (instance == null) {
-            instance = new LowMemoryWatcher();
+    public static boolean clean() {
+        final LRUCache<URI, Evictable> ramCache = IndexCacheFactory.getDefault().getRAMCache();
+        for (Evictable evictor  : ramCache.clear()) {
+            evictor.evicted();
         }
-        return instance;
+        try {
+            return LuceneIndex.awaitPendingEvictors();
+        } catch (InterruptedException ie) {
+            return false;
+        }
     }
 }

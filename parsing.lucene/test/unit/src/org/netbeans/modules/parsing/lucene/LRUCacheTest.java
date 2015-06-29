@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.lucene;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.Test;
@@ -78,6 +79,17 @@ public class LRUCacheTest extends NbTestCase {
             ev.put(i, new EvictableInt(i));
         }
         assertEquals(golden, used);
+    }
+
+    public void testClear() {
+        final LRUCache<Integer,Evictable> ev = new LRUCache<>(new TestEvictionPolicy());
+        for (int i=0; i<10; i++) {
+            ev.put(i, new EvictableInt(i));
+        }
+        Collection<? extends Evictable> removed = ev.clear();
+        assertEquals(10, removed.size());
+        removed = ev.clear();
+        assertEquals(0, removed.size());
     }
 
     private static class TestEvictionPolicy implements EvictionPolicy<Integer,Evictable> {
