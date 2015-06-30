@@ -313,7 +313,7 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                             caseSensitive,
                             isSelected? fgSelectionColor : fgColor);
                 } else {
-                    formatedName = convertor.getName(item);
+                    formatedName = highlightStrategy.plain(convertor.getName(item));
                 }
                 jlName.setText(formatedName);
                 jlOwner.setText(convertor.getOwnerName(item));
@@ -448,6 +448,11 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         }
 
         @NonNull
+        String plain (@NonNull final String text) {
+            return text;
+        }
+
+        @NonNull
         abstract  JLabel createNameLabel();
         @NonNull
         abstract void resetNameLabel(@NonNull JLabel nameLabel, @NonNull Font font);
@@ -551,6 +556,15 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                             highlightText,
                             caseSensitive,
                             color)).
+                    append("</nobr>").  //NOI18N
+                    toString();
+        }
+
+        @Override
+        @NonNull
+        String plain(@NonNull final String text) {
+            return new StringBuilder("<html><nobr>").   //NOI18N
+                    append(text).
                     append("</nobr>").  //NOI18N
                     toString();
         }
