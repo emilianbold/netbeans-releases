@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,10 +37,9 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.highlight.error;
+package org.netbeans.modules.cnd.highlight.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
+import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditListFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -66,21 +66,19 @@ import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
- * @author Alexander Simon
+ * @author Danila Sergeyev
  */
 @ServiceProviders({
-    //@ServiceProvider(path=NamedOption.HIGHLIGTING_CATEGORY, service=NamedOption.class, position=1400),
-    @ServiceProvider(service = CsmErrorProvider.class, position = 1000),
-    @ServiceProvider(service = CodeAuditProvider.class, position = 1000)
+    @ServiceProvider(service = CsmErrorProvider.class, position = 1200),
+    @ServiceProvider(service = CodeAuditProvider.class, position = 1300)
 })
-public class CodeAssistanceHintProvider extends CsmErrorProvider implements CodeAuditProvider {
-    
-    public static final String NAME = "CodeAssistance"; //NOI18N
+public class SecurityCheckProvider extends CsmErrorProvider implements CodeAuditProvider {
+    public static final String NAME = "SecurityCheck"; //NOI18N
     private Collection<CodeAudit> audits;
     private final AuditPreferences myPreferences;
-
-    public static CsmErrorProvider getInstance() {
-        for(CsmErrorProvider provider : Lookup.getDefault().lookupAll(CsmErrorProvider.class)) {
+    
+    public static CodeAuditProvider getInstance() {
+        for(CodeAuditProvider provider : Lookup.getDefault().lookupAll(CodeAuditProvider.class)) {
             if (NAME.equals(provider.getName())) {
                 return provider;
             }
@@ -88,11 +86,11 @@ public class CodeAssistanceHintProvider extends CsmErrorProvider implements Code
         return null;
     }
     
-    public CodeAssistanceHintProvider() {
+    public SecurityCheckProvider() {
          myPreferences = new AuditPreferences(AuditPreferences.AUDIT_PREFERENCES_ROOT.node(NAME));
     }
     
-    CodeAssistanceHintProvider(Preferences preferences) {        
+    SecurityCheckProvider(Preferences preferences) {        
         try {
             if (preferences.nodeExists(NAME)) {
                 preferences = preferences.node(NAME);
@@ -105,55 +103,20 @@ public class CodeAssistanceHintProvider extends CsmErrorProvider implements Code
             myPreferences = new AuditPreferences(preferences.node(NAME));
         }
     }
-
-    @Override
-    protected boolean validate(CsmErrorProvider.Request request) {
-        CsmFile file = request.getFile();
-        if (file == null){
-            return false;
-        }
-        for(CodeAudit audit : getAudits()) {
-            if (audit.isEnabled()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean hasHintControlPanel() {
-        return true;
-    }
     
     @Override
     public String getName() {
         return NAME;
     }
-
+    
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(CodeAssistanceHintProvider.class, "CA_NAME"); //NOI18N
+        return NbBundle.getMessage(SecurityCheckProvider.class, "SecurityCheck_NAME"); //NOI18N
     }
-
+    
     @Override
     public String getDescription() {
-        return NbBundle.getMessage(CodeAssistanceHintProvider.class, "CA_DESCRIPTION"); //NOI18N
-    }
-
-    @Override
-    public String getMimeType() {
-        return MIMENames.SOURCES_MIME_TYPE;
-    }
-
-    @Override
-    public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
-        for(CodeAudit audit : getAudits()) {
-            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
-            if (engine.isSupportedEvent(kind)) {
-                return true;
-            }
-        }
-        return false;
+        return NbBundle.getMessage(SecurityCheckProvider.class, "SecurityCheck_DESCRIPTION"); //NOI18N
     }
     
     @Override
@@ -179,13 +142,13 @@ public class CodeAssistanceHintProvider extends CsmErrorProvider implements Code
             }
         }
     }
-
+    
     @Override
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
             List<CodeAudit> res = new ArrayList<>();
-            for(CodeAuditFactory factory : Lookups.forPath(CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME).lookupAll(CodeAuditFactory.class)) {
-                res.add(factory.create(myPreferences));
+            for(CodeAuditListFactory factory : Lookups.forPath(CodeAuditListFactory.REGISTRATION_PATH+SecurityCheckProvider.NAME).lookupAll(CodeAuditListFactory.class)) {
+                res.addAll(factory.create(myPreferences));
             }
             Collections.sort(res, new Comparator<CodeAudit>(){
 
@@ -198,9 +161,26 @@ public class CodeAssistanceHintProvider extends CsmErrorProvider implements Code
         }
         return audits;
     }
-
+    
     @Override
     public AuditPreferences getPreferences() {
         return myPreferences;
     }
+
+    @Override
+    public String getMimeType() {
+        return MIMENames.SOURCES_MIME_TYPE;
+    }
+    
+    @Override
+    public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+        for(CodeAudit audit : getAudits()) {
+            AbstractCodeAudit engine = (AbstractCodeAudit)audit;
+            if (engine.isSupportedEvent(kind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
 }
