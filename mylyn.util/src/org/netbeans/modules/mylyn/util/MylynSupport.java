@@ -658,17 +658,18 @@ public class MylynSupport {
                         scheduleSave();
                     }
                     if (delta.getElement() instanceof ITask) {
-                        // task added to the tasklist
+                        // task added to the tasklist   
                         // new tasks (incoming_new) created long ago in the past
                         // should be marked as uptodate so when a repository is registener in the IDE
                         // it is not all green. Only fresh new tasks are relevant to the user
                         ITask task = (ITask) delta.getElement();
-                        if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
-                                && task.getCreationDate() != null && task.getModificationDate() != null) {
+                        if ( (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW 
+                              || task.getSynchronizationState() == ITask.SynchronizationState.INCOMING )
+                             && task.getCreationDate() != null && task.getModificationDate() != null) {
                             TaskRepository repository = taskRepositoryManager.getRepository(task.getConnectorKind(), task.getRepositoryUrl());
                             if (repository != null) {
                                 long time = getRepositoryCreationTime(repository.getRepositoryUrl());
-                                if (task.getCreationDate().getTime() < time) {
+                                if (task.getModificationDate().getTime() < time) {
                                     markTaskSeen(task, true);
                                     task.setAttribute(ATTR_TASK_INCOMING_NEW, Boolean.TRUE.toString());
                                 }
