@@ -395,7 +395,7 @@ public final class JNISupport {
     }
     
     private static String makeQualName(CharSequence qualName) {
-        return qualName.toString().replaceAll("\\.", "/");
+        return qualName.toString().replaceAll("\\.", "/"); // NOI18N
     }
     
     private static String escape(CharSequence text) {
