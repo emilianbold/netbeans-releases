@@ -91,7 +91,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private final SourceGroup[] folders;
     private boolean isFolder;
     private boolean freeFileExtension;
-    
+    private final char separatorChar;
+
     @SuppressWarnings("LeakingThisInConstructor")
     @Messages("LBL_SimpleTargetChooserPanel_Name=Name and Location")
     public SimpleTargetChooserPanelGUI( @NullAllowed Project project, @NonNull SourceGroup[] folders, Component bottomPanel, boolean isFolder, boolean freeFileExtension) {
@@ -99,6 +100,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         this.folders = folders.clone();
         this.isFolder = isFolder;
         this.freeFileExtension = freeFileExtension;
+        this.separatorChar = getPathNameSeparator(project, folders);
         initComponents();
         
         locationComboBox.setRenderer( CELL_RENDERER );
@@ -116,6 +118,20 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         folderTextField.getDocument().addDocumentListener( this );
         
         setName(LBL_SimpleTargetChooserPanel_Name());
+    }
+
+    private static char getPathNameSeparator(@NullAllowed Project project, @NonNull SourceGroup[] folders) {
+        FileObject fo = null;
+        if (folders != null && folders.length > 0) {
+            fo = folders[0].getRootFolder();
+        } else if (project != null) {
+            fo = project.getProjectDirectory();
+        }
+        String separator = null;
+        if (fo != null) {
+            separator = (String) fo.getAttribute(FileObject.DEFAULT_PATHNAME_SEPARATOR_ATTR);
+        }
+        return (separator == null || separator.isEmpty()) ? File.separatorChar : separator.charAt(0);
     }
     
     @Messages({
@@ -163,7 +179,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             folderTextField.setText(getRelativeNativeName(rootFolder, preselectedFolder));
         }
         else if (project == null && preselectedFolder != null) {
-            folderTextField.setText(preselectedFolder.getPath().replace('/', File.separatorChar));
+            folderTextField.setText(preselectedFolder.getPath().replace('/', this.separatorChar));
         }
 
         String ext = template == null ? "" : template.getExt(); // NOI18N
@@ -245,11 +261,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 //                String home = System.getProperty("user.home");
 //                if (home != null && new File(home).isDirectory()) {
 //                    FileObject homeFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(home)));
-//                    folderName = FileUtil.getFileDisplayName(homeFileObject) + File.separatorChar + folderName;
+//                    folderName = FileUtil.getFileDisplayName(homeFileObject) + this.separatorChar + folderName;
 //                }
 //            }
 //
-            return folderName.replace( File.separatorChar, '/' ); // NOI18N
+            return folderName.replace( this.separatorChar, '/' ); // NOI18N
         }
     }
     
@@ -451,7 +467,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             path = FileUtil.getRelativePath( root, folder );            
         }
         
-        return path == null ? "" : path.replace( '/', File.separatorChar ); // NOI18N
+        return path == null ? "" : path.replace( '/', this.separatorChar ); // NOI18N
     }
     
     private void updateCreatedFolder() {
@@ -470,7 +486,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             ( folderName.endsWith("/") || folderName.endsWith( File.separator ) || folderName.length() == 0 ? "" : "/" ) + // NOI18N
             documentName + (!freeFileExtension || documentName.indexOf('.') == -1 ? expectedExtension : "");
             
-        fileTextField.setText( createdFileName.replace( '/', File.separatorChar ) ); // NOI18N    
+        fileTextField.setText( createdFileName.replace( '/', this.separatorChar ) ); // NOI18N
             
         changeSupport.fireChange();
     }
@@ -491,11 +507,11 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
 
                 fo = BrowseFolders.showDialog( new SourceGroup[] { group },
                                                project,
-                                               folderTextField.getText().replace( File.separatorChar, '/' ) ); // NOI18N
+                                               folderTextField.getText().replace( this.separatorChar, '/' ) ); // NOI18N
 
                 if ( fo != null && fo.isFolder() ) {
                     String relPath = FileUtil.getRelativePath( group.getRootFolder(), fo );
-                    folderTextField.setText( relPath.replace( '/', File.separatorChar ) ); // NOI18N
+                    folderTextField.setText( relPath.replace( '/', this.separatorChar ) ); // NOI18N
                 }
             }
             else {
@@ -525,7 +541,7 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                     if (path == null) {
                          path = fo.getPath();
                     }
-                    folderTextField.setText( path.replace( '/', File.separatorChar ) ); // NOI18N
+                    folderTextField.setText( path.replace( '/', this.separatorChar ) ); // NOI18N
                 }
             }
         }

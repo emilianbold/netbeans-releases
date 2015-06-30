@@ -292,6 +292,16 @@ public final class ConnectionManager {
      * localhost environment. false otherwise.
      */
     public boolean isConnectedTo(final ExecutionEnvironment execEnv) {
+        return isConnectedTo(execEnv, true);
+    }
+
+    /**
+     * @param  checkHostInfo determines whether to check host info availability.
+     * There was a very small time frame when host was in fact connected, but host info was not yet put into cache (issue #252922)
+     * Due to the issue #252922 we make ConnectionManager.isConnected() return FALSE while in this period.
+     * But internally we need to distinguish whether a host is really connected and just host info is not yet made available.
+     */
+    /*package*/ boolean isConnectedTo(final ExecutionEnvironment execEnv, boolean checkHostInfo) {
         if (execEnv.isLocal()) {
             return true;
         }
@@ -303,7 +313,11 @@ public final class ConnectionManager {
         // balloon "Need to connect to..." appears several seconds before host is going "red" :)
         if (support != null) {
             if (support.isConnected()) {
-                return true;
+                if (checkHostInfo) {
+                    return HostInfoUtils.isHostInfoAvailable(execEnv);
+                } else {
+                    return true;
+                }
             } else {
                 if (connectionWatcher != null) {
                     connectionWatcher.scheduleNow();
@@ -477,7 +491,7 @@ public final class ConnectionManager {
             }
 
             log.log(Level.FINEST, "Getting host info for {0}", env); // NOI18N
-            HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+            HostInfo hostInfo = HostInfoUtils.getHostInfo(env, true);
             log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
 
             fireConnected(env);
