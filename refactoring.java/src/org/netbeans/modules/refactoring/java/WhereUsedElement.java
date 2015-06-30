@@ -424,12 +424,14 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation imp
     public boolean filter(FiltersManager manager) {
         boolean show = true;
 
-        if (inPlatform) {
-            show = show && manager.isSelected(JavaWhereUsedFilters.PLATFORM.getKey());
-        }
+        if(JavaWhereUsedQueryPlugin.DEPENDENCIES) {
+            if (inPlatform) {
+                show = show && manager.isSelected(JavaWhereUsedFilters.PLATFORM.getKey());
+            }
 
-        if (inDependency) {
-            show = show && manager.isSelected(JavaWhereUsedFilters.DEPENDENCY.getKey());
+            if (inDependency) {
+                show = show && manager.isSelected(JavaWhereUsedFilters.DEPENDENCY.getKey());
+            }
         }
 
         if (inTestclass) {

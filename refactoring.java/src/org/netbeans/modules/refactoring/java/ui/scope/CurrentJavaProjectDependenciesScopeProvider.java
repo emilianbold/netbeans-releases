@@ -57,6 +57,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
 import org.openide.filesystems.FileObject;
@@ -76,7 +77,6 @@ import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
            "WRN_FIELDCONSTANTS=Missing field access on constants."})
 public final class CurrentJavaProjectDependenciesScopeProvider extends ScopeProvider {
     
-    private static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
     private static final EnumSet<Modifier> CONSTANT = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
     
     private String detail;
@@ -86,7 +86,7 @@ public final class CurrentJavaProjectDependenciesScopeProvider extends ScopeProv
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
-        if(!DEPENDENCIES) {
+        if(!JavaWhereUsedQueryPlugin.DEPENDENCIES) {
             return false;
         }
         FileObject file = context.lookup(FileObject.class);

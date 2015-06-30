@@ -1098,6 +1098,9 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                         if (part.startsWith(prefix) && (!(item instanceof LazyCompletionItem) || ((LazyCompletionItem)item).accept())) {
                             return idx;
                         }
+                        if (part.length() > prefix.length()) {
+                            part = part.substring(0, prefix.length());
+                        }
                         int d = getDistance(part.toLowerCase(), prefLC);
                         if (isSmart) {
                             d -= 1000;

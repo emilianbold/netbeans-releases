@@ -92,7 +92,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
     private boolean fromLibrary;
     private final WhereUsedQuery refactoring;
     
-    private static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
+    public static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
     
     private volatile CancellableTask queryTask;
 
@@ -562,14 +562,16 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
             FileObject fo = compiler.getFileObject();
             fromPlatform = fromPlatform(fo);
             if (cu == null) {
+                if(DEPENDENCIES) {
 //                if(!fromPlatform) {
 //                    fromTest |= UnitTestForSourceQuery.
-                fromTest = false;
+                    fromTest = false;
 //                }
-                
-                elements.add(refactoring, WhereUsedBinaryElement.create(fo, fromTest, fromPlatform));
-                
-                usedFilters.add(JavaWhereUsedFilters.BINARYFILE.getKey());
+
+                    elements.add(refactoring, WhereUsedBinaryElement.create(fo, fromTest, fromPlatform));
+
+                    usedFilters.add(JavaWhereUsedFilters.BINARYFILE.getKey());
+                }
                 return;
             }
             final boolean fromDependency;
@@ -606,11 +608,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     if(usagesInComments) {
                         usedFilters.add(JavaWhereUsedFilters.COMMENT.getKey());
                     }
-                    if(fromDependency) {
-                        usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
-                    }
-                    if(fromPlatform) {
-                        usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                    if(DEPENDENCIES) {
+                        if(fromDependency) {
+                            usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
+                        }
+                        if(fromPlatform) {
+                            usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                        }
                     }
                 }
             }
@@ -629,11 +633,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                 elements.add(refactoring, WhereUsedElement.create(compiler, tree, fromTest, fromPlatform, fromDependency, inImport));
             }
             if(!result.isEmpty()) {
-                if(fromPlatform) {
-                    usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
-                }
-                if(fromDependency) {
-                    usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
+                if(DEPENDENCIES) {
+                    if(fromPlatform) {
+                        usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                    }
+                    if(fromDependency) {
+                        usedFilters.add(JavaWhereUsedFilters.DEPENDENCY.getKey());
+                    }
                 }
                 if(fromTest) {
                     usedFilters.add(JavaWhereUsedFilters.TESTFILE.getKey());
@@ -664,7 +670,9 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                                 javaPlatform.getStandardLibraries().contains(root) ||
                                 javaPlatform.getBootstrapLibraries().contains(root)) {
                             fromPlatform = true;
-                            usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                            if(DEPENDENCIES) {
+                                usedFilters.add(JavaWhereUsedFilters.PLATFORM.getKey());
+                            }
                             cachedPlatformRoots.add(root);
                             break;
                         }
