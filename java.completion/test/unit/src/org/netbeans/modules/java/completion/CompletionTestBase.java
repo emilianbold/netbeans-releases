@@ -343,6 +343,11 @@ public class CompletionTestBase extends NbTestCase {
         }
 
         @Override
+        public CI createModuleItem(String moduleName, int substitutionOffset) {
+            return new CI(moduleName, 950, moduleName); //NOI18N
+        }
+
+        @Override
         public CI createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
             int idx = pkgFQN.lastIndexOf('.');
             String simpleName = idx < 0 ? pkgFQN : pkgFQN.substring(idx + 1);

@@ -91,15 +91,15 @@ public class JavaCompletionTaskBasicTest extends CompletionTestBase {
     }
     
     public void testEmptyFileBeforeTypingPackageId() throws Exception {
-        performTest("Empty", 0, "package ", "allPackages.pass");
+        performTest("Empty", 0, "package ", "empty.pass");
     }
     
     public void testBeforeTypingPackageId() throws Exception {
-        performTest("SimpleNoPackage", 0, "package ", "allPackages.pass");
+        performTest("SimpleNoPackage", 0, "package ", "empty.pass");
     }
     
     public void testBeforePackageId() throws Exception {
-        performTest("Simple", 8, null, "allPackages.pass");
+        performTest("Simple", 8, null, "empty.pass");
     }
     
     public void testEmptyFileTypingPackageId() throws Exception {
