@@ -60,6 +60,7 @@ import org.netbeans.lib.v8debug.V8Request;
 import org.netbeans.lib.v8debug.V8Response;
 import org.netbeans.lib.v8debug.commands.ChangeBreakpoint;
 import org.netbeans.lib.v8debug.commands.ClearBreakpoint;
+import org.netbeans.lib.v8debug.commands.Flags;
 import org.netbeans.lib.v8debug.commands.SetBreakpoint;
 import org.netbeans.lib.v8debug.events.BreakEventBody;
 import org.netbeans.modules.javascript.v8debug.ScriptsHandler;
@@ -89,6 +90,8 @@ public class BreakpointsHandler implements V8Debugger.Listener {
     private final Set<JSLineBreakpoint> removeAfterSubmit = new WeakSet<>();
     private final List<ActiveBreakpointListener> abListeners = new CopyOnWriteArrayList<ActiveBreakpointListener>();
     private volatile JSLineBreakpoint activeBreakpoint;
+    private final List<BreakpointsActiveListener> acListeners = new CopyOnWriteArrayList<>();
+    private volatile boolean areBreakpointsActive = true;
     
     public BreakpointsHandler(V8Debugger dbg) { // TODO pass in initially submitted breakpoints in the debuggee
         this.dbg = dbg;
@@ -239,6 +242,33 @@ public class BreakpointsHandler implements V8Debugger.Listener {
         abListeners.remove(abl);
     }
 
+    boolean areBreakpointsActive() {
+        return areBreakpointsActive;
+    }
+
+    void setBreakpointsActive(final boolean active) {
+        Flags.Arguments args = new Flags.Arguments(Flags.FLAG_BREAK_POINTS_ACTIVE, active);
+        V8Request fRequest = dbg.sendCommandRequest(V8Command.Flags, args, new V8Debugger.CommandResponseCallback() {
+            @Override
+            public void notifyResponse(V8Request request, V8Response response) {
+                if (response != null && response.isSuccess()) {
+                    areBreakpointsActive = active;
+                    for (BreakpointsActiveListener acl : acListeners) {
+                        acl.breakpointsActivated(active);
+                    }
+                }
+            }
+        });
+    }
+    
+    void addBreakpointsActiveListener(BreakpointsActiveListener abl) {
+        acListeners.add(abl);
+    }
+
+    void removeBreakpointsActiveListener(BreakpointsActiveListener abl) {
+        acListeners.remove(abl);
+    }
+    
     public void positionChanged(long bpId, long line, long column) {
         SubmittedBreakpoint sb;
         synchronized (submittedBreakpoints) {
@@ -248,10 +278,17 @@ public class BreakpointsHandler implements V8Debugger.Listener {
             sb.updatePosition(line, column);
         }
     }
-    
+
+    /** Fired when an active (hit) breakpoint changes. */
     public static interface ActiveBreakpointListener {
         
         void notifyActiveBreakpoint(JSLineBreakpoint activeBreakpoint);
+    }
+    
+    /** Fired when breakpoints are activated/deactivated */
+    static interface BreakpointsActiveListener {
+
+        void breakpointsActivated(boolean activated);
     }
     
     private final class BreakpointsCommandsCallback implements V8Debugger.CommandResponseCallback {

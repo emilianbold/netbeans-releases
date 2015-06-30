@@ -356,10 +356,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                 }
                 // Submit the breakpoint for the lowest location on the line only:
                 Location location = locations.get(0);
+                com.sun.jdi.Method m0 = location.method();
                 for (int li = 1; li < locations.size(); li++) {
                     Location l = locations.get(li);
                     if (l.codeIndex() < location.codeIndex()) {
-                        location = l;
+                        if (l.method().equals(m0)) {
+                            // Assure that we're still in the same method
+                            location = l;
+                        }
                     }
                 }
                 try {

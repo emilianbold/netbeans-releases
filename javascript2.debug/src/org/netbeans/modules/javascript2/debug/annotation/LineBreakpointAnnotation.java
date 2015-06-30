@@ -85,7 +85,8 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         "TOOLTIP_BREAKPOINT=Line Breakpoint",
         "TOOLTIP_DISABLED_BREAKPOINT=Disabled Line Breakpoint",
         "TOOLTIP_CONDITIONAL_BREAKPOINT=Conditional Breakpoint",
-        "TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT=Disabled Conditional Breakpoint"
+        "TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT=Disabled Conditional Breakpoint",
+        "TOOLTIP_ALL_BREAKPOINTS_DEACTIVATED=All breakpoints are deactivated"
     })
     @Override
     public String getShortDescription() {
@@ -107,6 +108,9 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         }
         if (type == DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
             return Bundle.TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT();
+        }
+        if (type.endsWith(DEACTIVATED_BREAKPOINT_SUFFIX)) {
+            return Bundle.TOOLTIP_ALL_BREAKPOINTS_DEACTIVATED();
         }
         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
         return null;
