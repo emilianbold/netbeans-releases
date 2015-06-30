@@ -84,11 +84,11 @@ public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
         offset = csmObj.getStartOffset();
         project = csmFile.getProject();
         if (CsmKindUtilities.isClass(csmObj) && CsmKindUtilities.isTemplate(csmObj)) {
-            name = CsmDisplayUtilities.htmlize(((CsmTemplate)csmObj).getDisplayName());
+            name = ((CsmTemplate)csmObj).getDisplayName();
         } else if (CsmKindUtilities.isFunction(csmObj)) {
-            name = CsmDisplayUtilities.htmlize(((CsmFunction) csmObj).getSignature());
+            name = ((CsmFunction) csmObj).getSignature();
         } else if (CsmKindUtilities.isNamedElement(csmObj)) {
-            name = CsmDisplayUtilities.htmlize(((CsmNamedElement) csmObj).getName());
+            name = ((CsmNamedElement) csmObj).getName();
         } else {
             throw new IllegalArgumentException("should be CsmNamedElement, in fact " + csmObj.getClass().getName()); //NOI18N
         }
@@ -171,21 +171,10 @@ public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
                 if (i+2 < name.length() && name.charAt(i+1) == ')' && name.charAt(i+2) == '(') {
                     continue;
                 }
-                return dehtmlize(name.subSequence(0, i));
+                return name.subSequence(0, i).toString();
             }
         }
-        return dehtmlize(name);
-    }
-
-    private static String dehtmlize(CharSequence input) {
-        if (input == null) {
-            System.err.println("null string");// NOI18N
-            return "";// NOI18N
-        }
-        String temp = input.toString().replace("&amp;", "&");// NOI18N
-        temp = temp.replace("&lt;", "<"); // NOI18N
-        temp = temp.replace("&gt;", ">"); // NOI18N
-        return temp;
+        return name.toString();
     }
 
     @Override

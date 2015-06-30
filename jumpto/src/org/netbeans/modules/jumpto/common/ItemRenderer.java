@@ -497,12 +497,17 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
                 final boolean caseSensitive,
                 @NonNull final Color color) {
             return nameFormater.formatName(
-                        name,
-                        highlightText,
+                        UiUtils.htmlize(name),
+                        UiUtils.htmlize(highlightText),
                         caseSensitive,
                         color);
         }
 
+        @Override
+        @NonNull
+        String plain(@NonNull final String text) {
+            return UiUtils.htmlize(text);
+        }
     }
 
     private static class Background extends HighlightStrategy {
@@ -552,19 +557,10 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
         public String highlight(String name, String highlightText, boolean caseSensitive, Color color) {
             return new StringBuilder("<html><nobr>").   //NOI18N
                     append(nameFormater.formatName(
-                            name,
-                            highlightText,
+                            UiUtils.htmlize(name),
+                            UiUtils.htmlize(highlightText),
                             caseSensitive,
                             color)).
-                    append("</nobr>").  //NOI18N
-                    toString();
-        }
-
-        @Override
-        @NonNull
-        String plain(@NonNull final String text) {
-            return new StringBuilder("<html><nobr>").   //NOI18N
-                    append(text).
                     append("</nobr>").  //NOI18N
                     toString();
         }
