@@ -51,7 +51,10 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
@@ -71,6 +74,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
@@ -87,6 +91,7 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public final class ClankTokenStreamProducer extends TokenStreamProducer {
+
     private int[] skipped;
 
     private ClankTokenStreamProducer(FileImpl file, FileContent newFileContent) {
@@ -159,6 +164,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
         if (triggerParsingActivity) {
           addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
+          addMacroExpansions(fileImpl, getFileContent(), tokStreamCache);
         }
         skipped = tokStreamCache.getSkippedRanges();
         if (applyLanguageFilter) {
@@ -193,7 +199,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final boolean triggerParsingActivity;
         private final boolean filterOutComments;
 
-        private List<FileImpl> curFiles = new ArrayList<FileImpl>();
+        private List<FileImpl> curFiles = new ArrayList<>();
 
         private FileTokenStreamCallback(
                 PreprocHandler ppHandler,
@@ -489,6 +495,26 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
+    private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+        for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
+            ClankDriver.ClankMacroDirective referencedDeclaration = cur.getReferencedDeclaration();
+            CsmMacro referencedMacro = null;
+            if (referencedDeclaration != null) {
+                for(CsmMacro macro : parsingFileContent.getFileMacros().getMacros()) {
+                    if (macro.getStartOffset() == referencedDeclaration.getDirectiveStartOffset()) {
+                        referencedMacro = macro;
+                        break;
+                    }
+                }
+            }
+            addMacroUsage(curFile, parsingFileContent, new MacroReference(curFile, cur, referencedMacro));
+        }
+    }
+
+    private static void addMacroUsage(FileImpl curFile, FileContent parsingFileContent, MacroReference macroReference) {
+        parsingFileContent.addReference(macroReference, macroReference.getReferencedObject());
+    }
+
     private static void addMacro(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankMacroDirective ppDirective) {
         if (!ppDirective.isDefined()) {
             // only #define are handled by old model, not #undef
@@ -679,4 +705,39 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
 
     }
+
+    private static final class MacroReference extends OffsetableBase implements CsmReference {
+        private final CsmMacro referencedMacro;
+
+        private MacroReference(FileImpl curFile, ClankDriver.MacroExpansion cur, CsmMacro referencedMacro) {
+            super(curFile, cur.getStartOfset(), cur.getEndOfset());
+            this.referencedMacro = referencedMacro;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return referencedMacro;
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return getContainingFile();
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DIRECT_USAGE;
+        }
+
+        @Override
+        public CharSequence getText() {
+            return ""; //NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return getContainingFile();
+        }
+    }
+
 }

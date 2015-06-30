@@ -703,6 +703,11 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
 
         @Override
+        public Collection<ClankDriver.MacroExpansion> getMacroExpansions() {
+            return Collections.emptyList();
+        }
+
+        @Override
         public ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
             return this;
         }
