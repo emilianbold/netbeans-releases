@@ -1,6 +1,6 @@
-#changeset:   15196:229fbdfcbdde
-#user:        Ilia Gromov <ilia@netbeans.org>
-#date:        Mon Jun 22 19:59:54 2015 +0400
-#summary:     org.clang.frontend fix
-
-E03865DA6B38B4F87DEC7F3066A6259B47EB449D clank_0.3.6.zip
+#changeset:   15198:e131a7df573d
+#tag:         tip
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Tue Jun 30 19:06:56 2015 +0300
+#summary:     add referenced macro declaration in macro expansion info
+D36EA6B9D385551FF2AD2B8DEC19EDBB4F96666A clank_0.3.6.zip

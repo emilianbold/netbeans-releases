@@ -39,41 +39,27 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.mixeddev.java.model;
+package org.netbeans.modules.cnd.mixeddev;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class QualifiedNamePart {
+public final class Triple<F, S, T> {
     
-    private final CharSequence text;
+    public final F first;
     
-    private final Kind kind;
-
-    public QualifiedNamePart(CharSequence text, Kind kind) {
-        this.text = text;
-        this.kind = kind;
-    }
-
-    public CharSequence getText() {
-        return text;
-    }
-
-    public Kind getKind() {
-        return kind;
-    }
-
-    @Override
-    public String toString() {
-        return getText().toString();
-    }
+    public final S second;
     
-    public static enum Kind {
-        PACKAGE,
-        CLASS,
-        NESTED_CLASS,
-        METHOD
+    public final T third;
+    
+    public static <F, S, T> Triple<F, S, T> of(F f, S s, T t) {
+        return new Triple(f, s, t);
+    }
+
+    private Triple(F first, S second, T third) {
+        this.first = first;
+        this.second = second;
+        this.third = third;
     }
 }

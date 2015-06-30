@@ -61,13 +61,16 @@ public final class JavaMethodInfo implements JavaEntityInfo {
     private final boolean overloaded;
     
     private final boolean staticMethod;
+    
+    private final boolean nativeMethod;
 
     public JavaMethodInfo(CharSequence name, 
                             CharSequence qualifiedName, 
                             List<JavaTypeInfo> parameters, 
                             JavaTypeInfo returnType, 
                             boolean overloaded,
-                            boolean staticMethod) 
+                            boolean staticMethod,
+                            boolean nativeMethod) 
     {
         this.name = name;
         this.qualifiedName = qualifiedName;
@@ -75,6 +78,7 @@ public final class JavaMethodInfo implements JavaEntityInfo {
         this.returnType = returnType;
         this.overloaded = overloaded;
         this.staticMethod = staticMethod;
+        this.nativeMethod = nativeMethod;
     }
     
     public CharSequence getName() {
@@ -99,5 +103,13 @@ public final class JavaMethodInfo implements JavaEntityInfo {
     
     public boolean isStatic() {
         return staticMethod;
+    }
+    
+    public boolean isNative() {
+        return nativeMethod;
+    }
+    
+    public boolean isConstructor() {
+        return getReturnType() == null;
     }
 }

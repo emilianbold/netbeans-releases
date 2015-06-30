@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Collection;
 import java.util.List;
+import org.clang.tools.services.support.FileInfoCallback;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl;
@@ -69,6 +70,8 @@ public final class ClankDriver {
       boolean hasTokenStream();
 
       Collection<ClankPreprocessorDirective> getPreprocessorDirectives();
+
+      Collection<MacroExpansion> getMacroExpansions();
     }
 
     public static int extractFileIndex(PreprocHandler ppHandler) {
@@ -88,6 +91,30 @@ public final class ClankDriver {
             PreprocHandler ppHandler,
             ClankPreprocessorCallback callback, Interrupter interrupter) {
         return ClankDriverImpl.preprocessImpl(buffer, ppHandler, callback, interrupter);
+    }
+
+    public static final class MacroExpansion {
+        private final int startOfset;
+        private final int endOfset;
+        private final ClankDriver.ClankMacroDirective referencedDeclaration;
+        
+        public MacroExpansion(FileInfoCallback.MacroExpansionInfo expansion, ClankDriver.ClankMacroDirective decl) {
+            startOfset = expansion.getStartOffset();
+            endOfset = expansion.getEndOffset();
+            referencedDeclaration = decl;
+        }
+
+        public int getStartOfset() {
+            return startOfset;
+        }
+
+        public int getEndOfset() {
+            return endOfset;
+        }
+
+        public ClankMacroDirective getReferencedDeclaration() {
+            return referencedDeclaration;
+        }
     }
 
     public interface ClankPreprocessorDirective {

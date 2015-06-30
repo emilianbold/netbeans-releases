@@ -52,6 +52,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,11 +60,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -77,11 +81,15 @@ import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.*;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils.Converter;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isClass;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart;
 import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
 import org.openide.util.Pair;
 
@@ -90,6 +98,8 @@ import org.openide.util.Pair;
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JNISupport {
+    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.mixeddev.java"); //NOI18N
     
     /**
      * Checks if class in java file at the given offset has JNI methods
@@ -178,20 +188,24 @@ public final class JNISupport {
      * @param javaType
      * @return type signature
      */
-    public static String getTypeSignature(JavaTypeInfo javaType) {
-        if (javaType.getArrayDepth() > 0) {
-            return "[" + getTypeSignature( // NOI18N
-                new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
-            );
-        } else {
-            String typeName = javaType.getText().toString();
-            if (javaToSignatures.containsKey(typeName)) {
-                return javaToSignatures.get(typeName);
+    public static String getJNISignature(JavaTypeInfo javaType) {
+        if (javaType != null) {
+            if (javaType.getArrayDepth() > 0) {
+                return "[" + JNISupport.getJNISignature( // NOI18N
+                    new JavaTypeInfo(makeQualName(javaType.getQualifiedName()), javaType.getName(), javaType.getArrayDepth() - 1)
+                );
+            } else {
+                String typeName = javaType.getText().toString();
+                if (javaToSignatures.containsKey(typeName)) {
+                    return javaToSignatures.get(typeName);
+                }
+                return "L"  // NOI18N
+                    + makeQualName(javaType.getQualifiedName())
+                    + ";"; // NOI18N
             }
-            return "L"  // NOI18N
-                + javaType.getQualifiedName()
-                + ";"; // NOI18N
         }
+        // consider no type as void type
+        return javaToSignatures.get("void"); // NOI18N
     }
     
     /**
@@ -199,15 +213,85 @@ public final class JNISupport {
      * @param methodInfo
      * @return type signature
      */
-    public static String getTypeSignature(JavaMethodInfo methodInfo) {
+    public static String getJNISignature(JavaMethodInfo methodInfo) {
         StringBuilder signature = new StringBuilder();
         signature.append("("); // NOI18N
         for (JavaTypeInfo param : methodInfo.getParameters()) {
-            signature.append(getTypeSignature(param));
+            signature.append(JNISupport.getJNISignature(param));
         }
         signature.append(")"); // NOI18N
-        signature.append(getTypeSignature(methodInfo.getReturnType()));
+        signature.append(JNISupport.getJNISignature(methodInfo.getReturnType()));
         return signature.toString();
+    }
+    
+    /**
+     * 
+     * @param javaClass
+     * @return class signature (which is its qualified name)
+     */
+    public static String getJNISignature(JavaClassInfo javaClass) {
+        return makeQualName(javaClass.getQualifiedName());
+    }
+    
+    /**
+     * 
+     * @param javahFObj
+     * @param sourceRoot
+     * @param javaClass
+     * @param destination
+     * @param sourceCP
+     * @param compileCP
+     * @return file object of freshly generated header file or null
+     */
+    public static FileObject generateJNIHeader(FileObject javahFObj, FileObject sourceRoot, FileObject javaClass, String destination, ClassPath sourceCP, ClassPath compileCP) {
+        File javah = FileUtil.toFile(javahFObj); //NOI18N
+        String className = FileUtil.getRelativePath(sourceRoot, javaClass);
+        if (className.endsWith(".java")) { // NOI18N
+            className = className.substring(0, className.length() - 5).replace('/', '.').replace('\\', '.');
+        }
+
+        File workingDir = new File(FileUtil.toFile(sourceRoot.getParent()), "build/classes"); // NOI18N
+        List<String> args = new ArrayList<String>();
+        args.add("-o"); // NOI18N
+        args.add(destination);
+        String argCP = "";
+        boolean needed = false;
+        if (sourceCP != null) {
+            String source = sourceCP.toString();
+            if (!source.isEmpty()) {
+                needed = true;
+                argCP = argCP.concat(source + File.pathSeparator);
+            }
+        }
+        if (compileCP != null) {
+            String compile = compileCP.toString();
+            if (!compile.isEmpty()) {
+                needed = true;
+                argCP = argCP.concat(compile);
+            }
+        }
+        if (needed) {
+            args.add("-classpath"); // NOI18N
+            args.add(argCP);
+        }
+        args.add(className);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal());
+        npb.setWorkingDirectory(workingDir.getAbsolutePath());
+        npb.setExecutable(javah.getAbsolutePath());
+        npb.setArguments(args.toArray(new String[args.size()]));
+        ProcessUtils.ExitStatus javahStatus = ProcessUtils.execute(npb);
+
+        if (!javahStatus.isOK()) {
+            LOG.log(Level.WARNING, "javah failed {0}; args={1}", new Object[]{javahStatus, args});
+            return null;
+        }
+        
+        File destFile = new File(destination);
+        
+        return destFile.isAbsolute() ?
+            FileUtil.toFileObject(destFile) 
+            : FileUtil.toFileObject(new File(workingDir, destination));
     }
     
 //<editor-fold defaultstate="collapsed" desc="Implementation">    
@@ -297,7 +381,7 @@ public final class JNISupport {
         if (full) {
             signature.append(JNI_PARAMS_SIGNATURE_PREFIX);
             for (JavaTypeInfo param : methodInfo.getParameters()) {
-                signature.append(escape(getTypeSignature(param)));
+                signature.append(escape(JNISupport.getJNISignature(param)));
             }
         }
         
@@ -308,6 +392,10 @@ public final class JNISupport {
         signature.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
         
         return signature.toString();
+    }
+    
+    private static String makeQualName(CharSequence qualName) {
+        return qualName.toString().replaceAll("\\.", "/"); // NOI18N
     }
     
     private static String escape(CharSequence text) {
@@ -411,52 +499,7 @@ public final class JNISupport {
         }
     }
     
-    private abstract static class AbstractJNIContextTask<T> implements ResolveJavaContextTask<T> {
-        
-        protected final int offset;
-        
-        protected T result;
-        
-        public AbstractJNIContextTask(int offset) {
-            this(offset, null);
-        }
-
-        public AbstractJNIContextTask(int offset, T defaultResult) {
-            this.offset = offset;
-            this.result = defaultResult;
-        }
-        
-        @Override
-        public boolean hasResult() {
-            return result != null;
-        }
-        
-        @Override
-        public T getResult() {
-            return result;
-        }
-        
-        @Override
-        public void cancel() {
-            // Do nothing
-        }
-
-        @Override
-        public final void run(CompilationController controller) throws Exception {
-            if (controller == null || controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                return;
-            }
-            // Look for current element
-            TreePath tp = controller.getTreeUtilities().pathFor(offset);
-            if (tp != null) {
-                resolve(controller, tp);
-            }
-        }
-        
-        protected abstract void resolve(CompilationController controller, TreePath tp);
-    }
-    
-    private static final class ResolveJNIMethodTask extends AbstractJNIContextTask<JavaMethodInfo> {
+    private static final class ResolveJNIMethodTask extends AbstractResolveJavaContextTask<JavaMethodInfo> {
         
         public ResolveJNIMethodTask(int offset) {
             super(offset);
@@ -484,7 +527,7 @@ public final class JNISupport {
         }
     }
     
-    private static final class IsJNIClassTask extends AbstractJNIContextTask<Boolean> {
+    private static final class IsJNIClassTask extends AbstractResolveJavaContextTask<Boolean> {
         
         public IsJNIClassTask(int offset) {
             super(offset);
@@ -498,7 +541,7 @@ public final class JNISupport {
         }
     }
     
-    private static final class GetJNIClassTask extends AbstractJNIContextTask<JNIClass> {
+    private static final class GetJNIClassTask extends AbstractResolveJavaContextTask<JNIClass> {
         
         public GetJNIClassTask(int offset) {
             super(offset);
@@ -510,7 +553,10 @@ public final class JNISupport {
                 ClassTree clsTree = (ClassTree) tp.getLeaf();
                 if (hasJniMethods(clsTree)) {
                     List<MethodTree> jniMethods = getJniMethods(clsTree);
-                    result = new JNIClass(MixedDevUtils.transform(jniMethods, new MethodTreeToJavaMethodInfoConverter(controller)));
+                    result = new JNIClass(
+                        JavaContextSupport.createClassInfo(controller, tp),
+                        MixedDevUtils.transform(jniMethods, new MethodTreeToJavaMethodInfoConverter(controller))
+                    );
                 }
             }
         }

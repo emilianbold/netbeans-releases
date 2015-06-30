@@ -504,19 +504,19 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             }
             return childrenFO;
         } catch (InterruptedException | InterruptedIOException | 
-                FileNotFoundException | CancellationException ex) {
-            // don't report, this just means that we aren't connected
-            // or just interrupted (for example by FileChooser UI)
-            // or cancelled
+                FileNotFoundException | CancellationException | ExecutionException ex ) {
+            // InterruptedException:
+            //      don't report, this just means that we aren't connected
+            //      or just interrupted (for example by FileChooser UI)
+            //      or cancelled
+            // ExecutionException: should we report it?
             RemoteLogger.finest(ex, this);
-        } catch (ExecutionException ex) {
+        } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
-            // should we report ExecutionException?
             // don't report, this just means that we aren't connected
             setFlag(CONNECTION_ISSUES, true);
-            RemoteLogger.finest(ex, this);
-        }catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        } catch (IOException ex) {
+            RemoteLogger.info(ex, this); // undo won't show a red brick dialog, but print
         }
         return new RemoteFileObject[0];
     }
