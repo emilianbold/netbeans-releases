@@ -129,6 +129,7 @@
                 <friend>com.sun.tools.tuxedo.model</friend>
                 <friend>com.sun.tools.tuxedo.project</friend>
                 <friend>org.netbeans.modules.cnd</friend>
+                <friend>org.netbeans.modules.cnd.analysis.api</friend>
                 <friend>org.netbeans.modules.cnd.audit</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
                 <friend>org.netbeans.modules.cnd.debugger.gdb2</friend>
@@ -137,6 +138,7 @@
                 <friend>org.netbeans.modules.cnd.dwarfdiscovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
+                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <friend>org.netbeans.modules.cnd.modeldiscovery</friend>
                 <friend>org.netbeans.modules.cnd.remote</friend>
                 <friend>org.netbeans.modules.cnd.remote.projectui</friend>
@@ -146,7 +148,6 @@
                 <friend>org.netbeans.modules.dlight.discover</friend>
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
-                <friend>org.netbeans.modules.cnd.mixeddev</friend>
                 <package>org.netbeans.modules.cnd.api.remote</package>
                 <package>org.netbeans.modules.cnd.spi.remote</package>
             </friend-packages>
