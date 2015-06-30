@@ -108,4 +108,8 @@ public final class JavaMethodInfo implements JavaEntityInfo {
     public boolean isNative() {
         return nativeMethod;
     }
+    
+    public boolean isConstructor() {
+        return getReturnType() == null;
+    }
 }

@@ -219,37 +219,40 @@ public final class JavaContextSupport {
     }
 
     public static JavaTypeInfo createTypeInfo(CompilationController controller, Tree type) {
-        TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);
-        switch (type.getKind()) {
-            case CLASS: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
-                
-            case IDENTIFIER: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
-                
-            case MEMBER_SELECT: {
-                TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
-            }
+        if (type != null) { 
+            TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);
+            switch (type.getKind()) {
+                case CLASS: {
+                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
+                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                }
 
-            case PRIMITIVE_TYPE: {
-                CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
-                return new JavaTypeInfo(primitiveName, primitiveName, 0);
-            }
+                case IDENTIFIER: {
+                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
+                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                }
 
-            case ARRAY_TYPE: {
-                ArrayTypeTree arrayType = (ArrayTypeTree) type;
-                JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
-                return new JavaTypeInfo(inner.getQualifiedName(), inner.getName(), inner.getArrayDepth() + 1);
-            }
+                case MEMBER_SELECT: {
+                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
+                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                }
 
-            default:
-                return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", "<NOT_SUPPORTED_KIND_" + type.getKind() + ">", 0); // NOI18N
-        }        
+                case PRIMITIVE_TYPE: {
+                    CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
+                    return new JavaTypeInfo(primitiveName, primitiveName, 0);
+                }
+
+                case ARRAY_TYPE: {
+                    ArrayTypeTree arrayType = (ArrayTypeTree) type;
+                    JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
+                    return new JavaTypeInfo(inner.getQualifiedName(), inner.getName(), inner.getArrayDepth() + 1);
+                }
+
+                default:
+                    return new JavaTypeInfo("<NOT_SUPPORTED_KIND_" + type.getKind() + ">", "<NOT_SUPPORTED_KIND_" + type.getKind() + ">", 0); // NOI18N
+            }        
+        }
+        return null;
     }
     
     ////////////////////////////////////////////////////////////////////////////

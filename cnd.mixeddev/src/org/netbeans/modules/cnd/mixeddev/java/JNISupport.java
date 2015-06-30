@@ -188,19 +188,23 @@ public final class JNISupport {
      * @return type signature
      */
     public static String getJNISignature(JavaTypeInfo javaType) {
-        if (javaType.getArrayDepth() > 0) {
-            return "[" + JNISupport.getJNISignature( // NOI18N
-                new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
-            );
-        } else {
-            String typeName = javaType.getText().toString();
-            if (javaToSignatures.containsKey(typeName)) {
-                return javaToSignatures.get(typeName);
+        if (javaType != null) {
+            if (javaType.getArrayDepth() > 0) {
+                return "[" + JNISupport.getJNISignature( // NOI18N
+                    new JavaTypeInfo(makeQualName(javaType.getQualifiedName()), javaType.getName(), javaType.getArrayDepth() - 1)
+                );
+            } else {
+                String typeName = javaType.getText().toString();
+                if (javaToSignatures.containsKey(typeName)) {
+                    return javaToSignatures.get(typeName);
+                }
+                return "L"  // NOI18N
+                    + makeQualName(javaType.getQualifiedName())
+                    + ";"; // NOI18N
             }
-            return "L"  // NOI18N
-                + javaType.getQualifiedName()
-                + ";"; // NOI18N
         }
+        // consider no type as void type
+        return javaToSignatures.get("void"); // NOI18N
     }
     
     /**
@@ -378,6 +382,10 @@ public final class JNISupport {
         signature.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
         
         return signature.toString();
+    }
+    
+    private static String makeQualName(CharSequence qualName) {
+        return qualName.toString().replaceAll("\\.", "/");
     }
     
     private static String escape(CharSequence text) {

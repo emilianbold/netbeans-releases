@@ -73,9 +73,6 @@ public class ResolveJavaMethodTask extends AbstractResolveJavaContextTask<JavaMe
                 return null;
             }
         }
-        if (mtdInfo.getReturnType() == null || mtdInfo.getReturnType().getName() == null) {
-            return null;
-        }
         return mtdInfo;
     }
 }
