@@ -57,6 +57,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.Scope;
+import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.spi.ui.ScopeProvider;
 import org.netbeans.modules.refactoring.spi.ui.ScopeReference;
 import org.openide.filesystems.FileObject;
@@ -74,7 +75,6 @@ import static org.netbeans.modules.refactoring.java.ui.scope.Bundle.*;
 @ScopeReference(path = "org-netbeans-modules-refactoring-java-ui-WhereUsedPanel")
 public class DependenciesScopeProvider extends ScopeProvider {
 
-    private static final boolean DEPENDENCIES = Boolean.getBoolean("org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin.dependencies");     //NOI18N
     private static final EnumSet<Modifier> CONSTANT = EnumSet.of(Modifier.FINAL, Modifier.STATIC);
 
     private Scope scope;
@@ -82,7 +82,7 @@ public class DependenciesScopeProvider extends ScopeProvider {
 
     @Override
     public boolean initialize(Lookup context, AtomicBoolean cancel) {
-        if(!DEPENDENCIES) {
+        if(!JavaWhereUsedQueryPlugin.DEPENDENCIES) {
             return false;
         }
         Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
