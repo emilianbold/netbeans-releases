@@ -107,6 +107,11 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         return new RemoteFileObject[0];
     }
 
+    @Override
+    public final boolean isSymbolicLink() {
+        return true;
+    }
+
     private RemoteFileObject wrapFileObject(RemoteFileObject fo, String relativePath) {
         String childAbsPath;
         if (relativePath == null) {

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2014 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.highlight.hints;
+package org.netbeans.modules.cnd.highlight.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,7 +56,6 @@ import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.highlight.security.SecurityCheckProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -71,19 +70,19 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Alexander Simon
  */
-public class HintAnalyzerImpl extends AbstractAnalyzer {
+public class SecurityAnalyzerImpl extends AbstractAnalyzer {
     private static final String PREFIX = "cnd-"; //NOI18N
 
-    private HintAnalyzerImpl(Context ctx) {
+    private SecurityAnalyzerImpl(Context ctx) {
         super(ctx);
     }
 
     @Override
     protected CsmErrorProvider getErrorProvider(Preferences preferences) {
         if (preferences != null) {
-            return new CsmHintProvider(preferences);
+            return new SecurityCheckProvider(preferences);
         } else {
-            return CsmHintProvider.getInstance();
+            return (CsmErrorProvider) SecurityCheckProvider.getInstance();
         }
     }
 
@@ -140,17 +139,17 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
     public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
         
         public AnalyzerFactoryImpl() {
-            super(CsmHintProvider.NAME,
-                   NbBundle.getMessage(CsmHintProvider.class, "General_DESCRIPTION"), //NOI18N
+            super(SecurityCheckProvider.NAME,
+                   NbBundle.getMessage(SecurityCheckProvider.class, "SecurityCheck_DESCRIPTION"), //NOI18N
                    ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png")); //NOI18N
         }
 
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
             List<WarningDescription> result = new ArrayList<>();
-            final CsmHintProvider provider = (CsmHintProvider)CsmHintProvider.getInstance();
+            final SecurityCheckProvider provider = (SecurityCheckProvider)SecurityCheckProvider.getInstance();
             for(CodeAudit audit : provider.getAudits()) {
-                result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(), CsmHintProvider.NAME, provider.getDisplayName()));
+                result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(), SecurityCheckProvider.NAME, provider.getDisplayName()));
             }
             return result;
         }
@@ -186,15 +185,15 @@ public class HintAnalyzerImpl extends AbstractAnalyzer {
 
         private CodeAuditProvider getErrorProvider(Preferences preferences) {
             if (preferences != null) {
-                return new CsmHintProvider(preferences);
+                return new SecurityCheckProvider(preferences);
             } else {
-                return (CodeAuditProvider)CsmHintProvider.getInstance();
+                return (CodeAuditProvider)SecurityCheckProvider.getInstance();
             }
         }
         
         @Override
         public Analyzer createAnalyzer(Context context) {
-            return new HintAnalyzerImpl(context);
+            return new SecurityAnalyzerImpl(context);
         }
     }
 }
