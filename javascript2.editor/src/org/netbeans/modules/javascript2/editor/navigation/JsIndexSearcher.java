@@ -77,7 +77,9 @@ public class JsIndexSearcher implements IndexSearcher{
         final JsIndex index = getIndex(project);
 
         if (index != null) {
-            Collection<? extends IndexResult> indexResults = index.query(JsIndex.FIELD_BASE_NAME, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
+            String fieldToSearch = (searchType == Kind.CASE_INSENSITIVE_CAMEL_CASE || searchType == Kind.CASE_INSENSITIVE_PREFIX || searchType == Kind.CASE_INSENSITIVE_REGEXP)
+                    ? JsIndex.FIELD_BASE_NAME_INSENSITIVE : JsIndex.FIELD_BASE_NAME;
+            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
             for (IndexResult indexResult : indexResults) {
                 IndexedElement element = IndexedElement.create(indexResult);
                 if (element.getJSKind() == JsElement.Kind.CONSTRUCTOR
@@ -95,7 +97,9 @@ public class JsIndexSearcher implements IndexSearcher{
         final JsIndex index = getIndex(project);
 
         if (index != null) {
-            Collection<? extends IndexResult> indexResults = index.query(JsIndex.FIELD_BASE_NAME, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
+            String fieldToSearch = (searchType == Kind.CASE_INSENSITIVE_CAMEL_CASE || searchType == Kind.CASE_INSENSITIVE_PREFIX || searchType == Kind.CASE_INSENSITIVE_REGEXP)
+                    ? JsIndex.FIELD_BASE_NAME_INSENSITIVE : JsIndex.FIELD_BASE_NAME;
+            Collection<? extends IndexResult> indexResults = index.query(fieldToSearch, textForQuery, searchType, JsIndex.TERMS_BASIC_INFO);
             for (IndexResult indexResult : indexResults) {
                 result.add(new JsDescriptor(helper, IndexedElement.create(indexResult)));
             }
