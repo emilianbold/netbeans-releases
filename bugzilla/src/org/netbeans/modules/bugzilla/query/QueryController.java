@@ -261,6 +261,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
             panel.switchQueryFields(false);
             panel.urlTextField.setText(urlParameters);
             populated = true;
+            setChanged();
         } else {
             querySemaphore.acquireUninterruptibly();
             Bugzilla.LOG.log(Level.FINE, "lock aquired because populating {0}", query.getDisplayName()); // NOI18N
@@ -876,7 +877,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
 
     protected void onCloneQuery() {
         String p = getUrlParameters(false);
-        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
+        BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, isUrlDefined(), true);
         BugzillaUtil.openQuery(q);
     }
 
