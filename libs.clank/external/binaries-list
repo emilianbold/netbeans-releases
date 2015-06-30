@@ -1,6 +1,6 @@
-#changeset:   15197:eae34352d43d
+#changeset:   15198:e131a7df573d
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Jun 30 17:49:29 2015 +0300
-#summary:     Fixed char vs byte issue and fixed code model test. The solution is temporary, it should be replaced with getting file content via APTFileBuffer
-C3887FD7CCFE30A2B44E47A97D521CF0181A1BF7 clank_0.3.6.zip
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Tue Jun 30 19:06:56 2015 +0300
+#summary:     add referenced macro declaration in macro expansion info
+D36EA6B9D385551FF2AD2B8DEC19EDBB4F96666A clank_0.3.6.zip
