@@ -39,69 +39,98 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
+package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
-import org.netbeans.modules.cnd.mixeddev.Triple;
-import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.Pair;
-import org.openide.util.actions.NodeAction;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import javax.swing.tree.TreeNode;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public abstract class AbstractJNIAction extends NodeAction {
+public final class JPFCTreeNode<D> implements TreeNode {
     
-    public AbstractJNIAction() {
-        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
+    private final JPFCTreeNodeProviders providers;
+    
+    private final JPFCTreeNodeProvider<D> provider;
+    
+    private final JPFCTreeNodeFilter filter;
+    
+    private final JPFCTreeNode parent;
+    
+    private final D data;
+    
+    private List<JPFCTreeNode<?>> children;
+
+    public JPFCTreeNode(JPFCTreeNodeProviders providers, JPFCTreeNodeFilter filter, JPFCTreeNode parent, D data) {
+        this.providers = providers;
+        this.filter = filter;
+        this.parent = parent;
+        this.data = data;
+        this.provider = providers.getProvider(data);
+    }
+    
+    public JPFCTreeNodeProviders getProviders() {
+        return providers;
+    }
+
+    public D getData() {
+        return data;
+    }
+    
+    @Override
+    public TreeNode getParent() {
+        return parent;
+    }
+    
+    @Override
+    public boolean getAllowsChildren() {
+        return true;
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean asynchronous() {
-        return false;
+    public TreeNode getChildAt(int childIndex) {
+        ensureInitialized();
+        return children.get(childIndex);
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
-        if (context != null) {
-            return isEnabledAtPosition(context.second, context.third);
-        }
-        return false;
+    public int getChildCount() {
+        ensureInitialized();
+        return children.size();
+    }
+
+    @Override
+    public int getIndex(TreeNode node) {
+        ensureInitialized();
+        return children.indexOf(node);
+    }
+
+    @Override
+    public boolean isLeaf() {
+        ensureInitialized();
+        return !children.isEmpty();
+    }
+
+    @Override
+    public Enumeration children() {
+        ensureInitialized();
+        return Collections.enumeration(children);
+    }
+
+    @Override
+    public String toString() {
+        return provider.getName(this);
     }
     
-    protected final Triple<DataObject, Document, Integer> extractContext(Node[] activatedNodes) {
-        final Node activeNode = activatedNodes[0];
-        final DataObject dobj = activeNode.getLookup().lookup(DataObject.class);
-        if (dobj != null) {
-            final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
-                    @Override
-                    public JEditorPane run() {
-                        return NbDocument.findRecentEditorPane(ec);
-                    }
-                });
-                if (pane != null) {
-                    return Triple.of(dobj, pane.getDocument(), pane.getCaret().getDot());
-                }
-            }
+    private void ensureInitialized() {
+        if (children == null) {
+            children = provider.getChildren(this, filter);
         }
-        return null;
+        if (children == null) {
+            children = Collections.emptyList();
+        }
     }
-    
-    protected abstract boolean isEnabledAtPosition(Document doc, int caret);
 }

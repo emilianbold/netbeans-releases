@@ -52,6 +52,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,11 +60,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -79,9 +83,12 @@ import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMe
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isClass;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart;
 import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.CharSequences;
 import org.openide.util.Pair;
 
@@ -90,6 +97,8 @@ import org.openide.util.Pair;
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
 public final class JNISupport {
+    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.mixeddev.java"); //NOI18N
     
     /**
      * Checks if class in java file at the given offset has JNI methods
@@ -208,6 +217,67 @@ public final class JNISupport {
         signature.append(")"); // NOI18N
         signature.append(getTypeSignature(methodInfo.getReturnType()));
         return signature.toString();
+    }
+    
+    /**
+     * 
+     * @param javahFObj
+     * @param sourceRoot
+     * @param javaClass
+     * @param destination
+     * @param sourceCP
+     * @param compileCP
+     * @return file object of freshly generated header file or null
+     */
+    public static FileObject generateJNIHeader(FileObject javahFObj, FileObject sourceRoot, FileObject javaClass, String destination, ClassPath sourceCP, ClassPath compileCP) {
+        File javah = FileUtil.toFile(javahFObj); //NOI18N
+        String className = FileUtil.getRelativePath(sourceRoot, javaClass);
+        if (className.endsWith(".java")) { // NOI18N
+            className = className.substring(0, className.length() - 5).replace('/', '.').replace('\\', '.');
+        }
+
+        File workingDir = new File(FileUtil.toFile(sourceRoot.getParent()), "build/classes"); // NOI18N
+        List<String> args = new ArrayList<String>();
+        args.add("-o"); // NOI18N
+        args.add(destination);
+        String argCP = "";
+        boolean needed = false;
+        if (sourceCP != null) {
+            String source = sourceCP.toString();
+            if (!source.isEmpty()) {
+                needed = true;
+                argCP = argCP.concat(source + File.pathSeparator);
+            }
+        }
+        if (compileCP != null) {
+            String compile = compileCP.toString();
+            if (!compile.isEmpty()) {
+                needed = true;
+                argCP = argCP.concat(compile);
+            }
+        }
+        if (needed) {
+            args.add("-classpath"); // NOI18N
+            args.add(argCP);
+        }
+        args.add(className);
+
+        NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(ExecutionEnvironmentFactory.getLocal());
+        npb.setWorkingDirectory(workingDir.getAbsolutePath());
+        npb.setExecutable(javah.getAbsolutePath());
+        npb.setArguments(args.toArray(new String[args.size()]));
+        ProcessUtils.ExitStatus javahStatus = ProcessUtils.execute(npb);
+
+        if (!javahStatus.isOK()) {
+            LOG.log(Level.WARNING, "javah failed {0}; args={1}", new Object[]{javahStatus, args});
+            return null;
+        }
+        
+        File destFile = new File(destination);
+        
+        return destFile.isAbsolute() ?
+            FileUtil.toFileObject(destFile) 
+            : FileUtil.toFileObject(new File(workingDir, destination));
     }
     
 //<editor-fold defaultstate="collapsed" desc="Implementation">    
@@ -510,7 +580,10 @@ public final class JNISupport {
                 ClassTree clsTree = (ClassTree) tp.getLeaf();
                 if (hasJniMethods(clsTree)) {
                     List<MethodTree> jniMethods = getJniMethods(clsTree);
-                    result = new JNIClass(MixedDevUtils.transform(jniMethods, new MethodTreeToJavaMethodInfoConverter(controller)));
+                    result = new JNIClass(
+                        JavaContextSupport.createClassInfo(controller, tp),
+                        MixedDevUtils.transform(jniMethods, new MethodTreeToJavaMethodInfoConverter(controller))
+                    );
                 }
             }
         }

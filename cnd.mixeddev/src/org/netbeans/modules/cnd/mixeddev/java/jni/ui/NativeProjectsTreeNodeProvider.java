@@ -39,69 +39,46 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
+package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
-import javax.swing.JEditorPane;
-import javax.swing.text.Document;
-import org.netbeans.modules.cnd.mixeddev.Triple;
-import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
-import org.openide.util.HelpCtx;
-import org.openide.util.Mutex;
-import org.openide.util.Pair;
-import org.openide.util.actions.NodeAction;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public abstract class AbstractJNIAction extends NodeAction {
-    
-    public AbstractJNIAction() {
-        putValue("noIconInMenu", Boolean.TRUE);                         //NOI18N
+public class NativeProjectsTreeNodeProvider implements JPFCTreeNodeProvider<List<NativeProject>> {
+
+    @Override
+    public boolean accept(Object obj) {
+        return obj instanceof List;
     }
 
     @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-    
-    @Override
-    public boolean asynchronous() {
-        return false;
+    public String getName(JPFCTreeNode<List<NativeProject>> node) {
+        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.jpic_root_node_title"); // NOI18N
     }
 
     @Override
-    protected boolean enable(Node[] activatedNodes) {
-        Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
-        if (context != null) {
-            return isEnabledAtPosition(context.second, context.third);
-        }
-        return false;
-    }
-    
-    protected final Triple<DataObject, Document, Integer> extractContext(Node[] activatedNodes) {
-        final Node activeNode = activatedNodes[0];
-        final DataObject dobj = activeNode.getLookup().lookup(DataObject.class);
-        if (dobj != null) {
-            final EditorCookie ec = activeNode.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
-                    @Override
-                    public JEditorPane run() {
-                        return NbDocument.findRecentEditorPane(ec);
-                    }
-                });
-                if (pane != null) {
-                    return Triple.of(dobj, pane.getDocument(), pane.getCaret().getDot());
+    public List<JPFCTreeNode<?>> getChildren(JPFCTreeNode<List<NativeProject>> node, JPFCTreeNodeFilter filter) {
+        List<JPFCTreeNode<?>> result = new ArrayList<>();
+        List<NativeProject> data = node.getData();
+        for (NativeProject nativeProj : data) {
+            Project proj = nativeProj.getProject().getLookup().lookup(Project.class);
+            if (proj != null) {
+                if (filter.show(proj)) {
+                    result.add(new JPFCTreeNode(node.getProviders(), filter, node, proj));
                 }
             }
         }
-        return null;
+        return result;
     }
-    
-    protected abstract boolean isEnabledAtPosition(Document doc, int caret);
 }

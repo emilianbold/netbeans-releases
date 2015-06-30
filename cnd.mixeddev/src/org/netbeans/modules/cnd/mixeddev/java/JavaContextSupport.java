@@ -77,8 +77,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart;
-import org.netbeans.modules.cnd.mixeddev.java.model.QualifiedNamePart.Kind;
+import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart.Kind;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -188,6 +188,13 @@ public final class JavaContextSupport {
         return isClass(path) || isInterface(path);
     }
     
+    public static JavaClassInfo createClassInfo(CompilationController controller, TreePath clsTreePath) {
+        assert clsTreePath.getLeaf().getKind() == Tree.Kind.CLASS;            
+        List<QualifiedNamePart> qualifiedName = getQualifiedName(clsTreePath);
+        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
+        return new JavaClassInfo(simpleName, renderQualifiedName(qualifiedName));
+    }
+    
     public static JavaMethodInfo createMethodInfo(CompilationController controller, TreePath mtdTreePath) {
         assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;            
 
@@ -208,7 +215,7 @@ public final class JavaContextSupport {
             isOverloaded(mtdTreePath, simpleName),
             isStatic(mtdTreePath)
         );
-    }    
+    }
 
     public static JavaTypeInfo createTypeInfo(CompilationController controller, Tree type) {
         TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);

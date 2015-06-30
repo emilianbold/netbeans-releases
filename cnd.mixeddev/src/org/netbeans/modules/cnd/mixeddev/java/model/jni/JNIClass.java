@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.mixeddev.java.model.jni;
 
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 
 /**
@@ -51,10 +52,17 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
  */
 public final class JNIClass {
     
+    private final JavaClassInfo classInfo;
+    
     private final List<JavaMethodInfo> jniMethods;
 
-    public JNIClass(List<JavaMethodInfo> jniMethods) {
+    public JNIClass(JavaClassInfo classInfo, List<JavaMethodInfo> jniMethods) {
+        this.classInfo = classInfo;
         this.jniMethods = jniMethods;
+    }
+
+    public JavaClassInfo getClassInfo() {
+        return classInfo;
     }
     
     public List<JavaMethodInfo> getJNIMethods() {
