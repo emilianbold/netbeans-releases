@@ -177,20 +177,23 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
     private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String ERR_NAME = "<error>";
     
-    public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, final TreePath path, boolean elseSection) {
+    public static BreadCrumbsNodeImpl createBreadcrumbs(BreadCrumbsNodeImpl parent, final CompilationInfo info, TreePath path, boolean elseSection) {
         final Trees trees = info.getTrees();
         final SourcePositions sp = trees.getSourcePositions();
         int[] pos = new int[] {(int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf()), (int) sp.getEndPosition(path.getCompilationUnit(), path.getLeaf())};
             final Tree leaf = path.getLeaf();
             switch (leaf.getKind()) {
                 case COMPILATION_UNIT:
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), (Image) null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
+                    TreePathHandle tph = TreePathHandle.create(path, info);
+                    return new BreadCrumbsNodeImpl(parent, tph, (Image) null, FileUtil.getFileDisplayName(info.getFileObject()), info.getFileObject(), pos);
                 case CLASS:
                 case INTERFACE:
                 case ENUM:
                 case ANNOTATION_TYPE:
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), iconProviderFor(info, path), className(path), info.getFileObject(), pos);
+                    tph = TreePathHandle.create(path, info);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), className(path), info.getFileObject(), pos);
                 case METHOD:
+                    tph = TreePathHandle.create(path, info);
                     MethodTree mt = (MethodTree) leaf;
                     CharSequence name;
                     if (mt.getName().contentEquals(CONSTRUCTOR_NAME)) {
@@ -198,10 +201,12 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     } else {
                         name = mt.getName();
                     }
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), iconProviderFor(info, path), name.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), name.toString(), info.getFileObject(), pos);
                 case VARIABLE:
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), iconProviderFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
+                    tph = TreePathHandle.create(path, info);
+                    return new BreadCrumbsNodeImpl(parent, tph, iconProviderFor(info, path), ((VariableTree) leaf).getName().toString(), info.getFileObject(), pos);
                 case CASE:
+                    tph = TreePathHandle.create(path, info);
                     ExpressionTree expr = ((CaseTree) leaf).getExpression();
                     StringBuilder sb = new StringBuilder(expr == null ? "default:" : "case "); //NOI18N
                     if (expr != null) {
@@ -210,20 +215,23 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                         sb.append(":"); //NOI18N
                         sb.append("</font>"); //NOI18N
                     }
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case CATCH:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("catch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((CatchTree) leaf).getParameter().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case DO_WHILE_LOOP:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("do ... while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((DoWhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case ENHANCED_FOR_LOOP:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append("("); //NOI18N
@@ -232,8 +240,9 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     sb.append(escape(((EnhancedForLoopTree) leaf).getExpression().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case FOR_LOOP:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append("("); //NOI18N
@@ -273,25 +282,25 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     }
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case IF:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder(""); //NOI18N
                     Tree last = leaf;
-                    TreePath tempPath = path;
-                    while (tempPath != null && tempPath.getLeaf().getKind() == Kind.IF) {
+                    while (path != null && path.getLeaf().getKind() == Kind.IF) {
                         StringBuilder temp = new StringBuilder(""); //NOI18N
                         temp.append("if "); //NOI18N
                         temp.append("<font color=").append(COLOR).append(">"); // NOI18N
-                        temp.append(escape(((IfTree) tempPath.getLeaf()).getCondition().toString()));
+                        temp.append(escape(((IfTree) path.getLeaf()).getCondition().toString()));
                         temp.append("</font>"); //NOI18N
                         
-                        if (((IfTree) tempPath.getLeaf()).getElseStatement() == last || (tempPath.getLeaf() == leaf && elseSection)) {
+                        if (((IfTree) path.getLeaf()).getElseStatement() == last || (path.getLeaf() == leaf && elseSection)) {
                             temp.append(" else");
                         }
                         temp.append(" ");
                         sb.insert(0, temp.toString());
-                        last = tempPath.getLeaf();
-                        tempPath = tempPath.getParentPath();
+                        last = path.getLeaf();
+                        path = path.getParentPath();
                     }
                     sb.delete(sb.length() - 1, sb.length());
                     IfTree it = (IfTree) leaf;
@@ -313,35 +322,40 @@ public class BreadCrumbsNodeImpl implements BreadcrumbsElement {
                     } else {
                         pos[1] = elseStart - 1;
                     }
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SWITCH:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("switch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SwitchTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SYNCHRONIZED:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("synchronized "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SynchronizedTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case TRY:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("try"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case WHILE_LOOP:
+                    tph = TreePathHandle.create(path, info);
                     sb = new StringBuilder("while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((WhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                    return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case BLOCK:
+                    tph = TreePathHandle.create(path, info);
                     if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
                         sb = new StringBuilder(((BlockTree)leaf).isStatic() ? "&lt;static init&gt;" : "&lt;init&gt;"); //NOI18N
-                        return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                        return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                     } else if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
                         sb = new StringBuilder("finally"); //NOI18N
-                        return new BreadCrumbsNodeImpl(parent, TreePathHandle.create(path, info), DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
+                        return new BreadCrumbsNodeImpl(parent, tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                     }
                     break;
             }
