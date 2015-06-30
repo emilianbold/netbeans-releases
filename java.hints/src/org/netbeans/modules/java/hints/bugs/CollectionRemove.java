@@ -185,10 +185,12 @@ public class CollectionRemove {
                 Scope s = ctx.getInfo().getTrees().getScope(ctx.getPath());
 
                 while (s != null) {
-                    for (ExecutableElement ee : ElementFilter.methodsIn(ctx.getInfo().getElements().getAllMembers(s.getEnclosingClass()))) {
-                        if (ee == toCheckAgainst || ctx.getInfo().getElements().overrides(ee, toCheckAgainst, owner)) {
-                            site = (DeclaredType) s.getEnclosingClass().asType();
-                            break OUTER;
+                    if (s.getEnclosingClass() != null) {
+                        for (ExecutableElement ee : ElementFilter.methodsIn(ctx.getInfo().getElements().getAllMembers(s.getEnclosingClass()))) {
+                            if (ee == toCheckAgainst || ctx.getInfo().getElements().overrides(ee, toCheckAgainst, owner)) {
+                                site = (DeclaredType) s.getEnclosingClass().asType();
+                                break OUTER;
+                            }
                         }
                     }
                     s = s.getEnclosingScope();
