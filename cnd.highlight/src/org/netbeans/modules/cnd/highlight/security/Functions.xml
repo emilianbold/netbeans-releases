@@ -41,15 +41,31 @@ Contributor(s):
 Portions Copyrighted 2015 Sun Microsystems, Inc.
 -->
 
-<checks>
+<functions>
     <level value="unsafe">
-        <function name="gets" header="stdio.h" />
-        <function name="cftime" header="time.h" />
-        <function name="ascftime" header="time.h" />
+        <category name="gets">
+            <function name="gets" header="stdio.h" />
+        </category>
+        <category name="cftime">
+            <function name="cftime" header="time.h" />
+            <function name="ascftime" header="time.h" />
+        </category>
     </level>
     <level value="avoid">
-        <function name="strcat" header="string.h" />
-        <function name="strcpy" header="string.h" />
-        <function name="access" header="unistd.h" />
-    </level>    
-</checks>
+        <category name="strcat">
+            <function name="strcat" header="string.h" />
+            <function name="strcpy" header="string.h" />
+        </category>
+        <category name="access">
+            <function name="access" header="unistd.h" />
+        </category>
+    </level>
+    <level value="caution">
+        <category name="strncat">
+            <function name="strncat" header="string.h" />
+        </category>
+        <category name="strncpy">
+            <function name="strncpy" header="string.h" />
+        </category>
+    </level>
+</functions>

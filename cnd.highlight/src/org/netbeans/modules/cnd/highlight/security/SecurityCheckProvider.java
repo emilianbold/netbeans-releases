@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -53,14 +54,11 @@ import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAudit;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditListFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -146,18 +144,36 @@ public class SecurityCheckProvider extends CsmErrorProvider implements CodeAudit
     @Override
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
-            List<CodeAudit> res = new ArrayList<>();
-            for(CodeAuditListFactory factory : Lookups.forPath(CodeAuditListFactory.REGISTRATION_PATH+SecurityCheckProvider.NAME).lookupAll(CodeAuditListFactory.class)) {
-                res.addAll(factory.create(myPreferences));
+            FunctionsSecurityLevels avoid = FunctionsSecurityLevels.getInstance(FunctionsSecurityLevels.Level.AVOID);
+            FunctionsSecurityLevels unsafe = FunctionsSecurityLevels.getInstance(FunctionsSecurityLevels.Level.UNSAFE);
+            Map<String, Map<String, String>> avoidCategories = avoid.getCategories();
+            Map<String, Map<String, String>> unsafeCategories = unsafe.getCategories();
+            List<CodeAudit> result = new ArrayList<>(avoidCategories.size()+unsafeCategories.size());
+            for (String key : unsafeCategories.keySet()) {
+                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+key+".description"); // NOI18N
+                Map<String, String> functions = unsafeCategories.get(key);
+                for (String fKey: functions.keySet()) {
+                    String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", fKey); // NOI18N
+                    result.add(new FunctionUsageAudit(fKey, functions.get(fKey), id, id, description, "error", true, myPreferences)); // NOI18N
+                }
             }
-            Collections.sort(res, new Comparator<CodeAudit>(){
+            for (String key : avoidCategories.keySet()) {
+                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+key+".description"); // NOI18N
+                Map<String, String> functions = avoidCategories.get(key);
+                for (String fKey: functions.keySet()) {
+                    String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", fKey); // NOI18N
+                    result.add(new FunctionUsageAudit(fKey, functions.get(fKey), id, id, description, "warning", true, myPreferences)); // NOI18N
+                }
+            }
+            
+            Collections.sort(result, new Comparator<CodeAudit>(){
 
                 @Override
                 public int compare(CodeAudit o1, CodeAudit o2) {
                     return o1.getName().compareTo(o2.getName());
                 }
             });
-            audits = res;
+            audits = result;
         }
         return audits;
     }

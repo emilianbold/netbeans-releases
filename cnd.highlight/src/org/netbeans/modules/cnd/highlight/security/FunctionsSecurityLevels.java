@@ -62,23 +62,26 @@ import org.xml.sax.SAXException;
  *
  * @author Danila Sergeyev
  */
-public class Checks {
+public class FunctionsSecurityLevels {
     private static final String levelTagName = "level"; // NOI18N
     private static final String[] levelTagAttributes = {"value"}; // NOI18N
+    private static final String categoryTagName = "category"; // NOI18N
+    private static final String[] categoryTagAttributes = {"name"}; // NOI18N
     private static final String functionTagName = "function"; // NOI18N
     private static final String[] functionTagAttributes = {"name", "header"}; // NOI18N
     
     public enum Level {
         AVOID,
-        UNSAFE
+        UNSAFE,
+        CAUTION
     }
     
-    private final Map<String, String> unsecureFunctions;
+    private final Map<String, Map<String, String>> functionsCategories;
     private final String level;
     
-    private Checks(Level level) {
+    private FunctionsSecurityLevels(Level level) {
         this.level = level.name().toLowerCase();
-        unsecureFunctions = new HashMap<>();
+        functionsCategories = new HashMap<>();
         processXml();
     }
     
@@ -86,23 +89,40 @@ public class Checks {
         try {
             Document doc = DocumentBuilderFactory.newInstance()
                           .newDocumentBuilder()
-                          .parse(Checks.class.getResourceAsStream("Checks.xml")); // NOI18N
+                          .parse(FunctionsSecurityLevels.class.getResourceAsStream("Functions.xml")); // NOI18N
             
             NodeList levelNodes = doc.getElementsByTagName(levelTagName);
+            
+            // iterate through all security levels
             for (int i = 0, ilimit = levelNodes.getLength(); i < ilimit; i++) {
                 Node levelNode = levelNodes.item(i);
                 if (levelNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element levelElement = (Element) levelNode;
                     String value = levelElement.getAttribute(levelTagAttributes[0]);
                     if (value != null && value.equals(level)) {
-                        NodeList nodes = levelNode.getChildNodes();
-                        for (int j = 0, jlimit = nodes.getLength(); j < jlimit; j++) {
-                            Node node = nodes.item(j);
-                            if (node.getNodeName().equals(functionTagName) && node.getNodeType() == Node.ELEMENT_NODE) {
-                                Element element = (Element) node;
-                                String name = element.getAttribute(functionTagAttributes[0]);
-                                String header = element.getAttribute(functionTagAttributes[1]);
-                                unsecureFunctions.put(name, header);
+                        NodeList categoryNodes = levelNode.getChildNodes();
+                        
+                        // iterate through all categories within level
+                        for (int j = 0, jlimit = categoryNodes.getLength(); j < jlimit; j++) {
+                            Node categoryNode = categoryNodes.item(j);
+                            if (categoryNode.getNodeName().equals(categoryTagName) && categoryNode.getNodeType() == Node.ELEMENT_NODE) {
+                                Element categoryElement = (Element) categoryNode;
+                                String categoryName = categoryElement.getAttribute(categoryTagAttributes[0]);
+                                NodeList funcNodes = categoryNode.getChildNodes();
+                                Map<String, String> functions = new HashMap<>();
+                                
+                                // iterate through all functions within category
+                                for (int fnNdx = 0, flimit = funcNodes.getLength(); fnNdx < flimit; fnNdx++) {
+                                    Node node = funcNodes.item(fnNdx);
+                                    if (node.getNodeName().equals(functionTagName) && node.getNodeType() == Node.ELEMENT_NODE) {
+                                        Element element = (Element) node;
+                                        String fnName = element.getAttribute(functionTagAttributes[0]);
+                                        String header = element.getAttribute(functionTagAttributes[1]);
+                                        functions.put(fnName, header);
+                                    }
+                                }
+                                
+                                functionsCategories.put(categoryName, functions);
                             }
                         }
                     }
@@ -114,26 +134,16 @@ public class Checks {
         }
     }
     
-    public static Checks getInstance(Level level) {
-        return new Checks(level);
+    public static FunctionsSecurityLevels getInstance(Level level) {
+        return new FunctionsSecurityLevels(level);
     }
     
-    public Map<String, String> getFunctions() {
-        return Collections.unmodifiableMap(unsecureFunctions);
+    public Map<String, Map<String, String>> getCategories() {
+        return Collections.unmodifiableMap(functionsCategories);
     }
     
-    public boolean isUnsecuredFunction(CsmFunction function) {
-        String fname = function.getName().toString();
-        String header = unsecureFunctions.get(fname);
-        if (header != null) {
-            CsmFile file = function.getContainingFile();
-            for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(file)) {
-                if (include.getIncludeName().toString().equals(header)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    public Map<String, String> getFunctionsInCategory(String categoryName) {
+        return Collections.unmodifiableMap(functionsCategories.get(categoryName));
     }
     
 }

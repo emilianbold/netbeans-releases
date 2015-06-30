@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.cnd.highlight.security;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -51,25 +48,22 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AuditPreferences;
-import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditListFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Danila Sergeyev
  */
-public class UsingUnsafeFunctions extends AbstractCodeAudit {
+public class FunctionUsageAudit extends AbstractCodeAudit {
     private final String functionName;
     private final String header;
     
-    private UsingUnsafeFunctions(String functionName, String header, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    public FunctionUsageAudit(String functionName, String header, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
         this.functionName = functionName;
         this.header = header;
@@ -107,29 +101,6 @@ public class UsingUnsafeFunctions extends AbstractCodeAudit {
                     }
                 }
             }
-        }
-    }
-    
-    @ServiceProvider(path = CodeAuditListFactory.REGISTRATION_PATH+SecurityCheckProvider.NAME, service = CodeAuditListFactory.class, position = 1300)
-    public static final class SecurityAuditFactory implements CodeAuditListFactory {
-        @Override
-        public Collection<AbstractCodeAudit> create(AuditPreferences preferences) {
-            Checks avoid = Checks.getInstance(Checks.Level.AVOID);
-            Checks unsafe = Checks.getInstance(Checks.Level.UNSAFE);
-            Map<String, String> avoidFunctions = avoid.getFunctions();
-            Map<String, String> unsafeFunctions = unsafe.getFunctions();
-            ArrayList<AbstractCodeAudit> result = new ArrayList<>(avoidFunctions.size()+unsafeFunctions.size());
-            for (String key : avoidFunctions.keySet()) {
-                String id = NbBundle.getMessage(UsingUnsafeFunctions.class, "UsingUnsafeFunctions.name", key); // NOI18N
-                String description = NbBundle.getMessage(UsingUnsafeFunctions.class, "UsingUnsafeFunctions."+key+".description"); // NOI18N
-                result.add(new UsingUnsafeFunctions(key, avoidFunctions.get(key), id, id, description, "warning", true, preferences)); // NOI18N
-            }
-            for (String key : unsafeFunctions.keySet()) {
-                String id = NbBundle.getMessage(UsingUnsafeFunctions.class, "UsingUnsafeFunctions.name", key); // NOI18N
-                String description = NbBundle.getMessage(UsingUnsafeFunctions.class, "UsingUnsafeFunctions."+key+".description"); // NOI18N
-                result.add(new UsingUnsafeFunctions(key, unsafeFunctions.get(key), id, id, description, "error", true, preferences)); // NOI18N
-            }
-            return result;
         }
     }
     
