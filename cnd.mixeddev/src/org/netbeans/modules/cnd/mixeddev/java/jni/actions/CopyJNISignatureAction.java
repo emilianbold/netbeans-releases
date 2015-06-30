@@ -48,6 +48,8 @@ import javax.swing.text.Document;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.*;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -63,11 +65,11 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJavaMethodJNISignatureAction", category = "MixedDevelopment")
-@ActionRegistration(displayName = "#LBL_Action_CopyJavaMethodSignatureAction", lazy = false)
+@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNISignatureAction", category = "MixedDevelopment")
+@ActionRegistration(displayName = "#LBL_Action_CopyJNISignatureAction", lazy = false)
 @ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=40)})
-@NbBundle.Messages({"LBL_Action_CopyJavaMethodSignatureAction=Show JNI signature"})
-public class CopyJavaMethodJNISignatureAction extends AbstractJNIAction {
+@NbBundle.Messages({"LBL_Action_CopyJNISignatureAction=Copy JNI signature"})
+public class CopyJNISignatureAction extends AbstractJNIAction {
 
     @Override
     public String getName() {
@@ -76,27 +78,39 @@ public class CopyJavaMethodJNISignatureAction extends AbstractJNIAction {
 
     @Override
     protected boolean isEnabledAtPosition(Document doc, int caret) {
-        JavaMethodInfo mtd = resolveJavaMethod(doc, caret);
-        return mtd != null && !mtd.isNative();
+        JavaEntityInfo entity = resolveJavaEntity(doc, caret);
+        if (entity != null) {
+            if (entity instanceof JavaMethodInfo) {
+                return !((JavaMethodInfo) entity).isNative();
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
         if (context != null) {
-            final FileObject javaFile = context.first.getPrimaryFile();
             final Document doc = context.second;
             final int caret = context.third;
-            JavaMethodInfo mtd = resolveJavaMethod(doc, caret);
-            String jniSignature = JNISupport.getJNISignature(mtd);
-            StatusDisplayer.getDefault().setStatusText(jniSignature);
-            StringSelection ss = new StringSelection(jniSignature);
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(ss, null);
+            String jniSignature = null;
+            JavaEntityInfo entity = resolveJavaEntity(doc, caret);
+            if (entity instanceof JavaClassInfo) {
+                jniSignature = JNISupport.getJNISignature((JavaClassInfo) entity);
+            } else if (entity instanceof JavaMethodInfo) {
+                jniSignature = JNISupport.getJNISignature((JavaMethodInfo) entity);
+            }
+            if (jniSignature != null) {
+                StatusDisplayer.getDefault().setStatusText(jniSignature);
+                StringSelection ss = new StringSelection(jniSignature);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(ss, null);
+            }
         }
     }
     
-    private JavaMethodInfo resolveJavaMethod(Document doc, int caret) {
-        return JavaContextSupport.resolveContext(doc, new ResolveJavaMethodTask(caret));
+    private JavaEntityInfo resolveJavaEntity(Document doc, int caret) {
+        return JavaContextSupport.resolveContext(doc, new ResolveJavaEntityTask(caret));
     }
 }

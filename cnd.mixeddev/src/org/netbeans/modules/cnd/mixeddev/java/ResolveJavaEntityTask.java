@@ -46,7 +46,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationController;
-import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.*;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 
@@ -54,15 +55,17 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class ResolveJavaMethodTask extends AbstractResolveJavaContextTask<JavaMethodInfo> {
+public class ResolveJavaEntityTask extends AbstractResolveJavaContextTask<JavaEntityInfo> {
     
-    public ResolveJavaMethodTask(int offset) {
+    public ResolveJavaEntityTask(int offset) {
         super(offset);
     }
 
     @Override
     protected void resolve(CompilationController controller, TreePath tp) {
-        if (JavaContextSupport.isMethod(tp)) {
+        if (JavaContextSupport.isClassOrInterface(tp)) {
+            result = createClassInfo(controller, tp);
+        } else if (JavaContextSupport.isMethod(tp)) {
             result = validateMethodInfo(createMethodInfo(controller, tp));
         }
     }
