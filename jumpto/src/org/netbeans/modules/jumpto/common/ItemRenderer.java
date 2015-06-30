@@ -305,17 +305,17 @@ public final class ItemRenderer<T> extends DefaultListCellRenderer implements Ch
             final T item = dynamic_cast(value);
             if (item != null) {
                 jlName.setIcon(convertor.getItemIcon(item));
-                final String formatedName;
+                final String formattedName;
                 if (highlightStrategy.shouldHighlight(isSelected)) {
-                    formatedName = highlightStrategy.highlight(
+                    formattedName = highlightStrategy.highlight(
                             convertor.getName(item),
                             convertor.getHighlightText(item),
                             caseSensitive,
                             isSelected? fgSelectionColor : fgColor);
                 } else {
-                    formatedName = highlightStrategy.plain(convertor.getName(item));
+                    formattedName = highlightStrategy.plain(convertor.getName(item));
                 }
-                jlName.setText(formatedName);
+                jlName.setText(formattedName);
                 jlOwner.setText(convertor.getOwnerName(item));
                 setProjectName(jlPrj, convertor.getProjectName(item));
                 jlPrj.setIcon(convertor.getProjectIcon(item));
