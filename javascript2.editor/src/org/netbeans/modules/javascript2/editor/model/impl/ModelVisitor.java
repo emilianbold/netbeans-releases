@@ -1643,7 +1643,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             Node lhs = ((BinaryNode)init).lhs();
                             if (lhs instanceof IdentNode)  {
                                 JsObject previousRef = function.getProperty(((IdentNode)lhs).getName());
-                                if (previousRef != null) {
+                                if (previousRef != null && (previousRef instanceof JsFunction || previousRef instanceof JsFunctionReference)) {
                                     Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
                                     JsFunction origFunction = previousRef instanceof JsFunctionReference ? ((JsFunctionReference)previousRef).getOriginal() : (JsFunction)previousRef;
                                     JsObjectImpl variable = new JsFunctionReference(function, name, (JsFunction)origFunction, true, 
