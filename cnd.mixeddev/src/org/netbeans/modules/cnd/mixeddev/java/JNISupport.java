@@ -187,9 +187,9 @@ public final class JNISupport {
      * @param javaType
      * @return type signature
      */
-    public static String getTypeSignature(JavaTypeInfo javaType) {
+    public static String getJNISignature(JavaTypeInfo javaType) {
         if (javaType.getArrayDepth() > 0) {
-            return "[" + getTypeSignature( // NOI18N
+            return "[" + JNISupport.getJNISignature( // NOI18N
                 new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
             );
         } else {
@@ -208,14 +208,14 @@ public final class JNISupport {
      * @param methodInfo
      * @return type signature
      */
-    public static String getTypeSignature(JavaMethodInfo methodInfo) {
+    public static String getJNISignature(JavaMethodInfo methodInfo) {
         StringBuilder signature = new StringBuilder();
         signature.append("("); // NOI18N
         for (JavaTypeInfo param : methodInfo.getParameters()) {
-            signature.append(getTypeSignature(param));
+            signature.append(JNISupport.getJNISignature(param));
         }
         signature.append(")"); // NOI18N
-        signature.append(getTypeSignature(methodInfo.getReturnType()));
+        signature.append(JNISupport.getJNISignature(methodInfo.getReturnType()));
         return signature.toString();
     }
     
@@ -367,7 +367,7 @@ public final class JNISupport {
         if (full) {
             signature.append(JNI_PARAMS_SIGNATURE_PREFIX);
             for (JavaTypeInfo param : methodInfo.getParameters()) {
-                signature.append(escape(getTypeSignature(param)));
+                signature.append(escape(JNISupport.getJNISignature(param)));
             }
         }
         
@@ -481,52 +481,7 @@ public final class JNISupport {
         }
     }
     
-    private abstract static class AbstractJNIContextTask<T> implements ResolveJavaContextTask<T> {
-        
-        protected final int offset;
-        
-        protected T result;
-        
-        public AbstractJNIContextTask(int offset) {
-            this(offset, null);
-        }
-
-        public AbstractJNIContextTask(int offset, T defaultResult) {
-            this.offset = offset;
-            this.result = defaultResult;
-        }
-        
-        @Override
-        public boolean hasResult() {
-            return result != null;
-        }
-        
-        @Override
-        public T getResult() {
-            return result;
-        }
-        
-        @Override
-        public void cancel() {
-            // Do nothing
-        }
-
-        @Override
-        public final void run(CompilationController controller) throws Exception {
-            if (controller == null || controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                return;
-            }
-            // Look for current element
-            TreePath tp = controller.getTreeUtilities().pathFor(offset);
-            if (tp != null) {
-                resolve(controller, tp);
-            }
-        }
-        
-        protected abstract void resolve(CompilationController controller, TreePath tp);
-    }
-    
-    private static final class ResolveJNIMethodTask extends AbstractJNIContextTask<JavaMethodInfo> {
+    private static final class ResolveJNIMethodTask extends AbstractResolveJavaContextTask<JavaMethodInfo> {
         
         public ResolveJNIMethodTask(int offset) {
             super(offset);
@@ -554,7 +509,7 @@ public final class JNISupport {
         }
     }
     
-    private static final class IsJNIClassTask extends AbstractJNIContextTask<Boolean> {
+    private static final class IsJNIClassTask extends AbstractResolveJavaContextTask<Boolean> {
         
         public IsJNIClassTask(int offset) {
             super(offset);
@@ -568,7 +523,7 @@ public final class JNISupport {
         }
     }
     
-    private static final class GetJNIClassTask extends AbstractJNIContextTask<JNIClass> {
+    private static final class GetJNIClassTask extends AbstractResolveJavaContextTask<JNIClass> {
         
         public GetJNIClassTask(int offset) {
             super(offset);

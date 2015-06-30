@@ -39,73 +39,43 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java;
 
-package org.netbeans.modules.cnd.mixeddev.java.model;
-
-import java.util.List;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Modifier;
+import org.netbeans.api.java.source.CompilationController;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class JavaMethodInfo implements JavaEntityInfo {
+public class ResolveJavaMethodTask extends AbstractResolveJavaContextTask<JavaMethodInfo> {
     
-    private final CharSequence name;
-    
-    private final CharSequence qualifiedName;
-    
-    private final List<JavaTypeInfo> parameters;
-    
-    private final JavaTypeInfo returnType;
-    
-    private final boolean overloaded;
-    
-    private final boolean staticMethod;
-    
-    private final boolean nativeMethod;
-
-    public JavaMethodInfo(CharSequence name, 
-                            CharSequence qualifiedName, 
-                            List<JavaTypeInfo> parameters, 
-                            JavaTypeInfo returnType, 
-                            boolean overloaded,
-                            boolean staticMethod,
-                            boolean nativeMethod) 
-    {
-        this.name = name;
-        this.qualifiedName = qualifiedName;
-        this.parameters = parameters;
-        this.returnType = returnType;
-        this.overloaded = overloaded;
-        this.staticMethod = staticMethod;
-        this.nativeMethod = nativeMethod;
-    }
-    
-    public CharSequence getName() {
-        return name;
-    }    
-
-    public CharSequence getQualifiedName() {
-        return qualifiedName;
+    public ResolveJavaMethodTask(int offset) {
+        super(offset);
     }
 
-    public List<JavaTypeInfo> getParameters() {
-        return parameters;
-    }
-
-    public JavaTypeInfo getReturnType() {
-        return returnType;
-    }
-
-    public boolean isOverloaded() {
-        return overloaded;
+    @Override
+    protected void resolve(CompilationController controller, TreePath tp) {
+        if (JavaContextSupport.isMethod(tp)) {
+            result = validateMethodInfo(createMethodInfo(controller, tp));
+        }
     }
     
-    public boolean isStatic() {
-        return staticMethod;
-    }
-    
-    public boolean isNative() {
-        return nativeMethod;
+    private JavaMethodInfo validateMethodInfo(JavaMethodInfo mtdInfo) {
+        for (JavaTypeInfo type : mtdInfo.getParameters()) {
+            if (type == null || type.getName() == null) {
+                return null;
+            }
+        }
+        if (mtdInfo.getReturnType() == null || mtdInfo.getReturnType().getName() == null) {
+            return null;
+        }
+        return mtdInfo;
     }
 }

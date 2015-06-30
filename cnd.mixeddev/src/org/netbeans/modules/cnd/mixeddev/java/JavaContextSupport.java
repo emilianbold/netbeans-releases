@@ -213,7 +213,8 @@ public final class JavaContextSupport {
             parameters, 
             createTypeInfo(controller, mtdTree.getReturnType()), 
             isOverloaded(mtdTreePath, simpleName),
-            isStatic(mtdTreePath)
+            isStatic(mtdTreePath),
+            isNative(mtdTreePath)
         );
     }
 
@@ -412,6 +413,14 @@ public final class JavaContextSupport {
         if (Tree.Kind.METHOD.equals(mtdTreePath.getLeaf().getKind())) {
             MethodTree method = (MethodTree) mtdTreePath.getLeaf();
             return method.getModifiers().getFlags().contains(Modifier.STATIC);
+        }
+        return false;
+    }
+    
+    private static boolean isNative(TreePath mtdTreePath) {
+        if (Tree.Kind.METHOD.equals(mtdTreePath.getLeaf().getKind())) {
+            MethodTree method = (MethodTree) mtdTreePath.getLeaf();
+            return method.getModifiers().getFlags().contains(Modifier.NATIVE);
         }
         return false;
     }

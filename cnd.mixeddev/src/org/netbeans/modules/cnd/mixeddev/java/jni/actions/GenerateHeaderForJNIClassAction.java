@@ -105,7 +105,7 @@ import org.openide.windows.WindowManager;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions", category = "MixedDevelopment")
+@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.GenerateHeaderForJNIClassAction", category = "MixedDevelopment")
 @ActionRegistration(displayName = "#LBL_Action_GenerateHeaderForJNIClass", lazy = false)
 @ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=20)})
 @NbBundle.Messages({"LBL_Action_GenerateHeaderForJNIClass=Generate JNI header"})

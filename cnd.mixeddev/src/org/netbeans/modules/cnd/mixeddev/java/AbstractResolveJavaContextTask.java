@@ -39,73 +39,57 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.mixeddev.java;
 
-package org.netbeans.modules.cnd.mixeddev.java.model;
-
-import java.util.List;
+import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class JavaMethodInfo implements JavaEntityInfo {
+public abstract class AbstractResolveJavaContextTask<T> implements ResolveJavaContextTask<T> {
+        
+    protected final int offset;
     
-    private final CharSequence name;
+    protected T result;
     
-    private final CharSequence qualifiedName;
-    
-    private final List<JavaTypeInfo> parameters;
-    
-    private final JavaTypeInfo returnType;
-    
-    private final boolean overloaded;
-    
-    private final boolean staticMethod;
-    
-    private final boolean nativeMethod;
-
-    public JavaMethodInfo(CharSequence name, 
-                            CharSequence qualifiedName, 
-                            List<JavaTypeInfo> parameters, 
-                            JavaTypeInfo returnType, 
-                            boolean overloaded,
-                            boolean staticMethod,
-                            boolean nativeMethod) 
-    {
-        this.name = name;
-        this.qualifiedName = qualifiedName;
-        this.parameters = parameters;
-        this.returnType = returnType;
-        this.overloaded = overloaded;
-        this.staticMethod = staticMethod;
-        this.nativeMethod = nativeMethod;
-    }
-    
-    public CharSequence getName() {
-        return name;
-    }    
-
-    public CharSequence getQualifiedName() {
-        return qualifiedName;
+    public AbstractResolveJavaContextTask(int offset) {
+        this(offset, null);
     }
 
-    public List<JavaTypeInfo> getParameters() {
-        return parameters;
-    }
-
-    public JavaTypeInfo getReturnType() {
-        return returnType;
-    }
-
-    public boolean isOverloaded() {
-        return overloaded;
+    public AbstractResolveJavaContextTask(int offset, T defaultResult) {
+        this.offset = offset;
+        this.result = defaultResult;
     }
     
-    public boolean isStatic() {
-        return staticMethod;
+    @Override
+    public boolean hasResult() {
+        return result != null;
     }
     
-    public boolean isNative() {
-        return nativeMethod;
+    @Override
+    public T getResult() {
+        return result;
     }
+    
+    @Override
+    public void cancel() {
+        // Do nothing
+    }
+
+    @Override
+    public final void run(CompilationController controller) throws Exception {
+        if (controller == null || controller.toPhase(JavaSource.Phase.RESOLVED).compareTo(JavaSource.Phase.RESOLVED) < 0) {
+            return;
+        }
+        // Look for current element
+        TreePath tp = controller.getTreeUtilities().pathFor(offset);
+        if (tp != null) {
+            resolve(controller, tp);
+        }
+    }
+    
+    protected abstract void resolve(CompilationController controller, TreePath tp);
 }
