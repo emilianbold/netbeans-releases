@@ -53,11 +53,13 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
@@ -181,14 +183,22 @@ public class ProfilerOptionsContainer extends ProfilerOptionsPanel {
     }
     
     private JScrollPane createPanelScroll(ProfilerOptionsPanel panel) {
+        enlargeBorder(panel, 0, 0, 0, 5);
         JScrollPane scroll = new JScrollPane(panel);
         scroll.setBorder(BorderFactory.createEmptyBorder());
-        scroll.setViewportBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+        scroll.setViewportBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUnitIncrement(scrollIncrement);
         scroll.getVerticalScrollBar().setBlockIncrement((int)(content.getHeight() * 0.8d));
         scroll.getHorizontalScrollBar().setUnitIncrement(scrollIncrement);
         scroll.getHorizontalScrollBar().setBlockIncrement((int)(content.getWidth() * 0.8d));
         return scroll;
+    }
+    
+    private static void enlargeBorder(JComponent c, int t, int l, int b, int r) {
+        Border current = c.getBorder();
+        Border larger = BorderFactory.createEmptyBorder(t, l, b, r);
+        if (current == null) c.setBorder(larger);
+        else c.setBorder(BorderFactory.createCompoundBorder(larger, current));
     }
     
     
