@@ -60,6 +60,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.modules.refactoring.java.Bundle.*;
+import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
 
@@ -143,16 +144,22 @@ public class WhereUsedBinaryElement extends SimpleRefactoringElementImplementati
     public boolean filter(FiltersManager manager) {
         boolean show = true;
         
-        if(fromPlatform) {
-            show = show && manager.isSelected(JavaWhereUsedFilters.PLATFORM.getKey());
-        } else { // inDependency
-            show = show && manager.isSelected(JavaWhereUsedFilters.DEPENDENCY.getKey());
+        if(JavaWhereUsedQueryPlugin.DEPENDENCIES) {
+            if(fromPlatform) {
+                show = show && manager.isSelected(JavaWhereUsedFilters.PLATFORM.getKey());
+            } else { // inDependency
+                show = show && manager.isSelected(JavaWhereUsedFilters.DEPENDENCY.getKey());
+            }
         }
         
         if(fromTest) {
             show = show && manager.isSelected(JavaWhereUsedFilters.TESTFILE.getKey());
         }
         
-        return show && manager.isSelected(JavaWhereUsedFilters.BINARYFILE.getKey());
+        if(JavaWhereUsedQueryPlugin.DEPENDENCIES) {
+            show = show && manager.isSelected(JavaWhereUsedFilters.BINARYFILE.getKey());
+        }
+        
+        return show;
     }
 }
