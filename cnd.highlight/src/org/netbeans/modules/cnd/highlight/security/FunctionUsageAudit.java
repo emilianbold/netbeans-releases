@@ -88,11 +88,13 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
                     String altText = getAlternativesIfUnsafe(function);
                     if (altText != null) {
                         CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                        String name = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", function.getName().toString()); // NOI18N
                         String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), getName()+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset()));  // NOI18N
+                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                         } else {
+                            
                             response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
                         }
                     }
