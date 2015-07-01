@@ -43,10 +43,7 @@ package org.netbeans.modules.cnd.highlight.security;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -144,35 +141,26 @@ public class SecurityCheckProvider extends CsmErrorProvider implements CodeAudit
     @Override
     public synchronized Collection<CodeAudit> getAudits() {
         if (audits == null) {
-            FunctionsSecurityLevels avoid = FunctionsSecurityLevels.getInstance(FunctionsSecurityLevels.Level.AVOID);
-            FunctionsSecurityLevels unsafe = FunctionsSecurityLevels.getInstance(FunctionsSecurityLevels.Level.UNSAFE);
-            Map<String, Map<String, String>> avoidCategories = avoid.getCategories();
-            Map<String, Map<String, String>> unsafeCategories = unsafe.getCategories();
-            List<CodeAudit> result = new ArrayList<>(avoidCategories.size()+unsafeCategories.size());
-            for (String key : unsafeCategories.keySet()) {
-                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+key+".description"); // NOI18N
-                Map<String, String> functions = unsafeCategories.get(key);
-                for (String fKey: functions.keySet()) {
-                    String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", fKey); // NOI18N
-                    result.add(new FunctionUsageAudit(fKey, functions.get(fKey), id, id, description, "error", true, myPreferences)); // NOI18N
-                }
+            FunctionsXmlService service = FunctionsXmlService.getInstance();
+            List<CodeAudit> result = new ArrayList<>(service.getChecksCount());
+            for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.UNSAFE)) {
+                String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", category.getName()); // NOI18N
+                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
+                List<FunctionsXmlService.RvsdFunction> functions = category.getFunctions();
+                result.add(new FunctionUsageAudit(functions, id, id, description, "error", true, myPreferences)); // NOI18N
             }
-            for (String key : avoidCategories.keySet()) {
-                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+key+".description"); // NOI18N
-                Map<String, String> functions = avoidCategories.get(key);
-                for (String fKey: functions.keySet()) {
-                    String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", fKey); // NOI18N
-                    result.add(new FunctionUsageAudit(fKey, functions.get(fKey), id, id, description, "warning", true, myPreferences)); // NOI18N
-                }
+            for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.AVOID)) {
+                String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", category.getName()); // NOI18N
+                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
+                List<FunctionsXmlService.RvsdFunction> functions = category.getFunctions();
+                result.add(new FunctionUsageAudit(functions, id, id, description, "warning", true, myPreferences)); // NOI18N
             }
-            
-            Collections.sort(result, new Comparator<CodeAudit>(){
-
-                @Override
-                public int compare(CodeAudit o1, CodeAudit o2) {
-                    return o1.getName().compareTo(o2.getName());
-                }
-            });
+            for (FunctionsXmlService.Category category : service.getCategories(FunctionsXmlService.Level.CAUTION)) {
+                String id = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", category.getName()); // NOI18N
+                String description = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit."+category.getName()+".description"); // NOI18N
+                List<FunctionsXmlService.RvsdFunction> functions = category.getFunctions();
+                result.add(new FunctionUsageAudit(functions, id, id, description, "warning", false, myPreferences)); // NOI18N
+            }
             audits = result;
         }
         return audits;

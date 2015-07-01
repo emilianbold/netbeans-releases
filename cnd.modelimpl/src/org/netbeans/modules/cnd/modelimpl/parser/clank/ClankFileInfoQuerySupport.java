@@ -78,7 +78,6 @@ public class ClankFileInfoQuerySupport {
         if (interrupter.cancelled()) {
             return out;
         }
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "getClankMacroUsages Not yet implemented");
         if (handlers.isEmpty()) {
             DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
             return Collections.<CsmReference>emptyList();

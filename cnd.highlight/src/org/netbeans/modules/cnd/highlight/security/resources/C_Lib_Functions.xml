@@ -44,28 +44,61 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
 <functions>
     <level value="unsafe">
         <category name="gets">
-            <function name="gets" header="stdio.h" />
+            <function name="gets" header="stdio.h">
+                <altfunc text="fgets(buf, sizeof (buf), stdin)" />
+            </function>
         </category>
         <category name="cftime">
-            <function name="cftime" header="time.h" />
-            <function name="ascftime" header="time.h" />
+            <function name="cftime" header="time.h">
+                <altfunc text="strftime(buf, sizeof (buf), fmt, &amp;tm)" />
+            </function>
+            <function name="ascftime" header="time.h">
+                <altfunc text="strftime(buf, sizeof (buf), fmt, &amp;tm)" />
+            </function>
         </category>
     </level>
     <level value="avoid">
         <category name="strcat">
-            <function name="strcat" header="string.h" />
-            <function name="strcpy" header="string.h" />
+            <function name="strcat" header="string.h">
+                <altfunc text="strlcat(dst, src, dstsize)" />
+            </function>
+            <function name="strcpy" header="string.h">
+                <altfunc text="strlcpy(dst, src, dstsize)" />
+            </function>
         </category>
         <category name="access">
-            <function name="access" header="unistd.h" />
+            <function name="access" header="unistd.h">
+                <altfunc text="open()" />
+            </function>
+        </category>
+        <category name="chmod">
+            <function name="chmod" header="sys/stat.h"></function>
+            <function name="fchmodat" header="sys/stat.h"></function>
+            <function name="chown" header="unistd.h"></function>
+            <function name="lchown" header="unistd.h"></function>
+        </category>
+        <category name="alloca">
+            <function name="alloca" header="stdlib.h">
+                <altfunc text="malloc(size_t)" />
+            </function>
+            <function name="strdupa" header="string.h">
+                <altfunc text="strdup(const char *)" />
+            </function>
+            <function name="strndupa" header="string.h">
+                <altfunc text="strdup(const char *)" />
+            </function>
         </category>
     </level>
     <level value="caution">
         <category name="strncat">
-            <function name="strncat" header="string.h" />
+            <function name="strncat" header="string.h">
+                <altfunc text="strlcat(dst, src, dstsize)" />
+            </function>
         </category>
         <category name="strncpy">
-            <function name="strncpy" header="string.h" />
+            <function name="strncpy" header="string.h">
+                <altfunc text="strlcpy(dst, src, dstsize)" />
+            </function>
         </category>
     </level>
 </functions>
