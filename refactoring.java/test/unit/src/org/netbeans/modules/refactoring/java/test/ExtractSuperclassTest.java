@@ -90,6 +90,41 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
         performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE, new Problem(true, "ERR_ClassClash"));
     }
     
+    public void test252621() throws Exception { //#252621 - [Extract Superclass] Import for annotation is not added
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                        + "\n"
+                        + "import java.beans.Transient;\n"
+                        + "\n"
+                        + "public class ExtractBaseClass {\n"
+                        + "    @Transient\n"
+                        + "    public void m() {\n"
+                        + "    }\n"
+                        + "}"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE);
+        verifyContent(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "import java.beans.Transient;\n"
+                + "\n"
+                + "public class ExtractBaseClass extends ExtractSuperClass {\n"
+
+                + "}"),
+                new File("extract/ExtractSuperClass.java", "/* * Refactoring License */ package extract;\n"
+                + "\n"
+                + "import java.beans.Transient;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class ExtractSuperClass {\n"
+                + "    @Transient\n"
+                + "    public void m() {\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     
     public void test231639() throws Exception { //#231639 - StackOverflowError at com.sun.tools.javac.code.Type$WildcardType.getExtendsBound 
         writeFilesAndWaitForScan(src,
