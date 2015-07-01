@@ -147,7 +147,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                   tokStreamCache.getFileIndex());
           FileBuffer buffer = fileImpl.getBuffer();
           if (getFixCode() != null) {
-              buffer = new FixedFileBuffer(buffer, getFixCode());
+              buffer = new PatchedFileBuffer(buffer, getFixCode());
           }
           boolean tsFromClank = ClankDriver.preprocess(buffer, ppHandler, callback, interrupter);
           if (!tsFromClank) {
@@ -595,15 +595,15 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
-    private static final class FixedFileBuffer implements FileBuffer {
+    private static final class PatchedFileBuffer implements FileBuffer {
         private final FileBuffer delegate;
-        private final FixCode fixCode;
+        private final CodePatch codePatch;
         private char[] res;
         private Line2Offset lines;
 
-        private FixedFileBuffer(FileBuffer delegate, FixCode fixCode) {
+        private PatchedFileBuffer(FileBuffer delegate, CodePatch patchCode) {
             this.delegate = delegate;
-            this.fixCode = fixCode;
+            this.codePatch = patchCode;
         }
 
         @Override
@@ -690,11 +690,11 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         public char[] getCharBuffer() throws IOException {
             if (res == null) {
                 char[] charBuffer = delegate.getCharBuffer();
-                char[] patch = fixCode.getPatch().toCharArray();
-                res = new char[charBuffer.length-(fixCode.getEndOffset()-fixCode.getStartOffset())+patch.length];
-                System.arraycopy(charBuffer, 0, res, 0, fixCode.getStartOffset());
-                System.arraycopy(patch, 0, res, fixCode.getStartOffset(), patch.length);
-                System.arraycopy(charBuffer, fixCode.getEndOffset(), res, fixCode.getStartOffset()+patch.length, charBuffer.length - fixCode.getEndOffset());
+                char[] patch = codePatch.getPatch().toCharArray();
+                res = new char[charBuffer.length-(codePatch.getEndOffset()-codePatch.getStartOffset())+patch.length];
+                System.arraycopy(charBuffer, 0, res, 0, codePatch.getStartOffset());
+                System.arraycopy(patch, 0, res, codePatch.getStartOffset(), patch.length);
+                System.arraycopy(charBuffer, codePatch.getEndOffset(), res, codePatch.getStartOffset()+patch.length, charBuffer.length - codePatch.getEndOffset());
             }
             return res;
         }

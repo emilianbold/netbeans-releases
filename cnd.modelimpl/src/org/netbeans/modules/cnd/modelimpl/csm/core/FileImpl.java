@@ -1268,7 +1268,7 @@ public final class FileImpl implements CsmFile,
         String contextLanguage = this.getContextLanguage(ppState);
         String contextLanguageFlavor = this.getContextLanguageFlavor(ppState);
         tsp.prepare(preprocHandler, contextLanguage, contextLanguageFlavor, true);
-        tsp.setFixCode(new TokenStreamProducer.FixCode(startContextOffset, endContextOffset, context));
+        tsp.setCodePatch(new TokenStreamProducer.CodePatch(startContextOffset, endContextOffset, context));
         TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
         if (tokenStream == null) {
             return null;

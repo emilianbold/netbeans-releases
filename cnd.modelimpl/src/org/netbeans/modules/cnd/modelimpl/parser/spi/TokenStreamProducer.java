@@ -64,7 +64,7 @@ public abstract class TokenStreamProducer {
     private final FileImpl fileImpl;
     private final FileContent fileContent;
     private boolean allowToCacheOnRelease;
-    private FixCode fixCode;
+    private CodePatch codePatch;
 
     protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent) {
         assert fileImpl != null : "null file is not allowed";        
@@ -124,20 +124,20 @@ public abstract class TokenStreamProducer {
         return allowToCacheOnRelease;
     }
 
-    public FixCode getFixCode() {
-        return fixCode;
+    public CodePatch getFixCode() {
+        return codePatch;
     }
 
-    public void setFixCode(FixCode fixCode) {
-        this.fixCode = fixCode;
+    public void setCodePatch(CodePatch codePatch) {
+        this.codePatch = codePatch;
     }
 
-    public static final class FixCode {
+    public static final class CodePatch {
         private final int startOffset;
         private final int endOffset;
         private final String patch;
 
-        public FixCode(int startOffset, int endOffset, String patch) {
+        public CodePatch(int startOffset, int endOffset, String patch) {
             this.startOffset = startOffset;
             this.endOffset = endOffset;
             this.patch = patch;
