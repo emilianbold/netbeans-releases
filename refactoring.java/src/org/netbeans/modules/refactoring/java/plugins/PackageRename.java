@@ -46,6 +46,8 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -78,8 +80,9 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Becicka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=200)
-public class PackageRename implements RefactoringPluginFactory{
-    
+public class PackageRename implements RefactoringPluginFactory {
+    private static final Logger LOG = Logger.getLogger(PackageRename.class.getName());
+
     /** Creates a new instance of PackageRename */
     public PackageRename() {
     }
@@ -87,19 +90,22 @@ public class PackageRename implements RefactoringPluginFactory{
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
-            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)!=null) {
-                return new PackageRenamePlugin((RenameRefactoring) refactoring);
+            NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+            if (folder !=null) {
+                return new PackageRenamePlugin((RenameRefactoring) refactoring, folder);
             }
         }
         return null;
     }
     
     public class PackageRenamePlugin implements RefactoringPlugin {
-        private RenameRefactoring refactoring;
-        
+        private final RenameRefactoring refactoring;
+        private final NonRecursiveFolder nonRecursiveFolder;
+
         /** Creates a new instance of PackageRenamePlugin */
-        public PackageRenamePlugin(RenameRefactoring refactoring) {
+        public PackageRenamePlugin(RenameRefactoring refactoring, NonRecursiveFolder nonRecursiveFolder) {
             this.refactoring = refactoring;
+            this.nonRecursiveFolder = nonRecursiveFolder;
         }
         
         @Override
@@ -123,7 +129,7 @@ public class PackageRename implements RefactoringPluginFactory{
                 return new Problem(true, msg);
             }
 
-            FileObject folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder();
+            FileObject folder = nonRecursiveFolder.getFolder();
             ClassPath projectClassPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
             FileObject fo;
             if ((fo = projectClassPath.findResource(newName.replace('.','/')))!=null) {
@@ -131,7 +137,7 @@ public class PackageRename implements RefactoringPluginFactory{
                 if(ownerRoot != null && ownerRoot.equals(projectClassPath.findOwnerRoot(fo))) {
                     if (fo.isFolder() && fo.getChildren().length == 1) {
                         FileObject parent = fo.getChildren()[0];
-                        String relativePath = FileUtil.getRelativePath(parent, refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder());
+                        String relativePath = FileUtil.getRelativePath(parent, nonRecursiveFolder.getFolder());
                         if (relativePath != null) {
                             return null;
                         }
@@ -259,7 +265,12 @@ public class PackageRename implements RefactoringPluginFactory{
                         destination = tmp;
                     }
                     if (!this.folder.isValid()) {
-                        this.folder = FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
+                        FileObject toFileObject = FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
+                        if(toFileObject == null) {
+                            LOG.log(Level.INFO, "Invalid folder: {0}", this.folder.getPath());
+                            return; // File changed?
+                        }
+                        this.folder = toFileObject;
                     }
                     FileObject folder = this.folder;
                     FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
