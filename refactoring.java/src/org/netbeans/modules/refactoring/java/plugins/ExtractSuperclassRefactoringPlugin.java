@@ -411,8 +411,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                         newMembers);
 
                 rewrite(classTree, nc);
+                return classTree;
             }
-            return classTree;
+            return super.visitClass(classTree, p);
         }
 
         @Override
@@ -458,6 +459,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                         modifiers = make.addModifiersModifier(modifiers, Modifier.PROTECTED);
                     }
                     newMethod = genUtils.importFQNs(newMethod);
+                    modifiers = genUtils.importFQNs(modifiers);
                     final List<? extends TypeMirror> thrownTypes = ((ExecutableElement)current).getThrownTypes();
                     List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
                     for (TypeMirror typeMirror : thrownTypes) {
