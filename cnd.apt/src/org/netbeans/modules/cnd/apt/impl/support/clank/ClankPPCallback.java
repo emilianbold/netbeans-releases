@@ -508,7 +508,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             for (int i = 0; i < size; i++) {
                 FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
                 ClankMacroDirectiveWrapper decl = null;
-                SourceLocation referencedDeclarationSuorceLocation = e.getReferencedDeclarationSuorceLocation();
+                SourceLocation referencedDeclarationSuorceLocation = e.getReferencedDeclarationSourceLocation();
                 for(ClankDriver.ClankPreprocessorDirective directive : convertedPPDirectives) {
                     if (directive instanceof ClankMacroDirectiveWrapper) {
                         ClankMacroDirectiveWrapper wrapper = (ClankMacroDirectiveWrapper)directive;

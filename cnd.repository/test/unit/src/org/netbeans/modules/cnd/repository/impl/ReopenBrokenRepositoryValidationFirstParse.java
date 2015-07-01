@@ -37,10 +37,13 @@
  */
 package org.netbeans.modules.cnd.repository.impl;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  * This test parses project, compare model with golden and persist model in repository.
  * @author Vladimir Voskresensky
  */
+@RandomlyFails
 public class ReopenBrokenRepositoryValidationFirstParse extends RepositoryValidationFirstParse {
 
     public ReopenBrokenRepositoryValidationFirstParse(String testName) {

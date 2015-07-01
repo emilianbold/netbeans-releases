@@ -1,6 +1,7 @@
-#changeset:   15198:e131a7df573d
+#changeset:   15203:1b7e5b0576ff
 #tag:         tip
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Tue Jun 30 19:06:56 2015 +0300
-#summary:     add referenced macro declaration in macro expansion info
-D36EA6B9D385551FF2AD2B8DEC19EDBB4F96666A clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Wed Jul 01 21:47:39 2015 +0300
+#summary:     fix name misspelling
+92AE0C9D73639EA9BF3FBE1F980294F779CC603A clank_0.3.6.zip
+
