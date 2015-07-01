@@ -69,8 +69,8 @@ public class FunctionsXmlService {
     private static final String[] CATEGORY_TAG_ATTRIBUTES = {"name"}; // NOI18N
     private static final String FUNCTION_TAG_NAME = "function"; // NOI18N
     private static final String[] FUNCTION_TAG_ATTRIBUTES = {"name", "header"}; // NOI18N
-    private static final String ALTFUNC_TAG_NAME = "altfunc"; // NOI18N
-    private static final String[] ALTFUNC_TAG_ATTRIBUTES = {"text"}; // NOI18N
+    private static final String ALTERNATIVE_TAG_NAME = "alternative"; // NOI18N
+    private static final String[] ALTERNATIVE_TAG_ATTRIBUTES = {"text"}; // NOI18N
     
     private static final String ROOT_FOLDER = "CND"; // NOI18N
     private static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
@@ -141,8 +141,8 @@ public class FunctionsXmlService {
                                         // iterate through alternatives
                                         for (int l = 0, limit = alternatives.getLength(); l < limit; l++) {
                                             Node altNode = alternatives.item(l);
-                                            if (altNode.getNodeName().equals(ALTFUNC_TAG_NAME) && altNode.getNodeType() == Node.ELEMENT_NODE) {
-                                                func.addAlternative(((Element) altNode).getAttribute(ALTFUNC_TAG_ATTRIBUTES[0]));
+                                            if (altNode.getNodeName().equals(ALTERNATIVE_TAG_NAME) && altNode.getNodeType() == Node.ELEMENT_NODE) {
+                                                func.addAlternative(((Element) altNode).getAttribute(ALTERNATIVE_TAG_ATTRIBUTES[0]));
                                             }
                                         }
                                         category.addFunction(func);
@@ -209,9 +209,9 @@ public class FunctionsXmlService {
         private void addAlternative(String alternative) {
             alternatives.add(alternative);
             if (text.length() != 0) {
-                text.append(" ");
+                text.append(" "); // NOI18N
             }
-            text.append(alternative).append(";");
+            text.append(alternative).append(";"); // NOI18N
         }
         
         public String getName() {
