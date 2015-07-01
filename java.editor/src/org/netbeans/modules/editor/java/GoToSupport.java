@@ -901,9 +901,15 @@ public class GoToSupport {
                     boldStartCheck(highlightName);
                     result.append(e.getEnclosingElement().getSimpleName());
                     boldStopCheck(highlightName);
+                    TypeMirror memberType = null;
                     if (dt != null) {
                         dumpRealTypeArguments(dt.getTypeArguments());
-                        dumpArguments(e.getParameters(), ((ExecutableType) info.getTypes().asMemberOf(dt, e)).getParameterTypes());
+                        try {
+                            memberType = info.getTypes().asMemberOf(dt, e);
+                        } catch (IllegalStateException ise) {}
+                    }
+                    if (memberType instanceof ExecutableType) {
+                        dumpArguments(e.getParameters(), ((ExecutableType) memberType).getParameterTypes());
                     } else {
                         dumpArguments(e.getParameters(), null);
                     }
