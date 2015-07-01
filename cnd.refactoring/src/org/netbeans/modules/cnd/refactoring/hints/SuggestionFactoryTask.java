@@ -334,7 +334,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 2000)
     public static final class AssignVariable implements CodeAuditFactory {
         private static final String ID = "AssignVariable"; //NOI18N
         @Override
@@ -361,7 +361,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
     }
 
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 3000)
     public static final class AddMissingCases implements CodeAuditFactory {
         private static final String ID = "AddMissingCases"; //NOI18N
         @Override
@@ -388,7 +388,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 1000)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 4000)
     public static final class InstantInline implements CodeAuditFactory {
         private static final String ID = "InstantInline"; // NOI18N
         @Override
