@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.highlight.security;
 
+import java.util.List;
 import org.netbeans.modules.cnd.analysis.api.AnalyzerResponse;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -54,19 +55,18 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Danila Sergeyev
  */
 public class FunctionUsageAudit extends AbstractCodeAudit {
-    private final String functionName;
-    private final String header;
+    private final List<FunctionsXmlService.RvsdFunction> functions;
     
-    public FunctionUsageAudit(String functionName, String header, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    public FunctionUsageAudit(List<FunctionsXmlService.RvsdFunction> functions, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
-        this.functionName = functionName;
-        this.header = header;
+        this.functions = functions;
     }
     
     @Override
@@ -85,23 +85,34 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
             for (CsmReference ref : CsmReferenceResolver.getDefault().getReferences(file)) {
                 if (CsmKindUtilities.isFunction(ref.getReferencedObject())) {
                     CsmFunction function = (CsmFunction) ref.getReferencedObject();
-                    if (function.getName().toString().equals(functionName)) {
-                        CsmFile srcFile = function.getContainingFile();
-                        for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
-                            if (include.getIncludeName().toString().equals(header)) {
-                                CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                                if (response instanceof AnalyzerResponse) {
-                                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                        new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), getName()+"\n"+getDescription(), severity, ref.getStartOffset(), ref.getEndOffset()));  // NOI18N
-                                } else {
-                                    response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), getDescription(), severity, ref.getStartOffset(), ref.getEndOffset()));
-                                }
-                            }
+                    String altText = getAlternativesIfUnsafe(function);
+                    if (altText != null) {
+                        CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                        String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
+                        if (response instanceof AnalyzerResponse) {
+                            ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), getName()+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset()));  // NOI18N
+                        } else {
+                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
                         }
                     }
                 }
             }
         }
+    }
+    
+    private String getAlternativesIfUnsafe(CsmFunction function) {
+        for (FunctionsXmlService.RvsdFunction unsafeFunction : functions) {
+            if (function.getName().toString().equals(unsafeFunction.getName())) {
+                CsmFile srcFile = function.getContainingFile();
+                for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {
+                    if (include.getIncludeName().toString().equals(unsafeFunction.getHeader())) {
+                        return unsafeFunction.getAlternativesString();
+                    }
+                }
+            }
+        }
+        return null;
     }
     
 }
