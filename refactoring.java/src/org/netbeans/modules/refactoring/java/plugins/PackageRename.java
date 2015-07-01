@@ -46,6 +46,8 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -78,8 +80,9 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Becicka
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=200)
-public class PackageRename implements RefactoringPluginFactory{
-    
+public class PackageRename implements RefactoringPluginFactory {
+    private static final Logger LOG = Logger.getLogger(PackageRename.class.getName());
+
     /** Creates a new instance of PackageRename */
     public PackageRename() {
     }
@@ -259,7 +262,12 @@ public class PackageRename implements RefactoringPluginFactory{
                         destination = tmp;
                     }
                     if (!this.folder.isValid()) {
-                        this.folder = FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
+                        FileObject toFileObject = FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
+                        if(toFileObject == null) {
+                            LOG.log(Level.INFO, "Invalid folder: {0}", this.folder.getPath());
+                            return; // File changed?
+                        }
+                        this.folder = toFileObject;
                     }
                     FileObject folder = this.folder;
                     FileUtil.toFileObject(new java.io.File(this.folder.getPath()));
