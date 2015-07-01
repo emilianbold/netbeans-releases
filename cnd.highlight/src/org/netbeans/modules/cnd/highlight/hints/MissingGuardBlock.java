@@ -66,7 +66,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
-import org.netbeans.modules.cnd.highlight.error.CodeAssistanceHintProvider;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
@@ -142,9 +141,9 @@ public class MissingGuardBlock extends AbstractCodeAudit {
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
                         ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, null,
-                            new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
+                            new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
                     } else {
-                        response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CodeAssistanceHintProvider.NAME, getID(), message, severity, start));
+                        response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), message, severity, start));
                     }
                 } catch (InterruptedException | CancellationException | ExecutionException ex) {
                     ex.printStackTrace(System.err);
@@ -153,7 +152,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 4000)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {

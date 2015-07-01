@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.highlight.error.CodeAssistanceHintProvider;
 import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.NbBundle;
@@ -154,14 +153,14 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
             if (response instanceof AnalyzerResponse) {
                 ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, csmClass.getContainingFile().getFileObject(),
-                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
+                    new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));  // NOI18N
             } else {
-                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CodeAssistanceHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
+                response.addError(new NoMatchingConstructor.NoMatchingConstructorErrorInfoImpl(request.getDocument(), csmClass, CsmHintProvider.NAME, getID(), message, severity, csmClass.getStartOffset(), csmClass.getLeftBracketOffset()));
             }
         }
     }
     
-    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CodeAssistanceHintProvider.NAME, service = CodeAuditFactory.class, position = 1300)
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+CsmHintProvider.NAME, service = CodeAuditFactory.class, position = 6000)
     public static final class Factory implements CodeAuditFactory {
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
