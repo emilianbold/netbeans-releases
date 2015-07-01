@@ -90,19 +90,22 @@ public class PackageRename implements RefactoringPluginFactory {
     @Override
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         if (refactoring instanceof RenameRefactoring) {
-            if (refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class)!=null) {
-                return new PackageRenamePlugin((RenameRefactoring) refactoring);
+            NonRecursiveFolder folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class);
+            if (folder !=null) {
+                return new PackageRenamePlugin((RenameRefactoring) refactoring, folder);
             }
         }
         return null;
     }
     
     public class PackageRenamePlugin implements RefactoringPlugin {
-        private RenameRefactoring refactoring;
-        
+        private final RenameRefactoring refactoring;
+        private final NonRecursiveFolder nonRecursiveFolder;
+
         /** Creates a new instance of PackageRenamePlugin */
-        public PackageRenamePlugin(RenameRefactoring refactoring) {
+        public PackageRenamePlugin(RenameRefactoring refactoring, NonRecursiveFolder nonRecursiveFolder) {
             this.refactoring = refactoring;
+            this.nonRecursiveFolder = nonRecursiveFolder;
         }
         
         @Override
@@ -126,7 +129,7 @@ public class PackageRename implements RefactoringPluginFactory {
                 return new Problem(true, msg);
             }
 
-            FileObject folder = refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder();
+            FileObject folder = nonRecursiveFolder.getFolder();
             ClassPath projectClassPath = ClassPath.getClassPath(folder, ClassPath.SOURCE);
             FileObject fo;
             if ((fo = projectClassPath.findResource(newName.replace('.','/')))!=null) {
@@ -134,7 +137,7 @@ public class PackageRename implements RefactoringPluginFactory {
                 if(ownerRoot != null && ownerRoot.equals(projectClassPath.findOwnerRoot(fo))) {
                     if (fo.isFolder() && fo.getChildren().length == 1) {
                         FileObject parent = fo.getChildren()[0];
-                        String relativePath = FileUtil.getRelativePath(parent, refactoring.getRefactoringSource().lookup(NonRecursiveFolder.class).getFolder());
+                        String relativePath = FileUtil.getRelativePath(parent, nonRecursiveFolder.getFolder());
                         if (relativePath != null) {
                             return null;
                         }
