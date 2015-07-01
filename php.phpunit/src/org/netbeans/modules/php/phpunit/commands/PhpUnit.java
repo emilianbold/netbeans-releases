@@ -336,7 +336,7 @@ public final class PhpUnit {
             return phpUnit.debug(startFiles.get(0), getDescriptor(), null);
         } catch (CancellationException ex) {
             // canceled
-            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+            LOGGER.log(Level.FINE, "Test running cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
             if (PhpUnitPreferences.isPhpUnitEnabled(phpModule)) {
@@ -380,8 +380,8 @@ public final class PhpUnit {
             }
             return testGroupsProcessorFactory.getTestGroups();
         } catch (CancellationException ex) {
-            // canceled
-            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+            // cancelled
+            LOGGER.log(Level.FINE, "Test groups getting cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
             UiUtils.processExecutionException(ex, PhpUnitOptionsPanelController.OPTIONS_SUB_PATH);
