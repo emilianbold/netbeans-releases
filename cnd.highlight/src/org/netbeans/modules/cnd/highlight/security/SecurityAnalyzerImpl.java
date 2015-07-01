@@ -127,7 +127,7 @@ public class SecurityAnalyzerImpl extends AbstractAnalyzer {
                     buf.append(messages[i]);
                 }
                 buf.append("</pre>"); //NOI18N
-                String message = messages[1];
+                String message = messages[0];
                 return ErrorDescriptionFactory.createErrorDescription(PREFIX+abbr, Severity.ERROR,
                         message, buf.toString(), list, fo, errorInfo.getStartOffset(), errorInfo.getStartOffset());
             }
