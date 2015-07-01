@@ -1,7 +1,7 @@
-#changeset:   15201:35600d7ef8cb
+#changeset:   15203:1b7e5b0576ff
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Jul 01 21:10:24 2015 +0300
-#summary:     fixed system includes issue
-5A1BD93910958A2F6B8F7B2BBC3C5D6FB881E146 clank_0.3.6.zip
+#date:        Wed Jul 01 21:47:39 2015 +0300
+#summary:     fix name misspelling
+92AE0C9D73639EA9BF3FBE1F980294F779CC603A clank_0.3.6.zip
 
