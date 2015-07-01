@@ -411,8 +411,9 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
                         newMembers);
 
                 rewrite(classTree, nc);
+                return classTree;
             }
-            return classTree;
+            return super.visitClass(classTree, p);
         }
 
         @Override
