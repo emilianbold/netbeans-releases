@@ -449,7 +449,8 @@ public final class ElementUtilities {
             if (hider == member)
                 return true;
             if (hider.getSimpleName().contentEquals(member.getSimpleName())) {
-                if (member instanceof VariableElement && hider instanceof VariableElement)
+                if (member instanceof VariableElement && hider instanceof VariableElement
+                        && (!member.getKind().isField() || hider.getKind().isField()))
                     return true;
                 if (elements.hides(member, hider)) {
                     it.remove();

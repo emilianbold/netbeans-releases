@@ -75,6 +75,8 @@ import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.editor.document.AtomicLockDocument;
+import org.netbeans.api.editor.document.LineDocumentUtils;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -325,19 +327,29 @@ public abstract class JavaCompletionItem implements CompletionItem {
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.CTRL_MASK) > 0) {
             JTextComponent component = (JTextComponent)evt.getSource();
-            int caretOffset = component.getSelectionEnd();
-            Document doc = component.getDocument();
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
-            if (ts != null && (ts.moveNext() || ts.movePrevious())) {
-                if (ts.token().id() == JavaTokenId.IDENTIFIER
-                        || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
-                        || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
-                    try {
-                        doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+            final int caretOffset = component.getSelectionEnd();
+            final Document doc = component.getDocument();
+            Runnable r = new Runnable() {
+                public void run() {
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), caretOffset);
+                    if (ts != null && (ts.moveNext() || ts.movePrevious())) {
+                        if (ts.token().id() == JavaTokenId.IDENTIFIER
+                                || ts.token().id().primaryCategory().startsWith("keyword") //NOI18N
+                                || ts.token().id().primaryCategory().startsWith("string")) { //NOI18N
+                            try {
+                                doc.remove(caretOffset, ts.offset() + ts.token().length() - caretOffset);
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
                     }
                 }
+            };
+            AtomicLockDocument ald = LineDocumentUtils.as(doc, AtomicLockDocument.class);
+            if (ald != null) {
+                ald.runAtomic(r);
+            } else {
+                r.run();
             }
         } else if (evt.getID() == KeyEvent.KEY_PRESSED && evt.getKeyCode() == KeyEvent.VK_ENTER && (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0) {
             JTextComponent component = (JTextComponent)evt.getSource();
@@ -1489,7 +1501,49 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-            CharSequence cs = super.substituteText(c, offset, length, text, toAdd);
+            final String[] prefix = {""}; //NOI18N
+            Runnable r = new Runnable() {
+                public void run() {
+                    TokenSequence<JavaTokenId> t = findLastNonWhitespaceToken(SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset), 0, offset);
+                    if (t == null || t.token().id() != JavaTokenId.DOT) {
+                        final AtomicBoolean cancel = new AtomicBoolean();
+                        ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    ParserManager.parse(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                            if (cancel.get()) {
+                                                return;
+                                            }
+                                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                            controller.toPhase(Phase.RESOLVED);
+                                            if (cancel.get()) {
+                                                return;
+                                            }
+                                            Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                            for (Element localElement : scope.getLocalElements()) {
+                                                if (!localElement.getKind().isField() && localElement.getSimpleName().contentEquals(text)) {
+                                                    prefix[0] = modifiers.contains(Modifier.STATIC) ? scope.getEnclosingClass().getSimpleName() + "." : "this."; //NOI18N
+                                                }
+                                            }
+                                        }
+                                    });
+                                } catch (ParseException pe) {
+                                }
+                            }
+                        }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_prefix_if_necessary"), cancel, false); //NOI18N
+                    }
+                }
+            };
+            AtomicLockDocument ald = LineDocumentUtils.as(c.getDocument(), AtomicLockDocument.class);
+            if (ald != null) {
+                ald.runAtomic(r);
+            } else {
+                r.run();
+            }
+            CharSequence cs = super.substituteText(c, offset, length, prefix[0] + text, toAdd);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
@@ -3988,7 +4042,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (t != null) {
                                 SourcePositions sp = controller.getTrees().getSourcePositions();
                                 int endPos = (int)sp.getEndPosition(controller.getCompilationUnit(), t);
-                                TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller, embeddedOffset, endPos);
+                                TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(controller.getTokenHierarchy().tokenSequence(JavaTokenId.language()), embeddedOffset, endPos);
                                 if (ts != null) {
                                     if (ts.token().id() == JavaTokenId.SEMICOLON) {
                                         ret[0] = -1;
@@ -4014,8 +4068,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return ret[0];
     }
 
-    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(CompilationInfo info, int startPos, int endPos) {
-        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+    private static TokenSequence<JavaTokenId> findLastNonWhitespaceToken(TokenSequence<JavaTokenId> ts, int startPos, int endPos) {
         ts.move(endPos);
         while(ts.movePrevious()) {
             int offset = ts.offset();
