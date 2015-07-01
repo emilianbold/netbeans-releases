@@ -301,8 +301,8 @@ public final class Atoum {
             assert startFiles.size() == 1 : "Exactly one file expected for debugging but got " + startFiles;
             return atoum.debug(startFiles.get(0), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
-            // canceled
-            LOGGER.log(Level.FINE, "Test creating cancelled", ex);
+            // cancelled
+            LOGGER.log(Level.FINE, "Test running cancelled", ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.INFO, null, ex);
             if (AtoumPreferences.isAtoumEnabled(phpModule)) {
