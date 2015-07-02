@@ -217,8 +217,8 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * node is always teh faces config file.
      */
     public void setDefaultActivatedNode() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     setDefaultActivatedNode();
@@ -234,17 +234,24 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         FileObject facesConfigFO = context.getFacesConfigFile();
         if (!facesConfigFO.isValid()) {
             // XXX #148551 File is invalid, probably deleted already.
-            setActivatedNodes(new Node[0]);
+            setActivatedNode(null, null);
             return;
         }
         try {
-            Node node = new DefaultDataNode(DataObject.find(facesConfigFO));
-            setActivatedNodes(new Node[]{node});
+            DataObject dataObject = DataObject.find(facesConfigFO);
+            FileObject srcFolder = findSourceFolder(dataObject);
+            DataObject srcDataObject = null;
+            try {
+                srcDataObject = DataObject.find(srcFolder);
+            } catch (DataObjectNotFoundException ex) {
+                LOG.fine("WARNING: Unable to find the following DataObject: " + srcFolder);
+            }
+            setActivatedNode(dataObject, srcDataObject);
         } catch (DataObjectNotFoundException donfe) {
             Exceptions.printStackTrace(donfe);
             /* Trying to track down #112243 */
             LOG.fine("WARNING: Unable to find the following DataObject: " + facesConfigFO);
-            setActivatedNodes(new Node[]{});
+            setActivatedNode(null, null);
         }
     }
 
@@ -290,6 +297,45 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         });
     }
 
+    private void setActivatedNode(final DataObject dataObject, final DataObject srcFolder) {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setActivatedNode(dataObject, srcFolder);
+                }
+            });
+            return;
+        }
+        if (dataObject == null) {
+            setActivatedNodes(new Node[]{});
+            return;
+        }
+        Node node = new DefaultDataNode(dataObject, srcFolder != null ? srcFolder.getNodeDelegate() : null);
+        setActivatedNodes(new Node[]{node});
+    }
+
+
+    private static FileObject findSourceFolder(DataObject dataObject) {
+        assert !SwingUtilities.isEventDispatchThread();
+        Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
+        /* Let's only worry about this if it is actually part of a project.*/
+        if (p != null) {
+            //FileObject projectDirectory = p.getProjectDirectory();
+            Sources sources = ProjectUtils.getSources(p);
+            SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+            FileObject srcFolder;
+
+            if (groups != null && groups.length > 0) {
+                srcFolder = groups[0].getRootFolder();
+            } else {
+                srcFolder = dataObject.getFolder().getPrimaryFile();
+            }
+            return srcFolder;
+        }
+        return null;
+    }
+
 /* In order to prevent modifications of tab names when a page was selected, I needed to
      * create a DefaultDataNode (or filterNode).  Basically this is used to take look like
      * a DataNode but not be one exactly.
@@ -300,25 +346,16 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
 
         public DefaultDataNode(DataObject dataObject) {
             this(dataObject.getNodeDelegate());
-            Project p = FileOwnerQuery.getOwner(dataObject.getPrimaryFile());
-            /* Let's only worry about this if it is actually part of a project.*/
-            if (p != null) {
-                //FileObject projectDirectory = p.getProjectDirectory();
-                Sources sources = ProjectUtils.getSources(p);
-                SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
-                FileObject srcFolder;
-
-                try {
-                    if (groups != null && groups.length > 0) {
-                        srcFolder = groups[0].getRootFolder();
-                    } else {
-                        srcFolder = dataObject.getFolder().getPrimaryFile();
-                    }
-                    srcFolderNode = DataObject.find(srcFolder).getNodeDelegate();
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+            try {
+                this.srcFolderNode = DataObject.find(findSourceFolder(dataObject)).getNodeDelegate();
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
             }
+        }
+
+        public DefaultDataNode(DataObject dataObject, Node srcFolderNode) {
+            this(dataObject.getNodeDelegate());
+            this.srcFolderNode = srcFolderNode;
         }
 
         public DefaultDataNode(Node node) {
