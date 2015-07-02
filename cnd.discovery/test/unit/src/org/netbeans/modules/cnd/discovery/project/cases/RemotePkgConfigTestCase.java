@@ -68,6 +68,10 @@ public class RemotePkgConfigTestCase extends MakeProjectTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         env = NativeExecutionTestSupport.getTestExecutionEnvironment("intel-S2");
+        if (env == null) {
+            System.err.println("REMOTE IS NOT SET UP CORRECTLY. Check ~/.cndtestrc");
+            return;
+        }
         ConnectionManager.getInstance().connectTo(env);
         ServerRecord record = ServerList.get(env);
         record.setUp();
