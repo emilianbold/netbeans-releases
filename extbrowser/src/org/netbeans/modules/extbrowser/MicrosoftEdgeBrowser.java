@@ -121,10 +121,12 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
             // So, this hack will not be needed then.
             File folder = new File("C:\\Windows\\SystemApps"); // NOI18N
             String id = "Microsoft.MicrosoftEdge_8wekyb3d8bbwe"; // NOI18N
-            for (File file : folder.listFiles()) {
-                String fileName = file.getName();
-                if (fileName.startsWith("Microsoft.MicrosoftEdge")) { // NOI18N
-                    id = fileName;
+            if (folder.exists()) {
+                for (File file : folder.listFiles()) {
+                    String fileName = file.getName();
+                    if (fileName.startsWith("Microsoft.MicrosoftEdge")) { // NOI18N
+                        id = fileName;
+                    }
                 }
             }
             appUserModelId = id + "!MicrosoftEdge"; // NOI18N
