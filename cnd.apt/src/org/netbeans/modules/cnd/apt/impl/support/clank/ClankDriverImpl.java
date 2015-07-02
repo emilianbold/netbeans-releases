@@ -290,6 +290,9 @@ public class ClankDriverImpl {
                         chars[i+5] = ' ';
                     }
                 }
+            } if (chars[i] > 127) {
+                // convert all non ascii to spaces for fortran
+                chars[i] = ' ';
             }
             i++;
         }
