@@ -69,7 +69,7 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
     private static final long serialVersionUID = 4333320552804224866L;
 
     public MicrosoftEdgeBrowser() {
-        super(PrivateBrowserFamilyId.UNKNOWN);
+        super(PrivateBrowserFamilyId.EDGE);
     }
 
     @Override

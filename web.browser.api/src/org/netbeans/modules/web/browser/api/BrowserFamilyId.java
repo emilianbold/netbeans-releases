@@ -57,6 +57,7 @@ public enum BrowserFamilyId {
     IE,
     JAVAFX_WEBVIEW,
     OPERA,
+    EDGE,
     ANDROID,
     IOS,
     PHONEGAP,
