@@ -112,6 +112,9 @@ public final class CodeTemplateCompletionProvider implements CompletionProvider 
         }
         
         protected @Override boolean canFilter(JTextComponent component) {
+            if (component.getCaret() == null) {
+                return false;
+            }
             int caretOffset = component.getSelectionStart();
             Document doc = component.getDocument();
             filterPrefix = null;
