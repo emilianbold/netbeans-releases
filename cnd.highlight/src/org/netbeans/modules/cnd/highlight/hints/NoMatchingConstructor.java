@@ -134,7 +134,10 @@ class NoMatchingConstructor extends AbstractCodeAudit {
                     if (CsmKindUtilities.isConstructor(member)) {
                         CsmConstructor testedCtor = (CsmConstructor) member;
                         if (testedCtor.getParameters().isEmpty()) {
-                            flag = (testedCtor.getDefinition().getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
+                            CsmFunctionDefinition definition = testedCtor.getDefinition();
+                            if (definition != null) {
+                                flag = (definition.getDefinitionKind() == CsmFunctionDefinition.DefinitionKind.DELETE);
+                            }
                             break;
                         } else {
                             flag = true;
