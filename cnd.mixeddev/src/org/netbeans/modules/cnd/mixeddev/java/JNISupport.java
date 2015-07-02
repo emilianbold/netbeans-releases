@@ -192,7 +192,7 @@ public final class JNISupport {
         if (javaType != null) {
             if (javaType.getArrayDepth() > 0) {
                 return "[" + JNISupport.getJNISignature( // NOI18N
-                    new JavaTypeInfo(makeQualName(javaType.getQualifiedName()), javaType.getName(), javaType.getArrayDepth() - 1)
+                    new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
                 );
             } else {
                 String typeName = javaType.getText().toString();
@@ -200,7 +200,7 @@ public final class JNISupport {
                     return javaToSignatures.get(typeName);
                 }
                 return "L"  // NOI18N
-                    + makeQualName(javaType.getQualifiedName())
+                    + javaType.getQualifiedName()
                     + ";"; // NOI18N
             }
         }
@@ -230,7 +230,7 @@ public final class JNISupport {
      * @return class signature (which is its qualified name)
      */
     public static String getJNISignature(JavaClassInfo javaClass) {
-        return makeQualName(javaClass.getQualifiedName());
+        return javaClass.getQualifiedName().toString();
     }
     
     /**
@@ -392,10 +392,6 @@ public final class JNISupport {
         signature.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
         
         return signature.toString();
-    }
-    
-    private static String makeQualName(CharSequence qualName) {
-        return qualName.toString().replaceAll("\\.", "/"); // NOI18N
     }
     
     private static String escape(CharSequence text) {

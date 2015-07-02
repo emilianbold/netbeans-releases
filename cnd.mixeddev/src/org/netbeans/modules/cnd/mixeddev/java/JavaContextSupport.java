@@ -62,7 +62,11 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.NestingKind;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
@@ -75,6 +79,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart.Kind;
@@ -224,17 +229,17 @@ public final class JavaContextSupport {
             switch (type.getKind()) {
                 case CLASS: {
                     TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                    return new JavaTypeInfo(renderQualifiedName(getQualifiedName(elem)), elem.getSimpleName(), 0);
                 }
 
                 case IDENTIFIER: {
                     TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                    return new JavaTypeInfo(renderQualifiedName(getQualifiedName(elem)), elem.getSimpleName(), 0);
                 }
 
                 case MEMBER_SELECT: {
                     TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getQualifiedName(), elem.getSimpleName(), 0);
+                    return new JavaTypeInfo(renderQualifiedName(getQualifiedName(elem)), elem.getSimpleName(), 0);
                 }
 
                 case PRIMITIVE_TYPE: {
@@ -265,12 +270,20 @@ public final class JavaContextSupport {
     }    
         
     /*package*/ static List<QualifiedNamePart> getQualifiedName(TreePath treePath) {
-        List<QualifiedNamePart> qualifiedName = new ArrayList<QualifiedNamePart>();
+        List<QualifiedNamePart> qualifiedName = new ArrayList();
         TreePath currentPath = treePath;
         do {
             switch (currentPath.getLeaf().getKind()) {
                 case METHOD:
                     qualifiedName.add(0, new QualifiedNamePart(((MethodTree) currentPath.getLeaf()).getName(), Kind.METHOD));
+                    break;
+                    
+                case INTERFACE:
+                    if (currentPath.getParentPath() != null && currentPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
+                        qualifiedName.add(0, new QualifiedNamePart(((ClassTree) currentPath.getLeaf()).getSimpleName(), Kind.NESTED_INTERFACE));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(((ClassTree) currentPath.getLeaf()).getSimpleName(), Kind.INTERFACE));
+                    }
                     break;
 
                 case CLASS: {
@@ -284,14 +297,41 @@ public final class JavaContextSupport {
                     
                 case COMPILATION_UNIT: {
                     List<CharSequence> dotExpression = renderExpression(((CompilationUnitTree) currentPath.getLeaf()).getPackageName());
-                    ListIterator<CharSequence> iter = dotExpression.listIterator(dotExpression.size());
-                    while (iter.hasPrevious()) {
-                        qualifiedName.add(0, new QualifiedNamePart(iter.previous(), Kind.PACKAGE));
-                    }
+                    qualifiedName.add(0, new QualifiedNamePart(MixedDevUtils.stringize(dotExpression, "/"), Kind.PACKAGE)); // NOI18N
                     break;
                 }
             }
         } while ((currentPath = currentPath.getParentPath()) != null);
+        return qualifiedName;
+    }
+    
+    /*package*/ static List<QualifiedNamePart> getQualifiedName(TypeElement typeElement) {
+        List<QualifiedNamePart> qualifiedName = new ArrayList();
+        Element current = typeElement;
+        while (current != null) {
+            switch (current.getKind()) {
+                case CLASS:
+                    if (((TypeElement) current).getNestingKind().isNested()) {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.NESTED_CLASS));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.CLASS));
+                    }
+                    break;
+                case INTERFACE:
+                    if (((TypeElement) current).getNestingKind().isNested()) {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.NESTED_INTERFACE));
+                    } else {
+                        qualifiedName.add(0, new QualifiedNamePart(current.getSimpleName(), Kind.INTERFACE));
+                    }
+                    break;
+                case PACKAGE:
+                    PackageElement pkgElem = (PackageElement) current;
+                    String packageName = pkgElem.getQualifiedName().toString();
+                    qualifiedName.add(0, new QualifiedNamePart(packageName.replaceAll("\\.", "/"), Kind.PACKAGE)); // NOI18N
+                    break;
+            }
+            current = current.getEnclosingElement();
+        }
         return qualifiedName;
     }
     
@@ -305,12 +345,14 @@ public final class JavaContextSupport {
                         sb.append("/"); // NOI18N
                         break;
                     case CLASS:
+                    case INTERFACE:
                         sb.append("/"); // NOI18N
                         break;
                     case METHOD:
                         sb.append("/"); // NOI18N
                         break;
                     case NESTED_CLASS:
+                    case NESTED_INTERFACE:
                         sb.append("$"); // NOI18N
                         break;
                 }
