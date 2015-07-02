@@ -237,7 +237,7 @@ public class ConstantNameHint {
         if (xpr.getKind() == Tree.Kind.NEW_ARRAY) {
             NewArrayTree nat = (NewArrayTree)xpr;
             List<? extends ExpressionTree> dims = nat.getDimensions();
-            if (dims != null) {
+            if (dims != null && !dims.isEmpty()) {
                 Object size = ArithmeticUtilities.compute(info, 
                         new TreePath(
                             new TreePath(val, xpr),
