@@ -49,11 +49,13 @@ import java.util.logging.Level;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * @author Jan Stola
  */
 public class MicrosoftEdgeBrowser extends ExtWebBrowser {
+    private static Boolean hidden;
 
     /**
      * Determines whether the browser should be visible or not.
@@ -61,9 +63,14 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
      * @return {@code true} when the OS is Windows, returns {@code false} otherwise.
      */
     public static Boolean isHidden() {
-        String osName = System.getProperty("os.name"); // NOI18N
-        return !osName.startsWith("Windows 8") // JDK bug 8081573 // NOI18N
-                && !"Windows 10".equals(osName); // NOI18N
+        if (hidden == null) {
+            if (Utilities.isWindows()) {
+                hidden = getAppUserModelId().isEmpty();
+            } else {
+                hidden = false;
+            }
+        }
+        return hidden;
     }
 
     private static final long serialVersionUID = 4333320552804224866L;
@@ -113,14 +120,14 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
         return new NbProcessDescriptor(command, params);
     }
 
-    private String appUserModelId;
-    private String getAppUserModelId() {
+    private static String appUserModelId;
+    private static String getAppUserModelId() {
         if (appUserModelId == null) {
             // Hack that attepmts to get the correct hash in appUserModelId
             // Hopefully, the appUserModelId will be hash-less in the final version.
             // So, this hack will not be needed then.
             File folder = new File("C:\\Windows\\SystemApps"); // NOI18N
-            String id = "Microsoft.MicrosoftEdge_8wekyb3d8bbwe"; // NOI18N
+            String id = null;
             if (folder.exists()) {
                 for (File file : folder.listFiles()) {
                     String fileName = file.getName();
@@ -129,7 +136,7 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
                     }
                 }
             }
-            appUserModelId = id + "!MicrosoftEdge"; // NOI18N
+            appUserModelId = (id == null) ? "" : (id + "!MicrosoftEdge"); // NOI18N
         }
         return appUserModelId;
     }
