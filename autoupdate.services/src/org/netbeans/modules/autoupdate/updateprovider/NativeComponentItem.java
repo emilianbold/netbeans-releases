@@ -141,4 +141,9 @@ public class NativeComponentItem extends UpdateItemImpl {
     public boolean isInstalled () {
         return isInstalled;
     }
+    
+    @Override
+    public void setNeedsRestart(Boolean needsRestart) {
+        deployImpl.setNeedsRestart(needsRestart);
+    }
 }
