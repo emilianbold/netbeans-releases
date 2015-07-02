@@ -71,8 +71,8 @@ public class FunctionsXmlService {
     private static final String[] FUNCTION_TAG_ATTRIBUTES = {"name", "header"}; // NOI18N
     private static final String ALTERNATIVE_TAG_NAME = "alt"; // NOI18N
     
-    private static final String ROOT_FOLDER = "CND"; // NOI18N
-    private static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
+    public static final String ROOT_FOLDER = "CND"; // NOI18N
+    public static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
     
     public enum Level {
         AVOID,
