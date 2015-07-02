@@ -310,9 +310,11 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                         toolT = val.toString();
                     }
                 }
-                if (toolT != null && toolT.trim ().length () > 0) {
-                    toolT = toolT.trim();
-                    if (toolT.length() > MAX_TOOLTIP_LENGTH) {
+                if (toolT != null && (toolT = toolT.trim ()).length () > 0) {
+                    int ttl = toolT.length();
+                    if (ttl > MAX_TOOLTIP_LENGTH &&
+                        !toolT.regionMatches(false, 0, "<html>", 0, 6)) {   // Do not cut HTML tooltips
+
                         toolT = toolT.substring(0, MAX_TOOLTIP_LENGTH) + "...";
                     }
                     propPanel.setToolTipText (toolT);
