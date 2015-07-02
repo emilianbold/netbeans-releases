@@ -1,7 +1,5 @@
-#changeset:   15206:d165a1b5c5f9
-#tag:         tip
-#user:        Ilia Gromov <ilia@netbeans.org>
-#date:        Wed Jul 01 21:11:36 2015 +0400
-#summary:     fixed compilation
-
-92AE0C9D73639EA9BF3FBE1F980294F779CC603A clank_0.3.6.zip
+#changeset:   15207:b4a1d2ccae66
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Thu Jul 02 16:54:08 2015 +0300
+#summary:     fix lexing of UTF-8 char
+E4D8E3A0D8B3C53173F52BE183AB5E672E1ACC1B clank_0.3.6.zip
