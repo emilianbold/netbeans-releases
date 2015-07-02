@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -25,6 +25,7 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -40,31 +41,48 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.browser.api;
 
+package org.netbeans.modules.extbrowser;
 
-/**
- * Identification of different browser types.
- * 
- */
-public enum BrowserFamilyId {
+import java.awt.Image;
+import java.beans.BeanDescriptor;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
-    FIREFOX,
-    MOZILLA,
-    CHROME,
-    CHROMIUM,
-    SAFARI,
-    IE,
-    JAVAFX_WEBVIEW,
-    OPERA,
-    EDGE,
-    ANDROID,
-    IOS,
-    PHONEGAP,
-    UNKNOWN;
-    
-    public boolean isMobile() {
-        return this == ANDROID || this == IOS || this == PHONEGAP;
+public class MicrosoftEdgeBrowserBeanInfo extends SimpleBeanInfo {
+
+    @Override
+    public BeanDescriptor getBeanDescriptor() {
+        BeanDescriptor descr = new BeanDescriptor(MicrosoftEdgeBrowser.class);
+        descr.setDisplayName(NbBundle.getMessage(MicrosoftEdgeBrowserBeanInfo.class, "CTL_MicrosoftEdgeBrowserName")); // NOI18N
+        descr.setShortDescription(NbBundle.getMessage(MicrosoftEdgeBrowserBeanInfo.class, "HINT_MicrosoftEdgeBrowserName")); // NOI18N
+        descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N
+	return descr;
     }
-}
 
+    @Override
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        return new PropertyDescriptor[0];
+    }
+
+    @Override
+    public Image getIcon (int type) {
+        return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
+    }
+
+    @Override
+    public BeanInfo[] getAdditionalBeanInfo () {
+        try {
+            return new BeanInfo[] { Introspector.getBeanInfo(ExtWebBrowser.class) };
+        } catch (IntrospectionException ie) {
+            Exceptions.printStackTrace(ie);
+            return null;
+        }
+    }
+    
+}

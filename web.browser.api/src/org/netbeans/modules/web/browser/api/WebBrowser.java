@@ -279,6 +279,8 @@ public final class WebBrowser {
     private static final @StaticResource String CHROMIUM_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_chromium_24x.png"; // NOI18N
     private static final @StaticResource String IE_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_ie_16x.png"; // NOI18N
     private static final @StaticResource String IE_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_ie_24x.png"; // NOI18N
+    private static final @StaticResource String EDGE_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_edge_16x.png"; // NOI18N
+    private static final @StaticResource String EDGE_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_edge_24x.png"; // NOI18N
     private static final @StaticResource String SAFARI_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_safari_16x.png"; // NOI18N
     private static final @StaticResource String SAFARI_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_safari_24x.png"; // NOI18N
     private static final @StaticResource String GENERIC_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_generic_16x.png"; // NOI18N
@@ -296,6 +298,8 @@ public final class WebBrowser {
                 return small ? IE_SMALL : IE_LARGE;
             case SAFARI:
                 return small ? SAFARI_SMALL : SAFARI_LARGE;
+            case EDGE:
+                return small ? EDGE_SMALL : EDGE_LARGE;
             default:
                 return small ? GENERIC_SMALL : GENERIC_LARGE;
         }

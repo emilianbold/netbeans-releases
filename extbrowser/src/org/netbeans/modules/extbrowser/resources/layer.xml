@@ -64,6 +64,13 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="100"/>
         </file>
 
+        <file name="MicrosoftEdgeBrowser.settings" url="MicrosoftEdgeBrowser.xml">
+            <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.MicrosoftEdgeBrowser.isHidden"/>
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>
+            <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/extbrowser/resources/extbrowser.gif"/>
+            <attr name="position" intvalue="260"/>
+        </file>
+
         <file name="IExplorerBrowser.settings" url="IExplorerBrowser.xml">
             <attr name="hidden" methodvalue="org.netbeans.modules.extbrowser.IExplorerBrowser.isHidden"/>
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.extbrowser.Bundle"/>

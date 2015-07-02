@@ -171,6 +171,8 @@ final class WebBrowserFactoryDescriptor {
                 return BrowserFamilyId.IE;
             case OPERA:
                 return BrowserFamilyId.OPERA;
+            case EDGE:
+                return BrowserFamilyId.EDGE;
             default:
                 return BrowserFamilyId.UNKNOWN;
         }

@@ -56,6 +56,7 @@ public enum PrivateBrowserFamilyId {
     SAFARI,
     IE,
     OPERA,
+    EDGE,
     UNKNOWN;
     
 }
