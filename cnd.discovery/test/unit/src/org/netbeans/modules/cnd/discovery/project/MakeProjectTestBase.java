@@ -95,7 +95,14 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
- *
+ * To speed up tests:
+ * create $HOME/cnd-test-files-storage
+ * with all gz files, i.e. 
+ *  cmake-2.6.4.tar.gz
+ *  DiscoveryTestApplication.tar.gz
+ *  pkg-config-0.25.tar.gz
+ *  qlife-qt4-0.9.tar.gz
+ *  sqlite-autoconf-3071700.tar.gz
  * @author Alexander Simon
  */
 public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends NbTestCase
@@ -209,6 +216,10 @@ public abstract class MakeProjectTestBase extends ModelBasedTestCase { //extends
     public void performTestProject(String URL, List<String> additionalScripts, boolean useSunCompilers, final String subFolder) throws Exception {
         Map<String, String> tools = findTools();
         final ExecutionEnvironment ee = getEE();
+        if (ee == null) {
+            System.err.println("REMOTE IS NOT SET UP CORRECTLY. Check ~/.cndtestrc");
+            return;
+        }        
         CompilerSetManager csm = CompilerSetManager.get(ee);
         while (csm.isPending()) {
             try {
