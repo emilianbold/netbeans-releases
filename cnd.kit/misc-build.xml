@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 
     <property name="nbroot" location=".."/>
     <property name="nbbuild" location="${nbroot}/nbbuild"/>
-
+    
     <!-- When updating an entry within ZIP archive, Ant compares
          timestamps of the entry and the replacement file. If entry
          is newer that replacement file, no update is performed.
@@ -156,18 +156,21 @@ made subject to such option by the copyright holder.
     <target name="test" depends="-init-modules" description="run tests">
         <subant buildpath="${cnd.modules.sorted}" target="test">
             <property name="cluster.config" value="cnd"/>
+            <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-xref" depends="-init-modules" description="run xRef tests only">
         <subant buildpath="${cnd.modules.xref.fullpath}" target="test">
             <property name="cluster.config" value="cnd"/>
+            <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
     <target name="test-model" depends="-init-modules" description="run Model sensitive tests only">
         <subant buildpath="${cnd.modules.model.fullpath}" target="test">
             <property name="cluster.config" value="cnd"/>
+            <property name="continue.after.failing.tests" value="true"/>
         </subant>
     </target>
 
