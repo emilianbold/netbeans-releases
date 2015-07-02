@@ -46,7 +46,6 @@ package org.netbeans.modules.autoupdate.updateprovider;
 
 import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 import org.netbeans.spi.autoupdate.UpdateItem;
-import org.netbeans.spi.autoupdate.UpdateLicense;
 
 /**
  *
@@ -80,4 +79,10 @@ public abstract class UpdateItemImpl {
      * @return category or null
      */
     public abstract String getCategory ();
+    
+    public abstract void setNeedsRestart(Boolean needsRestart);
+    
+    public boolean isFragment(){
+        return false;
+    }
 }

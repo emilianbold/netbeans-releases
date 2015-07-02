@@ -75,6 +75,10 @@ public class UpdateItemDeploymentImpl {
         return needsRestart;
     }
     
+    public void setNeedsRestart(Boolean needsRestart) {
+        this.needsRestart = needsRestart;
+    }
+    
     public Boolean isGlobal () {
         return isGlobal;
     }

@@ -637,6 +637,18 @@ public class Utilities {
             for (;;) {
                 Set<Dependency> newones = processDependencies(deps, retval, availableInfos, brokenDependencies, element, aggressive, recommended, avoidRecommended);
                 newones.removeAll(all);
+               
+                //issue #247884 Autoupdate should force restart when a new module enables module which is a fragment of other module
+                for (Dependency dep : deps) {
+                    UpdateUnit uu = toUpdateUnit(dep.getName());
+                    if (uu != null && uu.getInstalled() != null) {
+                        ModuleUpdateElementImpl em = (ModuleUpdateElementImpl) Trampoline.API.impl(uu.getInstalled());
+                        if (em.getInstallInfo().getUpdateItemImpl().isFragment()) {
+                            el.getInstallInfo().getUpdateItemImpl().setNeedsRestart(true);
+                        }
+                    }
+                }
+                
                 if (newones.isEmpty()) {
                     break;
                 }
@@ -672,7 +684,7 @@ public class Utilities {
             FeatureUpdateElementImpl feature = (FeatureUpdateElementImpl) Trampoline.API.impl(element);
             aggressive = topAggressive;
             for (ModuleUpdateElementImpl module : feature.getContainedModuleElements ()) {
-                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive, recommended));
+                retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies, aggressive, recommended));                
             }
             break;
         case CUSTOM_HANDLED_COMPONENT :
