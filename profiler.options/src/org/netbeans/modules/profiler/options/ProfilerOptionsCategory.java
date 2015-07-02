@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.options;
 
 import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
 import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.modules.profiler.api.ProfilerIDESettings;
 import org.netbeans.modules.profiler.options.ui.v2.ProfilerOptionsContainer;
@@ -60,50 +59,46 @@ import org.openide.util.Lookup;
     keywordsCategory=JavaOptions.JAVA + "/Profiler")
 public class ProfilerOptionsCategory extends OptionsPanelController {
     
-        //~ Static fields/initializers -------------------------------------------------------------------------------------------
+    private static final HelpCtx HELP_CTX = new HelpCtx("ProfilerOptions.Help"); // NOI18N
+    
+    private static ProfilerOptionsPanel settingsPanel = null;
 
-        private static ProfilerOptionsPanel settingsPanel = null;
+    
+    public ProfilerOptionsPanel getComponent(Lookup lookup) {
+        if (settingsPanel == null) settingsPanel = new ProfilerOptionsContainer();
+        return settingsPanel;
+    }
 
-        //~ Methods --------------------------------------------------------------------------------------------------------------
+    public HelpCtx getHelpCtx() {
+        return HELP_CTX;
+    }
+    
+    public boolean isChanged() {
+        if (settingsPanel == null) return false;
+        return !settingsPanel.equalsTo(ProfilerIDESettings.getInstance());
+    }
 
-        public boolean isChanged() {
-            if (settingsPanel == null) return false;
-            return !settingsPanel.equalsTo(ProfilerIDESettings.getInstance());
-        }
+    public boolean isValid() {
+        return true;
+    }
 
-        public JComponent getComponent() {
-            return getComponent(Lookup.getDefault());
-        }
+    public void applyChanges() {
+        if (settingsPanel == null) return;
+        settingsPanel.storeTo(ProfilerIDESettings.getInstance());
+    }
 
-        public JComponent getComponent(Lookup lookup) {
-            if (settingsPanel == null) settingsPanel = new ProfilerOptionsContainer();
-            return settingsPanel;
-        }
+    public void cancel() {
+    }
 
-        private static final HelpCtx HELP_CTX = new HelpCtx("ProfilerOptions.Help"); // NOI18N
-        public HelpCtx getHelpCtx() { return HELP_CTX; }
-
-        public boolean isValid() {
-            return true;
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        public void applyChanges() {
-            if (settingsPanel == null) return;
-            settingsPanel.storeTo(ProfilerIDESettings.getInstance());
-        }
-
-        public void cancel() {
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-
-        public void update() {
-            if (settingsPanel == null) return;
-            settingsPanel.loadFrom(ProfilerIDESettings.getInstance());
-        }
+    public void update() {
+        if (settingsPanel == null) return;
+        settingsPanel.loadFrom(ProfilerIDESettings.getInstance());
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+    }
 
 }
