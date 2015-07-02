@@ -69,8 +69,7 @@ public class FunctionsXmlService {
     private static final String[] CATEGORY_TAG_ATTRIBUTES = {"name"}; // NOI18N
     private static final String FUNCTION_TAG_NAME = "function"; // NOI18N
     private static final String[] FUNCTION_TAG_ATTRIBUTES = {"name", "header"}; // NOI18N
-    private static final String ALTERNATIVE_TAG_NAME = "alternative"; // NOI18N
-    private static final String[] ALTERNATIVE_TAG_ATTRIBUTES = {"text"}; // NOI18N
+    private static final String ALTERNATIVE_TAG_NAME = "alt"; // NOI18N
     
     private static final String ROOT_FOLDER = "CND"; // NOI18N
     private static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
@@ -142,7 +141,11 @@ public class FunctionsXmlService {
                                         for (int l = 0, limit = alternatives.getLength(); l < limit; l++) {
                                             Node altNode = alternatives.item(l);
                                             if (altNode.getNodeName().equals(ALTERNATIVE_TAG_NAME) && altNode.getNodeType() == Node.ELEMENT_NODE) {
-                                                func.addAlternative(((Element) altNode).getAttribute(ALTERNATIVE_TAG_ATTRIBUTES[0]));
+                                                if (altNode.getFirstChild().getNodeType() == Node.CDATA_SECTION_NODE) {
+                                                    func.addAlternative(altNode.getFirstChild().getNodeValue().trim());
+                                                } else {
+                                                    func.addAlternative(altNode.getFirstChild().getNodeValue());
+                                                }
                                             }
                                         }
                                         category.addFunction(func);

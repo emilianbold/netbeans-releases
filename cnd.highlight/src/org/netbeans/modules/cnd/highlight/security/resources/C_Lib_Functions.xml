@@ -41,64 +41,108 @@ Contributor(s):
 Portions Copyrighted 2015 Sun Microsystems, Inc.
 -->
 
-<functions>
+<unreliablefunctions xmlns="http://www.netbeans.org/ns/cnd-unreliable-functions/1">
     <level value="unsafe">
         <category name="gets">
             <function name="gets" header="stdio.h">
-                <altfunc text="fgets(buf, sizeof (buf), stdin)" />
+                <alt><![CDATA[fgets(buf, sizeof (buf), stdin)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    This function does not check for bounds while storing the input. This function can't be used securely.
+                ]]>
+            </description>
         </category>
         <category name="cftime">
             <function name="cftime" header="time.h">
-                <altfunc text="strftime(buf, sizeof (buf), fmt, &amp;tm)" />
+                <alt><![CDATA[strftime(buf, sizeof (buf), fmt, &amp;tm)]]></alt>
             </function>
             <function name="ascftime" header="time.h">
-                <altfunc text="strftime(buf, sizeof (buf), fmt, &amp;tm)" />
+                <alt><![CDATA[strftime(buf, sizeof (buf), fmt, &amp;tm)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    These routines do no bounds checking on the output buffer and may import user-data through the environment variable CFTIME
+                ]]>
+            </description>
         </category>
     </level>
     <level value="avoid">
         <category name="strcat">
             <function name="strcat" header="string.h">
-                <altfunc text="strlcat(dst, src, dstsize)" />
+                <alt><![CDATA[strlcat(dst, src, dstsize)]]></alt>
             </function>
             <function name="strcpy" header="string.h">
-                <altfunc text="strlcpy(dst, src, dstsize)" />
+                <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    It is not possible to limit these functions to a maximum buffer size.<br>
+                    The use of these functions will always force reviewers to follow the logic, and prevent automated scanning of source code for vulnerabilities.
+                ]]>
+            </description>
         </category>
         <category name="access">
             <function name="access" header="unistd.h">
-                <altfunc text="open()" />
+                <alt><![CDATA[open()]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    This function is useless because the information it provides is outdated by the time you get to use it.<br>
+                    Using access() followed by open() has a race condition that can't be solved.
+                ]]>
+            </description>
         </category>
         <category name="chmod">
             <function name="chmod" header="sys/stat.h"></function>
             <function name="fchmodat" header="sys/stat.h"></function>
             <function name="chown" header="unistd.h"></function>
             <function name="lchown" header="unistd.h"></function>
+            <description>
+                <![CDATA[
+                    These functions operate on pathnames and are prone to race conditions.<br>
+                    Normally, programs shouldn't need to call chown/chmod but honor the current uid (switch back to it before opening files.) and umask.
+                ]]>
+            </description>
         </category>
         <category name="alloca">
             <function name="alloca" header="stdlib.h">
-                <altfunc text="malloc(size_t)" />
+                <alt><![CDATA[malloc(size_t)]]></alt>
             </function>
             <function name="strdupa" header="string.h">
-                <altfunc text="strdup(const char *)" />
+                <alt><![CDATA[strdup(const char *)]]></alt>
             </function>
             <function name="strndupa" header="string.h">
-                <altfunc text="strdup(const char *)" />
+                <alt><![CDATA[strdup(const char *)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    Does not check if the returned pointer is within the stack bounds <br>
+                    and for memory allocations larger than a page may jump over stack guard page into other allocated pages and overwrite them.
+                ]]>
+            </description>
         </category>
     </level>
     <level value="caution">
         <category name="strncat">
             <function name="strncat" header="string.h">
-                <altfunc text="strlcat(dst, src, dstsize)" />
+                <alt><![CDATA[strlcat(dst, src, dstsize)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    strncat() is hard to use as it requires the proper size of the destination buffer to be calculated
+                ]]>
+            </description>
         </category>
         <category name="strncpy">
             <function name="strncpy" header="string.h">
-                <altfunc text="strlcpy(dst, src, dstsize)" />
+                <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
             </function>
+            <description>
+                <![CDATA[
+                    strncpy() is not guaranteed to null-terminate the destination buffer.
+                ]]>
+            </description>
         </category>
     </level>
-</functions>
+</unreliablefunctions>
