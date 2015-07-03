@@ -140,6 +140,8 @@ public final class ClankDriver {
        */
       CharSequence getMacroName();
 
+      int getMacroNameOffset();
+
       /**
        * @return null for object-like macros, collection of parameter names for
        *        function-like macros

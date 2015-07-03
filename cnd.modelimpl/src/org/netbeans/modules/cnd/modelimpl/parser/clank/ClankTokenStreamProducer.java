@@ -526,8 +526,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         String body = "";
         int startOffset = ppDirective.getDirectiveStartOffset();
         int endOffset = ppDirective.getDirectiveEndOffset();
+        int macroNameOffset = ppDirective.getMacroNameOffset();
         MacroImpl impl = MacroImpl.create(name, params, body/*sb.toString()*/, curFile, startOffset, endOffset, kind);
         parsingFileContent.addMacro(impl);
+        parsingFileContent.addReference(new MacroDeclarationReference(curFile, impl, macroNameOffset), impl);
     }
 
     private static void addError(FileImpl curFile, FileContent parsingFileContent, ClankDriver.ClankErrorDirective ppDirective) {
@@ -740,4 +742,37 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         }
     }
 
+    private static final class MacroDeclarationReference extends OffsetableBase implements CsmReference {
+        private final CsmMacro referencedMacro;
+
+        private MacroDeclarationReference(FileImpl curFile, CsmMacro referencedMacro, int macroNameOffset) {
+            super(curFile, macroNameOffset, macroNameOffset + referencedMacro.getName().length());
+            this.referencedMacro = referencedMacro;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            return referencedMacro;
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            return getContainingFile();
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.DECLARATION;
+        }
+
+        @Override
+        public CharSequence getText() {
+            return referencedMacro.getText();
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            return getContainingFile();
+        }
+    }
 }

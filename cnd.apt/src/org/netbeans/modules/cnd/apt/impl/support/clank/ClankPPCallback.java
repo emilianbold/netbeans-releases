@@ -361,7 +361,8 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final List<CharSequence> params;
         private final CharSequence macroName;
         private final boolean isDefined;
-        private SourceLocation macroNameTokenSourceLocation;
+        private final SourceLocation macroNameTokenSourceLocation;
+        private final int macroNameOffset;
 
         public ClankMacroDirectiveWrapper(CharSequence macroName,
                 List<CharSequence> params, MacroDirectiveInfo clankDelegate, Token macroNameToken) {
@@ -370,6 +371,7 @@ public final class ClankPPCallback extends FileInfoCallback {
             this.macroName = macroName;
             this.isDefined = clankDelegate.isDefined();
             this.macroNameTokenSourceLocation = macroNameToken.getLocation();
+            macroNameOffset = clankDelegate.getMacroNameOffset();
         }
 
         @Override
@@ -380,6 +382,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         @Override
         public CharSequence getMacroName() {
             return this.macroName;
+        }
+
+        @Override
+        public int getMacroNameOffset() {
+            return macroNameOffset;
         }
 
         @Override
