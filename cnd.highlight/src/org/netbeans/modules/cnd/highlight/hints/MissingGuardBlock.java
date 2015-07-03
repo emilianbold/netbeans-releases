@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CodeAuditFactory;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfoHintProvider;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
@@ -73,6 +74,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 import org.netbeans.modules.cnd.refactoring.api.ui.CsmRefactoringActionsFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -95,7 +97,12 @@ public class MissingGuardBlock extends AbstractCodeAudit {
         CsmFile file = request.getFile();
         if (file.isHeaderFile()) {            
             if (!CsmFileInfoQuery.getDefault().hasGuardBlock(file)) {
-                final Document doc = request.getDocument();
+                Document doc_ = request.getDocument();
+                if (doc_ == null) {
+                    CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
+                    doc_ = CsmUtilities.openDocument(ces);
+                }
+                final Document doc = doc_;
                 final AtomicInteger startOffset = new AtomicInteger(0);
                 
                 Runnable runnable = new Runnable () {
@@ -140,7 +147,7 @@ public class MissingGuardBlock extends AbstractCodeAudit {
                     int start = moveBellowCommentsTask.get().get();
                     CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
                     if (response instanceof AnalyzerResponse) {
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, null,
+                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
                             new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), getName()+"\n"+message, severity, start));  // NOI18N
                     } else {
                         response.addError(new MissingGuardBlock.MissingGuardBlockErrorInfoImpl(doc, file, CsmHintProvider.NAME, getID(), message, severity, start));
