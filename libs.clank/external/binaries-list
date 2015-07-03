@@ -1,5 +1,7 @@
-#changeset:   15211:855cc587a508
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Fri Jul 03 15:18:04 2015 +0300
-#summary:     fix macro name start offset in macro declaration
-4356C8873649B2FE55380637F3BDC569F709FEB7 clank_0.3.6.zip
+#changeset:   15213:9a2ae5437e75
+#tag:         tip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Fri Jul 03 19:19:35 2015 +0300
+#summary:     fix lexing of UTF-8 char
+22C29A105A503A9831078DBCCFF9202BFD965022 clank_0.3.6.zip
+
