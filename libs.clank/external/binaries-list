@@ -1,5 +1,5 @@
-#changeset:   15210:37e7c588ba02
+#changeset:   15211:855cc587a508
 #user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Fri Jul 03 12:55:11 2015 +0300
-#summary:     fix macro usage end offset
-65903746EAB34493C58A91A63DCC68309AB78AE2 clank_0.3.6.zip
+#date:        Fri Jul 03 15:18:04 2015 +0300
+#summary:     fix macro name start offset in macro declaration
+4356C8873649B2FE55380637F3BDC569F709FEB7 clank_0.3.6.zip
