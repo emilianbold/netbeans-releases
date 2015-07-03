@@ -149,10 +149,10 @@ public class ClankDriverImpl {
             StringRef file = new StringRef(path);
             if (fortranFlavor) {
                 char[] chars = fixFortranTokens(buffer);
-                fileContent = MemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(chars);
             } else {
                 char[] chars = buffer.getCharBuffer();
-                fileContent = MemoryBufferImpl.create(chars);
+                fileContent = ClankMemoryBufferImpl.create(chars);
             }
             remappedBuffers = new HashMap<StringRef, MemoryBuffer>(remappedBuffers);
             remappedBuffers.put(file, fileContent);
@@ -290,89 +290,12 @@ public class ClankDriverImpl {
                         chars[i+5] = ' ';
                     }
                 }
-            } if (chars[i] > 127) {
-                // convert all non ascii to spaces for fortran
-                chars[i] = ' ';
             }
             i++;
         }
         return chars;
     }
 
-    private static class MemoryBufferImpl extends MemoryBuffer {
-    
-        
-        public static MemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
-            char[] chars = aptBuf.getCharBuffer();
-            return create(chars);
-        }
-
-        public static MemoryBufferImpl create(char[] chars) throws IOException {
-//            String s = new String(chars); // TODO: should it be optimized?
-//            char$ptr start = NativePointer.create_char$ptr(s);
-//            char$ptr end = start.$add(s.length());
-
-            CharBuffer cb = CharBuffer.wrap(chars);
-            ByteBuffer bb = getUTF8Charset().encode(cb);
-            // we need to add a trailing zero
-            byte[] array;
-            int nullTermIndex = bb.limit();
-            if (bb.limit() < bb.capacity()) {
-                // expand existing to keep \0
-                bb.limit(bb.limit() + 1);
-                bb.position(nullTermIndex);
-                bb.put((byte) '\0');
-                array = bb.array();
-            } else {
-                // have to create new to keep \0
-                array = new byte[nullTermIndex + 1];
-                System.arraycopy(bb.array(), 0, array, 0, nullTermIndex);
-                array[nullTermIndex] = (byte) '\0';
-            }
-            // NB: the above adds a treailing zero. If you don't want this, use Arrays.copyOfRange instead
-            //byte[] res = copyOfRange(bb.array(), bb.position(), bb.limit());
-            //return res;    
-            char$ptr start = NativePointer.create_char$ptr(array);
-            char$ptr end = start.$add(nullTermIndex);
-            return new MemoryBufferImpl(start, end, true);
-        }
-
-        private MemoryBufferImpl(char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
-            super();
-            init(start, end, RequiresNullTerminator);
-        }
-
-        @Override
-        public BufferKind getBufferKind() {        
-            return BufferKind.MemoryBuffer_Malloc;
-        }        
-        
-        private static volatile Charset UTF8Charset = null;
-
-        private static Charset getUTF8Charset() {
-            if (UTF8Charset == null) {
-                UTF8Charset = Charset.forName("UTF-8"); //NOI18N
-            }
-            return UTF8Charset;
-        }
-
-//        /**
-//         * The same as Arrays.copyOfRange, but adds a trailing zero
-//         */
-//        public static byte[] copyOfRange(byte[] original, int from, int to) {
-//            int newLength = to - from;
-//            if (newLength < 0) {
-//                throw new IllegalArgumentException(from + " > " + to);
-//            }
-//            newLength++; // reserve space for '\0'
-//            byte[] copy = new byte[newLength];
-//            System.arraycopy(original, from, copy, 0,
-//                    Math.min(original.length - from, newLength));
-//            copy[newLength - 1] = 0;
-//            return copy;
-//        }        
-    }
-    
     private static Map<StringRef, MemoryBuffer> getRemappedBuffers() {
         Map<StringRef, MemoryBuffer> result = Collections.<StringRef, MemoryBuffer>emptyMap();
         APTUnsavedBuffersProvider provider = Lookup.getDefault().lookup(APTUnsavedBuffersProvider.class);

@@ -51,6 +51,9 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
 
     public static ClankMemoryBufferImpl create(APTFileBuffer aptBuf) throws IOException {
         char[] chars = aptBuf.getCharBuffer();
+        if (true) {
+            return create(chars);
+        }
         CharBuffer cb = CharBuffer.wrap(chars);
         ByteBuffer bb = getUTF8Charset().encode(cb);
         // we need to add a trailing zero
@@ -70,6 +73,24 @@ class ClankMemoryBufferImpl extends MemoryBuffer {
         char$ptr end = start.$add(bb.limit());
         return new ClankMemoryBufferImpl(start, end, true);
     }
+    
+    public static ClankMemoryBufferImpl create(char[] chars) throws IOException {
+        int nullTermIndex = chars.length;
+        byte[] array = new byte[nullTermIndex+1];
+        for (int i = 0; i < nullTermIndex; i++) {
+            char c = chars[i];
+            if (c > 127) {
+                // convert all non ascii to spaces
+                array[i] = ' ';
+            } else {
+                array[i] = (byte)c;
+            }
+        }
+        array[nullTermIndex] = 0;
+        char$ptr start = NativePointer.create_char$ptr(array);
+        char$ptr end = start.$add(nullTermIndex);
+        return new ClankMemoryBufferImpl(start, end, true);
+    }    
 
     private ClankMemoryBufferImpl(char$ptr start, char$ptr end, boolean RequiresNullTerminator) {
         super();
