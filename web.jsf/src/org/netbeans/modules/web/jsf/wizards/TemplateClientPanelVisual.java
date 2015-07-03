@@ -298,11 +298,13 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
             ClassPathProvider cpp = Templates.getProject(wizardDescriptor).getLookup().lookup(ClassPathProvider.class);
             for (SourceGroup sourceGroup : getProjectDocumentSourceGroups()) {
                 ClassPath cp = cpp.findClassPath(sourceGroup.getRootFolder(), ClassPath.COMPILE);
-                for (FileObject root : cp.getRoots()) {
-                    FileObject contracts = root.getFileObject("META-INF/" + JsfConstants.CONTRACTS_FOLDER); //NOI18N
-                    if (contracts != null && contracts.isValid() && contracts.isFolder()) {
-                        for (FileObject contract : contracts.getChildren()) {
-                            roots.add(contract);
+                if (cp != null) {
+                    for (FileObject root : cp.getRoots()) {
+                        FileObject contracts = root.getFileObject("META-INF/" + JsfConstants.CONTRACTS_FOLDER); //NOI18N
+                        if (contracts != null && contracts.isValid() && contracts.isFolder()) {
+                            for (FileObject contract : contracts.getChildren()) {
+                                roots.add(contract);
+                            }
                         }
                     }
                 }
