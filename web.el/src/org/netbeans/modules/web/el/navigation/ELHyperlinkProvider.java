@@ -212,13 +212,16 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         return null;
     }
 
+    protected static Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
+        Source source = Source.create(doc);
+        return resolveNodeAndElement(source, offset, cancel);
+    }
     /**
      * Resolves the Node at the given offset.
      * @return the node and the ELElement containing it or null.
      */
-    protected static Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
+    protected static Pair<Node, ELElement> resolveNodeAndElement(final Source source, final int offset, final AtomicBoolean cancel) {
         final List<Pair<Node,ELElement>> result = new ArrayList<>(1);
-        Source source = Source.create(doc);
         try {
             ParserManager.parse(Collections.singletonList(source), new UserTask() {
                 @Override

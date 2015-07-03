@@ -50,12 +50,10 @@ public class YamlScannerTest extends YamlTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        YamlScanner.assertDocument = true;
     }
 
     @Override
     protected void tearDown() throws Exception {
-        YamlScanner.assertDocument = false;
         super.tearDown();
     }
 

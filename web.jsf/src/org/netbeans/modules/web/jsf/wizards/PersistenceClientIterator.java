@@ -230,10 +230,14 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                                 SourceGroup sgWeb[] = srcs.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
                                 FileObject webRoot = sgWeb[0].getRootFolder();
                                 generateJsfControllers2(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount, webRoot, bundleName, javaPackageRoot, resourcePackageRoot, templateStyle);
-                                PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage.getName()});
+                                PersistenceUtils.logUsage(PersistenceClientIterator.class,
+                                        "USG_PERSISTENCE_JSF",
+                                        new Object[]{entities.size(), preferredLanguage != null ? preferredLanguage.getName() : null});
                             } else {
                                 generateJsfControllers(progressContributor, progressPanel, jsfControllerPackageFileObject, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, genSessionBean, jpaProgressStepCount);
-                                PersistenceUtils.logUsage(PersistenceClientIterator.class, "USG_PERSISTENCE_JSF", new Object[]{entities.size(), preferredLanguage.getName()});
+                                PersistenceUtils.logUsage(PersistenceClientIterator.class,
+                                        "USG_PERSISTENCE_JSF",
+                                        new Object[]{entities.size(), preferredLanguage != null ? preferredLanguage.getName() : null});
                             }
                             progressContributor.progress(progressStepCount);
                         }
