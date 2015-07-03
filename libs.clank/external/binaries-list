@@ -1,6 +1,5 @@
-#changeset:   15209:2529e06df3cb
-#tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Jul 02 21:32:21 2015 +0300
-#summary:     use L postfix for values like 0xFFFF when they are converted into long like (long)0xFFFF, otherwise long become negative
-789CDBC14295E7E5E13AC48A255A3CF4EA10E13D clank_0.3.6.zip
+#changeset:   15211:855cc587a508
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Fri Jul 03 15:18:04 2015 +0300
+#summary:     fix macro name start offset in macro declaration
+4356C8873649B2FE55380637F3BDC569F709FEB7 clank_0.3.6.zip
