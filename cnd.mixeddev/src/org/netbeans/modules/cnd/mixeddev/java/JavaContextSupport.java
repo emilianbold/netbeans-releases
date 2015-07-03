@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart.Kind;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -193,6 +194,13 @@ public final class JavaContextSupport {
         return isClass(path) || isInterface(path);
     }
     
+    public static boolean isField(TreePath path) {
+        return path != null &&
+            path.getLeaf() != null &&
+            path.getLeaf().getKind() == Tree.Kind.VARIABLE &&
+            isClassOrInterface(path.getParentPath());
+    }
+    
     public static JavaClassInfo createClassInfo(CompilationController controller, TreePath clsTreePath) {
         assert clsTreePath.getLeaf().getKind() == Tree.Kind.CLASS;            
         List<QualifiedNamePart> qualifiedName = getQualifiedName(clsTreePath);
@@ -201,7 +209,7 @@ public final class JavaContextSupport {
     }
     
     public static JavaMethodInfo createMethodInfo(CompilationController controller, TreePath mtdTreePath) {
-        assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;            
+        assert mtdTreePath.getLeaf().getKind() == Tree.Kind.METHOD;
 
         List<JavaTypeInfo> parameters = new ArrayList<JavaTypeInfo>();
         MethodTree mtdTree = (MethodTree) mtdTreePath.getLeaf();
@@ -220,6 +228,18 @@ public final class JavaContextSupport {
             isOverloaded(mtdTreePath, simpleName),
             isStatic(mtdTreePath),
             isNative(mtdTreePath)
+        );
+    }
+    
+    public static JavaFieldInfo createFieldInfo(CompilationController controller, TreePath fieldTreePath) {
+        assert fieldTreePath.getLeaf().getKind() == Tree.Kind.VARIABLE;
+        VariableTree varTree = (VariableTree) fieldTreePath.getLeaf();
+        List<QualifiedNamePart> qualifiedName = getQualifiedName(fieldTreePath);
+        String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
+        return new JavaFieldInfo(
+            simpleName, 
+            renderQualifiedName(qualifiedName), 
+            createTypeInfo(controller, varTree.getType())
         );
     }
 

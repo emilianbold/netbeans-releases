@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.*;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -100,6 +101,8 @@ public class CopyJNISignatureAction extends AbstractJNIAction {
                 jniSignature = JNISupport.getJNISignature((JavaClassInfo) entity);
             } else if (entity instanceof JavaMethodInfo) {
                 jniSignature = JNISupport.getJNISignature((JavaMethodInfo) entity);
+            } else if (entity instanceof JavaFieldInfo) {
+                jniSignature = JNISupport.getJNISignature((JavaFieldInfo) entity);
             }
             if (jniSignature != null) {
                 StatusDisplayer.getDefault().setStatusText(jniSignature);

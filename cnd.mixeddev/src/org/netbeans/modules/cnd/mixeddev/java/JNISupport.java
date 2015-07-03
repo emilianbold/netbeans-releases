@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.mixeddev.MixedDevUtils.Converter;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isClass;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
@@ -231,6 +232,15 @@ public final class JNISupport {
      */
     public static String getJNISignature(JavaClassInfo javaClass) {
         return javaClass.getQualifiedName().toString();
+    }
+    
+    /**
+     * 
+     * @param javaField
+     * @return field signature (which is its type signature)
+     */
+    public static String getJNISignature(JavaFieldInfo javaField) {
+        return getJNISignature(javaField.getType());
     }
     
     /**

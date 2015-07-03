@@ -39,56 +39,35 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.mixeddev.java;
-
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CompilationController;
-import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.*;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
+package org.netbeans.modules.cnd.mixeddev.java.model;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class ResolveJavaEntityTask extends AbstractResolveJavaContextTask<JavaEntityInfo> {
+public final class JavaFieldInfo implements JavaEntityInfo {
     
-    public ResolveJavaEntityTask(int offset) {
-        super(offset);
+    private final CharSequence name;
+    
+    private final CharSequence qualifiedName;
+    
+    private final JavaTypeInfo type;
+
+    public JavaFieldInfo(CharSequence name, CharSequence qualifiedName, JavaTypeInfo type) {
+        this.name = name;
+        this.qualifiedName = qualifiedName;
+        this.type = type;
     }
 
-    @Override
-    protected void resolve(CompilationController controller, TreePath tp) {
-        if (JavaContextSupport.isClassOrInterface(tp)) {
-            result = createClassInfo(controller, tp);
-        } else if (JavaContextSupport.isMethod(tp)) {
-            result = validateMethodInfo(createMethodInfo(controller, tp));
-        } else if (JavaContextSupport.isField(tp)) {
-            result = validateFieldInfo(createFieldInfo(controller, tp));
-        }
+    public CharSequence getName() {
+        return name;
     }
-    
-    private JavaMethodInfo validateMethodInfo(JavaMethodInfo mtdInfo) {
-        for (JavaTypeInfo type : mtdInfo.getParameters()) {
-            if (type == null || type.getName() == null) {
-                return null;
-            }
-        }
-        return mtdInfo;
+
+    public CharSequence getQualifiedName() {
+        return qualifiedName;
     }
-    
-    private JavaFieldInfo validateFieldInfo(JavaFieldInfo fieldInfo) {
-        if (fieldInfo.getName() == null) {
-            return null;
-        }
-        if (fieldInfo.getType() == null) {
-            return null;
-        }
-        return fieldInfo;
+
+    public JavaTypeInfo getType() {
+        return type;
     }
 }
