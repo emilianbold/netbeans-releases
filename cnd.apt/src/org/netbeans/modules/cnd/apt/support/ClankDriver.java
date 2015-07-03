@@ -96,11 +96,13 @@ public final class ClankDriver {
     public static final class MacroExpansion {
         private final int startOfset;
         private final int endOfset;
+        private final int macroNameLength;
         private final ClankDriver.ClankMacroDirective referencedDeclaration;
         
         public MacroExpansion(FileInfoCallback.MacroExpansionInfo expansion, ClankDriver.ClankMacroDirective decl) {
             startOfset = expansion.getStartOffset();
             endOfset = expansion.getEndOffset();
+            macroNameLength = expansion.getMacroNameLength();
             referencedDeclaration = decl;
         }
 
@@ -110,6 +112,10 @@ public final class ClankDriver {
 
         public int getEndOfset() {
             return endOfset;
+        }
+
+        public int getMacroNameLength() {
+            return macroNameLength;
         }
 
         public ClankMacroDirective getReferencedDeclaration() {

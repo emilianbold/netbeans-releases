@@ -710,7 +710,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         private final CsmMacro referencedMacro;
 
         private MacroReference(FileImpl curFile, ClankDriver.MacroExpansion cur, CsmMacro referencedMacro) {
-            super(curFile, cur.getStartOfset(), cur.getEndOfset());
+            super(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength());
             this.referencedMacro = referencedMacro;
         }
 
