@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.model;
 
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart;
+
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
@@ -49,25 +53,39 @@ public final class JavaFieldInfo implements JavaEntityInfo {
     
     private final CharSequence name;
     
-    private final CharSequence qualifiedName;
+    private final List<QualifiedNamePart> qualifiedName;
     
     private final JavaTypeInfo type;
+    
+    private final boolean finalField;
+    
+    private final boolean staticField;
 
-    public JavaFieldInfo(CharSequence name, CharSequence qualifiedName, JavaTypeInfo type) {
+    public JavaFieldInfo(CharSequence name, List<QualifiedNamePart> qualifiedName, JavaTypeInfo type, boolean finalField, boolean staticField) {
         this.name = name;
-        this.qualifiedName = qualifiedName;
+        this.qualifiedName = Collections.unmodifiableList(qualifiedName);
         this.type = type;
+        this.finalField = finalField;
+        this.staticField = staticField;
     }
 
     public CharSequence getName() {
         return name;
     }
 
-    public CharSequence getQualifiedName() {
+    public List<QualifiedNamePart> getQualifiedName() {
         return qualifiedName;
     }
 
     public JavaTypeInfo getType() {
         return type;
+    }
+
+    public boolean isFinal() {
+        return finalField;
+    }
+
+    public boolean isStatic() {
+        return staticField;
     }
 }

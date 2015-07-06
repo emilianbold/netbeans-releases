@@ -81,9 +81,11 @@ import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.*;
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils.Converter;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.createMethodInfo;
 import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.isClass;
+import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.renderQualifiedName;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaClassInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaParameterInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -156,7 +158,7 @@ public final class JNISupport {
      * @return possible C++ signatures for a JNI method
      */
     public static String[] getCppMethodSignatures(JavaMethodInfo methodInfo) {
-        String exception = getExceptionalMethodCppSignature(methodInfo.getQualifiedName());
+        String exception = getExceptionalMethodCppSignature(renderQualifiedName(methodInfo.getQualifiedName()));
         if (exception != null) {
             return new String[]{exception};
         } else {
@@ -193,7 +195,7 @@ public final class JNISupport {
         if (javaType != null) {
             if (javaType.getArrayDepth() > 0) {
                 return "[" + JNISupport.getJNISignature( // NOI18N
-                    new JavaTypeInfo(javaType.getQualifiedName(), javaType.getName(), javaType.getArrayDepth() - 1)
+                    new JavaTypeInfo(javaType.getName(), javaType.getQualifiedName(), javaType.getArrayDepth() - 1)
                 );
             } else {
                 String typeName = javaType.getText().toString();
@@ -201,7 +203,7 @@ public final class JNISupport {
                     return javaToSignatures.get(typeName);
                 }
                 return "L"  // NOI18N
-                    + javaType.getQualifiedName()
+                    + renderQualifiedName(javaType.getQualifiedName())
                     + ";"; // NOI18N
             }
         }
@@ -217,8 +219,8 @@ public final class JNISupport {
     public static String getJNISignature(JavaMethodInfo methodInfo) {
         StringBuilder signature = new StringBuilder();
         signature.append("("); // NOI18N
-        for (JavaTypeInfo param : methodInfo.getParameters()) {
-            signature.append(JNISupport.getJNISignature(param));
+        for (JavaParameterInfo param : methodInfo.getParameters()) {
+            signature.append(JNISupport.getJNISignature(param.getType()));
         }
         signature.append(")"); // NOI18N
         signature.append(JNISupport.getJNISignature(methodInfo.getReturnType()));
@@ -386,19 +388,19 @@ public final class JNISupport {
         StringBuilder signature = new StringBuilder();
         
         // Add method name
-        signature.append(JNI_QN_PREFIX).append(escape(methodInfo.getQualifiedName()));
+        signature.append(JNI_QN_PREFIX).append(escape(renderQualifiedName(methodInfo.getQualifiedName())));
         
         if (full) {
             signature.append(JNI_PARAMS_SIGNATURE_PREFIX);
-            for (JavaTypeInfo param : methodInfo.getParameters()) {
-                signature.append(escape(JNISupport.getJNISignature(param)));
+            for (JavaParameterInfo param : methodInfo.getParameters()) {
+                signature.append(escape(JNISupport.getJNISignature(param.getType())));
             }
         }
         
         // Add parameters
         List<String> cppTypes = new ArrayList<String>();
         cppTypes.addAll(methodInfo.isStatic() ? JNI_STATIC_IMPLICIT_PARAMS : JNI_REGULAR_IMPLICIT_PARAMS);
-        cppTypes.addAll(transform(methodInfo.getParameters(), JavaTypeToCppTypeConverter.INSTANCE));        
+        cppTypes.addAll(transform(methodInfo.getParameters(), JavaParameterToCppTypeConverter.INSTANCE));        
         signature.append(LPAREN).append(stringize(cppTypes, COMMA)).append(RPAREN);
         
         return signature.toString();
@@ -478,6 +480,16 @@ public final class JNISupport {
         return methods;
     }
     
+    private final static class JavaParameterToCppTypeConverter implements Converter<JavaParameterInfo, String> {
+        
+        public static final JavaParameterToCppTypeConverter INSTANCE = new JavaParameterToCppTypeConverter();
+
+        @Override
+        public String convert(JavaParameterInfo from) {
+            return JavaTypeToCppTypeConverter.INSTANCE.convert(from.getType());
+        }
+    }
+    
     private final static class JavaTypeToCppTypeConverter implements Converter<JavaTypeInfo, String> {
         
         public static final JavaTypeToCppTypeConverter INSTANCE = new JavaTypeToCppTypeConverter();
@@ -521,8 +533,8 @@ public final class JNISupport {
         }
         
         private JavaMethodInfo validateMethodInfo(JavaMethodInfo mtdInfo) {
-            for (JavaTypeInfo type : mtdInfo.getParameters()) {
-                if (type == null || type.getName() == null) {
+            for (JavaParameterInfo param : mtdInfo.getParameters()) {
+                if (param == null || param.getName() == null) {
                     return null;
                 }
             }

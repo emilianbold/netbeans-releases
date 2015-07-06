@@ -39,57 +39,61 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.mixeddev.java;
+package org.netbeans.modules.cnd.mixeddev.java.jni.actions;
 
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
-import javax.lang.model.element.Modifier;
-import org.netbeans.api.java.source.CompilationController;
-import static org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport.*;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import javax.swing.text.Document;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
+import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaFieldInfo;
 import org.netbeans.modules.cnd.mixeddev.java.model.JavaMethodInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaParameterInfo;
-import org.netbeans.modules.cnd.mixeddev.java.model.JavaTypeInfo;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
+import org.openide.awt.StatusDisplayer;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class ResolveJavaEntityTask extends AbstractResolveJavaContextTask<JavaEntityInfo> {
+@ActionID(id = "org.netbeans.modules.cnd.mixeddev.java.jni.actions.CopyJNISetFieldCodeAction", category = "MixedDevelopment")
+@ActionRegistration(displayName = "#LBL_Action_CopyJNISetFieldCodeAction", lazy = false)
+@ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup/MixedDevelopment", position=100)})
+@NbBundle.Messages({"LBL_Action_CopyJNISetFieldCodeAction=Set field code"})
+public class CopyJNISetFieldCodeAction extends AbstractCopyJNIAccessCodeAction {
     
-    public ResolveJavaEntityTask(int offset) {
-        super(offset);
-    }
-
     @Override
-    protected void resolve(CompilationController controller, TreePath tp) {
-        if (JavaContextSupport.isClassOrInterface(tp)) {
-            result = createClassInfo(controller, tp);
-        } else if (JavaContextSupport.isMethod(tp)) {
-            result = validateMethodInfo(createMethodInfo(controller, tp));
-        } else if (JavaContextSupport.isField(tp)) {
-            result = validateFieldInfo(createFieldInfo(controller, tp));
-        }
+    protected boolean isEnabledAtPosition(Document doc, int caret) {
+        JavaEntityInfo entity = resolveJavaEntity(doc, caret);
+        return entity instanceof JavaFieldInfo;
     }
     
-    private JavaMethodInfo validateMethodInfo(JavaMethodInfo mtdInfo) {
-        for (JavaParameterInfo param : mtdInfo.getParameters()) {
-            if (param == null || param.getName() == null) {
-                return null;
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.copy_set_field_code"); // NOI18N
+    }
+    
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        Triple<DataObject, Document, Integer> context = extractContext(activatedNodes);
+        if (context != null) {
+            final Document doc = context.second;
+            final int caret = context.third;
+            JavaEntityInfo entity = resolveJavaEntity(doc, caret);
+            String code = generateEntitySetter(entity);
+            if (code != null) {
+                StatusDisplayer.getDefault().setStatusText(code);
+                StringSelection ss = new StringSelection(code);
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(ss, null);
             }
         }
-        return mtdInfo;
-    }
-    
-    private JavaFieldInfo validateFieldInfo(JavaFieldInfo fieldInfo) {
-        if (fieldInfo.getName() == null) {
-            return null;
-        }
-        if (fieldInfo.getType() == null) {
-            return null;
-        }
-        return fieldInfo;
     }
 }

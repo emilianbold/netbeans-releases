@@ -45,6 +45,9 @@ import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
+import org.netbeans.modules.cnd.mixeddev.java.JavaContextSupport;
+import org.netbeans.modules.cnd.mixeddev.java.ResolveJavaEntityTask;
+import org.netbeans.modules.cnd.mixeddev.java.model.JavaEntityInfo;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -101,6 +104,10 @@ public abstract class AbstractJNIAction extends NodeAction {
             }
         }
         return null;
+    }
+    
+    protected JavaEntityInfo resolveJavaEntity(Document doc, int caret) {
+        return JavaContextSupport.resolveContext(doc, new ResolveJavaEntityTask(caret));
     }
     
     protected abstract boolean isEnabledAtPosition(Document doc, int caret);

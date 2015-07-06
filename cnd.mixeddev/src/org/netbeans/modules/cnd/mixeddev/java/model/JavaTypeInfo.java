@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.cnd.mixeddev.java.model;
 
+import java.util.Collections;
+import java.util.List;
 import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.repeat;
+import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart;
 
 /**
  *
@@ -50,24 +53,24 @@ import static org.netbeans.modules.cnd.mixeddev.MixedDevUtils.repeat;
  */
 public final class JavaTypeInfo implements JavaEntityInfo {
     
-    private final CharSequence qualifiedName;
-    
     private final CharSequence name;
+    
+    private final List<QualifiedNamePart> qualifiedName;
     
     private final int array;
 
-    public JavaTypeInfo(CharSequence fullQualifiedName, CharSequence name, int array) {
-        this.qualifiedName = fullQualifiedName;
+    public JavaTypeInfo(CharSequence name, List<QualifiedNamePart> fullQualifiedName, int array) {
         this.name = name;
+        this.qualifiedName = Collections.unmodifiableList(fullQualifiedName);
         this.array = array;
     }
-
-    public CharSequence getQualifiedName() {
-        return qualifiedName;
-    }
-
+    
     public CharSequence getName() {
         return name;
+    }
+
+    public List<QualifiedNamePart> getQualifiedName() {
+        return qualifiedName;
     }
     
     public CharSequence getText() {

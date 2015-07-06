@@ -41,30 +41,34 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.model;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.cnd.mixeddev.java.QualifiedNamePart;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public final class JavaClassInfo implements JavaEntityInfo {
+public final class JavaParameterInfo implements JavaEntityInfo {
     
     private final CharSequence name;
     
-    private final List<QualifiedNamePart> qualifiedName;
+    private final JavaTypeInfo type;
+    
+    private final boolean finalParam;
 
-    public JavaClassInfo(CharSequence name, List<QualifiedNamePart> qualifiedName) {
+    public JavaParameterInfo(CharSequence name, JavaTypeInfo type, boolean finalParam) {
         this.name = name;
-        this.qualifiedName = Collections.unmodifiableList(qualifiedName);
+        this.type = type;
+        this.finalParam = finalParam;
     }
-
+    
     public CharSequence getName() {
         return name;
     }
 
-    public List<QualifiedNamePart> getQualifiedName() {
-        return qualifiedName;
+    public JavaTypeInfo getType() {
+        return type;
+    }
+
+    public boolean isFinal() {
+        return finalParam;
     }
 }

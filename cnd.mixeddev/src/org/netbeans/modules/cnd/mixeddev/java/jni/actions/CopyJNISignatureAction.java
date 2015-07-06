@@ -112,8 +112,4 @@ public class CopyJNISignatureAction extends AbstractJNIAction {
             }
         }
     }
-    
-    private JavaEntityInfo resolveJavaEntity(Document doc, int caret) {
-        return JavaContextSupport.resolveContext(doc, new ResolveJavaEntityTask(caret));
-    }
 }

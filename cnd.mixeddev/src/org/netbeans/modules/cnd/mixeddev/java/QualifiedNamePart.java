@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.mixeddev.java;
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-/*package*/ final class QualifiedNamePart {
+public final class QualifiedNamePart {
     
     private final CharSequence text;
     
@@ -76,6 +76,8 @@ package org.netbeans.modules.cnd.mixeddev.java;
         INTERFACE,
         NESTED_CLASS,
         NESTED_INTERFACE,
-        METHOD
+        METHOD,
+        VARIABLE,
+        PRIMITIVE
     }
 }
