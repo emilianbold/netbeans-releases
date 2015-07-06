@@ -56,6 +56,7 @@ import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
+import org.netbeans.modules.cnd.highlight.hints.ErrorInfoImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -113,12 +114,12 @@ public class SecurityAnalyzerImpl extends AbstractAnalyzer {
         @Override
         protected ErrorDescription addErrorImpl(CsmErrorInfo errorInfo, FileObject fo) {
             String messages[] = errorInfo.getMessage().split("\n");
-            if (messages.length >=2 ) {
+            if (messages.length >=3 ) {
                 String abbr = messages[0];
                 LazyFixList list = new AbstractAnalyzer.LazyFixListImpl();
                 StringBuilder buf = new StringBuilder("<pre>"); //NOI18N
                 boolean first = true;
-                for(int i = 1; i < messages.length; i++) {
+                for(int i = 2; i < messages.length; i++) {
                     if (first) {
                         first = false;
                     } else {
@@ -127,9 +128,15 @@ public class SecurityAnalyzerImpl extends AbstractAnalyzer {
                     buf.append(messages[i]);
                 }
                 buf.append("</pre>"); //NOI18N
-                String message = messages[0];
-                return ErrorDescriptionFactory.createErrorDescription(PREFIX+abbr, Severity.ERROR,
-                        message, buf.toString(), list, fo, errorInfo.getStartOffset(), errorInfo.getStartOffset());
+                String message = messages[1];
+                return ErrorDescriptionFactory.createErrorDescription(PREFIX+abbr
+                                                                     ,Severity.ERROR
+                                                                     ,message
+                                                                     ,buf.toString()
+                                                                     ,list
+                                                                     ,fo
+                                                                     ,errorInfo.getStartOffset()
+                                                                     ,errorInfo.getStartOffset());
             }
             return null;
         }
@@ -140,8 +147,8 @@ public class SecurityAnalyzerImpl extends AbstractAnalyzer {
         
         public AnalyzerFactoryImpl() {
             super(SecurityCheckProvider.NAME,
-                   NbBundle.getMessage(SecurityCheckProvider.class, "SecurityCheck_DESCRIPTION"), //NOI18N
-                   ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png")); //NOI18N
+                  NbBundle.getMessage(SecurityCheckProvider.class, "SecurityCheck_DESCRIPTION"), //NOI18N
+                  ImageUtilities.loadImage("org/netbeans/modules/cnd/highlight/resources/bugs.png")); //NOI18N
         }
 
         @Override
@@ -149,7 +156,7 @@ public class SecurityAnalyzerImpl extends AbstractAnalyzer {
             List<WarningDescription> result = new ArrayList<>();
             final SecurityCheckProvider provider = (SecurityCheckProvider)SecurityCheckProvider.getInstance();
             for(CodeAudit audit : provider.getAudits()) {
-                result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(), SecurityCheckProvider.NAME, provider.getDisplayName()));
+                result.add(WarningDescription.create(PREFIX+audit.getID(), audit.getName(), SecurityCheckProvider.NAME, SecurityCheckProvider.NAME));
             }
             return result;
         }

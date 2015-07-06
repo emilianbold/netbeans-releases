@@ -62,11 +62,13 @@ import org.openide.util.NbBundle;
  * @author Danila Sergeyev
  */
 public class FunctionUsageAudit extends AbstractCodeAudit {
-    private final List<FunctionsXmlService.RvsdFunction> functions;
+    private final FunctionsXmlService.Level level;
+    private final FunctionsXmlService.Category category;
     
-    public FunctionUsageAudit(List<FunctionsXmlService.RvsdFunction> functions, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
+    public FunctionUsageAudit(FunctionsXmlService.Level level, FunctionsXmlService.Category category, String id, String name, String description, String defaultSeverity, boolean defaultEnabled, AuditPreferences myPreferences) {
         super(id, name, description, defaultSeverity, defaultEnabled, myPreferences);
-        this.functions = functions;
+        this.level = level;
+        this.category = category;
     }
     
     @Override
@@ -88,13 +90,13 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
                     String altText = getAlternativesIfUnsafe(function);
                     if (altText != null) {
                         CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                        String name = NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.name", function.getName().toString()); // NOI18N
+                        String id = level.getLevel() + category.getName(); // NOI18N
+                        String name = "(" + level + ") " + function.getName().toString(); // NOI18N
                         String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), id+"\n"+name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                         } else {
-                            
                             response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
                         }
                     }
@@ -104,7 +106,7 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
     }
     
     private String getAlternativesIfUnsafe(CsmFunction function) {
-        for (FunctionsXmlService.RvsdFunction unsafeFunction : functions) {
+        for (FunctionsXmlService.RvsdFunction unsafeFunction : category.getFunctions()) {
             if (function.getName().toString().equals(unsafeFunction.getName())) {
                 CsmFile srcFile = function.getContainingFile();
                 for (CsmInclude include : CsmFileInfoQuery.getDefault().getIncludeStack(srcFile)) {

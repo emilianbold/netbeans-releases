@@ -47,11 +47,7 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <function name="gets" header="stdio.h">
                 <alt><![CDATA[fgets(buf, sizeof (buf), stdin)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    This function does not check for bounds while storing the input. This function can't be used securely.
-                ]]>
-            </description>
+            <description><![CDATA[This function does not check for bounds while storing the input. This function can't be used securely.]]></description>
         </category>
         <category name="cftime">
             <function name="cftime" header="time.h">
@@ -60,11 +56,7 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <function name="ascftime" header="time.h">
                 <alt><![CDATA[strftime(buf, sizeof (buf), fmt, &amp;tm)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    These routines do no bounds checking on the output buffer and may import user-data through the environment variable CFTIME
-                ]]>
-            </description>
+            <description><![CDATA[These routines do no bounds checking on the output buffer and may import user-data through the environment variable CFTIME]]></description>
         </category>
     </level>
     <level value="avoid">
@@ -75,35 +67,21 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <function name="strcpy" header="string.h">
                 <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    It is not possible to limit these functions to a maximum buffer size.<br>
-                    The use of these functions will always force reviewers to follow the logic, and prevent automated scanning of source code for vulnerabilities.
-                ]]>
+            <description><![CDATA[It is not possible to limit these functions to a maximum buffer size.<br>The use of these functions will always force reviewers to follow the logic, and prevent automated scanning of source code for vulnerabilities.]]>
             </description>
         </category>
         <category name="access">
             <function name="access" header="unistd.h">
                 <alt><![CDATA[open()]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    This function is useless because the information it provides is outdated by the time you get to use it.<br>
-                    Using access() followed by open() has a race condition that can't be solved.
-                ]]>
-            </description>
+            <description><![CDATA[This function is useless because the information it provides is outdated by the time you get to use it.<br>Using access() followed by open() has a race condition that can't be solved.]]></description>
         </category>
         <category name="chmod">
             <function name="chmod" header="sys/stat.h"></function>
             <function name="fchmodat" header="sys/stat.h"></function>
             <function name="chown" header="unistd.h"></function>
             <function name="lchown" header="unistd.h"></function>
-            <description>
-                <![CDATA[
-                    These functions operate on pathnames and are prone to race conditions.<br>
-                    Normally, programs shouldn't need to call chown/chmod but honor the current uid (switch back to it before opening files.) and umask.
-                ]]>
-            </description>
+            <description><![CDATA[These functions operate on pathnames and are prone to race conditions.<br>Normally, programs shouldn't need to call chown/chmod but honor the current uid (switch back to it before opening files.) and umask.]]></description>
         </category>
         <category name="alloca">
             <function name="alloca" header="stdlib.h">
@@ -115,12 +93,7 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <function name="strndupa" header="string.h">
                 <alt><![CDATA[strdup(const char *)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    Does not check if the returned pointer is within the stack bounds <br>
-                    and for memory allocations larger than a page may jump over stack guard page into other allocated pages and overwrite them.
-                ]]>
-            </description>
+            <description><![CDATA[Does not check if the returned pointer is within the stack bounds <br>and for memory allocations larger than a page may jump over stack guard page into other allocated pages and overwrite them.]]></description>
         </category>
     </level>
     <level value="caution">
@@ -128,21 +101,13 @@ Portions Copyrighted 2015 Sun Microsystems, Inc.
             <function name="strncat" header="string.h">
                 <alt><![CDATA[strlcat(dst, src, dstsize)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    strncat() is hard to use as it requires the proper size of the destination buffer to be calculated
-                ]]>
-            </description>
+            <description><![CDATA[strncat() is hard to use as it requires the proper size of the destination buffer to be calculated]]></description>
         </category>
         <category name="strncpy">
             <function name="strncpy" header="string.h">
                 <alt><![CDATA[strlcpy(dst, src, dstsize)]]></alt>
             </function>
-            <description>
-                <![CDATA[
-                    strncpy() is not guaranteed to null-terminate the destination buffer.
-                ]]>
-            </description>
+            <description><![CDATA[strncpy() is not guaranteed to null-terminate the destination buffer.]]></description>
         </category>
     </level>
 </unreliablefunctions>

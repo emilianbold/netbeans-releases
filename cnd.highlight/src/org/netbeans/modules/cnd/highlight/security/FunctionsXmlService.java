@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -75,9 +76,19 @@ public class FunctionsXmlService {
     public static final String CHECKS_FOLDER = "SecurityChecks"; // NOI18N
     
     public enum Level {
-        AVOID,
-        UNSAFE,
-        CAUTION
+        UNSAFE(0),
+        AVOID(1),
+        CAUTION(2);
+        
+        private final int level;
+        
+        private Level(int level) {
+            this.level = level;
+        }
+        
+        public String getLevel() {
+            return Integer.toString(level);
+        }
     }
     
     private final Map<Level, List<Category>> functions;
@@ -165,16 +176,16 @@ public class FunctionsXmlService {
     }
     
     private Level toLevel(String level) {
-        if (level.equals(Level.UNSAFE.name().toLowerCase())) {
+        if (level.equals(Level.UNSAFE.name().toLowerCase(Locale.getDefault()))) {
             return Level.UNSAFE;
-        } else if (level.equals(Level.AVOID.name().toLowerCase())) {
+        } else if (level.equals(Level.AVOID.name().toLowerCase(Locale.getDefault()))) {
             return Level.AVOID;
         } else {
             return Level.CAUTION;
         }
     }
     
-    public class Category {
+    public static class Category {
         private final String name;
         private final List<RvsdFunction> functions;
         
@@ -196,7 +207,7 @@ public class FunctionsXmlService {
         }
     }
     
-    public class RvsdFunction {
+    public static class RvsdFunction {
         private final String name;
         private final String header;
         private final List<String> alternatives;
