@@ -1,7 +1,6 @@
-#changeset:   15213:9a2ae5437e75
+#changeset:   15217:9a7b88da47c6
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Jul 03 19:19:35 2015 +0300
-#summary:     fix lexing of UTF-8 char
-22C29A105A503A9831078DBCCFF9202BFD965022 clank_0.3.6.zip
-
+#date:        Mon Jul 06 18:45:30 2015 +0300
+#summary:     made values kept in StringMap to be NativeCloneable
+034F952639FCF962C340537C42EB6D02B4D1C8E1 clank_0.3.6.zip
