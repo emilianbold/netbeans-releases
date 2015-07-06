@@ -73,58 +73,21 @@ public class ClankFileInfoQuerySupport {
 
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
         List<CsmReference> out = Collections.<CsmReference>emptyList();
-        //FileBuffer buffer = fileImpl.getBuffer();
-        Collection<PreprocHandler> handlers = fileImpl.getPreprocHandlersForParse(interrupter);
-        if (interrupter.cancelled()) {
-            return out;
-        }
-        if (handlers.isEmpty()) {
-            DiagnosticExceptoins.register(new IllegalStateException("Empty preprocessor handlers for " + fileImpl.getAbsolutePath())); //NOI18N
-            return Collections.<CsmReference>emptyList();
-        } else if (handlers.size() == 1) {
-            out = new ArrayList<>();
-            PreprocHandler handler = handlers.iterator().next();
-            PreprocHandler.State ppState = handler.getState();
-            TokenStreamProducer tsp = TokenStreamProducer.create(fileImpl, true, false);
-            if (tsp != null) {
-                String contextLanguage = fileImpl.getContextLanguage(ppState);
-                String contextLanguageFlavor = fileImpl.getContextLanguageFlavor(ppState);
-                tsp.prepare(handler, contextLanguage, contextLanguageFlavor, true);
-                TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
-                PreprocHandler currentPreprocHandler = tsp.getCurrentPreprocHandler();
-                for(CsmReference reference : fileImpl.getReferences()) {
-                    CsmObject referencedObject = reference.getReferencedObject();
-                    if (CsmKindUtilities.isMacro(referencedObject)) {
-                        out.add(reference);
-                    }
-                }
+        for(CsmReference reference : fileImpl.getReferences()) {
+            if (interrupter.cancelled()) {
+                return out;
             }
-        } else {
-            TreeSet<CsmReference> result = new TreeSet<>(CsmOffsetable.OFFSET_COMPARATOR);
-            for (PreprocHandler handler : handlers) {
-                PreprocHandler.State ppState = handler.getState();
-                TokenStreamProducer tsp = TokenStreamProducer.create(fileImpl, true, false);
-                if (tsp != null) {
-                    String contextLanguage = fileImpl.getContextLanguage(ppState);
-                    String contextLanguageFlavor = fileImpl.getContextLanguageFlavor(ppState);
-                    tsp.prepare(handler, contextLanguage, contextLanguageFlavor, true);
-                    TokenStream tokenStream = tsp.getTokenStream(false, false, false, interrupter);
-                    PreprocHandler currentPreprocHandler = tsp.getCurrentPreprocHandler();
-                    for(CsmReference reference : fileImpl.getReferences()) {
-                        CsmObject referencedObject = reference.getReferencedObject();
-                        if (CsmKindUtilities.isMacro(referencedObject)) {
-                            out.add(reference);
-                        }
-                    }
-                }
+            CsmObject referencedObject = reference.getReferencedObject();
+            if (CsmKindUtilities.isMacro(referencedObject)) {
+                out.add(reference);
             }
-            out = new ArrayList<>(result);
         }
         return out;
     }
 
     public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
         assert APTTraceFlags.USE_CLANK;
+        // TODO: get start/end of guard from fileImpl 
         CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "getGuardOffset not yet implemented");
         return null;
     }
