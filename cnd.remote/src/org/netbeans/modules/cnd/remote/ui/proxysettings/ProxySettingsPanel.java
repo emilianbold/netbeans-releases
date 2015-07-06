@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.remote.ui.proxysettings;
 import java.awt.BorderLayout;
 import java.util.Iterator;
 import javax.accessibility.Accessible;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSeparator;
@@ -155,6 +156,7 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
         int cnt = origPanel.getAccessibleContext().getAccessibleChildrenCount();
         boolean visible = false;
         boolean firstLabel = false;
+        int button = 0;
         for (int i = 0; i < cnt; i++) {
             Accessible accessibleChild = origPanel.getAccessibleContext().getAccessibleChild(i);
             if (accessibleChild instanceof JComponent) {
@@ -172,6 +174,15 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
                 }
                 if (!visible && elem.isVisible()) {
                     elem.setVisible(false);
+                } else {
+                    // #253316 - "Test connection" button ... works wrong
+                    // I dislike this hack, but it is not worse than the entire method :-/
+                    if (elem instanceof JButton) {
+                        button++;
+                        if (button == 3) {
+                            elem.setVisible(false);
+                        }
+                    }
                 }
             }
         }
