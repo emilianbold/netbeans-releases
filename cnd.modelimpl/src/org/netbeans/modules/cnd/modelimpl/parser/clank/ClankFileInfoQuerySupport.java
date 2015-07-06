@@ -72,7 +72,7 @@ import org.openide.util.Exceptions;
 public class ClankFileInfoQuerySupport {
 
     public static List<CsmReference> getMacroUsages(FileImpl fileImpl, Interrupter interrupter) {
-        List<CsmReference> out = Collections.<CsmReference>emptyList();
+        List<CsmReference> out = new ArrayList<>();
         for(CsmReference reference : fileImpl.getReferences()) {
             if (interrupter.cancelled()) {
                 return out;
