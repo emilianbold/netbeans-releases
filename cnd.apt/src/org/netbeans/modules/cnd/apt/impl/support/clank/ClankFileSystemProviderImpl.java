@@ -69,17 +69,10 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
     
     @Override
     public IntrusiveRefCntPtr<FileSystem> getFileSystemImpl(ClankCompilationDataBase.Entry entry) {
-        Collection<URI> compiledFiles = entry.getCompiledFiles();
+        Collection<CharSequence> compiledFiles = entry.getCompiledFiles();
         if (compiledFiles != null && !compiledFiles.isEmpty()) {
-            URI uri = compiledFiles.iterator().next();
-            URL url;
-            try {
-                url = uri.toURL();
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            FileObject fo = URLMapper.findFileObject(url);
+            CharSequence url = compiledFiles.iterator().next();
+            FileObject fo = CndFileSystemProvider.urlToFileObject(url);
             org.openide.filesystems.FileSystem nbFS;
             try {
                 nbFS = fo.getFileSystem();
