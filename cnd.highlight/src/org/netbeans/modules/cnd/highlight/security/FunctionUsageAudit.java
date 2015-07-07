@@ -95,9 +95,9 @@ public class FunctionUsageAudit extends AbstractCodeAudit {
                         String description = (altText.isEmpty())?getDescription():(getDescription()+NbBundle.getMessage(FunctionUsageAudit.class, "FunctionUsageAudit.alternative", altText)); // NOI18N
                         if (response instanceof AnalyzerResponse) {
                             ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), id+"\n"+name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
+                                new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), id+"\n"+name+"\n"+description, severity, ref.getStartOffset(), ref.getEndOffset())); // NOI18N
                         } else {
-                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getID(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
+                            response.addError(new ErrorInfoImpl(SecurityCheckProvider.NAME, getName(), description, severity, ref.getStartOffset(), ref.getEndOffset()));
                         }
                     }
                 }
