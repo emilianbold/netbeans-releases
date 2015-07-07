@@ -366,16 +366,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     public boolean hasGuardBlock(CsmFile file) {
         if (file instanceof FileImpl) {
             FileImpl fileImpl = (FileImpl) file;
-            try {
-                APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
-                if (apt.getGuardMacro().length() > 0) {
-                    return true;
-                }                    
-            } catch (FileNotFoundException ex) {
-                // file could be removed
-            } catch (IOException ex) {
-                System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
-            } 
+            if (APTTraceFlags.USE_CLANK) {
+              return ClankFileInfoQuerySupport.hasGuardBlock(fileImpl);
+            } else {
+              return APTFileInfoQuerySupport.hasGuardBlock(fileImpl);
+            }            
         }
         return false;
     }
