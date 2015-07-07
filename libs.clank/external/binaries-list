@@ -1,6 +1,6 @@
-#changeset:   15218:ce9f529ac169
+#changeset:   15220:b98d737a9316
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Jul 07 14:47:36 2015 +0300
-#summary:     JAVA: like in LLVM.Trunk; notify InclusionDirective after all resolving branches above
-275CA4271D1C7DC3D6286B867D66E497EEBF3460 clank_0.3.6.zip
+#date:        Tue Jul 07 18:02:22 2015 +0300
+#summary:     JAVA: to make test FileModelTest.testIncludeMacroExpansion happy - notify InclusionDirective callback and then produce diagnostics
+3F049D9BB783620E05C46CAD282E8C4E8692CE3F clank_0.3.6.zip
