@@ -200,8 +200,8 @@ public final class ClankPPCallback extends FileInfoCallback {
     protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
         APTFileSearch fileSearch = includeHandler.getFileSearch();
         if (fileSearch != null) {
-            String headerPath = fileSearch.searchInclude(
-                    Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFile.getName()));
+            char$ptr curFilePath = curFile.getName();
+            String headerPath = fileSearch.searchInclude(Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFilePath));
             if (headerPath != null) {
                 headerPath = CndPathUtilities.getDirName(headerPath);
                 if (headerPath == null) {
