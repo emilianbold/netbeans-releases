@@ -1,6 +1,6 @@
-#changeset:   15220:b98d737a9316
+#changeset:   15223:d6c9f9fe6447
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Jul 07 18:02:22 2015 +0300
-#summary:     JAVA: to make test FileModelTest.testIncludeMacroExpansion happy - notify InclusionDirective callback and then produce diagnostics
-3F049D9BB783620E05C46CAD282E8C4E8692CE3F clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Tue Jul 07 20:31:46 2015 +0300
+#summary:     Changed URIs to CharSequences in ClankCompilationDataBase
+7E3C57B75B8527A7D43393759ADA864EEDBE4FB4 clank_0.3.6.zip

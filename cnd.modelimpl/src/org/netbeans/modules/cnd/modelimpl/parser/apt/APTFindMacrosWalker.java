@@ -458,6 +458,20 @@ import org.openide.filesystems.FileSystem;
       return out;
     }
     
+    /*package*/ static boolean hasGuardBlockImpl(FileImpl fileImpl) {
+        try {
+            APTFile apt = APTDriver.findAPT(fileImpl.getBuffer(), fileImpl.getFileLanguage(), fileImpl.getFileLanguageFlavor());
+            if (apt.getGuardMacro().length() > 0) {
+                return true;
+            }
+        } catch (FileNotFoundException ex) {
+            // file could be removed
+        } catch (IOException ex) {
+            System.err.println("IOExeption in getGuardOffset:" + ex.getMessage()); //NOI18N
+        }
+        return false;
+    }
+    
     /*package*/ static CsmOffsetable getGuardOffsetImpl(FileImpl fileImpl) {
       assert !APTTraceFlags.USE_CLANK;
         try {

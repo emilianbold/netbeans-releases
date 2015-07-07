@@ -92,6 +92,13 @@ public class ClankFileInfoQuerySupport {
         return null;
     }
 
+    public static boolean hasGuardBlock(FileImpl fileImpl) {
+        assert APTTraceFlags.USE_CLANK;
+        // TODO: get guard from fileImpl 
+        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "hasGuardBlock not yet implemented");
+        return false;
+    }
+        
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
         assert APTTraceFlags.USE_CLANK;
         TokenStream ts = fileImpl.getTokenStream(offset, offset, code, true);

@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser.apt;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -56,18 +59,22 @@ import org.netbeans.modules.cnd.support.Interrupter;
  */
 public final class APTFileInfoQuerySupport {
 
-  private APTFileInfoQuerySupport() {
-  }
+    private APTFileInfoQuerySupport() {
+    }
 
-  public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
-      return APTFindMacrosWalker.getAPTMacroUsagesImpl(fileImpl, interrupter);
-  }
+    public static List<CsmReference> getMacroUsages(FileImpl fileImpl, final Interrupter interrupter) throws IOException {
+        return APTFindMacrosWalker.getAPTMacroUsagesImpl(fileImpl, interrupter);
+    }
 
-  public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
-      return APTFindMacrosWalker.getGuardOffsetImpl(fileImpl);
-  }
+    public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
+        return APTFindMacrosWalker.getGuardOffsetImpl(fileImpl);
+    }
 
-  public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
-      return StopOnOffsetParseFileWalker.expandImpl(fileImpl, code, handler, base, offset);
-  }
+    public static boolean hasGuardBlock(FileImpl fileImpl) {
+        return APTFindMacrosWalker.hasGuardBlockImpl(fileImpl);
+    }
+
+    public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {
+        return StopOnOffsetParseFileWalker.expandImpl(fileImpl, code, handler, base, offset);
+    }
 }
