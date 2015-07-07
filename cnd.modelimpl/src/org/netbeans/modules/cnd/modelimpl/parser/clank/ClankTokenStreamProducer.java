@@ -753,7 +753,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public CsmObject getOwner() {
-            return getContainingFile();
+            return null;
         }
 
         @Override
@@ -813,7 +813,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public CsmObject getOwner() {
-            return getContainingFile();
+            return referencedMacro;
         }
 
         @Override
