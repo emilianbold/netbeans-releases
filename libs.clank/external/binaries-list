@@ -1,5 +1,6 @@
-#changeset:   15219:83d45fda55ee
-#user:        Alexander Simon <alexvsimon@netbeans.org>
-#date:        Tue Jul 07 16:59:41 2015 +0300
-#summary:     collect macro definitions
-D19EC14C0C3EBEC946044E90E459D036080F6954 clank_0.3.6.zip
+#changeset:   15220:b98d737a9316
+#tag:         tip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Tue Jul 07 18:02:22 2015 +0300
+#summary:     JAVA: to make test FileModelTest.testIncludeMacroExpansion happy - notify InclusionDirective callback and then produce diagnostics
+3F049D9BB783620E05C46CAD282E8C4E8692CE3F clank_0.3.6.zip
