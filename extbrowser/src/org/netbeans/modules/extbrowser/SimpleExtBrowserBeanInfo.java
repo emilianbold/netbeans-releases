@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 
 public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor () {
         BeanDescriptor descr = new BeanDescriptor (SimpleExtBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (SimpleExtBrowserBeanInfo.class, "CTL_SimpleExtBrowser"));
@@ -72,6 +73,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
      * A client of getPropertyDescriptors can use "instanceof" to check
      * if a given PropertyDescriptor is an IndexedPropertyDescriptor.
      */
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] properties;
         try {
@@ -90,6 +92,7 @@ public class SimpleExtBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }

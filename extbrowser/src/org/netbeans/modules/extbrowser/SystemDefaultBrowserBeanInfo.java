@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 
 public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (SystemDefaultBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "CTL_SystemDefaultBrowserName"));
@@ -61,6 +62,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 	return descr;
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] properties;
         
@@ -101,6 +103,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.png"); // NOI18N
     }

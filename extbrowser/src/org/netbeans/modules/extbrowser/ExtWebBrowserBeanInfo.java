@@ -53,10 +53,12 @@ import org.openide.util.Utilities;
 
 public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         return new BeanDescriptor(ExtWebBrowser.class);
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] properties;
         if (Utilities.isWindows()) {
@@ -110,6 +112,7 @@ public class ExtWebBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }

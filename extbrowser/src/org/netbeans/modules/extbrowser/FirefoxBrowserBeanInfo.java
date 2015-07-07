@@ -51,6 +51,7 @@ import org.openide.util.NbBundle;
 
 public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (FirefoxBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (FirefoxBrowserBeanInfo.class, "CTL_FirefoxBrowserName"));
@@ -60,13 +61,12 @@ public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
 	return descr;
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor [0];
     }
 
-    /**
-    * Returns the IceBrowserSettings' icon. 
-    */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
@@ -76,6 +76,7 @@ public class FirefoxBrowserBeanInfo extends SimpleBeanInfo {
      * may override this if you want to (for example) return a
      * BeanInfo for a base class.
      */
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };
