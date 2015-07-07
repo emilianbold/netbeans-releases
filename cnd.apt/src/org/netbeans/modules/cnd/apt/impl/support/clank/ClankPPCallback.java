@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
@@ -72,6 +74,7 @@ import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroExpansion;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroUsage;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -200,8 +203,8 @@ public final class ClankPPCallback extends FileInfoCallback {
     protected boolean onNotFoundInclusionDirective(FileInfo curFile, StringRef FileName, SmallVectorImplChar RecoveryPath) {
         APTFileSearch fileSearch = includeHandler.getFileSearch();
         if (fileSearch != null) {
-            String headerPath = fileSearch.searchInclude(
-                    Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFile.getName()));
+            char$ptr curFilePath = curFile.getName();
+            String headerPath = fileSearch.searchInclude(Native.$toString(FileName.data(), FileName.size()), Native.$toString(curFilePath));
             if (headerPath != null) {
                 headerPath = CndPathUtilities.getDirName(headerPath);
                 if (headerPath == null) {
@@ -239,6 +242,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                         0/*should not be used by client*/, enteredTo.getIncludeStartOffset(), resolvedPath.getIndex());
                 includeHandler.cacheTokens(enteredToWrapper);
                 enteredFromWrapper = includeStack.get(includeStack.size() - 1);
+                enteredToWrapper.setMacroDefinitions(((ClankFileInfoWrapper)enteredFromWrapper).getMacroDefinitions());
             }
             // keep stack of active files
             includeStack.add(enteredToWrapper);
@@ -318,6 +322,32 @@ public final class ClankPPCallback extends FileInfoCallback {
         return delegate.needMacroExpansion();
     }
 
+    @Override
+    protected void onMacroDefineDirective(FileInfo curStackElement, MacroDirectiveInfo macroDirective) {
+        SmallVectorChar spell = new SmallVectorChar(1024);
+        // old model tracked only #define and not #undef
+        CharSequence macroName = ClankToAPTUtils.getTokenText(macroDirective.getMacroNameToken(), curStackElement.getPreprocessor(), spell);
+        List<CharSequence> params = null;
+        if (macroDirective.isDefined()) {
+            if (macroDirective.isFunctionLike()) {
+                IdentifierInfo[] arguments = macroDirective.getArguments();
+                params = new ArrayList<CharSequence>(arguments.length);
+                for (IdentifierInfo arg : arguments) {
+                    CharSequence argName = ClankToAPTUtils.getIdentifierText(arg);
+                    params.add(argName);
+                }
+                if (macroDirective.isVariadic()) {
+                    // replace the last param name by variadic marker
+                    assert params.size() > 0;
+                    params.set(params.size() - 1, APTUtils.VA_ARGS_TOKEN.getTextID());
+                }
+            }
+        }
+        ClankMacroDirectiveWrapper wrapper = new ClankMacroDirectiveWrapper(macroName, params, macroDirective, macroDirective.getMacroNameToken());
+        ClankFileInfoWrapper currentFileWrapper = includeStack.get(0);
+        delegate.onMacroDefineDirective(currentFileWrapper, wrapper);
+    }
+
     private static abstract class ClankPreprocessorDirectiveWrapper implements ClankDriver.ClankPreprocessorDirective {
 
         private Object externalAnnotation;
@@ -361,8 +391,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         private final List<CharSequence> params;
         private final CharSequence macroName;
         private final boolean isDefined;
-        private final SourceLocation macroNameTokenSourceLocation;
+        private final /*SourceLocation*/int macroNameTokenSourceLocation;
         private final int macroNameOffset;
+        private final CharSequence fileOwnerName;
 
         public ClankMacroDirectiveWrapper(CharSequence macroName,
                 List<CharSequence> params, MacroDirectiveInfo clankDelegate, Token macroNameToken) {
@@ -370,8 +401,19 @@ public final class ClankPPCallback extends FileInfoCallback {
             this.params = params;
             this.macroName = macroName;
             this.isDefined = clankDelegate.isDefined();
-            this.macroNameTokenSourceLocation = macroNameToken.getLocation();
+            this.macroNameTokenSourceLocation = macroNameToken.getRawLocation();
             macroNameOffset = clankDelegate.getMacroNameOffset();
+            FileInfo fileOwner = clankDelegate.getFileOwner();
+            if (fileOwner.isFile()) {
+                this.fileOwnerName = toJavaString(fileOwner.getName());
+            } else {
+                this.fileOwnerName = BUILD_IN_FILE;
+            }
+        }
+
+        @Override
+        public CharSequence getFile() {
+            return fileOwnerName;
         }
 
         @Override
@@ -393,7 +435,9 @@ public final class ClankPPCallback extends FileInfoCallback {
         public List<CharSequence> getParameters() {
             return this.params == null ? null : Collections.unmodifiableList(this.params);
         }
-        private SourceLocation getSourceLocation() {
+        
+        @Override
+        public /*SourceLocation*/int getMacroNameLocation() {
             return macroNameTokenSourceLocation;
         }
     }
@@ -478,9 +522,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         private APTToken[] convertedTokens;
         private List<ClankDriver.ClankPreprocessorDirective> convertedPPDirectives;
         private List<MacroExpansion> convertedMacroExpansions;
+        private List<MacroUsage> convertedMacroUsages;
         private boolean hasTokenStream = false;
         private int[] skippedRanges = null;
         private boolean convertedToAPT = false;
+        private Map<Integer, ClankDriver.ClankMacroDirective> macroDeclarations = new ConcurrentHashMap<Integer, ClankDriver.ClankMacroDirective>();
 
         public ClankFileInfoWrapper(FileInfo current,
                 PreprocHandler ppHandler) {
@@ -508,25 +554,25 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         private void prepareConvertedMacroExpansions() {
-            SmallVector<FileInfoCallback.MacroExpansionInfo> macroExpansions = current.getMacroExpansions();
-            int size = macroExpansions.size();
-            Object[] expansions = macroExpansions.$array();
-            convertedMacroExpansions = new ArrayList<MacroExpansion>(size);
-            for (int i = 0; i < size; i++) {
-                FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
-                ClankMacroDirectiveWrapper decl = null;
-                SourceLocation referencedDeclarationSuorceLocation = e.getReferencedDeclarationSourceLocation();
-                for(ClankDriver.ClankPreprocessorDirective directive : convertedPPDirectives) {
-                    if (directive instanceof ClankMacroDirectiveWrapper) {
-                        ClankMacroDirectiveWrapper wrapper = (ClankMacroDirectiveWrapper)directive;
-                        SourceLocation loc = wrapper.getSourceLocation();
-                        if (loc.$eq(referencedDeclarationSuorceLocation)) {
-                            decl = wrapper;
-                            break;
-                        }
-                    }
+            {
+                SmallVector<FileInfoCallback.MacroExpansionInfo> macroExpansions = current.getMacroExpansions();
+                int size = macroExpansions.size();
+                Object[] expansions = macroExpansions.$array();
+                convertedMacroExpansions = new ArrayList<MacroExpansion>(size);
+                for (int i = 0; i < size; i++) {
+                    FileInfoCallback.MacroExpansionInfo e = (FileInfoCallback.MacroExpansionInfo)expansions[i];
+                    convertedMacroExpansions.add(new MacroExpansion(e));
                 }
-                convertedMacroExpansions.add(new MacroExpansion(e, decl));
+            }
+            {
+                SmallVector<FileInfoCallback.MacroUsageInfo> macroUsages = current.getMacroUsages();
+                int size = macroUsages.size();
+                Object[] expansions = macroUsages.$array();
+                convertedMacroUsages = new ArrayList<MacroUsage>(size);
+                for (int i = 0; i < size; i++) {
+                    FileInfoCallback.MacroUsageInfo e = (FileInfoCallback.MacroUsageInfo)expansions[i];
+                    convertedMacroUsages.add(new MacroUsage(e));
+                }
             }
         }
 
@@ -600,6 +646,20 @@ public final class ClankPPCallback extends FileInfoCallback {
         @Override
         public Collection<MacroExpansion> getMacroExpansions() {
             return Collections.unmodifiableList(convertedMacroExpansions);
+        }
+
+        @Override
+        public Collection<MacroUsage> getMacroUsages() {
+            return Collections.unmodifiableList(convertedMacroUsages);
+        }
+
+        void setMacroDefinitions(Map<Integer, ClankDriver.ClankMacroDirective> macroDeclarations) {
+            this.macroDeclarations = macroDeclarations;
+        }
+
+        @Override
+        public Map<Integer, ClankDriver.ClankMacroDirective> getMacroDefinitions() {
+            return macroDeclarations;
         }
 
         @Override

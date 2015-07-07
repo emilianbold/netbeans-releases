@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.parser.clank;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.event.ChangeListener;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
@@ -51,12 +52,14 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.APTTokenStreamCache;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.ClankPreprocessorCallback;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
@@ -68,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.SystemMacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
@@ -83,6 +87,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
@@ -387,6 +392,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
         }        
 
+        @Override
+        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankMacroDirective directive) {
+            if (directive.isDefined()) {
+                // for #define A BODY macro name location is macro-ID
+                ((APTTokenStreamCache)directiveOwner).getMacroDefinitions().put(directive.getMacroNameLocation(), directive);
+            }
+        }
+
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
@@ -473,6 +486,10 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             return true;
         }
 
+        @Override
+        public void onMacroDefineDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankMacroDirective directive) {
+        }
+
         private ClankDriver.APTTokenStreamCache getPPOut() {
             return foundTokens;
         }
@@ -496,18 +513,26 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     }
 
     private static void addMacroExpansions(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+        Map<Integer, ClankDriver.ClankMacroDirective> macroDefinitions = cache.getMacroDefinitions();
         for (ClankDriver.MacroExpansion cur : cache.getMacroExpansions()) {
-            ClankDriver.ClankMacroDirective referencedDeclaration = cur.getReferencedDeclaration();
-            CsmMacro referencedMacro = null;
-            if (referencedDeclaration != null) {
-                for(CsmMacro macro : parsingFileContent.getFileMacros().getMacros()) {
-                    if (macro.getStartOffset() == referencedDeclaration.getDirectiveStartOffset()) {
-                        referencedMacro = macro;
-                        break;
-                    }
-                }
+            int referencedDeclaration = cur.getReferencedMacroID();
+            if (referencedDeclaration != 0) {
+                ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
+                assert directive != null : "Not found referenced ClankMacroDirective "+referencedDeclaration;
+                addMacroUsage(curFile, parsingFileContent, new MacroReference(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength(), directive));
+            } else {
+                // TODO: process invalid macro definition
             }
-            addMacroUsage(curFile, parsingFileContent, new MacroReference(curFile, cur, referencedMacro));
+        }
+        for(ClankDriver.MacroUsage cur : cache.getMacroUsages()) {
+            int referencedDeclaration = cur.getReferencedMacroID();
+            if (referencedDeclaration != 0) {
+                ClankDriver.ClankMacroDirective directive = macroDefinitions.get(referencedDeclaration);
+                assert directive != null : "Not found referenced ClankMacroDirective "+referencedDeclaration;
+                addMacroUsage(curFile, parsingFileContent, new MacroReference(curFile, cur.getStartOfset(), cur.getEndOfset(), directive));
+            } else {
+                // TODO: process invalid macro definition
+            }
         }
     }
 
@@ -711,9 +736,14 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
     private static final class MacroReference extends OffsetableBase implements CsmReference {
         private final CsmMacro referencedMacro;
 
-        private MacroReference(FileImpl curFile, ClankDriver.MacroExpansion cur, CsmMacro referencedMacro) {
-            super(curFile, cur.getStartOfset(), cur.getStartOfset()+cur.getMacroNameLength());
-            this.referencedMacro = referencedMacro;
+        private MacroReference(FileImpl curFile, int startOffset, int endOffset, final ClankDriver.ClankMacroDirective directive) {
+            super(curFile, startOffset, endOffset);
+            if (CharSequenceUtilities.equals(ClankDriver.ClankMacroDirective.BUILD_IN_FILE, directive.getFile())) {
+                referencedMacro =  SystemMacroImpl.create(directive.getMacroName(), "", directive.getParameters(), ((ProjectBase) curFile.getProject()).getUnresolvedFile(), CsmMacro.Kind.DEFINED);
+            } else {
+                referencedMacro =  MacroImpl.create(directive.getMacroName(), directive.getParameters(),
+                    "", getTargetFile(curFile, directive.getFile()), directive.getDirectiveStartOffset(), directive.getDirectiveEndOffset(), CsmMacro.Kind.DEFINED);
+            }
         }
 
         @Override
@@ -739,6 +769,32 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         @Override
         public CsmObject getClosestTopLevelObject() {
             return getContainingFile();
+        }
+
+        static CsmFile getTargetFile(FileImpl current, CharSequence macroContainerFile) {
+            CsmFile target = null;
+            if (current != null && macroContainerFile.length() > 0) {
+                FileSystem fs = null;
+                ProjectBase currentPrj = (ProjectBase) current.getProject();
+                ProjectBase targetPrj = currentPrj.findFileProject(macroContainerFile, true);
+                if (targetPrj != null) {
+                    target = targetPrj.findFile(macroContainerFile, true, false);
+                    fs = targetPrj.getFileSystem();
+                } else {
+                    fs = currentPrj.getFileSystem();
+                }
+                // try full model?
+                if (target == null) {
+                    target = CsmModelAccessor.getModel().findFile(new FSPath(fs, macroContainerFile.toString()), true, false);
+                }
+                if (target == null && targetPrj != null) {
+                    target = targetPrj.getUnresolvedFile();
+                }
+                if (target == null) {
+                    target = currentPrj.getUnresolvedFile();
+                }
+            }
+            return target;
         }
     }
 
