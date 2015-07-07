@@ -1002,7 +1002,7 @@ public final class WebProject implements Project {
                         if (serverType != null) {
                             String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.WAR, WebProject.this.getWebModule().getJ2eeProfile());
                             if (instanceID != null) {
-                                WebProjectProperties.setServerInstance(WebProject.this, WebProject.this.updateHelper, instanceID);
+                                WebProjectProperties.setServerInstanceInner(WebProject.this, WebProject.this.updateHelper, instanceID);
                                 platform = Deployment.getDefault().getJ2eePlatform(instanceID);
                             }
                         }
