@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
 
 public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descr = new BeanDescriptor (SystemDefaultBrowser.class);
         descr.setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "CTL_SystemDefaultBrowserName"));
@@ -61,6 +62,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 	return descr;
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         PropertyDescriptor[] properties;
         
@@ -82,12 +84,12 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
 
             properties[1].setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "PROP_DDE_ACTIVATE_TIMEOUT"));
             properties[1].setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_DDE_ACTIVATE_TIMEOUT"));
-            properties[1].setExpert(Boolean.TRUE.booleanValue());
+            properties[1].setExpert(true);
             properties[1].setHidden(true);
 
             properties[2].setDisplayName (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "PROP_DDE_OPENURL_TIMEOUT"));
             properties[2].setShortDescription (NbBundle.getMessage (SystemDefaultBrowserBeanInfo.class, "HINT_DDE_OPENURL_TIMEOUT"));
-            properties[2].setExpert(Boolean.TRUE.booleanValue());
+            properties[2].setExpert(true);
             properties[2].setHidden(true);
 
         } catch (IntrospectionException ie) {
@@ -101,6 +103,7 @@ public class SystemDefaultBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.png"); // NOI18N
     }
