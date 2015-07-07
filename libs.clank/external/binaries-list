@@ -1,6 +1,6 @@
-#changeset:   15217:9a7b88da47c6
+#changeset:   15218:ce9f529ac169
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Jul 06 18:45:30 2015 +0300
-#summary:     made values kept in StringMap to be NativeCloneable
-034F952639FCF962C340537C42EB6D02B4D1C8E1 clank_0.3.6.zip
+#date:        Tue Jul 07 14:47:36 2015 +0300
+#summary:     JAVA: like in LLVM.Trunk; notify InclusionDirective after all resolving branches above
+275CA4271D1C7DC3D6286B867D66E497EEBF3460 clank_0.3.6.zip

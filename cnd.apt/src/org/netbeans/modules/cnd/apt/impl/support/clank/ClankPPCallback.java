@@ -55,19 +55,16 @@ import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
-import org.clank.java.std;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
 import org.clank.support.NativePointer;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
-import org.llvm.adt.Twine;
 import org.llvm.adt.aliases.SmallVector;
 import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
-import org.llvm.support.sys.path;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
@@ -214,13 +211,6 @@ public final class ClankPPCallback extends FileInfoCallback {
                 RecoveryPath.assign(charPtr, charPtr.$add(headerPath.length()));
                 return true;
             }
-            // FIXME
-            // Clank does not resolve <angled.h> in the current dir, but CND does
-            // add cur file directory as a recovery
-            RecoveryPath.clear();
-            RecoveryPath.append(curFilePath, curFilePath.$add(std.strlen(curFilePath)));
-            path.remove_filename(RecoveryPath);
-            return true;
         }
         return super.onNotFoundInclusionDirective(curFile, FileName, RecoveryPath);
     }
