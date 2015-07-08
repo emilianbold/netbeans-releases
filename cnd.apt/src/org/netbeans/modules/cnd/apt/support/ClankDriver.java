@@ -77,6 +77,8 @@ public final class ClankDriver {
 
       Collection<MacroUsage> getMacroUsages();
 
+      FileGuard getFileGuard();
+
       Map<Integer, ClankMacroDirective> getMacroDefinitions();
     }
 
@@ -150,6 +152,24 @@ public final class ClankDriver {
 
         public int getReferencedMacroID() {
             return referencedMacroID;
+        }
+    }
+
+    public static final class FileGuard {
+        private final int startOfset;
+        private final int endOfset;
+
+        public FileGuard(int start, int end) {
+            startOfset = start;
+            endOfset = end;
+        }
+
+        public int getStartOfset() {
+            return startOfset;
+        }
+
+        public int getEndOfset() {
+            return endOfset;
         }
     }
 

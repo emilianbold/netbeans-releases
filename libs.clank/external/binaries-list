@@ -1,6 +1,5 @@
-#changeset:   15223:d6c9f9fe6447
-#tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Tue Jul 07 20:31:46 2015 +0300
-#summary:     Changed URIs to CharSequences in ClankCompilationDataBase
-7E3C57B75B8527A7D43393759ADA864EEDBE4FB4 clank_0.3.6.zip
+#changeset:   15224:4f27a6bf29a9
+#user:        Alexander Simon <alexvsimon@netbeans.org>
+#date:        Wed Jul 08 18:43:58 2015 +0300
+#summary:     implement clank guard
+B1B162CEF5F7306229ED9FF850F56F04FCF92312 clank_0.3.6.zip

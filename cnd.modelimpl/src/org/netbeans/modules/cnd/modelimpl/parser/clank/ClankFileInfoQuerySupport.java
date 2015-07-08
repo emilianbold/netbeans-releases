@@ -42,10 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.parser.clank;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.TreeSet;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -59,10 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.TokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 
 /**
@@ -87,16 +81,12 @@ public class ClankFileInfoQuerySupport {
 
     public static CsmOffsetable getGuardOffset(FileImpl fileImpl) {
         assert APTTraceFlags.USE_CLANK;
-        // TODO: get start/end of guard from fileImpl 
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "getGuardOffset not yet implemented");
-        return null;
+        return fileImpl.getFileGuard();
     }
 
     public static boolean hasGuardBlock(FileImpl fileImpl) {
         assert APTTraceFlags.USE_CLANK;
-        // TODO: get guard from fileImpl 
-        CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), "hasGuardBlock not yet implemented");
-        return false;
+        return fileImpl.hasFileGuard();
     }
         
     public static String expand(FileImpl fileImpl, String code, PreprocHandler handler, ProjectBase base, int offset) {

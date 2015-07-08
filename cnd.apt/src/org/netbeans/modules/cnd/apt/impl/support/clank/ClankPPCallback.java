@@ -51,16 +51,19 @@ import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
 import org.clang.basic.SourceLocation;
+import org.clang.basic.SourceManager;
 import org.clang.basic.SrcMgr;
 import org.clang.lex.Preprocessor;
 import org.clang.lex.Token;
 import org.clang.tools.services.support.FileInfo;
 import org.clang.tools.services.support.Interrupter;
 import org.clang.tools.services.support.FileInfoCallback;
+import static org.clank.java.std.$second_uint;
 import org.clank.support.Casts;
 import static org.clank.support.Casts.toJavaString;
 import org.clank.support.Native;
 import org.clank.support.NativePointer;
+import org.clank.support.Unsigned;
 import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
 import org.llvm.adt.aliases.SmallVector;
@@ -73,6 +76,7 @@ import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
+import org.netbeans.modules.cnd.apt.support.ClankDriver.FileGuard;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroExpansion;
 import org.netbeans.modules.cnd.apt.support.ClankDriver.MacroUsage;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -523,6 +527,7 @@ public final class ClankPPCallback extends FileInfoCallback {
         private List<ClankDriver.ClankPreprocessorDirective> convertedPPDirectives;
         private List<MacroExpansion> convertedMacroExpansions;
         private List<MacroUsage> convertedMacroUsages;
+        private FileGuard convertedGuard;
         private boolean hasTokenStream = false;
         private int[] skippedRanges = null;
         private boolean convertedToAPT = false;
@@ -573,6 +578,15 @@ public final class ClankPPCallback extends FileInfoCallback {
                     FileInfoCallback.MacroUsageInfo e = (FileInfoCallback.MacroUsageInfo)expansions[i];
                     convertedMacroUsages.add(new MacroUsage(e));
                 }
+            }
+        }
+
+        private void prepareConvertedGuard() {
+            FileGuardInfo fileGuardInfo = current.getFileGuardInfo();
+            if (fileGuardInfo != null) {
+                SourceManager srcMgr = current.getSourceManager();
+                int start = Unsigned.long2uint($second_uint(srcMgr.getDecomposedLoc(fileGuardInfo.getIfDefMacroLocation())));
+                convertedGuard = new FileGuard(start, start+fileGuardInfo.getIfDefMacro().getLength());
             }
         }
 
@@ -658,6 +672,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         @Override
+        public FileGuard getFileGuard() {
+            return convertedGuard;
+        }
+
+        @Override
         public Map<Integer, ClankDriver.ClankMacroDirective> getMacroDefinitions() {
             return macroDeclarations;
         }
@@ -694,6 +713,7 @@ public final class ClankPPCallback extends FileInfoCallback {
                 prepareConvertedTokensIfAny();
                 prepareConvertedPPDirectives();
                 prepareConvertedMacroExpansions();
+                prepareConvertedGuard();
                 convertedToAPT = true;
             }
             return this;
