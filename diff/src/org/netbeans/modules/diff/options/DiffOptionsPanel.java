@@ -338,16 +338,24 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, Doc
         @Override
         public void run () {
             String toCheck = cmd;
-            try {
-                Process p = Runtime.getRuntime().exec(toCheck);
-                p.destroy();
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run () {
-                        lblWarningCommand.setText(" "); //NOI18N
-                    }
-                });
-            } catch (IOException e) {
+            boolean invalid = false;
+            if (toCheck.trim().isEmpty()) {
+                invalid = true;
+            } else {
+                try {
+                    Process p = Runtime.getRuntime().exec(toCheck);
+                    p.destroy();
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            lblWarningCommand.setText(" "); //NOI18N
+                        }
+                    });
+                } catch (IOException e) {
+                    invalid = true;
+                }
+            }
+            if (invalid) {
                 // the command seems invalid
                 if (inPanel) {
                     EventQueue.invokeLater(new Runnable() {
