@@ -155,6 +155,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     }
 
     @Override
+    @NonNull
     public FileObject[] getSourceRoots () {
         if (getType() == Type.SOURCE) {
             final FileObject rootFo = getRoot();
@@ -183,13 +184,16 @@ public final class PersistentClassIndex extends ClassIndexImpl {
 
     @Override
     public FileObject[] getBinaryRoots() {
-        FileObject[] rootFos = new FileObject[0];
+        final Queue<FileObject> res = new ArrayDeque<>();
         if(getType() == Type.BINARY) {
-            rootFos = new FileObject[] {URLMapper.findFileObject (this.root)};
+            final FileObject fo = URLMapper.findFileObject (this.root);
+            if (fo != null) {
+                res.offer(fo);
+            }
         }
-        return rootFos;
+        return res.toArray(new FileObject[res.size()]);
     }
-    
+
     @Override
     public String getSourceName (final String binaryName) throws IOException, InterruptedException {
         try {
