@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
 import static org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit.toSeverity;
@@ -240,7 +241,9 @@ class NoMatchingConstructor extends AbstractCodeAudit {
             ic.add(EditorRegistry.lastFocusedComponent());
             Lookup lookup = new AbstractLookup(ic);
             
+            CsmCacheManager.enter();
             CsmRefactoringActionsFactory.showConstructorsGenerator(lookup);
+            CsmCacheManager.leave();
             return null;
         }
     }
