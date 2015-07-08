@@ -87,6 +87,7 @@ import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Convertors;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -417,17 +418,21 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
-                    return DocumentUtil.fileObjectConvertor (p.getSourceRoots());
+                    return DocumentUtil.fileObjectConvertor (ClassIndex.ResourceType.SOURCE, p.getSourceRoots());
                 }
             });
     }
     
     /**
-     * Returns a set of source files containing reference(s) to given type element.
+     * Returns a set of source or binary files containing reference(s) to given type element.
      * @param element the {@link ElementHandle} of a {@link TypeElement} for which usages should be found
      * @param searchKind type of reference, {@see SearchKind}
      * @param scope to search in {@see SearchScope}
-     * @param resourceType to return resource in, {@see ResourceType}
+     * @param resourceType to return resource in, {@see ResourceType}. The {@link ResourceType#BINARY}
+     * produces no result for source roots. For binary roots it does not do SourceForBinaryQuery translation and
+     * returns class files. The {@link ResourceType#SOURCE} for binary roots does SourceForBinaryQuery translation
+     * and returns corresponding java files or no result when there is no SourceForBinaryQuery configured for given binary root.
+     * The {@link ResourceType#SOURCE} is preferred to {@link ResourceType#BINARY}.
      * @return set of {@link FileObject}s containing the reference(s)
      * It may return null when the caller is a CancellableTask&lt;CompilationInfo&gt; and is cancelled
      * inside call of this method.
@@ -446,24 +451,20 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
-                    FileObject[] roots = {};
-                    for (ResourceType type : resourceType) {
-                        FileObject[] root = null;
-                        switch (type) {
-                            case SOURCE:
-                                root = p.getSourceRoots();
-                                break;
-                            case BINARY:
-                                root = p.getBinaryRoots();
-                                break;
-                        }
-                        if(root != null) {
-                            int prevSize = roots.length;
-                            roots = Arrays.copyOf(root, prevSize + root.length);
-                            System.arraycopy(root, 0, roots, prevSize, root.length);
+                    final List<Convertor<Document,FileObject>> base = new ArrayList<>(ResourceType.values().length);
+                    if (resourceType.contains(ResourceType.SOURCE)) {
+                        final FileObject[] roots = p.getSourceRoots();
+                        if (roots.length > 0) {
+                            base.add(DocumentUtil.fileObjectConvertor(ResourceType.SOURCE, roots));
                         }
                     }
-                    return DocumentUtil.fileObjectConvertor (roots);
+                    if (resourceType.contains(ResourceType.BINARY)) {
+                        final FileObject[] roots = p.getBinaryRoots();
+                        if (roots.length > 0) {
+                            base.add(DocumentUtil.fileObjectConvertor(ResourceType.BINARY, roots));
+                        }
+                    }
+                    return Convertors.firstNonNull(base);
                 }
             });
     }
@@ -490,7 +491,7 @@ public final class ClassIndex {
                 @NonNull
                 @Override
                 public Convertor<Document, FileObject> convert(@NonNull final ClassIndexImpl p) {
-                    return DocumentUtil.fileObjectConvertor (p.getSourceRoots());
+                    return DocumentUtil.fileObjectConvertor (ClassIndex.ResourceType.SOURCE, p.getSourceRoots());
                 }
             });
     }
