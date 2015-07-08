@@ -41,21 +41,31 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class JProjectFileChooser extends javax.swing.JDialog {
+public class JProjectFileChooser extends javax.swing.JDialog implements ExplorerManager.Provider {
     
-    private final TreeNode root;
+    private final ExplorerManager manager = new ExplorerManager();
+    
+    private final BeanTreeView view;
     
     private Project chosenProject;
     
@@ -64,11 +74,23 @@ public class JProjectFileChooser extends javax.swing.JDialog {
     /**
      * Creates new form JProjectFileChooser
      */
-    public JProjectFileChooser(java.awt.Frame parent, boolean modal, TreeNode root) {
+    public JProjectFileChooser(java.awt.Frame parent, boolean modal, List<NativeProject> projects) {
         super(parent, modal);
-        this.root = root;
         initComponents();
         selectButton.setEnabled(false);
+        this.view = (BeanTreeView) treeView;
+        view.setRootVisible(false);
+        manager.setRootContext(new AbstractNode(Children.create(new JPFCRootChildFactory(projects), false)));
+        manager.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    selectButton.setEnabled(isAcceptableNode(getSelectedNode()));
+                }
+            }
+            
+        });
     }
     
     public Project getChosenProject() {
@@ -77,6 +99,11 @@ public class JProjectFileChooser extends javax.swing.JDialog {
 
     public FileObject getChosenFile() {
         return chosenFile;
+    }
+
+    @Override
+    public ExplorerManager getExplorerManager() {
+        return manager;
     }
 
     /**
@@ -88,28 +115,12 @@ public class JProjectFileChooser extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
-        ProjectsTree = new javax.swing.JTree();
         expandAllButton = new javax.swing.JButton();
         collapseAllButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
+        treeView = new BeanTreeView();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-
-        ProjectsTree.setModel(new DefaultTreeModel(root, true));
-        ProjectsTree.expandRow(0);
-        ProjectsTree.setRootVisible(true);
-        ProjectsTree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                ProjectsTreeMouseClicked(evt);
-            }
-        });
-        ProjectsTree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                ProjectsTreeValueChanged(evt);
-            }
-        });
-        jScrollPane1.setViewportView(ProjectsTree);
 
         org.openide.awt.Mnemonics.setLocalizedText(expandAllButton, org.openide.util.NbBundle.getMessage(JProjectFileChooser.class, "JProjectFileChooser.expandAllButton.text")); // NOI18N
         expandAllButton.addActionListener(new java.awt.event.ActionListener() {
@@ -139,12 +150,12 @@ public class JProjectFileChooser extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
+                    .addComponent(treeView)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(expandAllButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(collapseAllButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 360, Short.MAX_VALUE)
                         .addComponent(selectButton)))
                 .addContainerGap())
         );
@@ -152,7 +163,7 @@ public class JProjectFileChooser extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(treeView, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(expandAllButton)
@@ -164,68 +175,51 @@ public class JProjectFileChooser extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void ProjectsTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ProjectsTreeMouseClicked
-        // do nothing
-    }//GEN-LAST:event_ProjectsTreeMouseClicked
-
     private void expandAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllButtonActionPerformed
-        int rowCount = ProjectsTree.getRowCount();
-        for (int i = 0; i < rowCount; ++i) {
-            ProjectsTree.expandRow(i);
-            rowCount = ProjectsTree.getRowCount();
-        }
+        view.expandAll();
     }//GEN-LAST:event_expandAllButtonActionPerformed
 
     private void collapseAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllButtonActionPerformed
-        int rowCount = ProjectsTree.getRowCount() - 1;
-        while (rowCount >= 1) {
-            ProjectsTree.collapseRow(rowCount);
-            --rowCount;
+        for (Node node : manager.getRootContext().getChildren().getNodes()) {
+            view.collapseNode(node);
         }
     }//GEN-LAST:event_collapseAllButtonActionPerformed
 
     private void selectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectButtonActionPerformed
-        if (isAcceptableNode(ProjectsTree.getSelectionPath())) {
-            chosenFile = getNodeFile(ProjectsTree.getSelectionPath());
-            chosenProject = getNodeProject(ProjectsTree.getSelectionPath());
+        Node selectedNode = getSelectedNode();
+        if (isAcceptableNode(selectedNode)) {
+            chosenFile = getNodeFile(selectedNode);
+            chosenProject = getNodeProject(selectedNode);
             setVisible(false);
         }
     }//GEN-LAST:event_selectButtonActionPerformed
-
-    private void ProjectsTreeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_ProjectsTreeValueChanged
-        if (isAcceptableNode(evt.getPath())) {
-            selectButton.setEnabled(true);
-        } else {
-            selectButton.setEnabled(false);
-        }
-    }//GEN-LAST:event_ProjectsTreeValueChanged
    
-    private boolean isAcceptableNode(TreePath path) {
-        if (path != null) {
-            Object lastElem = path.getLastPathComponent();
-            return lastElem instanceof JPFCTreeNode && ((JPFCTreeNode) lastElem).getData() instanceof FileObject;
-        }
-        return false;
+    private Node getSelectedNode() {
+        Node[] selectedNodes = manager.getSelectedNodes();
+        return (selectedNodes != null && selectedNodes.length > 0) ? selectedNodes[0] : null;
     }
     
-    private FileObject getNodeFile(TreePath path) {
-        if (isAcceptableNode(path)) {
-            Object lastElem = path.getLastPathComponent();
-            return (FileObject) ((JPFCTreeNode) lastElem).getData();
+    private boolean isAcceptableNode(Node node) {
+        return node.getLookup().lookup(FileObject.class) != null;
+    }
+    
+    private FileObject getNodeFile(Node selectedNode) {
+        if (isAcceptableNode(selectedNode)) {
+            return selectedNode.getLookup().lookup(FileObject.class);
         }
         return null;
     }
     
-    private Project getNodeProject(TreePath path) {
-        if (isAcceptableNode(path)) {
-            Object decomposed[] = path.getPath();
-            for (Object elem : decomposed) {
-                if (elem instanceof JPFCTreeNode) {
-                    JPFCTreeNode node = (JPFCTreeNode) elem;
-                    if (node.getData() instanceof Project) {
-                        return (Project) node.getData();
-                    }
+    private Project getNodeProject(Node selectedNode) {
+        if (isAcceptableNode(selectedNode)) {
+            Node current = selectedNode;
+            while (current != null) {
+                if (current instanceof NativeProjectNode) {
+                    NativeProjectNode projectNode = (NativeProjectNode) current;
+                    NativeProject nativeProject = projectNode.getNativeProject();
+                    return nativeProject.getProject().getLookup().lookup(Project.class);
                 }
+                current = current.getParentNode();
             }
         }
         return null;
@@ -274,10 +268,9 @@ public class JProjectFileChooser extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTree ProjectsTree;
     private javax.swing.JButton collapseAllButton;
     private javax.swing.JButton expandAllButton;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton selectButton;
+    private javax.swing.JScrollPane treeView;
     // End of variables declaration//GEN-END:variables
 }

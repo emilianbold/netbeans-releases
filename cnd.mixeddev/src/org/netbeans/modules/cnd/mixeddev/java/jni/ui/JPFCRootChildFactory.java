@@ -42,17 +42,34 @@
 package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public interface JPFCTreeNodeProvider<D> {
+public class JPFCRootChildFactory extends ChildFactory<NativeProject> {
     
-    boolean accept(Object obj);
-    
-    String getName(JPFCTreeNode<D> node);
-    
-    List<JPFCTreeNode<?>> getChildren(JPFCTreeNode<D> node, JPFCTreeNodeFilter filter);
-    
+    private final List<NativeProject> projects;
+
+    public JPFCRootChildFactory(List<NativeProject> projects) {
+        this.projects = projects;
+    }
+
+    @Override
+    protected boolean createKeys(List<NativeProject> toPopulate) {
+        for (NativeProject project : projects) {
+            toPopulate.add(project);
+        }
+        return true;
+    }
+
+    @Override
+    protected Node createNodeForKey(NativeProject key) {
+        return new NativeProjectNode(Children.create(new JPFCNativeProjectChildFactory(key), true), key);
+    }
 }

@@ -41,40 +41,51 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class FileObjectTreeNodeProvider implements JPFCTreeNodeProvider<FileObject> {
+public class JPFCNativeProjectChildFactory extends ChildFactory<FileObject> {
+    
+    private final NativeProject node;
 
-    @Override
-    public boolean accept(Object obj) {
-        return obj instanceof FileObject;
+    public JPFCNativeProjectChildFactory(NativeProject node) {
+        this.node = node;
     }
 
     @Override
-    public String getName(JPFCTreeNode<FileObject> node) {
-        return node.getData().getName();
-    }
-
-    @Override
-    public List<JPFCTreeNode<?>> getChildren(JPFCTreeNode<FileObject> node, JPFCTreeNodeFilter filter) {
-        FileObject data = node.getData();
-        if (data.isFolder()) {
-            FileObject[] children = data.getChildren();
-            List<JPFCTreeNode<?>> result = new ArrayList<>();
-            for (FileObject fObj : children) {
-                if (filter.show(fObj)) {
-                    result.add(new JPFCTreeNode(node.getProviders(), filter, node, fObj));
-                }
-            }
-            return result;
+    protected boolean createKeys(List<FileObject> toPopulate) {
+        Project proj = node.getProject().getLookup().lookup(Project.class);
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(proj).getSourceGroups(Sources.TYPE_GENERIC);
+        for (SourceGroup srcGrp : sourceGroups) {
+            toPopulate.add(srcGrp.getRootFolder());
         }
-        return Collections.emptyList();
+        return true;
+    }
+
+    @Override
+    protected Node createNodeForKey(FileObject key) {
+        try {
+            DataObject dObj = DataObject.find(key);
+            return new FilterNode(dObj.getNodeDelegate(), Children.create(new JPFCFileObjectChildFactory(key), false));
+            //return new FileObjectNode(Children.create(new JPFCFileObjectChildFactory(key), false), key);
+        } catch (DataObjectNotFoundException ex) {
+            return new AbstractNode(Children.LEAF);
+        }
     }
 }
