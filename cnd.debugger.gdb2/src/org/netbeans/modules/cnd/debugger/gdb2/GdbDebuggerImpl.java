@@ -2208,6 +2208,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     final List<GdbThread> res = new ArrayList<GdbThread>();
                     MITList results = threads.results();
                     String threadId = results.getConstValue(MI_CURRENT_THREAD);
+                    Thread curThread = null;
                     if (!threadId.isEmpty()) {
                         // lldb-mi doesn't report an active thread for a single-threaded app
                         currentThreadId = threadId;
@@ -2221,7 +2222,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
                         final GdbThread gdbThread = new GdbThread(GdbDebuggerImpl.this, threadUpdater, id, name, null, state);
                         if (id.equals(currentThreadId)) {
-                            gdbThread.setCurrent(true);
+                            curThread = gdbThread;
                         }
                         res.add(gdbThread);
 
@@ -2250,9 +2251,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                 guiStackFrames = gdbThread.getStack();
                             }
 
-                            //TODO better place
-                            threadsWithStacks = res.toArray(new GdbThread[res.size()]);   // TODO better place (this causes several updates at once)
-                            debuggingViewUpdater.treeChanged();
+                            threadsWithStacks = res.toArray(new GdbThread[res.size()]);
                         } else {
 
                             if (gdbThread.isSuspended()) {
@@ -2305,9 +2304,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 }
                                                 gdbThread.setStack(frames);
 
-                                                threadsWithStacks = res.toArray(new GdbThread[res.size()]);   // TODO better place (this causes several updates at once)
+                                                threadsWithStacks = res.toArray(new GdbThread[res.size()]);
                                                 debuggingViewUpdater.treeChanged();
-
+                                                
                                                 finish();
                                             }
                                             @Override
@@ -2324,6 +2323,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                             }
                         }
                     }
+                    
+                    makeThreadCurrent(curThread);
 
                     finish();
                 }
