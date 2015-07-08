@@ -72,13 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.netbeans.modules.cnd.mixeddev.Triple;
 import org.netbeans.modules.cnd.mixeddev.java.JNISupport;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.FileObjectTreeNodeProvider;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.JPFCTreeNode;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.JPFCTreeNodeFilter;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.JPFCTreeNodeProviders;
 import org.netbeans.modules.cnd.mixeddev.java.jni.ui.JProjectFileChooser;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.NativeProjectsTreeNodeProvider;
-import org.netbeans.modules.cnd.mixeddev.java.jni.ui.ProjectTreeNodeProvider;
 import org.netbeans.modules.cnd.mixeddev.java.model.jni.JNIClass;
 import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.createStub;
 import static org.netbeans.modules.cnd.mixeddev.wizard.Generator.getRootHeader;
@@ -153,25 +147,10 @@ public class GenerateHeaderForJNIClassAction extends AbstractJNIAction {
                 }
             }
             if (toJump == null) {
-                JPFCTreeNodeProviders providers = new JPFCTreeNodeProviders(
-                    new NativeProjectsTreeNodeProvider(),
-                    new ProjectTreeNodeProvider(),
-                    new FileObjectTreeNodeProvider()
-                );
-                JPFCTreeNodeFilter filter = new JPFCTreeNodeFilter() {
-                    @Override
-                    public boolean show(Object data) {
-                        if (data instanceof FileObject) {
-                            return ((FileObject) data).isFolder();
-                        }
-                        return data != null;
-                    }
-                };
-                JPFCTreeNode root = new JPFCTreeNode(providers, filter, null, nativeProjects);
                 JProjectFileChooser chooser = new JProjectFileChooser(
                     WindowManager.getDefault().getMainWindow(), 
                     true, 
-                    root
+                    nativeProjects
                 );
                 chooser.setVisible(true);
                 Project chosenProject = chooser.getChosenProject();

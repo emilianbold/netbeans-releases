@@ -41,41 +41,47 @@
  */
 package org.netbeans.modules.cnd.mixeddev.java.jni.ui;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Image;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class ProjectTreeNodeProvider implements JPFCTreeNodeProvider<Project> {
+public class NativeProjectNode extends AbstractNode {
+    
+    private final NativeProject nativeProject;
+    
+    private final Image icon;
 
-    @Override
-    public boolean accept(Object obj) {
-        return obj instanceof Project;
+    public NativeProjectNode(Children children, NativeProject nativeProject) {
+        super(children);
+        this.nativeProject = nativeProject;
+        setDisplayName(nativeProject.getProjectDisplayName());
+        Project prj = nativeProject.getProject().getLookup().lookup(Project.class);
+        ProjectInformation info = ProjectUtils.getInformation(prj);
+        this.icon = ImageUtilities.icon2Image(info.getIcon());
     }
 
     @Override
-    public String getName(JPFCTreeNode<Project> node) {
-        return ProjectUtils.getInformation(node.getData()).getDisplayName();
+    public Image getIcon(int type) {
+        return icon;
     }
 
     @Override
-    public List<JPFCTreeNode<?>> getChildren(JPFCTreeNode<Project> node, JPFCTreeNodeFilter filter) {
-        List<JPFCTreeNode<?>> result = new ArrayList<>();
-        Project proj = node.getData();
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(proj).getSourceGroups(Sources.TYPE_GENERIC);
-        for (SourceGroup srcGrp : sourceGroups) {
-            FileObject rootFolder = srcGrp.getRootFolder();
-            if (filter.show(rootFolder)) {
-                result.add(new JPFCTreeNode(node.getProviders(), filter, node, rootFolder));
-            }
-        }
-        return result;
+    public Image getOpenedIcon(int type) {
+        return icon;
+    }
+
+    public NativeProject getNativeProject() {
+        return nativeProject;
     }
 }

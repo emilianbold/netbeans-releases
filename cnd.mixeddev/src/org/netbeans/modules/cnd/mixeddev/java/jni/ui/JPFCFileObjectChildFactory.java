@@ -46,39 +46,48 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
-import org.openide.util.NbBundle;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Kudryavtsev <petrk@netbeans.org>
  */
-public class NativeProjectsTreeNodeProvider implements JPFCTreeNodeProvider<List<NativeProject>> {
+public class JPFCFileObjectChildFactory extends ChildFactory<FileObject> {
 
-    @Override
-    public boolean accept(Object obj) {
-        return obj instanceof List;
+    private final FileObject node;
+
+    public JPFCFileObjectChildFactory(FileObject node) {
+        this.node = node;
     }
 
     @Override
-    public String getName(JPFCTreeNode<List<NativeProject>> node) {
-        return NbBundle.getMessage(MixedDevUtils.class, "cnd.mixeddev.jpic_root_node_title"); // NOI18N
-    }
-
-    @Override
-    public List<JPFCTreeNode<?>> getChildren(JPFCTreeNode<List<NativeProject>> node, JPFCTreeNodeFilter filter) {
-        List<JPFCTreeNode<?>> result = new ArrayList<>();
-        List<NativeProject> data = node.getData();
-        for (NativeProject nativeProj : data) {
-            Project proj = nativeProj.getProject().getLookup().lookup(Project.class);
-            if (proj != null) {
-                if (filter.show(proj)) {
-                    result.add(new JPFCTreeNode(node.getProviders(), filter, node, proj));
-                }
+    protected boolean createKeys(List<FileObject> toPopulate) {
+        FileObject[] children = node.getChildren();
+        for (FileObject child : children) {
+            if (child.isFolder()) {
+                toPopulate.add(child);
             }
         }
-        return result;
+        return true;
+    }
+    
+    @Override
+    protected Node createNodeForKey(FileObject key) {
+        try {
+            DataObject dObj = DataObject.find(key);
+            return new FilterNode(dObj.getNodeDelegate(), Children.create(new JPFCFileObjectChildFactory(key), false));
+        } catch (DataObjectNotFoundException ex) {
+            return new AbstractNode(Children.LEAF);
+        }
     }
 }
