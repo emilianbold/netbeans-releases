@@ -1861,13 +1861,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             String tid = ((GdbThread) thread).getId();
 
             selectThread(-1, tid, true); // notify gdb to set current thread
-
-            if (get_debugging) {    // TODO maybe better way
-                for (GdbThread debuggingViewThread : threadsWithStacks) {
-                    debuggingViewThread.setCurrent(((GdbThread) thread).getId().equals(debuggingViewThread.getId()));
-                }
-                debuggingViewUpdater.treeChanged();
-            }
         }
     }
 
@@ -2305,7 +2298,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                                 gdbThread.setStack(frames);
 
                                                 threadsWithStacks = res.toArray(new GdbThread[res.size()]);
-                                                debuggingViewUpdater.treeChanged();
+                                                debuggingViewUpdater.treeChanged(); // maybe unnecessary
                                                 
                                                 finish();
                                             }
@@ -3803,6 +3796,13 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
             if (get_watches) {
                 updateWatches();
+            }
+            
+            if (get_debugging) {
+                for (GdbThread debuggingViewThread : threadsWithStacks) {
+                    debuggingViewThread.setCurrent(currentThreadId.equals(debuggingViewThread.getId()));
+                }
+                debuggingViewUpdater.treeChanged();
             }
 
             state().isProcess = true;
