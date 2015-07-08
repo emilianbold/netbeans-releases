@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Line2Offset;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Offsetable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -170,6 +171,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         if (triggerParsingActivity) {
           addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
           addMacroExpansions(fileImpl, getFileContent(), tokStreamCache);
+          setFileGuard(fileImpl, getFileContent(), tokStreamCache);
         }
         skipped = tokStreamCache.getSkippedRanges();
         if (applyLanguageFilter) {
@@ -509,6 +511,15 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             } else {
               CndUtils.assertTrueInConsole(false, "unknown directive " + cur.getClass().getSimpleName() + " " + cur);
             }
+        }
+    }
+    
+    private static void setFileGuard(FileImpl curFile, FileContent parsingFileContent, ClankDriver.APTTokenStreamCache cache) {
+        ClankDriver.FileGuard fileGuard = cache.getFileGuard();
+        if (fileGuard != null) {
+            curFile.setFileGuard(fileGuard.getStartOfset(), fileGuard.getEndOfset());
+        } else {
+            curFile.setFileGuard(-1, -1);
         }
     }
 

@@ -714,6 +714,11 @@ public class ClankIncludeHandlerImpl implements PPIncludeHandler {
         }
 
         @Override
+        public ClankDriver.FileGuard getFileGuard() {
+            return null;
+        }
+
+        @Override
         public ClankDriverImpl.APTTokenStreamCacheImplementation prepareCachesIfPossible() {
             return this;
         }

@@ -174,7 +174,8 @@ public final class FileImpl implements CsmFile,
         return false;
     }
 
-    /*package*/ FileContent prepareLazyStatementParsingContent() {
+    /*package*/
+    FileContent prepareLazyStatementParsingContent() {
         assert TraceFlags.PARSE_HEADERS_WITH_SOURCES;
         assert parsingFileContentRef.get().get() == null;
         FileContent out = FileContent.getHardReferenceBasedCopy(this.currentFileContent, false);
@@ -323,6 +324,8 @@ public final class FileImpl implements CsmFile,
     private FileContentSignature lastFileBasedSignature;
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
+    private int guardStart = -1;
+    private int guardEnd = -1;
 
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
 
@@ -1757,6 +1760,23 @@ public final class FileImpl implements CsmFile,
         return currentFileContent.getScopeElements();
     }
 
+    public void setFileGuard(int guardStart, int guardEnd) {
+        this.guardStart = guardStart;
+        this.guardStart = guardEnd;
+    }
+
+    public boolean hasFileGuard() {
+        return guardStart >= 0;
+    }
+
+    public CsmOffsetable getFileGuard() {
+        if (guardStart >= 0) {
+            return new Offsetable(this, guardStart, guardStart);
+        }
+        return null;
+    }
+
+
     @Override
     public boolean isValid() {
         if (disposed) {
@@ -2038,6 +2058,8 @@ public final class FileImpl implements CsmFile,
             curState = State.INITIAL;
         }
         output.writeByte(curState.ordinal());
+        output.writeInt(guardStart);
+        output.writeInt(guardEnd);
     }
     //private static boolean firstDump = false;
 
@@ -2064,6 +2086,8 @@ public final class FileImpl implements CsmFile,
         lastParsedCompilationUnitCRC = input.readLong();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
+        guardStart = input.readInt();
+        guardEnd = input.readInt();
     }
 
     public
