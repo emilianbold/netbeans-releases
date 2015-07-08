@@ -445,7 +445,7 @@ public final class Manager {
                         } else if (!window.isOpened() || (window.isOpened() && !window.isShowing() && isInSlidingMode)) {
                             Icon icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/gsf/testrunner/ui/resources/testResults.png"));   //NOI18N
                             String projectname = ProjectUtils.getInformation(session.getProject()).getDisplayName();
-                            int total = sessionResult.getTotal();
+                            int total = displayHandler.getTotalTests();
                             String title = total == 0 ? Bundle.LBL_NotificationDisplayer_NoTestsExecuted_title(projectname) : Bundle.LBL_NotificationDisplayer_title(total, projectname);
                             
                             if(bubbleTask.cancel()) {
