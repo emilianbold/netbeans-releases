@@ -50,12 +50,14 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.mixeddev.MixedDevUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -77,6 +79,7 @@ public class JProjectFileChooser extends javax.swing.JDialog implements Explorer
     public JProjectFileChooser(java.awt.Frame parent, boolean modal, List<NativeProject> projects) {
         super(parent, modal);
         initComponents();
+        setTitle(NbBundle.getMessage(JProjectFileChooser.class, "JProjectFileChooser.title")); // NOI18N
         selectButton.setEnabled(false);
         this.view = (BeanTreeView) treeView;
         view.setRootVisible(false);
