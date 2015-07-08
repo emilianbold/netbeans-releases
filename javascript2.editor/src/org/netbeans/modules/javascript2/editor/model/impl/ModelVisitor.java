@@ -896,8 +896,10 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (modelBuilder.getCurrentDeclarationFunction().getProperty(fn.getIdent().getName()) == null
                             && !(fn.getIdent().getName().startsWith("get ") || fn.getIdent().getName().startsWith("set "))) {
                         IdentifierImpl fakeObjectName = ModelElementFactory.create(parserResult, fn.getIdent());
-                        JsObjectImpl newObject = new JsObjectImpl(fncScope, fakeObjectName, fakeObjectName.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
-                        fncScope.addProperty(newObject.getName(), newObject);
+                        if (fakeObjectName != null) {
+                            JsObjectImpl newObject = new JsObjectImpl(fncScope, fakeObjectName, fakeObjectName.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                            fncScope.addProperty(newObject.getName(), newObject);
+                        }
                     }
                 }
             }

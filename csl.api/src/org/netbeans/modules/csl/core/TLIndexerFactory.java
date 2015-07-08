@@ -266,12 +266,6 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 return;
             }
 
-            List<Integer> lineStartOffsets = lineStartOffsetsCache.get(indexable);
-
-            if (lineStartOffsets == null) {
-                lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
-            }
-            
             //filter all the errors and retain only those suitable for the tasklist
             List<Error> filteredErrors  = null;
 
@@ -304,6 +298,14 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 simplifiedErrors.add(simplify(err, startPos));
             }
             storedErrors.addAll(simplifiedErrors);
+            
+            if (!storedErrors.isEmpty()) {
+                List<Integer> lineStartOffsets = lineStartOffsetsCache.get(indexable);
+
+                if (lineStartOffsets == null) {
+                    lineStartOffsetsCache.put(indexable, getLineStartOffsets(gsfParserResult.getSnapshot().getSource()));
+                }                
+            }
         }
         
         private static List<Integer> getLineStartOffsets(Source source) {
