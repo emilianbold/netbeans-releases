@@ -77,8 +77,6 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
 //    private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
 //    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
-    private final Project project;
-
     @ProjectServiceProvider(service=ProfilerLauncher.LauncherFactory.class, projectType="org-netbeans-modules-maven")
     final public static class MavenLauncherFactory implements ProfilerLauncher.LauncherFactory {
         @Override
@@ -113,17 +111,14 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         
     }
     
-    public RunCheckerImpl(Project prj) {
-        project = prj;
-    }
-    
     @Override
     public boolean checkRunConfig(final RunConfig config, ExecutionContext context) {
         Map<? extends String,? extends String> configProperties = config.getProperties();
+        final String actionName = config.getActionName();
         
-        if (ActionProvider.COMMAND_PROFILE.equals(config.getActionName()) ||
-               ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(config.getActionName()) ||
-              (config.getActionName() != null && config.getActionName().startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
+        if (ActionProvider.COMMAND_PROFILE.equals(actionName) ||
+               ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName) ||
+              (actionName != null && actionName.startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
             
             ProfilerLauncher.Session session = ProfilerLauncher.getLastSession();
             

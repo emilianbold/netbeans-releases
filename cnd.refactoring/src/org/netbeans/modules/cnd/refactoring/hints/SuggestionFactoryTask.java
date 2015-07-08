@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpressionStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.api.model.syntaxerr.AbstractCodeAudit;
@@ -133,7 +134,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         final CsmFile file = CsmFileInfoQuery.getDefault().getCsmFile(result);
         if (file != null && doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) == null) {
             if (event instanceof CursorMovedSchedulerEvent) {
+                CsmCacheManager.enter();
                 process(audits, doc, fileObject, (CursorMovedSchedulerEvent)event, file, canceled);
+                CsmCacheManager.leave();
             }
         }
         if (LOG.isLoggable(Level.FINE)) {

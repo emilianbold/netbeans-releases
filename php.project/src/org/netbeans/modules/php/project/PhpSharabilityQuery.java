@@ -117,7 +117,7 @@ public class PhpSharabilityQuery implements SharabilityQueryImplementation2, Pro
     private SharabilityQueryImplementation2 createDelegate() {
         String[] srcProps = sources.getRootProperties();
         String[] testProps = tests.getRootProperties();
-        String[] seleniumProps = tests.getRootProperties();
+        String[] seleniumProps = selenium.getRootProperties();
 
         int size = srcProps.length;
         size += testProps.length;
