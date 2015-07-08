@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.project.support;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,11 +52,14 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupMerger;
 import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -128,6 +132,18 @@ public final class LookupProviderSupport {
      */
     public static LookupMerger<ActionProvider> createActionProviderMerger() {
         return new ActionProviderMerger();
+    }
+
+    /**
+     * Factory method for creating {@link org.netbeans.spi.project.LookupMerger} instance that merges
+     * {@link SharabilityQueryImplementation2} instances in the project lookup.
+     * The first non {@link SharabilityQuery.Sharability#UNKNOWN} result returned by the {@link SharabilityQueryImplementation2}s
+     * included in the project's {@link Lookup} is returned.
+     * @return instance to include in project lookup
+     * @since 1.64
+     */
+    public static LookupMerger<SharabilityQueryImplementation2> createSharabilityQueryMerger() {
+        return new SharabilityQueryMerger();
     }
 
     private static class SourcesMerger implements LookupMerger<Sources> {
@@ -280,5 +296,37 @@ public final class LookupProviderSupport {
             actionNamesCache = null;
         }
 
+    }
+
+    private static final class SharabilityQueryMerger implements LookupMerger<SharabilityQueryImplementation2> {
+
+        @Override
+        public Class<SharabilityQueryImplementation2> getMergeableClass() {
+            return SharabilityQueryImplementation2.class;
+        }
+
+        @Override
+        public SharabilityQueryImplementation2 merge(Lookup lookup) {
+            return new MergedSharabilityQueryImplementation2(lookup);
+        }
+    }
+
+    private static final class MergedSharabilityQueryImplementation2 implements SharabilityQueryImplementation2 {
+        private final Lookup.Result<? extends SharabilityQueryImplementation2> lkpResult;
+
+        MergedSharabilityQueryImplementation2(@NonNull final Lookup lkp) {
+            this.lkpResult = lkp.lookupResult(SharabilityQueryImplementation2.class);
+        }
+
+        @Override
+        public SharabilityQuery.Sharability getSharability(URI uri) {
+            for (SharabilityQueryImplementation2 impl : lkpResult.allInstances()) {
+                SharabilityQuery.Sharability res = impl.getSharability(uri);
+                if (res != SharabilityQuery.Sharability.UNKNOWN) {
+                    return res;
+                }
+            }
+            return SharabilityQuery.Sharability.UNKNOWN;
+        }
     }
 }

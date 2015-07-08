@@ -107,8 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        
-
+        <change id="SharabilityQueryMerger">
+            <api name="general"/>
+            <summary>Added a <code>LookupMerger</code> for <code>SharabilityQueryImplementation2</code></summary>
+            <version major="1" minor="64"/>
+            <date day="8" month="6" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a factory method into the <code>LookupProviderSupport</code> creating a
+                    <code>LookupMerger</code> for <code>SharabilityQueryImplementation2</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.support" name="LookupProviderSupport"/>
+            <issue number="253355"/>
+        </change>
         <change id="ProjectManagerImplementation">
             <api name="general"/>
             <summary>SPI interface for <code>ProjectManager</code></summary>
@@ -126,7 +140,6 @@ is the proper place.
             <class package="org.netbeans.api.project" name="ProjectManager"/>
             <issue number="210465"/>
         </change>
-        
          <change id="ProjectManager.Result">
             <api name="general"/>
             <summary>More information in <code>ProjectManager.Result</code></summary>
