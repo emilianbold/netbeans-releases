@@ -101,7 +101,7 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/svnkit.jar</runtime-relative-path>
-                <binary-origin>external/org.tmatesoft.svnkit_1.8.7.r10376_v20141223_2131.jar</binary-origin>
+                <binary-origin>external/org.tmatesoft.svnkit_1.8.10.r10446_v20150526_1454.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/sqljet.jar</runtime-relative-path>
@@ -109,7 +109,7 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/trilead.ssh2.jar</runtime-relative-path>
-                <binary-origin>external/com.trilead.ssh2_1.0.0.build217_r155_v20130603_1628.jar</binary-origin>
+                <binary-origin>external/com.trilead.ssh2_1.0.0.build219_t20150519_2322.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
