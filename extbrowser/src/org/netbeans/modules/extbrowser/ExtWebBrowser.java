@@ -68,9 +68,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** DDE server property name */
     public static final String PROP_DDESERVER = "dDEServer";   // NOI18N
     
-//    /** Browser start timeout property name */
-//    public static final String PROP_BROWSER_START_TIMEOUT = "browserStartTimeout";   // NOI18N
-
     /** DDE activate timeout property name */
     public static final String PROP_DDE_ACTIVATE_TIMEOUT = "activateTimeout";   // NOI18N
     
@@ -91,10 +88,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     public static final String MOZILLA  = "MOZILLA";    // NOI18N
     /** Name of DDE server corresponding to Firefox */
     public static final String FIREFOX  = "FIREFOX";    // NOI18N
-
-    
-//    /** Default timeout for starting the browser */
-//    protected static final int DEFAULT_BROWSER_START_TIMEOUT = 5000;
     
     /** Default for DDE activate timeout property */
     protected static final int DEFAULT_ACTIVATE_TIMEOUT = 2000;
@@ -107,9 +100,6 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     /** storage for DDE activate timeout property */
     protected int activateTimeout = DEFAULT_ACTIVATE_TIMEOUT;
-
-//    /** storage for starting browser timeout property */
-//    protected int browserStartTimeout = DEFAULT_BROWSER_START_TIMEOUT;
 
     /** storage for DDE openURL timeout property */
     protected int openurlTimeout = DEFAULT_OPENURL_TIMEOUT;
@@ -184,27 +174,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             err.log(Level.INFO, "DDEServer changed to: " + ddeServer);                  // NOI18N
         }
     }
-   
-//    /** Getter for property browserStartTimeout.
-//     * @return Value of property browserStartTimeout.
-//     *
-//     */
-//    public int getBrowserStartTimeout() {
-//        return browserStartTimeout;
-//    }
-//    
-//    /** Setter for property browserStartTimeout.
-//     * @param browserStartTimeout New value of property browserStartTimeout.
-//     *
-//     */
-//    public void setBrowserStartTimeout(int browserStartTimeout) {
-//        if (browserStartTimeout != this.browserStartTimeout) {
-//            int oldVal = this.browserStartTimeout;
-//            this.browserStartTimeout = browserStartTimeout;
-//            pcs.firePropertyChange(PROP_BROWSER_START_TIMEOUT, oldVal, browserStartTimeout);
-//        }
-//    }
-    
+
     /** Getter for property openurlTimeout.
      * @return Value of property openurlTimeout.
      *
