@@ -210,7 +210,11 @@ public class TagHandlerIterator implements TemplateWizard.AsynchronousInstantiat
                             boolean required = ((Boolean)attrs[i][2]).booleanValue();
                             if (required) attr.setRequired("true"); //NOI18N
                             boolean rtexpr = ((Boolean)attrs[i][3]).booleanValue();
-                            if (rtexpr) attr.setRtexprvalue("true"); //NOI18N
+                            //if (rtexpr) attr.setRtexprvalue("true"); //NOI18N
+                            // #252857 there is likely a bug in 2.1 xsd where rtexprvalue is mandatory
+                            // while the docs says opposite, we chose not to fix the xsd as it
+                            // is part of the JSP 2.1 spec
+                            attr.setRtexprvalue(Boolean.toString(rtexpr));
                             tag.addAttribute(attr);
                         }
                         taglib.addTag(tag);

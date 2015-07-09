@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.ArrayList;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
-import javax.swing.event.EventListenerList;
 import java.util.EventListener;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -110,7 +109,7 @@ public class Annotations implements DocumentListener {
     private final BaseDocument doc;
 
     /** List of listeners on AnnotationsListener*/
-    private final EventListenerList listenerList;
+    private final WeakEventListenerList listenerList;
 
     /** Property change listener on annotation type changes */
     private final PropertyChangeListener l;
@@ -134,7 +133,7 @@ public class Annotations implements DocumentListener {
     public Annotations(BaseDocument doc) {
         lineAnnotationsByMark = new HashMap<Mark, LineAnnotations>(30);
         lineAnnotationsArray = new ArrayList<LineAnnotations>(20);
-        listenerList =  new EventListenerList();
+        listenerList =  new WeakEventListenerList();
         
         this.doc = doc;
         this.markChain = new MarkChain(doc, null);
