@@ -274,9 +274,19 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             table.isAncestorOf(focusOwner) ||
             (focusOwner instanceof Container &&
              ((Container) focusOwner).isAncestorOf(table));
+        if (tableHasFocus && !table.isPaintingForPrint()) {
+            boolean rowIsLead =
+                (table.getSelectionModel().getLeadSelectionIndex() == row);
+            boolean colIsLead =
+                (table.getColumnModel().getSelectionModel().getLeadSelectionIndex() == column);
+
+            hasFocus = (rowIsLead && colIsLead);
+        } else {
+            hasFocus = false;
+        }
         Component defaultRendererComponent = table.getDefaultRenderer(
                 Object.class).getTableCellRendererComponent(table, value,
-                        isSelected, tableHasFocus, row, column);
+                        isSelected, hasFocus, row, column);
         Color bg = getRealColor(defaultRendererComponent.getBackground());
         Color fg = defaultRendererComponent.getForeground();
 
