@@ -937,7 +937,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
                             if (andShow) {
                                 showMode = showModeOverride;
                                 NativeBreakpoint breakpoint = loc.getBreakpoint();
-                                if (breakpoint != null) {
+                                if (breakpoint != null && ShowMode.AUTO.equals(showModeOverride)) {
                                     if (breakpoint instanceof InstructionBreakpoint) {
                                         showMode = ShowMode.DIS;
                                     } else {
