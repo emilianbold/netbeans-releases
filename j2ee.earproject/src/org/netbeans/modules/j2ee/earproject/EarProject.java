@@ -72,8 +72,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -100,6 +102,7 @@ import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.api.problems.PlatformUpdatedCallBackImpl;
 import org.netbeans.modules.javaee.project.spi.ear.EarDDGeneratorImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
@@ -266,6 +269,7 @@ public final class EarProject implements Project, AntProjectListener {
     
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
+        final J2eeArchiveLogicalViewProvider lvp = new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, appModule);
         Lookup base = Lookups.fixed(new Object[] {
             QuerySupport.createProjectInformation(helper, this, EAR_PROJECT_ICON),
             aux,
@@ -277,7 +281,7 @@ public final class EarProject implements Project, AntProjectListener {
             // remove in next release
             new EarImpl(ear, appModule),
             new EarActionProvider(this, updateHelper),
-            new J2eeArchiveLogicalViewProvider(this, updateHelper, evaluator(), refHelper, appModule),
+            lvp,
             new MyIconBaseProvider(),
             new CustomizerProviderImpl(this, helper, refHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -303,6 +307,9 @@ public final class EarProject implements Project, AntProjectListener {
             new JavaEEProjectSettingsImpl(this),
             new EarDDGeneratorImpl(this),
             easelSupport,
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, PlatformUpdatedCallBackImpl.create(EarProjectType.PROJECT_CONFIGURATION_NAMESPACE, updateHelper, false, new String[]{"name", "minimum-ant-version","use-manifest"}), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
+            UILookupMergerSupport.createProjectProblemsProviderMerger(),
         });
         earLookup = new EarProjectLookup(this, base, new WebBrowserProvider(this));
         evaluator().addPropertyChangeListener(earLookup);
@@ -500,8 +507,7 @@ public final class EarProject implements Project, AntProjectListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
-                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
+                ProjectProblems.showAlert(EarProject.this);
             }
 
             String servInstID = EarProject.this.getUpdateHelper().

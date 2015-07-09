@@ -355,6 +355,7 @@
                 <package>org.netbeans.modules.javaee.project.api.ant.ui.logicalview</package>
                 <package>org.netbeans.modules.javaee.project.api.ant.ui.wizard</package>
                 <package>org.netbeans.modules.javaee.project.api.ear</package>
+                <package>org.netbeans.modules.javaee.project.api.problems</package>
                 <package>org.netbeans.modules.javaee.project.api.ui</package>
                 <package>org.netbeans.modules.javaee.project.api.ui.utils</package>
                 <package>org.netbeans.modules.javaee.project.spi</package>

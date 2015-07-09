@@ -60,6 +60,7 @@ import javax.swing.Icon;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -68,6 +69,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.DelagatingProjectClassPathModifierImpl;
@@ -100,6 +102,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
+import org.netbeans.modules.javaee.project.api.problems.PlatformUpdatedCallBackImpl;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.spi.client.WebServicesClientSupportFactory;
@@ -310,6 +313,7 @@ public final class AppClientProject implements Project, FileChangeListener {
     private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING);
+        final AppClientLogicalViewProvider lvp  = new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient);
         Lookup base = Lookups.fixed(new Object[] {
             QuerySupport.createProjectInformation(helper, this, CAR_PROJECT_ICON),
             aux,
@@ -317,7 +321,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             helper.createAuxiliaryProperties(),
             spp,
             new AppClientActionProvider( this, this.updateHelper ),
-            new AppClientLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper, appClient),
+            lvp,
             // new J2SECustomizerProvider(this, this.updateHelper, evaluator(), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -365,6 +369,9 @@ public final class AppClientProject implements Project, FileChangeListener {
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
             new JavaEEProjectSettingsImpl(this),
+            BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
+            BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, PlatformUpdatedCallBackImpl.create(AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, updateHelper), JavaPlatform.getDefault().getSpecification().getName(), ProjectProperties.PLATFORM_ACTIVE, ProjectProperties.JAVAC_SOURCE, ProjectProperties.JAVAC_TARGET),
+            UILookupMergerSupport.createProjectProblemsProviderMerger(),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
@@ -691,8 +698,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             }
             
             if (logicalViewProvider != null &&  logicalViewProvider.hasBrokenLinks()) {
-                BrokenReferencesSupport.showAlert(helper, refHelper, eval, 
-                        logicalViewProvider.getBreakableProperties(), logicalViewProvider.getPlatformProperties());
+                ProjectProblems.showAlert(AppClientProject.this);
             }
             if(WebServicesClientSupport.isBroken(AppClientProject.this)) {
                 WebServicesClientSupport.showBrokenAlert(AppClientProject.this);
