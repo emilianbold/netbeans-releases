@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript.nodejs.problems;
 
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
@@ -68,8 +67,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 public final class NpmProblemsProvider implements ProjectProblemsProvider {
-
-    static final String NODE_MODULES = "node_modules"; // NOI18N
 
     final FileChangeListener fileChangeListener = new FileChangeListener();
     final Project project;
@@ -151,8 +148,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
         if (!packageJson.exists()) {
             return false;
         }
-        File nodeModules = new File(packageJson.getFile().getParentFile(), NODE_MODULES);
-        if (nodeModules.isDirectory()) {
+        if (packageJson.getNodeModulesDir().isDirectory()) {
             return false;
         }
         return !packageJson.getDependencies().isEmpty();
@@ -202,7 +198,7 @@ public final class NpmProblemsProvider implements ProjectProblemsProvider {
         }
 
         private void processFolderChange(String folderName) {
-            if (NODE_MODULES.equals(folderName)) {
+            if (PackageJson.NODE_MODULES_DIR.equals(folderName)) {
                 fireProblemsChanged();
             }
         }
