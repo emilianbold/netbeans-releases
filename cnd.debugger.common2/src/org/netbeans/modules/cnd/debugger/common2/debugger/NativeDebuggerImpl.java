@@ -1741,7 +1741,12 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         if (bt.initBuildTools(model, new ArrayList<String>(), cs)) {
             conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
             cs = CompilerSetManager.get(exEnv).getCompilerSet(model.getSelectedCompilerSetName());
-            return cs.getTool(PredefinedToolKind.DebuggerTool).getPath();
+            if (cs != null) {
+                debuggerTool = cs.getTool(PredefinedToolKind.DebuggerTool);
+                if (debuggerTool != null) {
+                    return debuggerTool.getPath();
+                }
+            }
         }
         return null;
     }
