@@ -70,6 +70,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.BaseProgressUtils;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
@@ -125,6 +126,7 @@ public class OptionsDisplayerImpl {
     private static final RequestProcessor RP = new RequestProcessor(OptionsDisplayerImpl.class.getName(), 1, true);
     private static final int DELAY = 500;
     private boolean savingInProgress = false;
+    private FileObject configFile;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -342,7 +344,7 @@ public class OptionsDisplayerImpl {
      * @return true if exists some advanced options, false otherwise
      */
     private boolean advancedOptionsNotEmpty() {
-        FileObject servicesFO = FileUtil.getConfigFile("UI/Services");  //NOI18N
+        FileObject servicesFO = doGetConfigFile("UI/Services");  //NOI18N
         if(servicesFO != null) {
             FileObject[] advancedOptions = servicesFO.getChildren();
             for (FileObject advancedOption : advancedOptions) {
@@ -360,7 +362,7 @@ public class OptionsDisplayerImpl {
      * @return true if something is registered under OptionsExport, false otherwise
      */
     private boolean optionsExportNotEmpty() {
-        FileObject optionsExportFO = FileUtil.getConfigFile("OptionsExport");  //NOI18N
+        FileObject optionsExportFO = doGetConfigFile("OptionsExport");  //NOI18N
         if(optionsExportFO != null) {
             FileObject[] categories = optionsExportFO.getChildren();
             for (FileObject category : categories) {
@@ -379,6 +381,22 @@ public class OptionsDisplayerImpl {
             }
         }
         return false;
+    }
+
+    @NbBundle.Messages({"Get_Config_File_Lengthy_Operation=Please wait while getting config file."})
+    private FileObject doGetConfigFile(final String path) {
+        configFile = null;
+        AtomicBoolean getConfigFileCancelled = new AtomicBoolean(false);
+        BaseProgressUtils.runOffEventDispatchThread(new Runnable() {
+            @Override
+            public void run() {
+                configFile = FileUtil.getConfigFile(path);
+            }
+        }, Bundle.Get_Config_File_Lengthy_Operation(), getConfigFileCancelled, false, 50, 1000);
+        if (getConfigFileCancelled.get()) {
+            log.log(Level.FINE, "Options Dialog - Getting config file for path ''{0}'', cancelled by user.", path); //NOI18N
+        }
+        return configFile;
     }
 
     private Point getUserLocation(OptionsPanel optionsPanel) {
