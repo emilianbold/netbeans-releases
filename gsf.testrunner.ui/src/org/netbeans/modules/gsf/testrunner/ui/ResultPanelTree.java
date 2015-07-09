@@ -141,6 +141,10 @@ final class ResultPanelTree extends JPanel implements ExplorerManager.Provider, 
         accessCtx.setAccessibleName(Bundle.ACSN_VerticalScrollbar());
 
     }
+    
+    int getTotalTests() {
+        return rootNode.getTotalTests();
+    }
 
     /**
      */
