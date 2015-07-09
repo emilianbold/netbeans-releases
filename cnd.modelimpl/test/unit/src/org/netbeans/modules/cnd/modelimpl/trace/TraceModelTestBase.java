@@ -174,7 +174,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         preSetUp();
         super.setUp();
         super.clearWorkDir();
-        helper = new TestModelHelper(cleanCache);
+        helper = new TestModelHelper(cleanCache, getProjectFileFilter());
         assertNotNull("Model must be valid", getTraceModel().getModel()); // NOI18N
         postSetUp();
     }
@@ -183,6 +183,10 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
         helper.shutdown(true);
+    }
+
+    protected TraceModelFileFilter getProjectFileFilter() {
+        return null;
     }
 
     protected final void performModelTest(File testFile, PrintStream streamOut, PrintStream streamErr) throws Exception {
@@ -296,7 +300,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error) {
+        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(error) {
 
             @Override
             public void print(String s) {

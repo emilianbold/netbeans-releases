@@ -98,24 +98,10 @@ public final class APTTokenStreamProducer extends TokenStreamProducer {
         this.fullAPT = fullAPT;
     }
 
-    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent) {
         APTFile fullAPT = getFileAPT(file, true);
         if (fullAPT == null) {
             return null;
-        }
-        if (index) {
-            if (CndTraceFlags.TEXT_INDEX) {
-                Collection<? extends APTIndexFilter> indexFilters = Collections.emptyList();
-                Object pp = file.getProject().getPlatformProject();
-                if (pp instanceof NativeProject) {
-                    final Lookup.Provider project = ((NativeProject) pp).getProject();
-                    if (project != null) {
-                        indexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
-                    }
-                }
-                APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, file.getTextIndexKey(), indexFilters);
-                aptIndexingWalker.index();
-            }  
         }
         return new APTTokenStreamProducer(file, newFileContent, fullAPT);
     }
