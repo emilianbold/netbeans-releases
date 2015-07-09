@@ -39,51 +39,55 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript.bower.file;
+package org.netbeans.modules.javascript.nodejs.misc;
 
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import org.netbeans.modules.web.clientproject.api.json.JsonFile;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
+import java.net.URI;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.javascript.nodejs.file.PackageJson;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.queries.SharabilityQueryImplementation2;
+import org.openide.util.Utilities;
 
-@MIMEResolver.Registration(displayName = "bowerrc", resource = "../resources/bowerrc-resolver.xml", position = 129)
-public final class BowerrcJson {
+public final class SharabilityQueryImpl implements SharabilityQueryImplementation2 {
 
-    public static final String FILE_NAME = ".bowerrc"; // NOI18N
-    public static final String PROP_DIRECTORY = "DIRECTORY"; // NOI18N
-    // file content
-    public static final String FIELD_DIRECTORY = "directory"; // NOI18N
-    // default values
-    private static final String DEFAULT_BOWER_COMPONENTS_DIR = "bower_components"; // NOI18N
-
-    private final JsonFile bowerrcJson;
+    private final URI nodeModulesUri;
 
 
-    public BowerrcJson(FileObject directory) {
-        assert directory != null;
-        bowerrcJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
-                .add(PROP_DIRECTORY, FIELD_DIRECTORY));
+    private SharabilityQueryImpl(Project project) {
+        nodeModulesUri = Utilities.toURI(new PackageJson(project.getProjectDirectory()).getNodeModulesDir());
     }
 
-    public File getFile() {
-        return bowerrcJson.getFile();
+    private static SharabilityQueryImplementation2 create(Project project) {
+        return new SharabilityQueryImpl(project);
     }
 
-    public File getBowerComponentsDir() {
-        String directory = bowerrcJson.getContentValue(String.class, BowerrcJson.FIELD_DIRECTORY);
-        if (directory == null) {
-            directory = DEFAULT_BOWER_COMPONENTS_DIR;
+    @ProjectServiceProvider(service = SharabilityQueryImplementation2.class, projectType = "org-netbeans-modules-web-clientproject") // NOI18N
+    public static SharabilityQueryImplementation2 forHtml5Project(Project project) {
+        return create(project);
+    }
+
+    @ProjectServiceProvider(service = SharabilityQueryImplementation2.class, projectType = "org-netbeans-modules-php-project") // NOI18N
+    public static SharabilityQueryImplementation2 forPhpProject(Project project) {
+        return create(project);
+    }
+
+    @ProjectServiceProvider(service = SharabilityQueryImplementation2.class, projectType = "org-netbeans-modules-web-project") // NOI18N
+    public static SharabilityQueryImplementation2 forWebProject(Project project) {
+        return create(project);
+    }
+
+    @ProjectServiceProvider(service = SharabilityQueryImplementation2.class, projectType = "org-netbeans-modules-maven") // NOI18N
+    public static SharabilityQueryImplementation2 forMavenProject(Project project) {
+        return create(project);
+    }
+
+    @Override
+    public SharabilityQuery.Sharability getSharability(URI uri) {
+        if (uri.equals(nodeModulesUri)) {
+            return SharabilityQuery.Sharability.NOT_SHARABLE;
         }
-        return new File(bowerrcJson.getFile().getParentFile(), directory);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        bowerrcJson.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        bowerrcJson.removePropertyChangeListener(listener);
+        return SharabilityQuery.Sharability.UNKNOWN;
     }
 
 }
