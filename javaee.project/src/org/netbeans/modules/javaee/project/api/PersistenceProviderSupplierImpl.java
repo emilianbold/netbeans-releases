@@ -92,7 +92,7 @@ public final class PersistenceProviderSupplierImpl implements PersistenceProvide
             }
             return findPersistenceProviders(platform);
         } catch (InstanceRemovedException ex) {
-            return Collections.emptyList();
+            return findPersistenceProviders(null);
         }
     }
 
