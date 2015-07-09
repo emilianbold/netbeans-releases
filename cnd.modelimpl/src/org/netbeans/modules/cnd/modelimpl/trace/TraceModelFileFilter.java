@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,48 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.openide.util.Lookup;
+package org.netbeans.modules.cnd.modelimpl.trace;
 
 /**
  *
  * @author Alexander Simon
  */
-public interface MakeCommandFlagsProviderFactory {
-    boolean canHandle(String commandID, Lookup context, MakeConfiguration conf);
-    MakeCommandFlagsProvider createProvider();
-    
-    //@ServiceProvider(service=MakeCommandFlagsProviderFactory.class, position=1000)
-    public static final MakeCommandFlagsProviderFactory DEFAULT = new MakeCommandFlagsProviderFactory() {
-
-        @Override
-        public boolean canHandle(String commandID, Lookup context, MakeConfiguration conf) {
-            return true;
-        }
-
-        @Override
-        public MakeCommandFlagsProvider createProvider() {
-            return new MakeCommandFlagsProvider() {
-
-                @Override
-                public boolean flagValue(String commandID, Lookup context, Project project, MakeConfiguration conf, String flag, boolean defaultFlagValue) {
-                    if (MakeCommandFlagsProvider.PRE_BUILD_FIRST.equals(flag)) {//NOI18N
-                        return conf.getPreBuildConfiguration().getPreBuildFirst().getValue();
-                    } else if (MakeCommandFlagsProvider.BUILD_FIRST.equals(flag)) {//NOI18N
-                        RunProfile profile = conf.getProfile();
-                        if (profile != null) {
-                            return profile.getBuildFirst();
-                        }
-                    }
-                    return defaultFlagValue;
-                }
-            };
-        }
-    };
+public interface TraceModelFileFilter {
+    boolean isProjectFile(String filename);
 }

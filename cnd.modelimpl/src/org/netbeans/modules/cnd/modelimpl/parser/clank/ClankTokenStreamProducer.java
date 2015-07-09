@@ -104,7 +104,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         super(file, newFileContent);
     }
     
-    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean index) {
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent) {
         return new ClankTokenStreamProducer(file, newFileContent);
     }
 
