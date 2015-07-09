@@ -195,7 +195,7 @@ class NonVirtualMethod extends AbstractCodeAudit {
         }
     }    
     
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1500)
     public static final class VirtualMethodFixProvider extends CsmErrorInfoHintProvider {
 
         @Override

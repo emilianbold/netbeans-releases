@@ -185,7 +185,7 @@ class NoMatchingConstructor extends AbstractCodeAudit {
         }
     } 
     
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1300)
     public static final class NoMatchingConstructorFixProvider extends CsmErrorInfoHintProvider {
 
         @Override
