@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.openide.util.Lookup;
 
 /**
@@ -70,7 +71,10 @@ public interface MakeCommandFlagsProviderFactory {
                     if (MakeCommandFlagsProvider.PRE_BUILD_FIRST.equals(flag)) {//NOI18N
                         return conf.getPreBuildConfiguration().getPreBuildFirst().getValue();
                     } else if (MakeCommandFlagsProvider.BUILD_FIRST.equals(flag)) {//NOI18N
-                        return conf.getProfile().getBuildFirst();
+                        RunProfile profile = conf.getProfile();
+                        if (profile != null) {
+                            return profile.getBuildFirst();
+                        }
                     }
                     return defaultFlagValue;
                 }
