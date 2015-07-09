@@ -47,6 +47,7 @@ package org.netbeans.core.ui.options.general;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -76,6 +77,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -713,23 +715,38 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             editor = Lookup.getDefault().lookup(HtmlBrowser.FactoryEditor.class);
         }
         cbWebBrowser.removeAllItems ();
-        String[] tags = editor.getTags ();
-        if (tags.length > 0) {
-            for (String tag : tags) {
-                cbWebBrowser.addItem(tag);
+        // 188767: editor.getTags() can take long time => fill the combo
+        // with the selected item only for now and load the rest of its content
+        // outside event-dispatch thread
+        cbWebBrowser.addItem(editor.getAsText());
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final String[] tags = editor.getTags ();
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cbWebBrowser.removeAllItems ();
+                        if (tags.length > 0) {
+                            for (String tag : tags) {
+                                cbWebBrowser.addItem(tag);
+                            }
+                            cbWebBrowser.setSelectedItem(editor.getAsText());
+                            lWebBrowser.setVisible(true);
+                            cbWebBrowser.setVisible(true);
+                            editBrowserButton.setVisible(true);
+                            jSeparator2.setVisible(true);
+                        } else {
+                            // #153747 hide web browser settings for platform
+                            lWebBrowser.setVisible(false);
+                            cbWebBrowser.setVisible(false);
+                            editBrowserButton.setVisible(false);
+                            jSeparator2.setVisible(false);
+                        }
+                    }
+                });
             }
-            cbWebBrowser.setSelectedItem(editor.getAsText());
-            lWebBrowser.setVisible(true);
-            cbWebBrowser.setVisible(true);
-            editBrowserButton.setVisible(true);
-            jSeparator2.setVisible(true);
-        } else {
-            // #153747 hide web browser settings for platform
-            lWebBrowser.setVisible(false);
-            cbWebBrowser.setVisible(false);
-            editBrowserButton.setVisible(false);
-            jSeparator2.setVisible(false);
-        }
+        });
     }
     
     void applyChanges () {
