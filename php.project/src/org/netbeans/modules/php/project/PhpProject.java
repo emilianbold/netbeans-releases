@@ -751,6 +751,7 @@ public final class PhpProject implements Project {
                 new PhpLogicalViewProvider(this),
                 new CustomizerProviderImpl(this),
                 PhpSharabilityQuery.create(helper, getEvaluator(), getSourceRoots(), getTestRoots(), getSeleniumRoots()),
+                LookupProviderSupport.createSharabilityQueryMerger(),
                 new PhpProjectOperations(this) ,
                 phpProjectEncodingQueryImpl,
                 new CreateFromTemplateAttributesImpl(getHelper(), phpProjectEncodingQueryImpl),

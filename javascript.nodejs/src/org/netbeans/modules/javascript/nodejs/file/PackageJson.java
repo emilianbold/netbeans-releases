@@ -78,6 +78,8 @@ public final class PackageJson {
     public static final String FIELD_DEV_DEPENDENCIES = "devDependencies"; // NOI18N
     public static final String FIELD_PEER_DEPENDENCIES = "peerDependencies"; // NOI18N
     public static final String FIELD_OPTIONAL_DEPENDENCIES = "optionalDependencies"; // NOI18N
+    // default values
+    public static final String NODE_MODULES_DIR = "node_modules"; // NOI18N
 
     private final JsonFile packageJson;
 
@@ -108,6 +110,10 @@ public final class PackageJson {
 
     public File getFile() {
         return packageJson.getFile();
+    }
+
+    public File getNodeModulesDir() {
+        return new File(packageJson.getFile().getParentFile(), NODE_MODULES_DIR);
     }
 
     @CheckForNull
