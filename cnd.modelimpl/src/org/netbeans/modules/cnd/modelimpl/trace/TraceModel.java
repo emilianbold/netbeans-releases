@@ -252,8 +252,13 @@ public class TraceModel extends TraceModelBase {
         void error(String text, int line, int column);
     }
 
+
     public TraceModel(boolean cleanCache) {
-        super(cleanCache);
+        this(cleanCache, null);
+    }
+
+    public TraceModel(boolean cleanCache, TraceModelFileFilter filter) {
+        super(cleanCache, filter);
         CsmCorePackageAccessor.get().setFileImplTestHook(hook);
     }
 
