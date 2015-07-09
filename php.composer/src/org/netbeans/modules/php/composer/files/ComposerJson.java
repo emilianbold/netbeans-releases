@@ -91,10 +91,7 @@ public final class ComposerJson {
     }
 
     public File getVendorDir() {
-        String vendorDir = null;
-        if (exists()) {
-            vendorDir = composerJson.getContentValue(String.class, FIELD_CONFIG, FIELD_VENDOR_DIR);
-        }
+        String vendorDir = composerJson.getContentValue(String.class, FIELD_CONFIG, FIELD_VENDOR_DIR);
         if (vendorDir == null) {
             vendorDir = DEFAULT_VENDOR_DIR;
         }
