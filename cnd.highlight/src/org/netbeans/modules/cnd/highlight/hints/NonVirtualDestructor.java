@@ -153,7 +153,7 @@ class NonVirtualDestructor extends AbstractCodeAudit {
         }
     }    
     
-    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1100)
+    @ServiceProvider(service = CsmErrorInfoHintProvider.class, position = 1400)
     public static final class VirtualDestructorFixProvider extends CsmErrorInfoHintProvider {
 
         @Override
