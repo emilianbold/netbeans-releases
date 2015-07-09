@@ -51,8 +51,10 @@ package org.openide.explorer.propertysheet;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
+import javax.swing.plaf.LabelUI;
 import javax.swing.plaf.basic.*;
 import javax.swing.plaf.metal.MetalComboBoxIcon;
+import javax.swing.plaf.synth.SynthLabelUI;
 import org.openide.util.Utilities;
 
 
@@ -66,6 +68,7 @@ class CleanComboUI extends BasicComboBoxUI {
     private JButton button = null;
     private boolean tableUI;
     private ComboPopup popup = null;
+    private final boolean isGtk = "GTK".equals(UIManager.getLookAndFeel().getID());
 
     public CleanComboUI(boolean tableUI) {
         this.tableUI = tableUI;
@@ -304,7 +307,7 @@ class CleanComboUI extends BasicComboBoxUI {
         }
 
         Component c;
-        c = renderer.getListCellRendererComponent(listBox, comboBox.getSelectedItem(), -1, false, false);
+        c = renderer.getListCellRendererComponent(listBox, comboBox.getSelectedItem(), -1, hasFocus && !isPopupVisible(comboBox), false);
         c.setFont(comboBox.getFont());
         c.setForeground(comboBox.isEnabled() ? comboBox.getForeground() : PropUtils.getDisabledForeground());
 
@@ -316,9 +319,19 @@ class CleanComboUI extends BasicComboBoxUI {
             shouldValidate = true;
         }
 
+        LabelUI origUI = null;
+        if (c instanceof JLabel && isGtk) {
+            // Override L&F's strange background painting
+            origUI = ((JLabel) c).getUI();
+            ((JLabel) c).setUI(new SolidBackgroundLabelUI());
+        }
+
         currentValuePane.paintComponent(
             g, c, comboBox, bounds.x, bounds.y, bounds.width, bounds.height, shouldValidate
         );
+        if (origUI != null) {
+            ((JLabel) c).setUI(origUI);
+        }
     }
 
     @Override
@@ -445,4 +458,20 @@ class CleanComboUI extends BasicComboBoxUI {
         }
         
     }
+
+    private static class SolidBackgroundLabelUI extends SynthLabelUI {
+
+        @Override
+        public void update(Graphics g, JComponent c) {
+            Color bg = c.getBackground();
+            if (bg != null && c.isBackgroundSet()) {
+                Color oldC = g.getColor();
+                g.setColor(bg);
+                g.fillRect(0, 0, c.getWidth(), c.getHeight());
+                g.setColor(oldC);
+            }
+            paint(g, c);
+        }
+    }
+
 }
