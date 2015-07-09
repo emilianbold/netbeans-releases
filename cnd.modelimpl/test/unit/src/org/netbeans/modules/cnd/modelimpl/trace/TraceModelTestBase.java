@@ -300,7 +300,7 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
             }
         };
         File error = goldenErrFileName == null ? null : new File(workDir, goldenErrFileName);
-        PrintStream streamErr = goldenErrFileName == null ? null : new FilteredPrintStream(error) {
+        PrintStream streamErr = goldenErrFileName == null ? System.err : new FilteredPrintStream(error) {
 
             @Override
             public void print(String s) {
