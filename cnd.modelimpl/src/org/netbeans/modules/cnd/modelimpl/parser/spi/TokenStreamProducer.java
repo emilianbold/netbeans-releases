@@ -186,6 +186,7 @@ public abstract class TokenStreamProducer {
     private static void indexFileContent(FileImpl file) {
         TokenSequence<?> tsToIndex = createFileTokenSequence(file);
         if (tsToIndex == null) {
+            assert !file.isValid() : "must have token stream for valid files";
             return;
         }
         APTIndexFilter[] indexFilters = getIndexFilters(file);
@@ -219,17 +220,7 @@ public abstract class TokenStreamProducer {
         }
         TokenHierarchy<?> hi = TokenHierarchy.create(new CharBufferChars(charBuffer), false, language, mergedSkippedTokens, null);
 //        TokenHierarchy<?> hi = TokenHierarchy.create(new String(charBuffer), false, language, mergedSkippedTokens, null);
-        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(0, true);
-        // Go from inner to outer TSes
-        TokenSequence<?> tsToIndex = null;
-        for (int i = tsList.size() - 1; i >= 0; i--) {
-            TokenSequence<?> ts = tsList.get(i);
-            final Language<?> lang = ts.languagePath().innerLanguage();
-            if (CndLexerUtilities.isCppLanguage(lang, false) || (lang == FortranTokenId.languageFortran())) {
-                tsToIndex = ts;
-            }
-        }
-        return tsToIndex;
+        return hi.tokenSequence();
     }
 
 
