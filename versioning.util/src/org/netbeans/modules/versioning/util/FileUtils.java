@@ -231,7 +231,7 @@ public class FileUtils {
         FileUtils.copyFile(orig, dest);
 
         for (int i = 0; i<3; i++) {
-            if (orig.delete()) {
+            if (!orig.exists() || orig.delete()) {
                 return;
             }
             try {
@@ -239,7 +239,7 @@ public class FileUtils {
             } catch (InterruptedException e) {
             }
         }
-        throw new IOException("Can not delete: " + orig.getAbsolutePath());  // NOI18N
+        throw new IOException("Can not delete: " + orig.getAbsolutePath() + " - exists: " + orig.exists());  // NOI18N
     }
 
     /**

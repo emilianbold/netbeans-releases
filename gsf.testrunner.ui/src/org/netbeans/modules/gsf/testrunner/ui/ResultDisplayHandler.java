@@ -96,6 +96,8 @@ public final class ResultDisplayHandler {
     private final TestSession session;
 
     private Lookup l;
+    
+    private StatisticsPanel statisticsPanel;
 
     /** Creates a new instance of ResultDisplayHandler */
     public ResultDisplayHandler(TestSession session) {
@@ -134,10 +136,15 @@ public final class ResultDisplayHandler {
      */
     private JSplitPane createDisplayComp() {
         DividerSettings dividerSettings = TestRunnerSettings.getDefault().getDividerSettings(null);
-        return createDisplayComp(new StatisticsPanel(this),
+        statisticsPanel = new StatisticsPanel(this);
+        return createDisplayComp(statisticsPanel,
                 getOutputComponent(),
                 dividerSettings.getOrientation(),
                 dividerSettings.getLocation());
+    }
+
+    public int getTotalTests() {
+        return statisticsPanel.getTreePanel().getTotalTests();
     }
 
     private JSplitPane createDisplayComp(Component left, Component right, int orientation, final int location) {

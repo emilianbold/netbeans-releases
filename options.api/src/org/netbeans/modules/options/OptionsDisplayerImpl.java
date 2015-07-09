@@ -180,7 +180,7 @@ public class OptionsDisplayerImpl {
         }
 
         OptionsPanel optionsPanel = null;
-        if (descriptor == null) {
+        if (descriptor == null || descriptor.isModal() != modal) {
             optionsPanel = categoryID == null ? new OptionsPanel (categoryInstance) : new OptionsPanel(categoryID, categoryInstance);
             bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
@@ -479,16 +479,14 @@ public class OptionsDisplayerImpl {
         
         @SuppressWarnings("unchecked")
         public void actionPerformed (ActionEvent e) {
-            if (!isOpen()) { //WORKARROUND for some bug in NbPresenter
-                return;
-            }
-                // listener is called twice ...
+//                // listener is called twice ...
             if (e.getSource () == bOK) {
                 log.fine("Options Dialog - Ok pressed."); //NOI18N
-                Dialog d = dialog;
-                dialog = null;
                 saveOptionsOffEDT(true);
-                d.dispose ();
+                if (isOpen()) { //WORKARROUND for some bug in NbPresenter
+                    dialog.dispose();
+                    dialog = null;
+                }
             } else if (e.getSource () == bAPPLY) {
                 log.fine("Options Dialog - Apply pressed."); //NOI18N
                 saveOptionsOffEDT(false);
@@ -498,12 +496,13 @@ public class OptionsDisplayerImpl {
                 e.getSource () == DialogDescriptor.CLOSED_OPTION
             ) {
                 log.fine("Options Dialog - Cancel pressed."); //NOI18N
-                Dialog d = dialog;
-                dialog = null;
                 optionsPanel.cancel ();
                 bOK.setEnabled(true);
                 bAPPLY.setEnabled(false);
-                d.dispose ();                
+                if (isOpen()) { //WORKARROUND for some bug in NbPresenter
+                    dialog.dispose();
+                    dialog = null;
+                }
             }
         }
         

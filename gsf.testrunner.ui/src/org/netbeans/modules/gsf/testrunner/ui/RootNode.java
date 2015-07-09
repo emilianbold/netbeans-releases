@@ -116,6 +116,10 @@ final class RootNode extends AbstractNode {
         return children;
     }
 
+    int getTotalTests() {
+        return totalTests;
+    }
+
     /**
      */
     void displayMessage(final String msg) {

@@ -46,6 +46,8 @@ import org.netbeans.modules.subversion.client.AbstractCommandTestCase;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.subversion.client.SvnClientFactory;
+import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -479,6 +481,54 @@ public class PropertyTestHidden extends AbstractCommandTestCase {
         assertPropertyStatus(SVNStatusKind.MODIFIED, folder1);
         assertPropertyStatus(SVNStatusKind.MODIFIED, file1);        
         assertNotifiedFiles(folder);
+    }
+    
+    public void testKWPropertySet () throws Exception {                                                
+        File folder = createFolder("folder");        
+        File file1 = createFile(folder, "file1");        
+        
+        add(folder);
+        add(file1);
+        commit(getWC());
+ 
+        ISVNClientAdapter c = getNbClient();        
+        c.propertySet(file1, "svn:keywords", "Id", false);
+        assertNotifiedFiles(file1);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file1);
+        
+        // add property for new file
+        File file2 = createFile(folder, "file2");
+        assertStatus(SVNStatusKind.UNVERSIONED, file2);
+        c.addFile(file2);
+        assertStatus(SVNStatusKind.ADDED, file2);
+        
+        c.propertySet(file2, "svn:keywords", "Id", false);
+        assertNotifiedFiles(file2);
+        
+        assertPropertyStatus(SVNStatusKind.MODIFIED, file2);
+        
+    }
+    
+    public void testKWAutoPropSet () throws Exception {                                                
+        File folder = createFolder("folder");        
+        
+        add(folder);
+        commit(getWC());
+
+        write(new File(SvnConfigFiles.getNBConfigPath(), "config"), "[miscellany]\n"
+                + "enable-auto-props = yes\n"
+                + "[auto-props]\n"
+                + "*.java = svn:keywords=Id\n"
+                + "");
+        
+        ISVNClientAdapter c = getNbClient();        
+        File file1 = createFile(folder, "file1.java");
+        assertStatus(SVNStatusKind.UNVERSIONED, file1);
+        c.addFile(file1);
+        assertStatus(SVNStatusKind.ADDED, file1);
+        
+        c.commit(new File[] { file1 }, "message", true);
     }
 
     private void assertProperty(String name, String value, Map<String, ISVNProperty> propMap) {

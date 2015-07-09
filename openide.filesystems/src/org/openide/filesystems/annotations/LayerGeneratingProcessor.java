@@ -48,6 +48,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.NoSuchFileException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -240,7 +241,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                 } finally {
                     is.close();
                 }
-            } catch (FileNotFoundException fnfe) {
+            } catch (FileNotFoundException | NoSuchFileException fnfe) {
                 // Fine, not yet created.
             } catch (IOException x) {
                 processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to read generated-layer.xml: " + x.toString());
