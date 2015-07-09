@@ -101,6 +101,7 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
         for(CsmFile file : project.getAllFiles()){
             if (file.getAbsolutePath().toString().endsWith("quote.cc")) {
                 quote = file;
+                break;
             }
         }
         assertNotNull(quote);
@@ -108,6 +109,7 @@ public class CallGraphTestCase extends ProjectBasedTestCase {
         for(CsmDeclaration decl : quote.getDeclarations()) {
             if (decl.getName().toString().startsWith("main")) {
                 main = decl;
+                break;
             }
         }
         assertNotNull(main);
