@@ -576,6 +576,7 @@ public class ClientSideProject implements Project {
                new CreateFromTemplateAttributesImpl(projectHelper, fileEncodingQuery),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER),
+               LookupProviderSupport.createSharabilityQueryMerger(),
                projectBrowserProvider,
                new ProjectDirectoriesProviderImpl(),
                new CoverageProviderImpl(this),
