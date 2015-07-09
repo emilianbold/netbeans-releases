@@ -44,7 +44,9 @@
 
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
+import java.util.Arrays;
 import org.junit.Test;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceModelFileFilter;
 
 /**
  *
@@ -54,6 +56,21 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public BasicHyperlinkTestCase(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected TraceModelFileFilter getTraceModelFileFilter() {
+        final String testName = getName();
+        if (Arrays.asList("testTwoMacros").contains(testName)) {
+            return new TraceModelFileFilter() {
+
+                @Override
+                public boolean isProjectFile(String filename) {
+                    return filename.contains("twoMacros");
+                }
+            };
+        }
+        return null;
     }
 
     public void test239814() throws Exception {
