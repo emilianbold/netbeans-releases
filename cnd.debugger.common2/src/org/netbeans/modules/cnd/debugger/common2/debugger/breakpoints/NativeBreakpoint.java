@@ -495,10 +495,11 @@ public abstract class NativeBreakpoint
 
     private int findByBreakpoint(NativeBreakpoint subBpt) {
 	// Vector.indexOf uses equals() which is overkill for us
-	for (int bx = 0; bx < children.size(); bx++) {
-	    NativeBreakpoint candidate = children.get(bx);
+        int bx = 0;
+	for (NativeBreakpoint candidate : children) {
 	    if (candidate == subBpt)
 		return bx;
+            bx++;
 	}
 	return -1;
     }
@@ -669,9 +670,7 @@ public abstract class NativeBreakpoint
 
 
     public final NativeBreakpoint[] getChildren() {
-	NativeBreakpoint array[] = new NativeBreakpoint[children.size()];
-	children.toArray(array);
-	return array;
+	return children.toArray(new NativeBreakpoint[0]);
     }
 
     /**
