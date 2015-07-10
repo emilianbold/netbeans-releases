@@ -46,9 +46,11 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.netbeans.modules.remote.impl.fs.RemoteExceptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -100,6 +102,7 @@ public class FastPasteAction extends CookieAction {
                     FileObject targetFolder = df.getPrimaryFile();
                     for (FileObject fo : fileObjects) {
                         try {
+                            testNesting(fo, targetFolder);
                             String suffix = existInFolder(fo, targetFolder);
                             String newName = fo.getName() + suffix;
                             fo.copy(targetFolder, newName, fo.getExt());
@@ -126,6 +129,22 @@ public class FastPasteAction extends CookieAction {
             return ""; // NOI18N
         } else {
             return name.substring (orig.length ());
+        }
+    }
+    
+    private void testNesting(FileObject folder, FileObject targetFolder) throws IOException {
+        if (targetFolder.equals(folder)) {
+            throw RemoteExceptions.createIOException(
+                    NbBundle.getMessage(FastPasteAction.class, "EXC_CannotCopyTheSame", folder.getNameExt()));
+        } else {
+            FileObject testFolder = targetFolder.getParent();
+            while (testFolder != null) {
+                if (testFolder.equals(folder)) {
+                    throw RemoteExceptions.createIOException(
+                            NbBundle.getMessage(FastPasteAction.class, "EXC_CannotCopySubfolder", folder.getNameExt()));
+                }
+                testFolder = testFolder.getParent();
+            }
         }
     }
 
