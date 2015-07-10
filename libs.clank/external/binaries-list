@@ -1,6 +1,6 @@
-#changeset:   15261:9e2e4800729a
+#changeset:   15267:b104ccfa0d62
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Jul 10 14:01:14 2015 +0300
-#summary:     adjust to changed CndTextIndexFilter
-38733D0432C0C5CBE3AF36465AB7DE2B6170E98D clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Sat Jul 11 01:19:32 2015 +0300
+#summary:     new preprocessor: mixed remote support
+71800CD2D0F4E0163CC5E1C91ECE13974DFCC92A clank_0.3.6.zip
