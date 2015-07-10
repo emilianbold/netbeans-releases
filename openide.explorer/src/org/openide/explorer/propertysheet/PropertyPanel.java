@@ -1175,8 +1175,10 @@ public class PropertyPanel extends JComponent implements javax.accessibility.Acc
                 c = Color.LIGHT_GRAY;
             }
 
+            Color oldC = g.getColor();
             g.setColor(c);
             g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(oldC);
         }
 
         super.paint(g);
