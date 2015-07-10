@@ -41,59 +41,32 @@
  */
 package org.netbeans.modules.javascript.bower.file;
 
-import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.web.clientproject.api.json.JsonFile;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.MIMEResolver;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 
-@MIMEResolver.Registration(displayName = "bowerrc", resource = "../resources/bowerrc-resolver.xml", position = 129)
-public final class BowerrcJson {
+public class BowerrcJsonTest extends NbTestCase {
 
-    public static final String FILE_NAME = ".bowerrc"; // NOI18N
-    public static final String PROP_DIRECTORY = "DIRECTORY"; // NOI18N
-    // file content
-    public static final String FIELD_DIRECTORY = "directory"; // NOI18N
-    // default values
-    static final String DEFAULT_BOWER_COMPONENTS_DIR = "bower_components"; // NOI18N
-
-    private final JsonFile bowerrcJson;
-
-
-    public BowerrcJson(FileObject directory) {
-        this(directory, FILE_NAME);
+    public BowerrcJsonTest(String name) {
+        super(name);
     }
 
-    // for unit tests
-    BowerrcJson(FileObject directory, String filename) {
-        assert directory != null;
-        assert filename != null;
-        bowerrcJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
-                .add(PROP_DIRECTORY, FIELD_DIRECTORY));
+    public void testBowerComponentsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "bowerrc-bower-components");
+        assertTrue(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), BowerrcJson.DEFAULT_BOWER_COMPONENTS_DIR), bowerrcJson.getBowerComponentsDir());
     }
 
-    public boolean exists() {
-        return bowerrcJson.exists();
+    public void testLibsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "bowerrc-libs");
+        assertTrue(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), "public_html/libs"), bowerrcJson.getBowerComponentsDir());
     }
 
-    public File getFile() {
-        return bowerrcJson.getFile();
-    }
-
-    public File getBowerComponentsDir() {
-        String directory = bowerrcJson.getContentValue(String.class, BowerrcJson.FIELD_DIRECTORY);
-        if (directory == null) {
-            directory = DEFAULT_BOWER_COMPONENTS_DIR;
-        }
-        return new File(bowerrcJson.getFile().getParentFile(), directory);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        bowerrcJson.addPropertyChangeListener(listener);
-    }
-
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        bowerrcJson.removePropertyChangeListener(listener);
+    public void testDefaultBowerComponentsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "nonexisting-bowerrc");
+        assertFalse(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), BowerrcJson.DEFAULT_BOWER_COMPONENTS_DIR), bowerrcJson.getBowerComponentsDir());
     }
 
 }
