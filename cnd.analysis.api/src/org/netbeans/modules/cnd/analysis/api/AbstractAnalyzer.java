@@ -31,9 +31,9 @@ import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
@@ -117,7 +117,7 @@ public abstract class AbstractAnalyzer implements Analyzer {
         } else {
             String canonicalPath;
             try {
-                canonicalPath = RemoteFileUtil.getCanonicalPath(sr);
+                canonicalPath = FileSystemProvider.getCanonicalPath(sr);
                 if (!antiLoop.contains(canonicalPath)) {
                     antiLoop.add(canonicalPath);
                     for (FileObject fo : sr.getChildren()) {
