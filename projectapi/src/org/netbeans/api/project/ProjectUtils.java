@@ -106,6 +106,7 @@ public class ProjectUtils {
      * @see Project#getLookup
      */
     public static Sources getSources(@NonNull Project p) {
+        Parameters.notNull("p", p); //NOI18N
         Lookup l = p.getLookup();
         Sources s = l.lookup(Sources.class);
         if (s != null) {
