@@ -142,7 +142,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     implements BreakpointProvider, Gdb.Factory.Listener {
 
     private GdbEngineProvider engineProvider;
-    private Gdb gdb;				// gdb proxy
+    private volatile Gdb gdb;				// gdb proxy
     private GdbVersionPeculiarity peculiarity;  // gdb version differences
     private final DebuggerSettingsBridge profileBridge;
 

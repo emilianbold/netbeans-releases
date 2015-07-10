@@ -41,20 +41,18 @@
  */
 package org.netbeans.modules.cnd.apt.support.spi;
 
-import org.netbeans.modules.cnd.apt.support.APTToken;
-
 /**
  * When indexing a file, determines, which tokens to index and how.
  * Initial need is Tuxedo, which needs to search for functions in tpcall() parameter strings.
  * Later use could be: search in comments
  * @author vkvashin
  */
-public interface APTIndexFilter {
+public interface CndTextIndexFilter {
     /**
-     * Is called for each token of a file in order to determine
+     * Is called for each string token of a file in order to determine
      * whether to index it and get text to put into index.
-     * @param token
-     * @return if non-null, the returned text is put into index
+     * @param stringTokenText text of string token
+     * @return if non-null, the returned text should be stored in index
      */
-    CharSequence getIndexText(APTToken token);
+    CharSequence getStringIndexText(CharSequence stringTokenText);
 }
