@@ -91,7 +91,7 @@ import org.openide.util.RequestProcessor;
 public final class ExecutableProjectPanel extends javax.swing.JPanel {
 
 //    private DocumentListener executableValidateListener = null;
-    private static final RequestProcessor RP = new RequestProcessor("ExecutableProjectPanel", 1);
+    private static final RequestProcessor RP = new RequestProcessor("ExecutableProjectPanel", 1); //NOI18N
     private final JButton actionButton;
     private boolean noproject;
     private final EngineDescriptor debuggerType;
