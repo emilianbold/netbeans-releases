@@ -46,26 +46,20 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.FortranTokenId;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
@@ -75,6 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.apt.APTTokenStreamProducer;
 import org.netbeans.modules.cnd.modelimpl.parser.clank.ClankTokenStreamProducer;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
 
 /**
  *
@@ -189,7 +184,7 @@ public abstract class TokenStreamProducer {
             assert !file.isValid() : "must have token stream for valid files";
             return;
         }
-        APTIndexFilter[] indexFilters = getIndexFilters(file);
+        CndTextIndexFilter[] indexFilters = getIndexFilters(file);
         assert indexFilters != null;
         assert indexFilters.length > 0 : "must be at least one filter";
         Set<CharSequence> ids = new HashSet<>(1024);
@@ -262,7 +257,7 @@ public abstract class TokenStreamProducer {
         }
     }
     
-    private static void indexFileTokens(TokenSequence<?> expTS, APTIndexFilter[] indexFilters, Set<CharSequence> ids) {
+    private static void indexFileTokens(TokenSequence<?> expTS, CndTextIndexFilter[] indexFilters, Set<CharSequence> ids) {
         if (expTS != null) {
             expTS.moveStart();
             while (expTS.moveNext()) {
@@ -276,47 +271,37 @@ public abstract class TokenStreamProducer {
                         CppTokenId.PREPROCESSOR_IDENTIFIER_CATEGORY.equals(primaryCategory) ||
                         CppTokenId.KEYWORD_CATEGORY.equals(primaryCategory)) {
                         ids.add(expToken.text().toString());
-                    } if (CppTokenId.STRING_CATEGORY.equals(primaryCategory)) {
-//                        for (APTIndexFilter filter : indexFilters) {
-//                            CharSequence indexText = filter.getIndexText(token);
-//                            if (indexText != null) {
-//                                ids.add(indexText);
-//                            }
-//                        }
+                    } if (indexFilters.length > 0 && 
+                          CppTokenId.STRING_CATEGORY.equals(primaryCategory)) {
+                        for (CndTextIndexFilter filter : indexFilters) {
+                            CharSequence indexText = filter.getStringIndexText(expToken.text());
+                            if (indexText != null) {
+                                ids.add(indexText.toString());
+                            }
+                        }
                     }
                 }
             }
         }
     }
 
-    private static APTIndexFilter[] getIndexFilters(FileImpl file) {
-        Collection<? extends APTIndexFilter> extraIndexFilters = Collections.emptyList();
+    private static CndTextIndexFilter[] getIndexFilters(FileImpl file) {
+        Collection<? extends CndTextIndexFilter> extraIndexFilters = Collections.emptyList();
         Object pp = file.getProject().getPlatformProject();
         if (pp instanceof NativeProject) {
             final Lookup.Provider project = ((NativeProject) pp).getProject();
             if (project != null) {
-                extraIndexFilters = project.getLookup().lookupAll(APTIndexFilter.class);
+                extraIndexFilters = project.getLookup().lookupAll(CndTextIndexFilter.class);
             }
         }
         // index using CndLexer and index filters
-        final APTIndexFilter[] indexFilters = new APTIndexFilter[extraIndexFilters.size() + 1];
+        final CndTextIndexFilter[] indexFilters = new CndTextIndexFilter[extraIndexFilters.size()];
         int i = 0;
-        for (APTIndexFilter f : extraIndexFilters) {
+        for (CndTextIndexFilter f : extraIndexFilters) {
             indexFilters[i] = f;
             i++;
         }
-        indexFilters[i] = new DefaultIndexFilter();
         return indexFilters;
-    }
-    
-    private static final class DefaultIndexFilter implements APTIndexFilter {
-        @Override
-        public CharSequence getIndexText(APTToken token) {
-            if (APTUtils.isID(token) || token.getType() == APTTokenTypes.ID_DEFINED) {
-                return token.getTextID();
-            }
-            return null;
-        }
     }    
 
     private static final class CharBufferChars implements CharSequence {
