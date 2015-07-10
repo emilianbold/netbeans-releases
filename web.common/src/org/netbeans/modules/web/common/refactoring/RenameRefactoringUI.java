@@ -63,6 +63,8 @@ import org.openide.util.lookup.Lookups;
  */
 public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
+    private static final RequestProcessor RP
+            = new RequestProcessor(RenameRefactoringUI.class);
     private final AbstractRefactoring refactoring;
     private RenamePanel panel;
     private final FileObject file;
@@ -142,7 +144,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass {
 
     @Override
     public void doRefactoringBypass() throws IOException {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
