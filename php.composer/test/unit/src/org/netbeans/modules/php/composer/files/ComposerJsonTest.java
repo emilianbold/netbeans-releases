@@ -83,7 +83,7 @@ public class ComposerJsonTest extends NbTestCase {
     public void testVendorDir() {
         ComposerJson composerJson = new ComposerJson(FileUtil.toFileObject(getDataDir()), "composer-vendor.json");
         assertTrue(composerJson.getFile().getAbsolutePath(), composerJson.exists());
-        assertEquals(new File(getDataDir(), "vendor"), composerJson.getVendorDir());
+        assertEquals(new File(getDataDir(), ComposerJson.DEFAULT_VENDOR_DIR), composerJson.getVendorDir());
     }
 
     public void testLibsDir() {
@@ -95,7 +95,7 @@ public class ComposerJsonTest extends NbTestCase {
     public void testDefaultVendorDir() {
         ComposerJson composerJson = new ComposerJson(FileUtil.toFileObject(getDataDir()), "nonexisting-composer.json");
         assertFalse(composerJson.getFile().getAbsolutePath(), composerJson.exists());
-        assertEquals(new File(getDataDir(), "vendor"), composerJson.getVendorDir());
+        assertEquals(new File(getDataDir(), ComposerJson.DEFAULT_VENDOR_DIR), composerJson.getVendorDir());
     }
 
 }

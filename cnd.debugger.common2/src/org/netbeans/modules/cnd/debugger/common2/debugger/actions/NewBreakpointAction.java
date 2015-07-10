@@ -165,8 +165,7 @@ public class NewBreakpointAction
 	// interface DialogManager
         @Override
 	public void refocus() {
-	    System.out.println
-		("NOT IMPLEMENTED: NewBreakpointProcessor.refocus()"); // NOI18N
+            // do nothing
 	}
 
 

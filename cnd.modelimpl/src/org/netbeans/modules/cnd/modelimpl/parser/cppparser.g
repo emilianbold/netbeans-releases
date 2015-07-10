@@ -494,15 +494,11 @@ tokens {
                 if (TraceFlags.DEBUG) {
                     e.printStackTrace(System.err);
                 } else {
-                    doReportError(e);
+                    reportError(e);
                 }
 	    }
 	    errorCount++;
 	}
-
-	public void doReportError(RecognitionException e) {
-            super.reportError(e);
-        }
 
 	public void reportError(String s) {
 	    if (reportErrors) {
@@ -510,6 +506,10 @@ tokens {
 	    }
 	    errorCount++;
 	}
+
+        protected boolean hasReportErrors() {
+            return reportErrors;
+        }
 
         // Set of tokens stopping recovery
         private static final BitSet stopSet = new BitSet();

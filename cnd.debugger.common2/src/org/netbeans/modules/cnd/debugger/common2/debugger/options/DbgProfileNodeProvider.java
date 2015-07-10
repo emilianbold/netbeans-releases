@@ -131,7 +131,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
             }
             String profileID = EngineTypeManager.engine2DebugProfileID(engine);
             DbgProfile dbgProfile = (DbgProfile) configuration.getAuxObject(profileID);
-            return new Sheet[]{dbgProfile.getSheet()};
+            return dbgProfile != null ? new Sheet[]{dbgProfile.getSheet()} : null;
         }
 
         @Override
@@ -155,7 +155,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
 	public Sheet[] getSheets(Configuration configuration) {
             // show debugger chooser panel if it is enabled
             EngineProfile profile = (EngineProfile) configuration.getAuxObject(EngineProfile.PROFILE_ID);
-            return new Sheet[]{profile.getSheet()};
+            return profile != null ? new Sheet[]{profile.getSheet()} : null;
 	}
 
         @Override

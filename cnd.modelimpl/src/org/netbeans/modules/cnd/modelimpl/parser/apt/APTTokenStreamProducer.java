@@ -62,7 +62,6 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.api.PPIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.spi.APTIndexFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
@@ -82,6 +81,7 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
+import org.netbeans.modules.cnd.apt.support.spi.CndTextIndexFilter;
 
 /**
  *

@@ -55,15 +55,25 @@ public final class BowerrcJson {
     // file content
     public static final String FIELD_DIRECTORY = "directory"; // NOI18N
     // default values
-    private static final String DEFAULT_BOWER_COMPONENTS_DIR = "bower_components"; // NOI18N
+    static final String DEFAULT_BOWER_COMPONENTS_DIR = "bower_components"; // NOI18N
 
     private final JsonFile bowerrcJson;
 
 
     public BowerrcJson(FileObject directory) {
+        this(directory, FILE_NAME);
+    }
+
+    // for unit tests
+    BowerrcJson(FileObject directory, String filename) {
         assert directory != null;
-        bowerrcJson = new JsonFile(FILE_NAME, directory, JsonFile.WatchedFields.create()
+        assert filename != null;
+        bowerrcJson = new JsonFile(filename, directory, JsonFile.WatchedFields.create()
                 .add(PROP_DIRECTORY, FIELD_DIRECTORY));
+    }
+
+    public boolean exists() {
+        return bowerrcJson.exists();
     }
 
     public File getFile() {
