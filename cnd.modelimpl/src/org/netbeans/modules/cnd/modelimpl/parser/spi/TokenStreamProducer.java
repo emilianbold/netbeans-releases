@@ -184,11 +184,10 @@ public abstract class TokenStreamProducer {
             assert !file.isValid() : "must have token stream for valid files";
             return;
         }
-        CndTextIndexFilter[] indexFilters = getIndexFilters(file);
-        assert indexFilters != null;
-        assert indexFilters.length > 0 : "must be at least one filter";
+        CndTextIndexFilter[] extraIndexFilters = getExtraTextIndexFilters(file);
+        assert extraIndexFilters != null;
         Set<CharSequence> ids = new HashSet<>(1024);
-        indexFileTokens(tsToIndex, indexFilters, ids);
+        indexFileTokens(tsToIndex, extraIndexFilters, ids);
         CndTextIndex.put(file.getTextIndexKey(), ids);
     }
 
@@ -285,7 +284,7 @@ public abstract class TokenStreamProducer {
         }
     }
 
-    private static CndTextIndexFilter[] getIndexFilters(FileImpl file) {
+    private static CndTextIndexFilter[] getExtraTextIndexFilters(FileImpl file) {
         Collection<? extends CndTextIndexFilter> extraIndexFilters = Collections.emptyList();
         Object pp = file.getProject().getPlatformProject();
         if (pp instanceof NativeProject) {
