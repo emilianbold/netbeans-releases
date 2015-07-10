@@ -91,6 +91,7 @@ import org.openide.util.RequestProcessor;
 public final class ExecutableProjectPanel extends javax.swing.JPanel {
 
 //    private DocumentListener executableValidateListener = null;
+    private static final RequestProcessor RP = new RequestProcessor("ExecutableProjectPanel", 1); //NOI18N
     private final JButton actionButton;
     private boolean noproject;
     private final EngineDescriptor debuggerType;
@@ -505,7 +506,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
  
         projectComboBox.setEnabled(false);
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 final ProjectCBItem prj = getProjectByPath(hostName, path);

@@ -1281,7 +1281,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 		// interface DialogManager
                 @Override
 		public void refocus() {
-			System.out.println("NOT IMPLEMENTED: CustomizeBreakpointProcessor.refocus()"); // NOI18N
+                    // do nothing
 		}
 
 		// interface PropertyChangeListener

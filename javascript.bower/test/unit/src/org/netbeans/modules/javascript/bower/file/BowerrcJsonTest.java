@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.apt.support.spi;
+package org.netbeans.modules.javascript.bower.file;
 
-import org.netbeans.modules.cnd.apt.support.APTToken;
+import java.io.File;
+import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileUtil;
 
-/**
- * When indexing a file, determines, which tokens to index and how.
- * Initial need is Tuxedo, which needs to search for functions in tpcall() parameter strings.
- * Later use could be: search in comments
- * @author vkvashin
- */
-public interface APTIndexFilter {
-    /**
-     * Is called for each token of a file in order to determine
-     * whether to index it and get text to put into index.
-     * @param token
-     * @return if non-null, the returned text is put into index
-     */
-    CharSequence getIndexText(APTToken token);
+public class BowerrcJsonTest extends NbTestCase {
+
+    public BowerrcJsonTest(String name) {
+        super(name);
+    }
+
+    public void testBowerComponentsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "bowerrc-bower-components");
+        assertTrue(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), BowerrcJson.DEFAULT_BOWER_COMPONENTS_DIR), bowerrcJson.getBowerComponentsDir());
+    }
+
+    public void testLibsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "bowerrc-libs");
+        assertTrue(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), "public_html/libs"), bowerrcJson.getBowerComponentsDir());
+    }
+
+    public void testDefaultBowerComponentsDir() {
+        BowerrcJson bowerrcJson = new BowerrcJson(FileUtil.toFileObject(getDataDir()), "nonexisting-bowerrc");
+        assertFalse(bowerrcJson.getFile().getAbsolutePath(), bowerrcJson.exists());
+        assertEquals(new File(getDataDir(), BowerrcJson.DEFAULT_BOWER_COMPONENTS_DIR), bowerrcJson.getBowerComponentsDir());
+    }
+
 }
