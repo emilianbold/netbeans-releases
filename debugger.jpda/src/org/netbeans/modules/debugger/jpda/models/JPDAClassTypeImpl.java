@@ -59,7 +59,9 @@ import com.sun.jdi.Value;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -116,14 +118,17 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return classType;
     }
 
+    @Override
     public String getName() {
         return classType.name();
     }
 
+    @Override
     public String getSourceName() throws AbsentInformationException {
         return classType.sourceName();
     }
 
+    @Override
     public ClassVariable classObject() {
         ClassObjectReference co;
         try {
@@ -140,6 +145,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return new ClassVariableImpl(debugger, co, "");
     }
     
+    @Override
     public ObjectVariable getClassLoader() {
         ClassLoaderReference cl;
         try {
@@ -154,6 +160,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return new AbstractObjectVariable(debugger, cl, "Loader "+getName());
     }
     
+    @Override
     public Super getSuperClass() {
         if (classType instanceof ClassType) {
             try {
@@ -173,16 +180,11 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         }
     }
     
+    @Override
     public List<JPDAClassType> getSubClasses() {
         if (classType instanceof ClassType) {
             List<ClassType> subclasses = ClassTypeWrapper.subclasses0((ClassType) classType);
-            if (subclasses.size() > 0) {
-                List<JPDAClassType> subClasses = new ArrayList(subclasses.size());
-                for (ClassType subclass : subclasses) {
-                    subClasses.add(debugger.getClassType(subclass));
-                }
-                return Collections.unmodifiableList(subClasses);
-            }
+            return getTypes(subclasses);
         }
         if (classType instanceof InterfaceType) {
             List<InterfaceType> subinterfaces = InterfaceTypeWrapper.subinterfaces0((InterfaceType) classType);
@@ -203,6 +205,73 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return Collections.EMPTY_LIST;
     }
 
+    @Override
+    public List<JPDAClassType> getAllInterfaces() {
+        if (classType instanceof ClassType) {
+            try {
+                List<InterfaceType> allInterfaces = ClassTypeWrapper.allInterfaces0((ClassType) classType);
+                return getTypes(allInterfaces);
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                // Nothing to return
+            }
+        } else if (classType instanceof InterfaceType) {
+            try {
+                List<InterfaceType> allInterfaces = new ArrayList<>();
+                List<InterfaceType> processedInterfaces = new ArrayList<>();
+                List<InterfaceType> directInterfaces = InterfaceTypeWrapper.superinterfaces0((InterfaceType) classType);
+                allInterfaces.addAll(directInterfaces);
+                while (processedInterfaces.size() < allInterfaces.size()) {
+                    InterfaceType it = allInterfaces.get(processedInterfaces.size());
+                    directInterfaces = InterfaceTypeWrapper.superinterfaces0(it);
+                    for (InterfaceType di : directInterfaces) {
+                        if (!allInterfaces.contains(di)) {
+                            allInterfaces.add(di);
+                        }
+                    }
+                    processedInterfaces.add(it);
+                }
+                return getTypes(allInterfaces);
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                // Nothing to return
+            }
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    public List<JPDAClassType> getDirectInterfaces() {
+        if (classType instanceof ClassType) {
+            try {
+                List<InterfaceType> directInterfaces = ClassTypeWrapper.interfaces0((ClassType) classType);
+                return getTypes(directInterfaces);
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                // Nothing to return
+            }
+        } else if (classType instanceof InterfaceType) {
+            try {
+                List<InterfaceType> directInterfaces = InterfaceTypeWrapper.superinterfaces0((InterfaceType) classType);
+                return getTypes(directInterfaces);
+            } catch (ClassNotPreparedExceptionWrapper ex) {
+                // Nothing to return
+            }
+        }
+        return Collections.EMPTY_LIST;
+    }
+
+    private List<JPDAClassType> getTypes(Collection<? extends ReferenceType> types) {
+        if (types.size() > 0) {
+            types = new LinkedHashSet<>(types); // To remove duplicities
+            List<JPDAClassType> interfaces = new ArrayList(types.size());
+            for (ReferenceType intrfc : types) {
+                interfaces.add(debugger.getClassType(intrfc));
+            }
+            return Collections.unmodifiableList(interfaces);
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+
+    @Override
     public boolean isInstanceOf(String className) {
         List<ReferenceType> classTypes;
         try {
@@ -226,6 +295,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return false;
     }
 
+    @Override
     public List<Field> staticFields() {
         List<com.sun.jdi.Field> allFieldsOrig;
         try {
@@ -352,6 +422,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         }
     }
     
+    @Override
     public long getInstanceCount() {//boolean refresh) {
             /*synchronized (this) {
                 if (!refresh && cachedInstanceCount > -1L) {
@@ -372,6 +443,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
             }*/
     }
     
+    @Override
     public List<ObjectVariable> getInstances(long maxInstances) {
             //assert !java.awt.EventQueue.isDispatchThread() : "Instances retrieving in AWT Event Queue!";
             final List<ObjectReference> instances;
@@ -385,17 +457,20 @@ public class JPDAClassTypeImpl implements JPDAClassType {
                 return Collections.emptyList();
             }
             return new AbstractList<ObjectVariable>() {
+                @Override
                 public ObjectVariable get(int i) {
                     ObjectReference obj = instances.get(i);
                     return new AbstractObjectVariable(debugger, obj, classType.name()+" instance "+i);
                 }
 
+                @Override
                 public int size() {
                     return instances.size();
                 }
             };
     }
     
+    @Override
     public boolean equals(Object o) {
         if (!(o instanceof JPDAClassTypeImpl)) {
             return false;
@@ -403,6 +478,7 @@ public class JPDAClassTypeImpl implements JPDAClassType {
         return classType.equals(((JPDAClassTypeImpl) o).classType);
     }
     
+    @Override
     public int hashCode() {
         return classType.hashCode() + 1000;
     }
