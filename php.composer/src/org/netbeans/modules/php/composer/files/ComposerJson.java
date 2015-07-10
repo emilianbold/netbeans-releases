@@ -63,7 +63,7 @@ public final class ComposerJson {
     private static final String FIELD_CONFIG = "config"; // NOI18N
     private static final String FIELD_VENDOR_DIR = "vendor-dir"; // NOI18N
     // default values
-    private static final String DEFAULT_VENDOR_DIR = "vendor"; // NOI18N
+    static final String DEFAULT_VENDOR_DIR = "vendor"; // NOI18N
 
     private final JsonFile composerJson;
 
