@@ -70,6 +70,7 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 import javax.swing.text.Document;
@@ -259,32 +260,48 @@ public final class JavaContextSupport {
 
     public static JavaTypeInfo createTypeInfo(CompilationController controller, Tree type) {
         if (type != null) { 
+            // TODO: handle TypeParameterElement nodes
             TreePath typePath = controller.getTrees().getPath(controller.getCompilationUnit(), type);
             switch (type.getKind()) {
                 case CLASS: {
-                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getSimpleName(), getQualifiedName(elem), 0);
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
                 }
 
                 case IDENTIFIER: {
-                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getSimpleName(), getQualifiedName(elem), 0);
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
                 }
 
                 case MEMBER_SELECT: {
-                    TypeElement elem = (TypeElement) controller.getTrees().getElement(typePath);
-                    return new JavaTypeInfo(elem.getSimpleName(), getQualifiedName(elem), 0);
-                }
-
-                case PRIMITIVE_TYPE: {
-                    CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
-                    return new JavaTypeInfo(primitiveName, Arrays.asList(new QualifiedNamePart(primitiveName, Kind.PRIMITIVE)), 0);
+                    Element elem = controller.getTrees().getElement(typePath);
+                    if (elem instanceof TypeElement) {
+                        TypeElement typeElem = (TypeElement) elem;
+                        return new JavaTypeInfo(typeElem.getSimpleName(), getQualifiedName(typeElem), 0);
+                    }
+                    break;
                 }
 
                 case ARRAY_TYPE: {
                     ArrayTypeTree arrayType = (ArrayTypeTree) type;
                     JavaTypeInfo inner = createTypeInfo(controller, arrayType.getType());
-                    return new JavaTypeInfo(inner.getName(), inner.getQualifiedName(), inner.getArrayDepth() + 1);
+                    if (inner != null) {
+                        return new JavaTypeInfo(inner.getName(), inner.getQualifiedName(), inner.getArrayDepth() + 1);
+                    }
+                    break;
+                }
+                
+                case PRIMITIVE_TYPE: {
+                    CharSequence primitiveName = convertKind(((PrimitiveTypeTree) type).getPrimitiveTypeKind());
+                    return new JavaTypeInfo(primitiveName, Arrays.asList(new QualifiedNamePart(primitiveName, Kind.PRIMITIVE)), 0);
                 }
 
                 default:
