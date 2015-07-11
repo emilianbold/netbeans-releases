@@ -494,7 +494,7 @@ tokens {
                 if (TraceFlags.DEBUG) {
                     e.printStackTrace(System.err);
                 } else {
-                    reportError(e);
+                    super.reportError(e);
                 }
 	    }
 	    errorCount++;
