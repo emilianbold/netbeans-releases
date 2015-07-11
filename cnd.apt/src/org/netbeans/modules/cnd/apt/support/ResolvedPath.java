@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.apt.support;
 import java.io.File;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -68,6 +69,7 @@ public final class ResolvedPath {
     public ResolvedPath(FileSystem fileSystem, CharSequence folder, CharSequence path, boolean isDefaultSearchPath, int index) {
         this.folder = folder;// should be already shared
         this.fileSystem = fileSystem;
+        CndPathUtilities.assertNoUrl(path);
         this.path = FilePathCache.getManager().getString(path);
         this.isDefaultSearchPath = isDefaultSearchPath;
         this.index = index;

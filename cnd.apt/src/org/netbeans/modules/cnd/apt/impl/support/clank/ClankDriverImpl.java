@@ -43,9 +43,6 @@ package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,8 +52,6 @@ import org.clang.tools.services.ClankPreprocessorServices;
 import org.clang.tools.services.ClankRunPreprocessorSettings;
 import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.clang.tools.services.support.PrintWriter_ostream;
-import org.clank.support.NativePointer;
-import org.clank.support.aliases.char$ptr;
 import org.llvm.adt.StringRef;
 import org.llvm.support.MemoryBuffer;
 import org.llvm.support.llvm;
@@ -68,8 +63,9 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStream;
 import org.netbeans.modules.cnd.apt.support.ClankDriver;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
-import org.netbeans.modules.cnd.apt.support.spi.APTUnsavedBuffersProvider;
+import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -117,7 +113,8 @@ public class ClankDriverImpl {
             final org.netbeans.modules.cnd.support.Interrupter interrupter) {
         try {
             // TODO: prepare buffers mapping
-            CharSequence path = buffer.getAbsolutePath();
+            // note that for local files no "file://" prefix is added
+            CharSequence path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath());
             if (CndUtils.isDebugMode()) {
                 byte[] bytes = toBytes(path, buffer.getCharBuffer());
                 assert bytes != null;
@@ -298,7 +295,7 @@ public class ClankDriverImpl {
 
     private static Map<StringRef, MemoryBuffer> getRemappedBuffers() {
         Map<StringRef, MemoryBuffer> result = Collections.<StringRef, MemoryBuffer>emptyMap();
-        APTUnsavedBuffersProvider provider = Lookup.getDefault().lookup(APTUnsavedBuffersProvider.class);
+        APTBufferProvider provider = Lookup.getDefault().lookup(APTBufferProvider.class);
         if (provider != null) {
             Collection<APTFileBuffer> buffers = provider.getUnsavedBuffers();
             if (buffers != null && !buffers.isEmpty()) {
