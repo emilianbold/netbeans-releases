@@ -895,6 +895,33 @@ These are mainly class and thread filters and hit counts.
         <issue number="246819"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>Add methods for retrieval of implemented and extended types.</summary>
+        <version major="3" minor="2"/>
+        <date day="10" month="7" year="2015"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            Methods that provide implemented and extended types were added to
+            <code>JPDAClassType</code> class. These are:
+            <ul>
+                <li>getSubClasses()</li>
+                <li>getAllInterfaces()</li>
+                <li>getDirectInterfaces()</li>
+                <li>isInstanceOf()</li>
+            </ul>
+            Associated with this is also an ability to retrieve the reflected type
+            from the class variable. Therefore, we add following method
+            to <code>ClassVariable</code>:
+            <ul>
+                <li>getReflectedType()</li>
+            </ul>
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="JPDAClassType" />
+        <class package="org.netbeans.api.debugger.jpda" name="ClassVariable" />
+        <issue number="253295"/>
+    </change>
 </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->
