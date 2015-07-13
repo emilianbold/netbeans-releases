@@ -71,6 +71,7 @@ import org.netbeans.modules.jumpto.common.CurrentSearch;
 import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.common.ItemRenderer;
 import org.netbeans.modules.jumpto.common.Models;
+import org.netbeans.modules.jumpto.common.Models.MutableListModel;
 import org.netbeans.modules.jumpto.common.Utils;
 import org.netbeans.spi.jumpto.support.AsyncDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -365,10 +366,15 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 Level.FINE,
                 "Worker for {0} - started {1} ms.", //NOI18N
                 new Object[]{text, System.currentTimeMillis() - createTime});
-            final List<SymbolDescriptor> fixed = new ArrayList<>(512);
+            final List<SymbolDescriptor> transientItems = new ArrayList<>(512);
             Collection<? extends SymbolProvider> providers = getTypeProviders();
             int lastSize = -1, lastProvCount = providers.size();
             final int[] newSize = new int[1];
+            final SymbolDescriptorAttrCopier attrCopier = new SymbolDescriptorAttrCopier();
+            final MutableListModel<SymbolDescriptor> model = Models.mutable(
+                    new SymbolComparator(),
+                    currentSearch.resetFilter(),
+                    attrCopier);
             while(true) {
                 final Result res = getSymbolNames(text, providers);
                 if (isCanceled) {
@@ -378,8 +384,9 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                         new Object[]{text, System.currentTimeMillis() - createTime});
                     return;
                 }
-                final List<SymbolDescriptor> mergedSymbols = mergeSymbols(
-                        fixed,
+                final List<? extends SymbolDescriptor> toRemove = new ArrayList<>(transientItems);
+                final List<? extends SymbolDescriptor> toAdd = mergeSymbols(
+                        transientItems,
                         res.symbols,
                         providers,
                         res.nonFinishedProviders,
@@ -390,12 +397,9 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                 if (done || resultChanged) {
                     lastSize = newSize[0];
                     lastProvCount = newProvCount;
-                    Collections.sort(mergedSymbols, new SymbolComparator());
-                    final SymbolDescriptorAttrCopier attrCopier = new SymbolDescriptorAttrCopier(done ? mergedSymbols : Collections.<SymbolDescriptor>emptyList());
-                    final ListModel fmodel = Models.<SymbolDescriptor>fromList(
-                            mergedSymbols,
-                            currentSearch.resetFilter(),
-                            attrCopier);
+                    model.remove(toRemove);
+                    model.add(toAdd);
+                    attrCopier.checkWrongCase(toRemove, toAdd);
                     if ( isCanceled ) {
                         LOG.log(
                             Level.FINE,
@@ -422,7 +426,7 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
                                         nameAndScope.second());
                             }
                             if (!isCanceled) {
-                                enableOK(panel.setModel(fmodel));
+                                enableOK(panel.setModel(model));
                             }
                         }
                     });
@@ -512,27 +516,21 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
         }
 
         @NonNull
-        private List<SymbolDescriptor> mergeSymbols(
-            @NonNull final List<SymbolDescriptor> fixedSymbols,
+        private List<? extends SymbolDescriptor> mergeSymbols(
+            @NonNull final List<SymbolDescriptor> transientSymbols,
             @NonNull final List<? extends SymbolDescriptor> newSymbols,
             @NonNull final Collection<? extends SymbolProvider> usedProviders,
             @NonNull final Collection<? extends SymbolProvider> nonFinishedProviders,
             @NonNull final int[] newSize) {
+            transientSymbols.clear();
             newSize[0] = 0;
-            final Set<SymbolProvider> finishedProviders = Collections.newSetFromMap(new IdentityHashMap<SymbolProvider,Boolean>());
-            finishedProviders.addAll(usedProviders);
-            finishedProviders.removeAll(nonFinishedProviders);
-            final List<SymbolDescriptor> merged = new ArrayList<>(fixedSymbols.size() + newSymbols.size());
             for (SymbolDescriptor newSymbol : newSymbols) {
-                if (finishedProviders.contains(SymbolProviderAccessor.DEFAULT.getSymbolProvider(newSymbol))) {
-                    fixedSymbols.add(newSymbol);
-                } else {
+                if (nonFinishedProviders.contains(SymbolProviderAccessor.DEFAULT.getSymbolProvider(newSymbol))) {
                     newSize[0]++;
-                    merged.add(newSymbol);
+                    transientSymbols.add(newSymbol);
                 }
             }
-            merged.addAll(fixedSymbols);
-            return merged;
+            return newSymbols;
         }
     }
 
@@ -540,14 +538,19 @@ final class ContentProviderImpl implements GoToPanelImpl.ContentProvider {
 
         private final Set</*@GuardedBy("hasWrongCase")*/AsyncDescriptor<SymbolDescriptor>> hasWrongCase;
 
-        SymbolDescriptorAttrCopier(Collection<? extends SymbolDescriptor> desc) {
-            final Set<AsyncDescriptor<SymbolDescriptor>> hwc = Collections.newSetFromMap(new IdentityHashMap<AsyncDescriptor<SymbolDescriptor>, Boolean>());
-            for (SymbolDescriptor d : desc) {
+        SymbolDescriptorAttrCopier() {
+            hasWrongCase = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<AsyncDescriptor<SymbolDescriptor>, Boolean>()));
+        }
+
+        void checkWrongCase(
+                @NonNull final Collection<? extends SymbolDescriptor> remove,
+                @NonNull final Collection<? extends SymbolDescriptor> add) {
+            hasWrongCase.removeAll(remove);
+            for (SymbolDescriptor d : add) {
                 if (d instanceof AsyncDescriptor && !((AsyncDescriptor<SymbolDescriptor>)d).hasCorrectCase()) {
-                    hwc.add((AsyncDescriptor<SymbolDescriptor>)d);
+                    reportWrongCase((AsyncDescriptor<SymbolDescriptor>)d);
                 }
             }
-            hasWrongCase = Collections.synchronizedSet(hwc);
         }
 
         void clearWrongCase() {
