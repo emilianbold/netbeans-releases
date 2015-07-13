@@ -102,8 +102,9 @@ public final class Models {
 
     public static <T> MutableListModel<T> mutable(
             @NullAllowed final Comparator<? super T> comparator,
-            @NullAllowed final Filter<? super T> filter) {
-        return new MutableListModelImpl(comparator, filter);
+            @NullAllowed final Filter<? super T> filter,
+            @NullAllowed final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier) {
+        return new MutableListModelImpl(comparator, filter, attrCopier);
     }
 
     @NonNull
@@ -175,7 +176,7 @@ public final class Models {
         @Override
         public void descriptorChanged(@NonNull final DescriptorChangeEvent<T> event) {
             final T source  = (T) event.getSource();
-            final Collection<? extends T> items = copyAttrs(source, filter(event.getReplacement()));
+            final Collection<? extends T> items = copyAttrs(attrCopier, source, filter(this.filter, event.getReplacement()));
             ((AsyncDescriptor<T>)source).removeDescriptorChangeListener(this);
             final Runnable r = new Runnable() {
                 @Override
@@ -258,62 +259,6 @@ public final class Models {
                     }
                 });
             }
-        }
-
-        @SuppressWarnings("unchecked")
-        @NullUnknown
-        private T head(@NonNull final Collection<? extends T> c) {
-            if (c instanceof List<?>) {
-                return ((List<? extends T>) c).get(0);
-            } else {
-                return c.iterator().next();
-            }
-        }
-
-        @SuppressWarnings("unchecked")
-        @NonNull
-        private Collection<? extends T> tail(@NonNull final Collection<? extends T> c) {
-            if (c instanceof List<?>) {
-                return ((List<? extends T>)c).subList(1, c.size());
-            } else {
-                final List<T> res = new ArrayList<>(c.size()-1);
-                boolean add = false;
-                for (T item : c) {
-                    if (add) {
-                        res.add(item);
-                    } else {
-                        add = true;
-                    }
-                }
-                return res;
-            }
-        }
-
-        @NonNull
-        private Collection<? extends T> copyAttrs(
-                @NonNull final T source,
-                @NonNull final Collection<? extends T> c) {
-            if (attrCopier != null) {
-                for (T item : c) {
-                    final T res = attrCopier.create(Pair.of(source, item));
-                    assert res == item;
-                }
-            }
-            return c;
-        }
-
-        @NonNull
-        private Collection<? extends T> filter(@NonNull final Collection<? extends T> c) {
-            if (filter == null) {
-                return c;
-            }
-            final Collection<T> res = new ArrayList<>(c.size());
-            for (T item : c) {
-                if (filter.accept(item)) {
-                    res.add(item);
-                }
-            }
-            return res;
         }
     }
 
@@ -425,18 +370,21 @@ public final class Models {
         }
     }
 
-    private static final class MutableListModelImpl<T> extends AbstractListModel<T> implements MutableListModel<T>, ChangeListener {
+    private static final class MutableListModelImpl<T> extends AbstractListModel<T> implements MutableListModel<T>, ChangeListener, DescriptorChangeListener<T> {
 
         private final Comparator<T> comparator;
         private final Filter<T> filter;
+        private final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier;
         private List<T> items;
         private List<T> included;
 
         MutableListModelImpl(
                 @NullAllowed final Comparator<T> comparator,
-                @NullAllowed final Filter<T> filter) {
+                @NullAllowed final Filter<T> filter,
+                @NullAllowed final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier) {
             this.comparator = comparator;
             this.filter = filter;
+            this.attrCopier = attrCopier;
             items = included = Collections.<T>emptyList();
             if (this.comparator instanceof StateFullComparator) {
                 ((StateFullComparator)this.comparator).addChangeListener(this);
@@ -460,6 +408,11 @@ public final class Models {
 
         @Override
         public void add(Collection<? extends T> values) {
+            for (T value : values) {
+                if (value instanceof AsyncDescriptor) {
+                    ((AsyncDescriptor)value).addDescriptorChangeListener(this);
+                }
+            }
             boolean success;
             do {
                 final Pair<List<T>,List<T>> data = getData();
@@ -473,6 +426,11 @@ public final class Models {
 
         @Override
         public void remove(Collection<? extends T> values) {
+            for (T value : values) {
+                if (value instanceof AsyncDescriptor) {
+                    ((AsyncDescriptor)value).removeDescriptorChangeListener(this);
+                }
+            }
             boolean success;
             do {
                 final Pair<List<T>,List<T>> data = getData();
@@ -488,6 +446,67 @@ public final class Models {
                 add(Collections.<T>emptyList());
             } else if (source == this.filter) {
                 filterData();
+            }
+        }
+
+        @Override
+        public void descriptorChanged(@NonNull final DescriptorChangeEvent<T> event) {
+            final T source  = (T) event.getSource();
+            final Collection<? extends T> replacement = copyAttrs(attrCopier, source, filter(this.filter, event.getReplacement()));
+            ((AsyncDescriptor<T>)source).removeDescriptorChangeListener(this);
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    int listIndex = items.indexOf(source);
+                    int includedIndex = included.indexOf(source);
+                    if (listIndex >= 0) {
+                        switch (replacement.size()) {
+                            case 0:
+                            {
+                                items.remove(listIndex);
+                                if (includedIndex >= 0) {
+                                    if (included != items) {
+                                        included.remove(includedIndex);
+                                    }
+                                    fireIntervalRemoved(MutableListModelImpl.this, includedIndex, includedIndex);
+                                }
+                                break;
+                            }
+                            case 1:
+                            {
+                                final T item = head(replacement);
+                                items.set(listIndex, item);
+                                if (includedIndex >= 0) {
+                                    if (included != items) {
+                                        included.set(includedIndex, item);
+                                    }
+                                    fireContentsChanged(MutableListModelImpl.this, includedIndex, includedIndex);
+                                }
+                                break;
+                            }
+                            default:
+                            {
+                                final T head = head(replacement);
+                                final Collection<? extends T> tail = tail(replacement);
+                                items.set(listIndex, head);
+                                items.addAll(listIndex+1, tail);
+                                if (includedIndex >= 0) {
+                                    if (included != items) {
+                                        included.set(includedIndex, head);
+                                        included.addAll(includedIndex+1, tail);
+                                    }
+                                    fireContentsChanged(MutableListModelImpl.this, includedIndex, includedIndex);
+                                    fireIntervalAdded(MutableListModelImpl.this, includedIndex+1, includedIndex+tail.size());
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                SwingUtilities.invokeLater(r);
             }
         }
 
@@ -589,6 +608,67 @@ public final class Models {
         @Override
         public void stateChanged(@NonNull final ChangeEvent e) {
             changeSupport.fireChange();
+        }
+    }
+
+    // Private helpers
+
+    @NonNull
+    private static <T> Collection<? extends T> filter(
+            @NullAllowed final Filter<? super T> filter,
+            @NonNull final Collection<? extends T> c) {
+        if (filter == null) {
+            return c;
+        }
+        final Collection<T> res = new ArrayList<>(c.size());
+        for (T item : c) {
+            if (filter.accept(item)) {
+                res.add(item);
+            }
+        }
+        return res;
+    }
+
+    @NonNull
+    private static <T> Collection<? extends T> copyAttrs(
+            @NullAllowed final Factory<? extends T, Pair<? extends T, ? extends T>> attrCopier,
+            @NonNull final T source,
+            @NonNull final Collection<? extends T> c) {
+        if (attrCopier != null) {
+            for (T item : c) {
+                final T res = attrCopier.create(Pair.of(source, item));
+                assert res == item;
+            }
+        }
+        return c;
+    }
+
+    @SuppressWarnings("unchecked")
+    @NullUnknown
+    private static <T> T head(@NonNull final Collection<? extends T> c) {
+        if (c instanceof List<?>) {
+            return ((List<? extends T>) c).get(0);
+        } else {
+            return c.iterator().next();
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @NonNull
+    private static <T> Collection<? extends T> tail(@NonNull final Collection<? extends T> c) {
+        if (c instanceof List<?>) {
+            return ((List<? extends T>)c).subList(1, c.size());
+        } else {
+            final List<T> res = new ArrayList<>(c.size()-1);
+            boolean add = false;
+            for (T item : c) {
+                if (add) {
+                    res.add(item);
+                } else {
+                    add = true;
+                }
+            }
+            return res;
         }
     }
 
