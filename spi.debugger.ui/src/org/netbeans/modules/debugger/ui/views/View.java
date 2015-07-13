@@ -82,6 +82,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     protected transient String propertiesHelpID;
     private transient String displayNameResource;
     private transient String toolTipResource;
+    private transient boolean isComponentShowing;
     
     protected View (String icon, String name, String helpID, String propertiesHelpID,
                   String displayNameResource, String toolTipResource) {
@@ -102,6 +103,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
 
     @Override
     protected void componentShowing () {
+        isComponentShowing = true;
         super.componentShowing ();
         if (viewModelListener != null) {
             viewModelListener.setUp();
@@ -154,6 +156,7 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     
     @Override
     protected void componentHidden () {
+        isComponentShowing = false;
         super.componentHidden ();
         if (viewModelListener != null) {
             viewModelListener.destroy ();
@@ -212,9 +215,16 @@ public class View extends TopComponent implements org.openide.util.HelpCtx.Provi
     public Object writeReplace() {
         return new ResolvableHelper(name);
     }
-     
-    
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        if (isComponentShowing && viewModelListener != null) {
+            viewModelListener.setUp();
+        }
+    }
+
+
     /**
      * The serializing class.
      */

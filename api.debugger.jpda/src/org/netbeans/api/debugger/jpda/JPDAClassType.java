@@ -89,8 +89,43 @@ public interface JPDAClassType extends VariableType {
      */
     Super getSuperClass();
     
-    /*List<JPDAClassType> getSubClasses();*/
-    
+    /**
+     * Get the currently loaded subclasses, when this type represents a class,
+     * or loaded subinterfaces and implementors of this interface, if this type
+     * represents an interface.
+     * @return a list of direct classes and interfaces, that extend this type.
+     *         Returns an empty array when there are no such types.
+     * @since 3.2
+     */
+    List<JPDAClassType> getSubClasses();
+
+    /**
+     * Get all interfaces that are directly or indirectly implemented by this class,
+     * or extended by this interface.
+     * @return a list of all implemented or extended interfaces.
+     *         Returns an empty array when there are no such interfaces.
+     * @since 3.2
+     */
+    List<JPDAClassType> getAllInterfaces();
+
+    /**
+     * Get the interfaces that are directly implemented by this class,
+     * or directly extended by this interface.
+     * @return a list of all implemented or extended interfaces.
+     *         Returns an empty array when there are no such interfaces.
+     * @since 3.2
+     */
+    List<JPDAClassType> getDirectInterfaces();
+
+    /**
+     * Check if this type in an instance of a given class name.
+     * @param className the class name
+     * @return <code>true</code> when this type is an instance of the given class
+     * name, <code>false</code> otherwise.
+     * @since 3.2
+     */
+    boolean isInstanceOf(String className);
+
     /**
      * Provide a list of static fields declared in this type.
      * @return the list of {@link org.netbeans.api.debugger.jpda.Field} objects
