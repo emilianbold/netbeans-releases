@@ -45,6 +45,8 @@
 package org.netbeans.modules.java.navigation.base;
 
 import java.io.CharConversionException;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
@@ -106,5 +108,33 @@ public class Utils {
             comp.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         }
         return comp;
+    }
+
+    @CheckForNull
+    public static <T extends Element> ElementHandle<T> createElementHandle(@NonNull final T element) {
+        if (element.getKind() == ElementKind.OTHER) {
+            return null;
+        }
+        try {
+            return ElementHandle.create(element);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    public static boolean signatureEquals(
+        @NonNull final ElementHandle<Element> handle,
+        @NonNull final Element element) {
+        if (handle == null) {
+            return false;
+        }
+        if (element.getKind() == ElementKind.OTHER) {
+            return false;
+        }
+        try {
+            return handle.signatureEquals(element);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
