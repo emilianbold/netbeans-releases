@@ -1,6 +1,6 @@
-#changeset:   15278:ccba1be92f58
+#changeset:   15281:e6c741fdece6
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Mon Jul 13 15:40:46 2015 +0300
-#summary:     Fixed duplicated symbol in ADT/Support (or it was done intentionally?)
-66D3E54F78F4C304E441E34666C2B9B07230F161 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Mon Jul 13 20:02:39 2015 +0300
+#summary:     assert about EOD tokens
+93C7FB153337A7638E255CC9EBCADFABC8C29855 clank_0.3.6.zip
