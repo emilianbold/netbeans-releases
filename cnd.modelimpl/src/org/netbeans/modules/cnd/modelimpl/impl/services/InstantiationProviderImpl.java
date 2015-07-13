@@ -820,7 +820,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                 DefaultDeduceTemplateTypeStrategy calcStrategy = new DefaultDeduceTemplateTypeStrategy(DeduceTemplateTypeStrategy.Error.MatchQualsError);
                 CsmType deduced[] = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                 if (deduced != null && deduced.length > 0) {
-                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                    results.addAll(Arrays.asList(deduced));
                     if (specTemplateParam.isVarArgs()
                             && instParamIter.hasNext()
                             && CsmBaseUtilities.isValid(specParamType.getClassifier())
@@ -837,7 +837,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                             if (CsmKindUtilities.isTypeBasedSpecalizationParameter(instParam) && instType != null) {
                                 deduced = deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy);
                                 if (deduced != null && deduced.length > 0) {
-                                    results.addAll(Arrays.asList(deduceTemplateType(specTemplateParam, specParamType, instType, calcStrategy)));
+                                    results.addAll(Arrays.asList(deduced));
                                 }
                             } else {
                                 break;
