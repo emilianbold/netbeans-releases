@@ -1,6 +1,6 @@
-#changeset:   15267:b104ccfa0d62
+#changeset:   15278:ccba1be92f58
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Sat Jul 11 01:19:32 2015 +0300
-#summary:     new preprocessor: mixed remote support
-D47651221E90B9F494FDC939C2EF9A574048237A clank_0.3.6.zip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Mon Jul 13 15:40:46 2015 +0300
+#summary:     Fixed duplicated symbol in ADT/Support (or it was done intentionally?)
+66D3E54F78F4C304E441E34666C2B9B07230F161 clank_0.3.6.zip
