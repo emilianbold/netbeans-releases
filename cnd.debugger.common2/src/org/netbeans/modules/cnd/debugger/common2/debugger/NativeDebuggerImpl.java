@@ -62,6 +62,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 
@@ -414,6 +415,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
      *   for us so all the accomodation and worries about that are gone.
      */
     protected final List<StateListener> actions = new LinkedList<StateListener>();
+    protected final ReentrantReadWriteLock actionsLock = new ReentrantReadWriteLock();
     protected javax.swing.Timer runTimer;		// see stateSetRunning()
     protected int runDelay = -1;	// -1 == first time through
 
@@ -431,11 +433,21 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 
     @Override
     public void addStateListener(StateListener sl) {
-        actions.add(sl);
+        actionsLock.writeLock().lock();
+        try {
+            actions.add(sl);
+        } finally {
+            actionsLock.writeLock().unlock();
+        }
     }
 
     protected void removeStateListener(StateListener sl) {
-        actions.remove(sl);
+        actionsLock.writeLock().lock();
+        try {
+            actions.remove(sl);
+        } finally {
+            actionsLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -473,8 +485,13 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
             @Override
             public void run() {
                 // update explicitly registered actions
-                for (StateListener action : actions) {
-                    action.update(state);
+                actionsLock.readLock().lock();
+                try {
+                    for (StateListener action : actions) {
+                        action.update(state);
+                    }
+                } finally {
+                    actionsLock.readLock().unlock();
                 }
 
                 // update actions managed by ActionEnabler
