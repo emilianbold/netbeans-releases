@@ -55,6 +55,8 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -197,12 +199,12 @@ public final class UndoManager {
         LinkedList<UndoItem> undoitems = undoList.get(session);
         if (undoitems != null) {
             final LinkedList<UndoItem> undo = undoitems;
-            if (!autoConfirm && JOptionPane.showConfirmDialog(
-                    WindowManager.getDefault().getMainWindow(),
-                    NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription(session)),
-                    NbBundle.getMessage(UndoManager.class, "MSG_ConfirmUndo"),
-                    JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
-                throw new CannotUndoException();
+            if(!autoConfirm) {
+                NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription(session)), NbBundle.getMessage(UndoManager.class, "MSG_ConfirmUndo"), NotifyDescriptor.YES_NO_OPTION);
+                Object result = DialogDisplayer.getDefault().notify(nd);
+                if (!NotifyDescriptor.OK_OPTION.equals(result)) {
+                    throw new CannotUndoException();
+                }
             }
 
             Runnable run = new Runnable() {
