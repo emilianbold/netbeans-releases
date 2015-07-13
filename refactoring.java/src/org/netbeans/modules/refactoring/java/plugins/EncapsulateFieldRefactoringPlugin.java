@@ -940,9 +940,19 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
 
         private ExpressionTree createMemberSelection(ExpressionTree node, String name) {
             ExpressionTree selector;
-            if (node.getKind() == Tree.Kind.MEMBER_SELECT) {
-                MemberSelectTree select = (MemberSelectTree) node;
-                selector = make.MemberSelect(select.getExpression(), name);
+            ExpressionTree expr = node;
+            boolean addParens = false;
+            while (expr.getKind() == Tree.Kind.PARENTHESIZED) {
+                ParenthesizedTree parens = (ParenthesizedTree) expr;
+                expr = parens.getExpression();
+                addParens = true;
+            }
+            if (expr.getKind() == Tree.Kind.MEMBER_SELECT) {
+                ExpressionTree select = ((MemberSelectTree) expr).getExpression();
+                if (addParens) {
+                    select = make.Parenthesized(select);
+                }
+                selector = make.MemberSelect(select, name);
             } else {
                 selector = make.Identifier(name);
             }
