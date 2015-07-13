@@ -203,9 +203,18 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             type = type.substring(0, type.length() -3);
                             varargs = true;
                         }
-                        ExpressionTree ident = make.QualIdent(type);
+                        Tree ident;
+                        if(type.indexOf('<') > -1 && type.charAt(type.length()-1) == '>') {
+                            List<ExpressionTree> tas = new LinkedList<>();
+                            for (String ta : type.substring(type.indexOf('<') + 1, type.length() - 1).split(",")) {
+                                tas.add(make.QualIdent(ta));
+                            }
+                            ident = make.ParameterizedType(make.QualIdent(type.substring(0, type.indexOf('<'))), tas);
+                        } else {
+                            ident = make.QualIdent(type);
+                        }
                         if(varargs) {
-                            ident = (ExpressionTree) make.ArrayType(ident);
+                            ident = make.ArrayType(ident);
                         }
                         members.add(make.Variable(
                                 make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
@@ -249,7 +258,16 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             type = type.substring(0, type.length() -3);
                             varargs = true;
                         }
-                        ExpressionTree ident = make.QualIdent(type);
+                        Tree ident;
+                        if(type.indexOf('<') > -1 && type.charAt(type.length()-1) == '>') {
+                            List<ExpressionTree> tas = new LinkedList<>();
+                            for (String ta : type.substring(type.indexOf('<') + 1, type.length() - 1).split(",")) {
+                                tas.add(make.QualIdent(ta));
+                            }
+                            ident = make.ParameterizedType(make.QualIdent(type.substring(0, type.indexOf('<'))), tas);
+                        } else {
+                            ident = make.QualIdent(type);
+                        }
                         members.add(make.Method(
                                 make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                 set.getName(),

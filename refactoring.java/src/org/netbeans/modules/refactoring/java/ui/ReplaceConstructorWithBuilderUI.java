@@ -101,7 +101,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
         for (int i = 0; i < parameters.size(); i++) {
             VariableTree var = parameters.get(i);
             paramaterNames.add(var.getName().toString());
-            String type = var.getType().toString();
+            String type = contructorElement.getParameters().get(i).asType().toString();
             if(varargs && i+1 == parameters.size()) {
                 if(var.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
                     ArrayTypeTree att = (ArrayTypeTree) var.getType();
