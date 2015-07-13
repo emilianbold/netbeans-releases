@@ -41,21 +41,13 @@
  */
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
 import org.clang.basic.vfs.FileSystem;
 import org.clang.tools.services.ClankCompilationDataBase;
 import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 
 /**
  *
@@ -63,36 +55,65 @@ import org.openide.util.Exceptions;
  */
 public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
     
+    public static final String RFS_PREFIX = "rfs:"; //NOI18N
 
-    ConcurrentHashMap<org.openide.filesystems.FileSystem, ClankFileObjectBasedFileSystem> fileSystems 
-            = new ConcurrentHashMap<org.openide.filesystems.FileSystem, ClankFileObjectBasedFileSystem>();
     
     @Override
     public IntrusiveRefCntPtr<FileSystem> getFileSystemImpl(ClankCompilationDataBase.Entry entry) {
-        Collection<CharSequence> compiledFiles = entry.getCompiledFiles();
-        if (compiledFiles != null && !compiledFiles.isEmpty()) {
-            CharSequence url = compiledFiles.iterator().next();
-            FileObject fo = CndFileSystemProvider.urlToFileObject(url);
-            org.openide.filesystems.FileSystem nbFS;
-            try {
-                nbFS = fo.getFileSystem();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-                return null;
-            }
-            if (CndFileSystemProvider.isRemote(nbFS) || APTTraceFlags.ALWAYS_USE_NB_FS) {
-                ClankFileObjectBasedFileSystem clankFS = fileSystems.get(nbFS);
-                if (clankFS == null) {
-                    clankFS = new ClankFileObjectBasedFileSystem(nbFS);
-                    ClankFileObjectBasedFileSystem prevClankFS = fileSystems.putIfAbsent(nbFS, clankFS);
-                    if (prevClankFS != null) {
-                        clankFS.destroy();
-                        clankFS = prevClankFS;
-                    }
-                }
-                return new IntrusiveRefCntPtr<FileSystem>(clankFS);
+        boolean useFS;
+        if (APTTraceFlags.ALWAYS_USE_NB_FS) {
+            useFS = true;
+        } else {
+            if (isFullRemote(entry)) {
+                useFS = true;
+            } else if (isMixedOrSimpleRemote(entry)) {
+                useFS = true;
+            } else {
+                useFS = false;
             }
         }
-        return null;
-    }    
+        return useFS ? new IntrusiveRefCntPtr<FileSystem>(ClankFileObjectBasedFileSystem.getInstance()) : null;
+    }
+
+    private boolean isMixedOrSimpleRemote(ClankCompilationDataBase.Entry entry) {
+        for (CharSequence sysIncludePath : entry.getPredefinedSystemIncludePaths()) {
+            if (CharSequenceUtils.startsWith(sysIncludePath, RFS_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isFullRemote(ClankCompilationDataBase.Entry entry) {
+        Collection<CharSequence> compiledFiles = entry.getCompiledFiles();
+        if (compiledFiles != null && !compiledFiles.isEmpty()) {
+            if (CharSequenceUtils.startsWith(compiledFiles.iterator().next(), RFS_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static CharSequence getPathFromUrl(CharSequence path) {
+        if (CharSequenceUtils.startsWith(path, RFS_PREFIX)) {
+            // examples:
+            // rfs://user@host:22/usr/include
+            // rfs:user@host:22/usr/include
+            // rfs://user@host:22
+            // rfs:user@host:22
+            int pos = CharSequenceUtils.indexOf(path, ":", RFS_PREFIX.length());
+            if (pos > 0) {
+                pos++;
+                while (pos < path.length() && Character.isDigit(path.charAt(pos))) {
+                    pos++;
+                }
+                return path.subSequence(pos, path.length());
+            } else {
+                throw new IllegalArgumentException("The path " + path + " starts with " + RFS_PREFIX + //NOI18N
+                        " but does not contain a colon after it"); //NOI18N                
+            }
+        } else {
+            return path;
+        }
+    }
 }

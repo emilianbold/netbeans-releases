@@ -50,7 +50,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import org.clang.basic.FileEntry;
 import org.clang.basic.IdentifierInfo;
-import org.clang.basic.SourceLocation;
 import org.clang.basic.SourceManager;
 import org.clang.basic.SrcMgr;
 import org.clang.lex.Preprocessor;
@@ -71,6 +70,7 @@ import org.llvm.adt.aliases.SmallVectorChar;
 import org.llvm.adt.aliases.SmallVectorImplChar;
 import org.llvm.support.raw_ostream;
 import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.clank.ClankDriverImpl.ArrayBasedAPTTokenStream;
 import org.netbeans.modules.cnd.apt.support.APTFileSearch;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
@@ -83,11 +83,17 @@ import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -177,20 +183,35 @@ public final class ClankPPCallback extends FileInfoCallback {
             // unresolved #include
             return null;
         }
-        // FIXME: get correct file system
-        FileSystem fs = includeHandler.getStartEntry().getFileSystem();
-        String strFileEntryPath = Casts.toCharSequence(fileEntry.getName()).toString();
+        FileSystem fs;
+        String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+        if (searchPath.startsWith(ClankFileSystemProviderImpl.RFS_PREFIX)) {            
+            FileObject fo = CndFileSystemProvider.urlToFileObject(searchPath); //TODO: optimize!
+            searchPath = fo.getPath();
+            try {
+                fs = fo.getFileSystem();
+            } catch (FileStateInvalidException ex) {
+                fs = CndFileSystemProvider.urlToFileSystem(searchPath);
+                Exceptions.printStackTrace(ex); // should never be the case
+            }
+        } else {
+            fs = includeHandler.getStartEntry().getFileSystem();
+        }
+        char$ptr fleEntryName = fileEntry.getName();
+        String strFileEntryPath = Casts.toCharSequence(fleEntryName).toString();
         strFileEntryPath = CndFileUtils.normalizeAbsolutePath(fs, strFileEntryPath);
         if (directive.getSearchPath().empty()) {
             // was resolved as absolute path (i.e -include directive)
-            String parent = CndPathUtilities.getDirName(strFileEntryPath);
+            CharSequence parent = CndPathUtilities.getDirName(strFileEntryPath);
+            parent = ClankFileSystemProviderImpl.getPathFromUrl(parent);
             return new ResolvedPath(fs, FilePathCache.getManager().getString(parent), strFileEntryPath, false, 0);
         } else {
-            CharSequence pathCharSeq = CharSequences.create(strFileEntryPath);
-            SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);
-            String searchPath = Casts.toCharSequence(directive.getSearchPath().data(), directive.getSearchPath().size()).toString();
+            CharSequence pathCharSeq = ClankFileSystemProviderImpl.getPathFromUrl(strFileEntryPath);
+            pathCharSeq = CharSequences.create(pathCharSeq);
+            SrcMgr.CharacteristicKind fileDirFlavor = PP.getHeaderSearchInfo().getFileDirFlavor(fileEntry);            
             assert CndPathUtilities.isPathAbsolute(searchPath) : "expected to be abs path [" + searchPath + "]";
             CharSequence folder = CndFileUtils.normalizeAbsolutePath(fs, searchPath);
+            folder = ClankFileSystemProviderImpl.getPathFromUrl(folder);
             folder = FilePathCache.getManager().getString(CharSequences.create(folder));
             // FIXME: for now consider user path as isDefaultSearchPath
             boolean isDefaultSearchPath = (fileDirFlavor == SrcMgr.CharacteristicKind.C_User);
@@ -235,8 +256,18 @@ public final class ClankPPCallback extends FileInfoCallback {
             ClankFileInfoWrapper enteredToWrapper = new ClankFileInfoWrapper(enteredTo, ppHandler);
             // main file is not pushed as include, all others are
             if (includeStack.isEmpty()) {
-                assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
-                        includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+//                assert includeHandler.getStartEntry().getStartFile().toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
+//                        includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+                if (CndUtils.isDebugMode()) {
+                    CharSequence startUrl;
+                    if (APTTraceFlags.USE_CLANK) {
+                        startUrl = CndFileSystemProvider.toUrl(includeHandler.getStartEntry().getFileSystem(), includeHandler.getStartEntry().getStartFile());
+                    } else {
+                        startUrl = includeHandler.getStartEntry().getStartFile();
+                    }
+                    assert startUrl.toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
+                            includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+                }
                 assert includeHandler.getInclStackIndex() == 0 : " expected zero: " + includeHandler.getInclStackIndex();
                 assert enteredToWrapper.getFileIndex() == 0 : " expected zero: " + enteredToWrapper.getFileIndex();
                 enteredFromWrapper = null;
@@ -409,7 +440,10 @@ public final class ClankPPCallback extends FileInfoCallback {
             macroNameOffset = clankDelegate.getMacroNameOffset();
             FileInfo fileOwner = clankDelegate.getFileOwner();
             if (fileOwner.isFile()) {
-                this.fileOwnerName = toJavaString(fileOwner.getName());
+                this.fileOwnerName = ClankFileSystemProviderImpl.getPathFromUrl(toJavaString(fileOwner.getName()));
+                if(CharSequenceUtils.startsWith(this.fileOwnerName, ClankFileSystemProviderImpl.RFS_PREFIX)) {
+                    Exceptions.printStackTrace(new IllegalArgumentException("File owner name should not contain protocol: " + this.fileOwnerName)); //NOI18N
+                }
             } else {
                 this.fileOwnerName = BUILD_IN_FILE;
             }
@@ -647,7 +681,7 @@ public final class ClankPPCallback extends FileInfoCallback {
 
         @Override
         public CharSequence getFilePath() {
-            return this.filePath;
+            return ClankFileSystemProviderImpl.getPathFromUrl(filePath);
         }
 
         @Override

@@ -1,6 +1,6 @@
-#changeset:   15261:9e2e4800729a
+#changeset:   15281:e6c741fdece6
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Jul 10 14:01:14 2015 +0300
-#summary:     adjust to changed CndTextIndexFilter
-38733D0432C0C5CBE3AF36465AB7DE2B6170E98D clank_0.3.6.zip
+#date:        Mon Jul 13 20:02:39 2015 +0300
+#summary:     assert about EOD tokens
+93C7FB153337A7638E255CC9EBCADFABC8C29855 clank_0.3.6.zip

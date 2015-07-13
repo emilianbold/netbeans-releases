@@ -43,11 +43,13 @@ package org.netbeans.modules.cnd.apt.support.spi;
 
 import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author vkvashin
  */
-public interface APTUnsavedBuffersProvider {
+public interface APTBufferProvider {
     Collection<APTFileBuffer> getUnsavedBuffers();
+    APTFileBuffer getOrCreateFileBuffer(FileObject fileObject);
 }
