@@ -170,6 +170,10 @@ public class GdbVersionPeculiarity {
         return platform == Platform.MacOSX_x86;
     }
     
+    public boolean isLocalsOutputUnusual() {
+        return platform == Platform.MacOSX_x86 && version <= 6.3;
+    }
+    
     public boolean isSyscallBreakpointsSupported() {
         return platform != Platform.MacOSX_x86;
     }
