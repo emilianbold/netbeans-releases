@@ -71,11 +71,15 @@ public class EditorContextBridge {
     }
     
     public static String getMostRecentFilePath() {
-        FileObject currentFile = contextDispatcher.getMostRecentFile();
+        FileObject currentFile = getMostRecentFileObject();
         if (currentFile != null) {
             return currentFile.getPath();
         }
         return "";
+    }
+
+    public static FileObject getMostRecentFileObject() {
+        return contextDispatcher.getMostRecentFile();
     }
 
     public static int getCurrentLineNumber() {
@@ -98,4 +102,5 @@ public class EditorContextBridge {
         contextDispatcher.addPropertyChangeListener(MIMENames.ASM_MIME_TYPE, l);
         contextDispatcher.addPropertyChangeListener(MIMENames.FORTRAN_MIME_TYPE, l);
     }
+
 }

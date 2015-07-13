@@ -42,17 +42,28 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.util.Collection;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
-import org.netbeans.modules.cnd.apt.support.spi.APTUnsavedBuffersProvider;
+import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.utils.FSPath;
+import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author vkvashin
  */
-@ServiceProvider(service = APTUnsavedBuffersProvider.class)
-public class UnsavedBuffersProviderImpl implements APTUnsavedBuffersProvider {
+@ServiceProvider(service = APTBufferProvider.class)
+public class APTBuffersProviderImpl implements APTBufferProvider {
     @Override
     public Collection<APTFileBuffer> getUnsavedBuffers() {
         return ModelSupport.instance().getUnsavedBuffers();
-    }    
+    }
+
+    @Override
+    public APTFileBuffer getOrCreateFileBuffer(FileObject fileObject) {
+        FileImpl csmFile = (FileImpl) ModelImpl.instance().findFile(FSPath.toFSPath(fileObject), false, false);
+        return (csmFile == null) ? ModelSupport.createFileBuffer(fileObject) : csmFile.getBuffer();
+    }
 }

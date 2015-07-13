@@ -49,6 +49,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
 
 import java.awt.*;
+import org.netbeans.api.visual.laf.LookFeel;
 import org.netbeans.api.visual.widget.ResourceTable;
 import org.netbeans.api.visual.widget.Widget;
 
@@ -82,7 +83,7 @@ public class DashedBorder implements Border {
             throw new IllegalArgumentException ("Invalid thickness: " + thickness);
         }
         this.thickness = thickness;
-        this.color = color != null ? color : Color.BLACK;
+        this.color = color != null ? color : LookFeel.createDefaultLookFeel().getForeground()/*Color.BLACK*/;
         stroke = new BasicStroke (thickness, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_MITER, dash, 0);
     }
     

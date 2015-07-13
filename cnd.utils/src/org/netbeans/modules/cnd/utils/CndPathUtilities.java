@@ -544,10 +544,18 @@ public class CndPathUtilities {
         return CndFileSystemProvider.isAbsolute(fs, path);
     }
 
+    public static void assertNoUrl(CharSequence path) {
+        if(CharSequenceUtils.startsWith(path, "rfs:") || CharSequenceUtils.startsWith(path, "file:")) { //NOI18N
+            CndUtils.assertTrue(false, "Path should not start with protocol: " + path); //NOI18N
+        }
+    }
+
     public static boolean isPathAbsolute(CharSequence path) {
         if (path == null || path.length() == 0) {
             return false;
-        } else if (path.charAt(0) == '/') {
+        }
+        assertNoUrl(path);
+        if (path.charAt(0) == '/') {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;

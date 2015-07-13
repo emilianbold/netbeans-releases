@@ -115,7 +115,13 @@ public class CndSessionChanger implements SessionBridge.SessionChanger{
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            ret = NativeDebuggerManager.get().currentDebugger().session().coreSession();
+            NativeDebugger currentDebugger = NativeDebuggerManager.get().currentDebugger();
+            if (currentDebugger != null) {
+                NativeSession nativeSession = currentDebugger.session();
+                if (nativeSession != null) {
+                    ret = nativeSession.coreSession();
+                }
+            }
         } else {
             NativeSession.map(ret).getDebugger().pause();
             NativeSession.map(ret).getDebugger().stepTo(funcName);

@@ -86,6 +86,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.picklist.DefaultPicklistModel;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
@@ -93,6 +95,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
@@ -158,8 +161,11 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	executableComboBox.setModel(new DefaultComboBoxModel(executablePickList.getElementsDisplayName()));
 	((JTextField)executableComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(validationWorker);
 
-        if (host != null) {
-            lastHostChoice = host;
+        if (lastHostChoice == null) {
+            ServerRecord defaultHost = ServerList.getDefaultRecord();
+            if (defaultHost != null) {
+                lastHostChoice = ExecutionEnvironmentFactory.toUniqueID(defaultHost.getExecutionEnvironment());
+            }
         }
 	initRemoteHost();
 	initEngine();
