@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -72,7 +73,7 @@ import org.openide.util.Exceptions;
 })
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
-    private final List<ArtifactListener> listeners = new ArrayList<>();
+    private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<>();
     private final Project project;
 
 
@@ -216,9 +217,7 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void addArtifactListener(ArtifactListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     /**
@@ -227,16 +226,12 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
      */
     @Override
     public void removeArtifactListener(ArtifactListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
+        listeners.remove(listener);
     }
 
     protected final void fireArtifactChange(Iterable<ArtifactListener.Artifact> artifacts) {
-        synchronized (listeners) {
-            for (ArtifactListener listener : listeners) {
-                listener.artifactsUpdated(artifacts);
-            }
+        for (ArtifactListener listener : listeners) {
+            listener.artifactsUpdated(artifacts);
         }
     }
 
