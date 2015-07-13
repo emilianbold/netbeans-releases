@@ -102,8 +102,11 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     private final FieldBreakpoint breakpoint;
     
     
-    public FieldBreakpointImpl (FieldBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
-        super (breakpoint, debugger, session);
+    FieldBreakpointImpl (FieldBreakpoint breakpoint,
+                         JPDADebuggerImpl debugger,
+                         Session session,
+                         SourceRootsCache sourceRootsCache) {
+        super (breakpoint, debugger, session, sourceRootsCache);
         this.breakpoint = breakpoint;
         setSourceRoot(""); // Just to setup source change listener
         set ();
