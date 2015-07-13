@@ -553,7 +553,9 @@ public class CndPathUtilities {
     public static boolean isPathAbsolute(CharSequence path) {
         if (path == null || path.length() == 0) {
             return false;
-        } else if (path.charAt(0) == '/') {
+        }
+        assertNoUrl(path);
+        if (path.charAt(0) == '/') {
             return true;
         } else if (path.charAt(0) == '\\') {
             return true;
