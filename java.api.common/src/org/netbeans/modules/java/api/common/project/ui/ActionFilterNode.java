@@ -44,6 +44,7 @@
 package org.netbeans.modules.java.api.common.project.ui;
 
 
+import java.beans.PropertyChangeEvent;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -93,9 +94,14 @@ import org.openide.actions.FindAction;
 import org.openide.actions.OpenAction;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -104,7 +110,7 @@ import org.openide.util.RequestProcessor;
  * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
  * class path roots.
  */
-final class ActionFilterNode extends FilterNode {
+final class ActionFilterNode extends FilterNode implements NodeListener {
 
     private static enum Mode {
         ROOT {
@@ -166,6 +172,7 @@ final class ActionFilterNode extends FilterNode {
     private static final RequestProcessor RP = new RequestProcessor(ActionFilterNode.class);
 
     private final Mode mode;
+    private final Children children;
     private Action[] actionCache;
 
     /**
@@ -287,13 +294,26 @@ final class ActionFilterNode extends FilterNode {
     }
 
     private ActionFilterNode (Node original, Mode mode) {
-        super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode, null));
+        super (original, Children.LEAF);
         this.mode = mode;
+        this.children = new ActionFilterChildren (original, mode, null);
+        initChildren();
     }
 
     private ActionFilterNode (Node original, Mode mode, FileObject root, Lookup lkp) {
-        super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode,root),lkp);
+        super (original, Children.LEAF, lkp);
         this.mode = mode;
+        this.children = new ActionFilterChildren (original, mode,root);
+        initChildren();
+    }
+
+    private void initChildren() {
+        Node node = getOriginal();
+        node.addNodeListener(WeakListeners.create(NodeListener.class, this, node));
+        final boolean leaf = node.isLeaf();
+        if (!leaf) {
+            setChildren(children);
+        }
     }
 
     @Override
@@ -323,6 +343,29 @@ final class ActionFilterNode extends FilterNode {
             }
         }
         return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (Node.PROP_LEAF.equals(evt.getPropertyName()) && children != getChildren()) {
+            setChildren(children);
+        }
+    }
+
+    @Override
+    public void childrenAdded(NodeMemberEvent ev) {
+    }
+
+    @Override
+    public void childrenRemoved(NodeMemberEvent ev) {
+    }
+
+    @Override
+    public void childrenReordered(NodeReorderEvent ev) {
+    }
+
+    @Override
+    public void nodeDestroyed(NodeEvent ev) {
     }
 
     private Action[] initActions () {
