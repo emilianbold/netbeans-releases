@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,7 +57,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
@@ -159,7 +159,9 @@ public class Hk2DatasourceManager implements DatasourceManager {
             Set<Datasource> dataSources = dataSourcesReader.getDataSourcesFromServer();
             // Return when data sources were retrieved successfully.
             if (dataSources != null) {
-                return dataSources;
+                // #250444 we have to convert JDBCResource back to SunDatasource
+                // to have it all the same type in collections
+                return translate(dataSources);
             }
         }
         // Fallback option to retrieve data sources from domain.xml
@@ -205,6 +207,14 @@ public class Hk2DatasourceManager implements DatasourceManager {
         } else {
             return new HashSet<>();
         }
+    }
+
+    private static Set<Datasource> translate(Collection<Datasource> sources) {
+        Set<Datasource> ret = new HashSet<>();
+        for (Datasource ds : sources) {
+            ret.add(new SunDatasource(ds.getJndiName(), ds.getUrl(), ds.getUsername(), ds.getPassword(), ds.getDriverClassName()));
+        }
+        return ret;
     }
 
     // ------------------------------------------------------------------------
