@@ -58,6 +58,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 
 class LineBreakpointPanel extends BreakpointPanel {
 
@@ -97,11 +101,17 @@ class LineBreakpointPanel extends BreakpointPanel {
 	addCommonComponents(2);
 
 	if (!customizing) {
-	    // Seed the bpt object
-            String fileName = EditorContextBridge.getMostRecentFilePath();
-            if (!fileName.trim().equals("")) {
+            // Seed the bpt object
+            FileObject mostRecentFileObject = EditorContextBridge.getMostRecentFileObject();
+            if (mostRecentFileObject != null) {
+                String fileName = mostRecentFileObject.getPath();
                 int lineNo = EditorContextBridge.getMostRecentLineNumber();
-                breakpoint.setFileAndLine(fileName, lineNo);
+                FileSystem fileSystem = null;
+                try {
+                    fileSystem = mostRecentFileObject.getFileSystem();
+                } catch (FileStateInvalidException ex) {
+                }
+                breakpoint.setFileAndLine(fileName, lineNo, fileSystem);
             }
 	}
 
@@ -228,7 +238,13 @@ class LineBreakpointPanel extends BreakpointPanel {
 	if (!seed.isDirectory())
 	    seed = seed.getParentFile();
 
-        ExecutionEnvironment environment = ExecutionEnvironmentFactory.getLocal();
+        FileSystem fileSystem = lb.getFileSystem();
+        ExecutionEnvironment environment;
+        if (fileSystem != null) {
+            environment = FileSystemProvider.getExecutionEnvironment(fileSystem);
+        } else {
+            environment = ExecutionEnvironmentFactory.getLocal();
+        }
         Session coreSession = DebuggerManager.getDebuggerManager().getCurrentSession();
         if (coreSession != null) {
             NativeSession nativeSession = NativeSession.map(coreSession);
