@@ -107,7 +107,12 @@ public class PersistenceXmlPackageRename extends PersistenceXmlRefactoring{
             if(root == null ) {
                 return null;
             }
-            String prefix = FileUtil.getRelativePath(root, folder.getParent()).replace('/','.');
+            String prefix = FileUtil.getRelativePath(root, folder.getParent());
+            // #249491
+            if (prefix == null) {
+                return null;
+            }
+            prefix = prefix.replace('/','.'); // NOI18N
             String oldName = buildName(prefix, folder.getName());
             // the new package name
             String newName = buildName(prefix, renameRefactoring.getNewName());
