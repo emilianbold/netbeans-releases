@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.navigation.base;
 
 import java.io.CharConversionException;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -68,7 +69,8 @@ import org.openide.xml.XMLUtil;
 public class Utils {
 
     private static final String CLASS_EXTENSION = "class"; // NOI18N
-    
+    private static final Logger LOG = Logger.getLogger(Utils.class.getName());
+
     private Utils() {
         throw new IllegalStateException();
     }
@@ -112,12 +114,16 @@ public class Utils {
 
     @CheckForNull
     public static <T extends Element> ElementHandle<T> createElementHandle(@NonNull final T element) {
+        //ElementKind OTHER represents errors <any>, <none>.
+        //These are special errors which cannot be resolved
         if (element.getKind() == ElementKind.OTHER) {
             return null;
         }
         try {
             return ElementHandle.create(element);
         } catch (IllegalArgumentException e) {
+            //Do not happen for JLS valid names
+            LOG.warning(e.getMessage());
             return null;
         }
     }
@@ -128,12 +134,16 @@ public class Utils {
         if (handle == null) {
             return false;
         }
+        //ElementKind OTHER represents errors <any>, <none>.
+        //These are special errors which cannot be resolved
         if (element.getKind() == ElementKind.OTHER) {
             return false;
         }
         try {
             return handle.signatureEquals(element);
         } catch (IllegalArgumentException e) {
+            //Do not happen for JLS valid names
+            LOG.warning(e.getMessage());
             return false;
         }
     }
