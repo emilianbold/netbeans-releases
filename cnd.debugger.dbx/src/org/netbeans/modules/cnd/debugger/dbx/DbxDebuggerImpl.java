@@ -529,7 +529,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
     // ExecutorJava and Unix both have remote capability.
     // LATER private Executor executor =Executor.getDefault(Catalog.get("Dbx"));
 
-    private CommonDbx.Factory factory;
+    private volatile CommonDbx.Factory factory;
 
     /**
      * @param additionalArgv Additional arguments to pass to dbx. (This
@@ -581,13 +581,20 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
         String dbxPath = null;
         if (!NativeDebuggerManager.isStandalone() /*&& !NativeDebuggerManager.isPL()*/) {
             dbxPath = getDebuggerString(DbxEngineCapabilityProvider.getDbxEngineType().getDebuggerID(), (MakeConfiguration)ddi.getConfiguration());
+        } else {
+            
         }
         factory = new Dbx.DbxFactory(executor, additionalArgv,
                                      listener, exec32, isShortName(),
                                      dbxInitFile, host, connectExisting, dbxPath,
                                      ddi.getInputOutput(), ddi, optionLayers());
 
-        factory.start();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                factory.start();
+            }
+        });
     }
 
     // interface Dbx.Factory.Listener
