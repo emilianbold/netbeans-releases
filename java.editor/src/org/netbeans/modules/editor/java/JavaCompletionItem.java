@@ -1563,40 +1563,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-            final String[] prefix = {""}; //NOI18N
+            final AtomicBoolean findPrefix = new AtomicBoolean();
             Runnable r = new Runnable() {
                 public void run() {
                     TokenSequence<JavaTokenId> t = findLastNonWhitespaceToken(SourceUtils.getJavaTokenSequence(TokenHierarchy.get(c.getDocument()), offset), 0, offset);
-                    if (t == null || t.token().id() != JavaTokenId.DOT) {
-                        final AtomicBoolean cancel = new AtomicBoolean();
-                        ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    ParserManager.parse(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
-                                        @Override
-                                        public void run(ResultIterator resultIterator) throws Exception {
-                                            if (cancel.get()) {
-                                                return;
-                                            }
-                                            final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
-                                            controller.toPhase(Phase.RESOLVED);
-                                            if (cancel.get()) {
-                                                return;
-                                            }
-                                            Scope scope = controller.getTreeUtilities().scopeFor(offset);
-                                            for (Element localElement : scope.getLocalElements()) {
-                                                if (!localElement.getKind().isField() && localElement.getSimpleName().contentEquals(text)) {
-                                                    prefix[0] = modifiers.contains(Modifier.STATIC) ? scope.getEnclosingClass().getSimpleName() + "." : "this."; //NOI18N
-                                                }
-                                            }
-                                        }
-                                    });
-                                } catch (ParseException pe) {
-                                }
-                            }
-                        }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_prefix_if_necessary"), cancel, false); //NOI18N
-                    }
+                    findPrefix.set(t == null || t.token().id() != JavaTokenId.DOT);
                 }
             };
             AtomicLockDocument ald = LineDocumentUtils.as(c.getDocument(), AtomicLockDocument.class);
@@ -1604,6 +1575,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 ald.runAtomic(r);
             } else {
                 r.run();
+            }
+            final String[] prefix = {""}; //NOI18N
+            if (findPrefix.get()) {
+                final AtomicBoolean cancel = new AtomicBoolean();
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ParserManager.parse(Collections.singletonList(Source.create(c.getDocument())), new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    if (cancel.get()) {
+                                        return;
+                                    }
+                                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                    controller.toPhase(Phase.RESOLVED);
+                                    if (cancel.get()) {
+                                        return;
+                                    }
+                                    Scope scope = controller.getTreeUtilities().scopeFor(offset);
+                                    for (Element localElement : scope.getLocalElements()) {
+                                        if (!localElement.getKind().isField() && localElement.getSimpleName().contentEquals(text)) {
+                                            prefix[0] = modifiers.contains(Modifier.STATIC) ? scope.getEnclosingClass().getSimpleName() + "." : "this."; //NOI18N
+                                        }
+                                    }
+                                }
+                            });
+                        } catch (ParseException pe) {
+                        }
+                    }
+                }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-find_prefix_if_necessary"), cancel, false); //NOI18N
             }
             CharSequence cs = super.substituteText(c, offset, length, prefix[0] + text, toAdd);
             if (autoImportEnclosingType) {
