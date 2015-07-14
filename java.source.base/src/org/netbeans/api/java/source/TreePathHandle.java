@@ -265,7 +265,16 @@ public final class TreePathHandle {
             child = true;
             current = current.getParentPath();
         }
-        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, element != null ? ElementHandle.create(element) : null, correspondingElement != null && isSupported(correspondingElement) ? ElementHandle.create(correspondingElement) : null));
+        ElementHandle<?> elementHandle = null;
+        //Do not create ElementHandle for OTHER (<any>,<none>).
+        if (element != null && element.getKind() != ElementKind.OTHER) {
+            elementHandle = ElementHandle.create(element);
+        }
+        ElementHandle<?> correspondingElementHandle = null;
+        if (correspondingElement != null && isSupported(correspondingElement)) {
+            correspondingElementHandle = ElementHandle.create(correspondingElement);
+        }
+        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, elementHandle, correspondingElementHandle));
     }
 
     /**                                                                                                                                                                                                                        
