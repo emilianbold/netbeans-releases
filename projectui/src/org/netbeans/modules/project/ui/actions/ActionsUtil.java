@@ -84,6 +84,10 @@ class ActionsUtil {
         // First find out whether there is a project directly in the Lookup
         Set<Project> result = new LinkedHashSet<Project>(); // XXX or use OpenProjectList.projectByDisplayName?
         for (Project p : lookup.lookupAll(Project.class)) {
+            // All projects have to have the command enabled
+            if (command != null && !commandSupported(p, command, lookup)) {
+                return new Project[0];
+            }
             result.add(p);
         }
         // Now try to guess the project from dataobjects
@@ -91,20 +95,15 @@ class ActionsUtil {
             FileObject fObj = dObj.getPrimaryFile();
             Project p = FileOwnerQuery.getOwner(fObj);
             if ( p != null ) {
+                // All projects have to have the command enabled
+                if (command != null && !commandSupported(p, command, lookup)) {
+                    return new Project[0];
+                }
                 result.add( p );
             }
         }
-        Project[] projectsArray = result.toArray(new Project[result.size()]);
-                
-        if ( command != null ) {
-            // All projects have to have the command enabled
-            for (Project p : projectsArray) {
-                if (!commandSupported(p, command, lookup)) {
-                    return new Project[0];
-                }
-            }
-        }
         
+        Project[] projectsArray = result.toArray(new Project[result.size()]);
         return projectsArray;
     }
     
