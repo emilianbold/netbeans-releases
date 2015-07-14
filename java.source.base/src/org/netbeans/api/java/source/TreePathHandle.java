@@ -268,11 +268,11 @@ public final class TreePathHandle {
         ElementHandle<?> elementHandle = null;
         //Do not create ElementHandle for OTHER (<any>,<none>).
         if (element != null && element.getKind() != ElementKind.OTHER) {
-            elementHandle = ElementHandle.create(element);
+            elementHandle = createHandle(element);
         }
         ElementHandle<?> correspondingElementHandle = null;
         if (correspondingElement != null && isSupported(correspondingElement)) {
-            correspondingElementHandle = ElementHandle.create(correspondingElement);
+            correspondingElementHandle = createHandle(correspondingElement);
         }
         return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, elementHandle, correspondingElementHandle));
     }
@@ -311,6 +311,22 @@ public final class TreePathHandle {
         }
             
         return new TreePathHandle(new ElementDelegate(ElementHandle.create(element), u, qualName, info.getClasspathInfo()));
+    }
+
+    @CheckForNull
+    private static <T extends Element> ElementHandle<T> createHandle (@NonNull final T element) {
+        try {
+            return ElementHandle.create(element);
+        } catch (IllegalArgumentException e) {
+            log.log(
+                Level.INFO,
+                "Unresolvable element: {0}, reason: {1}",    //NOI18N
+                new Object[]{
+                    element,
+                    e.getMessage()
+                });
+            return null;
+        }
     }
 
     private static boolean isSupported(Element el) {

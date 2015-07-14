@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.navigation.base;
 
 import java.io.CharConversionException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -122,8 +123,13 @@ public class Utils {
         try {
             return ElementHandle.create(element);
         } catch (IllegalArgumentException e) {
-            //Do not happen for JLS valid names
-            LOG.warning(e.getMessage());
+            LOG.log(
+                    Level.INFO,
+                    "Unresolvable element: {0}, reason: {1}",    //NOI18N
+                    new Object[]{
+                        element,
+                        e.getMessage()
+                    });
             return null;
         }
     }
@@ -142,8 +148,13 @@ public class Utils {
         try {
             return handle.signatureEquals(element);
         } catch (IllegalArgumentException e) {
-            //Do not happen for JLS valid names
-            LOG.warning(e.getMessage());
+            LOG.log(
+                Level.INFO,
+                "Unresolvable element: {0}, reason: {1}",    //NOI18N
+                new Object[]{
+                    element,
+                    e.getMessage()
+                });
             return false;
         }
     }
