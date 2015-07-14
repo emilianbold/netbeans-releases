@@ -81,8 +81,11 @@ public class ExceptionBreakpointImpl extends ClassBasedBreakpoint {
     private ExceptionBreakpoint breakpoint;
     
     
-    public ExceptionBreakpointImpl (ExceptionBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
-        super (breakpoint, debugger, session);
+    ExceptionBreakpointImpl (ExceptionBreakpoint breakpoint,
+                             JPDADebuggerImpl debugger,
+                             Session session,
+                             SourceRootsCache sourceRootsCache) {
+        super (breakpoint, debugger, session, sourceRootsCache);
         this.breakpoint = breakpoint;
         set ();
     }
