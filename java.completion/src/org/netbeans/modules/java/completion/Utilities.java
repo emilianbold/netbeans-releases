@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.java.completion;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;

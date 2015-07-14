@@ -876,7 +876,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM_CONSTANT:
                 case FIELD:
                     TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, null, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
@@ -927,7 +927,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 case ENUM_CONSTANT:
                 case FIELD:
                     TypeMirror tm = type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType();
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement) e, tm, null, substitutionOffset, null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), /*isOfSmartType(env, tm, smartTypes)*/false, -1, null));
                     break;
             }
         }
@@ -963,11 +963,11 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), null, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
                     break;
                 case FIELD:
                     TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, null, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
                     break;
             }
         }
@@ -1060,12 +1060,12 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         for (Element e : controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, e.asType(), null, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, e.asType(), smartTypes)*/, -1, null));
                     break;
                 case FIELD:
                     String name = e.getSimpleName().toString();
                     TypeMirror tm = asMemberOf(e, enclClass != null ? enclClass.asType() : null, types);
-                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
+                    items.add(JavaCompletionItem.createVariableItem(controller, (VariableElement)e, tm, null, substitutionOffset, null, scope.getEnclosingClass() != e.getEnclosingElement(), elements.isDeprecated(e), false/*isOfSmartType(env, tm, smartTypes)*/, -1, null));
                     break;
                 case CONSTRUCTOR:
                 case METHOD:
