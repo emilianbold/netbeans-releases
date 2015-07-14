@@ -107,6 +107,10 @@ public class FileModel3Test extends TraceModelTestBase {
         performTest("operators.cc");
     }
     
+    public void test_operators_h() throws Exception {
+        performTest("operators.h");
+    }
+    
     public void test_ppExpression() throws Exception {
         performTest("ppExpression.cpp");
     }
