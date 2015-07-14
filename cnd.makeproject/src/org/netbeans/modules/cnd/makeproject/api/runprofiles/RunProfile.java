@@ -669,7 +669,8 @@ public boolean isSimpleRunCommand() {
     }
 
     public ComboStringConfiguration getRunCommand() {
-        return runCommand;
+        //fix for #249872 - NullPointerException at org.netbeans.modules.cnd.makeproject.runprofiles.ui.RerunArguments.<init>
+        return (runCommand == null) ? getDefaultRunCommand() : runCommand;
     }
 
     public void setRunCommand(ComboStringConfiguration runCommand) {
