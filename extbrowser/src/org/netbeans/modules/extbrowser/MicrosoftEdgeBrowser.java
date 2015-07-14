@@ -112,8 +112,8 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
      */
     @Override
     protected NbProcessDescriptor defaultBrowserExecutable () {
-        String command = "PowerShell"; // NOI18N
-        String params = "-Command start shell:AppsFolder\\" + getAppUserModelId() + " {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
+        String command = "cmd"; // NOI18N
+        String params = "/C start microsoft-edge:{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "{0} MicrosoftEdge: defaultBrowserExecutable: {1}, {2}", new Object[] { System.currentTimeMillis(), params, command });
         }
@@ -123,9 +123,6 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
     private static String appUserModelId;
     private static String getAppUserModelId() {
         if (appUserModelId == null) {
-            // Hack that attepmts to get the correct hash in appUserModelId
-            // Hopefully, the appUserModelId will be hash-less in the final version.
-            // So, this hack will not be needed then.
             File folder = new File("C:\\Windows\\SystemApps"); // NOI18N
             String id = null;
             if (folder.exists()) {
@@ -140,7 +137,7 @@ public class MicrosoftEdgeBrowser extends ExtWebBrowser {
         }
         return appUserModelId;
     }
-    
+
     private void readObject (java.io.ObjectInputStream ois) throws java.io.IOException, ClassNotFoundException {
         ois.defaultReadObject();
     }
