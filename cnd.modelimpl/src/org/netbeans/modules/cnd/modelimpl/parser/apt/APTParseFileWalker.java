@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTMacroExpandedStream;
 import org.netbeans.modules.cnd.apt.support.api.PreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
@@ -432,11 +433,16 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         // create even for invalid macro (to have possibility of showing error HL)
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
+        APTToken lastParam = null;
         if (paramTokens != null) {
             params = new ArrayList<>(paramTokens.size());
             for (APTToken elem : paramTokens) {
                 if (APTUtils.isID(elem)) {
                     params.add(NameCache.getManager().getString(elem.getTextID()));
+                }
+                if (!APTUtils.isVaArgsToken(elem)) {
+                    // in APT VaArgs is shared token without real offsets 
+                    lastParam = elem;
                 }
             }
             if (params.isEmpty()) {
@@ -449,7 +455,19 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTToken last;
         String body = "";
         if (bodyTokens.isEmpty()) {
-            last = define.getName();
+            if (false && lastParam != null && !APTUtils.isEOF(lastParam) && lastParam.getEndOffset() > 0) {
+                // To make APT and Clank more similar for 
+                // #define FUN_LIKE(param)
+                // for closing ) use last param + 1
+                final int lParentOffset = lastParam.getEndOffset()+1;
+                last = new APTTokenAbstact() { 
+                    public int getEndOffset() {
+                        return lParentOffset;
+                    }
+                };
+            } else {
+                last = define.getName() ;
+            }
         } else {
             last = bodyTokens.get(bodyTokens.size() - 1);
             //APTToken start = (APTToken) bodyTokens.get(0);
