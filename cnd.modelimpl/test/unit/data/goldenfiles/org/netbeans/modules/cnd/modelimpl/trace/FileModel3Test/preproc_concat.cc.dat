@@ -1,0 +1,170 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 39):
+<U>#define '["A",<ID>,line=94,col=9],offset=2651,file=null'=''
+<U>#define '["B",<ID>,line=95,col=9],offset=2661,file=null'=''
+<U>#define '["BOOST_PP_AUTO_REC",<ID>,line=35,col=9],offset=1194,file=null[["pred",<ID>,line=35,col=27],offset=1212,file=null, ["n",<ID>,line=35,col=33],offset=1218,file=null]'='["1",<DECIMALINT>,line=35,col=36],offset=1221,file=null'
+<U>#define '["BOOST_PP_CAT",<ID>,line=29,col=9],offset=968,file=null[["a",<ID>,line=29,col=22],offset=981,file=null, ["b",<ID>,line=29,col=25],offset=984,file=null]'='["BOOST_PP_CAT_I",<ID>,line=29,col=28],offset=987,file=null ["(",<LPAREN>,line=29,col=42],offset=1001,file=null ["a",<ID>,line=29,col=43],offset=1002,file=null [",",<COMMA>,line=29,col=44],offset=1003,file=null ["b",<ID>,line=29,col=46],offset=1005,file=null [")",<RPAREN>,line=29,col=47],offset=1006,file=null'
+<U>#define '["BOOST_PP_CAT_I",<ID>,line=30,col=9],offset=1017,file=null[["a",<ID>,line=30,col=24],offset=1032,file=null, ["b",<ID>,line=30,col=27],offset=1035,file=null]'='["a",<ID>,line=30,col=30],offset=1038,file=null ["##",<DBL_SHARP>,line=30,col=32],offset=1040,file=null ["b",<ID>,line=30,col=35],offset=1043,file=null'
+<U>#define '["BOOST_PP_REPEAT",<ID>,line=47,col=10],offset=1655,file=null'='["BOOST_PP_CAT",<ID>,line=47,col=26],offset=1671,file=null ["(",<LPAREN>,line=47,col=38],offset=1683,file=null ["BOOST_PP_REPEAT_",<ID>,line=47,col=39],offset=1684,file=null [",",<COMMA>,line=47,col=55],offset=1700,file=null ["BOOST_PP_AUTO_REC",<ID>,line=47,col=57],offset=1702,file=null ["(",<LPAREN>,line=47,col=74],offset=1719,file=null ["BOOST_PP_REPEAT_P",<ID>,line=47,col=75],offset=1720,file=null [",",<COMMA>,line=47,col=92],offset=1737,file=null ["4",<DECIMALINT>,line=47,col=94],offset=1739,file=null [")",<RPAREN>,line=47,col=95],offset=1740,file=null [")",<RPAREN>,line=47,col=96],offset=1741,file=null'
+<U>#define '["BOOST_PP_REPEAT_1",<ID>,line=37,col=10],offset=1233,file=null[["c",<ID>,line=37,col=28],offset=1251,file=null, ["m",<ID>,line=37,col=31],offset=1254,file=null, ["d",<ID>,line=37,col=34],offset=1257,file=null]'='["BOOST_PP_REPEAT_1_I",<ID>,line=37,col=37],offset=1260,file=null ["(",<LPAREN>,line=37,col=56],offset=1279,file=null ["c",<ID>,line=37,col=57],offset=1280,file=null [",",<COMMA>,line=37,col=58],offset=1281,file=null ["m",<ID>,line=37,col=60],offset=1283,file=null [",",<COMMA>,line=37,col=61],offset=1284,file=null ["d",<ID>,line=37,col=63],offset=1286,file=null [")",<RPAREN>,line=37,col=64],offset=1287,file=null'
+<U>#define '["BOOST_PP_REPEAT_1_0",<ID>,line=43,col=10],offset=1501,file=null[["m",<ID>,line=43,col=30],offset=1521,file=null, ["d",<ID>,line=43,col=33],offset=1524,file=null]'=''
+<U>#define '["BOOST_PP_REPEAT_1_1",<ID>,line=44,col=10],offset=1536,file=null[["m",<ID>,line=44,col=30],offset=1556,file=null, ["d",<ID>,line=44,col=33],offset=1559,file=null]'='["m",<ID>,line=44,col=36],offset=1562,file=null ["(",<LPAREN>,line=44,col=37],offset=1563,file=null ["2",<DECIMALINT>,line=44,col=38],offset=1564,file=null [",",<COMMA>,line=44,col=39],offset=1565,file=null ["0",<OCTALINT>,line=44,col=41],offset=1567,file=null [",",<COMMA>,line=44,col=42],offset=1568,file=null ["d",<ID>,line=44,col=44],offset=1570,file=null [")",<RPAREN>,line=44,col=45],offset=1571,file=null'
+<U>#define '["BOOST_PP_REPEAT_1_2",<ID>,line=45,col=10],offset=1582,file=null[["m",<ID>,line=45,col=30],offset=1602,file=null, ["d",<ID>,line=45,col=33],offset=1605,file=null]'='["BOOST_PP_REPEAT_1_1",<ID>,line=45,col=36],offset=1608,file=null ["(",<LPAREN>,line=45,col=55],offset=1627,file=null ["m",<ID>,line=45,col=56],offset=1628,file=null [",",<COMMA>,line=45,col=57],offset=1629,file=null ["d",<ID>,line=45,col=59],offset=1631,file=null [")",<RPAREN>,line=45,col=60],offset=1632,file=null ["m",<ID>,line=45,col=62],offset=1634,file=null ["(",<LPAREN>,line=45,col=63],offset=1635,file=null ["2",<DECIMALINT>,line=45,col=64],offset=1636,file=null [",",<COMMA>,line=45,col=65],offset=1637,file=null ["1",<DECIMALINT>,line=45,col=67],offset=1639,file=null [",",<COMMA>,line=45,col=68],offset=1640,file=null ["d",<ID>,line=45,col=70],offset=1642,file=null [")",<RPAREN>,line=45,col=71],offset=1643,file=null'
+<U>#define '["BOOST_PP_REPEAT_1_I",<ID>,line=40,col=10],offset=1364,file=null[["c",<ID>,line=40,col=30],offset=1384,file=null, ["m",<ID>,line=40,col=33],offset=1387,file=null, ["d",<ID>,line=40,col=36],offset=1390,file=null]'='["BOOST_PP_REPEAT_1_",<ID>,line=40,col=39],offset=1393,file=null ["##",<DBL_SHARP>,line=40,col=58],offset=1412,file=null ["c",<ID>,line=40,col=61],offset=1415,file=null ["(",<LPAREN>,line=40,col=62],offset=1416,file=null ["m",<ID>,line=40,col=63],offset=1417,file=null [",",<COMMA>,line=40,col=64],offset=1418,file=null ["d",<ID>,line=40,col=66],offset=1420,file=null [")",<RPAREN>,line=40,col=67],offset=1421,file=null'
+<U>#define '["BOOST_PP_REPEAT_2",<ID>,line=38,col=10],offset=1298,file=null[["c",<ID>,line=38,col=28],offset=1316,file=null, ["m",<ID>,line=38,col=31],offset=1319,file=null, ["d",<ID>,line=38,col=34],offset=1322,file=null]'='["BOOST_PP_REPEAT_2_I",<ID>,line=38,col=37],offset=1325,file=null ["(",<LPAREN>,line=38,col=56],offset=1344,file=null ["c",<ID>,line=38,col=57],offset=1345,file=null [",",<COMMA>,line=38,col=58],offset=1346,file=null ["m",<ID>,line=38,col=60],offset=1348,file=null [",",<COMMA>,line=38,col=61],offset=1349,file=null ["d",<ID>,line=38,col=63],offset=1351,file=null [")",<RPAREN>,line=38,col=64],offset=1352,file=null'
+<U>#define '["BOOST_PP_REPEAT_2_I",<ID>,line=41,col=10],offset=1432,file=null[["c",<ID>,line=41,col=30],offset=1452,file=null, ["m",<ID>,line=41,col=33],offset=1455,file=null, ["d",<ID>,line=41,col=36],offset=1458,file=null]'='["BOOST_PP_REPEAT_2_",<ID>,line=41,col=39],offset=1461,file=null ["##",<DBL_SHARP>,line=41,col=58],offset=1480,file=null ["c",<ID>,line=41,col=61],offset=1483,file=null ["(",<LPAREN>,line=41,col=62],offset=1484,file=null ["m",<ID>,line=41,col=63],offset=1485,file=null [",",<COMMA>,line=41,col=64],offset=1486,file=null ["d",<ID>,line=41,col=66],offset=1488,file=null [")",<RPAREN>,line=41,col=67],offset=1489,file=null'
+<U>#define '["CAT",<ID>,line=56,col=9],offset=1896,file=null[["a",<ID>,line=56,col=13],offset=1900,file=null, ["b",<ID>,line=56,col=16],offset=1903,file=null]'='["a",<ID>,line=56,col=19],offset=1906,file=null ["##",<DBL_SHARP>,line=56,col=21],offset=1908,file=null ["b",<ID>,line=56,col=24],offset=1911,file=null'
+<U>#define '["DECL",<ID>,line=51,col=9],offset=1802,file=null[["z",<ID>,line=51,col=14],offset=1807,file=null, ["n",<ID>,line=51,col=17],offset=1810,file=null, ["text",<ID>,line=51,col=20],offset=1813,file=null]'='["text",<ID>,line=51,col=26],offset=1819,file=null ["##",<DBL_SHARP>,line=51,col=31],offset=1824,file=null ["n",<ID>,line=51,col=34],offset=1827,file=null ["=",<ASSIGNEQUAL>,line=51,col=36],offset=1829,file=null ["n",<ID>,line=51,col=38],offset=1831,file=null [";",<SEMICOLON>,line=51,col=39],offset=1832,file=null'
+<U>#define '["EMPTY_MACRO",<ID>,line=81,col=9],offset=2314,file=null'=''
+<U>#define '["FUN_1",<ID>,line=57,col=9],offset=1921,file=null[["x",<ID>,line=57,col=15],offset=1927,file=null]'='["int",<ID>,line=57,col=18],offset=1930,file=null ["x",<ID>,line=57,col=22],offset=1934,file=null ["=",<ASSIGNEQUAL>,line=57,col=25],offset=1937,file=null ["1",<DECIMALINT>,line=57,col=27],offset=1939,file=null [";",<SEMICOLON>,line=57,col=28],offset=1940,file=null'
+<U>#define '["FUN_2",<ID>,line=76,col=9],offset=2235,file=null[["x",<ID>,line=76,col=15],offset=2241,file=null]'='["int",<ID>,line=76,col=18],offset=2244,file=null ["x",<ID>,line=76,col=22],offset=2248,file=null ["=",<ASSIGNEQUAL>,line=76,col=25],offset=2251,file=null ["2",<DECIMALINT>,line=76,col=27],offset=2253,file=null [";",<SEMICOLON>,line=76,col=28],offset=2254,file=null'
+<U>#define '["MAC1",<ID>,line=61,col=9],offset=2006,file=null'='["A",<ID>,line=61,col=14],offset=2011,file=null'
+<U>#define '["MAC1MAC2",<ID>,line=63,col=9],offset=2036,file=null'='["A_B",<ID>,line=63,col=18],offset=2045,file=null'
+<U>#define '["MAC2",<ID>,line=62,col=9],offset=2021,file=null'='["B",<ID>,line=62,col=14],offset=2026,file=null'
+<U>#define '["MAC3",<ID>,line=65,col=9],offset=2058,file=null[["x",<ID>,line=65,col=14],offset=2063,file=null, ["y",<ID>,line=65,col=17],offset=2066,file=null]'='["x",<ID>,line=65,col=20],offset=2069,file=null ["##",<DBL_SHARP>,line=65,col=22],offset=2071,file=null ["y",<ID>,line=65,col=25],offset=2074,file=null'
+<U>#define '["MAC4",<ID>,line=67,col=9],offset=2085,file=null[["x",<ID>,line=67,col=14],offset=2090,file=null, ["y",<ID>,line=67,col=17],offset=2093,file=null]'='["MAC3",<ID>,line=67,col=20],offset=2096,file=null ["(",<LPAREN>,line=67,col=24],offset=2100,file=null ["x",<ID>,line=67,col=25],offset=2101,file=null [",",<COMMA>,line=67,col=26],offset=2102,file=null ["y",<ID>,line=67,col=28],offset=2104,file=null [")",<RPAREN>,line=67,col=29],offset=2105,file=null'
+<U>#define '["MAC_A",<ID>,line=58,col=9],offset=1950,file=null'='["CAT",<ID>,line=58,col=16],offset=1957,file=null ["(",<LPAREN>,line=58,col=19],offset=1960,file=null ["FUN_",<ID>,line=58,col=20],offset=1961,file=null [",",<COMMA>,line=58,col=24],offset=1965,file=null ["1",<DECIMALINT>,line=58,col=26],offset=1967,file=null [")",<RPAREN>,line=58,col=27],offset=1968,file=null'
+<U>#define '["MAC_B",<ID>,line=77,col=9],offset=2264,file=null'='["FUN_2",<ID>,line=77,col=16],offset=2271,file=null'
+<U>#define '["PREFIX",<ID>,line=83,col=9],offset=2382,file=null[["x",<ID>,line=83,col=16],offset=2389,file=null]'='["__STRING",<ID>,line=83,col=20],offset=2393,file=null ["(",<LPAREN>,line=83,col=28],offset=2401,file=null ["x",<ID>,line=83,col=29],offset=2402,file=null [")",<RPAREN>,line=83,col=30],offset=2403,file=null'
+<U>#define '["TO_EMPTY",<ID>,line=82,col=9],offset=2334,file=null[["x",<ID>,line=82,col=18],offset=2343,file=null]'='["PREFIX",<ID>,line=82,col=29],offset=2354,file=null ["(",<LPAREN>,line=82,col=35],offset=2360,file=null ["EMPTY_MACRO",<ID>,line=82,col=36],offset=2361,file=null [")",<RPAREN>,line=82,col=47],offset=2372,file=null'
+<U>#define '["_Mdouble_",<ID>,line=20,col=9],offset=755,file=null'='["double",<ID>,line=20,col=33],offset=767,file=null'
+<U>#define '["__CONCAT",<ID>,line=3,col=9],offset=25,file=null[["x",<ID>,line=3,col=18],offset=34,file=null, ["y",<ID>,line=3,col=20],offset=36,file=null]'='["x",<ID>,line=3,col=25],offset=39,file=null ["##",<DBL_SHARP>,line=3,col=27],offset=41,file=null ["y",<ID>,line=3,col=30],offset=44,file=null'
+<U>#define '["__MATHCALL",<ID>,line=6,col=9],offset=78,file=null[["function",<ID>,line=6,col=20],offset=89,file=null, ["suffix",<ID>,line=6,col=29],offset=98,file=null, ["args",<ID>,line=6,col=37],offset=106,file=null]'='["__MATHDECL",<ID>,line=7,col=3],offset=116,file=null ["(",<LPAREN>,line=7,col=14],offset=127,file=null ["_Mdouble_",<ID>,line=7,col=15],offset=128,file=null [",",<COMMA>,line=7,col=24],offset=137,file=null ["function",<ID>,line=7,col=25],offset=138,file=null [",",<COMMA>,line=7,col=33],offset=146,file=null ["suffix",<ID>,line=7,col=34],offset=147,file=null [",",<COMMA>,line=7,col=40],offset=153,file=null ["args",<ID>,line=7,col=42],offset=155,file=null [")",<RPAREN>,line=7,col=46],offset=159,file=null'
+<U>#define '["__MATHCALLX",<ID>,line=12,col=9],offset=324,file=null[["function",<ID>,line=12,col=21],offset=336,file=null, ["suffix",<ID>,line=12,col=30],offset=345,file=null, ["args",<ID>,line=12,col=38],offset=353,file=null, ["attrib",<ID>,line=12,col=44],offset=359,file=null]'='["__MATHDECLX",<ID>,line=13,col=3],offset=371,file=null ["(",<LPAREN>,line=13,col=15],offset=383,file=null ["_Mdouble_",<ID>,line=13,col=16],offset=384,file=null [",",<COMMA>,line=13,col=25],offset=393,file=null ["function",<ID>,line=13,col=26],offset=394,file=null [",",<COMMA>,line=13,col=34],offset=402,file=null ["suffix",<ID>,line=13,col=35],offset=403,file=null [",",<COMMA>,line=13,col=41],offset=409,file=null ["args",<ID>,line=13,col=43],offset=411,file=null [",",<COMMA>,line=13,col=47],offset=415,file=null ["attrib",<ID>,line=13,col=49],offset=417,file=null [")",<RPAREN>,line=13,col=55],offset=423,file=null'
+<U>#define '["__MATHDECL",<ID>,line=9,col=9],offset=170,file=null[["type",<ID>,line=9,col=20],offset=181,file=null, ["function",<ID>,line=9,col=26],offset=187,file=null, ["suffix",<ID>,line=9,col=35],offset=196,file=null, ["args",<ID>,line=9,col=43],offset=204,file=null]'='["__MATHDECL_1",<ID>,line=10,col=3],offset=214,file=null ["(",<LPAREN>,line=10,col=15],offset=226,file=null ["type",<ID>,line=10,col=16],offset=227,file=null [",",<COMMA>,line=10,col=20],offset=231,file=null ["function",<ID>,line=10,col=22],offset=233,file=null [",",<COMMA>,line=10,col=30],offset=241,file=null ["suffix",<ID>,line=10,col=31],offset=242,file=null [",",<COMMA>,line=10,col=37],offset=248,file=null ["args",<ID>,line=10,col=39],offset=250,file=null [")",<RPAREN>,line=10,col=43],offset=254,file=null [";",<SEMICOLON>,line=10,col=44],offset=255,file=null ["__MATHDECL_1",<ID>,line=11,col=3],offset=261,file=null ["(",<LPAREN>,line=11,col=15],offset=273,file=null ["type",<ID>,line=11,col=16],offset=274,file=null [",",<COMMA>,line=11,col=20],offset=278,file=null ["__CONCAT",<ID>,line=11,col=22],offset=280,file=null ["(",<LPAREN>,line=11,col=30],offset=288,file=null ["__",<ID>,line=11,col=31],offset=289,file=null [",",<COMMA>,line=11,col=33],offset=291,file=null ["function",<ID>,line=11,col=34],offset=292,file=null [")",<RPAREN>,line=11,col=42],offset=300,file=null [",",<COMMA>,line=11,col=43],offset=301,file=null ["suffix",<ID>,line=11,col=44],offset=302,file=null [",",<COMMA>,line=11,col=50],offset=308,file=null ["args",<ID>,line=11,col=52],offset=310,file=null [")",<RPAREN>,line=11,col=56],offset=314,file=null'
+<U>#define '["__MATHDECLX",<ID>,line=14,col=9],offset=433,file=null[["type",<ID>,line=14,col=21],offset=445,file=null, ["function",<ID>,line=14,col=27],offset=451,file=null, ["suffix",<ID>,line=14,col=36],offset=460,file=null, ["args",<ID>,line=14,col=44],offset=468,file=null, ["attrib",<ID>,line=14,col=50],offset=474,file=null]'='["__MATHDECL_1",<ID>,line=15,col=3],offset=486,file=null ["(",<LPAREN>,line=15,col=15],offset=498,file=null ["type",<ID>,line=15,col=16],offset=499,file=null [",",<COMMA>,line=15,col=20],offset=503,file=null ["function",<ID>,line=15,col=22],offset=505,file=null [",",<COMMA>,line=15,col=30],offset=513,file=null ["suffix",<ID>,line=15,col=31],offset=514,file=null [",",<COMMA>,line=15,col=37],offset=520,file=null ["args",<ID>,line=15,col=39],offset=522,file=null [")",<RPAREN>,line=15,col=43],offset=526,file=null ["__attribute__",<ID>,line=15,col=45],offset=528,file=null ["(",<LPAREN>,line=15,col=59],offset=542,file=null ["attrib",<ID>,line=15,col=60],offset=543,file=null [")",<RPAREN>,line=15,col=66],offset=549,file=null [";",<SEMICOLON>,line=15,col=67],offset=550,file=null ["__MATHDECL_1",<ID>,line=16,col=3],offset=556,file=null ["(",<LPAREN>,line=16,col=15],offset=568,file=null ["type",<ID>,line=16,col=16],offset=569,file=null [",",<COMMA>,line=16,col=20],offset=573,file=null ["__CONCAT",<ID>,line=16,col=22],offset=575,file=null ["(",<LPAREN>,line=16,col=30],offset=583,file=null ["__",<ID>,line=16,col=31],offset=584,file=null [",",<COMMA>,line=16,col=33],offset=586,file=null ["function",<ID>,line=16,col=34],offset=587,file=null [")",<RPAREN>,line=16,col=42],offset=595,file=null [",",<COMMA>,line=16,col=43],offset=596,file=null ["suffix",<ID>,line=16,col=44],offset=597,file=null [",",<COMMA>,line=16,col=50],offset=603,file=null ["args",<ID>,line=16,col=52],offset=605,file=null [")",<RPAREN>,line=16,col=56],offset=609,file=null ["__attribute__",<ID>,line=16,col=58],offset=611,file=null ["(",<LPAREN>,line=16,col=72],offset=625,file=null ["attrib",<ID>,line=16,col=73],offset=626,file=null [")",<RPAREN>,line=16,col=79],offset=632,file=null'
+<U>#define '["__MATHDECL_1",<ID>,line=17,col=9],offset=642,file=null[["type",<ID>,line=17,col=22],offset=655,file=null, ["function",<ID>,line=17,col=28],offset=661,file=null, ["suffix",<ID>,line=17,col=37],offset=670,file=null, ["args",<ID>,line=17,col=45],offset=678,file=null]'='["extern",<ID>,line=18,col=3],offset=688,file=null ["type",<ID>,line=18,col=10],offset=695,file=null ["__MATH_PRECNAME",<ID>,line=18,col=15],offset=700,file=null ["(",<LPAREN>,line=18,col=30],offset=715,file=null ["function",<ID>,line=18,col=31],offset=716,file=null [",",<COMMA>,line=18,col=39],offset=724,file=null ["suffix",<ID>,line=18,col=40],offset=725,file=null [")",<RPAREN>,line=18,col=46],offset=731,file=null ["args",<ID>,line=18,col=48],offset=733,file=null ["__THROW",<ID>,line=18,col=53],offset=738,file=null'
+<U>#define '["__MATH_PRECNAME",<ID>,line=21,col=9],offset=782,file=null[["name",<ID>,line=21,col=25],offset=798,file=null, ["r",<ID>,line=21,col=30],offset=803,file=null]'='["__CONCAT",<ID>,line=21,col=33],offset=806,file=null ["(",<LPAREN>,line=21,col=41],offset=814,file=null ["name",<ID>,line=21,col=42],offset=815,file=null [",",<COMMA>,line=21,col=46],offset=819,file=null ["r",<ID>,line=21,col=47],offset=820,file=null [")",<RPAREN>,line=21,col=48],offset=821,file=null'
+<U>#define '["__STRING",<ID>,line=4,col=9],offset=54,file=null[["x",<ID>,line=4,col=18],offset=63,file=null]'='["#",<SHARP>,line=4,col=25],offset=66,file=null ["x",<ID>,line=4,col=26],offset=67,file=null'
+<U>#define '["__THROW",<ID>,line=2,col=9],offset=9,file=null'=''
+<U>#define '["conc",<ID>,line=93,col=9],offset=2622,file=null[["a",<ID>,line=93,col=14],offset=2627,file=null, ["b",<ID>,line=93,col=16],offset=2629,file=null]'='["conc1",<ID>,line=93,col=19],offset=2632,file=null ["(",<LPAREN>,line=93,col=24],offset=2637,file=null ["b",<ID>,line=93,col=25],offset=2638,file=null [",",<COMMA>,line=93,col=26],offset=2639,file=null ["a",<ID>,line=93,col=27],offset=2640,file=null [")",<RPAREN>,line=93,col=28],offset=2641,file=null'
+<U>#define '["conc1",<ID>,line=92,col=9],offset=2595,file=null[["a",<ID>,line=92,col=15],offset=2601,file=null, ["b",<ID>,line=92,col=17],offset=2603,file=null]'='["a",<ID>,line=92,col=20],offset=2606,file=null ["##",<DBL_SHARP>,line=92,col=21],offset=2607,file=null ["b",<ID>,line=92,col=23],offset=2609,file=null ["##",<DBL_SHARP>,line=92,col=24],offset=2610,file=null ["1",<DECIMALINT>,line=92,col=26],offset=2612,file=null'
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE preproc_concat.cc
+Includes:
+    <no includes>
+Macros:
+#define 'A' [94:1/2643-94:10/2652]
+#define 'B' [95:1/2653-95:10/2662]
+#define 'BOOST_PP_AUTO_REC[pred, n]' [35:1/1186-35:37/1222]
+#define 'BOOST_PP_CAT[a, b]' [29:1/960-29:48/1007]
+#define 'BOOST_PP_CAT_I[a, b]' [30:1/1009-30:36/1044]
+#define 'BOOST_PP_REPEAT' [47:1/1646-47:97/1742]
+#define 'BOOST_PP_REPEAT_1[c, m, d]' [37:1/1224-37:65/1288]
+#define 'BOOST_PP_REPEAT_1_0[m, d]' [43:1/1492-43:29/1520]
+#define 'BOOST_PP_REPEAT_1_1[m, d]' [44:1/1527-44:46/1572]
+#define 'BOOST_PP_REPEAT_1_2[m, d]' [45:1/1573-45:72/1644]
+#define 'BOOST_PP_REPEAT_1_I[c, m, d]' [40:1/1355-40:68/1422]
+#define 'BOOST_PP_REPEAT_2[c, m, d]' [38:1/1289-38:65/1353]
+#define 'BOOST_PP_REPEAT_2_I[c, m, d]' [41:1/1423-41:68/1490]
+#define 'CAT[a, b]' [56:1/1888-56:25/1912]
+#define 'DECL[z, n, text]' [51:1/1794-51:40/1833]
+#define 'EMPTY_MACRO' [81:1/2306-81:20/2325]
+#define 'FUNC[a]' [87:1/2472-87:21/2492]
+#define 'FUN_1[x]' [57:1/1913-57:29/1941]
+#define 'FUN_2[x]' [76:1/2227-76:29/2255]
+#define 'MAC1' [61:1/1998-61:15/2012]
+#define 'MAC1MAC2' [63:1/2028-63:21/2048]
+#define 'MAC2' [62:1/2013-62:15/2027]
+#define 'MAC3[x, y]' [65:1/2050-65:26/2075]
+#define 'MAC4[x, y]' [67:1/2077-67:30/2106]
+#define 'MAC_A' [58:1/1942-58:28/1969]
+#define 'MAC_B' [77:1/2256-77:21/2276]
+#define 'PREFIX[x]' [83:1/2374-83:31/2404]
+#define 'TO_EMPTY[x]' [82:1/2326-82:48/2373]
+#define '_Mdouble_' [20:1/747-20:39/773]
+#define '__CONCAT[x, y]' [3:1/17-3:31/45]
+#define '__MATHCALL[function, suffix, args]' [6:1/70-7:47/160]
+#define '__MATHCALLX[function, suffix, args, attrib]' [12:1/316-13:56/424]
+#define '__MATHDECL[type, function, suffix, args]' [9:1/162-11:57/315]
+#define '__MATHDECLX[type, function, suffix, args, attrib]' [14:1/425-16:80/633]
+#define '__MATHDECL_1[type, function, suffix, args]' [17:1/634-18:60/745]
+#define '__MATH_PRECNAME[name, r]' [21:1/774-21:49/822]
+#define '__STRING[x]' [4:1/46-4:27/68]
+#define '__THROW' [2:1/1-2:16/16]
+#define 'conc[a, b]' [93:1/2614-93:29/2642]
+#define 'conc1[a, b]' [92:1/2587-92:27/2613]
+FUNCTION __atan [23:1/824-23:37/860] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE __atan(double)
+    UNIQUE NAME F:__atan(double)
+    PARAMETERS:
+        __x [23:1/824-23:36/859]  TYPE: double TEXT=double  [23:1/824-23:36/859]  INIT: null  SCOPE: __atan 
+    RETURNS double TEXT=double  [23:1/824-23:36/859]
+FUNCTION atan [23:1/824-23:36/859] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE atan(double)
+    UNIQUE NAME F:atan(double)
+    PARAMETERS:
+        __x [23:1/824-23:36/859]  TYPE: double TEXT=double  [23:1/824-23:36/859]  INIT: null  SCOPE: atan 
+    RETURNS double TEXT=double  [23:1/824-23:36/859]
+FUNCTION __tan [25:1/863-25:36/898] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE __tan(double)
+    UNIQUE NAME F:__tan(double)
+    PARAMETERS:
+        __x [25:1/863-25:35/897]  TYPE: double TEXT=double  [25:1/863-25:35/897]  INIT: null  SCOPE: __tan 
+    RETURNS double TEXT=double  [25:1/863-25:35/897]
+FUNCTION tan [25:1/863-25:35/897] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE tan(double)
+    UNIQUE NAME F:tan(double)
+    PARAMETERS:
+        __x [25:1/863-25:35/897]  TYPE: double TEXT=double  [25:1/863-25:35/897]  INIT: null  SCOPE: tan 
+    RETURNS double TEXT=double  [25:1/863-25:35/897]
+VARIABLE x0 [53:1/1835-53:32/1866]  TYPE: int TEXT=int  [53:1/1835-53:32/1866]  INIT: text='BOOST_PP_REPEAT(2, DECL, int x)'  SCOPE: $Global$ 
+VARIABLE x1 [53:1/1835-53:32/1866]  TYPE: int TEXT=int  [53:1/1835-53:32/1866]  INIT: text='BOOST_PP_REPEAT(2, DECL, int x)'  SCOPE: $Global$ 
+VARIABLE b [59:1/1970-59:9/1978]  TYPE: int TEXT=int  [59:1/1970-59:9/1978]  INIT: text='MAC_A(b)'  SCOPE: $Global$ 
+VARIABLE A_B [70:1/2131-70:22/2152]  TYPE: int TEXT=int  [70:1/2131-70:4/2134]  INIT: null  SCOPE: $Global$ 
+VARIABLE AB [73:1/2184-73:22/2205]  TYPE: int TEXT=int  [73:1/2184-73:4/2187]  INIT: null  SCOPE: $Global$ 
+VARIABLE z [78:1/2277-78:9/2285]  TYPE: int TEXT=int  [78:1/2277-78:9/2285]  INIT: text='MAC_B(z)'  SCOPE: $Global$ 
+VARIABLE buf [84:1/2405-84:25/2429]  TYPE: *char TEXT=char*  [84:1/2405-84:6/2410]  INIT: text='TO_EMPTY(1)'  SCOPE: $Global$ 
+VARIABLE FUNC [89:1/2572-89:13/2584]  TYPE: int TEXT=int  [89:1/2572-89:4/2575]  INIT: null  SCOPE: $Global$ 
+VARIABLE x [96:1/2663-96:18/2680]  TYPE: int TEXT=int  [96:1/2663-96:4/2666]  INIT: text='conc1(,)'  SCOPE: $Global$ 
+VARIABLE y [97:1/2681-97:19/2699]  TYPE: int TEXT=int  [97:1/2681-97:4/2684]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
+
+========== Dumping model of PROJECT DummyProject
+FUNCTION __atan [23:1/824-23:37/860] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE __atan(double)
+    UNIQUE NAME F:__atan(double)
+    PARAMETERS:
+        __x [23:1/824-23:36/859]  TYPE: double TEXT=double  [23:1/824-23:36/859]  INIT: null  SCOPE: __atan 
+    RETURNS double TEXT=double  [23:1/824-23:36/859]
+FUNCTION atan [23:1/824-23:36/859] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE atan(double)
+    UNIQUE NAME F:atan(double)
+    PARAMETERS:
+        __x [23:1/824-23:36/859]  TYPE: double TEXT=double  [23:1/824-23:36/859]  INIT: null  SCOPE: atan 
+    RETURNS double TEXT=double  [23:1/824-23:36/859]
+FUNCTION __tan [25:1/863-25:36/898] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE __tan(double)
+    UNIQUE NAME F:__tan(double)
+    PARAMETERS:
+        __x [25:1/863-25:35/897]  TYPE: double TEXT=double  [25:1/863-25:35/897]  INIT: null  SCOPE: __tan 
+    RETURNS double TEXT=double  [25:1/863-25:35/897]
+FUNCTION tan [25:1/863-25:35/897] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE tan(double)
+    UNIQUE NAME F:tan(double)
+    PARAMETERS:
+        __x [25:1/863-25:35/897]  TYPE: double TEXT=double  [25:1/863-25:35/897]  INIT: null  SCOPE: tan 
+    RETURNS double TEXT=double  [25:1/863-25:35/897]
+VARIABLE x0 [53:1/1835-53:32/1866]  TYPE: int TEXT=int  [53:1/1835-53:32/1866]  INIT: text='BOOST_PP_REPEAT(2, DECL, int x)'  SCOPE: $Global$ 
+VARIABLE x1 [53:1/1835-53:32/1866]  TYPE: int TEXT=int  [53:1/1835-53:32/1866]  INIT: text='BOOST_PP_REPEAT(2, DECL, int x)'  SCOPE: $Global$ 
+VARIABLE b [59:1/1970-59:9/1978]  TYPE: int TEXT=int  [59:1/1970-59:9/1978]  INIT: text='MAC_A(b)'  SCOPE: $Global$ 
+VARIABLE A_B [70:1/2131-70:22/2152]  TYPE: int TEXT=int  [70:1/2131-70:4/2134]  INIT: null  SCOPE: $Global$ 
+VARIABLE AB [73:1/2184-73:22/2205]  TYPE: int TEXT=int  [73:1/2184-73:4/2187]  INIT: null  SCOPE: $Global$ 
+VARIABLE z [78:1/2277-78:9/2285]  TYPE: int TEXT=int  [78:1/2277-78:9/2285]  INIT: text='MAC_B(z)'  SCOPE: $Global$ 
+VARIABLE buf [84:1/2405-84:25/2429]  TYPE: *char TEXT=char*  [84:1/2405-84:6/2410]  INIT: text='TO_EMPTY(1)'  SCOPE: $Global$ 
+VARIABLE FUNC [89:1/2572-89:13/2584]  TYPE: int TEXT=int  [89:1/2572-89:4/2575]  INIT: null  SCOPE: $Global$ 
+VARIABLE x [96:1/2663-96:18/2680]  TYPE: int TEXT=int  [96:1/2663-96:4/2666]  INIT: text='conc1(,)'  SCOPE: $Global$ 
+VARIABLE y [97:1/2681-97:19/2699]  TYPE: int TEXT=int  [97:1/2681-97:4/2684]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
+

@@ -1,0 +1,3 @@
+FileModel3Test/preproc_concat.cc, line 87: '#' is not followed by a macro parameter
+INCORRECT #define directive: in preproc_concat.cc for:
+	TOKEN{["#define ",<DEFINE>,line=87,col=1],offset=2472,file=null} MACRO{["FUNC",<ID>,line=87,col=9],offset=2480,file=null}PARAMS{["a",<ID>,line=87,col=14],offset=2485,file=null}BODY{["#",<SHARP>,line=87,col=18],offset=2489,file=null ["b",<ID>,line=87,col=20],offset=2491,file=null}

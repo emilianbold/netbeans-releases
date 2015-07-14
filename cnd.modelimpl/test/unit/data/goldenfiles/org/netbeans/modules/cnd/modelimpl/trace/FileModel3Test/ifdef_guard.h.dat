@@ -1,0 +1,63 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 24):
+<U>#define '["GNU_STUBS_INCLUDED",<ID>,line=319,col=9],offset=10818,file=null'='["<comment text skipped>",<CPP_COMMENT>,line=319,col=28],offset=10837,file=null'
+<U>#define '["SYS_CDEFS_INCLUDED",<ID>,line=296,col=11],offset=9978,file=null'='["<comment text skipped>",<CPP_COMMENT>,line=296,col=30],offset=9997,file=null'
+<U>#define '["_BSD_SOURCE",<ID>,line=151,col=10],offset=5867,file=null'='["1",<DECIMALINT>,line=151,col=25],offset=5879,file=null'
+<U>#define '["_FEATURES_H",<ID>,line=20,col=9],offset=900,file=null'='["1",<DECIMALINT>,line=20,col=25],offset=912,file=null'
+<U>#define '["_POSIX_C_SOURCE",<ID>,line=172,col=11],offset=6680,file=null'='["199506L",<DECIMALINT>,line=172,col=33],offset=6696,file=null'
+<U>#define '["_POSIX_SOURCE",<ID>,line=168,col=10],offset=6563,file=null'='["1",<DECIMALINT>,line=168,col=25],offset=6577,file=null'
+<U>#define '["_SVID_SOURCE",<ID>,line=152,col=10],offset=5890,file=null'='["1",<DECIMALINT>,line=152,col=25],offset=5903,file=null'
+<U>#define '["__GLIBC_MINOR__",<ID>,line=266,col=9],offset=8949,file=null'='["3",<DECIMALINT>,line=266,col=25],offset=8965,file=null'
+<U>#define '["__GLIBC_PREREQ",<ID>,line=282,col=9],offset=9433,file=null[["maj",<ID>,line=282,col=24],offset=9448,file=null, ["min",<ID>,line=282,col=29],offset=9453,file=null]'='["(",<LPAREN>,line=283,col=9],offset=9461,file=null ["(",<LPAREN>,line=283,col=10],offset=9462,file=null ["__GLIBC__",<ID>,line=283,col=11],offset=9463,file=null ["<<",<SHIFTLEFT>,line=283,col=21],offset=9473,file=null ["16",<DECIMALINT>,line=283,col=24],offset=9476,file=null [")",<RPAREN>,line=283,col=26],offset=9478,file=null ["+",<PLUS>,line=283,col=28],offset=9480,file=null ["__GLIBC_MINOR__",<ID>,line=283,col=30],offset=9482,file=null [">=",<GREATERTHANOREQUALTO>,line=283,col=46],offset=9498,file=null ["(",<LPAREN>,line=283,col=49],offset=9501,file=null ["(",<LPAREN>,line=283,col=50],offset=9502,file=null ["maj",<ID>,line=283,col=51],offset=9503,file=null [")",<RPAREN>,line=283,col=54],offset=9506,file=null ["<<",<SHIFTLEFT>,line=283,col=56],offset=9508,file=null ["16",<DECIMALINT>,line=283,col=59],offset=9511,file=null [")",<RPAREN>,line=283,col=61],offset=9513,file=null ["+",<PLUS>,line=283,col=63],offset=9515,file=null ["(",<LPAREN>,line=283,col=65],offset=9517,file=null ["min",<ID>,line=283,col=66],offset=9518,file=null [")",<RPAREN>,line=283,col=69],offset=9521,file=null [")",<RPAREN>,line=283,col=70],offset=9522,file=null'
+<U>#define '["__GLIBC__",<ID>,line=265,col=9],offset=8929,file=null'='["2",<DECIMALINT>,line=265,col=25],offset=8939,file=null'
+<U>#define '["__GNUC_PREREQ",<ID>,line=279,col=10],offset=9391,file=null[["maj",<ID>,line=279,col=24],offset=9405,file=null, ["min",<ID>,line=279,col=29],offset=9410,file=null]'='["0",<OCTALINT>,line=279,col=34],offset=9415,file=null'
+<U>#define '["__GNU_LIBRARY__",<ID>,line=261,col=9],offset=8770,file=null'='["6",<DECIMALINT>,line=261,col=25],offset=8786,file=null'
+<U>#define '["__KERNEL_STRICT_NAMES",<ID>,line=110,col=10],offset=4600,file=null'=''
+<U>#define '["__STDC_IEC_559_COMPLEX__",<ID>,line=249,col=9],offset=8195,file=null'='["1",<DECIMALINT>,line=249,col=41],offset=8220,file=null'
+<U>#define '["__STDC_IEC_559__",<ID>,line=248,col=9],offset=8167,file=null'='["1",<DECIMALINT>,line=248,col=41],offset=8185,file=null'
+<U>#define '["__STDC_ISO_10646__",<ID>,line=252,col=9],offset=8310,file=null'='["200009L",<DECIMALINT>,line=252,col=41],offset=8330,file=null'
+<U>#define '["__USE_ANSI",<ID>,line=114,col=9],offset=4670,file=null'='["1",<DECIMALINT>,line=114,col=25],offset=4681,file=null'
+<U>#define '["__USE_BSD",<ID>,line=232,col=10],offset=7888,file=null'='["1",<DECIMALINT>,line=232,col=25],offset=7898,file=null'
+<U>#define '["__USE_MISC",<ID>,line=228,col=10],offset=7839,file=null'='["1",<DECIMALINT>,line=228,col=25],offset=7850,file=null'
+<U>#define '["__USE_POSIX",<ID>,line=177,col=10],offset=6804,file=null'='["1",<DECIMALINT>,line=177,col=25],offset=6816,file=null'
+<U>#define '["__USE_POSIX199309",<ID>,line=185,col=10],offset=6981,file=null'='["1",<DECIMALINT>,line=185,col=33],offset=6999,file=null'
+<U>#define '["__USE_POSIX199506",<ID>,line=189,col=10],offset=7055,file=null'='["1",<DECIMALINT>,line=189,col=33],offset=7073,file=null'
+<U>#define '["__USE_POSIX2",<ID>,line=181,col=10],offset=6912,file=null'='["1",<DECIMALINT>,line=181,col=25],offset=6925,file=null'
+<U>#define '["__USE_SVID",<ID>,line=236,col=10],offset=7937,file=null'='["1",<DECIMALINT>,line=236,col=25],offset=7948,file=null'
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE ifdef_guard.h
+Includes:
+    <no includes>
+Macros:
+#define 'GNU_STUBS_INCLUDED' [319:1/10810-319:52/10861]
+#define 'SYS_CDEFS_INCLUDED' [296:1/9968-296:53/10020]
+#define '_BSD_SOURCE' [151:1/5858-151:26/5880]
+#define '_FEATURES_H' [20:1/892-20:26/913]
+#define '_POSIX_C_SOURCE' [172:1/6670-172:40/6703]
+#define '_POSIX_SOURCE' [168:1/6554-168:26/6578]
+#define '_SVID_SOURCE' [152:1/5881-152:26/5904]
+#define '__GLIBC_MINOR__' [266:1/8941-266:26/8966]
+#define '__GLIBC_PREREQ[maj, min]' [282:1/9425-283:71/9523]
+#define '__GLIBC__' [265:1/8921-265:26/8940]
+#define '__GNUC_PREREQ[maj, min]' [279:1/9382-279:35/9416]
+#define '__GNU_LIBRARY__' [261:1/8762-261:26/8787]
+#define '__KERNEL_STRICT_NAMES' [110:1/4591-110:31/4621]
+#define '__STDC_IEC_559_COMPLEX__' [249:1/8187-249:42/8221]
+#define '__STDC_IEC_559__' [248:1/8159-248:42/8186]
+#define '__STDC_ISO_10646__' [252:1/8302-252:48/8337]
+#define '__USE_ANSI' [114:1/4662-114:26/4682]
+#define '__USE_BSD' [232:1/7879-232:26/7899]
+#define '__USE_MISC' [228:1/7830-228:26/7851]
+#define '__USE_POSIX' [177:1/6795-177:26/6817]
+#define '__USE_POSIX199309' [185:1/6972-185:34/7000]
+#define '__USE_POSIX199506' [189:1/7046-189:34/7074]
+#define '__USE_POSIX2' [181:1/6903-181:26/6926]
+#define '__USE_SVID' [236:1/7928-236:26/7949]
+
+========== Dumping model of PROJECT DummyProject
+

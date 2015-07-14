@@ -1,0 +1,18 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE preproc_test_include_with_macro_sys.h
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+VARIABLE BOOST_REGEX_USER_CONFIG_VAL [4:1/74-4:37/110]  TYPE: int TEXT=int  [4:1/74-4:4/77]  INIT: text='0'  SCOPE: $Global$ 
+
+========== Dumping model of PROJECT DummyProject
+VARIABLE BOOST_REGEX_USER_CONFIG_VAL [4:1/74-4:37/110]  TYPE: int TEXT=int  [4:1/74-4:4/77]  INIT: text='0'  SCOPE: $Global$ 
+
