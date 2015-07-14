@@ -182,7 +182,7 @@ public class OptionsDisplayerImpl {
         }
 
         OptionsPanel optionsPanel = null;
-        if (descriptor == null || descriptor.isModal() != modal) {
+        if (descriptor == null) {
             optionsPanel = categoryID == null ? new OptionsPanel (categoryInstance) : new OptionsPanel(categoryID, categoryInstance);
             bOK = (JButton) loc(new JButton(), "CTL_OK");//NOI18N
             bOK.getAccessibleContext().setAccessibleDescription(loc("ACS_OKButton"));//NOI18N
