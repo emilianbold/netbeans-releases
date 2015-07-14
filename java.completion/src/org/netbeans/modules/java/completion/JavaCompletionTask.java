@@ -127,6 +127,13 @@ public final class JavaCompletionTask<T> extends BaseTask {
 
         T createInitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset);
     }
+    
+    public static interface TypeCastableItemFactory<T> extends ItemFactory<T> {
+
+        T createTypeCastableVariableItem(CompilationInfo info, VariableElement elem, TypeMirror type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean smartType, int assignToVarOffset);
+
+        T createTypeCastableExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, TypeMirror castType, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef);        
+    }
 
     public static enum Options {
 
@@ -1329,6 +1336,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
             TreePath expPath = new TreePath(path, exp);
             TypeMirror type = controller.getTrees().getTypeMirror(expPath);
             if (type != null) {
+                Element el = controller.getTrees().getElement(expPath);
+                type = adjustType(env, type, el, expPath);
                 EnumSet<ElementKind> kinds;
                 DeclaredType baseType = null;
                 Set<TypeMirror> exs = null;
@@ -1361,7 +1370,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         if (it.hasNext()) {
                             ExpressionTree et = it.next();
                             if (et == fa || (et.getKind() == Tree.Kind.ASSIGNMENT && ((AssignmentTree) et).getExpression() == fa)) {
-                                Element el = controller.getTrees().getElement(expPath);
                                 if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
                                     el = controller.getElements().getPackageElement(((TypeElement) el).getQualifiedName());
                                 }
@@ -1376,7 +1384,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         kinds = EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT);
                     }
                 } else if (parent.getKind() == Tree.Kind.ASSIGNMENT && ((AssignmentTree) parent).getExpression() == fa && grandParent != null && grandParent.getKind() == Tree.Kind.ANNOTATION) {
-                    Element el = controller.getTrees().getElement(expPath);
                     if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
                         el = controller.getElements().getPackageElement(((TypeElement) el).getQualifiedName());
                     }
@@ -1423,7 +1430,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         baseType = controller.getTypes().getDeclaredType(te);
                     }
                 } else if (parent.getKind() == Tree.Kind.METHOD && ((MethodTree) parent).getDefaultValue() == fa) {
-                    Element el = controller.getTrees().getElement(expPath);
                     if (type.getKind() == TypeKind.ERROR && el.getKind().isClass()) {
                         el = controller.getElements().getPackageElement(((TypeElement) el).getQualifiedName());
                     }
@@ -1502,7 +1508,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                                 b = false;
                             }
                         }
-                        Element el = controller.getTrees().getElement(expPath);
+                        el = controller.getTrees().getElement(expPath);
                         if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
                             if (parent.getKind() == Tree.Kind.NEW_CLASS && ((NewClassTree) parent).getIdentifier() == fa && prefix != null) {
                                 String typeName = controller.getElementUtilities().getElementName(el, true) + "." + prefix; //NOI18N
@@ -3246,6 +3252,7 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return false;
             }
         };
+        boolean addCast = elem instanceof VariableElement && !elem.getKind().isField() && !types.isSameType(type, elem.asType());
         for (Element e : controller.getElementUtilities().getMembers(type, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
@@ -3259,7 +3266,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                         results.add(itemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                     } else {
                         TypeMirror tm = asMemberOf(e, type, types);
-                        results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
+                        if (addCast && itemFactory instanceof TypeCastableItemFactory) {
+                            results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableVariableItem(env.getController(), (VariableElement) e, tm, type, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
+                        } else {
+                            results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
+                        }
                     }
                     break;
                 case CONSTRUCTOR:
@@ -3268,7 +3279,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     break;
                 case METHOD:
                     et = (ExecutableType) asMemberOf(e, type, types);
-                    results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, type), smartTypes), env.assignToVarPos(), false));
+                    if (addCast && itemFactory instanceof TypeCastableItemFactory) {
+                        results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableExecutableItem(env.getController(), (ExecutableElement) e, et, type, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, type), smartTypes), env.assignToVarPos(), false));
+                    } else {
+                        results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, type), smartTypes), env.assignToVarPos(), false));
+                    }
                     break;
                 case CLASS:
                 case ENUM:
@@ -5239,6 +5254,111 @@ public final class JavaCompletionTask<T> extends BaseTask {
             }
         }
         return ret.isEmpty() ? null : ret;
+    }
+    
+    private TypeMirror adjustType(Env env, TypeMirror original, Element element, TreePath path) {
+        if (element instanceof VariableElement && !element.getKind().isField() && itemFactory instanceof TypeCastableItemFactory) {
+            final Trees trees = env.getController().getTrees();
+            final Types types = env.getController().getTypes();
+            final TypeUtilities tu = env.getController().getTypeUtilities();
+            Tree last = null;
+            while (path != null) {
+                if (path.getLeaf().getKind() == Tree.Kind.IF) {
+                    IfTree ifTree = (IfTree) path.getLeaf();
+                    if (ifTree.getThenStatement() == last) {
+                        Tree cond = ifTree.getCondition();
+                        while (cond.getKind() == Tree.Kind.PARENTHESIZED) {
+                            cond = ((ParenthesizedTree)cond).getExpression();
+                        }
+                        if (cond.getKind() == Tree.Kind.INSTANCE_OF) {
+                            InstanceOfTree instTree = (InstanceOfTree) cond;
+                            if (element == trees.getElement(new TreePath(path, instTree.getExpression()))) {
+                                TypeMirror tm = trees.getTypeMirror(new TreePath(path, instTree.getType()));
+                                if (tm != null && tu.isCastable(original, tm)) {
+                                    Boolean used = new TreePathScanner<Boolean, Element>() {
+                                        @Override
+                                        public Boolean reduce(Boolean r1, Boolean r2) {
+                                            return r1 == Boolean.TRUE ? r1 : r2;
+                                        }                                        
+
+                                        @Override
+                                        public Boolean visitAssignment(AssignmentTree tree, Element e) {
+                                            return e == trees.getElement(new TreePath(getCurrentPath(), tree.getVariable()))
+                                                    ? Boolean.TRUE : super.visitAssignment(tree, e);
+                                        }
+
+                                        @Override
+                                        public Boolean visitCompoundAssignment(CompoundAssignmentTree tree, Element e) {
+                                            return e == trees.getElement(new TreePath(getCurrentPath(), tree.getVariable()))
+                                                    ? Boolean.TRUE : super.visitCompoundAssignment(tree, e);
+                                        }
+                                    }.scan(new TreePath(path, ifTree.getThenStatement()), element);
+                                    if (used != Boolean.TRUE) {
+                                        if (original.getKind() == TypeKind.DECLARED) {
+                                            return inferDeclaredType(types, (DeclaredType)original, tm);
+                                        }
+                                        return tm;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                last = path.getLeaf();
+                path = path.getParentPath();
+            }
+        }
+        return original;
+    }
+    
+    private TypeMirror inferDeclaredType(Types types, DeclaredType original, TypeMirror type) {
+        if (type != null && type.getKind() == TypeKind.DECLARED) {
+            Element el = ((DeclaredType)type).asElement();
+            if (el.getKind().isClass() || el.getKind().isInterface()) {
+                List<? extends TypeParameterElement> typeParams = ((TypeElement)el).getTypeParameters();
+                if (!typeParams.isEmpty()) {
+                    if (el == original.asElement()) {
+                        return original;
+                    }
+                    Map<Element, TypeMirror> map = new HashMap<>();
+                    TypeMirror sup = ((TypeElement)el).getSuperclass();
+                    TypeMirror infSup = inferDeclaredType(types, original, sup);
+                    if (sup != infSup) {
+                        Iterator<? extends TypeMirror> supTP = ((DeclaredType)sup).getTypeArguments().iterator();
+                        Iterator<? extends TypeMirror> infTP = ((DeclaredType)infSup).getTypeArguments().iterator();
+                        while (supTP.hasNext() && infTP.hasNext()) {
+                            final TypeMirror next = supTP.next();
+                            if (next.getKind() == TypeKind.TYPEVAR) {
+                                map.put(((TypeVariable)next).asElement(), infTP.next());
+                            }
+                        }
+                        assert !supTP.hasNext() && !infTP.hasNext();
+                    }
+                    for (TypeMirror iface : ((TypeElement)el).getInterfaces()) {
+                        TypeMirror infIface = inferDeclaredType(types, original, iface);
+                        if (iface != infIface) {
+                            Iterator<? extends TypeMirror> ifaceTP = ((DeclaredType)iface).getTypeArguments().iterator();
+                            Iterator<? extends TypeMirror> infTP = ((DeclaredType)infIface).getTypeArguments().iterator();
+                            while (ifaceTP.hasNext() && infTP.hasNext()) {
+                                final TypeMirror next = ifaceTP.next();
+                                if (next.getKind() == TypeKind.TYPEVAR) {
+                                    map.put(((TypeVariable)next).asElement(), infTP.next());
+                                }
+                            }
+                            assert !ifaceTP.hasNext() && !infTP.hasNext();
+                        }                        
+                    }
+                    TypeMirror[] targs = new TypeMirror[typeParams.size()];
+                    int i = 0;
+                    for (TypeParameterElement typeParam : typeParams) {
+                        TypeMirror val = map.get(typeParam);
+                        targs[i++] = val != null ? val : typeParam.getBounds().get(0);
+                    }
+                    return types.getDeclaredType((TypeElement)el, targs);
+                }
+            }
+        }
+        return type;
     }
 
     private boolean withinScope(Env env, TypeElement e) throws IOException {

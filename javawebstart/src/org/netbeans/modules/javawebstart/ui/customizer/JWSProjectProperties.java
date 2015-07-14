@@ -154,6 +154,8 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     // explicit manifest entries (see #231951, #234231, http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/no_redeploy.html)
     public static final String MANIFEST_CUSTOM_CODEBASE = "manifest.custom.codebase"; // NOI18N
     public static final String MANIFEST_CUSTOM_PERMISSIONS = "manifest.custom.permissions"; // NOI18N
+    public static final String MANIFEST_CUSTOM_CALLER_ALLOWABLE_CODEBASE = "manifest.custom.caller.allowable.codebase"; //NOI18N
+    public static final String MANIFEST_CUSTOM_APPLICATION_LIBRARY_ALLOWABLE_CODEBASE= "manifest.custom.application.library.allowable.codebase";    //NOI18N
 
     public enum DescType {
         application, applet, component;
@@ -416,6 +418,14 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         if(!editableProps.containsKey(MANIFEST_CUSTOM_PERMISSIONS) && !privProps.containsKey(MANIFEST_CUSTOM_PERMISSIONS)) {
             editableProps.setProperty(MANIFEST_CUSTOM_PERMISSIONS, ""); // NOI18N
             editableProps.setComment(MANIFEST_CUSTOM_PERMISSIONS, new String[]{"# " + NbBundle.getMessage(JWSProjectProperties.class, "COMMENT_manifest_custom_permissions")}, false); // NOI18N
+        }
+        if(!editableProps.containsKey(MANIFEST_CUSTOM_CALLER_ALLOWABLE_CODEBASE) && !privProps.containsKey(MANIFEST_CUSTOM_CALLER_ALLOWABLE_CODEBASE)) {
+            editableProps.setProperty(MANIFEST_CUSTOM_CALLER_ALLOWABLE_CODEBASE, ""); // NOI18N
+            editableProps.setComment(MANIFEST_CUSTOM_CALLER_ALLOWABLE_CODEBASE, new String[]{"# " + NbBundle.getMessage(JWSProjectProperties.class, "COMMENT_manifest_custom_caller_allowable_codebase")}, false); // NOI18N
+        }
+        if(!editableProps.containsKey(MANIFEST_CUSTOM_APPLICATION_LIBRARY_ALLOWABLE_CODEBASE) && !privProps.containsKey(MANIFEST_CUSTOM_APPLICATION_LIBRARY_ALLOWABLE_CODEBASE)) {
+            editableProps.setProperty(MANIFEST_CUSTOM_APPLICATION_LIBRARY_ALLOWABLE_CODEBASE, ""); // NOI18N
+            editableProps.setComment(MANIFEST_CUSTOM_APPLICATION_LIBRARY_ALLOWABLE_CODEBASE, new String[]{"# " + NbBundle.getMessage(JWSProjectProperties.class, "COMMENT_manifest_custom_application_library_allowable_codebase")}, false); // NOI18N
         }
         // store codebase type
         String selItem = ((CodebaseComboBoxModel) codebaseModel).getSelectedCodebaseItem();
