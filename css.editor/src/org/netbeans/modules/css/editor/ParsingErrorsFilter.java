@@ -214,7 +214,7 @@ public class ParsingErrorsFilter {
             public void run() {
                 //refresh Action Items for this file
                 FileObject parent = fo.getParent();
-                while(!parent.isRoot()) {
+                while(!parent.isRoot() && FileOwnerQuery.getOwner(parent.getParent().getParent()) != null) {
                     parent = parent.getParent();
                 }
                 IndexingManager.getDefault().refreshIndexAndWait(parent.toURL(),
