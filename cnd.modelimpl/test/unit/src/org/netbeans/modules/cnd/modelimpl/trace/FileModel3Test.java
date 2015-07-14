@@ -55,7 +55,7 @@ public class FileModel3Test extends TraceModelTestBase {
     protected void setUp() throws Exception {
         System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
         System.setProperty("parser.report.errors", "true");
-//        System.setProperty("apt.use.clank", "true");
+        System.setProperty("apt.use.clank", "true");
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         super.setUp();
     }
@@ -121,6 +121,10 @@ public class FileModel3Test extends TraceModelTestBase {
     
     public void test_preproc_concat() throws Exception {
         performTest("preproc_concat.cc");
+    }
+    
+    public void test_preproc_concat_error() throws Exception {
+        performTest("preproc_concat_error.cc");
     }
     
     public void test_preproc_endif() throws Exception {

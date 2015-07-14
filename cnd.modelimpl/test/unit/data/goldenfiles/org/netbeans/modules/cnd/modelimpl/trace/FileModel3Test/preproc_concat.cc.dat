@@ -2,8 +2,8 @@
 State of macro map:
 Own Map:
 MACROS (sorted 39):
-<U>#define '["A",<ID>,line=94,col=9],offset=2651,file=null'=''
-<U>#define '["B",<ID>,line=95,col=9],offset=2661,file=null'=''
+<U>#define '["A",<ID>,line=88,col=9],offset=2495,file=null'=''
+<U>#define '["B",<ID>,line=89,col=9],offset=2505,file=null'=''
 <U>#define '["BOOST_PP_AUTO_REC",<ID>,line=35,col=9],offset=1194,file=null[["pred",<ID>,line=35,col=27],offset=1212,file=null, ["n",<ID>,line=35,col=33],offset=1218,file=null]'='["1",<DECIMALINT>,line=35,col=36],offset=1221,file=null'
 <U>#define '["BOOST_PP_CAT",<ID>,line=29,col=9],offset=968,file=null[["a",<ID>,line=29,col=22],offset=981,file=null, ["b",<ID>,line=29,col=25],offset=984,file=null]'='["BOOST_PP_CAT_I",<ID>,line=29,col=28],offset=987,file=null ["(",<LPAREN>,line=29,col=42],offset=1001,file=null ["a",<ID>,line=29,col=43],offset=1002,file=null [",",<COMMA>,line=29,col=44],offset=1003,file=null ["b",<ID>,line=29,col=46],offset=1005,file=null [")",<RPAREN>,line=29,col=47],offset=1006,file=null'
 <U>#define '["BOOST_PP_CAT_I",<ID>,line=30,col=9],offset=1017,file=null[["a",<ID>,line=30,col=24],offset=1032,file=null, ["b",<ID>,line=30,col=27],offset=1035,file=null]'='["a",<ID>,line=30,col=30],offset=1038,file=null ["##",<DBL_SHARP>,line=30,col=32],offset=1040,file=null ["b",<ID>,line=30,col=35],offset=1043,file=null'
@@ -39,8 +39,8 @@ MACROS (sorted 39):
 <U>#define '["__MATH_PRECNAME",<ID>,line=21,col=9],offset=782,file=null[["name",<ID>,line=21,col=25],offset=798,file=null, ["r",<ID>,line=21,col=30],offset=803,file=null]'='["__CONCAT",<ID>,line=21,col=33],offset=806,file=null ["(",<LPAREN>,line=21,col=41],offset=814,file=null ["name",<ID>,line=21,col=42],offset=815,file=null [",",<COMMA>,line=21,col=46],offset=819,file=null ["r",<ID>,line=21,col=47],offset=820,file=null [")",<RPAREN>,line=21,col=48],offset=821,file=null'
 <U>#define '["__STRING",<ID>,line=4,col=9],offset=54,file=null[["x",<ID>,line=4,col=18],offset=63,file=null]'='["#",<SHARP>,line=4,col=25],offset=66,file=null ["x",<ID>,line=4,col=26],offset=67,file=null'
 <U>#define '["__THROW",<ID>,line=2,col=9],offset=9,file=null'=''
-<U>#define '["conc",<ID>,line=93,col=9],offset=2622,file=null[["a",<ID>,line=93,col=14],offset=2627,file=null, ["b",<ID>,line=93,col=16],offset=2629,file=null]'='["conc1",<ID>,line=93,col=19],offset=2632,file=null ["(",<LPAREN>,line=93,col=24],offset=2637,file=null ["b",<ID>,line=93,col=25],offset=2638,file=null [",",<COMMA>,line=93,col=26],offset=2639,file=null ["a",<ID>,line=93,col=27],offset=2640,file=null [")",<RPAREN>,line=93,col=28],offset=2641,file=null'
-<U>#define '["conc1",<ID>,line=92,col=9],offset=2595,file=null[["a",<ID>,line=92,col=15],offset=2601,file=null, ["b",<ID>,line=92,col=17],offset=2603,file=null]'='["a",<ID>,line=92,col=20],offset=2606,file=null ["##",<DBL_SHARP>,line=92,col=21],offset=2607,file=null ["b",<ID>,line=92,col=23],offset=2609,file=null ["##",<DBL_SHARP>,line=92,col=24],offset=2610,file=null ["1",<DECIMALINT>,line=92,col=26],offset=2612,file=null'
+<U>#define '["conc",<ID>,line=87,col=9],offset=2466,file=null[["a",<ID>,line=87,col=14],offset=2471,file=null, ["b",<ID>,line=87,col=16],offset=2473,file=null]'='["conc1",<ID>,line=87,col=19],offset=2476,file=null ["(",<LPAREN>,line=87,col=24],offset=2481,file=null ["b",<ID>,line=87,col=25],offset=2482,file=null [",",<COMMA>,line=87,col=26],offset=2483,file=null ["a",<ID>,line=87,col=27],offset=2484,file=null [")",<RPAREN>,line=87,col=28],offset=2485,file=null'
+<U>#define '["conc1",<ID>,line=86,col=9],offset=2439,file=null[["a",<ID>,line=86,col=15],offset=2445,file=null, ["b",<ID>,line=86,col=17],offset=2447,file=null]'='["a",<ID>,line=86,col=20],offset=2450,file=null ["##",<DBL_SHARP>,line=86,col=21],offset=2451,file=null ["b",<ID>,line=86,col=23],offset=2453,file=null ["##",<DBL_SHARP>,line=86,col=24],offset=2454,file=null ["1",<DECIMALINT>,line=86,col=26],offset=2456,file=null'
 System Map:
 MACROS (sorted 0):
 
@@ -49,8 +49,8 @@ MACROS (sorted 0):
 Includes:
     <no includes>
 Macros:
-#define 'A' [94:1/2643-94:10/2652]
-#define 'B' [95:1/2653-95:10/2662]
+#define 'A' [88:1/2487-88:10/2496]
+#define 'B' [89:1/2497-89:10/2506]
 #define 'BOOST_PP_AUTO_REC[pred, n]' [35:1/1186-35:37/1222]
 #define 'BOOST_PP_CAT[a, b]' [29:1/960-29:48/1007]
 #define 'BOOST_PP_CAT_I[a, b]' [30:1/1009-30:36/1044]
@@ -65,7 +65,6 @@ Macros:
 #define 'CAT[a, b]' [56:1/1888-56:25/1912]
 #define 'DECL[z, n, text]' [51:1/1794-51:40/1833]
 #define 'EMPTY_MACRO' [81:1/2306-81:20/2325]
-#define 'FUNC[a]' [87:1/2472-87:21/2492]
 #define 'FUN_1[x]' [57:1/1913-57:29/1941]
 #define 'FUN_2[x]' [76:1/2227-76:29/2255]
 #define 'MAC1' [61:1/1998-61:15/2012]
@@ -87,8 +86,8 @@ Macros:
 #define '__MATH_PRECNAME[name, r]' [21:1/774-21:49/822]
 #define '__STRING[x]' [4:1/46-4:27/68]
 #define '__THROW' [2:1/1-2:16/16]
-#define 'conc[a, b]' [93:1/2614-93:29/2642]
-#define 'conc1[a, b]' [92:1/2587-92:27/2613]
+#define 'conc[a, b]' [87:1/2458-87:29/2486]
+#define 'conc1[a, b]' [86:1/2431-86:27/2457]
 FUNCTION __atan [23:1/824-23:37/860] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE __atan(double)
@@ -124,9 +123,8 @@ VARIABLE A_B [70:1/2131-70:22/2152]  TYPE: int TEXT=int  [70:1/2131-70:4/2134]  
 VARIABLE AB [73:1/2184-73:22/2205]  TYPE: int TEXT=int  [73:1/2184-73:4/2187]  INIT: null  SCOPE: $Global$ 
 VARIABLE z [78:1/2277-78:9/2285]  TYPE: int TEXT=int  [78:1/2277-78:9/2285]  INIT: text='MAC_B(z)'  SCOPE: $Global$ 
 VARIABLE buf [84:1/2405-84:25/2429]  TYPE: *char TEXT=char*  [84:1/2405-84:6/2410]  INIT: text='TO_EMPTY(1)'  SCOPE: $Global$ 
-VARIABLE FUNC [89:1/2572-89:13/2584]  TYPE: int TEXT=int  [89:1/2572-89:4/2575]  INIT: null  SCOPE: $Global$ 
-VARIABLE x [96:1/2663-96:18/2680]  TYPE: int TEXT=int  [96:1/2663-96:4/2666]  INIT: text='conc1(,)'  SCOPE: $Global$ 
-VARIABLE y [97:1/2681-97:19/2699]  TYPE: int TEXT=int  [97:1/2681-97:4/2684]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
+VARIABLE x [90:1/2507-90:18/2524]  TYPE: int TEXT=int  [90:1/2507-90:4/2510]  INIT: text='conc1(,)'  SCOPE: $Global$ 
+VARIABLE y [91:1/2525-91:19/2543]  TYPE: int TEXT=int  [91:1/2525-91:4/2528]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION __atan [23:1/824-23:37/860] FunctionImpl SCOPE: $Global$ 
@@ -164,7 +162,6 @@ VARIABLE A_B [70:1/2131-70:22/2152]  TYPE: int TEXT=int  [70:1/2131-70:4/2134]  
 VARIABLE AB [73:1/2184-73:22/2205]  TYPE: int TEXT=int  [73:1/2184-73:4/2187]  INIT: null  SCOPE: $Global$ 
 VARIABLE z [78:1/2277-78:9/2285]  TYPE: int TEXT=int  [78:1/2277-78:9/2285]  INIT: text='MAC_B(z)'  SCOPE: $Global$ 
 VARIABLE buf [84:1/2405-84:25/2429]  TYPE: *char TEXT=char*  [84:1/2405-84:6/2410]  INIT: text='TO_EMPTY(1)'  SCOPE: $Global$ 
-VARIABLE FUNC [89:1/2572-89:13/2584]  TYPE: int TEXT=int  [89:1/2572-89:4/2575]  INIT: null  SCOPE: $Global$ 
-VARIABLE x [96:1/2663-96:18/2680]  TYPE: int TEXT=int  [96:1/2663-96:4/2666]  INIT: text='conc1(,)'  SCOPE: $Global$ 
-VARIABLE y [97:1/2681-97:19/2699]  TYPE: int TEXT=int  [97:1/2681-97:4/2684]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
+VARIABLE x [90:1/2507-90:18/2524]  TYPE: int TEXT=int  [90:1/2507-90:4/2510]  INIT: text='conc1(,)'  SCOPE: $Global$ 
+VARIABLE y [91:1/2525-91:19/2543]  TYPE: int TEXT=int  [91:1/2525-91:4/2528]  INIT: text='conc(A,B)'  SCOPE: $Global$ 
 

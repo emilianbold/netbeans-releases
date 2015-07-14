@@ -83,12 +83,6 @@ MAC_B(z)
 #define PREFIX(x)  __STRING(x)
 char* buf = TO_EMPTY(1);
 
-// 24.6: In function-like macro (right).
-#define FUNC(a)  # b
-//E t_6_048.cpp(23): error: ill formed preprocessing operator: stringize ('#')
-int FUNC(1);
-
-
 #define conc1(a,b) a##b##1
 #define conc(a,b) conc1(b,a)
 #define A
