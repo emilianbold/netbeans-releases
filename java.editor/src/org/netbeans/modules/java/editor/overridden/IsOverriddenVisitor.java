@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -65,7 +67,8 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
  * @author Jan Lahoda
  */
 class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
-    
+
+    private static final Logger LOG = Logger.getLogger(IsOverriddenVisitor.class.getName());
     private CompilationInfo info;
     
     Map<ElementHandle<TypeElement>, List<ElementHandle<ExecutableElement>>> type2Declaration;
@@ -108,11 +111,20 @@ class IsOverriddenVisitor extends CancellableTreePathScanner<Void, Tree> {
                     if (methods == null) {
                         type2Declaration.put(currentClass, methods = new ArrayList<ElementHandle<ExecutableElement>>());
                     }
-                    
-                    ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(overridee);
-                    
-                    methods.add(methodHandle);
-                    declaration2Tree.put(methodHandle, tree);
+
+                    try {
+                        ElementHandle<ExecutableElement> methodHandle = ElementHandle.create(overridee);
+                        methods.add(methodHandle);
+                        declaration2Tree.put(methodHandle, tree);
+                    } catch (IllegalArgumentException iae) {
+                        LOG.log(
+                            Level.INFO,
+                            "Unresolvable method: {0}, reason: {1}",    //NOI18N
+                            new Object[]{
+                                overridee,
+                                iae.getMessage()
+                            });
+                    }
                 }
             }
         }
