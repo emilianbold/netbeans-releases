@@ -492,8 +492,12 @@ public class ProxyLookup extends Lookup {
         /** Just delegates.
          */
         public void removeLookupListener(LookupListener l) {
-            if (listeners != null) {
-                listeners.remove(l);
+            LookupListenerList listenersLocal;
+            synchronized (proxy()) {
+                listenersLocal = listeners;
+            }
+            if (listenersLocal != null) {
+                listenersLocal.remove(l);
             }
         }
 

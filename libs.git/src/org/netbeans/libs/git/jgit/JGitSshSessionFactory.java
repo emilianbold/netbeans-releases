@@ -98,7 +98,7 @@ public class JGitSshSessionFactory extends JschConfigSessionFactory {
 
     @Override
     protected void configure (Host host, Session sn) {
-        
+        sn.setConfig("PreferredAuthentications", "publickey,password,keyboard-interactive"); //NOI18N
     }
 
     @Override

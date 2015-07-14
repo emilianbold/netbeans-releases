@@ -73,15 +73,16 @@ import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter.ClassNames;
 */
 public class ClassBreakpointImpl extends ClassBasedBreakpoint {
 
-    private ClassLoadUnloadBreakpoint breakpoint;
+    private final ClassLoadUnloadBreakpoint breakpoint;
 
 
-    public ClassBreakpointImpl (
+    ClassBreakpointImpl (
         ClassLoadUnloadBreakpoint breakpoint, 
         JPDADebuggerImpl debugger,
-        Session session
+        Session session,
+        SourceRootsCache sourceRootsCache
     ) {
-        super (breakpoint, debugger, session);
+        super (breakpoint, debugger, session, sourceRootsCache);
         this.breakpoint = breakpoint;
         set ();
     }
