@@ -26,7 +26,7 @@ __MATHCALL (tan,, (_Mdouble_ __x));
 //-----------------------
 //--- excerpts from boost headers
 
-#define BOOST_PP_CAT(a, b) BOOST_PP_CAT_I(a, b) 
+#define BOOST_PP_CAT(a, b) BOOST_PP_CAT_I(a, b)
 #define BOOST_PP_CAT_I(a, b) a ## b
 
 // this is the only macro that has its right part replaced by just "1"
