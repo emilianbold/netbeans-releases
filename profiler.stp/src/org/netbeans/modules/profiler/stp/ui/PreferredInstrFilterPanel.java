@@ -45,7 +45,6 @@ package org.netbeans.modules.profiler.stp.ui;
 
 
 //import org.netbeans.api.progress.ProgressHandle;
-//import org.netbeans.api.progress.ProgressHandleFactory;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import java.awt.Dimension;
@@ -143,7 +142,7 @@ public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provide
                             public void run() {
                                 //            ProgressHandle pHandle = null;
                                 //            try {
-                                //              pHandle = ProgressHandleFactory.createHandle(COMPUTING_FILTER_STRING);
+                                //              pHandle = ProgressHandle.createHandle(COMPUTING_FILTER_STRING);
                                 //              pHandle.setInitialDelay(0);
                                 //              pHandle.start();
 
