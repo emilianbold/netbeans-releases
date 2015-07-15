@@ -118,8 +118,7 @@ public final class ExternalBrowserPlugin {
             Thread shutdown = new Thread(){
                 @Override
                 public void run() {
-                    List<BrowserTabDescriptor> browserTabs = new ArrayList<BrowserTabDescriptor>(knownBrowserTabs);
-                    for (BrowserTabDescriptor tab : browserTabs) {
+                    for (BrowserTabDescriptor tab : knownBrowserTabs) {
                         tab.deinitialize();
                     }
                     server.stop();
@@ -220,8 +219,7 @@ public final class ExternalBrowserPlugin {
     }
 
     private void removeKey( SelectionKey key ) {
-        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-            BrowserTabDescriptor browserTab = iterator.next();
+        for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
             if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
                 browserTab.deinitialize();
                 browserTab.browserImpl.wasClosed();
@@ -230,7 +228,7 @@ public final class ExternalBrowserPlugin {
             if (!browserTab.isAnyKeyRegistered()) {
                 // SelectionKey of the last feature (that was interested in this tab)
                 // was removed => we can forget this tab.
-                iterator.remove();
+                knownBrowserTabs.remove(browserTab);
             }
         }
     }
@@ -471,13 +469,12 @@ public final class ExternalBrowserPlugin {
         }
         
         private boolean deinitializeTab(int tabId, boolean close) {
-            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-                BrowserTabDescriptor browserTab = iterator.next();
+            for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
                 if ( tabId == browserTab.tabID ) {
                     browserTab.deinitialize();
                     browserTab.disableReInitialization();
                     if (close) {
-                        iterator.remove();
+                        knownBrowserTabs.remove(browserTab);
                         browserTab.browserImpl.wasClosed();
                     }
                     return true;
@@ -630,8 +627,7 @@ public final class ExternalBrowserPlugin {
             final String url = String.valueOf(resource.get("url"));
             final String type = String.valueOf(resource.get("type"));
             URL mainDocumentUrl = null;
-            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
-                BrowserTabDescriptor browserTab = iterator.next();
+            for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
                 if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
                     mainDocumentUrl = browserTab.browserImpl.getURL();
                 }
@@ -720,7 +716,7 @@ public final class ExternalBrowserPlugin {
 
     }
 
-    private List<BrowserTabDescriptor> knownBrowserTabs = new ArrayList<BrowserTabDescriptor>();
+    private List<BrowserTabDescriptor> knownBrowserTabs = new CopyOnWriteArrayList<BrowserTabDescriptor>();
 
     /**
      * Descriptor of tab opened in the external browser.

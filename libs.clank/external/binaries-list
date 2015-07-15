@@ -1,6 +1,6 @@
-#changeset:   15281:e6c741fdece6
+#changeset:   15287:6a9a36cc1914
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Mon Jul 13 20:02:39 2015 +0300
-#summary:     assert about EOD tokens
-93C7FB153337A7638E255CC9EBCADFABC8C29855 clank_0.3.6.zip
+#user:        Vladimir Kvashin <vkvashin@netbeans.org>
+#date:        Wed Jul 15 13:53:44 2015 +0300
+#summary:     made new preprocessor work on Windows
+415A808B75F9EDB3CD6F4689DCEF9C399BF802A8 clank_0.3.6.zip

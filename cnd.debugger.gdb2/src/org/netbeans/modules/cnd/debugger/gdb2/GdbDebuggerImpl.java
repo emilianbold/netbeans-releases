@@ -3164,7 +3164,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
-                wv.populateUpdate(updatevar.asTuple());
+                wv.populateUpdate(updatevar.asTuple(), variableBag);
 
                 // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
@@ -4474,6 +4474,26 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         // interface Controller
         @Override
         public void requestDis(boolean withSource) {
+            if (peculiarity.isLldb()) {
+                MICommand cmd = new MiCommandImpl("-data-evaluate-expression $pc") { //NOI18N
+
+                    @Override
+                    protected void onDone(MIRecord record) {
+                        if (!record.isError()) {
+                            String start = record.results().getConstValue("value"); //NOI18N
+                            long end = Long.parseLong(start) + 100;
+                            requestDisFromGdb(
+                                    "-data-disassemble -s " + start +   //NOI18N
+                                    " -e " + end +                      //NOI18N
+                                    " -- 0");                            //NOI18N
+                        }
+                    }
+                    
+                };
+                
+                gdb.sendCommand(cmd);
+                return;
+            }
             GdbFrame currentFrame = getCurrentFrame();
             if (currentFrame == null) {
                 return;

@@ -1257,7 +1257,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
                 execPath = executor.readlsof(dt.getPid());
             } else if (host.getPlatform() == Platform.Windows_x86) {
                 // omit arguments (IZ 230518)
-                execPath = execPath.split(" ")[0]; // NOI18N
+                //execPath = execPath.split(" ")[0]; // NOI18N
             } else {
                 execPath = executor.readlink(dt.getPid());
             }

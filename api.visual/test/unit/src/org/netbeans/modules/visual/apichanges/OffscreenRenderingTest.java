@@ -53,6 +53,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -83,9 +84,11 @@ public class OffscreenRenderingTest extends VisualTestCase {
         layer.addChild (widget);
 
         BufferedImage image = dumpSceneOffscreenRendering (scene);
-        assertCleaness (testCleaness (image, Color.WHITE, Color.BLACK), image, null);
+        Color backgroundColor = (Color) (new DefaultLookFeel()).getBackground();
+        Color foregroundColor = (new DefaultLookFeel()).getForeground();
+        assertCleaness (testCleaness (image, backgroundColor, foregroundColor), image, null);
 
-        assertScene (scene, Color.WHITE, new Rectangle (19, 19, 42, 42));
+        assertScene (scene, backgroundColor, new Rectangle (19, 19, 42, 42));
     }
 
     private BufferedImage dumpSceneOffscreenRendering (Scene scene) {
