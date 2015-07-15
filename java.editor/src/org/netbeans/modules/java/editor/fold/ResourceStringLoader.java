@@ -352,8 +352,9 @@ public final class ResourceStringLoader {
                     if (h == null) {
                         LOG.fine("Found expired holder for " + f);
                         loaded.remove(f);
+                    } else {
+                        fireHolders.add(h);
                     }
-                    fireHolders.add(h);
                 }
             }
             Set<ResourceStringLoader> loaders = new HashSet<>();
