@@ -3291,7 +3291,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         }
         String expr = v.getMIName();
 	// editable ?
-        String cmdString = "-var-show-attributes \"" + expr + "\""; // NOI18N
+        String cmdString = peculiarity.showAttributesCommand(expr);
         MICommand cmd =
             new MiCommandImpl(cmdString) {
             @Override
@@ -5464,9 +5464,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         notImplemented("postVarContinuation");	// NOI18N
     }
 
-    // interface GdbDebugger
+    // interface GdbDebugger 
     public void runArgs(String args) {
-        sendSilent(peculiarity.runArgsCommand(args));
+        sendSilent("-exec-arguments " + args); // NOI18N
     }
 
     public void runDir(String dir) {
