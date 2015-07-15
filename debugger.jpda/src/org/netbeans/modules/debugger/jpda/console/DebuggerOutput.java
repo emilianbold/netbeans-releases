@@ -340,7 +340,8 @@ public class DebuggerOutput implements PropertyChangeListener {
                 if (lineNumber > 0 && url != null) {
                     line = new DebuggerConsoleIO.Line (
                         url, 
-                        lineNumber
+                        lineNumber,
+                        debugger
                     );
                 } else {
                     line = null;

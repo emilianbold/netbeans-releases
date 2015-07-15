@@ -364,6 +364,15 @@ public class RSSFeed extends JPanel implements Constants, PropertyChangeListener
                         setContent( buildProxyPanel() );
                     }
                 });
+            } catch( SAXException e ) {
+                // cancel the feed loading task if there is a parse exception
+                stopReloading();
+                SwingUtilities.invokeLater( new Runnable() {
+                    @Override
+                    public void run() {
+                        setContent( buildErrorLabel() );
+                    }
+                });
             } catch( Exception e ) {
                 if( isContentCached()) {
                     isCached = false;
