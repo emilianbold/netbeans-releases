@@ -101,7 +101,7 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
             // rfs:user@host:22/usr/include
             // rfs://user@host:22
             // rfs:user@host:22
-            int pos = CharSequenceUtils.indexOf(path, ":", RFS_PREFIX.length());
+            int pos = CharSequenceUtils.indexOf(path, ":", RFS_PREFIX.length()); //NOI18N
             if (pos > 0) {
                 pos++;
                 while (pos < path.length() && Character.isDigit(path.charAt(pos))) {
