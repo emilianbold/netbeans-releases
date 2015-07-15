@@ -68,16 +68,10 @@ public final class DebuggerConsoleIO {
     }
     
     public void println(String text, Line line) {
-        if (line != null) {
-            line.setDebuggerTimeStamp(this.debugger);
-        }
         output.getIOManager().println(text, line);
     }
     
     public void println(String text, Line line, boolean important) {
-        if (line != null) {
-            line.setDebuggerTimeStamp(this.debugger);
-        }
         output.getIOManager().println(text, line, important);
     }
     
@@ -85,15 +79,12 @@ public final class DebuggerConsoleIO {
         
         private final String url;
         private final int lineNumber;
-        private Reference<JPDADebugger> debuggerRef;
+        private final Reference<JPDADebugger> debuggerRef;
         
-        public Line (String url, int lineNumber) {
+        public Line (String url, int lineNumber, JPDADebugger debuggerTimeStamp) {
             this.url = url;
             this.lineNumber = lineNumber;
-        }
-        
-        private void setDebuggerTimeStamp(JPDADebugger debugger) {
-            this.debuggerRef = new WeakReference<>(debugger);
+            this.debuggerRef = new WeakReference<>(debuggerTimeStamp);
         }
         
         public void show () {
