@@ -63,7 +63,7 @@ import java.util.*;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.visual.laf.LookFeel;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * A scene is a tree of small building blocks called widgets and represented by this class.
@@ -175,8 +175,8 @@ public class Widget implements Accessible, Lookup.Provider {
 
         opaque = false;
         font = null;
-        background = LookFeel.createDefaultLookFeel().getBackground();//Color.WHITE;
-        foreground = LookFeel.createDefaultLookFeel().getForeground()/*Color.BLACK*/;
+        background = (new DefaultLookFeel()).getBackground();//Color.WHITE;
+        foreground = (new DefaultLookFeel()).getForeground();//Color.BLACK;
         border = BorderFactory.createEmptyBorder ();
         layout = LayoutFactory.createAbsoluteLayout ();
         preferredLocation = null;

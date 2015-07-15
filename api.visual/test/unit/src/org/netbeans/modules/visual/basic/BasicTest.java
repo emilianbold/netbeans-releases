@@ -58,6 +58,7 @@ import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -106,7 +107,8 @@ public class BasicTest extends VisualTestCase {
         conn.setTargetAnchor(AnchorFactory.createRectangularAnchor(w2));
         connLayer.addChild(conn);
         
-        assertScene (scene, Color.WHITE,
+        Color color = (Color) (new DefaultLookFeel()).getBackground();
+        assertScene (scene, color,
                 new Rectangle (99, 99, 42, 22),
                 new Rectangle (199, 99, 42, 22),
                 new Rectangle (138, 108, 64, 4)
