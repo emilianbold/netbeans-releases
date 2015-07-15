@@ -61,6 +61,6 @@ import org.openide.awt.ActionRegistration;
 public class OptionsWindowAction implements ActionListener {
     
     public void actionPerformed(ActionEvent evt) {
-        OptionsDisplayer.getDefault().open();
+        OptionsDisplayer.getDefault().open(false);
     }
 }

@@ -430,6 +430,13 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             provider.setGenerateIntegrationTests(isIntegrationTests());
             break;
         }
+        Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
+        for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
+            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+                TestCreatorConfigurationProvider.Context context = new TestCreatorConfigurationProvider.Context(multipleClasses, new CommonCfgOfCreateCallback(this));
+                panelProvider.persistConfigurationPanel(context);
+            }
+        }
     }
 
     private void setLastSelectedTestingFramework() {

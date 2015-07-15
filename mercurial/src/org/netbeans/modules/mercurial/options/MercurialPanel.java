@@ -103,6 +103,7 @@ final class MercurialPanel extends javax.swing.JPanel {
         cbAskBeforeCommitAfterMerge.addActionListener(actionListener);
         cbInternalMergeToolEnabled.addActionListener(actionListener);
         excludeNewFiles.addActionListener(actionListener);
+        pullWithUpdate.addActionListener(actionListener);
     }
 
     @Override
@@ -203,24 +204,17 @@ final class MercurialPanel extends javax.swing.JPanel {
         lblWarning.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(lblWarning, " "); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(pullWithUpdate, org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.pullWithUpdate.text")); // NOI18N
+        pullWithUpdate.setToolTipText(org.openide.util.NbBundle.getMessage(MercurialPanel.class, "MercurialPanel.pullWithUpdate.toolTipText")); // NOI18N
+        pullWithUpdate.setBorder(null);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbOpenOutputWindow)
-                            .addComponent(cbAskBeforeCommitAfterMerge)
-                            .addComponent(cbInternalMergeToolEnabled)
-                            .addComponent(excludeNewFiles)))
-                    .addComponent(jLabel1)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(201, 201, 201)))
-                .addGap(248, 248, 248))
+                .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(449, 449, 449))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel5)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -240,7 +234,7 @@ final class MercurialPanel extends javax.swing.JPanel {
                             .addComponent(exportFilenameBrowseButton)
                             .addComponent(execPathBrowseButton)))
                     .addComponent(userNameTextField)))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -248,16 +242,26 @@ final class MercurialPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(annotationTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addButton, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTextPane1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(manageButton))
+                        .addComponent(addButton))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(92, 92, 92)
-                        .addComponent(jSeparator2))))
+                        .addComponent(jSeparator2))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jTextPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(manageButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(lblWarning)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblWarning)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbOpenOutputWindow)
+                            .addComponent(cbAskBeforeCommitAfterMerge)
+                            .addComponent(cbInternalMergeToolEnabled)
+                            .addComponent(excludeNewFiles)
+                            .addComponent(pullWithUpdate)))
+                    .addComponent(jLabel1))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -301,9 +305,13 @@ final class MercurialPanel extends javax.swing.JPanel {
                 .addComponent(cbInternalMergeToolEnabled)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(excludeNewFiles)
-                .addGap(18, 18, 18)
-                .addComponent(lblWarning)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(lblWarning))
+                    .addGroup(layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pullWithUpdate))))
         );
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {addButton, annotationTextField, jLabel3});
@@ -323,14 +331,16 @@ final class MercurialPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_excludeNewFilesActionPerformed
     
     private void nameChange() {
+        HgModuleConfig config = HgModuleConfig.getDefault();
         boolean isChanged = (userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText()))
-                || !HgModuleConfig.getDefault().getExecutableBinaryPath().equals(executablePathTextField.getText())
-                || !HgModuleConfig.getDefault().getExportFilename().equals(exportFilenameTextField.getText())
-                || !HgModuleConfig.getDefault().getAnnotationFormat().equals(annotationTextField.getText())
-                || HgModuleConfig.getDefault().getAutoOpenOutput() != cbOpenOutputWindow.isSelected()
-                || HgModuleConfig.getDefault().getConfirmCommitAfterMerge() != cbAskBeforeCommitAfterMerge.isSelected()
-                || HgModuleConfig.getDefault().isInternalMergeToolEnabled() != cbInternalMergeToolEnabled.isSelected()
-                || HgModuleConfig.getDefault().getExludeNewFiles() != excludeNewFiles.isSelected();
+                || !config.getExecutableBinaryPath().equals(executablePathTextField.getText())
+                || !config.getExportFilename().equals(exportFilenameTextField.getText())
+                || !config.getAnnotationFormat().equals(annotationTextField.getText())
+                || config.getAutoOpenOutput() != cbOpenOutputWindow.isSelected()
+                || config.getConfirmCommitAfterMerge() != cbAskBeforeCommitAfterMerge.isSelected()
+                || config.isInternalMergeToolEnabled() != cbInternalMergeToolEnabled.isSelected()
+                || config.isPullWithUpdate() != pullWithUpdate.isSelected()
+                || config.getExludeNewFiles() != excludeNewFiles.isSelected();
         controller.changed(isChanged);
     }
 
@@ -345,10 +355,11 @@ final class MercurialPanel extends javax.swing.JPanel {
         // someTextField.setText(SomeSystemOption.getDefault().getSomeStringProperty());
         userNameTextField.setEnabled(false);
         userNameTextField.setText(CTL_UsernameLoading());
+        final HgModuleConfig config = HgModuleConfig.getDefault();
         Mercurial.getInstance().getParallelRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                initialUserName = HgModuleConfig.getDefault().getSysUserName();
+                initialUserName = config.getSysUserName();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
@@ -358,16 +369,18 @@ final class MercurialPanel extends javax.swing.JPanel {
                 });
             }
         });
-        executablePathTextField.setText(HgModuleConfig.getDefault().getExecutableBinaryPath());
-        exportFilenameTextField.setText(HgModuleConfig.getDefault().getExportFilename());
-        annotationTextField.setText(HgModuleConfig.getDefault().getAnnotationFormat());
-        cbOpenOutputWindow.setSelected(HgModuleConfig.getDefault().getAutoOpenOutput());
-        cbAskBeforeCommitAfterMerge.setSelected(HgModuleConfig.getDefault().getConfirmCommitAfterMerge());
-        cbInternalMergeToolEnabled.setSelected(HgModuleConfig.getDefault().isInternalMergeToolEnabled());
-        excludeNewFiles.setSelected(HgModuleConfig.getDefault().getExludeNewFiles());
+        executablePathTextField.setText(config.getExecutableBinaryPath());
+        exportFilenameTextField.setText(config.getExportFilename());
+        annotationTextField.setText(config.getAnnotationFormat());
+        cbOpenOutputWindow.setSelected(config.getAutoOpenOutput());
+        cbAskBeforeCommitAfterMerge.setSelected(config.getConfirmCommitAfterMerge());
+        cbInternalMergeToolEnabled.setSelected(config.isInternalMergeToolEnabled());
+        excludeNewFiles.setSelected(config.getExludeNewFiles());
+        pullWithUpdate.setSelected(config.isPullWithUpdate());
     }
     
     void store() {
+        HgModuleConfig config = HgModuleConfig.getDefault();
         // TODO store modified settings
         // Example:
         // Preferences.userNodeForPackage(MercurialPanel.class).putBoolean("someFlag", someCheckBox.isSelected()); // NOI18N
@@ -377,19 +390,20 @@ final class MercurialPanel extends javax.swing.JPanel {
         // SomeSystemOption.getDefault().setSomeStringProperty(someTextField.getText());
         if(userNameTextField.isEnabled() && !initialUserName.equals(userNameTextField.getText())) {
             try {
-                HgModuleConfig.getDefault().setUserName(userNameTextField.getText());
+                config.setUserName(userNameTextField.getText());
             } catch (IOException ex) {
                 HgModuleConfig.notifyParsingError();
             }
         }
-        HgModuleConfig.getDefault().setExecutableBinaryPath(executablePathTextField.getText());
+        config.setExecutableBinaryPath(executablePathTextField.getText());
 	Mercurial.getInstance().asyncInit();
-        HgModuleConfig.getDefault().setExportFilename(exportFilenameTextField.getText());
-        HgModuleConfig.getDefault().setAnnotationFormat(annotationTextField.getText());
-        HgModuleConfig.getDefault().setAutoOpenOutput(cbOpenOutputWindow.isSelected());
-        HgModuleConfig.getDefault().setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
-        HgModuleConfig.getDefault().setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
-        HgModuleConfig.getDefault().setExcludeNewFiles(excludeNewFiles.isSelected());
+        config.setExportFilename(exportFilenameTextField.getText());
+        config.setAnnotationFormat(annotationTextField.getText());
+        config.setAutoOpenOutput(cbOpenOutputWindow.isSelected());
+        config.setConfirmCommitAfterMerge(cbAskBeforeCommitAfterMerge.isSelected());
+        config.setInternalMergeToolEnabled(cbInternalMergeToolEnabled.isSelected());
+        config.setExcludeNewFiles(excludeNewFiles.isSelected());
+        config.setPullWithUpdate(pullWithUpdate.isSelected());
     }
  
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -414,6 +428,7 @@ final class MercurialPanel extends javax.swing.JPanel {
     private javax.swing.JTextPane jTextPane1;
     private javax.swing.JLabel lblWarning;
     final javax.swing.JButton manageButton = new javax.swing.JButton();
+    final javax.swing.JCheckBox pullWithUpdate = new javax.swing.JCheckBox();
     final javax.swing.JTextField userNameTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables
 

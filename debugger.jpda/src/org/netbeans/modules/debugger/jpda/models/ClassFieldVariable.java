@@ -90,6 +90,7 @@ public class ClassFieldVariable extends ObjectFieldVariable implements ClassVari
         super(debugger, value, field, parentID, genericSignature, objectReference);
     }
     
+    @Override
     public JPDAClassType getReflectedType() {
         Value innerValue = getInnerValue();
         if (!(innerValue instanceof ClassObjectReference)) {
