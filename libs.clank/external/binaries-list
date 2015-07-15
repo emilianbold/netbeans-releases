@@ -1,6 +1,6 @@
-#changeset:   15287:6a9a36cc1914
+#changeset:   15289:95423f7428a0
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Jul 15 13:53:44 2015 +0300
-#summary:     made new preprocessor work on Windows
-415A808B75F9EDB3CD6F4689DCEF9C399BF802A8 clank_0.3.6.zip
+#date:        Wed Jul 15 22:20:31 2015 +0300
+#summary:     fixing remote on windows with new preprocessor
+0B135A2E7108FD8CDA9D21D0DC338FC4758A3EDD clank_0.3.6.zip
