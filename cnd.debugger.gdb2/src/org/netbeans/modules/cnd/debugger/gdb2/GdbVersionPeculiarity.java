@@ -87,15 +87,7 @@ public class GdbVersionPeculiarity {
         if (version > 6.3) {
             return "-environment-cd"; // NOI18N
         } else {
-            return "cd"; // NOI18N
-        }
-    }
-
-    public String runArgsCommand(String args) {
-        if (lldb) {
-            return "-interpreter-exec console \"settings set target.run-args " + args + "\""; // NOI18N
-        } else {
-            return "-exec-arguments " + args; // NOI18N
+             return "cd"; // NOI18N
         }
     }
 
@@ -160,6 +152,14 @@ public class GdbVersionPeculiarity {
         }
         
         return retVal.toString();
+    }
+    
+    public String showAttributesCommand(String expr) {
+        if (lldb) {
+            return "-var-show-attributes " + expr; // NOI18N
+        } else {
+            return "-var-show-attributes \"" + expr + "\""; // NOI18N
+        }
     }
 
     public boolean isLldb() {
