@@ -73,8 +73,8 @@ import org.openide.util.NbCollections;
  *
  * @author Jan Pokorsky
  */
-@org.openide.util.lookup.ServiceProvider(service=CreateFromTemplateAttributes.class)
-public final class ProjectTemplateAttributesProvider implements CreateFromTemplateAttributes {
+@org.openide.util.lookup.ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
+public final class ProjectTemplateAttributesLegacy implements CreateFromTemplateAttributesProvider {
     
     private static final String ATTR_PROJECT = "project"; // NOI18N
     private static final String ATTR_LICENSE = "license"; // NOI18N
@@ -82,46 +82,26 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
     private static final String ATTR_ENCODING = "encoding"; // NOI18N
 
     @Override
-    public Map<String, ?> attributesFor(CreateDescriptor desc) {
-        FileObject templateF = desc.getTemplate();
-        FileObject targetF = desc.getTarget();
-        String name = desc.getProposedName();
+    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+        FileObject targetF = target.getPrimaryFile();
         Project prj = FileOwnerQuery.getOwner(targetF);
         Map<String, Object> all = new HashMap();
         if (prj != null) {
             // call old providers
             Collection<? extends CreateFromTemplateAttributesProvider> oldProvs = prj.getLookup().lookupAll(CreateFromTemplateAttributesProvider.class);
-            if (!oldProvs.isEmpty() && desc.getValue(ProjectTemplateAttributesLegacy.class.getName()) == null) {
-                try {
-                    DataObject t = DataObject.find(targetF);
-                    if (t instanceof DataFolder) {
-                        DataFolder target = (DataFolder)t;
-                        DataObject template = DataObject.find(templateF);
-                        for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
-                            Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
-                            if (m != null) {
-                                all.putAll(m);
-                            }
+            if (!oldProvs.isEmpty()) {
+                for (CreateFromTemplateAttributesProvider attrs : oldProvs) {
+                    Map<String, ? extends Object> m = attrs.attributesFor(template, target, name);
+                    if (m != null) {
+                        if (all == null) {
+                            all = new HashMap<String, Object>();
                         }
+                        all.putAll(m);
                     }
-                } catch (IOException ex) {
-                    // an unexpected error
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            // call new providers last, so they can override anything old providers could screw up.
-            // new providers should get all attributes collected from previous (new-style) CFTAs incl. attributes provided
-            // by [deprecated] CFTAPs accumulated above.
-            FileBuilder bld = FileBuilder.fromDescriptor(desc);
-            // temporary:
-            for (CreateFromTemplateAttributes attrs : prj.getLookup().lookupAll(CreateFromTemplateAttributes.class)) {
-                CreateDescriptor childDesc = bld.withParameters(all).createDescriptor(false);
-                Map<String, ? extends Object> m = attrs.attributesFor(childDesc);
-                if (m != null) {
-                    all.putAll(m);
                 }
             }
         }
+        all.put(ProjectTemplateAttributesLegacy.class.getName(), Boolean.TRUE);
         return checkProjectAttrs(all, targetF);
     }
     
