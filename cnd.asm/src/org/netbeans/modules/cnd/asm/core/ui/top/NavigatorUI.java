@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -134,21 +135,31 @@ public class NavigatorUI extends javax.swing.JPanel implements
             setEmpty();
             return;
         }  
-       
+
         IntervalSet<FunctionBoundsResolver.Entry> funcs = resolver.getFunctions();
-                
-        Node []nodes =
-                new Node[funcs.getList().size()];
-        int i = 0;
-        
+        String fName = null;
+        int startOffset = -1;
+        int endOffset = -1;
+        List<Node> nodeList = new ArrayList<Node>();
         for (FunctionBoundsResolver.Entry en : funcs) {
             List<AsmElement> comp = state.getElements().getCompounds();
-            int start = comp.get(en.getStartOffset()).getStartOffset();
-            int end = comp.get(en.getEndOffset()).getEndOffset();
-            AsmOffsetable off = DefaultOffsetable.create(start, end);
-            
-            nodes[i++] = new AsmFunctionNode(dob, en.getName(), off);
+            if (en.getName().equals(fName)) {
+                endOffset = comp.get(en.getEndOffset()).getEndOffset();
+            } else {
+                if (fName != null) {
+                    nodeList.add(new AsmFunctionNode(dob, fName, DefaultOffsetable.create(startOffset, endOffset)));
+                    fName = null;
+                }
+                fName = en.getName();
+                startOffset = comp.get(en.getStartOffset()).getStartOffset();
+                endOffset = comp.get(en.getEndOffset()).getEndOffset();
+            }
         }
+        if (fName != null) {
+            nodeList.add(new AsmFunctionNode(dob, fName, DefaultOffsetable.create(startOffset, endOffset)));
+        }
+                
+        Node []nodes = nodeList.toArray(new Node[nodeList.size()]);
         Children ch = new Children.Array();
         ch.add(nodes);
         AbstractNode node = new AbstractNode(ch);

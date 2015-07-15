@@ -265,8 +265,8 @@ public final class ClankPPCallback extends FileInfoCallback {
                     } else {
                         startUrl = includeHandler.getStartEntry().getStartFile();
                     }
-                    assert startUrl.toString().contentEquals(Casts.toCharSequence(enteredTo.getName())) :
-                            includeHandler.getStartEntry() + " vs. " + enteredTo; // NOI18N
+                    CndUtils.assertPathsEqualInConsole(startUrl, Casts.toCharSequence(enteredTo.getName()), "{0} vs. {1}", //NOI18N
+                            includeHandler.getStartEntry(), enteredTo);
                 }
                 assert includeHandler.getInclStackIndex() == 0 : " expected zero: " + includeHandler.getInclStackIndex();
                 assert enteredToWrapper.getFileIndex() == 0 : " expected zero: " + enteredToWrapper.getFileIndex();

@@ -53,6 +53,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * Test for #98641 - Missing vertical labels
@@ -105,7 +106,8 @@ public class LabelOrientationTest extends VisualTestCase {
                 new Rectangle (945, 275, 30, 190)
 
         );
-        assertCleaness (testCleaness (clean, Color.WHITE, Color.YELLOW, Color.RED), snapshot, clean);
+        Color color = (Color) (new DefaultLookFeel()).getBackground();
+        assertCleaness (testCleaness (clean, color, Color.YELLOW, Color.RED), snapshot, clean);
     }
 
     private static LabelWidget createLabel (LayerWidget layer, String label, int x, int y, LabelWidget.Orientation orientation, LabelWidget.Alignment alignment, LabelWidget.VerticalAlignment verticalAlignment) {

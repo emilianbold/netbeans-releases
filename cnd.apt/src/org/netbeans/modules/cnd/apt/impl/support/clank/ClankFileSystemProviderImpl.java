@@ -48,6 +48,7 @@ import org.clang.tools.services.support.ClangFileSystemProvider;
 import org.llvm.adt.IntrusiveRefCntPtr;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -61,7 +62,7 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
     @Override
     public IntrusiveRefCntPtr<FileSystem> getFileSystemImpl(ClankCompilationDataBase.Entry entry) {
         boolean useFS;
-        if (APTTraceFlags.ALWAYS_USE_NB_FS) {
+        if (APTTraceFlags.ALWAYS_USE_NB_FS || Utilities.isWindows()) {
             useFS = true;
         } else {
             if (isFullRemote(entry)) {
@@ -101,7 +102,7 @@ public class ClankFileSystemProviderImpl extends ClangFileSystemProvider {
             // rfs:user@host:22/usr/include
             // rfs://user@host:22
             // rfs:user@host:22
-            int pos = CharSequenceUtils.indexOf(path, ":", RFS_PREFIX.length());
+            int pos = CharSequenceUtils.indexOf(path, ":", RFS_PREFIX.length()); //NOI18N
             if (pos > 0) {
                 pos++;
                 while (pos < path.length() && Character.isDigit(path.charAt(pos))) {

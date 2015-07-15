@@ -51,6 +51,7 @@ import org.netbeans.api.visual.widget.Widget;
 import java.awt.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.modules.visual.laf.DefaultLookFeel;
 
 /**
  * @author David Kaspar
@@ -80,7 +81,8 @@ public class LayerWidget103528Test extends VisualTestCase {
         widget.setBackground (Color.RED);
         layer.addChild (widget);
 
-        assertScene (scene, Color.WHITE, new Rectangle (80, 90, 100, 50));
+        Color color = (Color) (new DefaultLookFeel()).getBackground();
+        assertScene (scene, color, new Rectangle (80, 90, 100, 50));
     }
 
 }
