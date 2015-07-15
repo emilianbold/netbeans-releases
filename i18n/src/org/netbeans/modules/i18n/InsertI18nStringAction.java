@@ -265,16 +265,14 @@ public class InsertI18nStringAction extends CookieAction {
 
         if (dataObject == null) return false;
 
-	// check that the node has project
-	if (FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) == null) return false;
-
         if (FactoryRegistry.hasFactory(dataObject.getClass()) == false) return false;
 
         EditorCookie sec = (activatedNodes[0]).getCookie(EditorCookie.class);
-        if (sec == null) return false;
+        if (sec == null || !hasOpenedPane(sec)) return false;
+        
 
-
-        return hasOpenedPane(sec); // #188430
+	// check that the node has project
+	return FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) != null;
     }
 
     /**
