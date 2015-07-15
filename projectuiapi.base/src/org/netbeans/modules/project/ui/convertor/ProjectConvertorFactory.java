@@ -119,6 +119,11 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
         throw new IllegalStateException("ConvertorProject cannot be modified"); //NOI18N
     }
 
+    public static boolean isConvertorProject(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        return project.getLookup().lookup(ConvertorProject.class) != null;
+    }
+
     @CheckForNull
     private ProjectConvertor.Result isProjectImpl(@NonNull final FileObject projectDirectory) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<ProjectConvertor.Result>() {
@@ -166,7 +171,7 @@ public final class ProjectConvertorFactory implements ProjectFactory2 {
                     this.result));
             }
             this.projectLkp = new DynamicLookup();
-            final Lookup preLkp = Lookups.singleton(new OpenHook());
+            final Lookup preLkp = Lookups.fixed(new OpenHook(), this);
             final Queue<Object> postServices = new ArrayDeque<>();
             for (ProjectConvertorServiceFactory f : services.allInstances()) {
                 postServices.addAll(f.createServices(this, result));

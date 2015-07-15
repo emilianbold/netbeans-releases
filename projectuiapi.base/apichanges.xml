@@ -107,6 +107,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectConvertors">
+            <api name="BaseProjectUIAPI"/>
+            <summary>Added <code>ProjectConvertors</code> the support for <code>ProjectConvertor</code>s.</summary>
+            <version major="1" minor="80"/>
+            <date day="15" month="7" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>ProjectConvertors</code> providing a support for <code>ProjectConvertor</code>s.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectConvertors"/>
+            <issue number="250232"/>
+        </change>
          <change id="ProjectConvertor">
             <api name="BaseProjectUIAPI"/>
             <summary>Added <code>ProjectConvertor</code> adding an ability to convert a folder into a project.</summary>
