@@ -3164,7 +3164,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 //            }
             GdbVariable wv = variableBag.get(mi_name, true, VariableBag.FROM_BOTH);
             if (wv != null) {
-                wv.populateUpdate(updatevar.asTuple());
+                wv.populateUpdate(updatevar.asTuple(), variableBag);
 
                 // update value
                 if (updatevar.asTuple().valueOf("value") != null) { //NOI18N
