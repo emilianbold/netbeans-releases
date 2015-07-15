@@ -52,6 +52,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -192,6 +193,18 @@ public class ProjectConvertorFactoryTest extends NbTestCase {
         assertEquals(artPrj, realPrj);
         assertNull(realPrj.getLookup().lookup(ConvertorAdditionalServicePermanent.class));
         assertNotNull(realPrj.getLookup().lookup(ProjectAdditionalService.class));
+    }
+
+    public void testIsConvertorProject() throws IOException {
+        final Project artPrj = ProjectManager.getDefault().findProject(projectDir);
+        assertNotNull(artPrj);
+        assertTrue(ProjectConvertorFactory.isConvertorProject(artPrj));
+        OpenProjects.getDefault().open(new Project[]{artPrj}, false);
+        assertTrue(OpenProjects.getDefault().isProjectOpen(artPrj));
+        assertFalse(ProjectConvertorFactory.isConvertorProject(artPrj));
+        final Project newPrj = ProjectManager.getDefault().findProject(projectDir);
+        assertNotSame(newPrj, artPrj);
+        assertFalse(ProjectConvertorFactory.isConvertorProject(newPrj));
     }
 
     @NonNull

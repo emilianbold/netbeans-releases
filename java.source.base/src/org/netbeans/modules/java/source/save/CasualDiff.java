@@ -3389,7 +3389,9 @@ public class CasualDiff {
                             printer.print(" ");
                         }
                         printer.print(decl.name);
-                        printer.printVarInit(decl);
+                        if (decl.init != null) {
+                            printer.printVarInit(decl);
+                        }
                     }
                     skipWhitespaces = false;
                     break;
