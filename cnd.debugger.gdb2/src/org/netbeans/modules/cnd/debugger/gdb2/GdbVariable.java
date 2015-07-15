@@ -380,7 +380,7 @@ class GdbVariable extends Variable {
         setNumChild(numchild_l); // also set children if there is any
     }
 
-    void populateUpdate(MITList results) {
+    void populateUpdate(MITList results, VariableBag variableBag) {
         for (MIResult item : results.getOnly(MIResult.class)) {
             if (item.matches("in_scope")) { //NOI18N
                 if (this instanceof GdbWatch) {
@@ -390,6 +390,12 @@ class GdbVariable extends Variable {
                 setType(item.value().asConst().value());
             } else if (item.matches("new_num_children")) { //NOI18N
                 setNumChild(item.value().asConst().value());
+                if (!isLeaf()) {
+                    Variable[] ch = getChildren();
+                    for (Variable v : ch) {
+                        variableBag.remove(v);
+                    }
+                }
                 setChildren(null, false);
             } else if (item.matches("dynamic")) { //NOI18N
                 setDynamic(item.value().asConst().value());
@@ -399,6 +405,12 @@ class GdbVariable extends Variable {
                 setHasMore(item.value().asConst().value());
                 if (hasMore) {
                     setNumChild(item.value().asConst().value());
+                    if (!isLeaf()) {
+                        Variable[] ch = getChildren();
+                        for (Variable v : ch) {
+                            variableBag.remove(v);
+                        }
+                    }
                     setChildren(null, false);
                 }
             } else if (item.matches("new_children")) { //NOI18N

@@ -99,10 +99,10 @@ public class CallChildren extends Children.Keys<Call> {
         } else {
             if (call != null) {
                 set = model.getCallers(call.getCaller());
-                model.setCalleesExpanded(call.getCaller(), true);
+                model.setCallersExpanded(call.getCaller(), true);
             } else {
                 set = model.getCallers(function);
-                model.setCalleesExpanded(function, true);
+                model.setCallersExpanded(function, true);
             }
         }
         if (set != null && set.size() > 0) {
