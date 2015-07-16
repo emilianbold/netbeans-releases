@@ -1226,7 +1226,7 @@ class FilesystemInterceptor extends VCSInterceptor {
                 gitToMetadataFolder.put(gitFolder, new MetadataMapping(metadataFolder, ts));
                 metadataToGitFolder.put(metadataFolder, gitFolder);
             }
-            return metadataFolder;
+            return FileUtil.normalizeFile(metadataFolder);
         }
 
         private File translateToGitFolder (File metadataFolder) {

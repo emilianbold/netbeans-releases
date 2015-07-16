@@ -260,7 +260,8 @@ PropertyChangeListener {
             if (url != null && lineNumber >= 0) {
                 line = new DebuggerConsoleIO.Line (
                     url,
-                    lineNumber
+                    lineNumber,
+                    dbg
                 );
             }
             consoleIO.println (printText, null, true);
@@ -281,7 +282,8 @@ PropertyChangeListener {
             if (bp instanceof LineBreakpoint) {
                 line = new DebuggerConsoleIO.Line (
                     ((LineBreakpoint) bp).getURL(),
-                    ((LineBreakpoint) bp).getLineNumber()
+                    ((LineBreakpoint) bp).getLineNumber(),
+                    dbg
                 );
             }
             consoleIO.println (printText, line, false);
