@@ -43,11 +43,20 @@ package org.netbeans.modules.php.codeception.ui.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.testing.PhpTesting;
+import org.netbeans.modules.php.codeception.CodeceptionTestingProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.Actions;
+import org.openide.awt.DynamicMenuContent;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
 
@@ -55,21 +64,26 @@ import org.openide.util.actions.Presenter;
  * Factory for Codeception actions.
  *
  */
-@NbBundle.Messages({
-    "CodeceptionActionsFactory.name=Codeception"
-})
 @ActionID(id = "org.netbeans.modules.php.codeception.ui.actions.CodeceptionActionsFactory", category = "Project")
-@ActionRegistration(displayName = "#ActionsFactory.name", lazy = false)
-// TODO fix path
-@ActionReference(position = 1060, path = "Projects/org-netbeans-modules-php-phpproject/Actions")
-public final class CodeceptionActionsFactory extends AbstractAction implements Presenter.Popup {
+@ActionRegistration(displayName = "#CodeceptionActionsFactory.name", lazy = false)
+@ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 950)
+@NbBundle.Messages("CodeceptionActionsFactory.name=Codeception")
+public final class CodeceptionActionsFactory extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
-    private static final long serialVersionUID = -2812120756265236422L;
+    @NullAllowed
+    private final PhpModule phpModule;
 
-    private JMenu codeceptionActions = null;
 
     public CodeceptionActionsFactory() {
-        super();
+        this(null);
+    }
+
+    public CodeceptionActionsFactory(PhpModule phpModule) {
+        this.phpModule = phpModule;
+        setEnabled(phpModule != null);
+        putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
+        // hide this action from Tools > Keymap
+        putValue(Action.NAME, ""); // NOI18N
     }
 
     @Override
@@ -78,25 +92,27 @@ public final class CodeceptionActionsFactory extends AbstractAction implements P
     }
 
     @Override
-    public JMenuItem getPopupPresenter() {
-        if (codeceptionActions == null) {
-            codeceptionActions = new CodeceptionActions();
+    public Action createContextAwareInstance(Lookup actionContext) {
+        PhpModule module = PhpModule.Factory.lookupPhpModule(actionContext);
+        if (module == null) {
+            return this;
         }
-        return codeceptionActions;
+        if (!PhpTesting.isTestingProviderEnabled(CodeceptionTestingProvider.IDENTIFIER, module)) {
+            return this;
+        }
+        return new CodeceptionActionsFactory(module);
     }
 
-    //~ Inner classes
-    private static class CodeceptionActions extends JMenu {
-
-        private static final long serialVersionUID = -6068854298781341688L;
-
-        // XXX Is it OK to add these actions?
-        public CodeceptionActions() {
-            super(Bundle.CodeceptionActionsFactory_name());
-            add(new BootstrapAction());
-            add(new BuildAction());
-            add(new CleanAction());
+    @Override
+    public JMenuItem getPopupPresenter() {
+        if (phpModule == null) {
+            return new Actions.MenuItem(this, false);
         }
+        JMenu menu = new JMenu(Bundle.CodeceptionActionsFactory_name());
+        menu.add(new BootstrapAction(phpModule));
+        menu.add(new BuildAction(phpModule));
+        menu.add(new CleanAction(phpModule));
+        return menu;
     }
 
 }

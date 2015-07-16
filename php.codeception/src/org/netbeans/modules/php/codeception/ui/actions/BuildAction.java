@@ -48,7 +48,9 @@ import org.openide.util.NbBundle;
 
 public class BuildAction extends BaseCodeceptionAction {
 
-    private static final long serialVersionUID = 8967275965111092062L;
+    public BuildAction(PhpModule phpModule) {
+        super(phpModule);
+    }
 
     @NbBundle.Messages("BuildAction.name=Build")
     @Override
@@ -57,7 +59,7 @@ public class BuildAction extends BaseCodeceptionAction {
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+    protected void runCommand() throws InvalidPhpExecutableException {
         Codecept codecept = Codecept.getForPhpModule(phpModule, true);
         if (codecept != null) {
             codecept.build(phpModule);

@@ -48,7 +48,9 @@ import org.openide.util.NbBundle;
 
 public class BootstrapAction extends BaseCodeceptionAction {
 
-    private static final long serialVersionUID = -877406326166751071L;
+    public BootstrapAction(PhpModule phpModule) {
+        super(phpModule);
+    }
 
     @NbBundle.Messages("BootstrapAction.name=Bootstrap")
     @Override
@@ -57,7 +59,7 @@ public class BootstrapAction extends BaseCodeceptionAction {
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+    protected void runCommand() throws InvalidPhpExecutableException {
         Codecept codecept = Codecept.getForPhpModule(phpModule, true);
         if (codecept == null) {
             return;

@@ -51,9 +51,11 @@ import org.openide.util.NbBundle;
 
 abstract class BaseCodeceptionAction extends AbstractAction {
 
-    private static final long serialVersionUID = 5236389041819013225L;
+    protected final PhpModule phpModule;
 
-    protected BaseCodeceptionAction() {
+    protected BaseCodeceptionAction(PhpModule phpModule) {
+        assert phpModule != null;
+        this.phpModule = phpModule;
         putValue("noIconInMenu", true); // NOI18N
         String name = getName();
         putValue(NAME, name);
@@ -63,19 +65,16 @@ abstract class BaseCodeceptionAction extends AbstractAction {
 
     protected abstract String getName();
 
-    protected abstract void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException;
+    protected abstract void runCommand() throws InvalidPhpExecutableException;
 
     @NbBundle.Messages("BaseCodeceptionAction.error.codeception.notValid=Codeception is not valid.")
     @Override
     public final void actionPerformed(ActionEvent e) {
-        PhpModule phpModule = PhpModule.Factory.inferPhpModule();
-        if (phpModule == null) {
-            return;
-        }
         try {
-            runCommand(phpModule);
+            runCommand();
         } catch (InvalidPhpExecutableException ex) {
             UiUtils.invalidScriptProvided(Bundle.BaseCodeceptionAction_error_codeception_notValid(), CodeceptionOptionsPanelController.OPTIONS_SUB_PATH);
         }
     }
+
 }

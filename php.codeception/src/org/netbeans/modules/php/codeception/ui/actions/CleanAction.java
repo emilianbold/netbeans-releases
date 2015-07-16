@@ -48,7 +48,9 @@ import org.openide.util.NbBundle;
 
 public class CleanAction extends BaseCodeceptionAction {
 
-    private static final long serialVersionUID = 2126478281412358114L;
+    public CleanAction(PhpModule phpModule) {
+        super(phpModule);
+    }
 
     @NbBundle.Messages("CleanAction.name=Clean")
     @Override
@@ -57,7 +59,7 @@ public class CleanAction extends BaseCodeceptionAction {
     }
 
     @Override
-    protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
+    protected void runCommand() throws InvalidPhpExecutableException {
         Codecept codecept = Codecept.getForPhpModule(phpModule, true);
         if (codecept != null) {
             codecept.clean(phpModule);
