@@ -4097,6 +4097,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 return;
             }
             clear();
+            List<Line> lines = new ArrayList<Line>();
             for (int i = 0; i < mem.length(); i++) {
                 int k = mem.indexOf('\n', i);
                 if (k < i) {
@@ -4142,8 +4143,9 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
                 } else {
                     memvalue = "  " + memvalue; //NOI18N
                 }
-                add(memaddr, memvalue);
+                lines.add(new Line(memaddr, memvalue));
             }
+            addAll(lines);
 	    update();
         }
     }
