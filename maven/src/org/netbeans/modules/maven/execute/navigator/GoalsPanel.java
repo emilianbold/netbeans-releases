@@ -244,6 +244,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             public void run() {
                 treeView.setRootVisible(false);
                 explorerManager.setRootContext(createEmptyNode());
+                treeView.expandAll(); // Force update view - see  bug 242567.
             }
         });
     }
@@ -262,6 +263,7 @@ public class GoalsPanel extends javax.swing.JPanel implements ExplorerManager.Pr
             public void run() {
                treeView.setRootVisible(false);
                explorerManager.setRootContext(createEmptyNode());
+               treeView.expandAll(); // Force update view - see  bug 242567.
             } 
         });
     }
