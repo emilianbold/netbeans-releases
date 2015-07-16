@@ -68,7 +68,7 @@ import org.openide.util.Utilities;
     @ActionReference(path = "Editors/text/bower+x-json/Popup", position = 905),
     @ActionReference(path = "Loaders/text/bower+x-json/Actions", position = 155),
     @ActionReference(path = "Projects/org-netbeans-modules-web-clientproject/Actions", position = 175),
-    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 660),
+    @ActionReference(path = "Projects/org-netbeans-modules-php-project/Actions", position = 115),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 660),
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 760)
 })
