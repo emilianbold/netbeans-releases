@@ -4349,6 +4349,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	 * See gdb/mi/README.examples for examples.
 	 */
 	private void parseDisasm(MITList inss) {
+            List<Line> lines = new ArrayList<Line>();
 	    for (int ix = 0; ix < inss.size(); ix++) {
 		MITList ins = ((MIValue) inss.get(ix)).asTuple();
 		String address = ins.getConstValue("address"); // NOI18N
@@ -4370,10 +4371,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		*/
 
 		if (offset != null)
-		    add(address + ":", fname + "+" + offset + ":\t" + inst); // NOI18N
+                    lines.add(new Line(address + ":", fname + "+" + offset + ":\t" + inst)); // NOI18N
 		else
-		    add(address + ":", fname + ":\t" + inst); // NOI18N
+		    lines.add(new Line(address + ":", fname + ":\t" + inst)); // NOI18N
 	    }
+            addAll(lines);
 	}
 
 	/**
@@ -4396,6 +4398,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    }  else {
 		// src lines and disassembly
+                List<Line> list = new ArrayList<Line>();
 		for (int lx = 0; lx < lines.size(); lx++) {
 		    MIResult src_and_asm_lineR = (MIResult) lines.get(lx);
 		    MITList src_and_asm_line =
@@ -4411,10 +4414,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 		    /*
 		    System.out.printf("%s:%s\n", file, line);
 		    */
-		    add(line, file);
-
+                    list.add(new Line(line, file));
 		    parseDisasm(inss);
 		}
+                addAll(list);
 	    }
 	    sw.stop();
 	    // sw.dump();
