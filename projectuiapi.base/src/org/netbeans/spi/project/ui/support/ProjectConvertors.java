@@ -43,6 +43,7 @@ package org.netbeans.spi.project.ui.support;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory;
 import org.netbeans.spi.project.ui.ProjectConvertor;
 
@@ -63,5 +64,18 @@ public final class ProjectConvertors {
      */
     public static boolean isConvertorProject(@NonNull final Project project) {
         return ProjectConvertorFactory.isConvertorProject(project);
+    }
+
+    /**
+     * Unregisters the artifical convertor {@link Project} from {@link ProjectManager}.
+     * Unregisters the artifical convertor {@link Project} from {@link ProjectManager} to
+     * allow another {@link Project} to take folder ownership. The method should be called
+     * only by {@link Project} generators when creating a new {@link Project}.
+     * Requires {@link ProjectManager#mutex()} write access.
+     * @param project the project to be unregistered.
+     * @since 1.81
+     */
+    public static void unregisterConvertorProject(@NonNull final Project project) {
+        ProjectConvertorFactory.unregisterConvertorProject(project);
     }
 }
