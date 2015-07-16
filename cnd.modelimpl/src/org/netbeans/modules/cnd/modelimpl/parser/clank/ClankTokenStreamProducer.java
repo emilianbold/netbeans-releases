@@ -288,7 +288,8 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
                         assert false : "something wrong when including " + path + " from " + curFile;
                       }
                   } else {
-                    assert false : "invalid start project when including " + path + " from " + curFile;
+                    APTUtils.LOG.log(Level.INFO, "invalid start project {0} when including {1} from {2}", new Object[] {aStartProject, path, curFile});
+                    // assert false : "invalid start project when including " + path + " from " + curFile;
                   }
               } else {
                   APTUtils.LOG.log(Level.SEVERE, "FileTokenStreamCallback: file {0} without project!!!", new Object[]{path});// NOI18N

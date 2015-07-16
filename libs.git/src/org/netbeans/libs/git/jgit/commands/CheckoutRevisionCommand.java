@@ -138,7 +138,7 @@ public class CheckoutRevisionCommand extends GitCommand {
 
             cache = repository.lockDirCache();
             DirCacheCheckout dco = null;
-            RevCommit commit;
+            RevCommit commit = null;
             try {
                 commit = Utils.findCommit(repository, revision);
                 dco = headTree == null ? new DirCacheCheckout(repository, cache, commit.getTree()) : new DirCacheCheckout(repository, headTree, cache, commit.getTree());
@@ -170,6 +170,10 @@ public class CheckoutRevisionCommand extends GitCommand {
                     mergeConflicts(dco.getConflicts(), cache);
                 }
                 // End of JGit WA
+            } catch (org.eclipse.jgit.dircache.InvalidPathException ex) {
+                throw new GitException("Commit " + commit.name() + " cannot be checked out because an invalid file name in one of the files.\n"
+                        + "Please remove the file from repository with an external tool and try again.\n\n"
+                        + ex.getMessage());
             } catch (CheckoutConflictException ex) {
                 List<String> conflicts = dco.getConflicts();
                 throw new GitException.CheckoutConflictException(conflicts.toArray(new String[conflicts.size()]), ex);

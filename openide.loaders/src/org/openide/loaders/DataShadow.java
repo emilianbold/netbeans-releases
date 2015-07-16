@@ -1170,8 +1170,10 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
 
                 try {
                     DataObject orig = obj.original;
-                    orig.rename (val);
-                    writeOriginal (null, null, obj.getPrimaryFile (), orig);
+                    if (!val.equals (orig.getName())) {
+                        orig.rename (val);
+                        writeOriginal (null, null, obj.getPrimaryFile (), orig);
+                    }
                 } catch (IOException ex) {
                     throw new InvocationTargetException (ex);
                 }

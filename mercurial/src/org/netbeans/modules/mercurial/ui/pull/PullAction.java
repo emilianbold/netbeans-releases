@@ -64,6 +64,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgException;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
@@ -538,6 +539,7 @@ public class PullAction extends ContextAction {
             OutputLogger logger = supp.getLogger();
             boolean bMergeNeeded = false;
             boolean updateNeeded = false;
+            boolean update = true;
             for (String s : list) {
                 logger.output(HgUtils.replaceHttpPassword(s));
                 if (HgCommand.isMergeNeededMsg(s)) {
@@ -566,10 +568,15 @@ public class PullAction extends ContextAction {
                     if (currentBranch == null) {
                         supp.setDisplayName(Bundle.MSG_PullAction_progress_updating());
                     } else {
-                        supp.setDisplayName(Bundle.MSG_PullAction_progress_updatingBranch(currentBranch));
+                        update = askForUpdate(currentBranch);
+                        if (update) {
+                            supp.setDisplayName(Bundle.MSG_PullAction_progress_updatingBranch(currentBranch));
+                        }
                     }
-                    list = HgCommand.doUpdateAll(root, false, currentBranch);
-                    logger.output(list);
+                    if (update) {
+                        list = HgCommand.doUpdateAll(root, false, currentBranch);
+                        logger.output(list);
+                    }
                 }
             }
             boolean finished = !bMergeNeeded;
@@ -611,8 +618,10 @@ public class PullAction extends ContextAction {
                     MergeAction.displayMergeWarning(branchHeads, logger, warnMoreHeads && !supp.isCanceled());
                 }
                 Mercurial.getInstance().historyChanged(root);
-                HgUtils.notifyUpdatedFiles(root, list);
-                HgUtils.forceStatusRefresh(root);
+                if (update) {
+                    HgUtils.notifyUpdatedFiles(root, list);
+                    HgUtils.forceStatusRefresh(root);
+                }
             }
         }
 
@@ -645,6 +654,30 @@ public class PullAction extends ContextAction {
                 mergeAccepted = HgUtils.confirmDialog(
                         PullAction.class, "MSG_PULL_MERGE_CONFIRM_TITLE", "MSG_PULL_MERGE_CONFIRM_QUERY"); //NOI18N
             }
+        }
+
+        @NbBundle.Messages({
+            "LBL_PullAction_updateQuestion_title=Update After Pull"
+        })
+        private boolean askForUpdate (String branchName) {
+            HgModuleConfig config = HgModuleConfig.getDefault();
+            boolean update = config.isPullWithUpdate();
+            if (!update) {
+                UpdateAfterPull panel = new UpdateAfterPull(branchName);
+                Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                        panel,
+                        Bundle.LBL_PullAction_updateQuestion_title(),
+                        NotifyDescriptor.YES_NO_OPTION,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        new Object[] { NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION },
+                        NotifyDescriptor.YES_OPTION
+                ));
+                if (value == NotifyDescriptor.YES_OPTION) {
+                    update = true;
+                    config.setPullWithUpdate(panel.cbUpdateAlways.isSelected());
+                }
+            }
+            return update;
         }
     }
 

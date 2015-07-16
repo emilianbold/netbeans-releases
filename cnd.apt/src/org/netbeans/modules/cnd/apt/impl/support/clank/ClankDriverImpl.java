@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.apt.support.spi.APTBufferProvider;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -87,16 +88,16 @@ public class ClankDriverImpl {
         ClangFileSystemProvider.setImplementation(new ClankFileSystemProviderImpl());
     }
 
-    public static void invalidateImpl(CharSequence absPath) {
+    public static void invalidateImpl(FileSystem fs, CharSequence absPath) {
         if (APTTraceFlags.USE_CLANK) {
-            ClankPreprocessorServices.invalidate(absPath);
+            ClankPreprocessorServices.invalidate(CndFileSystemProvider.toUrl(fs, absPath));
         }
     }
 
     public static void invalidateImpl(APTFileBuffer buffer) {
         if (APTTraceFlags.USE_CLANK) {
             // TODO: split by file system?
-            invalidateImpl(buffer.getAbsolutePath());
+            invalidateImpl(buffer.getFileSystem(), buffer.getAbsolutePath());
         }
     }
 

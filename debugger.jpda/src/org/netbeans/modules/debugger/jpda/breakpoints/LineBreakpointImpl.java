@@ -137,17 +137,17 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     private BreakpointsReader   reader;
     
     
-    public LineBreakpointImpl (
+    LineBreakpointImpl (
         LineBreakpoint breakpoint, 
         BreakpointsReader reader,
         JPDADebuggerImpl debugger,
         Session session,
-        SourcePath sourcePath
+        SourceRootsCache sourceRootsCache
     ) {
-        super (breakpoint, reader, debugger, session);
+        super (breakpoint, reader, debugger, session, sourceRootsCache);
         this.reader = reader;
         updateLineNumber();
-        setSourceRoot(sourcePath.getSourceRoot(breakpoint.getURL()));
+        setSourceRoot(sourceRootsCache.getSourcePath().getSourceRoot(breakpoint.getURL()));
         set ();
     }
 
@@ -190,11 +190,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         {
             String srcRoot = getSourceRoot();
             if (srcRoot != null) {
-                String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-                for (int i = 0; i < sourceRoots.length; i++) {
-                    if (compareSourceRoots(srcRoot, sourceRoots[i])) {
-                        isInSources = true;
-                    }
+                if (isRootInSources(srcRoot)) {
+                    isInSources = true;
                 }
             }
         }
@@ -256,11 +253,8 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         if (!isEmptyURL) {
             String srcRoot = getSourceRoot();
             if (srcRoot != null) {
-                String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-                for (int i = 0; i < sourceRoots.length; i++) {
-                    if (compareSourceRoots(srcRoot, sourceRoots[i])) {
-                        isInSources = true;
-                    }
+                if (isRootInSources(srcRoot)) {
+                    isInSources = true;
                 }
             }
         }
