@@ -42,10 +42,20 @@
 package org.netbeans.modules.php.codeception.ui.options;
 
 import java.awt.Cursor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -55,6 +65,7 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -67,7 +78,7 @@ import org.openide.util.NbBundle;
 @OptionsPanelController.Keywords(
         keywords = {"php", "codeception", "unit testing", "framework", "coverage", "#CodeceptionOptionsPanel.keywords.coverage"},
         location = UiUtils.OPTIONS_PATH, tabTitle = "#CodeceptionOptionsPanel.keywords.TabTitle")
-final class CodeceptionOptionsPanel extends javax.swing.JPanel {
+final class CodeceptionOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = 7996459123413784896L;
     private static final String CODECEPTION_LAST_FOLDER_SUFFIX = ".codeception"; // NOI18N
@@ -135,112 +146,110 @@ final class CodeceptionOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        codeceptionLabel = new javax.swing.JLabel();
-        codeceptionTextField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
-        searchButton = new javax.swing.JButton();
-        codeceptionHintLabel = new javax.swing.JLabel();
-        errorLabel = new javax.swing.JLabel();
-        noteLabel = new javax.swing.JLabel();
-        minVersionLabel = new javax.swing.JLabel();
-        installLabel = new javax.swing.JLabel();
-        learnMoreLabel = new javax.swing.JLabel();
+        codeceptionLabel = new JLabel();
+        codeceptionTextField = new JTextField();
+        browseButton = new JButton();
+        searchButton = new JButton();
+        codeceptionHintLabel = new JLabel();
+        errorLabel = new JLabel();
+        noteLabel = new JLabel();
+        minVersionLabel = new JLabel();
+        installLabel = new JLabel();
+        learnMoreLabel = new JLabel();
 
         codeceptionLabel.setLabelFor(codeceptionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(codeceptionLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.text")); // NOI18N
-        codeceptionLabel.setToolTipText(org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.toolTipText")); // NOI18N
+        Mnemonics.setLocalizedText(codeceptionLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.text")); // NOI18N
+        codeceptionLabel.setToolTipText(NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.toolTipText")); // NOI18N
 
-        codeceptionTextField.setText(org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionTextField.text")); // NOI18N
+        codeceptionTextField.setText(NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.browseButton.text")); // NOI18N
-        browseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.browseButton.text")); // NOI18N
+        browseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(searchButton, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.searchButton.text")); // NOI18N
-        searchButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.searchButton.text")); // NOI18N
+        searchButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(codeceptionHintLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionHintLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(codeceptionHintLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionHintLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.errorLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.errorLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.noteLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(minVersionLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.minVersionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(minVersionLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.minVersionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.installLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(installLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.installLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, org.openide.util.NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.learnMoreLabel.text")); // NOI18N
-        learnMoreLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.learnMoreLabel.text")); // NOI18N
+        learnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+            public void mousePressed(MouseEvent evt) {
                 learnMoreLabelMousePressed(evt);
             }
         });
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(codeceptionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(codeceptionHintLabel)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(codeceptionTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchButton))))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(minVersionLabel)
                     .addComponent(installLabel))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(errorLabel)
-                    .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(codeceptionLabel)
-                    .addComponent(codeceptionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(codeceptionTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseButton)
                     .addComponent(searchButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(codeceptionHintLabel)
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(minVersionLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(installLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     @NbBundle.Messages("CodeceptionOptionsPanel.codeception.browse.title=Select codecept")
-    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+    private void browseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         File file = new FileChooserBuilder(CodeceptionOptionsPanel.class.getName() + CODECEPTION_LAST_FOLDER_SUFFIX)
                 .setFilesOnly(true)
                 .setTitle(Bundle.CodeceptionOptionsPanel_codeception_browse_title())
@@ -256,7 +265,7 @@ final class CodeceptionOptionsPanel extends javax.swing.JPanel {
         "CodeceptionOptionsPanel.codeception.search.pleaseWaitPart=Codecept files",
         "CodeceptionOptionsPanel.codeception.search.notFound=No Codecept files found."
     })
-    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+    private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         String codeception = UiUtils.SearchWindow.search(new UiUtils.SearchWindow.SearchWindowSupport() {
 
             @Override
@@ -289,7 +298,7 @@ final class CodeceptionOptionsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_searchButtonActionPerformed
 
-    private void learnMoreLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
+    private void learnMoreLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMousePressed
         try {
             URL url = new URL("http://codeception.com/"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
@@ -298,21 +307,21 @@ final class CodeceptionOptionsPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
-    private void learnMoreLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMouseEntered
+    private void learnMoreLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_learnMoreLabelMouseEntered
         evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_learnMoreLabelMouseEntered
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
-    private javax.swing.JLabel codeceptionHintLabel;
-    private javax.swing.JLabel codeceptionLabel;
-    private javax.swing.JTextField codeceptionTextField;
-    private javax.swing.JLabel errorLabel;
-    private javax.swing.JLabel installLabel;
-    private javax.swing.JLabel learnMoreLabel;
-    private javax.swing.JLabel minVersionLabel;
-    private javax.swing.JLabel noteLabel;
-    private javax.swing.JButton searchButton;
+    private JButton browseButton;
+    private JLabel codeceptionHintLabel;
+    private JLabel codeceptionLabel;
+    private JTextField codeceptionTextField;
+    private JLabel errorLabel;
+    private JLabel installLabel;
+    private JLabel learnMoreLabel;
+    private JLabel minVersionLabel;
+    private JLabel noteLabel;
+    private JButton searchButton;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

@@ -46,10 +46,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -57,6 +61,7 @@ import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.codeception.preferences.CodeceptionPreferences;
 import org.netbeans.modules.php.codeception.preferences.CodeceptionPreferencesValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -187,95 +192,93 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        scriptCheckBox = new javax.swing.JCheckBox();
-        scriptTextField = new javax.swing.JTextField();
-        scriptLabel = new javax.swing.JLabel();
-        scriptBrowseButton = new javax.swing.JButton();
-        codeceptionCheckBox = new javax.swing.JCheckBox();
-        codeceptionLabel = new javax.swing.JLabel();
-        codeceptionTextField = new javax.swing.JTextField();
-        codeceptionBrowseButton = new javax.swing.JButton();
-        askForAdditionalParametersCheckBox = new javax.swing.JCheckBox();
+        scriptCheckBox = new JCheckBox();
+        scriptTextField = new JTextField();
+        scriptLabel = new JLabel();
+        scriptBrowseButton = new JButton();
+        codeceptionCheckBox = new JCheckBox();
+        codeceptionLabel = new JLabel();
+        codeceptionTextField = new JTextField();
+        codeceptionBrowseButton = new JButton();
+        askForAdditionalParametersCheckBox = new JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(scriptCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptCheckBox.text")); // NOI18N
 
-        scriptTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptTextField.text")); // NOI18N
+        scriptTextField.setText(NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptTextField.text")); // NOI18N
 
         scriptLabel.setLabelFor(scriptTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(scriptLabel, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(scriptBrowseButton, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptBrowseButton.text")); // NOI18N
-        scriptBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptBrowseButton.text")); // NOI18N
+        scriptBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 scriptBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(codeceptionCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(codeceptionCheckBox, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionCheckBox.text")); // NOI18N
 
         codeceptionLabel.setLabelFor(codeceptionTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(codeceptionLabel, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(codeceptionLabel, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionLabel.text")); // NOI18N
 
-        codeceptionTextField.setText(org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionTextField.text")); // NOI18N
+        codeceptionTextField.setText(NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionTextField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(codeceptionBrowseButton, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionBrowseButton.text")); // NOI18N
-        codeceptionBrowseButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(codeceptionBrowseButton, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionBrowseButton.text")); // NOI18N
+        codeceptionBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 codeceptionBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(askForAdditionalParametersCheckBox, org.openide.util.NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.askForAdditionalParametersCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(askForAdditionalParametersCheckBox, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.askForAdditionalParametersCheckBox.text")); // NOI18N
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                    .addGroup(GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(codeceptionLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(codeceptionTextField))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                    .addGroup(GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(scriptLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(scriptTextField)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                     .addComponent(scriptBrowseButton)
                     .addComponent(codeceptionBrowseButton)))
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addComponent(scriptCheckBox)
                     .addComponent(codeceptionCheckBox)
                     .addComponent(askForAdditionalParametersCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(scriptCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(scriptTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                    .addComponent(scriptTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(scriptLabel)
                     .addComponent(scriptBrowseButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(codeceptionCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(codeceptionLabel)
-                    .addComponent(codeceptionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(codeceptionTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(codeceptionBrowseButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(askForAdditionalParametersCheckBox))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     @NbBundle.Messages("CustomizerCodeception.chooser.codecept=Select Codecept Script")
-    private void scriptBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scriptBrowseButtonActionPerformed
+    private void scriptBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_scriptBrowseButtonActionPerformed
         File file = new FileChooserBuilder(CustomizerCodeception.class)
                 .setTitle(Bundle.CustomizerCodeception_chooser_codecept())
                 .setFilesOnly(true)
@@ -288,7 +291,7 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_scriptBrowseButtonActionPerformed
 
     @NbBundle.Messages("CustomizerCodeception.chooser.codeception.yml=Select codeception.yml")
-    private void codeceptionBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_codeceptionBrowseButtonActionPerformed
+    private void codeceptionBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_codeceptionBrowseButtonActionPerformed
         File file = new FileChooserBuilder(CustomizerCodeception.class)
                 .setTitle(Bundle.CustomizerCodeception_chooser_codeception_yml())
                 .setFilesOnly(true)
@@ -301,15 +304,15 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_codeceptionBrowseButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox askForAdditionalParametersCheckBox;
-    private javax.swing.JButton codeceptionBrowseButton;
-    private javax.swing.JCheckBox codeceptionCheckBox;
-    private javax.swing.JLabel codeceptionLabel;
-    private javax.swing.JTextField codeceptionTextField;
-    private javax.swing.JButton scriptBrowseButton;
-    private javax.swing.JCheckBox scriptCheckBox;
-    private javax.swing.JLabel scriptLabel;
-    private javax.swing.JTextField scriptTextField;
+    private JCheckBox askForAdditionalParametersCheckBox;
+    private JButton codeceptionBrowseButton;
+    private JCheckBox codeceptionCheckBox;
+    private JLabel codeceptionLabel;
+    private JTextField codeceptionTextField;
+    private JButton scriptBrowseButton;
+    private JCheckBox scriptCheckBox;
+    private JLabel scriptLabel;
+    private JTextField scriptTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
