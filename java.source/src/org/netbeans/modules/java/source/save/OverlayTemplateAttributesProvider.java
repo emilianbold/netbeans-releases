@@ -44,11 +44,11 @@ package org.netbeans.modules.java.source.save;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.api.templates.CreateFromTemplateAttributes;
+import org.netbeans.api.templates.FileBuilder;
 import org.netbeans.modules.java.source.FileObjectFromTemplateCreator;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.CreateFromTemplateAttributesProvider;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -56,21 +56,20 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@ServiceProvider(service=CreateFromTemplateAttributesProvider.class)
-public class OverlayTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
+@ServiceProvider(service=CreateFromTemplateAttributes.class)
+public class OverlayTemplateAttributesProvider implements CreateFromTemplateAttributes {
 
     @Override
-    public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
-        FileObject origFile = (FileObject) target.getPrimaryFile().getAttribute(FileObjectFromTemplateCreator.ATTR_ORIG_FILE);
+    public Map<String, ?> attributesFor(CreateDescriptor desc) {
+        FileObject origFile = (FileObject) desc.getTarget().getAttribute(FileObjectFromTemplateCreator.ATTR_ORIG_FILE);
         if (origFile == null) return null;
-        
-        DataFolder origDF = DataFolder.findFolder(origFile);
-        if (origDF == null) return null;
 
-        Map<String, Object> all = new HashMap<String, Object>();
-        
-        for (CreateFromTemplateAttributesProvider provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributesProvider.class)) {
-            Map<String, ? extends Object> map = provider.attributesFor(template, origDF, name);
+        Map<String, Object> all = new HashMap<>();
+
+        FileBuilder bld = new FileBuilder(desc.getTemplate(), origFile);
+        CreateDescriptor childDesc = bld.withParameters(desc.getParameters()).createDescriptor(false);
+        for (CreateFromTemplateAttributes provider : Lookup.getDefault().lookupAll(CreateFromTemplateAttributes.class)) {
+            Map<String, ? extends Object> map = provider.attributesFor(childDesc);
             if (map != null) {
                 for (Map.Entry<String, ? extends Object> e : map.entrySet()) {
                     all.put(e.getKey(), e.getValue());
