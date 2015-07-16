@@ -1350,7 +1350,11 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
 	    // DisView.addrFromLine is sensitive to this number of spaces
             current_addrs.add(new Line(memaddr, memvalue));
         }
-	
+
+	protected final void addAll(List<Line> lines) {
+            current_addrs.addAll(lines);
+        }
+
 	protected final void update() {
             for (Listener listener : listeners) {
                 listener.fragUpdated();
