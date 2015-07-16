@@ -724,7 +724,7 @@ public class ColumnModels {
             synchronized(listeners) {
                 List<CellEditorListener> list = new ArrayList<CellEditorListener>(listeners);
                 for (CellEditorListener listener : list) {
-                    listener.editingCanceled(new ChangeEvent(this));
+                    listener.editingStopped(new ChangeEvent(this));
                 }
             }
         }

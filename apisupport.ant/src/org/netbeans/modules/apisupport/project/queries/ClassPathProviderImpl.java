@@ -605,7 +605,7 @@ next:       for (PathResourceImplementation pri : resources) {
                         }
                     }
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    LOG.log(Level.INFO, null, ioe);
                 }
                 res = jfx = pr == null ?
                     Collections.<PathResourceImplementation>emptyList():

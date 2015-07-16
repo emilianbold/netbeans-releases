@@ -74,6 +74,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -624,6 +625,10 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
                     fqn = superTypeVar.getType();
                     superTypeNames.add(fqn);
                     superTypeVar = superTypeVar.getSuper();
+                }
+                List<JPDAClassType> allInterfaces = thisVar.getClassType().getAllInterfaces();
+                for (JPDAClassType intrfc : allInterfaces) {
+                    superTypeNames.add(intrfc.getName());
                 }
             } else {
                 addClassNames(currentFrame.getClassName(), superTypeNames);

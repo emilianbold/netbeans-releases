@@ -47,20 +47,21 @@ package org.openide.loaders;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.NewTemplateAction;
 import org.openide.actions.SaveAsTemplateAction;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -69,6 +70,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.StatusDecorator;
 import org.openide.nodes.Node;
+import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Utilities;
 
 /** Test things about shadows and broken shadows, etc.
@@ -251,16 +253,40 @@ implements java.net.URLStreamHandlerFactory {
     public void testCreateTheShadow () throws Exception {
         DataShadow shade = original.createShadow (folder);
         
-        assertEquals ("Shadow's original is the one", original, shade.getOriginal ());
+        Node node = shade.createNodeDelegate();
         
-        Object cookie = shade.getCookie (DataObject.class);
-        assertEquals ("The shadow is own data object", shade, cookie);
+        final AtomicBoolean modified = new AtomicBoolean();
+        shade.getPrimaryFile().addFileChangeListener(new FileChangeAdapter() {
+
+            @Override
+            public void fileChanged (FileEvent fe) {
+                modified.set(true);
+            }
+            
+        });
         
-        cookie = shade.getCookie (original.getClass ());
-        assertEquals ("But it also returns the original when requested", original, cookie);
-        
-        URL u = DataShadow.readURL(shade.getPrimaryFile());
-        assertEquals("DataShadow's URL must point to the Original", original.getPrimaryFile().getURL(), u);
+        String originName = node.getName();
+        PropertySet[] props = node.getPropertySets();
+        Node.Property p = null;
+        for (PropertySet propSet : props) {
+            for (Node.Property prop : propSet.getProperties()) {
+                if ("OriginalName".equals(prop.getName())) {
+                    p = prop;
+                    break;
+                }
+            }
+        }
+        assertNotNull(p);
+        // set name to the same value
+        p.setValue(originName);
+        // nothing should happen
+        assertFalse(modified.get());
+        assertEquals(originName, original.getName());
+        // set name to the same value
+        p.setValue(originName + ".txt");
+        // link should be changed
+        assertTrue(modified.get());
+        assertEquals(originName + ".txt", original.getName());
     }
 
     @RandomlyFails // NB-Core-Build #1428
@@ -531,5 +557,20 @@ implements java.net.URLStreamHandlerFactory {
         } catch (IOException ex) {
             // this is oK
         }
+    }
+    
+    public void testRenameWithNode () throws Exception {
+        DataShadow shade = original.createShadow (folder);
+        
+        assertEquals ("Shadow's original is the one", original, shade.getOriginal ());
+        
+        Object cookie = shade.getCookie (DataObject.class);
+        assertEquals ("The shadow is own data object", shade, cookie);
+        
+        cookie = shade.getCookie (original.getClass ());
+        assertEquals ("But it also returns the original when requested", original, cookie);
+        
+        URL u = DataShadow.readURL(shade.getPrimaryFile());
+        assertEquals("DataShadow's URL must point to the Original", original.getPrimaryFile().getURL(), u);
     }
 }

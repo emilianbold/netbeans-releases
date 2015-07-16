@@ -85,7 +85,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
 
     // init ....................................................................
     
-    public ThreadBreakpointImpl (ThreadBreakpoint presenter, JPDADebuggerImpl debugger, Session session) {
+    ThreadBreakpointImpl (ThreadBreakpoint presenter, JPDADebuggerImpl debugger, Session session) {
         super (presenter, null, debugger, session);
         breakpoint = presenter;
         set ();

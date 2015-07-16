@@ -108,28 +108,32 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
     
     private String sourceRoot;
     private final Object SOURCE_ROOT_LOCK = new Object();
+    private final SourceRootsCache sourceRootsCache;
     private SourceRootsChangedListener srChListener;
     private PropertyChangeListener weakSrChListener;
     private BreakpointsClassFilter classFilter;
     
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.breakpoints"); // NOI18N
 
-    public ClassBasedBreakpoint (
+    ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
         JPDADebuggerImpl debugger,
-        Session session
+        Session session,
+        SourceRootsCache sourceRootsCache
     ) {
-        this (breakpoint, null, debugger, session);
+        this (breakpoint, null, debugger, session, sourceRootsCache);
     }
     
-    public ClassBasedBreakpoint (
+    ClassBasedBreakpoint (
         JPDABreakpoint breakpoint, 
         BreakpointsReader reader,
         JPDADebuggerImpl debugger,
-        Session session
+        Session session,
+        SourceRootsCache sourceRootsCache
     ) {
         super (breakpoint, reader, debugger, session);
         classFilter = new CompoundClassFilter(session.lookup(null, BreakpointsClassFilter.class));
+        this.sourceRootsCache = sourceRootsCache;
     }
     
     protected final BreakpointsClassFilter getClassFilter() {
@@ -177,6 +181,20 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return false;
     }
     
+    protected final boolean isRootInSources(String root) {
+        if (sourceRootsCache.getRootPaths().contains(root)) {
+            return true;
+        }
+        File rootFile = new File(root);
+        try {
+            rootFile = rootFile.getCanonicalFile();
+        } catch (IOException ioex) {}
+        if (sourceRootsCache.getRootCanonicalFiles().contains(rootFile)) {
+            return true;
+        }
+        return false;
+    }
+    
     @Override
     protected void remove () {
         super.remove();
@@ -194,21 +212,23 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         if (sourceRoot == null) {
             return true;
         }
-        String[] sourceRoots = getDebugger().getEngineContext().getSourceRoots();
-        for (int i = 0; i < sourceRoots.length; i++) {
-            if (compareSourceRoots(sourceRoot, sourceRoots[i])) {
-                return true;
-            }
+        if (sourceRootsCache.getRootPaths().contains(sourceRoot)) {
+            return true;
         }
-        String[] projectSourceRoots = getDebugger().getEngineContext().getProjectSourceRoots();
-        for (int i = 0; i < projectSourceRoots.length; i++) {
-            if (compareSourceRoots(sourceRoot, projectSourceRoots[i])) {
+        File rootFile = new File(sourceRoot);
+        try {
+            rootFile = rootFile.getCanonicalFile();
+        } catch (IOException ioex) {}
+        if (sourceRootsCache.getRootCanonicalFiles().contains(rootFile)) {
+            return true;
+        }
+        if (sourceRootsCache.getProjectRootPaths().contains(sourceRoot) ||
+            sourceRootsCache.getProjectRootCanonicalFiles().contains(rootFile)) {
                 setValidity(VALIDITY.INVALID,
                             NbBundle.getMessage(ClassBasedBreakpoint.class,
                                         "MSG_DisabledSourceRoot",
                                         sourceRoot));
                 return false;
-            }
         }
         // Breakpoint is not in debugger's source roots,
         // though it still might get hit if the app loads additional classes...
