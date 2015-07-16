@@ -63,9 +63,8 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Theofanis Oikonomou
  */
-// XXX should be in php.phpunit module, not here
 @ServiceProvider(service=TestCreatorConfigurationProvider.class, position=20)
-public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
+public class PhpTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
 
     /**
      *
@@ -74,7 +73,7 @@ public class PhpUnitTestCreatorConfigurationProvider extends TestCreatorConfigur
      */
     @Override
     public boolean canHandleProject(String framework) {
-        return framework.equals(TestCreatorProvider.FRAMEWORK_PHPUNIT);
+        return framework.equals(TestCreatorProvider.FRAMEWORK_PHP);
     }
 
     @Override

@@ -64,7 +64,10 @@ public abstract class TestCreatorProvider {
     public static final String FRAMEWORK_JUNIT = "JUnit";
     public static final String FRAMEWORK_TESTNG = "TestNG";
     public static final String FRAMEWORK_SELENIUM = "Selenium";
-    public static final String FRAMEWORK_PHPUNIT = "PHPUnit";
+    /**
+     * @since 2.4
+     */
+    public static final String FRAMEWORK_PHP = "PHP";
     /** suffix of test classes */
     public static final String TEST_CLASS_SUFFIX = "Test"; //NOI18N
     /** suffix of integration test classes */
