@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ProjectConvertors-unregister">
+            <api name="BaseProjectUIAPI"/>
+            <summary>Added <code>unregisterConvertorProject</code>into <code>ProjectConvertors</code>.</summary>
+            <version major="1" minor="81"/>
+            <date day="16" month="7" year="2015"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added <code>unregisterConvertorProject</code>into <code>ProjectConvertors</code> to allow
+                    project generators to unload the artifical convertor project before creating a new one.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.project.ui.support" name="ProjectConvertors"/>
+            <issue number="250268"/>
+        </change>
         <change id="ProjectConvertors">
             <api name="BaseProjectUIAPI"/>
             <summary>Added <code>ProjectConvertors</code> the support for <code>ProjectConvertor</code>s.</summary>
