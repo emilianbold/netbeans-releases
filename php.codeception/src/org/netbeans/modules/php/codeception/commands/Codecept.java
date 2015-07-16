@@ -55,9 +55,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.input.InputProcessor;
-import org.netbeans.api.extexecution.input.InputProcessors;
-import org.netbeans.api.extexecution.input.LineProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessor;
+import org.netbeans.api.extexecution.base.input.InputProcessors;
+import org.netbeans.api.extexecution.base.input.LineProcessor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -666,8 +666,7 @@ public final class Codecept {
     }
 
     //~ Inner class
-    // TODO use InputProcessorFactory2
-    private static class GenerateTestOutputFactory implements ExecutionDescriptor.InputProcessorFactory {
+    private static class GenerateTestOutputFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         // XXX improve patterns?
         private static final Pattern CREATED_FILE_PATTERN = Pattern.compile("Test was created in (?<file>.+\\.php)"); // NOI18N
