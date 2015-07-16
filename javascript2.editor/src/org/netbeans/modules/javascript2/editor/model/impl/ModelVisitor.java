@@ -1980,7 +1980,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
             int pathSize = getPath().size();
-            Node lastVisited = getPath().get(pathSize - 2);
+            Node lastVisited =  pathSize > 1 ? getPath().get(pathSize - 2) : getPath().get(0);
             boolean onLeftSite = false;
             if (lastVisited instanceof BinaryNode) {
                 BinaryNode bNode = (BinaryNode)lastVisited;
