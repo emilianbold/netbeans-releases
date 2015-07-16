@@ -339,7 +339,7 @@ public final class Codecept {
 
     @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        PhpExecutable codecept = getExecutable(phpModule, getOutputTitle(runInfo));
+        PhpExecutable codecept = getExecutable(phpModule, getOutputTitle(phpModule.getDisplayName()));
         if (codecept == null) {
             return null;
         }
@@ -356,7 +356,7 @@ public final class Codecept {
                     String relativePath = FileUtil.getRelativePath(parent, startFile);
                     if (relativePath != null) {
                         if (startFile.isFolder() && !relativePath.endsWith("/")) { // NOI18N
-                            relativePath = relativePath + "/"; // NOI18N
+                            relativePath += "/"; // NOI18N
                         }
                         if (!customTests.isEmpty() && !runInfo.isRerun()) {
                             relativePath = relativePath + ":" + customTests.get(0).getName(); // NOI18N
@@ -471,27 +471,11 @@ public final class Codecept {
     }
 
     @NbBundle.Messages({
-        "Codecept.run.test.single=Codecept (test)",
-        "Codecept.run.test.all=Codecept (test all)",
-        "Codecept.debug.single=Codecept (debug)",
-        "Codecept.debug.all=Codecept (debug all)"
+        "# {0} - project name",
+        "Codecept.invoke=Codecept ({0})",
     })
-    private String getOutputTitle(TestRunInfo runInfo) {
-        boolean allTests = runInfo.allTests();
-        switch (runInfo.getSessionType()) {
-            case TEST:
-                if (allTests) {
-                    return Bundle.Codecept_run_test_all();
-                }
-                return Bundle.Codecept_run_test_single();
-            case DEBUG:
-                if (allTests) {
-                    return Bundle.Codecept_debug_all();
-                }
-                return Bundle.Codecept_debug_single();
-            default:
-                throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
-        }
+    private String getOutputTitle(String projectName) {
+        return Bundle.Codecept_invoke(projectName);
     }
 
     private List<String> mergeParameters(String command, List<String> defaultParams, List<String> commandParams) {
