@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
+import org.openide.filesystems.FileSystem;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -58,7 +59,7 @@ public class FileExistsSensitiveCacheDriver implements CndFileExistSensitiveCach
     }
 
     @Override
-    public void invalidateFile(String file) {
+    public void invalidateFile(FileSystem fileSystem, String file) {
         SupportAPIAccessor.get().invalidateFileBasedCache(file);
     }
 
