@@ -43,6 +43,7 @@ package org.netbeans.modules.php.codeception.options;
 
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.openide.util.NbPreferences;
@@ -59,6 +60,7 @@ public final class CodeceptionOptions {
         return INSTANCE;
     }
 
+    @CheckForNull
     public String getCodeceptionPath() {
         String codeceptionPath = getPreferences().get(CODECEPTION_PATH, null);
         if (codeceptionPath == null && !codeceptionSearched) {

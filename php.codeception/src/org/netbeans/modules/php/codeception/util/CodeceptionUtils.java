@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.codeception.util;
 
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.openide.util.NbBundle;
 
@@ -52,7 +53,7 @@ public final class CodeceptionUtils {
 
     @NbBundle.Messages("CodeceptionUtils.codeception.label=Codecept file")
     @CheckForNull
-    public static String validateCodeceptPath(String codeceptionPath) {
+    public static String validateCodeceptPath(@NullAllowed String codeceptionPath) {
         return PhpExecutableValidator.validateCommand(codeceptionPath, Bundle.CodeceptionUtils_codeception_label());
     }
 

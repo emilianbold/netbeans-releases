@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.codeception.preferences;
 
 import java.io.File;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
@@ -62,7 +63,7 @@ public final class CodeceptionPreferencesValidator {
         return this;
     }
 
-    public CodeceptionPreferencesValidator validateCodecept(boolean codeceptEnabled, String codeceptPath) {
+    public CodeceptionPreferencesValidator validateCodecept(boolean codeceptEnabled, @NullAllowed String codeceptPath) {
         if (codeceptEnabled) {
             String warning = CodeceptionUtils.validateCodeceptPath(codeceptPath);
             if (warning != null) {
@@ -75,14 +76,17 @@ public final class CodeceptionPreferencesValidator {
     @NbBundle.Messages({
         "CodeceptionPreferencesValidator.incorrect.codeception.yml.fileName=codeception.yml must be set."
     })
-    public CodeceptionPreferencesValidator validateCodeceptionYml(boolean codeceptionYmlEnabled, String codeceptionYmlPath) {
+    public CodeceptionPreferencesValidator validateCodeceptionYml(boolean codeceptionYmlEnabled, @NullAllowed String codeceptionYmlPath) {
         if (codeceptionYmlEnabled) {
             validatePath(codeceptionYmlEnabled, codeceptionYmlPath, Codecept.CODECEPTION_CONFIG_FILE_NAME, "codeceptionYmlPath"); // NOI18N
-            File file = new File(codeceptionYmlPath);
-            if (file.exists()) {
-                String fileName = FileUtil.toFileObject(file).getNameExt();
-                if (!Codecept.CODECEPTION_CONFIG_FILE_NAME.equals(fileName)) { // NOI18N
-                    result.addWarning(new ValidationResult.Message("codeceptionYmlPath", Bundle.CodeceptionPreferencesValidator_incorrect_codeception_yml_fileName())); // NOI18N
+            if (codeceptionYmlPath != null) {
+                File file = new File(codeceptionYmlPath);
+                if (file.exists()) {
+                    String fileName = FileUtil.toFileObject(file).getNameExt();
+                    if (!Codecept.CODECEPTION_CONFIG_FILE_NAME.equals(fileName)) { // NOI18N
+                        result.addWarning(new ValidationResult.Message("codeceptionYmlPath", // NOI18N
+                                Bundle.CodeceptionPreferencesValidator_incorrect_codeception_yml_fileName()));
+                    }
                 }
             }
         }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.codeception.preferences;
 
 import java.util.prefs.Preferences;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.codeception.CodeceptionTestingProvider;
 
@@ -64,6 +65,7 @@ public final class CodeceptionPreferences {
         getPreference(phpModule).putBoolean(CUSTOM_CODECEPT_ENABLED, customCodeceptEnabled);
     }
 
+    @CheckForNull
     public static String getCustomCodeceptPath(PhpModule phpModule) {
         return getPreference(phpModule).get(CUSTOM_CODECEPT_PATH, null);
     }
@@ -80,6 +82,7 @@ public final class CodeceptionPreferences {
         getPreference(phpModule).putBoolean(CUSTOM_CODECEPTION_YML_ENABLED, customCodeceptionYmlEnabled);
     }
 
+    @CheckForNull
     public static String getCustomCodeceptionYmlPath(PhpModule phpModule) {
         return getPreference(phpModule).get(CUSTOM_CODECEPTION_YML_PATH, null);
     }

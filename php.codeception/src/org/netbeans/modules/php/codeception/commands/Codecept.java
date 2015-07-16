@@ -220,6 +220,7 @@ public final class Codecept {
             }
             path = CodeceptionOptions.getInstance().getCodeceptionPath();
         }
+        assert path != null;
         return new Codecept(path);
     }
 
