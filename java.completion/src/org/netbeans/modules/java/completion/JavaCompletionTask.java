@@ -1337,7 +1337,6 @@ public final class JavaCompletionTask<T> extends BaseTask {
             TypeMirror type = controller.getTrees().getTypeMirror(expPath);
             if (type != null) {
                 Element el = controller.getTrees().getElement(expPath);
-                type = adjustType(env, type, el, expPath);
                 EnumSet<ElementKind> kinds;
                 DeclaredType baseType = null;
                 Set<TypeMirror> exs = null;
@@ -3139,15 +3138,20 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
     }
 
-    private void addMembers(final Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport, final boolean insideNew, final boolean autoImport) throws IOException {
+    private void addMembers(final Env env, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final boolean inImport, final boolean insideNew, final boolean autoImport) throws IOException {        
         Set<? extends TypeMirror> smartTypes = getSmartTypes(env);
+        final TreePath path = env.getPath();
+        TypeMirror actualType = type;
+        if (path != null && path.getLeaf().getKind() == Tree.Kind.MEMBER_SELECT) {
+            actualType = adjustType(env, type, elem, new TreePath(path, ((MemberSelectTree)path.getLeaf()).getExpression()));
+        }
         final CompilationController controller = env.getController();
         final Trees trees = controller.getTrees();
         final Elements elements = controller.getElements();
         final ElementUtilities eu = controller.getElementUtilities();
         final Types types = controller.getTypes();
         final TreeUtilities tu = controller.getTreeUtilities();
-        TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement) ((DeclaredType) type).asElement() : null;
+        TypeElement typeElem = actualType.getKind() == TypeKind.DECLARED ? (TypeElement) ((DeclaredType) actualType).asElement() : null;
         final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER) && elem.asType().getKind() != TypeKind.ERROR;
         final boolean isThisCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(THIS_KEYWORD);
         final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
@@ -3252,8 +3256,8 @@ public final class JavaCompletionTask<T> extends BaseTask {
                 return false;
             }
         };
-        boolean addCast = elem instanceof VariableElement && !elem.getKind().isField() && !types.isSameType(type, elem.asType());
-        for (Element e : controller.getElementUtilities().getMembers(type, acceptor)) {
+        boolean addCast = actualType != type && elem instanceof VariableElement && !elem.getKind().isField();
+        for (Element e : controller.getElementUtilities().getMembers(actualType, acceptor)) {
             switch (e.getKind()) {
                 case ENUM_CONSTANT:
                 case EXCEPTION_PARAMETER:
@@ -3265,42 +3269,42 @@ public final class JavaCompletionTask<T> extends BaseTask {
                     if (THIS_KEYWORD.equals(name) || CLASS_KEYWORD.equals(name) || SUPER_KEYWORD.equals(name)) {
                         results.add(itemFactory.createKeywordItem(name, null, anchorOffset, isOfSmartType(env, e.asType(), smartTypes)));
                     } else {
-                        TypeMirror tm = asMemberOf(e, type, types);
+                        TypeMirror tm = asMemberOf(e, actualType, types);
                         if (addCast && itemFactory instanceof TypeCastableItemFactory) {
-                            results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableVariableItem(env.getController(), (VariableElement) e, tm, type, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
+                            results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableVariableItem(env.getController(), (VariableElement) e, tm, actualType, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
                         } else {
                             results.add(itemFactory.createVariableItem(env.getController(), (VariableElement) e, tm, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), isOfSmartType(env, tm, smartTypes), env.assignToVarPos()));
                         }
                     }
                     break;
                 case CONSTRUCTOR:
-                    ExecutableType et = (ExecutableType) asMemberOf(e, type, types);
-                    results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, type, smartTypes), env.assignToVarPos(), false));
+                    ExecutableType et = (ExecutableType) asMemberOf(e, actualType, types);
+                    results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, false, isOfSmartType(env, actualType, smartTypes), env.assignToVarPos(), false));
                     break;
                 case METHOD:
-                    et = (ExecutableType) asMemberOf(e, type, types);
+                    et = (ExecutableType) asMemberOf(e, actualType, types);
                     if (addCast && itemFactory instanceof TypeCastableItemFactory) {
-                        results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableExecutableItem(env.getController(), (ExecutableElement) e, et, type, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, type), smartTypes), env.assignToVarPos(), false));
+                        results.add(((TypeCastableItemFactory<T>)itemFactory).createTypeCastableExecutableItem(env.getController(), (ExecutableElement) e, et, actualType, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, actualType), smartTypes), env.assignToVarPos(), false));
                     } else {
-                        results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, type), smartTypes), env.assignToVarPos(), false));
+                        results.add(itemFactory.createExecutableItem(env.getController(), (ExecutableElement) e, et, anchorOffset, autoImport ? env.getReferencesCount() : null, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, env.addSemicolon(), isOfSmartType(env, getCorrectedReturnType(env, et, (ExecutableElement) e, actualType), smartTypes), env.assignToVarPos(), false));
                     }
                     break;
                 case CLASS:
                 case ENUM:
                 case INTERFACE:
                 case ANNOTATION_TYPE:
-                    DeclaredType dt = (DeclaredType) asMemberOf(e, type, types);
+                    DeclaredType dt = (DeclaredType) asMemberOf(e, actualType, types);
                     results.add(itemFactory.createTypeItem(env.getController(), (TypeElement) e, dt, anchorOffset, null, elements.isDeprecated(e), insideNew, insideNew || env.isInsideClass(), true, isOfSmartType(env, dt, smartTypes), autoImport));
                     break;
             }
         }
         if (!ctorSeen[0] && kinds.contains(CONSTRUCTOR) && elem.getKind().isInterface()) {
-            results.add(itemFactory.createDefaultConstructorItem((TypeElement) elem, anchorOffset, isOfSmartType(env, type, smartTypes)));
+            results.add(itemFactory.createDefaultConstructorItem((TypeElement) elem, anchorOffset, isOfSmartType(env, actualType, smartTypes)));
         }
         if (isStatic && enclClass != null && elem.getKind().isInterface() && env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0) {
             for (TypeMirror iface : enclClass.getInterfaces()) {
                 if (((DeclaredType) iface).asElement() == elem) {
-                    results.add(itemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, type, smartTypes)));
+                    results.add(itemFactory.createKeywordItem(SUPER_KEYWORD, null, anchorOffset, isOfSmartType(env, actualType, smartTypes)));
                     break;
                 }
             }
