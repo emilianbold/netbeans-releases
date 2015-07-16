@@ -44,8 +44,12 @@ package org.netbeans.modules.php.api.testing;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.php.spi.testing.PhpTestingProviders;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
@@ -57,6 +61,8 @@ import org.openide.util.lookup.Lookups;
  * The path is "{@value #TESTING_PATH}" on SFS.
  */
 public final class PhpTesting {
+
+    private static final Logger LOGGER = Logger.getLogger(PhpTesting.class.getName());
 
     /**
      * Path on SFS where {@link PhpTestingProvider PHP testing providers} need to be registered.
@@ -80,6 +86,29 @@ public final class PhpTesting {
      */
     public static List<PhpTestingProvider> getTestingProviders() {
         return new ArrayList<>(TESTING_PROVIDERS.allInstances());
+    }
+
+    /**
+     * Checks whether the given testing provider is enabled in the given PHP module.
+     * @param providerIdentifier identifier of the testing provider
+     * @param phpModule project to be checked
+     * @return {@code true} if the given testing provider is enabled in the given PHP module, {@code false} otherwise
+     * @since 0.17
+     */
+    public static boolean isTestingProviderEnabled(String providerIdentifier, PhpModule phpModule) {
+        Parameters.notNull("providerIdentifier", providerIdentifier); // NOI18N
+        Parameters.notNull("phpModule", phpModule); // NOI18N
+        PhpTestingProviders testingProviders = phpModule.getLookup().lookup(PhpTestingProviders.class);
+        if (testingProviders == null) {
+            LOGGER.log(Level.INFO, "Cannot find PhpTestingProviders instance in lookup of project {0}", phpModule.getClass().getName());
+            return false;
+        }
+        for (PhpTestingProvider testingProvider : testingProviders.getEnabledTestingProviders()) {
+            if (providerIdentifier.equals(testingProvider.getIdentifier())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
