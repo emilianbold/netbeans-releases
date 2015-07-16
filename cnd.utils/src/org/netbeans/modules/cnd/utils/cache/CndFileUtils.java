@@ -737,9 +737,10 @@ public final class CndFileUtils {
         public void fileFolderCreated(FileEvent fe) {            
             String path = checkSeparators(fe.getFile());
             String absPath = changeStringCaseIfNeeded(getFileSystem(fe), path);
-            if (getFilesMap(getFileSystem(fe)).put(absPath, Flags.DIRECTORY) != null) {
+            FileSystem fs = getFileSystem(fe);
+            if (getFilesMap(fs).put(absPath, Flags.DIRECTORY) != null) {
                 // If there was something in the map already - invalidate it
-                invalidateFile(path, absPath);
+                invalidateFile(fs, path, absPath);
             }
         }
 
@@ -747,9 +748,10 @@ public final class CndFileUtils {
         public void fileDataCreated(FileEvent fe) {
             String path = checkSeparators(fe.getFile());
             String absPath = changeStringCaseIfNeeded(getFileSystem(fe), path);
-            if (getFilesMap(getFileSystem(fe)).put(absPath, Flags.FILE) != null) {
+            FileSystem fs = getFileSystem(fe);
+            if (getFilesMap(fs).put(absPath, Flags.FILE) != null) {
                 // If there was something in the map already - invalidate it
-                invalidateFile(path, absPath);
+                invalidateFile(fs, path, absPath);
             }
         }
 
@@ -819,10 +821,10 @@ public final class CndFileUtils {
             }
         }
 
-        private static void invalidateFile(String file, String absPath) {
+        private static void invalidateFile(FileSystem fileSystem, String file, String localPathOrRemoteUrl) {
             for (CndFileExistSensitiveCache cache : getCaches()) {
-                cache.invalidateFile(file);
-                cache.invalidateFile(absPath);
+                cache.invalidateFile(fileSystem, file);
+                cache.invalidateFile(fileSystem, localPathOrRemoteUrl);
             }
         }
 
@@ -833,7 +835,7 @@ public final class CndFileUtils {
             if (TRACE_EXTERNAL_CHANGES) {
                 System.err.printf("clean cache for %s->%s\n", absPath, removed);
             }
-            invalidateFile(file, absPath);
+            invalidateFile(fsPath.getFileSystem(), file, absPath);
         }
     }
     private static final boolean TRACE_EXTERNAL_CHANGES = Boolean.getBoolean("cnd.modelimpl.trace.external.changes"); // NOI18N
