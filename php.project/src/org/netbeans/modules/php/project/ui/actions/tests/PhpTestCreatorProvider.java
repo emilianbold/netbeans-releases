@@ -77,7 +77,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Action for creating new PHP Unit tests.
+ * Action for creating new PHP unit tests.
  * @author Tomas Mysik
  */
 @TestCreatorProvider.Registration(displayName = TestCreatorProvider.FRAMEWORK_PHP)

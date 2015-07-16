@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.project.ui.actions.tests;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -55,8 +58,10 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -66,14 +71,37 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=TestCreatorConfigurationProvider.class, position=20)
 public class PhpTestCreatorConfigurationProvider extends TestCreatorConfigurationProvider {
 
-    /**
-     *
-     * @param framework the value of framework
-     * @return the boolean
-     */
+    private Project currentProject;
+
+
     @Override
     public boolean canHandleProject(String framework) {
         return framework.equals(TestCreatorProvider.FRAMEWORK_PHP);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - testing provider name",
+        "PhpTestCreatorConfigurationProvider.info=New test will be created using {0}.",
+    })
+    @Override
+    public Component getConfigurationPanel(Context context) {
+        assert currentProject != null;
+        Component component = super.getConfigurationPanel(context);
+        PhpProject phpProject = currentProject.getLookup().lookup(PhpProject.class);
+        currentProject = null;
+        if (phpProject != null) {
+            List<PhpTestingProvider> testingProviders = phpProject.getTestingProviders();
+            if (!testingProviders.isEmpty()) {
+                PhpTestingProvider testingProvider = testingProviders.get(0);
+                String info = Bundle.PhpTestCreatorConfigurationProvider_info(testingProvider.getDisplayName());
+                if (component instanceof JPanel) {
+                    ((JPanel) component).add(new JLabel(info));
+                } else {
+                    component = new JLabel(info);
+                }
+            }
+        }
+        return component;
     }
 
     @Override
@@ -85,6 +113,7 @@ public class PhpTestCreatorConfigurationProvider extends TestCreatorConfiguratio
         String[] result = {"", ""};
         Project p = FileOwnerQuery.getOwner(fileObj);
         if (p != null) {
+            currentProject = p;
             Collection<? extends ClassPathProvider> providers = p.getLookup().lookupAll(ClassPathProvider.class);
             for (ClassPathProvider provider : providers) {
                 ClassPath cp = provider.findClassPath(fileObj, PhpSourcePath.SOURCE_CP);
@@ -99,7 +128,7 @@ public class PhpTestCreatorConfigurationProvider extends TestCreatorConfiguratio
         return result;
     }
 
-    
+
 
     @Override
     public Object[] getTestSourceRoots(Collection<SourceGroup> createdSourceRoots, FileObject fo) {
@@ -118,5 +147,5 @@ public class PhpTestCreatorConfigurationProvider extends TestCreatorConfiguratio
         }
         return folders.toArray();
     }
-    
+
 }
