@@ -189,7 +189,35 @@
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="FontsColors">
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
@@ -290,7 +318,35 @@
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="FontsColors">
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
@@ -392,7 +448,35 @@
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="FontsColors">
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="resources/cplusplus/Netbeans-CC-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.cplusplus.Bundle"/>
@@ -484,7 +568,35 @@
                     <attr name="beaninfo" boolvalue="false"/>
                 </file>
                 <folder name="FontsColors">
+                    <folder name="NetBeans55">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                     <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="NetBeansEarth">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
                         <folder name="Defaults">
                             <file name="coloring.xml" url="resources/fortran/Netbeans-Fortran-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.fortran.Bundle"/>
