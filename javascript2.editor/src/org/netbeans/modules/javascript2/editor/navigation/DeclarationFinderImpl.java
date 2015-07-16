@@ -152,6 +152,9 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     while (parent != null  && !fqnParts[0].equals(parent.getFullyQualifiedName())) {
                         parent  = parent.getParent();
                     }
+                    if (parent == null) {
+                        return DeclarationLocation.NONE;
+                    }
                     int partIndex = 1;
                     // find the last object that is defined in the file / model. The rest will be done through the index. 
                     while (partIndex < fqnParts.length) {
