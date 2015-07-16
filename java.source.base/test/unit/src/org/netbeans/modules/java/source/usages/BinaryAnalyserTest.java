@@ -104,9 +104,8 @@ public class BinaryAnalyserTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        SourceUtilsTestUtil.setLookup(new Object[0], getClass().getClassLoader());
+        SourceUtilsTestUtil.setLookup(new Object[] {new MockCfg()}, getClass().getClassLoader());
         clearWorkDir();
-        MockServices.setServices(MockCfg.class);
     }
 
 
