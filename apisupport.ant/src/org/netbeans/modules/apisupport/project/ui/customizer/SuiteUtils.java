@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -298,6 +299,7 @@ public final class SuiteUtils {
         // #152279: used also for cleanup of standalone modules with suite.properties
         // assert subModule.getModuleType() == NbModuleType.SUITE_COMPONENT : "Not a suite component: " + subModule;
         try {
+            if (!Boolean.TRUE.equals(temporaryChange.get())) {
             subModule.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
                 public void run() throws IOException {
                     try {
@@ -346,6 +348,7 @@ public final class SuiteUtils {
                     }
                 }
             });
+            }
 
             // now clean up the suite
             if (suiteProps != null) {
@@ -558,6 +561,24 @@ public final class SuiteUtils {
     public static String getSuiteDirectoryPath(final Project project) {
         File suiteDir = getSuiteDirectory(project);
         return suiteDir != null ? suiteDir.getAbsolutePath() : null;
+    }
+
+    private static final ThreadLocal<Boolean> temporaryChange = new ThreadLocal<Boolean>();
+    
+    public static <T> T moving (Callable<T> callable) throws IOException {
+        Boolean temp = temporaryChange.get();
+        try {
+            temporaryChange.set(true);
+            return callable.call();
+        } catch (Exception ex) {
+            if (ex instanceof IOException) {
+                throw (IOException) ex;
+            } else {
+                throw new IOException(ex);
+            }
+        } finally {
+            temporaryChange.set(temp);
+        }
     }
     
 }
