@@ -43,10 +43,14 @@
 package org.netbeans.modules.git.ui.commit;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
+import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.GitTestKit;
+import org.netbeans.modules.versioning.util.common.VCSCommitOptions;
+import org.netbeans.modules.versioning.util.common.VCSFileNode;
 
 /**
  *
@@ -126,6 +130,27 @@ public class CommitTableTest extends NbTestCase {
        t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE), GitTestKit.createFileNode(getWorkDir(), "cfile", FileInformation.Status.IN_CONFLICT, true)});
        assertTrue(t.containsCommitable());         
        assertNull(t.getErrorMessage());
+    }
+    
+    public void testNewIncludeExcludeFile () throws Exception {
+        GitCommitTable t = new GitCommitTable();
+
+        GitLocalFileNode n = GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.NEW_INDEX_WORKING_TREE);
+        t.setNodes(new GitLocalFileNode[] { n });
+        assertTrue(t.containsCommitable());
+
+        GitModuleConfig.getDefault().setExcludeNewFiles(true);
+        n = GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.NEW_INDEX_WORKING_TREE);
+        t.setNodes(new GitLocalFileNode[] { n });
+        assertFalse(t.containsCommitable());
+
+        // same as table does when including
+        VCSCommitOptions options = n.getDefaultCommitOption(false);
+        Method m = VCSFileNode.class.getDeclaredMethod("setCommitOptions", VCSCommitOptions.class);
+        m.setAccessible(true);
+        m.invoke(n, options);
+        
+        assertTrue(t.containsCommitable());
     }
     
 }
