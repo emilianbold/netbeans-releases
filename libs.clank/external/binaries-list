@@ -1,6 +1,6 @@
-#changeset:   15289:95423f7428a0
+#changeset:   15294:6289d6b118ae
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Wed Jul 15 22:20:31 2015 +0300
-#summary:     fixing remote on windows with new preprocessor
-0B135A2E7108FD8CDA9D21D0DC338FC4758A3EDD clank_0.3.6.zip
+#date:        Fri Jul 17 13:33:05 2015 +0300
+#summary:     fixed lots of  "fatel error: ... modified since it was first processed" messages on Windows
+DC58D8AA22207CFB67EEFA4B582EF581A7EE24A4 clank_0.3.6.zip
