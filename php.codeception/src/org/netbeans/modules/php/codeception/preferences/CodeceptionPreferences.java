@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.php.codeception.preferences;
 
+import java.io.File;
 import java.util.prefs.Preferences;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.codeception.CodeceptionTestingProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileUtil;
 
 public final class CodeceptionPreferences {
 
@@ -67,11 +71,11 @@ public final class CodeceptionPreferences {
 
     @CheckForNull
     public static String getCustomCodeceptPath(PhpModule phpModule) {
-        return getPreference(phpModule).get(CUSTOM_CODECEPT_PATH, null);
+        return resolvePath(phpModule, getPreference(phpModule).get(CUSTOM_CODECEPT_PATH, null));
     }
 
     public static void setCustomCodeceptPath(PhpModule phpModule, String codeceptPath) {
-        getPreference(phpModule).put(CUSTOM_CODECEPT_PATH, codeceptPath);
+        getPreference(phpModule).put(CUSTOM_CODECEPT_PATH, relativizePath(phpModule, codeceptPath));
     }
 
     public static boolean isCustomCodeceptionYmlEnabled(PhpModule phpModule) {
@@ -84,11 +88,11 @@ public final class CodeceptionPreferences {
 
     @CheckForNull
     public static String getCustomCodeceptionYmlPath(PhpModule phpModule) {
-        return getPreference(phpModule).get(CUSTOM_CODECEPTION_YML_PATH, null);
+        return resolvePath(phpModule, getPreference(phpModule).get(CUSTOM_CODECEPTION_YML_PATH, null));
     }
 
     public static void setCustomCodeceptionYmlPath(PhpModule phpModule, String codeceptPath) {
-        getPreference(phpModule).put(CUSTOM_CODECEPTION_YML_PATH, codeceptPath);
+        getPreference(phpModule).put(CUSTOM_CODECEPTION_YML_PATH, relativizePath(phpModule, codeceptPath));
     }
 
     public static boolean askForAdditionalParameters(PhpModule phpModule) {
@@ -102,4 +106,25 @@ public final class CodeceptionPreferences {
     private static Preferences getPreference(PhpModule phpModule) {
         return phpModule.getPreferences(CodeceptionTestingProvider.class, true);
     }
+
+    private static String relativizePath(PhpModule phpModule, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return ""; // NOI18N
+        }
+        File file = new File(filePath);
+        String path = PropertyUtils.relativizeFile(FileUtil.toFile(phpModule.getProjectDirectory()), file);
+        if (path == null) {
+            // sorry, cannot be relativized
+            path = file.getAbsolutePath();
+        }
+        return path;
+    }
+
+    private static String resolvePath(PhpModule phpModule, String filePath) {
+        if (!StringUtils.hasText(filePath)) {
+            return null;
+        }
+        return PropertyUtils.resolveFile(FileUtil.toFile(phpModule.getProjectDirectory()), filePath).getAbsolutePath();
+    }
+
 }
