@@ -150,7 +150,7 @@ public class ImportDiffAction extends ContextAction {
                     } else {
                         kind = null;
                     }
-                    HgProgressSupport support = new ImportDiffProgressSupport(root, patchFile, kind);
+                    HgProgressSupport support = new ImportDiffProgressSupport(root, patchFile, true, kind);
                     support.start(rp, root, org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
                 }
                 dialog.dispose();
@@ -159,21 +159,23 @@ public class ImportDiffAction extends ContextAction {
         dialog.setVisible(true);
     }
 
-    private static class ImportDiffProgressSupport extends HgProgressSupport {
+    static class ImportDiffProgressSupport extends HgProgressSupport {
 
         private final File patchFile;
         private final File repository;
         private final Kind kind;
+        private final boolean commit;
         
         static enum Kind {
             PATCH,
             BUNDLE
         }
 
-        public ImportDiffProgressSupport (File repository, File patchFile, Kind kind) {
+        public ImportDiffProgressSupport (File repository, File patchFile, boolean commit, Kind kind) {
             this.repository = repository;
             this.patchFile = patchFile;
             this.kind = kind;
+            this.commit = commit;
         }
         
         @Override
@@ -258,9 +260,14 @@ public class ImportDiffAction extends ContextAction {
                 HgUtils.runWithoutIndexing(new Callable<Void>() {
                     @Override
                     public Void call () throws Exception {
-                        List<String> list = HgCommand.doImport(repository, patchFile, logger);
-                        Mercurial.getInstance().historyChanged(repository);
-                        Mercurial.getInstance().changesetChanged(repository);
+                        List<String> list = HgCommand.doImport(repository, patchFile, commit, logger);
+                        if (commit) {
+                            Mercurial.getInstance().historyChanged(repository);
+                            Mercurial.getInstance().changesetChanged(repository);
+                        } else {
+                            HgUtils.notifyUpdatedFiles(repository, list);
+                            HgUtils.forceStatusRefresh(repository);
+                        }
                         logger.output(list);
                         return null;
                     }
