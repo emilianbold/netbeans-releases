@@ -73,7 +73,6 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types = TreeModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types = TreeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TreeModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TreeModelFilter.class),
 })
 public class VariablesJSTreeModel implements TreeModelFilter {
