@@ -655,9 +655,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_STRIP_CMD);
         command.add(HG_CONFIG_OPTION_CMD);
         command.add(HG_STRIP_EXT_CMD);
-        command.add(HG_STRIP_CMD);
         if(doForceMultiHead){
             command.add(HG_STRIP_FORCE_MULTIHEAD_CMD);
         }
@@ -782,8 +782,8 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
-        command.add(HG_VERBOSE_CMD);
         command.add(HG_UNBUNDLE_CMD);
+        command.add(HG_VERBOSE_CMD);
         if (update) {
             command.add(HG_UPDATE_CMD);
         }
@@ -3380,9 +3380,9 @@ public abstract class HgCommand<T> implements Callable<T> {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
+        command.add(HG_QSERIES_CMD);
         command.add(HG_CONFIG_OPTION_CMD);
         command.add(HG_MQ_EXT_CMD);
-        command.add(HG_QSERIES_CMD);
 
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
