@@ -105,6 +105,11 @@ public class PhpTestCreatorConfigurationProvider extends TestCreatorConfiguratio
     }
 
     @Override
+    public boolean showClassNameInfo() {
+        return false;
+    }
+
+    @Override
     public void persistConfigurationPanel(Context context) {
     }
 

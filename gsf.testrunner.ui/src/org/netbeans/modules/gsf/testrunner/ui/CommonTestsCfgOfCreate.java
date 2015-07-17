@@ -551,21 +551,34 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
     
     private void updateClassName() {
-        if (tfClassName != null) {
+        boolean shouldShowClassNameInfo = shouldShowClassNameInfo();
+        tfClassName.setVisible(shouldShowClassNameInfo);
+        lblClassName.setVisible(shouldShowClassNameInfo);
+        if (tfClassName != null && tfClassName.isVisible()) {
             FileObject fileObj = activatedFOs[0];
 
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
             if (cp != null) {
-            String className = cp.getResourceName(fileObj, '.', false);
+                String className = cp.getResourceName(fileObj, '.', false);
 
                 String suffix = (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM))
                         || (chkIntegrationTests != null && chkIntegrationTests.isEnabled() && chkIntegrationTests.isSelected()) ? TestCreatorProvider.INTEGRATION_TEST_CLASS_SUFFIX : TestCreatorProvider.TEST_CLASS_SUFFIX;
-            String prefilledName = className + getTestingFrameworkSuffix() + suffix;
-            tfClassName.setText(prefilledName);
-            tfClassName.setDefaultText(prefilledName);
-            tfClassName.setCaretPosition(prefilledName.length());
+                String prefilledName = className + getTestingFrameworkSuffix() + suffix;
+                tfClassName.setText(prefilledName);
+                tfClassName.setDefaultText(prefilledName);
+                tfClassName.setCaretPosition(prefilledName.length());
+            }
         }
     }
+    
+    private boolean shouldShowClassNameInfo() {
+        Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
+        for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
+            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+                return panelProvider.showClassNameInfo();
+            }
+        }
+        return true;
     }
     
     private void setSelectedTestingFramework() {
@@ -617,7 +630,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         final boolean askForClassName = singleClass;
         
         JLabel lblClassToTest = new JLabel();
-        JLabel lblClassName = askForClassName ? new JLabel() : null;
+        lblClassName = askForClassName ? new JLabel() : null;
         JLabel lblLocation = new JLabel();
         JLabel lblFramework = new JLabel();
         
@@ -1215,6 +1228,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
 
     private JLabel lblClassToTestValue;
+    private JLabel lblClassName;
     private ClassNameTextField tfClassName;
     private JTextComponent txtAreaMessage;
     private JComboBox cboxLocation;
