@@ -101,7 +101,7 @@ public final class APTToClankCompilationDB implements ClankCompilationDataBase {
         ClankIncludeHandlerImpl includeHandler = (ClankIncludeHandlerImpl)ppHandler.getIncludeHandler();
         StartEntry startEntry = includeHandler.getStartEntry();
         FSPath startPath = new FSPath(startEntry.getFileSystem(), startEntry.getStartFile().toString());
-        CharSequence startUrl = CndFileSystemProvider.fileObjectToUrl(startPath.getFileObject());
+        CharSequence startUrl = CndFileSystemProvider.toUrl(startPath);
         DataBaseEntryBuilder builder = new DataBaseEntryBuilder(startUrl, null);
 
         builder.setLang(getLang(ppHandler.getLanguage(), startPath.getPath()));

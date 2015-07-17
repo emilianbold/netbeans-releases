@@ -403,10 +403,11 @@ public class TraceModelTestBase extends ModelImplBaseTestCase {
         for (String line = br.readLine(); line != null; line = br.readLine()) {
             i = line.indexOf(macro);
             if (i >= 0) {
-                char currentSeparator = line.charAt(i+macro.length());
-                if (separator != currentSeparator) {
-                    line = line.replace(currentSeparator, separator);
-                }
+                // fixing tests on Windows
+                // char currentSeparator = line.charAt(i+macro.length());
+                // if (separator != currentSeparator) {
+                //     line = line.replace(currentSeparator, separator);
+                // }
                 line = line.replace(macro, origin);
             }
             wr.write(line);
