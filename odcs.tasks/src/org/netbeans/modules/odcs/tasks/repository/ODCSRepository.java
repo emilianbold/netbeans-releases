@@ -54,6 +54,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.PasswordAuthentication;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -64,6 +65,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import oracle.eclipse.tools.cloud.dev.tasks.CloudDevClient;
@@ -128,9 +131,22 @@ public class ODCSRepository implements PropertyChangeListener {
         this(createInfo(project.getDisplayName(), project.getFeatureLocation(), project)); // use name as id - can'npe be changed anyway
         assert project != null;
         this.project = project;
-        TeamAccessorUtils.getTeamAccessor(project.getFeatureLocation()).addPropertyChangeListener(this, project.getWebLocation().toString());
+
+        String projectHost = project.getHost();
+        if (projectHost != null) {
+            TeamAccessor teamAccessor = TeamAccessorUtils.getTeamAccessor(projectHost);
+            if (teamAccessor != null) {
+                teamAccessor.addPropertyChangeListener(this, projectHost);
+            } else {
+                ODCS.LOG.log(Level.WARNING, "No TeamAccessor available for {0} project from {1}.", new Object[] {project.getName(), project.getWebLocation()}); // NOI18N
+                assert false : "Missing server entry"; // NOI18N
+            }
+        } else {
+            ODCS.LOG.log(Level.WARNING, "Project {0} from unknown host.", project.getName()); // NOI18N
+            assert false : "Project with unknown host"; // NOI18N
+        }
     }
-    
+
     public ODCSRepository() {
         this.icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.support = new PropertyChangeSupport(this);
@@ -446,8 +462,9 @@ public class ODCSRepository implements PropertyChangeListener {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<>(PredefinedTaskQuery.class);
             if(!Boolean.getBoolean("odcs.tasks.noPredefinedQueries")) { // NOI18N
+                Collection<String> queriesToSkip = getQueriesToSkip();
                 for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                    if(ptq == PredefinedTaskQuery.RECENT) {
+                    if(ptq == PredefinedTaskQuery.RECENT || queriesToSkip.contains(ptq.toString())) {
                         continue;
                     }
                     try {
@@ -476,6 +493,27 @@ public class ODCSRepository implements PropertyChangeListener {
         }
     }
 
+    private static Collection<String> getQueriesToSkip() {
+        try {
+            String prop = System.getProperty("odcs.tasks.queriesToSkip"); // NOI18N
+            if(prop == null || prop.trim().isEmpty()) {
+                return Collections.EMPTY_LIST;
+            }
+            StringTokenizer tk = new StringTokenizer(prop, ",");
+            Set<String> ret = new HashSet<>(PredefinedTaskQuery.values().length);
+            while(tk.hasMoreTokens()) {
+                String t = tk.nextToken().trim();
+                if(!t.isEmpty()) {
+                    ret.add(t);
+                }
+            }
+            return ret;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
     public final ODCSQuery getPredefinedQuery (PredefinedTaskQuery ptq) {
         getQueries();
         synchronized (QUERIES_LOCK) {
