@@ -115,7 +115,7 @@ public final class QueryTopComponent extends TopComponent
     private static QueryTopComponent instance;
 
     /** Set of opened {@code QueryTopComponent}s. */
-    private static final Set<QueryTopComponent> openQueries = Collections.synchronizedSet(new HashSet<QueryTopComponent>());
+    private static final Set<QueryTopComponent> openQueries = new HashSet<QueryTopComponent>();
 
     private final RepoSelectorPanel repoPanel;
     private final LinkButton newButton;
@@ -186,10 +186,6 @@ public final class QueryTopComponent extends TopComponent
     private static int getLeftContainerGap(JComponent comp) {
         LayoutStyle layoutStyle = LayoutStyle.getInstance();
         return layoutStyle.getContainerGap(comp, WEST, null);
-    }
-
-    public static Set<QueryTopComponent> getOpenQueries() {
-        return openQueries;
     }
     
     public QueryImpl getQuery() {
@@ -332,7 +328,8 @@ public final class QueryTopComponent extends TopComponent
      * @return top-component that should display the given query.
      */
     public static synchronized QueryTopComponent find(QueryImpl query) {
-        for (QueryTopComponent tc : openQueries) {
+        QueryTopComponent[] tcs = getOpenQueries();
+        for (QueryTopComponent tc : tcs) {
             if (query.equals(tc.getQuery())) {
                 return tc;
             }
@@ -341,7 +338,8 @@ public final class QueryTopComponent extends TopComponent
     }
 
     public static void closeFor(RepositoryImpl repo) {
-        for (QueryTopComponent itc : openQueries) {
+        QueryTopComponent[] tcs = getOpenQueries();
+        for (QueryTopComponent itc : tcs) {
             QueryImpl tcQuery = itc.getQuery(); 
             if(tcQuery == null) {
                 continue;
@@ -355,6 +353,14 @@ public final class QueryTopComponent extends TopComponent
         }
     }
 
+    private static QueryTopComponent[] getOpenQueries() {
+        QueryTopComponent[] tcs;
+        synchronized(openQueries) {
+            tcs = openQueries.toArray(new QueryTopComponent[openQueries.size()]);
+        }
+        return tcs;
+    }
+    
     @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
@@ -367,7 +373,9 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void componentOpened() {
-        openQueries.add(this);
+        synchronized(openQueries) {
+            openQueries.add(this);
+        }
         if(query != null) {
             getController(query).opened();
         }
@@ -381,7 +389,9 @@ public final class QueryTopComponent extends TopComponent
 
     @Override
     public void componentClosed() {
-        openQueries.remove(this);
+        synchronized(openQueries) {
+            openQueries.remove(this);
+        }
         if(query != null) {
             unregisterListeners();
             getController(query).closed();
