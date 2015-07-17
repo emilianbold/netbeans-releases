@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.codeception.coverage;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage.Line;
@@ -53,8 +54,10 @@ import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
 public final class CoverageImpl implements Coverage {
 
     private final List<File> files = new ArrayList<>();
+
     private long generated = -1;
     private CoverageMetricsImpl metrics;
+
 
     public long getGenerated() {
         return generated;
@@ -77,7 +80,7 @@ public final class CoverageImpl implements Coverage {
 
     @Override
     public List<File> getFiles() {
-        return files;
+        return Collections.unmodifiableList(files);
     }
 
     public void addFile(File file) {
@@ -86,12 +89,15 @@ public final class CoverageImpl implements Coverage {
     }
 
     //~ Inner classes
+
     public static final class FileImpl implements Coverage.File {
 
         private final String path;
         private final List<ClassImpl> classes = new ArrayList<>();
         private final List<Line> lines = new ArrayList<>();
+
         private FileMetrics metrics;
+
 
         public FileImpl(String path) {
             assert path != null;
@@ -115,7 +121,7 @@ public final class CoverageImpl implements Coverage {
         }
 
         public List<ClassImpl> getClasses() {
-            return classes;
+            return Collections.unmodifiableList(classes);
         }
 
         public void addClass(ClassImpl clazz) {
@@ -125,7 +131,7 @@ public final class CoverageImpl implements Coverage {
 
         @Override
         public List<Line> getLines() {
-            return lines;
+            return Collections.unmodifiableList(lines);
         }
 
         public void addLine(Line line) {
@@ -139,12 +145,13 @@ public final class CoverageImpl implements Coverage {
 
         private final String name;
         private final String namespace;
+
         private ClassMetricsImpl metrics;
+
 
         public ClassImpl(String name, String namespace) {
             assert name != null;
             assert namespace != null;
-
             this.name = name;
             this.namespace = namespace;
         }
@@ -169,9 +176,10 @@ public final class CoverageImpl implements Coverage {
 
         @Override
         public String toString() {
-            return String.format("ClassImpl{name: %s, namespace: %s, classMetrics: %s}",
+            return String.format("ClassImpl{name: %s, namespace: %s, classMetrics: %s}", // NOI18N
                     name, namespace, metrics);
         }
+
     }
 
     public static final class LineImpl implements Line {
@@ -181,6 +189,7 @@ public final class CoverageImpl implements Coverage {
         private final String name;
         private final int crap;
         private final int count;
+
 
         public LineImpl(int num, String type, String name, int crap, int count) {
             this.num = num;

@@ -46,6 +46,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -56,11 +57,13 @@ public class CoverageProvider {
 
     private static final Logger LOGGER = Logger.getLogger(CoverageProvider.class.getName());
 
+
     @CheckForNull
     public Coverage getCoverage() {
         CoverageImpl coverage = new CoverageImpl();
         try {
-            CodeceptionCoverageLogParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(Codecept.COVERAGE_LOG), "UTF-8")), coverage); // NOI18N
+            CodeceptionCoverageLogParser.parse(
+                    new BufferedReader(new InputStreamReader(new FileInputStream(Codecept.COVERAGE_LOG), StandardCharsets.UTF_8)), coverage);
         } catch (FileNotFoundException ex) {
             LOGGER.info(String.format("File %s not found. If there are no errors in Codeception output (verify in Output window), "
                     + "please report an issue (http://www.netbeans.org/issues/).", Codecept.COVERAGE_LOG));

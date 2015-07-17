@@ -24,6 +24,29 @@
   <projectmakefile>Makefile</projectmakefile>
   <defaultConf>1</defaultConf>
   <confs>
+    <conf name="Debug" type="1">
+      <toolsSet>
+        <compilerSet>X-TOOLCHAIN-X</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cCompilerTool>
+        </cCompilerTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
     <conf name="FastBuild" type="1">
       <toolsSet>
         <compilerSet>X-TOOLCHAIN-X</compilerSet>
@@ -41,29 +64,6 @@
         <asmTool>
           <developmentMode>0</developmentMode>
         </asmTool>
-        <linkerTool>
-          <linkerLibItems>
-          </linkerLibItems>
-        </linkerTool>
-      </compileType>
-      <item path="fractal.cc">
-        <itemTool>1</itemTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
-      </item>
-      <item path="readme.txt">
-        <itemTool>3</itemTool>
-      </item>
-    </conf>
-    <conf name="Debug" type="1">
-      <toolsSet>
-        <compilerSet>X-TOOLCHAIN-X</compilerSet>
-      </toolsSet>
-      <compileType>
-        <cCompilerTool>
-        </cCompilerTool>
-        <ccCompilerTool>
-        </ccCompilerTool>
         <linkerTool>
           <linkerLibItems>
           </linkerLibItems>

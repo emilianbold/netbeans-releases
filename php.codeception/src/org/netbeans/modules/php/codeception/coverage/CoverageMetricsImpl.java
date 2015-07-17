@@ -45,7 +45,9 @@ class CoverageMetricsImpl extends FileMetricsImpl {
 
     private final int files;
 
-    public CoverageMetricsImpl(int files, int loc, int ncloc, int classes, int methods, int coveredMethods, int conditionals, int coveredConditionals, int statements, int coveredStatements, int elements, int coveredElements) {
+
+    public CoverageMetricsImpl(int files, int loc, int ncloc, int classes, int methods, int coveredMethods,
+            int conditionals, int coveredConditionals, int statements, int coveredStatements, int elements, int coveredElements) {
         super(loc, ncloc, classes, methods, coveredMethods, conditionals, coveredConditionals, statements, coveredStatements, elements, coveredElements);
         this.files = files;
     }
@@ -57,8 +59,8 @@ class CoverageMetricsImpl extends FileMetricsImpl {
     @Override
     public String toString() {
         return String.format("CoverageMetricsImpl{files: %d, loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, " // NOI18N
-                + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", files, getLineCount(), getNcloc(), getClasses(), getMethods(), getCoveredMethods(), // NOI18N
-                getStatements(), getCoveredStatements(), getElements(), getCoveredElements());
+                + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", files, getLineCount(), getNcloc(), // NOI18N
+                getClasses(), getMethods(), getCoveredMethods(), getStatements(), getCoveredStatements(), getElements(), getCoveredElements());
     }
 
 }

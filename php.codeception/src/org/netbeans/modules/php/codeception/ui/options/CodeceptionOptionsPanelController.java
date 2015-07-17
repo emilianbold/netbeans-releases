@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.codeception.options.CodeceptionOptions;
@@ -60,10 +62,8 @@ import org.openide.util.Lookup;
         //    toolTip="#LBL_OptionsTooltip"
         position = 800
 )
-@org.openide.util.NbBundle.Messages({
-    "CodeceptionOptionsPanelController.displayName=Codeception"
-})
-public final class CodeceptionOptionsPanelController extends OptionsPanelController {
+@org.openide.util.NbBundle.Messages("CodeceptionOptionsPanelController.displayName=Codeception")
+public final class CodeceptionOptionsPanelController extends OptionsPanelController implements ChangeListener {
 
     static final String ID = "Codeception"; // NOI18N
     public static final String OPTIONS_SUB_PATH = UiUtils.FRAMEWORKS_AND_TOOLS_SUB_PATH + "/" + ID; // NOI18N
@@ -83,7 +83,6 @@ public final class CodeceptionOptionsPanelController extends OptionsPanelControl
             firstOpening = false;
             getCodeceptionOptionsPanel().setCodeception(getCodeceptionOptions().getCodeceptionPath());
         }
-
         changed = false;
     }
 
@@ -158,7 +157,8 @@ public final class CodeceptionOptionsPanelController extends OptionsPanelControl
     private CodeceptionOptionsPanel getCodeceptionOptionsPanel() {
         assert EventQueue.isDispatchThread();
         if (codeceptionOptionsPanel == null) {
-            codeceptionOptionsPanel = new CodeceptionOptionsPanel(this);
+            codeceptionOptionsPanel = new CodeceptionOptionsPanel();
+            codeceptionOptionsPanel.addChangeListener(this);
         }
         return codeceptionOptionsPanel;
     }
@@ -167,7 +167,8 @@ public final class CodeceptionOptionsPanelController extends OptionsPanelControl
         return CodeceptionOptions.getInstance();
     }
 
-    void changed() {
+    @Override
+    public void stateChanged(ChangeEvent e) {
         if (!changed) {
             changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);

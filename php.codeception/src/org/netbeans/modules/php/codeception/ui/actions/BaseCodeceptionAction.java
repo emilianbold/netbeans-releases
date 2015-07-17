@@ -53,6 +53,7 @@ abstract class BaseCodeceptionAction extends AbstractAction {
 
     protected final PhpModule phpModule;
 
+
     protected BaseCodeceptionAction(PhpModule phpModule) {
         assert phpModule != null;
         this.phpModule = phpModule;

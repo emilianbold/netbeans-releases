@@ -78,13 +78,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="scriptTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/codeception/ui/customizer/Bundle.properties" key="CustomizerCodeception.scriptTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="scriptLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -94,6 +87,8 @@
           <ResourceString bundle="org/netbeans/modules/php/codeception/ui/customizer/Bundle.properties" key="CustomizerCodeception.scriptLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="scriptTextField">
     </Component>
     <Component class="javax.swing.JButton" name="scriptBrowseButton">
       <Properties>
@@ -123,11 +118,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="codeceptionTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/codeception/ui/customizer/Bundle.properties" key="CustomizerCodeception.codeceptionTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="codeceptionBrowseButton">
       <Properties>

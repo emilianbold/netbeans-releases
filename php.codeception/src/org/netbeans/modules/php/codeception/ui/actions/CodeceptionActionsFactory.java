@@ -62,7 +62,6 @@ import org.openide.util.actions.Presenter;
 
 /**
  * Factory for Codeception actions.
- *
  */
 @ActionID(id = "org.netbeans.modules.php.codeception.ui.actions.CodeceptionActionsFactory", category = "Project")
 @ActionRegistration(displayName = "#CodeceptionActionsFactory.name", lazy = false)
