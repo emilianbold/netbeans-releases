@@ -58,7 +58,7 @@ import org.openide.util.Lookup;
         id = CodeceptionOptionsPanelController.ID,
         displayName = "#CodeceptionOptionsPanelController.displayName",
         //    toolTip="#LBL_OptionsTooltip"
-        position = 190 // XXX change?
+        position = 800
 )
 @org.openide.util.NbBundle.Messages({
     "CodeceptionOptionsPanelController.displayName=Codeception"
