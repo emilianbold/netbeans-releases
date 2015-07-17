@@ -59,6 +59,7 @@ import org.netbeans.modules.javascript.nodejs.preferences.NodeJsPreferences;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.common.api.UsageLogger;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -274,6 +275,8 @@ public final class NodeJsUtils {
 
     /**
      * Checks whether the given folder is already a project.
+     * <p>
+     * This method ignores ProjectConvertor projects.
      * @param folder folder to be checked
      * @return {@code true} if the given folder is already a project, {@code false} otherwise
      */
@@ -287,8 +290,11 @@ public final class NodeJsUtils {
         } catch (IllegalArgumentException ex) {
             // noop
         }
-        return prj != null
-                || foundButBroken;
+        if (prj != null
+                && !ProjectConvertors.isConvertorProject(prj)) {
+            return true;
+        }
+        return foundButBroken;
     }
 
 }

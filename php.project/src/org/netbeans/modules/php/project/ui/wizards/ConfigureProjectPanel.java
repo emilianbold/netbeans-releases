@@ -48,7 +48,6 @@ import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import java.awt.Component;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -57,14 +56,13 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.wizards.NewPhpProjectWizardIterator.WizardType;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -462,30 +460,11 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (err != null) {
             return err;
         }
-        if (isProjectAlready(projectFolder)) {
+        if (PhpProjectUtils.isProject(projectFolder)) {
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectAlreadyProject");
         }
         warnIfNotEmpty(projectFolder.getAbsolutePath(), "Project"); // NOI18N
         return null;
-    }
-
-    // #137230, #165918
-    private boolean isProjectAlready(File projectFolder) {
-        if (!projectFolder.exists()) {
-            return false;
-        }
-
-        Project prj = null;
-        boolean foundButBroken = false;
-        try {
-            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(projectFolder)));
-        } catch (IOException ex) {
-            foundButBroken = true;
-        } catch (IllegalArgumentException ex) {
-            // we have passed non-folder - should be already handled
-            assert false : "Should not get here";
-        }
-        return prj != null || foundButBroken;
     }
 
     @NbBundle.Messages("ConfigureProjectPanel.error.sources.homeDir=Sources cannot be your home directory.")
@@ -521,7 +500,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         if (!configureProjectPanelVisual.isProjectFolderUsed()) {
             // project folder not used => validate sources as project folder
-            if (isProjectAlready(sources)) {
+            if (PhpProjectUtils.isProject(sources)) {
                 return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_SourcesAlreadyProject");
             }
         }

@@ -156,6 +156,7 @@
                 <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.cake3</friend>
                 <friend>org.netbeans.modules.php.code.analysis</friend>
+                <friend>org.netbeans.modules.php.codeception</friend>
                 <friend>org.netbeans.modules.php.composer</friend>
                 <friend>org.netbeans.modules.php.dbgp</friend>
                 <friend>org.netbeans.modules.php.doctrine2</friend>

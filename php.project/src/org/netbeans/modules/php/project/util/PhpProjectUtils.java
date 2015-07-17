@@ -55,6 +55,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
@@ -69,6 +70,7 @@ import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -121,6 +123,31 @@ public final class PhpProjectUtils {
             return null;
         }
         return project.getLookup().lookup(PhpProject.class);
+    }
+
+    // #137230, #165918
+    /**
+     * Checks whether the given folder is already a project.
+     * <p>
+     * This method ignores ProjectConvertor projects.
+     * @param folder folder to be checked
+     * @return {@code true} if the given folder is already a project, {@code false} otherwise
+     */
+    public static boolean isProject(File folder) {
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(folder)));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // noop
+        }
+        if (prj != null
+                && !ProjectConvertors.isConvertorProject(prj)) {
+            return true;
+        }
+        return foundButBroken;
     }
 
     public static void openFile(File file) {
