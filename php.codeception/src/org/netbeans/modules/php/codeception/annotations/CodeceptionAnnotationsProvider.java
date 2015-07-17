@@ -52,6 +52,7 @@ public final class CodeceptionAnnotationsProvider extends AnnotationCompletionTa
 
     private static final CodeceptionAnnotationsProvider INSTANCE = new CodeceptionAnnotationsProvider();
 
+
     @NbBundle.Messages("CodeceptionAnnotationsProvider.name=Codeception")
     private CodeceptionAnnotationsProvider() {
         super("Codeception Annotations", // NOI18N
@@ -66,7 +67,7 @@ public final class CodeceptionAnnotationsProvider extends AnnotationCompletionTa
 
     @Override
     public List<AnnotationCompletionTag> getFunctionAnnotations() {
-        // TODO
+        // XXX
         return Collections.emptyList();
     }
 

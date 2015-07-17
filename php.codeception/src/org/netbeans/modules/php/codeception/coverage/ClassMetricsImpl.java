@@ -52,7 +52,9 @@ class ClassMetricsImpl {
     private final int elements;
     private final int coveredElements;
 
-    public ClassMetricsImpl(int methods, int coveredMethods, int conditionals, int coveredConditionals, int statements, int coveredStatements, int elements, int coveredElements) {
+
+    public ClassMetricsImpl(int methods, int coveredMethods, int conditionals, int coveredConditionals, int statements,
+            int coveredStatements, int elements, int coveredElements) {
         this.methods = methods;
         this.coveredMethods = coveredMethods;
         this.conditionals = conditionals;
@@ -97,8 +99,9 @@ class ClassMetricsImpl {
 
     @Override
     public String toString() {
-        return String.format("ClassMetricsImpl{methods: %d, coveredMethods: %d, conditionals: %d, coveredConditionals: %d, statements: %d, coveredStatements: %d, " // NOI18N
-                + "elements: %d, coveredElements: %d}", methods, coveredMethods, conditionals, coveredConditionals, statements, coveredStatements, elements, coveredElements); // NOI18N
+        return String.format("ClassMetricsImpl{methods: %d, coveredMethods: %d, conditionals: %d, coveredConditionals: %d, statements: %d, " // NOI18N
+                + "coveredStatements: %d, elements: %d, coveredElements: %d}", methods, coveredMethods, conditionals, coveredConditionals, // NOI18N
+                statements, coveredStatements, elements, coveredElements);
     }
 
 }

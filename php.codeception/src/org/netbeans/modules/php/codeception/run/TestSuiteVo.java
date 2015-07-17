@@ -48,13 +48,13 @@ import org.openide.filesystems.FileObject;
 
 /**
  * Value Object for TestSuite.
- *
  */
 public final class TestSuiteVo {
 
     private final List<TestCaseVo> testCases = new ArrayList<>();
     private final String name;
     private final long time;
+
 
     public TestSuiteVo(String name, long time) {
         assert name != null;
@@ -76,7 +76,7 @@ public final class TestSuiteVo {
     }
 
     public List<TestCaseVo> getPureTestCases() {
-        return testCases;
+        return Collections.unmodifiableList(testCases);
     }
 
     public List<TestCaseVo> getTestCases() {
@@ -89,7 +89,7 @@ public final class TestSuiteVo {
 
     private List<TestCaseVo> sanitizedTestCases() {
         if (!testCases.isEmpty()) {
-            return testCases;
+            return Collections.unmodifiableList(testCases);
         }
         // XXX can't know actual skipped test cases
         // because they are not logged in xml file

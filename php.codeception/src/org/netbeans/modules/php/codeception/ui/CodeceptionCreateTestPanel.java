@@ -42,10 +42,7 @@
 package org.netbeans.modules.php.codeception.ui;
 
 import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
@@ -62,31 +59,22 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public class CodeceptionCreateTestPanel extends JPanel {
+public final class CodeceptionCreateTestPanel extends JPanel {
 
-    private static final long serialVersionUID = -7767663312729593009L;
-    private final List<GenerateCommand> commands;
-    private final Set<String> suites;
-
-    /**
-     * Creates new form CodeceptionSuitesPanel
-     */
     private CodeceptionCreateTestPanel(List<GenerateCommand> commands, List<String> suites) {
         assert EventQueue.isDispatchThread();
         assert suites != null;
         assert commands != null;
 
-        this.commands = new ArrayList<>(commands);
-        this.suites = new HashSet<>(suites);
         initComponents();
-        init();
+        init(commands, suites);
     }
 
-    private void init() {
-        for (String suite : this.suites) {
+    private void init(List<GenerateCommand> commands, List<String> suites) {
+        for (String suite : suites) {
             suitesComboBox.addItem(suite);
         }
-        for (GenerateCommand command : this.commands) {
+        for (GenerateCommand command : commands) {
             generateComboBox.addItem(command);
         }
     }
@@ -138,14 +126,16 @@ public class CodeceptionCreateTestPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        commandLabel = new JLabel();
         generateComboBox = new JComboBox<Codecept.GenerateCommand>();
+        suiteLabel = new JLabel();
         suitesComboBox = new JComboBox<String>();
-        jLabel1 = new JLabel();
-        jLabel2 = new JLabel();
 
-        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(CodeceptionCreateTestPanel.class, "CodeceptionCreateTestPanel.jLabel1.text")); // NOI18N
+        commandLabel.setLabelFor(generateComboBox);
+        Mnemonics.setLocalizedText(commandLabel, NbBundle.getMessage(CodeceptionCreateTestPanel.class, "CodeceptionCreateTestPanel.commandLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(CodeceptionCreateTestPanel.class, "CodeceptionCreateTestPanel.jLabel2.text")); // NOI18N
+        suiteLabel.setLabelFor(suitesComboBox);
+        Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CodeceptionCreateTestPanel.class, "CodeceptionCreateTestPanel.suiteLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -153,32 +143,33 @@ public class CodeceptionCreateTestPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel2))
+                    .addComponent(commandLabel)
+                    .addComponent(suiteLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(suitesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(generateComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 12, Short.MAX_VALUE))
+                    .addComponent(suitesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(generateComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(12, 12, 12))
         );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGap(5, 5, 5)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(commandLabel)
                     .addComponent(generateComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                    .addComponent(suiteLabel)
                     .addComponent(suitesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel commandLabel;
     private JComboBox<Codecept.GenerateCommand> generateComboBox;
-    private JLabel jLabel1;
-    private JLabel jLabel2;
+    private JLabel suiteLabel;
     private JComboBox<String> suitesComboBox;
     // End of variables declaration//GEN-END:variables
+
 }

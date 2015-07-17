@@ -51,37 +51,40 @@ import org.netbeans.modules.php.codeception.coverage.CoverageImpl.ClassImpl;
 import org.netbeans.modules.php.codeception.coverage.CoverageImpl.FileImpl;
 import org.netbeans.modules.php.codeception.coverage.CoverageImpl.LineImpl;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-public class CodeceptionCoverageLogParser extends DefaultHandler {
+public final class CodeceptionCoverageLogParser extends DefaultHandler {
 
-    enum Content {
-
-        COVERAGE, FILE, CLASS
-    };
     private static final Logger LOGGER = Logger.getLogger(CodeceptionCoverageLogParser.class.getName());
 
-    private final XMLReader xmlReader;
+    private enum Content {
+        COVERAGE,
+        FILE,
+        CLASS,
+    };
+
+    final XMLReader xmlReader;
     private final CoverageImpl coverage;
+
     private FileImpl file; // actual file
     private ClassImpl clazz; // actual class
     private Content content = null;
+
 
     private CodeceptionCoverageLogParser(CoverageImpl coverage) throws SAXException {
         assert coverage != null;
         this.coverage = coverage;
         xmlReader = FileUtils.createXmlReader();
-        xmlReader.setContentHandler(this);
     }
 
     public static void parse(Reader reader, CoverageImpl coverage) {
         try {
             CodeceptionCoverageLogParser parser = new CodeceptionCoverageLogParser(coverage);
+            parser.xmlReader.setContentHandler(parser);
             parser.xmlReader.parse(new InputSource(reader));
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
@@ -92,7 +95,7 @@ public class CodeceptionCoverageLogParser extends DefaultHandler {
             try {
                 reader.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
@@ -323,4 +326,5 @@ public class CodeceptionCoverageLogParser extends DefaultHandler {
         }
         return l;
     }
+
 }

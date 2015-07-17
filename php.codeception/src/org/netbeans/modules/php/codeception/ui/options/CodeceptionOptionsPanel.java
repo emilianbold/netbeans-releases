@@ -50,6 +50,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -68,7 +70,6 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -80,14 +81,14 @@ import org.openide.util.NbBundle;
         location = UiUtils.OPTIONS_PATH, tabTitle = "#CodeceptionOptionsPanel.keywords.TabTitle")
 final class CodeceptionOptionsPanel extends JPanel {
 
-    private static final long serialVersionUID = 7996459123413784896L;
+    private static final Logger LOGGER = Logger.getLogger(CodeceptionOptionsPanel.class.getName());
+
     private static final String CODECEPTION_LAST_FOLDER_SUFFIX = ".codeception"; // NOI18N
 
-    private final CodeceptionOptionsPanelController controller;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    CodeceptionOptionsPanel(CodeceptionOptionsPanelController controller) {
-        this.controller = controller;
+
+    CodeceptionOptionsPanel() {
         initComponents();
 
         init();
@@ -97,7 +98,8 @@ final class CodeceptionOptionsPanel extends JPanel {
         "# {0} - short script name",
         "# {1} - long script name",
         "# {2} - PHAR script name",
-        "CodeceptionOptionsPanel.codeception.hint=<html>Full path of Codecept file (typically {0}, {1} or {2}).",})
+        "CodeceptionOptionsPanel.codeception.hint=<html>Full path of Codecept file (typically {0}, {1} or {2}).",
+    })
     private void init() {
         errorLabel.setText(" "); // NOI18N
         codeceptionHintLabel.setText(Bundle.CodeceptionOptionsPanel_codeception_hint(Codecept.SCRIPT_NAME, Codecept.SCRIPT_NAME_LONG, Codecept.SCRIPT_NAME_PHAR));
@@ -151,17 +153,15 @@ final class CodeceptionOptionsPanel extends JPanel {
         browseButton = new JButton();
         searchButton = new JButton();
         codeceptionHintLabel = new JLabel();
-        errorLabel = new JLabel();
         noteLabel = new JLabel();
         minVersionLabel = new JLabel();
         installLabel = new JLabel();
         learnMoreLabel = new JLabel();
+        errorLabel = new JLabel();
 
         codeceptionLabel.setLabelFor(codeceptionTextField);
         Mnemonics.setLocalizedText(codeceptionLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.text")); // NOI18N
         codeceptionLabel.setToolTipText(NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionLabel.toolTipText")); // NOI18N
-
-        codeceptionTextField.setText(NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionTextField.text")); // NOI18N
 
         Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
@@ -177,9 +177,7 @@ final class CodeceptionOptionsPanel extends JPanel {
             }
         });
 
-        Mnemonics.setLocalizedText(codeceptionHintLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.codeceptionHintLabel.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.errorLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(codeceptionHintLabel, "HINT"); // NOI18N
 
         Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(CodeceptionOptionsPanel.class, "CodeceptionOptionsPanel.noteLabel.text")); // NOI18N
 
@@ -196,6 +194,8 @@ final class CodeceptionOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
+
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -303,7 +303,7 @@ final class CodeceptionOptionsPanel extends JPanel {
             URL url = new URL("http://codeception.com/"); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
@@ -325,6 +325,7 @@ final class CodeceptionOptionsPanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
+
     private final class DefaultDocumentListener implements DocumentListener {
 
         @Override

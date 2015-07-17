@@ -60,9 +60,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
-public class CodeceptionTestLocator implements TestLocator {
+public final class CodeceptionTestLocator implements TestLocator {
 
     private final PhpModule phpModule;
+
 
     public CodeceptionTestLocator(PhpModule phpModule) {
         assert phpModule != null;
