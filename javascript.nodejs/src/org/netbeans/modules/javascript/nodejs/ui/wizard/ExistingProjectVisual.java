@@ -58,7 +58,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.javascript.nodejs.file.PackageJson;
 import org.netbeans.modules.javascript.nodejs.util.NodeJsUtils;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.api.util.ValidationUtilities;
@@ -192,8 +191,6 @@ public class ExistingProjectVisual extends JPanel {
         "ExistingProjectVisual.error.folder.invalid={0} is not a valid path.",
         "# {0} - folder name",
         "ExistingProjectVisual.error.folder.nbproject={0} is already NetBeans project (maybe only in memory).",
-        "# {0} - folder name",
-        "ExistingProjectVisual.error.folder.packageJson={0} is already NetBeans project, open it via File > Open Project.",
     })
     private String validateFolder(String folder, String folderName) {
         if (!StringUtilities.hasText(folder)) {
@@ -203,9 +200,6 @@ public class ExistingProjectVisual extends JPanel {
         if (!folderDir.isDirectory()) {
             return Bundle.ExistingProjectVisual_error_folder_invalid(folderName);
         } else if (NodeJsUtils.isProject(folderDir)) {
-            if (new File(folderDir, PackageJson.FILE_NAME).isFile()) {
-                return Bundle.ExistingProjectVisual_error_folder_packageJson(folderName);
-            }
             return Bundle.ExistingProjectVisual_error_folder_nbproject(folderName);
         }
         return null;
@@ -224,7 +218,6 @@ public class ExistingProjectVisual extends JPanel {
         "ExistingProjectVisual.error.projectDirectory.invalid=Project directory is not a valid path.",
         "ExistingProjectVisual.error.projectDirectory.empty=Project directory must be selected.",
         "ExistingProjectVisual.error.projectDirectory.alreadyProject=Project directory is already NetBeans project (maybe only in memory).",
-        "ExistingProjectVisual.error.projectDirectory.packageJson=Project directory is already NetBeans project, open it via File > Open Project.",
         "ExistingProjectVisual.error.projectDirectory.notWritable=Project directory cannot be created."
     })
     private String validateProjectDirectory() {
@@ -234,9 +227,6 @@ public class ExistingProjectVisual extends JPanel {
         }
         File projDir = FileUtil.normalizeFile(new File(projectDirectory).getAbsoluteFile());
         if (NodeJsUtils.isProject(projDir)) {
-            if (new File(projDir, PackageJson.FILE_NAME).isFile()) {
-                return Bundle.ExistingProjectVisual_error_projectDirectory_packageJson();
-            }
             return Bundle.ExistingProjectVisual_error_projectDirectory_alreadyProject();
         }
         if (!projDir.isDirectory()) {
