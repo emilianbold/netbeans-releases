@@ -48,8 +48,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
 import org.openide.util.NbBundle;
 
-// XXX only if enabled in project
-public class CodeceptionAnnotationsProvider extends AnnotationCompletionTagProvider {
+public final class CodeceptionAnnotationsProvider extends AnnotationCompletionTagProvider {
 
     private static final CodeceptionAnnotationsProvider INSTANCE = new CodeceptionAnnotationsProvider();
 
