@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -223,9 +224,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     private void dataChanged () {
-        if (node != null) {
-            node.fireDataChanged();
-        }
         updateTooltip();
         fireDataChanged();
         refreshViewData(false);
@@ -247,9 +245,6 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
                 if (updateTooltip()) {
                     fireDataChanged();
                 }
@@ -472,7 +467,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
      * Defines columns for a view table.
      */
     public static ColumnDescriptor[] DESCRIPTORS;
-    private JiraIssueNode node;
+    private WeakReference<JiraIssueNode> nodeRef;
     
     public NbJiraIssue (NbTask task, JiraRepository repo) {
         super(task);
@@ -1048,10 +1043,12 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
     }
 
     public IssueNode getNode() {
-        if(node == null) {
-            node = new JiraIssueNode(this);
+        JiraIssueNode n = nodeRef != null ? nodeRef.get() : null;
+        if(n == null) {
+            n = new JiraIssueNode(this);
+            nodeRef = new WeakReference<>(n);
         }
-        return node;
+        return n;
     }
 
     // XXX carefull - implicit double refresh

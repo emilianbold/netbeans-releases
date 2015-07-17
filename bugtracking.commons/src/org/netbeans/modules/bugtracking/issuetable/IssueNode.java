@@ -50,14 +50,15 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import org.openide.nodes.*;
-import org.openide.util.lookup.Lookups;
 import javax.swing.*;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  * The node that is rendered in the IssuesTable. It gets values to display from an
@@ -116,7 +117,7 @@ public abstract class IssueNode<I> extends AbstractNode {
         this.changesProvider = changesProvider;
         initProperties();
         refreshHtmlDisplayName();
-        issueImpl.addIssueStatusListener(new PropertyChangeListener() {
+        issueImpl.addPropertyChangeListener(WeakListeners.propertyChange(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(IssueNode.this.issueImpl.i != evt.getSource()) {
@@ -124,9 +125,11 @@ public abstract class IssueNode<I> extends AbstractNode {
                 }
                 if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_STATUS_CHANGED)) {
                     fireSeenValueChanged();
+                } else if(IssueProvider.EVENT_ISSUE_DATA_CHANGED.equals(evt.getPropertyName())) {
+                    fireDataChanged();
                 }
             }
-        });
+        }, this));
     }
     
     public I getIssueData() {
@@ -357,7 +360,7 @@ public abstract class IssueNode<I> extends AbstractNode {
             this.statusProvider = statusProvider;
         }
 
-        private void addIssueStatusListener(PropertyChangeListener propertyChangeListener) {
+        private void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
             provider.addPropertyChangeListener(i, propertyChangeListener);
         }
 
