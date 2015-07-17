@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -53,6 +59,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -71,6 +83,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.refactoring.hints.ExpressionFinder.StatementResult;
 import org.netbeans.modules.cnd.refactoring.hints.StatementFinder.AddMissingCasesFixImpl;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
@@ -161,6 +174,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         boolean assign = false;
         boolean cases = false;
         boolean inline = false;
+        boolean pragma = false;
         for(CodeAudit audit : audits) {
             if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
                 introduce = true;
@@ -170,6 +184,8 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 cases = true;
             } else if (InstantInline.ID.equals(audit.getID()) && audit.isEnabled()) {
                 inline = true;
+            } else if (PragmaOnceAudit.ID.equals(audit.getID()) && audit.isEnabled()) {
+                pragma = true;
             }
         }
         if (assign || introduce) {
@@ -202,6 +218,81 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ((CsmMacro) ref.getReferencedObject()).getStartOffset())[0];
                 if (replacement != null && (!replacement.isEmpty()) && (refLine != objLine)) {
                     createInstantInlineHint(ref, doc, file, fileObject, replacement);
+                }
+            }
+        }
+        if (pragma) {
+            CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
+            if (file.isHeaderFile() && query.hasGuardBlock(file)) {
+                final AtomicInteger startOffset = new AtomicInteger(-1);
+                final AtomicInteger endOffset = new AtomicInteger(-1);
+                Runnable runnable = new Runnable () {
+                    @Override
+                    public void run() {
+                        TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
+                        if (docTokenSequence == null) {
+                            return;
+                        }
+                        
+                        boolean isGuardMacro = false;
+                        docTokenSequence.moveStart();
+                        while(docTokenSequence.moveNext()) {
+                            if (docTokenSequence.token().id() instanceof CppTokenId) {
+                                CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
+                                if (tokenId.equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                                    TokenSequence<CppTokenId> preprocTokenSequence = docTokenSequence.embedded(CppTokenId.languagePreproc());
+                                    if (preprocTokenSequence == null) {
+                                        return;
+                                    }
+                                    
+                                    preprocTokenSequence.moveStart();
+                                    while(preprocTokenSequence.moveNext()) {
+                                        switch(preprocTokenSequence.token().id()) {
+                                            case PREPROCESSOR_PRAGMA:
+                                                return;
+                                            case PREPROCESSOR_IFNDEF:
+                                                startOffset.set(preprocTokenSequence.offset());
+                                                isGuardMacro = true;
+                                                preprocTokenSequence.moveEnd();
+                                                break;
+                                            case PREPROCESSOR_IF:
+                                                isGuardMacro = true;
+                                                break;
+                                            case PREPROCESSOR_DEFINED:
+                                                if (isGuardMacro) {
+                                                    startOffset.set(preprocTokenSequence.offset());
+                                                    preprocTokenSequence.moveEnd();
+                                                    break;
+                                                }
+                                                return;
+                                            case PREPROCESSOR_DEFINE:
+                                                if (isGuardMacro) {
+                                                    endOffset.set(preprocTokenSequence.offset());
+                                                }
+                                                return;
+                                            default:
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+                
+                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<>(runnable, startOffset);
+                doc.render(moveBellowCommentsTask);
+                
+                int startResult = startOffset.get();
+                int endResult = endOffset.get();
+                if (startResult != -1 && endResult != -1) {
+                    int startGuardLine = query.getLineColumnByOffset(file, startResult)[0];
+                    int guardStart = (int)query.getOffset(file, startGuardLine, 1);
+                    int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
+                    int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
+                    if (caretOffset >= guardStart && caretOffset <= guardEnd) {
+                        createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                    }
                 }
             }
         }
@@ -273,6 +364,14 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, description, fixes, fo,
                         ref.getStartOffset(), ref.getStartOffset()));
+        HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
+    }
+    
+    private void createReplaceWithPragmaOnceHint(int caret, Document doc, CsmFile file, FileObject fo, int guardBlockStart, int guardBlockEnd) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new ReplaceWithPragmaOnce(doc, file, guardBlockStart, guardBlockEnd));
+        String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
+        List<ErrorDescription> hints = Collections.singletonList(
+                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, caret, caret));
         HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
     }
     
@@ -399,6 +498,32 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
             String name = NbBundle.getMessage(InstantInline.class, "InstantInline.name"); // NOI18N
             String description = NbBundle.getMessage(InstantInline.class, "InstantInline.description"); // NOI18N
             return new AbstractCodeAudit(ID, name, description, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 5000)
+    public static final class PragmaOnceAudit implements CodeAuditFactory {
+        private static final String ID = "ReplaceWithPragmaOnce"; // NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
+            return new AbstractCodeAudit(ID, text, text, "warning", true, preferences) { // NOI18N
 
                 @Override
                 public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
