@@ -123,6 +123,8 @@ public final class CodeceptionLogParser extends DefaultHandler {
             case "error": // NOI18N
                 startTestError(attributes);
                 break;
+            default:
+                // noop
         }
     }
 
@@ -141,6 +143,8 @@ public final class CodeceptionLogParser extends DefaultHandler {
             case "error": // NOI18N
                 endTestContent();
                 break;
+            default:
+                // noop
         }
     }
 

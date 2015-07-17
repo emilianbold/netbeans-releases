@@ -515,7 +515,9 @@ public final class Codecept {
         // A PHP Framework may have a codeception.yml in an inner directory.
         // e.g. In case of Yii2 framework, source/tests/codeception.yml
         if (CodeceptionPreferences.isCustomCodeceptionYmlEnabled(phpModule)) {
-            File file = new File(CodeceptionPreferences.getCustomCodeceptionYmlPath(phpModule));
+            String ymlPath = CodeceptionPreferences.getCustomCodeceptionYmlPath(phpModule);
+            assert ymlPath != null;
+            File file = new File(ymlPath);
             if (file.exists()) {
                 return FileUtil.toFileObject(file);
             }
