@@ -66,12 +66,13 @@ import org.openide.util.NbBundle;
 
 /**
  * Testing provider for Codeception.
- *
  */
 public final class CodeceptionTestingProvider implements PhpTestingProvider {
 
     public static final String IDENTIFIER = "Codeception"; // NOI18N
+
     private static final CodeceptionTestingProvider INSTANCE = new CodeceptionTestingProvider();
+
 
     @PhpTestingProvider.Registration(position = 400)
     public static CodeceptionTestingProvider getInstance() {
@@ -100,13 +101,15 @@ public final class CodeceptionTestingProvider implements PhpTestingProvider {
             }
         }
         FileObject sourceDirectory = phpModule.getSourceDirectory();
-        return sourceDirectory != null && FileUtil.isParentOf(sourceDirectory, fileObject);
+        return sourceDirectory != null
+                && FileUtil.isParentOf(sourceDirectory, fileObject);
     }
 
     @Override
     public boolean isTestCase(PhpModule phpModule, PhpClass.Method method) {
         boolean isTest = Codecept.isTestClass(method.getPhpClass().getName());
-        if (!isTest && !Codecept.isCestClass(method.getPhpClass().getName())) {
+        if (!isTest
+                && !Codecept.isCestClass(method.getPhpClass().getName())) {
             return false;
         }
         return Codecept.isTestMethod(method.getName(), isTest);

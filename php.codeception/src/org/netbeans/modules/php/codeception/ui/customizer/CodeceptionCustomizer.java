@@ -50,17 +50,17 @@ import org.openide.util.NbBundle;
 
 /**
  * Project customizer for Codeception.
- *
  */
-public class CodeceptionCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public final class CodeceptionCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
     public static final String IDENTIFIER = CodeceptionTestingProvider.getInstance().getIdentifier();
+
     private final PhpModule phpModule;
+
 
     public CodeceptionCustomizer(PhpModule phpModule) {
         assert phpModule != null;
         this.phpModule = phpModule;
-
     }
 
     @NbBundle.Messages("CodeceptionCustomizer.name=Codeception")

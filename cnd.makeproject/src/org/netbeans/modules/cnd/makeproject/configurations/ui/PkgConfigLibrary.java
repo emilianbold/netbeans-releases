@@ -50,22 +50,29 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TreeMap;
 import javax.swing.AbstractListModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -74,17 +81,15 @@ import org.openide.util.NbBundle;
 public class PkgConfigLibrary extends javax.swing.JPanel {
     private final MyListCellRenderer myListCellRenderer = new MyListCellRenderer();
     private final List<PackageConfiguration> avaliablePkgConfigs;
+    private static final RequestProcessor RP = new RequestProcessor("PkgConfigLibrary init",1); //NOI18N
 
     /** Creates new form PkgConfigLibrary */
-    public PkgConfigLibrary(ExecutionEnvironment env) {
+    public PkgConfigLibrary(final ExecutionEnvironment env, final JButton okButton) {
         initComponents();
 	list.setCellRenderer(myListCellRenderer);
-        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
-        TreeMap<String, PackageConfiguration> map = new TreeMap<>();
-        for(PackageConfiguration conf : pkgConfig.getAvaliablePkgConfigs()) {
-            map.put(conf.getName(), conf);
-        }
-        avaliablePkgConfigs = new ArrayList<>(map.values());
+        avaliablePkgConfigs = new ArrayList<>();
+        avaliablePkgConfigs.add(new Waiting());
+        okButton.setEnabled(false);
         list.setModel(new AbstractListModel() {
             @Override
             public int getSize() {
@@ -110,6 +115,46 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
             @Override
             public void changedUpdate(DocumentEvent e) {
                 updateModel();
+            }
+        });
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    Iterator<PackageConfiguration> iterator = avaliablePkgConfigs.iterator();
+                    if (iterator.hasNext() && (iterator.next() instanceof Error)) {
+                        okButton.setEnabled(false);
+                    } else {
+                        okButton.setEnabled(true);
+                    }
+                    list.setModel(new AbstractListModel() {
+                        @Override
+                        public int getSize() {
+                            return avaliablePkgConfigs.size();
+                        }
+                        @Override
+                        public Object getElementAt(int i) {
+                            return avaliablePkgConfigs.get(i);
+                        }
+                    });
+
+                } else {
+                    if (HostInfoUtils.isHostInfoAvailable(env)) {
+                        PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(env);
+                        TreeMap<String, PackageConfiguration> map = new TreeMap<>();
+                        for(PackageConfiguration conf : pkgConfig.getAvaliablePkgConfigs()) {
+                            map.put(conf.getName(), conf);
+                        }
+                        avaliablePkgConfigs.clear();
+                        avaliablePkgConfigs.addAll(map.values());
+                        SwingUtilities.invokeLater(this);
+                    } else {
+                        avaliablePkgConfigs.clear();
+                        avaliablePkgConfigs.add(new Error());
+                        SwingUtilities.invokeLater(this);
+                    }
+                }
             }
         });
     }
@@ -216,15 +261,97 @@ public class PkgConfigLibrary extends javax.swing.JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	    PackageConfiguration libraryItem = (PackageConfiguration)value;
-	    label.setIcon(getLibraryIcon());
-	    label.setText(libraryItem.getName());
-            String message = NbBundle.getMessage(PkgConfigLibrary.class, "PkgConfigLibrary.tooltip.text", //NOI18N
-                    libraryItem.getDisplayName(), libraryItem.getVersion(), libraryItem.getLibs());
-	    label.setToolTipText(message);
+            if (libraryItem instanceof Waiting) {
+                label.setText(libraryItem.getName());
+                label.setIcon(getWaitIcon());
+            } else if (libraryItem instanceof Error) {
+                label.setText(libraryItem.getName());
+                label.setIcon(getErrorIcon());
+            } else {
+                label.setIcon(getLibraryIcon());
+                label.setText(libraryItem.getName());
+                String message = NbBundle.getMessage(PkgConfigLibrary.class, "PkgConfigLibrary.tooltip.text", //NOI18N
+                        libraryItem.getDisplayName(), libraryItem.getVersion(), libraryItem.getLibs());
+                label.setToolTipText(message);
+            }
             return label;
         }
         private ImageIcon getLibraryIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/resources/stdLibrary.gif", false); //NOI18N
+        }
+        private ImageIcon getWaitIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/waitNode.gif", false); //NOI18N
+        }
+        private ImageIcon getErrorIcon() {
+            return ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/makeproject/ui/resources/exclamation.gif", false); //NOI18N
+        }
+    }
+
+    private static final class Waiting implements PackageConfiguration {
+        private static final String NAME = NbBundle.getMessage(PkgConfigLibrary.class, "Init_PkgConfigLibrary_List"); //NOI18N
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return NAME;
+        }
+
+        @Override
+        public String getVersion() {
+            return ""; //NOI18N
+        }
+
+        @Override
+        public Collection<String> getIncludePaths() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Collection<String> getMacros() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getLibs() {
+            return ""; //NOI18N
+        }
+    }
+
+    private static final class Error implements PackageConfiguration {
+        private static final String NAME = NbBundle.getMessage(PkgConfigLibrary.class, "Error_PkgConfigLibrary_List");
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return NAME;
+        }
+
+        @Override
+        public String getVersion() {
+            return ""; //NOI18N
+        }
+
+        @Override
+        public Collection<String> getIncludePaths() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public Collection<String> getMacros() {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public String getLibs() {
+            return ""; //NOI18N
         }
     }
 }

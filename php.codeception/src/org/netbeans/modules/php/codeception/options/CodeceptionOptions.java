@@ -56,6 +56,7 @@ public final class CodeceptionOptions {
 
     private volatile boolean codeceptionSearched = false;
 
+
     public static CodeceptionOptions getInstance() {
         return INSTANCE;
     }

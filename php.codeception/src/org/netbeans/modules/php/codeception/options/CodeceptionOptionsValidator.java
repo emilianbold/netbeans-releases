@@ -48,6 +48,7 @@ public final class CodeceptionOptionsValidator {
 
     private final ValidationResult result = new ValidationResult();
 
+
     public CodeceptionOptionsValidator validateCodeceptionPath(String codeceptionPath) {
         String warning = CodeceptionUtils.validateCodeceptPath(codeceptionPath);
         if (warning != null) {

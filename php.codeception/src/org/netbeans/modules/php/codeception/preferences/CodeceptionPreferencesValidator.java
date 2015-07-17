@@ -55,8 +55,6 @@ public final class CodeceptionPreferencesValidator {
 
     private final ValidationResult result = new ValidationResult();
 
-    public CodeceptionPreferencesValidator() {
-    }
 
     public CodeceptionPreferencesValidator validate(PhpModule phpModule) {
         validateCodecept(CodeceptionPreferences.isCustomCodeceptEnabled(phpModule), CodeceptionPreferences.getCustomCodeceptPath(phpModule));
