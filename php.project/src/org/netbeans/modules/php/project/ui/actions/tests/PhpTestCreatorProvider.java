@@ -77,16 +77,13 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Action for creating new PHP Unit tests.
+ * Action for creating new PHP unit tests.
  * @author Tomas Mysik
  */
-// XXX this is common test creator, not phpunit specific one
-@TestCreatorProvider.Registration(displayName=TestCreatorProvider.FRAMEWORK_PHPUNIT)
-public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
+@TestCreatorProvider.Registration(displayName = TestCreatorProvider.FRAMEWORK_PHP)
+public final class PhpTestCreatorProvider extends TestCreatorProvider {
 
-    private static final long serialVersionUID = -468532132435473111L;
-
-    private static final Logger LOGGER = Logger.getLogger(PhpUnitTestCreatorProvider.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PhpTestCreatorProvider.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP unit tests", 1); // NOI18N
     static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<>();
@@ -128,7 +125,7 @@ public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
         RUNNABLES.add(new Runnable() {
             @Override
             public void run() {
-                ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "LBL_CreatingTests"));
+                ProgressHandle handle = ProgressHandle.createHandle(NbBundle.getMessage(PhpTestCreatorProvider.class, "LBL_CreatingTests"));
                 handle.start();
                 try {
                     LifecycleManager.getDefault().saveAll();
@@ -238,7 +235,7 @@ public final class PhpUnitTestCreatorProvider extends TestCreatorProvider {
             sb.append("\n"); // NOI18N
         }
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(
-                NbBundle.getMessage(PhpUnitTestCreatorProvider.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
+                NbBundle.getMessage(PhpTestCreatorProvider.class, "MSG_TestNotGenerated", sb.toString()), NotifyDescriptor.WARNING_MESSAGE));
     }
 
     private void reformat(Set<FileObject> files) {

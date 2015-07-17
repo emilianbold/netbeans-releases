@@ -43,9 +43,7 @@
 
 package org.netbeans.modules.profiler.stp;
 
-import javax.swing.event.ChangeEvent;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.filters.SimpleFilter;
@@ -77,7 +75,6 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeListener;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.UIUtils;
@@ -635,7 +632,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (configurator != null) {
             synchronizeCurrentSettings();
 
-            final ProgressHandle pHandle = ProgressHandleFactory.createHandle(Bundle.SelectProfilingTask_InitSessionString());
+            final ProgressHandle pHandle = ProgressHandle.createHandle(Bundle.SelectProfilingTask_InitSessionString());
             pHandle.setInitialDelay(0);
             pHandle.start();
             
