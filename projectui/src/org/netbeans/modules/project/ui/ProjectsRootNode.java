@@ -66,6 +66,8 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -76,6 +78,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -172,7 +175,7 @@ public class ProjectsRootNode extends AbstractNode {
 
         assert ((ch.type == LOGICAL_VIEW) || (ch.type == PHYSICAL_VIEW));
         // Speed up search in case we have an owner project - look in its node first.
-        Project ownerProject = FileOwnerQuery.getOwner(target);
+        Project ownerProject = findProject(target);
         for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
             for (Node node : ch.getNodes(true)) {
                 Project p = node.getLookup().lookup(Project.class);
@@ -220,7 +223,24 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
     }
-    
+
+    @CheckForNull
+    private static Project findProject(@NonNull final FileObject target) {
+        Project owner = FileOwnerQuery.getOwner(target);
+        if (owner != null && ProjectConvertors.isConvertorProject(owner)) {
+            FileObject dir = owner.getProjectDirectory().getParent();
+            while (dir != null) {
+                Project p = FileOwnerQuery.getOwner(dir);
+                if (p != null && !ProjectConvertors.isConvertorProject(p)) {
+                    owner = p;
+                    break;
+                }
+                dir = dir.getParent();
+            }
+        }
+        return owner;
+    }
+
     private static class Handle implements Node.Handle {
 
         private static final long serialVersionUID = 78374332058L;
