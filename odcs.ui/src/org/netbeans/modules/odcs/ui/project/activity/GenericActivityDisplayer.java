@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import java.awt.event.MouseEvent;
-import java.util.MissingResourceException;
-import javax.swing.Icon;
+import java.util.Map;
+import javax.swing.GroupLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import oracle.clouddev.server.profile.activity.client.api.Activity;
-import org.netbeans.modules.bugtracking.commons.TextUtils;
-import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.project.LinkLabel;
-import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
-import org.openide.util.ImageUtilities;
+import oracle.clouddev.server.profile.activity.client.api.Author;
 
-public final class WikiActivityDisplayer extends ActivityDisplayer {
-
-    private static final String PROP_PAGE = "page"; // NOI18N
-    private static final String PROP_TYPE = "type"; // NOI18N
-
+/**
+ * A generic displayer of activity - shows raw activity data as received from
+ * the server (the type, ID, and all properties). Can be used to see the activity
+ * data when need to implement a new type (or change in data). Normally not shown
+ * to the user (there are special displayers for supported activity types), can be
+ * configured in ActivityPanel constructor (mapping to activity type) and in
+ * RecentActivitiesPanel.isActivityShowable (to enable given type).
+ */
+public class GenericActivityDisplayer extends ActivityDisplayer {
     private final Activity activity;
-    private final ProjectHandle<ODCSProject> projectHandle;
 
-    public WikiActivityDisplayer(Activity activity, ProjectHandle<ODCSProject> projectHandle, int maxWidth) {
+    public GenericActivityDisplayer(Activity activity, int maxWidth) {
         super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
-        this.projectHandle = projectHandle;
     }
 
     @Override
     public JComponent getShortDescriptionComponent() {
-        final String page = activity.getProperty(PROP_PAGE);
-        LinkLabel pageLink = new LinkLabel(page) {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(getPageUrl(page));
-            }
-        };
-        String bundleKey = "FMT_Wiki_" + activity.getProperty(PROP_TYPE); // NOI18N
-        try {
-            return createMultipartTextComponent(bundleKey, pageLink);
-        } catch (MissingResourceException ex) {
-            return createMultipartTextComponent("FMT_Wiki_UPDATED", pageLink); // NOI18N
-        }
+        return new JLabel("Activity " + activity.getType() + " " + activity.getId()); // NOI18N
     }
 
     @Override
     public JComponent getDetailsComponent() {
-        return null;
+        JPanel panel = new JPanel();
+        GroupLayout layout = new GroupLayout(panel);
+        layout.setAutoCreateContainerGaps(true);
+        layout.setAutoCreateGaps(true);
+        panel.setLayout(layout);
+        GroupLayout.ParallelGroup hGroup1 = layout.createParallelGroup();
+        GroupLayout.ParallelGroup hGroup2 = layout.createParallelGroup();
+        GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
+        Map<String,String> properties = activity.getProperties();
+        if (properties.isEmpty()) {
+            JLabel l = new JLabel("no properties"); // NOI18N
+            hGroup1.addComponent(l);
+            vGroup.addComponent(l);
+        } else {
+            for (Map.Entry<String,String> e : properties.entrySet()) {
+                JLabel l1 = new JLabel(e.getKey());
+                JLabel l2 = new JLabel(e.getValue());
+                hGroup1.addComponent(l1);
+                hGroup2.addComponent(l2);
+                vGroup.addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(l1).addComponent(l2));
+            }
+        }
+        layout.setHorizontalGroup(layout.createSequentialGroup().addGroup(hGroup1).addGroup(hGroup2));
+        layout.setVerticalGroup(vGroup);
+        return panel;
     }
 
     @Override
     String getUserName() {
-        return activity.getAuthor().getFullname();
+        Author author = activity.getAuthor();
+        return author != null ? author.getFullname() : "Unknown Author"; // NOI18N
     }
-
-    @Override
-    public Icon getActivityIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_wiki.png", true); //NOI18N
-    }
-
-    private String getPageUrl(String page) {
-        page = TextUtils.encodeURL(page);
-        return projectHandle.getTeamProject().getWebUrl() + "/wiki/p/" + page; // NOI18N
-    }
+    
 }

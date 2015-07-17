@@ -1,0 +1,1 @@
+OpenIDE-Module: oracle.clouddev.server.profile.activity.client.api

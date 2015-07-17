@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.odcs.ui.project.activity;
 
-import com.tasktop.c2c.server.profile.domain.activity.RssActivity;
-import com.tasktop.c2c.server.tasks.domain.Comment;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -52,46 +50,56 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import oracle.clouddev.server.profile.activity.client.api.Activity;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
-public class RssActivityDisplayer extends ActivityDisplayer {
+public final class RssActivityDisplayer extends ActivityDisplayer {
 
-    private final RssActivity activity;
+    private static final String PROP_AUTHOR = "author"; // NOI18N
+    private static final String PROP_TITLE = "title"; // NOI18N
+    private static final String PROP_DESCRIPTION = "description"; // NOI18N
+    private static final String PROP_AUTHOR_URL = "authorUrl"; // NOI18N
+    private static final String PROP_URL = "url"; // NOI18N
 
-    public RssActivityDisplayer(RssActivity activity, int maxWidth) {
-        super(activity.getActivityDate(), maxWidth);
+    private final Activity activity;
+
+    public RssActivityDisplayer(Activity activity, int maxWidth) {
+        super(activity.getTimestamp(), maxWidth);
         this.activity = activity;
     }
 
-    @Override    
-    public JComponent getShortDescriptionComponent() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridheight = GridBagConstraints.REMAINDER;
-
-        gbc.insets = new Insets(0, 5, 0, 0);
-        LinkLabel linkPage = new LinkLabel(activity.getActivity().getTitle()) {
+    @Override
+    public JComponent getTitleComponent() {
+        String author = activity.getProperty(PROP_AUTHOR);
+        final String authorUrl = activity.getProperty(PROP_AUTHOR_URL);
+        LinkLabel authorLink = new LinkLabel("<html><u>" + author + "</u></html", false) { // NOI18N
             @Override
             public void mouseClicked(MouseEvent e) {
-                Utils.openBrowser(activity.getActivity().getUrl());
+                Utils.openBrowser(authorUrl);
             }
         };
-        panel.add(linkPage, gbc);
-        
-        gbc = new GridBagConstraints();
-        gbc.weightx = 1.0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(new JLabel(), gbc);
-        return panel;
+        return createMultipartTextComponent("FMT_RSS", authorLink); // NOI18N
+    }
+
+    @Override
+    public JComponent getShortDescriptionComponent() {
+        String title = activity.getProperty(PROP_TITLE);
+        final String url = activity.getProperty(PROP_URL);
+        LinkLabel linkPage = new LinkLabel("<html><u>" + title + "</u></html>", false) { // NOI18N
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                Utils.openBrowser(url);
+            }
+        };
+        return linkPage;
     }
 
     @Override
     public JComponent getDetailsComponent() {
-        String description = activity.getActivity().getDescription();
+        String description = activity.getProperty(PROP_DESCRIPTION);
         if(description != null && !description.trim().isEmpty()) {
             return descriptionPanel(description);
         } else {
@@ -101,7 +109,7 @@ public class RssActivityDisplayer extends ActivityDisplayer {
 
     @Override
     String getUserName() {
-        return activity.getActivity().getAuthor();
+        return "";
     }
 
     @Override
@@ -119,11 +127,11 @@ public class RssActivityDisplayer extends ActivityDisplayer {
         gbc.weightx = 1.0;
         gbc.gridwidth = GridBagConstraints.REMAINDER;
 
-        JLabel lbl = new JLabel(NbBundle.getMessage(TaskActivityDisplayer.class, "LBL_Description"));
+        JLabel lbl = new JLabel(NbBundle.getMessage(RssActivityDisplayer.class, "LBL_Description")); // NOI18N
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
 
-        JLabel lblComment = new JLabel(desc);
+        JLabel lblComment = new JLabel("<html>" + desc + "</html>"); // NOI18N
         panel.add(lblComment, gbc);
         return panel;
     }
