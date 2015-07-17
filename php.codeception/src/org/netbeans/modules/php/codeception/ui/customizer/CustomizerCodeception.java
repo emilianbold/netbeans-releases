@@ -68,15 +68,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
+public final class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
 
-    private static final long serialVersionUID = 169253893591764337L;
     private final ProjectCustomizer.Category category;
     private final PhpModule phpModule;
 
-    /**
-     * Creates new form CustomizerCodeception
-     */
+
     public CustomizerCodeception(ProjectCustomizer.Category category, PhpModule phpModule) {
         this.category = category;
         this.phpModule = phpModule;
@@ -193,8 +190,8 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         scriptCheckBox = new JCheckBox();
-        scriptTextField = new JTextField();
         scriptLabel = new JLabel();
+        scriptTextField = new JTextField();
         scriptBrowseButton = new JButton();
         codeceptionCheckBox = new JCheckBox();
         codeceptionLabel = new JLabel();
@@ -203,8 +200,6 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
         askForAdditionalParametersCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptCheckBox.text")); // NOI18N
-
-        scriptTextField.setText(NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptTextField.text")); // NOI18N
 
         scriptLabel.setLabelFor(scriptTextField);
         Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.scriptLabel.text")); // NOI18N
@@ -220,8 +215,6 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
 
         codeceptionLabel.setLabelFor(codeceptionTextField);
         Mnemonics.setLocalizedText(codeceptionLabel, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionLabel.text")); // NOI18N
-
-        codeceptionTextField.setText(NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionTextField.text")); // NOI18N
 
         Mnemonics.setLocalizedText(codeceptionBrowseButton, NbBundle.getMessage(CustomizerCodeception.class, "CustomizerCodeception.codeceptionBrowseButton.text")); // NOI18N
         codeceptionBrowseButton.addActionListener(new ActionListener() {
@@ -316,6 +309,7 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
+
     private final class DefaultDocumentListener implements DocumentListener {
 
         @Override
@@ -336,6 +330,7 @@ public class CustomizerCodeception extends JPanel implements HelpCtx.Provider {
         private void processUpdate() {
             validateData();
         }
+
     }
 
 }

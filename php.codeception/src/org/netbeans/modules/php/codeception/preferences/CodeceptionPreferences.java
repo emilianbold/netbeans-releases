@@ -58,6 +58,7 @@ public final class CodeceptionPreferences {
     private static final String CUSTOM_CODECEPTION_YML_PATH = "custom.codeception.yml.path"; // NOI18N
     private static final String ASK_FOR_ADDITIONAL_PARAMS = "additional.params.ask"; // NOI18N
 
+
     private CodeceptionPreferences() {
     }
 

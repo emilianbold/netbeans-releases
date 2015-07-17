@@ -62,13 +62,22 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
 
-public class TestCreator {
+public final class TestCreator {
+
+    private static final Logger LOGGER = Logger.getLogger(TestCreator.class.getName());
+
+    private static final List<GenerateCommand> TEST_COMMANDS = Arrays.asList(
+            GenerateCommand.Test,
+            GenerateCommand.Phpunit,
+            GenerateCommand.Cept,
+            GenerateCommand.Cest
+    );
 
     private final PhpModule phpModule;
-    private static final Logger LOGGER = Logger.getLogger(TestCreator.class.getName());
-    private static final List<GenerateCommand> TEST_COMMANDS = Arrays.asList(GenerateCommand.Test, GenerateCommand.Phpunit, GenerateCommand.Cept, GenerateCommand.Cest);
+
 
     public TestCreator(PhpModule phpModule) {
+        assert phpModule != null;
         this.phpModule = phpModule;
     }
 
@@ -93,7 +102,8 @@ public class TestCreator {
         return new CreateTestsResult(succeeded, failed);
     }
 
-    private void generateTest(Codecept codeception, PhpModule phpModule, FileObject fo, Pair<GenerateCommand, String> commandSuite, Set<FileObject> failed, Set<FileObject> succeeded) throws ExecutionException {
+    private void generateTest(Codecept codeception, PhpModule phpModule, FileObject fo, Pair<GenerateCommand, String> commandSuite,
+            Set<FileObject> failed, Set<FileObject> succeeded) throws ExecutionException {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
         Collection<PhpClass> classes = editorSupport.getClasses(fo);

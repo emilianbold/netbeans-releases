@@ -49,7 +49,9 @@ class FileMetricsImpl extends ClassMetricsImpl implements FileMetrics {
     private final int ncloc;
     private final int classes;
 
-    public FileMetricsImpl(int loc, int ncloc, int classes, int methods, int coveredMethods, int conditionals, int coveredConditionals, int statements, int coveredStatements, int elements, int coveredElements) {
+
+    public FileMetricsImpl(int loc, int ncloc, int classes, int methods, int coveredMethods, int conditionals,
+            int coveredConditionals, int statements, int coveredStatements, int elements, int coveredElements) {
         super(methods, coveredMethods, conditionals, coveredConditionals, statements, coveredStatements, elements, coveredElements);
         this.loc = loc;
         this.ncloc = ncloc;
@@ -72,7 +74,7 @@ class FileMetricsImpl extends ClassMetricsImpl implements FileMetrics {
     @Override
     public String toString() {
         return String.format("FileMetricsImpl{loc: %d, ncloc: %d, classes: %d, methods: %d, coveredMethods: %d, " // NOI18N
-                + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", loc, ncloc, classes, getMethods(), getCoveredMethods(),
+                + "statements: %d, coveredStatements: %d, elements: %d, coveredElements: %d}", loc, ncloc, classes, getMethods(), getCoveredMethods(), // NOI18N
                 getStatements(), getCoveredStatements(), getElements(), getCoveredElements()); // NOI18N
     }
 

@@ -58,4 +58,5 @@ public final class UiUtils {
         DialogDisplayer.getDefault().notifyLater(
                 new NotifyDescriptor.Message(Bundle.UiUtils_project_noSources(projectName), NotifyDescriptor.WARNING_MESSAGE));
     }
+
 }

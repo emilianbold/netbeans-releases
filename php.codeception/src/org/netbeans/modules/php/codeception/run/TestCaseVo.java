@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
 
 /**
  * Value Object for TestCase.
- *
  */
 public final class TestCaseVo {
 
@@ -70,7 +69,8 @@ public final class TestCaseVo {
     private final int line;
     private final long time;
 
-    private TestCase.Status status = TestCase.Status.PASSED;
+    TestCase.Status status = TestCase.Status.PASSED;
+
 
     public TestCaseVo(String className, String name, String file, int line, long time) {
         assert name != null;
@@ -195,7 +195,8 @@ public final class TestCaseVo {
 
     @Override
     public String toString() {
-        return String.format("TestCaseVo{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}", name, file, line, time, status, stacktrace); // NOI18N
+        return String.format("TestCaseVo{name: %s, file: %s, line: %d, time: %d, status: %s, stacktrace: %s}", // NOI18N
+                name, file, line, time, status, stacktrace);
     }
 
 }

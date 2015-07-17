@@ -91,11 +91,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="codeceptionTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/codeception/ui/options/Bundle.properties" key="CodeceptionOptionsPanel.codeceptionTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="browseButton">
       <Properties>
@@ -119,16 +114,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="codeceptionHintLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/codeception/ui/options/Bundle.properties" key="CodeceptionOptionsPanel.codeceptionHintLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="errorLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/codeception/ui/options/Bundle.properties" key="CodeceptionOptionsPanel.errorLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="HINT" noResource="true"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="noteLabel">
@@ -162,6 +148,11 @@
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="learnMoreLabelMouseEntered"/>
         <EventHandler event="mousePressed" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="learnMoreLabelMousePressed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="errorLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="ERROR" noResource="true"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

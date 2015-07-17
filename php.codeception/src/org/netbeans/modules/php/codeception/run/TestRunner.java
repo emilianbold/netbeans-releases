@@ -47,8 +47,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.util.logging.Level;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -62,8 +61,10 @@ import org.netbeans.modules.php.spi.testing.run.TestSuite;
 
 public final class TestRunner {
 
-    private final PhpModule phpModule;
     private static final Logger LOGGER = Logger.getLogger(TestRunner.class.getName());
+
+    private final PhpModule phpModule;
+
 
     public TestRunner(PhpModule phpModule) {
         assert phpModule != null;
@@ -89,10 +90,7 @@ public final class TestRunner {
     private TestSessionVo createTestSession(File xmlLog) throws TestRunException {
         Reader reader;
         try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(xmlLog), "UTF-8")); // NOI18N
-        } catch (UnsupportedEncodingException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-            return null;
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(xmlLog), StandardCharsets.UTF_8));
         } catch (FileNotFoundException ex) {
             processCodeceptionError(ex);
             return null;
@@ -114,6 +112,7 @@ public final class TestRunner {
     }
 
     //~ Mappers
+
     private void map(TestSessionVo sessionVo, TestSession testSession) {
         testSession.setOutputLineHandler(sessionVo.getOutputLineHandler());
         String initMessage = sessionVo.getInitMessage();

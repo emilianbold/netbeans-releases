@@ -62,17 +62,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
-public class CodeceptRunParametersPanel extends JPanel {
-
-    private static final long serialVersionUID = -1481008269523968666L;
+public final class CodeceptRunParametersPanel extends JPanel {
 
     // <source directory path, parameters>
     private static final Map<String, ParameterContainer> PARAM_HISTORY = new HashMap<>();
+
     private final PhpModule phpModule;
 
-    /**
-     * Creates new form CodeceptRunParametersPanel
-     */
     private CodeceptRunParametersPanel(@NonNull PhpModule phpModule) {
         assert EventQueue.isDispatchThread();
         assert phpModule != null;
@@ -108,7 +104,7 @@ public class CodeceptRunParametersPanel extends JPanel {
 
     private void init() {
         List<String> params = new ArrayList<>();
-        params.add(""); //NOI18N
+        params.add(""); // NOI18N
         params.addAll(getStoredParameters());
         parametersComboBox.setModel(new DefaultComboBoxModel<>(params.toArray(new String[params.size()])));
         preselectLastSelectedParam();
@@ -121,7 +117,7 @@ public class CodeceptRunParametersPanel extends JPanel {
         }
         String lastSelected = params.getLastSelected();
         if (lastSelected == null) {
-            parametersComboBox.setSelectedItem(""); //NOI18N
+            parametersComboBox.setSelectedItem(""); // NOI18N
             return;
         }
         for (int i = 0; i < parametersComboBox.getItemCount(); i++) {
@@ -134,8 +130,7 @@ public class CodeceptRunParametersPanel extends JPanel {
     }
 
     private String getSelectedParameters() {
-        Object selectedItem = parametersComboBox.getSelectedItem();
-        return selectedItem.toString().trim();
+        return parametersComboBox.getSelectedItem().toString().trim();
     }
 
     @CheckForNull
@@ -204,29 +199,38 @@ public class CodeceptRunParametersPanel extends JPanel {
     private JComboBox<String> parametersComboBox;
     // End of variables declaration//GEN-END:variables
 
+    //~ Inner classes
+
     /**
      * Holds a set of parameters and maintains info on what parameter was the
      * last one selected.
      */
-    private static class ParameterContainer {
+    private static final class ParameterContainer {
 
         private final Set<String> params = new HashSet<>();
+
+        // @GuardedBy("EDT")
         private String lastSelected;
+
 
         public void addParam(String param) {
             params.add(param);
         }
 
         public String getLastSelected() {
+            assert EventQueue.isDispatchThread();
             return lastSelected;
         }
 
         public void setLastSelected(String lastSelected) {
+            assert EventQueue.isDispatchThread();
             this.lastSelected = lastSelected;
         }
 
         public Set<String> getParams() {
-            return params;
+            return Collections.unmodifiableSet(params);
         }
+
     }
+
 }
