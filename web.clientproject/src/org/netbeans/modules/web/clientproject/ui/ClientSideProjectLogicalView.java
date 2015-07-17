@@ -61,6 +61,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -86,6 +87,7 @@ import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -155,7 +157,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return null;
         }
         // first check project
-        Project owner = FileOwnerQuery.getOwner(fo);
+        Project owner = findProject(fo);
         if (!prj.equals(owner)) {
             // another project
             return null;
@@ -188,6 +190,24 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
         return null;
+    }
+
+    //Todo: Move to ProjectConvertors SPI support
+    @CheckForNull
+    private static Project findProject(@NonNull final FileObject target) {
+        Project owner = FileOwnerQuery.getOwner(target);
+        if (owner != null && ProjectConvertors.isConvertorProject(owner)) {
+            FileObject dir = owner.getProjectDirectory().getParent();
+            while (dir != null) {
+                Project p = FileOwnerQuery.getOwner(dir);
+                if (p != null && !ProjectConvertors.isConvertorProject(p)) {
+                    owner = p;
+                    break;
+                }
+                dir = dir.getParent();
+            }
+        }
+        return owner;
     }
 
     @CheckForNull
