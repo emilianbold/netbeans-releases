@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
@@ -81,10 +82,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * Codeception 2.1+ support
- *
+ * Codeception 2.1+ support.
  */
 public final class Codecept {
+
+    private static final Logger LOGGER = Logger.getLogger(Codecept.class.getName());
 
     public enum GenerateCommand {
 
@@ -99,7 +101,9 @@ public final class Codecept {
         Stepobject("stepobject"), // NOI18N
         Suite("suite"), // NOI18N
         Test("test"); // NOI18N
+
         private final String command;
+
 
         private GenerateCommand(String command) {
             this.command = command;
@@ -142,9 +146,7 @@ public final class Codecept {
 
     // params
     private static final String ANSI_PARAM = "--ansi"; // NOI18N
-    private static final String NO_ANSI_PARAM = "--no-ansi"; // NOI18N
     private static final String NO_INTERACTION_PARAM = "--no-interaction"; // NOI18N
-    private static final String CONFIG_PARAM = "--config=%s"; // NOI18N
     private static final List<String> DEFAULT_PARAMS = Arrays.asList(
             ANSI_PARAM,
             NO_INTERACTION_PARAM
@@ -163,8 +165,9 @@ public final class Codecept {
 
     public static final String CODECEPTION_CONFIG_FILE_NAME = "codeception.yml"; // NOI18N
     public static final Pattern LINE_PATTERN = Pattern.compile("(?:.+\\(\\) )?(.+):(\\d+)"); // NOI18N
+
     private final String codeceptPath;
-    private static final Logger LOGGER = Logger.getLogger(Codecept.class.getName());
+
 
     static {
         String logDirName = System.getProperty("java.io.tmpdir"); // NOI18N
@@ -172,7 +175,8 @@ public final class Codecept {
         if (userLogDirName != null) {
             LOGGER.log(Level.INFO, "Custom directory for Codeception logs provided: {0}", userLogDirName);
             File userLogDir = new File(userLogDirName);
-            if (userLogDir.isDirectory() && FileUtils.isDirectoryWritable(userLogDir)) {
+            if (userLogDir.isDirectory()
+                    && FileUtils.isDirectoryWritable(userLogDir)) {
                 logDirName = userLogDirName;
             } else {
                 LOGGER.log(Level.WARNING, "Directory for Codeception logs {0} is not writable directory", userLogDirName);
@@ -239,6 +243,7 @@ public final class Codecept {
         "Codecept.run.bootstrap.confirmation=Initialize Codeception in {0}",
         "Codecept.run.bootstrap.confirmation.title=Initialize Codeception"
     })
+    @CheckForNull
     public Future<Integer> bootstrap(PhpModule phpModule) {
         assert phpModule != null;
         FileObject codeceptionYml = getCodeceptionYml(phpModule);
@@ -248,6 +253,7 @@ public final class Codecept {
         }
 
         // XXX allow a working directory other than source directory?
+        // XXX RE: we perhaps prefer project directory...
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             // broken project
@@ -261,28 +267,29 @@ public final class Codecept {
         if (DialogDisplayer.getDefault().notify(confirmation) != NotifyDescriptor.OK_OPTION) {
             return null;
         }
-
-        return runCommand(phpModule, BOOTSTRAP_COMMAND, Bundle.Codecept_run_bootstrap());
+        return runCommand(phpModule, BOOTSTRAP_COMMAND);
     }
 
-    @NbBundle.Messages("Codecept.run.clean=Codecept (clean)")
+    @CheckForNull
     public Future<Integer> clean(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, CLEAN_COMMAND, Bundle.Codecept_run_clean());
+        return runCommand(phpModule, CLEAN_COMMAND);
     }
 
-    @NbBundle.Messages("Codecept.run.build=Codecept (build)")
+    @CheckForNull
     public Future<Integer> build(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, BUILD_COMMAND, Bundle.Codecept_run_build());
+        return runCommand(phpModule, BUILD_COMMAND);
     }
 
-    private Future<Integer> runCommand(PhpModule phpModule, String command, String title) {
-        return runCommand(phpModule, command, title, Collections.<String>emptyList());
+    @CheckForNull
+    private Future<Integer> runCommand(PhpModule phpModule, String command) {
+        return runCommand(phpModule, command, Collections.<String>emptyList());
     }
 
-    private Future<Integer> runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
-        PhpExecutable executable = getExecutable(phpModule, title);
+    @CheckForNull
+    private Future<Integer> runCommand(PhpModule phpModule, String command, List<String> commandParams) {
+        PhpExecutable executable = getExecutable(phpModule);
         if (executable == null) {
             return null;
         }
@@ -295,16 +302,12 @@ public final class Codecept {
                 .run(getDescriptor(false));
     }
 
-    @NbBundle.Messages({
-        "# {0} - name",
-        "Codecept.run.generate.test=Codecept ({0})"
-    })
     public FileObject generateTest(PhpModule phpModule, FileObject fo, GenerateCommand command, String suite, String fqName) throws ExecutionException {
         String testPath = fullyQualifiedNameToPath(fqName);
         if (testPath.startsWith("/")) { // NOI18N
             testPath = testPath.substring(1);
         }
-        PhpExecutable executable = getExecutable(phpModule, Bundle.Codecept_run_generate_test(command.getFullCommand()));
+        PhpExecutable executable = getExecutable(phpModule);
         if (executable == null) {
             return null;
         }
@@ -340,7 +343,7 @@ public final class Codecept {
 
     @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        PhpExecutable codecept = getExecutable(phpModule, getOutputTitle(phpModule.getDisplayName()));
+        PhpExecutable codecept = getExecutable(phpModule);
         if (codecept == null) {
             return null;
         }
@@ -417,7 +420,12 @@ public final class Codecept {
         return null;
     }
 
-    private PhpExecutable getExecutable(PhpModule phpModule, String title) {
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "Codecept.displayName=Codecept ({0})",
+    })
+    @CheckForNull
+    private PhpExecutable getExecutable(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             org.netbeans.modules.php.codeception.ui.UiUtils.warnNoSources(phpModule.getDisplayName());
@@ -425,7 +433,7 @@ public final class Codecept {
         }
         return new PhpExecutable(codeceptPath)
                 .optionsSubcategory(CodeceptionOptionsPanelController.OPTIONS_SUB_PATH)
-                .displayName(title);
+                .displayName(Bundle.Codecept_displayName(phpModule.getDisplayName()));
     }
 
     private ExecutionDescriptor getDescriptor(boolean cleanupLogFiles) {
@@ -469,14 +477,6 @@ public final class Codecept {
             return FileUtil.toFile(sourceDirectory);
         }
         return null;
-    }
-
-    @NbBundle.Messages({
-        "# {0} - project name",
-        "Codecept.invoke=Codecept ({0})",
-    })
-    private String getOutputTitle(String projectName) {
-        return Bundle.Codecept_invoke(projectName);
     }
 
     private List<String> mergeParameters(String command, List<String> defaultParams, List<String> commandParams) {
@@ -566,43 +566,54 @@ public final class Codecept {
 
     //~ Static helper methods
     public static boolean isTestFile(String fileName) {
-        return !fileName.equals(Codecept.TEST_FILE_SUFFIX) && fileName.endsWith(Codecept.TEST_FILE_SUFFIX);
+        return !fileName.equals(Codecept.TEST_FILE_SUFFIX)
+                && fileName.endsWith(Codecept.TEST_FILE_SUFFIX);
     }
 
     public static boolean isTestClass(String className) {
-        return !className.equals(Codecept.TEST_CLASS_SUFFIX) && className.endsWith(Codecept.TEST_CLASS_SUFFIX);
+        return !className.equals(Codecept.TEST_CLASS_SUFFIX)
+                && className.endsWith(Codecept.TEST_CLASS_SUFFIX);
     }
 
     public static boolean isTestMethod(String methodName, boolean isTest) {
         if (isTest) {
-            return !methodName.equals(Codecept.TEST_METHOD_PREFIX) && methodName.startsWith(Codecept.TEST_METHOD_PREFIX);
+            return !methodName.equals(Codecept.TEST_METHOD_PREFIX)
+                    && methodName.startsWith(Codecept.TEST_METHOD_PREFIX);
         }
         // Cest
         return !methodName.startsWith("_"); // NOI18N
     }
 
     public static boolean isCeptFile(String fileName) {
-        return !fileName.equals(Codecept.CEPT_FILE_SUFFIX) && fileName.endsWith(Codecept.CEPT_FILE_SUFFIX);
+        return !fileName.equals(Codecept.CEPT_FILE_SUFFIX)
+                && fileName.endsWith(Codecept.CEPT_FILE_SUFFIX);
     }
 
     public static boolean isCeptClass(String className) {
-        return !className.equals(Codecept.CEPT_CLASS_SUFFIX) && className.endsWith(Codecept.CEPT_CLASS_SUFFIX);
+        return !className.equals(Codecept.CEPT_CLASS_SUFFIX)
+                && className.endsWith(Codecept.CEPT_CLASS_SUFFIX);
     }
 
     public static boolean isCestFile(String fileName) {
-        return !fileName.equals(Codecept.CEST_FILE_SUFFIX) && fileName.endsWith(Codecept.CEST_FILE_SUFFIX);
+        return !fileName.equals(Codecept.CEST_FILE_SUFFIX)
+                && fileName.endsWith(Codecept.CEST_FILE_SUFFIX);
     }
 
     public static boolean isCestClass(String className) {
-        return !className.equals(Codecept.CEST_CLASS_SUFFIX) && className.endsWith(Codecept.CEST_CLASS_SUFFIX);
+        return !className.equals(Codecept.CEST_CLASS_SUFFIX)
+                && className.endsWith(Codecept.CEST_CLASS_SUFFIX);
     }
 
     public static boolean isCodeceptionTestFile(String fileName) {
-        return isTestFile(fileName) || isCeptFile(fileName) || isCestFile(fileName);
+        return isTestFile(fileName)
+                || isCeptFile(fileName)
+                || isCestFile(fileName);
     }
 
     public static boolean isCodeceptionTestClass(String className) {
-        return isTestClass(className) || isCeptClass(className) || isCestClass(className);
+        return isTestClass(className)
+                || isCeptClass(className)
+                || isCestClass(className);
     }
 
     public static String getTestedClass(String codeceptionTestClass) {
@@ -643,22 +654,26 @@ public final class Codecept {
         return testedClass + Codecept.CEST_CLASS_SUFFIX;
     }
 
-    private static String fullyQualifiedNameToPath(String fqName) {
+    private static String fullyQualifiedNameToPath(@NullAllowed String fqName) {
         if (fqName == null) {
             return null;
         }
         return fqName.replace("\\", "/"); // NOI18N
     }
 
-    //~ Inner class
-    private static class GenerateTestOutputFactory implements ExecutionDescriptor.InputProcessorFactory2 {
+    //~ Inner classes
+
+    private static final class GenerateTestOutputFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
         // XXX improve patterns?
         private static final Pattern CREATED_FILE_PATTERN = Pattern.compile("Test was created in (?<file>.+\\.php)"); // NOI18N
         private static final Pattern EXISTS_FILE_PATTERN = Pattern.compile("Test (?<file>.+\\.php) already exists"); // NOI18N
+
         static final String FILE_GROUP = "file"; // NOI18N
+
         volatile String filePath;
         volatile boolean isExists = false;
+
 
         @Override
         public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {

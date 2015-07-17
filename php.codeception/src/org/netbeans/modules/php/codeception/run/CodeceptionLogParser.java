@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.util.Exceptions;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -59,45 +58,48 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public final class CodeceptionLogParser extends DefaultHandler {
 
-    enum Content {
-
-        NONE, ERROR, FAILURE
-    };
     private static final Logger LOGGER = Logger.getLogger(CodeceptionLogParser.class.getName());
-    private static final String NO_FILE = "NO_FILE"; // NOI18N
 
-    private final XMLReader xmlReder;
+    private enum Content {
+        NONE,
+        ERROR,
+        FAILURE
+    };
+
+    final XMLReader xmlReader;
     private final TestSessionVo givenTestSession;
     private final TestSessionVo tmpTestSession = new TestSessionVo();
     private final Deque<TestSuiteVo> testSuites = new LinkedList<>();
     private final Set<TestSuiteVo> parentTestSuites = new HashSet<>();
+
     private TestCaseVo testCase;
     private Content content = Content.NONE;
     private StringBuilder buffer = new StringBuilder(200); // for error/failure: buffer for the whole message
 
+
     private CodeceptionLogParser(TestSessionVo testSession) throws SAXException {
         assert testSession != null;
         this.givenTestSession = testSession;
-        this.xmlReder = FileUtils.createXmlReader();
+        this.xmlReader = FileUtils.createXmlReader();
     }
 
     static boolean parse(Reader reader, TestSessionVo testSession) {
         try {
             CodeceptionLogParser parser = new CodeceptionLogParser(testSession);
-            parser.xmlReder.setContentHandler(parser);
-            parser.xmlReder.parse(new InputSource(reader));
+            parser.xmlReader.setContentHandler(parser);
+            parser.xmlReader.parse(new InputSource(reader));
             parser.finish();
             return true;
         } catch (SAXException ex) {
             // ignore (this can happen e.g. if one interrupts debugging)
             LOGGER.log(Level.INFO, null, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.WARNING, null, ex);
         } finally {
             try {
                 reader.close();
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
         return false;
@@ -238,7 +240,6 @@ public final class CodeceptionLogParser extends DefaultHandler {
                     stacktraceStarted = true;
                     testCase.addStacktrace(buffer.toString().trim());
                 }
-                continue;
             } else if (line.startsWith("\n\n")) { // NOI18N
                 // empty line => stacktrace started
                 stacktraceStarted = true;
@@ -318,4 +319,5 @@ public final class CodeceptionLogParser extends DefaultHandler {
             givenTestSession.addTestSuite(testSuiteVo);
         }
     }
+
 }

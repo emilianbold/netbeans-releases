@@ -49,7 +49,7 @@ public class EnvTag extends AnnotationCompletionTag {
     public EnvTag() {
         super("env", // NOI18N
                 "@env", // NOI18N
-                NbBundle.getMessage(EnvTag.class, "EnvTag.documentation"));
+                NbBundle.getMessage(EnvTag.class, "EnvTag.documentation")); // NOI18N
     }
 
 }

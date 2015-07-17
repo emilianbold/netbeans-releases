@@ -42,10 +42,11 @@
 package org.netbeans.modules.php.codeception.run;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.extexecution.input.LineProcessors;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
+import org.netbeans.api.extexecution.print.LineProcessors;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.netbeans.modules.php.spi.testing.run.OutputLineHandler;
 import org.openide.util.NbBundle;
@@ -53,7 +54,6 @@ import org.openide.windows.OutputWriter;
 
 /**
  * Value Object for TestSession.
- *
  */
 public final class TestSessionVo {
 
@@ -61,6 +61,7 @@ public final class TestSessionVo {
 
     private long time = -1L;
     private int tests = -1;
+
 
     public TestSessionVo() {
     }
@@ -70,7 +71,7 @@ public final class TestSessionVo {
     }
 
     public List<TestSuiteVo> getTestSuites() {
-        return testSuites;
+        return Collections.unmodifiableList(testSuites);
     }
 
     public int getTests() {
@@ -103,19 +104,21 @@ public final class TestSessionVo {
         return Bundle.TestSessionVo_msg_output();
     }
 
-    @Override
-    public String toString() {
-        return String.format("TestSessionVo{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size());
-    }
-
     public OutputLineHandler getOutputLineHandler() {
         return new CodeceptionOutputLineHandler();
     }
 
+    @Override
+    public String toString() {
+        return String.format("TestSessionVo{time: %d, tests: %d, suites: %d}", time, tests, testSuites.size()); // NOI18N
+    }
+
     //~ Inner classes
+
     private static final class CodeceptionOutputLineHandler implements OutputLineHandler {
 
         private static final LineConvertor CONVERTOR = LineConvertors.filePattern(null, Codecept.LINE_PATTERN, null, 1, 2);
+
 
         @Override
         public void handleLine(OutputWriter out, String text) {
