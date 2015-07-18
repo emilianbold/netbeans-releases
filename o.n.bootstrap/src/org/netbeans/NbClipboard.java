@@ -315,11 +315,11 @@ implements LookupListener, FlavorListener, AWTEventListener
             log.log (level, "  no clipboard contents");
         }
         else {
-            java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < arr.length; i++) {
-                sb.append("  ").append(i).append(" = ").append(arr[i]);
-                if (content) {
+            if (content) {
+                java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < arr.length; i++) {
+                    sb.append("  ").append(i).append(" = ").append(arr[i]);
                     try {
                         sb.append(" contains: ").append(trans.getTransferData(arr[i]));
                     } catch (UnsupportedFlavorException ex) {
@@ -327,10 +327,12 @@ implements LookupListener, FlavorListener, AWTEventListener
                     } catch (IOException ex) {
                         log.log(level, "Can't convert to " + arr[i], ex);
                     }
+                    sb.append("\n");
                 }
-                sb.append("\n");
+                log.log (level, sb.toString());
+            } else {
+                log.log (level, " clipboard contains data");
             }
-            log.log (level, sb.toString());
         }
     }
 

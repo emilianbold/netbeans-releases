@@ -8328,36 +8328,58 @@
   <!-- "Profiling Threads Window"-->
   <mapID target="NBCSH3442" url="f1_profiler053.htm#NBCSH3442" />
   <!-- "Related Topics"-->
-  <mapID target="f1_profiler054.htm-sthref444" url="f1_profiler054.htm#sthref444" />
-  <!-- "Lock Contention Window"-->
-  <mapID target="f1_profiler055.htm-sthref446" url="f1_profiler055.htm#sthref446" />
+  <mapID target="ProcessDetails.HelpCtx" url="f1_profiler054.htm#ProcessDetails.HelpCtx" />
   <!-- "Details of &lt;Process> Dialog"-->
-  <mapID target="f1_profiler056.htm-sthref448" url="f1_profiler056.htm#sthref448" />
+  <mapID target="f1_profiler054.htm-sthref444" url="f1_profiler054.htm#sthref444" />
+  <!-- "Details of &lt;Process> Dialog"-->
+  <mapID target="SelectMethodDialog.HelpCtx" url="f1_profiler055.htm#SelectMethodDialog.HelpCtx" />
   <!-- "Select Method Dialog"-->
+  <mapID target="f1_profiler055.htm-sthref446" url="f1_profiler055.htm#sthref446" />
+  <!-- "Select Method Dialog"-->
+  <mapID target="SelectClassDialog.HelpCtx" url="f1_profiler056.htm#SelectClassDialog.HelpCtx" />
+  <!-- "Select Class Dialog"-->
+  <mapID target="f1_profiler056.htm-sthref448" url="f1_profiler056.htm#sthref448" />
+  <!-- "Select Class Dialog"-->
   <mapID target="f1_profiler057.htm-sthref450" url="f1_profiler057.htm#sthref450" />
   <!-- "Select Class Dialog"-->
-  <mapID target="f1_profiler058.htm-sthref452" url="f1_profiler058.htm#sthref452" />
-  <!-- "Profile Class / Profile Method (Select Feature) Dialog"-->
-  <mapID target="f1_profiler059.htm-sthref454" url="f1_profiler059.htm#sthref454" />
+  <mapID target="SnapshotsWindow.HelpCtx" url="f1_profiler058.htm#SnapshotsWindow.HelpCtx" />
   <!-- "Snapshot Window"-->
+  <mapID target="f1_profiler058.htm-sthref452" url="f1_profiler058.htm#sthref452" />
+  <!-- "Snapshot Window"-->
+  <mapID target="SnapshotInfo.HelpCtx" url="f1_profiler059.htm#SnapshotInfo.HelpCtx" />
+  <!-- "Snapshot Information"-->
+  <mapID target="f1_profiler059.htm-sthref454" url="f1_profiler059.htm#sthref454" />
+  <!-- "Snapshot Information"-->
+  <mapID target="ProfileTelemetry.HelpCtx" url="f1_profiler060.htm#ProfileTelemetry.HelpCtx" />
+  <!-- "Profile Window with Telemetry"-->
   <mapID target="f1_profiler060.htm-sthref456" url="f1_profiler060.htm#sthref456" />
-  <!-- "Snapshot Information "-->
+  <!-- "Profile Window with Telemetry"-->
+  <mapID target="ProfileMethods.HelpCtx" url="f1_profiler061.htm#ProfileMethods.HelpCtx" />
+  <!-- "Profile Window with Methods"-->
   <mapID target="f1_profiler061.htm-sthref458" url="f1_profiler061.htm#sthref458" />
-  <!-- "Profile Window with Telemetry "-->
+  <!-- "Profile Window with Methods"-->
+  <mapID target="ProfileObjects.HelpCtx" url="f1_profiler062.htm#ProfileObjects.HelpCtx" />
+  <!-- "Profile Window with Objects"-->
   <mapID target="f1_profiler062.htm-sthref460" url="f1_profiler062.htm#sthref460" />
-  <!-- "Profile Window with Methods "-->
-  <mapID target="f1_profiler063.htm-sthref462" url="f1_profiler063.htm#sthref462" />
-  <!-- "Profile Window with Objects "-->
-  <mapID target="f1_profiler064.htm-sthref464" url="f1_profiler064.htm#sthref464" />
+  <!-- "Profile Window with Objects"-->
+  <mapID target="ProfileThreads.HelpCtx" url="f1_profiler063.htm#ProfileThreads.HelpCtx" />
   <!-- "Profile Window with Threads"-->
-  <mapID target="f1_profiler065.htm-sthref466" url="f1_profiler065.htm#sthref466" />
-  <!-- "Profile Window with Locks "-->
-  <mapID target="f1_profiler066.htm-sthref468" url="f1_profiler066.htm#sthref468" />
+  <mapID target="f1_profiler063.htm-sthref462" url="f1_profiler063.htm#sthref462" />
+  <!-- "Profile Window with Threads"-->
+  <mapID target="ProfileLocks.HelpCtx" url="f1_profiler064.htm#ProfileLocks.HelpCtx" />
+  <!-- "Profile Window with Locks"-->
+  <mapID target="f1_profiler064.htm-sthref464" url="f1_profiler064.htm#sthref464" />
+  <!-- "Profile Window with Locks"-->
+  <mapID target="ThreadDumpWindow.HelpCtx" url="f1_profiler065.htm#ThreadDumpWindow.HelpCtx" />
   <!-- "Thread Dump Window"-->
+  <mapID target="f1_profiler065.htm-sthref466" url="f1_profiler065.htm#sthref466" />
+  <!-- "Thread Dump Window"-->
+  <mapID target="f1_profiler066.htm-sthref468" url="f1_profiler066.htm#sthref468" />
+  <!-- "CPU Snapshot"-->
   <mapID target="f1_profiler067.htm-sthref470" url="f1_profiler067.htm#sthref470" />
-  <!-- "Methods Snapshot Dialog"-->
+  <!-- "Memory Snapshot"-->
   <mapID target="f1_profiler068.htm-sthref472" url="f1_profiler068.htm#sthref472" />
-  <!-- "Objects Snapshot Dialog"-->
+  <!-- "Heap Window"-->
   <mapID target="NBCSH3443" url="f1_php.htm#NBCSH3443" />
   <!-- "Using PHP "-->
   <mapID target="f1_php.htm" url="f1_php.htm" />

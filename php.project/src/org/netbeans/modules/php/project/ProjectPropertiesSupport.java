@@ -196,7 +196,7 @@ public final class ProjectPropertiesSupport {
         BrowseTestSources panel = Mutex.EVENT.readAccess(new Mutex.Action<BrowseTestSources>() {
             @Override
             public BrowseTestSources run() {
-                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_tests(),
+                return new BrowseTestSources(project, Bundle.ProjectPropertiesSupport_browse_selenium_test(),
                         Bundle.ProjectPropertiesSupport_browse_tests_info());
             }
         });

@@ -67,7 +67,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types = TableModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types = TableModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TableModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types = TableModelFilter.class, position = 850),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types = TableModelFilter.class)
 })
 public class VariablesJSTableModel implements TableModelFilter {

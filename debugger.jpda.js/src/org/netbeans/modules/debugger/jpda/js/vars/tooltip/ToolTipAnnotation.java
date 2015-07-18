@@ -48,9 +48,11 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.js.JSUtils;
 import org.netbeans.modules.debugger.jpda.js.vars.DebuggerSupport;
+import org.netbeans.modules.debugger.jpda.js.vars.JSVariable;
 import org.netbeans.modules.javascript2.debug.tooltip.AbstractJSToolTipAnnotation;
 import org.openide.util.Pair;
 
@@ -80,16 +82,24 @@ public final class ToolTipAnnotation extends AbstractJSToolTipAnnotation<JPDADeb
     protected Pair<String, Object> evaluate(String expression, DebuggerEngine engine, JPDADebuggerTooltipSupport dbg) throws CancellationException {
         String toolTipText;
         CallStackFrame frame = dbg.getFrame();
+        JSVariable jsresult = null;
         try {
             Variable result = DebuggerSupport.evaluate(dbg.getDebugger(), frame, expression);
             if (result == null) {
                 throw new CancellationException();
             }
-            toolTipText = expression + " = " + DebuggerSupport.getVarValue(dbg.getDebugger(), result);
+            if (result instanceof ObjectVariable) {
+                jsresult = JSVariable.createIfScriptObject(dbg.getDebugger(), (ObjectVariable) result, expression);
+            }
+            if (jsresult != null) {
+                toolTipText = expression + " = " + jsresult.getValue();
+            } else {
+                toolTipText = expression + " = " + DebuggerSupport.getVarValue(dbg.getDebugger(), result);
+            }
         } catch (InvalidExpressionException ex) {
             toolTipText = expression + " = >" + ex.getMessage () + "<";
         }
-        return Pair.of(toolTipText, null);
+        return Pair.of(toolTipText, (Object) jsresult);
     }
     
 }
