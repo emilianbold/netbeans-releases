@@ -74,6 +74,17 @@ public abstract class TestCreatorConfigurationProvider {
     }
     
     /**
+     * Determines whether "Class Name" label and text field should be shown.
+     * Default implementation just returns {@code true}
+     * 
+     * @return {@code true} if this provider should show "Class Name" label and text field, {@code false} otherwise
+     * @since 1.4
+     */
+    public boolean showClassNameInfo() {
+        return true;
+    }
+    
+    /**
      * Finds the configuration panel that should be presented in the test creator dialog.
      * Default implementation just returns an empty panel
      * 

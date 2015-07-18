@@ -199,7 +199,12 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             setBorder(BorderFactory.createEmptyBorder(12, 12, 0, 11));
             addAccessibleDescriptions();
             initializeCheckBoxStates();
-            fillFormData();
+            Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
+            for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
+                if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+                    fillFormData(panelProvider);
+                }
+            }
             checkAcceptability();
             
             /*
@@ -533,7 +538,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
         for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
             if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
-                fillFormData();
+                fillFormData(panelProvider);
                 checkAcceptability();
                 TestCreatorConfigurationProvider.Context context = new TestCreatorConfigurationProvider.Context(multipleClasses, new CommonCfgOfCreateCallback(this));
                 Component bottomPanel = panelProvider.getConfigurationPanel(context);
@@ -546,21 +551,34 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
     
     private void updateClassName() {
-        if (tfClassName != null) {
+        boolean shouldShowClassNameInfo = shouldShowClassNameInfo();
+        tfClassName.setVisible(shouldShowClassNameInfo);
+        lblClassName.setVisible(shouldShowClassNameInfo);
+        if (tfClassName != null && tfClassName.isVisible()) {
             FileObject fileObj = activatedFOs[0];
 
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
             if (cp != null) {
-            String className = cp.getResourceName(fileObj, '.', false);
+                String className = cp.getResourceName(fileObj, '.', false);
 
                 String suffix = (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM))
                         || (chkIntegrationTests != null && chkIntegrationTests.isEnabled() && chkIntegrationTests.isSelected()) ? TestCreatorProvider.INTEGRATION_TEST_CLASS_SUFFIX : TestCreatorProvider.TEST_CLASS_SUFFIX;
-            String prefilledName = className + getTestingFrameworkSuffix() + suffix;
-            tfClassName.setText(prefilledName);
-            tfClassName.setDefaultText(prefilledName);
-            tfClassName.setCaretPosition(prefilledName.length());
+                String prefilledName = className + getTestingFrameworkSuffix() + suffix;
+                tfClassName.setText(prefilledName);
+                tfClassName.setDefaultText(prefilledName);
+                tfClassName.setCaretPosition(prefilledName.length());
+            }
         }
     }
+    
+    private boolean shouldShowClassNameInfo() {
+        Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
+        for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
+            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+                return panelProvider.showClassNameInfo();
+            }
+        }
+        return true;
     }
     
     private void setSelectedTestingFramework() {
@@ -612,7 +630,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         final boolean askForClassName = singleClass;
         
         JLabel lblClassToTest = new JLabel();
-        JLabel lblClassName = askForClassName ? new JLabel() : null;
+        lblClassName = askForClassName ? new JLabel() : null;
         JLabel lblLocation = new JLabel();
         JLabel lblFramework = new JLabel();
         
@@ -653,7 +671,11 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         cboxFramework.addItemListener(new java.awt.event.ItemListener() {
             @Override
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                fireFrameworkChanged();
+                // itemStateChanged is fired both on ItemEvent.SELECTED and 
+                // ItemEvent.DESELECTED. React only one time per state change.
+                if(evt.getStateChange() == ItemEvent.SELECTED) {
+                    fireFrameworkChanged();
+                }
             }
         });
         
@@ -952,7 +974,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      * Initializes form in the Test Settings panel of the dialog.
      */
     @NbBundle.Messages("DefaultPackageName=<default package>")
-    private void fillFormData() {
+    private void fillFormData(TestCreatorConfigurationProvider panelProvider) {
         final FileObject fileObj = activatedFOs[0];
         
         if (singleClass) {
@@ -960,16 +982,13 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             
             String className = "";
             String prefilledName = "";
-            Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
-            for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
-                if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
-                    boolean isTestNG = !getTestingFrameworkSuffix().isEmpty();
-                    boolean isSelenium = isIntegrationTests() || 
-                            (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM));
-                    String[] testClassNames = panelProvider.getSourceAndTestClassNames(fileObj, isTestNG, isSelenium);
-                    className = testClassNames[0];
-                    prefilledName = testClassNames[1];
-                }
+            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+                boolean isTestNG = !getTestingFrameworkSuffix().isEmpty();
+                boolean isSelenium = isIntegrationTests()
+                        || (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM));
+                String[] testClassNames = panelProvider.getSourceAndTestClassNames(fileObj, isTestNG, isSelenium);
+                className = testClassNames[0];
+                prefilledName = testClassNames[1];
             }
             lblClassToTestValue.setText(className);
             
@@ -988,7 +1007,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             //PENDING
         }
         
-        setupLocationChooser(fileObj);
+        setupLocationChooser(fileObj, panelProvider);
         
         checkClassNameValidity();
     }
@@ -999,14 +1018,11 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         "# {0} - file", 
         "MSG_NoTestTarget_Fi=Unable to locate test package folder for file {0}. The project must contain a test package folder to create tests. You can designate test package folders for your project in the Sources pane of the project Properties dialog."
     })
-    private void setupLocationChooser(FileObject refFileObject) {
+    private void setupLocationChooser(FileObject refFileObject, TestCreatorConfigurationProvider panelProvider) {
         Object[] targetFolders = null;
-        Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
-        for (TestCreatorConfigurationProvider panelProvider : panelProviders) {
-            if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
-                targetFolders = panelProvider.getTestSourceRoots(createdSourceRoots, refFileObject);
+        if (selectedTestingFramework != null && panelProvider.canHandleProject(selectedTestingFramework)) {
+            targetFolders = panelProvider.getTestSourceRoots(createdSourceRoots, refFileObject);
         }
-                }
 
         if (targetFolders != null && targetFolders.length != 0) {
             hasTargetFolders = true;
@@ -1019,7 +1035,8 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             //PENDING - message text:
                 String msgNoTargetsFound = refFileObject.isFolder()? Bundle.MSG_NoTestTarget_Fo(refFileObject.getNameExt()) : Bundle.MSG_NoTestTarget_Fi(refFileObject.getNameExt());
             setMessage(msgNoTargetsFound, MSG_TYPE_NO_TARGET_FOLDERS);
-            disableComponents();
+            // do not disable all components as user might want to select a different testing provider
+//            disableComponents();
         }
     }
     }
@@ -1211,6 +1228,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
 
     private JLabel lblClassToTestValue;
+    private JLabel lblClassName;
     private ClassNameTextField tfClassName;
     private JTextComponent txtAreaMessage;
     private JComboBox cboxLocation;

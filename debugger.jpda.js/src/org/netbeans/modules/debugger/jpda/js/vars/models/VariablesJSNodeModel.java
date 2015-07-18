@@ -72,7 +72,7 @@ import org.openide.util.datatransfer.PasteType;
 @DebuggerServiceRegistrations({
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/LocalsView",  types=ExtendedNodeModelFilter.class),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ResultsView", types=ExtendedNodeModelFilter.class),
-    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types=ExtendedNodeModelFilter.class),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/ToolTipView", types=ExtendedNodeModelFilter.class, position = 500),
     @DebuggerServiceRegistration(path="netbeans-JPDASession/JS/WatchesView", types=ExtendedNodeModelFilter.class),
 })
 public class VariablesJSNodeModel implements ExtendedNodeModelFilter {
