@@ -271,6 +271,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void registerListeners() {
+        unregisterListeners(); // avoid duplicates
         query.addPropertyChangeListener(this);
         query.getController().addPropertyChangeListener(this);
         query.getRepositoryImpl().addPropertyChangeListener(this);
@@ -392,14 +393,26 @@ public final class QueryTopComponent extends TopComponent
         synchronized(openQueries) {
             openQueries.remove(this);
         }
+        RepositoryRegistry.getInstance().removePropertyChangeListener(this);
+
         if(query != null) {
-            unregisterListeners();
-            getController(query).closed();
+            releaseQuery(!isSaved());
         }
+        
         if(prepareTask != null) {
             prepareTask.cancel();
         }
         BugtrackingManager.LOG.log(Level.FINE, "{0} - {1} closed", new Object[] {this.getClass().getName(), query != null ? query.getDisplayName() : null});  // NOI18N
+    }
+
+    private void releaseQuery(boolean remove) {
+        if(query != null) {
+            unregisterListeners();
+            getController(query).closed();
+            if(remove) {
+                query = null;
+            }
+        }
     }
 
     /** replaces this in object stream */
@@ -427,7 +440,7 @@ public final class QueryTopComponent extends TopComponent
                     }    
                 }
                 if(!stillExists) {
-                    closeInAwt();
+                    queryRemoved();
                 }
             }
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
@@ -438,15 +451,13 @@ public final class QueryTopComponent extends TopComponent
                 {
                     RepositoryImpl thisRepo = query.getRepositoryImpl();
                     if(contains((Collection) cOld, thisRepo)) {
-                        // removed
-                        closeInAwt();
+                        queryRemoved();
                     }
                 } else if(cOld == null) {
                     RepositoryImpl thisRepo = query.getRepositoryImpl();
                     Collection<RepositoryImpl> knownRepos = RepositoryRegistry.getInstance().getKnownRepositories(true);
                     if(!contains((Collection) knownRepos, thisRepo)) {
-                        // removed
-                        closeInAwt();
+                        queryRemoved();
                     }
                 }
             }
@@ -493,6 +504,11 @@ public final class QueryTopComponent extends TopComponent
             }
             
         } 
+    }
+
+    private void queryRemoved() {
+        closeInAwt();
+        releaseQuery(true);
     }
 
     private void openDashboard() {
@@ -656,6 +672,7 @@ public final class QueryTopComponent extends TopComponent
                     if(repo == null) {
                         return;
                     }
+                    repo.removePropertyChangeListener(QueryTopComponent.this);
                     repo.addPropertyChangeListener(QueryTopComponent.this);
 
                     if(query != null) {
