@@ -103,11 +103,11 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
                 ProxyResult<?> p = ref.get();
 
-                if (p != null && p.updateLookup(p.delegate, l)) {
+                if (p != null && p.updateLookup(p.getDelegate(), l)) {
                     p.collectFires(evAndListeners);
                 }
             }
-            
+
             for (Iterator it = evAndListeners.iterator(); it.hasNext(); ) {
                 LookupEvent ev = (LookupEvent)it.next();
                 LookupListener ll = (LookupListener)it.next();
@@ -167,7 +167,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
      */
     private final class ProxyResult<T> extends WaitableResult<T> implements LookupListener {
         /** Template used for this result. It is never null.*/
-        private Template<T> template;
+        private final Template<T> template;
 
         /** result to delegate to */
         private Lookup.Result<T> delegate;
@@ -184,9 +184,9 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         /** Checks state of the result
          */
         private Result<T> checkResult() {
-            Lookup.Result lkp = delegate;
+            Lookup.Result lkp = getDelegate();
             updateLookup(lkp, checkLookup());
-            return this.delegate;
+            return this.getDelegate();
         }
 
         /** Updates the state of the lookup.
@@ -201,36 +201,36 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             LookupListener prevListener;
             Result<T> toAdd;
             for (;;) {
-                
+
                 synchronized (this) {
-                    if ((delegate != null) && (lastListener != null)) {
-                        prevListener = lastListener;
-                        delegate.removeLookupListener(lastListener);
+                    if ((getDelegate() != null) && (getLastListener() != null)) {
+                        prevListener = getLastListener();
+                        getDelegate().removeLookupListener(getLastListener());
                     } else {
                         prevListener = null;
                     }
                 }
-                
-                // cannot call to foreign code 
+
+                // cannot call to foreign code
                 Lookup.Result<T> res = l.lookup(template);
-                
+
                 synchronized (this) {
-                    if (prevListener == lastListener) {
-                        delegate = res;
-                        lastListener = new WeakResult<T>(this, delegate);
-                        toAdd = delegate;
+                    if (prevListener == getLastListener()) {
+                        setDelegate(res);
+                        setLastListener(new WeakResult<T>(this, getDelegate()));
+                        toAdd = getDelegate();
                         break;
                     }
                 }
             }
-            toAdd.addLookupListener(lastListener);
+            toAdd.addLookupListener(getLastListener());
 
             if (oldPairs == null) {
                 // nobody knows about a change
                 return false;
             }
 
-            Collection<? extends Item<T>> newPairs = delegate.allItems();
+            Collection<? extends Item<T>> newPairs = getDelegate().allItems();
 
             // See #34961 for explanation.
             if (!(oldPairs instanceof List)) {
@@ -249,18 +249,14 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
             return !oldPairs.equals(newPairs);
         }
 
-        public synchronized void addLookupListener(LookupListener l) {
-            if (listeners == null) {
-                listeners = new LookupListenerList();
-            }
-
-            listeners.add(l);
+        @Override
+        public void addLookupListener(LookupListener l) {
+            getListeners(l, null);
         }
 
-        public synchronized void removeLookupListener(LookupListener l) {
-            if (listeners != null) {
-                listeners.remove(l);
-            }
+        @Override
+        public void removeLookupListener(LookupListener l) {
+            getListeners(null, l);
         }
 
         public java.util.Collection<? extends T> allInstances() {
@@ -289,10 +285,11 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
          */
         public void resultChanged(LookupEvent anEvent) {
             collectFires(null);
-        } 
-        
+        }
+
+        @Override
         protected void collectFires(Collection<Object> evAndListeners) {
-            LookupListenerList l = this.listeners;
+            LookupListenerList l = this.getListeners(null, null);
 
             if (l == null) {
                 return;
@@ -317,17 +314,54 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
             return allItems();
         }
+
+        /** Access to listeners. Initializes the listeners field if needed -
+         * e.g. if adding a listener and listeners are <code>null</code>.
+         *
+         * @return the listeners
+         */
+        private synchronized LookupListenerList getListeners(LookupListener toAdd, LookupListener toRemove) {
+            if (toAdd == null && listeners == null) {
+                return null;
+            }
+            if (listeners == null) {
+                listeners = new LookupListenerList();
+            }
+            if (toAdd != null) {
+                listeners.add(toAdd);
+            }
+            if (toRemove != null) {
+                listeners.remove(toRemove);
+            }
+            return listeners;
+        }
+
+        private Lookup.Result<T> getDelegate() {
+            return delegate;
+        }
+
+        private void setDelegate(Lookup.Result<T> delegate) {
+            this.delegate = delegate;
+        }
+
+        private LookupListener getLastListener() {
+            return lastListener;
+        }
+
+        private void setLastListener(LookupListener lastListener) {
+            this.lastListener = lastListener;
+        }
     }
      // end of ProxyResult
     private final class WeakResult<T> extends WaitableResult<T> implements LookupListener {
         private Lookup.Result source;
         private Reference<ProxyResult<T>> result;
-        
+
         public WeakResult(ProxyResult<T> r, Lookup.Result<T> s) {
             this.result = new WeakReference<ProxyResult<T>>(r);
             this.source = s;
         }
-        
+
         protected void beforeLookup(Lookup.Template t) {
             ProxyResult r = (ProxyResult)result.get();
             if (r != null) {
