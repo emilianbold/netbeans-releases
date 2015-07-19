@@ -53,17 +53,13 @@ public class InitializationBug44134Test extends NbTestCase {
         super(testName);
     }
 
-    public static void main(java.lang.String[] args) {
-        junit.textui.TestRunner.run(new NbTestSuite(InitializationBug44134Test.class));
-    }
-
     public void testThereShouldBe18Integers () throws Exception {
         FooManifestLookup foo = new FooManifestLookup ();
-        
+
         Collection items = foo.lookup (new Lookup.Template (Integer.class)).allItems ();
-        
+
         assertEquals ("18 of them", 18, items.size ());
-        
+
         Iterator it = items.iterator ();
         while (it.hasNext()) {
             Lookup.Item t = (Lookup.Item)it.next ();
@@ -71,59 +67,59 @@ public class InitializationBug44134Test extends NbTestCase {
         }
     }
 
-    
+
     public class FooManifestLookup extends AbstractLookup {
         public FooManifestLookup() {
             super();
         }
-        
+
         @Override
         protected void initialize() {
             for (int i=0; i<18; i++) {
                 try {
                     String id= "__" + i;
-                    
+
                     addPair(new FooLookupItem(new Integer(i),id));
                 }
                 catch (Exception e) {
                 }
             }
         }
-        
+
         public class FooLookupItem extends AbstractLookup.Pair {
             public FooLookupItem(Integer data, String id) {
                 super();
                 this.data=data;
                 this.id=id;
             }
-            
+
             protected boolean creatorOf(Object obj) {
                 return obj == data;
             }
-            
+
             public String getDisplayName() {
                 return data.toString();
             }
-            
+
             public Class getType () {
                 return Integer.class;
             }
-            
+
             protected boolean instanceOf (Class c) {
                 return c.isInstance(data);
             }
-            
+
             public Object getInstance() {
                 return data;
             }
-            
+
             public String getId() {
                 return id;
             }
-            
+
             private Integer data;
             private String id;
         }
     }
-    
+
 }
