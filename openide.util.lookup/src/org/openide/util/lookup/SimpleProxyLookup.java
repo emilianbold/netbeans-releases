@@ -103,7 +103,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
                 ProxyResult<?> p = ref.get();
 
-                if (p != null && p.updateLookup(p.getDelegate(), l)) {
+                if (p != null && p.updateLookup(null, null, l)) {
                     p.collectFires(evAndListeners);
                 }
             }
@@ -184,16 +184,25 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         /** Checks state of the result
          */
         private Result<T> checkResult() {
-            Lookup.Result lkp = getDelegate();
-            updateLookup(lkp, checkLookup());
-            return this.getDelegate();
+            Lookup.Result lkp;
+            synchronized (this) {
+                lkp = getDelegate();
+            }
+            Lookup.Result[] used = { null };
+            updateLookup(lkp, used, checkLookup());
+            return used[0];
         }
 
         /** Updates the state of the lookup.
          * @return true if the lookup really changed
          */
-        public boolean updateLookup(Lookup.Result prev, Lookup l) {
+        public boolean updateLookup(Lookup.Result prev, Lookup.Result[] used, Lookup l) {
             Collection<? extends Item<T>> oldPairs = null;
+            if (used == null) {
+                synchronized (this) {
+                    prev = getDelegate();
+                }
+            }
             if (prev != null) {
                 oldPairs = prev.allItems();
             }
@@ -220,6 +229,9 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                         listenerToAdd = new WeakResult<T>(this, getDelegate());
                         setLastListener(listenerToAdd);
                         setDelegate(toAdd);
+                        if (used != null) {
+                            used[0] = this.getDelegate();
+                        }
                         break;
                     }
                 }
@@ -231,7 +243,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                 return false;
             }
 
-            Collection<? extends Item<T>> newPairs = getDelegate().allItems();
+            Collection<? extends Item<T>> newPairs = toAdd.allItems();
 
             // See #34961 for explanation.
             if (!(oldPairs instanceof List)) {
@@ -338,10 +350,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         }
 
         private Lookup.Result<T> getDelegate() {
+            assert Thread.holdsLock(this);
             return delegate;
         }
 
         private void setDelegate(Lookup.Result<T> delegate) {
+            assert Thread.holdsLock(this);
             this.delegate = delegate;
         }
 
