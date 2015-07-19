@@ -200,6 +200,7 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
 
             LookupListener prevListener;
             Result<T> toAdd;
+            LookupListener listenerToAdd;
             for (;;) {
 
                 synchronized (this) {
@@ -212,18 +213,18 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
                 }
 
                 // cannot call to foreign code
-                Lookup.Result<T> res = l.lookup(template);
+                toAdd = l.lookup(template);
 
                 synchronized (this) {
                     if (prevListener == getLastListener()) {
-                        setDelegate(res);
-                        setLastListener(new WeakResult<T>(this, getDelegate()));
-                        toAdd = getDelegate();
+                        listenerToAdd = new WeakResult<T>(this, getDelegate());
+                        setLastListener(listenerToAdd);
+                        setDelegate(toAdd);
                         break;
                     }
                 }
             }
-            toAdd.addLookupListener(getLastListener());
+            toAdd.addLookupListener(listenerToAdd);
 
             if (oldPairs == null) {
                 // nobody knows about a change
@@ -345,10 +346,12 @@ final class SimpleProxyLookup extends org.openide.util.Lookup {
         }
 
         private LookupListener getLastListener() {
+            assert Thread.holdsLock(this);
             return lastListener;
         }
 
         private void setLastListener(LookupListener lastListener) {
+            assert Thread.holdsLock(this);
             this.lastListener = lastListener;
         }
     }
