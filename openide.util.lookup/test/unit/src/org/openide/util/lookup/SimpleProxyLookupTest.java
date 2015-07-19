@@ -46,7 +46,10 @@ package org.openide.util.lookup;
 
 import java.lang.ref.WeakReference;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Lookup;
@@ -87,6 +90,7 @@ public class SimpleProxyLookupTest extends NbTestCase {
         final Lookup fixed = new AbstractLookup(ic);
         class BlockingResult<T> extends Lookup.Result<T> {
             final List<LookupListener> listeners = new CopyOnWriteArrayList<LookupListener>();
+            final Set<LookupListener> allListeners = Collections.synchronizedSet(new HashSet<LookupListener>());
             final Class<T> type;
 
             public BlockingResult(Class<T> type) {
@@ -103,6 +107,10 @@ public class SimpleProxyLookupTest extends NbTestCase {
             @Override
             public void addLookupListener(LookupListener l) {
                 listeners.add(l);
+                allListeners.add(l);
+                if (allListeners.size() > 1) {
+                    fail("Too many listeners added " + allListeners);
+                }
             }
 
             @Override
@@ -206,6 +214,9 @@ public class SimpleProxyLookupTest extends NbTestCase {
 
         assertEquals("No listener on no longer used BlockingLookup", 0, blocking.ints.listeners.size());
         assertEquals("One listener on the one still in use", 1, blocking2.ints.listeners.size());
+
+        assertTrue("At most one listener added", 1 >= blocking.ints.allListeners.size());
+        assertEquals("Only one listener added", 1, blocking2.ints.allListeners.size());
     }
 
     private static class LL implements LookupListener {
