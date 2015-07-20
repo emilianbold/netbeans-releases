@@ -4282,6 +4282,15 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 stateChanged();
 		session().setSessionState(state());
 
+                // Set session pid on attach
+                // The UserAttachActionImpl.attach() creates target by binary+pid
+                // The DebuggerCommonIntegrationUtils.registerDefaultListener().propertyChange() try to recreate
+                // target by binary+pid. If pid is not set, the second target by binary is created.
+                long aPid = getNDI().getPid();
+                if (aPid != -1) {
+                    session().setPid(aPid);
+                }
+
                 noteProgLoaded(fprogram);
 
                 finish();
