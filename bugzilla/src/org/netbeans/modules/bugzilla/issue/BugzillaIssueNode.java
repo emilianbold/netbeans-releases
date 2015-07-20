@@ -49,7 +49,6 @@ import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.IssueField;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 

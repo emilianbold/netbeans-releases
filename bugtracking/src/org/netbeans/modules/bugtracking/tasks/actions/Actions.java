@@ -85,6 +85,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakSet;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -116,12 +117,12 @@ public class Actions {
     //<editor-fold defaultstate="collapsed" desc="default actions">
     public static class RefreshAction extends AbstractAction {
 
-        private final List<Refreshable> nodes;
+        private final WeakSet<Refreshable> nodes;
 
         private RefreshAction(List<Refreshable> nodes) {
             super(NbBundle.getMessage(Actions.class, "CTL_Refresh"));
             putValue(ACCELERATOR_KEY, REFRESH_KEY);
-            this.nodes = nodes;
+            this.nodes = new WeakSet<Refreshable>(nodes);
         }
 
         @Override

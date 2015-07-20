@@ -265,7 +265,7 @@ public class FindUsagesVisitor extends TreePathScanner<Tree, Element> {
         Kind parentKind = parentTree.getKind();
         if(parentKind == Kind.MEMBER_SELECT) {
             Element member = workingCopy.getTrees().getElement(parentPath);
-            if(member.getKind() == ElementKind.METHOD) {
+            if(member != null && member.getKind() == ElementKind.METHOD) {
                 ExecutableElement method = (ExecutableElement) member;
                 if (writeMethods.contains(method.getSimpleName().toString())) {
                     result = JavaWhereUsedFilters.ReadWrite.WRITE;
