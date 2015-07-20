@@ -44,6 +44,8 @@ package org.netbeans.core.startup.logging;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.StreamHandler;
@@ -56,6 +58,10 @@ final class MessagesHandler extends StreamHandler {
     private final File dir;
     private final File[] files;
     private final long limit;
+    private final boolean filterRepeats;
+    private LogRecord lastLogRecord;
+    private LogRecord repeatingRecord;
+    private long repeatCounter;
     
     MessagesHandler(File dir) {
         this(dir, -1, 1024 * 1024);
@@ -77,6 +83,7 @@ final class MessagesHandler extends StreamHandler {
         }
         this.files = arr;
         this.limit = limit;
+        this.filterRepeats = !Boolean.getBoolean("org.netbeans.log.disableRepeatingMessagesFilter"); // NOI18N
         setFormatter(NbFormatter.FORMATTER);
         setLevel(Level.ALL);
         
@@ -103,10 +110,28 @@ final class MessagesHandler extends StreamHandler {
 
     @Override
     public synchronized void publish(LogRecord record) {
+        if (filterRepeats) {
+            if (lastLogRecord != null) {
+                if (compareRepeating(lastLogRecord, record)) {
+                    repeatCounter++;
+                    repeatingRecord = createRepeatingRecord(record, repeatCounter);
+                    return ;
+                } else if (repeatCounter > 0) {
+                    flushRepeatCounter();
+                }
+            }
+            lastLogRecord = record;
+        }
         super.publish(record);
         if (checkRotate(false)) {
             initStream();
         }
+    }
+
+    @Override
+    public synchronized void flush() {
+        flushRepeatCounter();
+        super.flush();
     }
     
     private synchronized void doRotate() {
@@ -120,5 +145,54 @@ final class MessagesHandler extends StreamHandler {
                 files[i].renameTo(files[i + 1]);
             }
         }
+    }
+
+    private synchronized void flushRepeatCounter() {
+        if (repeatCounter > 0) {
+            super.publish(repeatingRecord);
+            repeatingRecord = null;
+            repeatCounter = 0;
+        }
+    }
+
+    private boolean compareRepeating(LogRecord r1, LogRecord r2) {
+        return r1.getLevel().equals(r2.getLevel()) &&
+               Objects.equals(r1.getLoggerName(), r2.getLoggerName()) &&
+               Objects.equals(r1.getMessage(), r2.getMessage()) &&
+               Objects.deepEquals(r1.getParameters(), r2.getParameters()) &&
+               Objects.equals(r1.getResourceBundle(), r2.getResourceBundle()) &&
+               Objects.equals(r1.getResourceBundleName(), r2.getResourceBundleName()) &&
+               Objects.equals(r1.getSourceClassName(), r2.getSourceClassName()) &&
+               Objects.equals(r1.getSourceMethodName(), r2.getSourceMethodName()) &&
+               //r1.getThreadID() == r2.getThreadID() &&
+               compareThrown(r1.getThrown(), r2.getThrown());
+    }
+
+    private boolean compareThrown(Throwable t1, Throwable t2) {
+        if (t1 == null) {
+            return t2 == null;
+        }
+        if (t2 == null) {
+            return false;
+        }
+        return t1.getClass().equals(t2.getClass()) &&
+               Objects.equals(t1.getMessage(), t2.getMessage()) &&
+               Objects.equals(t1.getLocalizedMessage(), t2.getLocalizedMessage()) &&
+               Arrays.deepEquals(t1.getStackTrace(), t2.getStackTrace()) &&
+               compareThrown(t1.getCause(), t2.getCause());
+    }
+
+    private LogRecord createRepeatingRecord(LogRecord r, long rc) {
+        return new LogRecord(r.getLevel(), getRepeatingMessage(rc));
+    }
+
+    static String getRepeatingMessage(long rc) {
+        String msg;
+        if (rc == 1) {
+            msg = "Last record repeated again.";
+        } else {
+            msg = "Last record repeated "+rc+" more times.";
+        }
+        return msg;
     }
 }
