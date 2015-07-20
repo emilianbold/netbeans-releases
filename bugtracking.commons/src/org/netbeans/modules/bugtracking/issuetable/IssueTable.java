@@ -839,13 +839,13 @@ public class IssueTable implements MouseListener, AncestorListener, KeyListener,
         });
     }
 
-    private class SeenDescriptor extends ColumnDescriptor<Boolean> {
+    private static class SeenDescriptor extends ColumnDescriptor<Boolean> {
         public SeenDescriptor() {
             super(IssueNode.LABEL_NAME_SEEN, Boolean.class, "", NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Seen_Desc"), -1, true, true); // NOI18N
         }
     }
 
-    private class RecentChangesDescriptor extends ColumnDescriptor<String> {
+    private static class RecentChangesDescriptor extends ColumnDescriptor<String> {
         public RecentChangesDescriptor() {
             super(IssueNode.LABEL_RECENT_CHANGES, String.class, NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Recent"), NbBundle.getBundle(IssueTable.class).getString("CTL_Issue_Recent_Desc"), -1, true, true); // NOI18N
         }

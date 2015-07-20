@@ -276,12 +276,13 @@ public class PreviewManager {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-
-                    internal.remove(0, internal.getLength());
-                    internal.insertString(0, new String(buf), null);
+                    Document doc = getDocument();
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, new String(buf), null);
                 } else {
-                    internal.remove(0, internal.getLength());
-                    internal.insertString(0, newText, null);
+                    Document doc = getDocument();
+                    doc.remove(0, doc.getLength());
+                    doc.insertString(0, newText, null);
                 }
             } catch (BadLocationException ex) {
                 Logger.getLogger(getClass().getName()).log(Level.SEVERE, ex.getMessage(), ex);

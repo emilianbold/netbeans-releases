@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.issue;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -119,7 +120,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     private final BugzillaRepository repository;
 
     private BugzillaIssueController controller;
-    private BugzillaIssueNode node;
+    private WeakReference<BugzillaIssueNode> nodeRef;
     private OwnerInfo info;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
@@ -375,14 +376,16 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     public IssueNode getNode() {
-        if(node == null) {
-            node = createNode();
+        BugzillaIssueNode n = nodeRef != null ? nodeRef.get() : null;
+        if(n == null) {
+            n = createNode();
+            nodeRef = new WeakReference<>(n);
         }
         if (!EventQueue.isDispatchThread()) {
             // loads repository task data from disk
             getRepositoryTaskData();
         }
-        return node;
+        return n;
     }
 
     public void setOwnerInfo(OwnerInfo info) {
@@ -454,9 +457,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
                 if (updateTooltip()) {
                     fireDataChanged();
                 }
@@ -1681,9 +1681,6 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
     }
 
     private void dataChanged () {
-        if (node != null) {
-            node.fireDataChanged();
-        }
         updateTooltip();
         fireDataChanged();
         refreshViewData(false);

@@ -157,7 +157,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             return null;
         }
         // first check project
-        Project owner = findProject(fo);
+        Project owner = FileOwnerQuery.getOwner(fo);
         if (!prj.equals(owner)) {
             // another project
             return null;
@@ -192,23 +192,6 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         return null;
     }
 
-    //Todo: Move to ProjectConvertors SPI support
-    @CheckForNull
-    private static Project findProject(@NonNull final FileObject target) {
-        Project owner = FileOwnerQuery.getOwner(target);
-        if (owner != null && ProjectConvertors.isConvertorProject(owner)) {
-            FileObject dir = owner.getProjectDirectory().getParent();
-            while (dir != null) {
-                Project p = FileOwnerQuery.getOwner(dir);
-                if (p != null && !ProjectConvertors.isConvertorProject(p)) {
-                    owner = p;
-                    break;
-                }
-                dir = dir.getParent();
-            }
-        }
-        return owner;
-    }
 
     @CheckForNull
     private static Node findNode(Node node, FileObject root, FileObject fo) {

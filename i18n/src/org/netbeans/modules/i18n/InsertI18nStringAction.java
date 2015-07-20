@@ -48,6 +48,7 @@ package org.netbeans.modules.i18n;
 
 import java.awt.Dialog;
 import java.io.IOException;
+import java.util.concurrent.Future;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
@@ -64,6 +65,8 @@ import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 
 
 /**
@@ -271,6 +274,10 @@ public class InsertI18nStringAction extends CookieAction {
         if (sec == null || !hasOpenedPane(sec)) return false;
         
 
+        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+        if(!openProjects.isDone()) {
+            return false;
+        }
 	// check that the node has project
 	return FileOwnerQuery.getOwner(dataObject.getPrimaryFile()) != null;
     }

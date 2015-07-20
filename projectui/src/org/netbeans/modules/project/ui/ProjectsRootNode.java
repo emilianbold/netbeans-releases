@@ -51,6 +51,7 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,6 +69,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -77,6 +79,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileChangeAdapter;
@@ -104,6 +107,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 
 /** Root node for list of open projects
@@ -176,30 +180,40 @@ public class ProjectsRootNode extends AbstractNode {
         assert ((ch.type == LOGICAL_VIEW) || (ch.type == PHYSICAL_VIEW));
         // Speed up search in case we have an owner project - look in its node first.
         Project ownerProject = findProject(target);
-        for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
-            for (Node node : ch.getNodes(true)) {
-                Project p = node.getLookup().lookup(Project.class);
-                assert p != null : "Should have had a Project in lookup of " + node;
-                if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
-                    continue; // but try again (in next outer loop) as a fallback
-                }
-                Node n = null;
-                LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
-                if (lvp != null) {
-                    // XXX (cf. #63554): really should be calling this on DataObject usually, since
-                    // DataNode does *not* currently have a FileObject in its lookup (should it?)
-                    // ...but it is not clear who has implemented findPath to assume FileObject!
-                    n = lvp.findPath(node, target);
-                }
-                if (n == null && ch.type == PHYSICAL_VIEW) {
-                    PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
-                    if ( pf != null ) {
-                        n = pf.findPath(node, target);
+        final SelectInProjectFileOwnerQueryImpl foq = SelectInProjectFileOwnerQueryImpl.getInstance();
+        if (foq != null) {
+            foq.setCurrentProject(target, ownerProject);
+        }
+        try {
+            for (int lookOnlyInOwnerProject = (ownerProject != null) ? 0 : 1; lookOnlyInOwnerProject < 2; lookOnlyInOwnerProject++) {
+                for (Node node : ch.getNodes(true)) {
+                    Project p = node.getLookup().lookup(Project.class);
+                    assert p != null : "Should have had a Project in lookup of " + node;
+                    if (lookOnlyInOwnerProject == 0 && p != ownerProject) {
+                        continue; // but try again (in next outer loop) as a fallback
+                    }
+                    Node n = null;
+                    LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+                    if (lvp != null) {
+                        // XXX (cf. #63554): really should be calling this on DataObject usually, since
+                        // DataNode does *not* currently have a FileObject in its lookup (should it?)
+                        // ...but it is not clear who has implemented findPath to assume FileObject!
+                        n = lvp.findPath(node, target);
+                    }
+                    if (n == null && ch.type == PHYSICAL_VIEW) {
+                        PhysicalView.PathFinder pf = node.getLookup().lookup(PhysicalView.PathFinder.class);
+                        if ( pf != null ) {
+                            n = pf.findPath(node, target);
+                        }
+                    }
+                    if ( n != null ) {
+                        return n;
                     }
                 }
-                if ( n != null ) {
-                    return n;
-                }
+            }
+        } finally {
+            if (foq != null) {
+                foq.clearCurrentProject();
             }
         }
         return null;
@@ -935,4 +949,63 @@ public class ProjectsRootNode extends AbstractNode {
             return getLookups().length > 1;
         }
     } // end of BadgingLookup
+
+    /**
+     * The {@link FileOwnerQueryImplementation} returning the first non artificial project owner
+     * for {@link LogicalViewProvider#findPath}.
+     * This {@link FileOwnerQueryImplementation} removes a need for {@link Project}'s {@link LogicalViewProvider}s
+     * to ignore the artificial projects as done in {@link ProjectsRootNode#findProject}.
+     * Needs to have the higher priority than the SimpleFileOwnerQueryImplementation.
+     */
+    @ServiceProvider(service = FileOwnerQueryImplementation.class, position = 10)
+    public static final class SelectInProjectFileOwnerQueryImpl implements FileOwnerQueryImplementation {
+
+        private final ThreadLocal<Object[]> current = new ThreadLocal<Object[]>();
+
+        @Override
+        @CheckForNull
+        public Project getOwner(final URI file) {
+            final Object[] currentTuple = current.get();
+            if (currentTuple != null) {
+                Object currentUri = currentTuple[1];
+                if (currentUri == null) {
+                     currentTuple[1] = currentUri = ((FileObject)currentTuple[0]).toURI();
+                }
+                if (currentUri.equals(file)) {
+                    return (Project) currentTuple[2];
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public Project getOwner(final FileObject file) {
+            final Object[] currentTuple = current.get();
+            if (currentTuple != null && currentTuple[0].equals(file)) {
+                return (Project) currentTuple[2];
+            }
+            return null;
+        }
+
+        private void setCurrentProject(
+                @NonNull final FileObject fo,
+                @NullAllowed final Project prj) {
+            assert fo != null;
+            current.set(new Object[]{fo, null, prj});
+        }
+
+        private void clearCurrentProject() {
+            current.remove();
+        }
+
+        @CheckForNull
+        private static SelectInProjectFileOwnerQueryImpl getInstance() {
+            for (FileOwnerQueryImplementation impl : Lookup.getDefault().lookupAll(FileOwnerQueryImplementation.class)) {
+                if (SelectInProjectFileOwnerQueryImpl.class == impl.getClass()) {
+                    return SelectInProjectFileOwnerQueryImpl.class.cast(impl);
+                }
+            }
+            return null;
+        }
+    }
 }
