@@ -87,9 +87,9 @@ public class ReplaceWithPragmaOnce implements Fix {
         final String endifMacro = "#endif";  // NOI18N
         if (file.getText(startLastLineOffset, lastOffset).toString().contains(endifMacro)) {
             Position startEndifPosition = NbDocument.createPosition(doc, startLastLineOffset, Position.Bias.Forward);
-            Position endEndifPosition = NbDocument.createPosition(doc, lastOffset, Position.Bias.Forward);
+            Position endEndifPosition = NbDocument.createPosition(doc, lastOffset, Position.Bias.Backward);
             doc.replace(startPosition.getOffset(), endPosition.getOffset() - startPosition.getOffset(), "#pragma once", null); // NOI18N
-            doc.replace(startEndifPosition.getOffset(), endEndifPosition.getOffset() - startEndifPosition.getOffset(), "\n", null); // NOI18N
+            doc.replace(startEndifPosition.getOffset(), endEndifPosition.getOffset() - startEndifPosition.getOffset(), "", null); // NOI18N
         }
         return null;
     }
