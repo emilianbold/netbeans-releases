@@ -1,6 +1,6 @@
-#changeset:   15297:3f783b0c0934
+#changeset:   15304:654d3a46071e
 #tag:         tip
-#user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Mon Jul 20 07:30:11 2015 +0300
-#summary:     fixing tests on Windows
-8B629DC73226ACC258D76D47F36C0836759A7706 clank_0.3.6.zip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Mon Jul 20 14:49:47 2015 +0300
+#summary:     Fixed test test_preproc_concat
+2089FF810111D45E3ADB011C3D80BC1D10EE0605 clank_0.3.6.zip
