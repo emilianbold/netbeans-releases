@@ -46,51 +46,48 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
+
 /**
  *
  * @author Danila Sergeyev
  */
-public class ReplaceWithPragmaOnce implements Fix {
+public class SurroundWithIfndef implements Fix {
     private final BaseDocument doc;
     private final CsmFile file;
-    private final int guardBlockStart;
-    private final int guardBlockEnd;
+    private final String macroIdentifier;
+    private final CsmReference ref;
     
-    public ReplaceWithPragmaOnce(Document doc, CsmFile file, int guardBlockStart, int guardBlockEnd) {
+    public SurroundWithIfndef(Document doc, CsmFile file, CsmReference ref, String macroIdentifier) {
         this.doc = (BaseDocument) doc;
         this.file = file;
-        this.guardBlockStart = guardBlockStart;
-        this.guardBlockEnd = guardBlockEnd;
+        this.ref = ref;
+        this.macroIdentifier = macroIdentifier;
     }
     
     @Override
     public String getText() {
-        return NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
+        return NbBundle.getMessage(SurroundWithIfndef.class, "HINT_Ifndef"); //NOI18N
     }
     
     @Override
     public ChangeInfo implement() throws Exception {
         CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
+        int line = query.getLineColumnByOffset(file, ref.getStartOffset())[0];
+        int startOffset = (int) query.getOffset(file, line, 1);
+        int endOffset = (int) query.getOffset(file, line+1, 1) - 1;
+        Position startPosition = NbDocument.createPosition(doc, startOffset, Position.Bias.Forward);
+        Position endPosition = NbDocument.createPosition(doc, endOffset, Position.Bias.Forward);
         
-        // get offsets of #ifndef - #define
-        Position startPosition = NbDocument.createPosition(doc, guardBlockStart, Position.Bias.Forward);
-        Position endPosition = NbDocument.createPosition(doc, guardBlockEnd, Position.Bias.Backward);
+        String ifndefText = "#ifndef " + macroIdentifier + "\n"; // NOI18N
+        doc.insertString(startPosition.getOffset(), ifndefText, null);
+        doc.insertString(endPosition.getOffset(), "\n#endif", null); // NOI18N
         
-        // get offsets of #endif
-        int lineCount = query.getLineCount(file); // number of the last non-empty line
-        int startLastLineOffset = (int) query.getOffset(file, lineCount, 1);
-        int lastOffset = file.getText().length();
-        final String endifMacro = "#endif";  // NOI18N
-        if (file.getText(startLastLineOffset, lastOffset).toString().contains(endifMacro)) {
-            Position startEndifPosition = NbDocument.createPosition(doc, startLastLineOffset, Position.Bias.Forward);
-            Position endEndifPosition = NbDocument.createPosition(doc, lastOffset, Position.Bias.Backward);
-            doc.replace(startPosition.getOffset(), endPosition.getOffset() - startPosition.getOffset(), "#pragma once", null); // NOI18N
-            doc.replace(startEndifPosition.getOffset(), endEndifPosition.getOffset() - startEndifPosition.getOffset(), "", null); // NOI18N
-        }
         return null;
     }
+    
 }
