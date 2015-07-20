@@ -44,9 +44,10 @@ package org.netbeans.modules.cnd.refactoring.hints;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -95,6 +96,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -218,8 +220,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         if (pragma) {
             CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
             if (file.isHeaderFile() && query.hasGuardBlock(file) && CndTokenUtilities.isInPreprocessorDirective(doc, caretOffset)) {
-                final AtomicInteger startOffset = new AtomicInteger(-1);
-                final AtomicInteger endOffset = new AtomicInteger(-1);
+                final AtomicIntegerArray result = new AtomicIntegerArray(2);
                 Runnable runnable = new Runnable () {
                     @Override
                     public void run() {
@@ -245,7 +246,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                             case PREPROCESSOR_PRAGMA:
                                                 return;
                                             case PREPROCESSOR_IFNDEF:
-                                                startOffset.set(preprocTokenSequence.offset());
+                                                result.set(0, preprocTokenSequence.offset());
                                                 isGuardMacro = true;
                                                 preprocTokenSequence.moveEnd();
                                                 break;
@@ -254,14 +255,14 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                                 break;
                                             case PREPROCESSOR_DEFINED:
                                                 if (isGuardMacro) {
-                                                    startOffset.set(preprocTokenSequence.offset());
+                                                    result.set(0, preprocTokenSequence.offset());
                                                     preprocTokenSequence.moveEnd();
                                                     break;
                                                 }
                                                 return;
                                             case PREPROCESSOR_DEFINE:
                                                 if (isGuardMacro) {
-                                                    endOffset.set(preprocTokenSequence.offset());
+                                                    result.set(1, preprocTokenSequence.offset());
                                                 }
                                                 return;
                                             default:
@@ -277,19 +278,23 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                     }
                 };
                 
-                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<>(runnable, startOffset);
-                doc.render(moveBellowCommentsTask);
+                FutureTask<AtomicIntegerArray> atomicOffsetsArray = new FutureTask<>(runnable, result);
+                doc.render(atomicOffsetsArray);
                 
-                int startResult = startOffset.get();
-                int endResult = endOffset.get();
-                if (startResult != -1 && endResult != -1) {
-                    int startGuardLine = query.getLineColumnByOffset(file, startResult)[0];
-                    int guardStart = (int)query.getOffset(file, startGuardLine, 1);
-                    int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
-                    int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
-                    if (caretOffset >= guardStart && caretOffset <= guardEnd) {
-                        createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                try {
+                    int startResult = atomicOffsetsArray.get().get(0);
+                    int endResult = atomicOffsetsArray.get().get(1);
+                    if (startResult != -1 && endResult != -1) {
+                        int startGuardLine = query.getLineColumnByOffset(file, startResult)[0];
+                        int guardStart = (int)query.getOffset(file, startGuardLine, 1);
+                        int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
+                        int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
+                        if (caretOffset >= guardStart && caretOffset <= guardEnd) {
+                            createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                        }
                     }
+                } catch (InterruptedException | ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
