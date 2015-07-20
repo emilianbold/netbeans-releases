@@ -1,6 +1,6 @@
-#changeset:   15304:654d3a46071e
+#changeset:   15307:5ff858da7004
 #tag:         tip
 #user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Mon Jul 20 14:49:47 2015 +0300
-#summary:     Fixed test test_preproc_concat
-2089FF810111D45E3ADB011C3D80BC1D10EE0605 clank_0.3.6.zip
+#date:        Mon Jul 20 23:55:36 2015 +0300
+#summary:     Fixed test test_resolver_typedef_s_e_c_u
+453E2443D8E45E322A73CF6CDFCDE8F4D99E846C clank_0.3.6.zip
