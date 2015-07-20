@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -303,6 +304,11 @@ public class RefactoringUtils {
      */
     public static boolean isFileInOpenProject(FileObject file) {
         assert file != null;
+        // Future<Project[]> o.n.api.project.ui.OpenProjects.openProjects()
+        Future<Project[]> openProjects = OpenProjects.getDefault().openProjects();
+        if(!openProjects.isDone()) {
+            return false;
+        }
         Project p = FileOwnerQuery.getOwner(file);
         if (p == null) {
             return false;
