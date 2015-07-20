@@ -85,8 +85,13 @@ public class PhpTestCreatorConfigurationProvider extends TestCreatorConfiguratio
     })
     @Override
     public Component getConfigurationPanel(Context context) {
-        assert currentProject != null;
+        // XXX
+        //assert currentProject != null;
         Component component = super.getConfigurationPanel(context);
+        if (currentProject == null) {
+            // #253565
+            return component;
+        }
         PhpProject phpProject = currentProject.getLookup().lookup(PhpProject.class);
         currentProject = null;
         if (phpProject != null) {
