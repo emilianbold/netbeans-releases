@@ -37,8 +37,6 @@
  */
 package org.netbeans.modules.bugzilla;
 
-import java.beans.PropertyChangeListener;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;

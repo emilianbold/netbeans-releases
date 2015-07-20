@@ -1,6 +1,6 @@
-#changeset:   15294:6289d6b118ae
+#changeset:   15297:3f783b0c0934
 #tag:         tip
 #user:        Vladimir Kvashin <vkvashin@netbeans.org>
-#date:        Fri Jul 17 13:33:05 2015 +0300
-#summary:     fixed lots of  "fatel error: ... modified since it was first processed" messages on Windows
-DC58D8AA22207CFB67EEFA4B582EF581A7EE24A4 clank_0.3.6.zip
+#date:        Mon Jul 20 07:30:11 2015 +0300
+#summary:     fixing tests on Windows
+8B629DC73226ACC258D76D47F36C0836759A7706 clank_0.3.6.zip

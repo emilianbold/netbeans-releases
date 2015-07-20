@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.commons.AttachmentsPanel;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -103,7 +104,7 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
 
     private ODCSIssueController controller;
     
-    private ODCSIssueNode node;
+    private WeakReference<ODCSIssueNode> nodeRef;
     
     /**
      * IssueProvider wasn't seen yet
@@ -146,10 +147,12 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     public IssueNode getNode() {
-        if(node == null) {
-            node = new ODCSIssueNode(this);
+        ODCSIssueNode n = nodeRef != null ? nodeRef.get() : null;
+        if(n == null) {
+            n = new ODCSIssueNode(this);
+            nodeRef = new WeakReference<>(n);
         }
-        return node;
+        return n;
     }
     
     public String getDisplayName() {
@@ -882,9 +885,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
     }
 
     private void dataChanged () {
-        if (node != null) {
-            node.fireDataChanged();
-        }
         updateTooltip();
         fireDataChanged();
         refreshViewData(false);
@@ -906,9 +906,6 @@ public class ODCSIssue extends AbstractNbTaskWrapper {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {
-                if (node != null) {
-                    node.fireDataChanged();
-                }
                 if (updateTooltip()) {
                     fireDataChanged();
                 }

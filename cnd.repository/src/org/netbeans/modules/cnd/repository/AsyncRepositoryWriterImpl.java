@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author akrasny
  */
-public final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
+/*package*/ final class AsyncRepositoryWriterImpl implements AsyncRepositoryWriter {
 
     private static final int ncounters = 0x80;
     private static final int bits = 32;
