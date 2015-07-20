@@ -129,11 +129,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private boolean addProjectFold = false;
     private URL[] mavencoreurls;
 
-    
-    
-
-    CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
-        super(hand, createVisitorContext ? new OutputVisitor(new ContextImpl()) : new OutputVisitor());
+    public CommandLineOutputHandler(InputOutput io, Project proj, ProgressHandle hand, RunConfig config, boolean createVisitorContext) {
+        super(proj, hand, config, createVisitorContext ? new OutputVisitor(new ContextImpl()) : new OutputVisitor());
         if (createVisitorContext) {
             contextImpl = (ContextImpl) visitor.getContext();
             assert contextImpl != null;
@@ -141,10 +138,6 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
         }
         this.parser = new JSONParser();
         handle = hand;
-    }
-
-    public CommandLineOutputHandler(InputOutput io, Project proj, ProgressHandle hand, RunConfig config, boolean createVisitorContext) {
-        this(hand, createVisitorContext);
         inputOutput = io;
         stdOut = inputOutput.getOut();
 //        logger = new Logger();

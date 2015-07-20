@@ -50,5 +50,6 @@ made subject to such option by the copyright holder.
         <unzip src="external/${bundled.maven}-bin.zip" dest="${cluster}/maven">
             <mapper type="glob" from="${bundled.maven}/*" to="*"/>
         </unzip>
+        <copy file="external/wagon-http-2.8-shaded.jar" todir="${cluster}/maven/lib/ext"/>
     </target>
 </project>

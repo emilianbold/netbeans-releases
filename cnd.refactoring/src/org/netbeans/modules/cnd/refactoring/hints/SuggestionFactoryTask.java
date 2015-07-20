@@ -44,9 +44,10 @@ package org.netbeans.modules.cnd.refactoring.hints;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -95,6 +96,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -169,6 +171,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         boolean cases = false;
         boolean inline = false;
         boolean pragma = false;
+        boolean defineMacro = false;
         for(CodeAudit audit : audits) {
             if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
                 introduce = true;
@@ -180,6 +183,8 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 inline = true;
             } else if (PragmaOnceAudit.ID.equals(audit.getID()) && audit.isEnabled()) {
                 pragma = true;
+            } else if (SurroundWithIfndefAudit.ID.equals(audit.getID()) && audit.isEnabled()) {
+                defineMacro = true;
             }
         }
         if (assign || introduce) {
@@ -218,8 +223,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         if (pragma) {
             CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
             if (file.isHeaderFile() && query.hasGuardBlock(file) && CndTokenUtilities.isInPreprocessorDirective(doc, caretOffset)) {
-                final AtomicInteger startOffset = new AtomicInteger(-1);
-                final AtomicInteger endOffset = new AtomicInteger(-1);
+                final AtomicIntegerArray result = new AtomicIntegerArray(2);
                 Runnable runnable = new Runnable () {
                     @Override
                     public void run() {
@@ -245,7 +249,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                             case PREPROCESSOR_PRAGMA:
                                                 return;
                                             case PREPROCESSOR_IFNDEF:
-                                                startOffset.set(preprocTokenSequence.offset());
+                                                result.set(0, preprocTokenSequence.offset());
                                                 isGuardMacro = true;
                                                 preprocTokenSequence.moveEnd();
                                                 break;
@@ -254,38 +258,98 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                                 break;
                                             case PREPROCESSOR_DEFINED:
                                                 if (isGuardMacro) {
-                                                    startOffset.set(preprocTokenSequence.offset());
+                                                    result.set(0, preprocTokenSequence.offset());
                                                     preprocTokenSequence.moveEnd();
                                                     break;
                                                 }
                                                 return;
                                             case PREPROCESSOR_DEFINE:
                                                 if (isGuardMacro) {
-                                                    endOffset.set(preprocTokenSequence.offset());
+                                                    result.set(1, preprocTokenSequence.offset());
                                                 }
                                                 return;
                                             default:
                                                 break;
                                         }
                                     }
+                                } else if (!tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY) 
+                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    isGuardMacro = false;
                                 }
                             }
                         }
                     }
                 };
                 
-                FutureTask<AtomicInteger> moveBellowCommentsTask = new FutureTask<>(runnable, startOffset);
-                doc.render(moveBellowCommentsTask);
+                FutureTask<AtomicIntegerArray> atomicOffsetsArray = new FutureTask<>(runnable, result);
+                doc.render(atomicOffsetsArray);
                 
-                int startResult = startOffset.get();
-                int endResult = endOffset.get();
-                if (startResult != -1 && endResult != -1) {
-                    int startGuardLine = query.getLineColumnByOffset(file, startResult)[0];
-                    int guardStart = (int)query.getOffset(file, startGuardLine, 1);
-                    int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
-                    int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
-                    if (caretOffset >= guardStart && caretOffset <= guardEnd) {
-                        createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                try {
+                    int startResult = atomicOffsetsArray.get().get(0);
+                    int endResult = atomicOffsetsArray.get().get(1);
+                    if (startResult != -1 && endResult != -1) {
+                        int startGuardLine = query.getLineColumnByOffset(file, startResult)[0];
+                        int guardStart = (int)query.getOffset(file, startGuardLine, 1);
+                        int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
+                        int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
+                        if (caretOffset >= guardStart && caretOffset <= guardEnd) {
+                            createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        if (defineMacro) {
+            CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, caretOffset);
+            if (CsmKindUtilities.isMacro(reference.getReferencedObject())) {
+                CsmMacro macro = (CsmMacro) reference.getReferencedObject();
+                if (caretOffset >= macro.getStartOffset() 
+                        && caretOffset <= macro.getEndOffset() 
+                        && macro.getKind().equals(CsmMacro.Kind.DEFINED)) {
+                    final int caret = caretOffset;
+                    final AtomicBoolean isLoneDefine = new AtomicBoolean(false);
+                    Runnable runnable = new Runnable () {
+                        @Override
+                        public void run() {
+                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, caret, false, true);
+                            if (docTokenSequence == null) {
+                                return;
+                            }
+                            docTokenSequence.movePrevious();
+                            if (docTokenSequence.token().id() instanceof CppTokenId) {
+                                CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
+                                if (tokenId.equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                                    TokenSequence<CppTokenId> preprocTokenSequence = docTokenSequence.embedded(CppTokenId.languagePreproc());
+                                    if (preprocTokenSequence == null) {
+                                        return;
+                                    }
+                                    // check wheter previouse token is #ifndef or #if macro
+                                    preprocTokenSequence.moveStart();
+                                    preprocTokenSequence.moveNext();
+                                    preprocTokenSequence.moveNext();
+                                    CppTokenId preprocTokenId = preprocTokenSequence.token().id();
+                                    if (preprocTokenId.equals(CppTokenId.PREPROCESSOR_IFNDEF) 
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_IF)
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_ELIF)
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_ELSE)) {
+                                        return;
+                                    }
+                                }
+                            }                            
+                            isLoneDefine.set(true);
+                        }
+                    };
+                    
+                    FutureTask<AtomicBoolean> checkLoneDefine = new FutureTask<>(runnable, isLoneDefine);
+                    doc.render(checkLoneDefine);
+                    try {
+                        if (checkLoneDefine.get().get()) {
+                            createSurroundWithIfndef(reference, doc, file, fileObject, macro.getName().toString());
+                        }
+                    } catch (InterruptedException | ExecutionException ex) {
+                        ex.printStackTrace(System.err);
                     }
                 }
             }
@@ -366,6 +430,14 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, caret, caret));
+        HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
+    }
+    
+    private void createSurroundWithIfndef(CsmReference ref, Document doc, CsmFile file, FileObject fo, String macroIdentifier) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new SurroundWithIfndef(doc, file, ref, macroIdentifier));
+        String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Ifndef"); //NOI18N
+        List<ErrorDescription> hints = Collections.singletonList(
+                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, ref.getStartOffset(), ref.getEndOffset()));
         HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
     }
     
@@ -517,6 +589,32 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
             String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
+            return new AbstractCodeAudit(ID, text, text, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 6000)
+    public static final class SurroundWithIfndefAudit implements CodeAuditFactory {
+        private static final String ID = "SurroundWithIfndef"; // NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String text = NbBundle.getMessage(SurroundWithIfndef.class, "HINT_Ifndef"); //NOI18N
             return new AbstractCodeAudit(ID, text, text, "warning", true, preferences) { // NOI18N
 
                 @Override
