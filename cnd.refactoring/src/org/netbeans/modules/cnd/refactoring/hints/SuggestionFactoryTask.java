@@ -58,6 +58,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -216,7 +217,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         }
         if (pragma) {
             CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
-            if (file.isHeaderFile() && query.hasGuardBlock(file)) {
+            if (file.isHeaderFile() && query.hasGuardBlock(file) && CndTokenUtilities.isInPreprocessorDirective(doc, caretOffset)) {
                 final AtomicInteger startOffset = new AtomicInteger(-1);
                 final AtomicInteger endOffset = new AtomicInteger(-1);
                 Runnable runnable = new Runnable () {
@@ -267,6 +268,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                                 break;
                                         }
                                     }
+                                } else if (!tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY) 
+                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    isGuardMacro = false;
                                 }
                             }
                         }
