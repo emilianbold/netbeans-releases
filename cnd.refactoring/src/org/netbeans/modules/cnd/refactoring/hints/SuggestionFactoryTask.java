@@ -171,6 +171,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         boolean cases = false;
         boolean inline = false;
         boolean pragma = false;
+        boolean defineMacro = false;
         for(CodeAudit audit : audits) {
             if (IntroduceVariable.ID.equals(audit.getID()) && audit.isEnabled()) {
                 introduce = true;
@@ -182,6 +183,8 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 inline = true;
             } else if (PragmaOnceAudit.ID.equals(audit.getID()) && audit.isEnabled()) {
                 pragma = true;
+            } else if (SurroundWithIfndefAudit.ID.equals(audit.getID()) && audit.isEnabled()) {
+                defineMacro = true;
             }
         }
         if (assign || introduce) {
@@ -298,6 +301,59 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                 }
             }
         }
+        if (defineMacro) {
+            CsmReference reference = CsmReferenceResolver.getDefault().findReference(file, doc, caretOffset);
+            if (CsmKindUtilities.isMacro(reference.getReferencedObject())) {
+                CsmMacro macro = (CsmMacro) reference.getReferencedObject();
+                if (caretOffset >= macro.getStartOffset() 
+                        && caretOffset <= macro.getEndOffset() 
+                        && macro.getKind().equals(CsmMacro.Kind.DEFINED)) {
+                    final int caret = caretOffset;
+                    final AtomicBoolean isLoneDefine = new AtomicBoolean(false);
+                    Runnable runnable = new Runnable () {
+                        @Override
+                        public void run() {
+                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, caret, false, true);
+                            if (docTokenSequence == null) {
+                                return;
+                            }
+                            docTokenSequence.movePrevious();
+                            if (docTokenSequence.token().id() instanceof CppTokenId) {
+                                CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
+                                if (tokenId.equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                                    TokenSequence<CppTokenId> preprocTokenSequence = docTokenSequence.embedded(CppTokenId.languagePreproc());
+                                    if (preprocTokenSequence == null) {
+                                        return;
+                                    }
+                                    // check wheter previouse token is #ifndef or #if macro
+                                    preprocTokenSequence.moveStart();
+                                    preprocTokenSequence.moveNext();
+                                    preprocTokenSequence.moveNext();
+                                    CppTokenId preprocTokenId = preprocTokenSequence.token().id();
+                                    if (preprocTokenId.equals(CppTokenId.PREPROCESSOR_IFNDEF) 
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_IF)
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_ELIF)
+                                            || preprocTokenId.equals(CppTokenId.PREPROCESSOR_ELSE)) {
+                                        return;
+                                    }
+                                }
+                            }                            
+                            isLoneDefine.set(true);
+                        }
+                    };
+                    
+                    FutureTask<AtomicBoolean> checkLoneDefine = new FutureTask<>(runnable, isLoneDefine);
+                    doc.render(checkLoneDefine);
+                    try {
+                        if (checkLoneDefine.get().get()) {
+                            createSurroundWithIfndef(reference, doc, file, fileObject, macro.getName().toString());
+                        }
+                    } catch (InterruptedException | ExecutionException ex) {
+                        ex.printStackTrace(System.err);
+                    }
+                }
+            }
+        }
     }
 
     private void detectIntroduceVariable(final CsmFile file, int caretOffset, int selectionStart, int selectionEnd, final Document doc, final AtomicBoolean canceled, boolean assign, final FileObject fileObject, boolean introduce, JTextComponent comp) {
@@ -374,6 +430,14 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, caret, caret));
+        HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
+    }
+    
+    private void createSurroundWithIfndef(CsmReference ref, Document doc, CsmFile file, FileObject fo, String macroIdentifier) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new SurroundWithIfndef(doc, file, ref, macroIdentifier));
+        String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Ifndef"); //NOI18N
+        List<ErrorDescription> hints = Collections.singletonList(
+                ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, ref.getStartOffset(), ref.getEndOffset()));
         HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
     }
     
@@ -525,6 +589,32 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         @Override
         public AbstractCodeAudit create(AuditPreferences preferences) {
             String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
+            return new AbstractCodeAudit(ID, text, text, "warning", true, preferences) { // NOI18N
+
+                @Override
+                public boolean isSupportedEvent(CsmErrorProvider.EditorEvent kind) {
+                    return true;
+                }
+
+                @Override
+                public String getKind() {
+                    return "action"; //NOI18N
+                }
+
+                @Override
+                public void doGetErrors(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+    }
+    
+    @ServiceProvider(path = CodeAuditFactory.REGISTRATION_PATH+SuggestionProvider.NAME, service = CodeAuditFactory.class, position = 6000)
+    public static final class SurroundWithIfndefAudit implements CodeAuditFactory {
+        private static final String ID = "SurroundWithIfndef"; // NOI18N
+        @Override
+        public AbstractCodeAudit create(AuditPreferences preferences) {
+            String text = NbBundle.getMessage(SurroundWithIfndef.class, "HINT_Ifndef"); //NOI18N
             return new AbstractCodeAudit(ID, text, text, "warning", true, preferences) { // NOI18N
 
                 @Override
