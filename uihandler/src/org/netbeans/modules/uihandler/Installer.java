@@ -934,7 +934,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static OutputStream logStreamMetrics () throws FileNotFoundException {
-        synchronized (Installer.class) {
+        synchronized (METRICS_LOG_LOCK) {
             if (logStreamMetrics != null) {
                 return logStreamMetrics;
             }
@@ -949,7 +949,7 @@ public class Installer extends ModuleInstall implements Runnable {
             os = new NullOutputStream();
         }
 
-        synchronized (Installer.class) {
+        synchronized (METRICS_LOG_LOCK) {
             if (logStreamMetrics != null) {
                 try {
                     os.close();
@@ -978,7 +978,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static void closeLogStreamMetrics() {
         OutputStream os;
-        synchronized (Installer.class) {
+        synchronized (METRICS_LOG_LOCK) {
             os = logStreamMetrics;
             logStreamMetrics = null;
         }
