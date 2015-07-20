@@ -929,7 +929,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
             if (tab.getEditorComponent() instanceof ChangeParametersButtonPanel) {
                 field = (JTextComponent) ((JScrollPane) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp()).getViewport().getView();
             } else {
-                field = (JTextComponent) tab.getEditorComponent();
+                field = (JTextComponent) ((JScrollPane) tab.getEditorComponent()).getViewport().getView();
             }
             field.requestFocusInWindow();
         }
