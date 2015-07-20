@@ -105,6 +105,9 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         txtPattern = new javax.swing.JTextArea();
         txtPatternError = new javax.swing.JLabel();
         autoScan = new javax.swing.JCheckBox();
+        lblScanning = new javax.swing.JLabel();
+        setScanning = new javax.swing.JSeparator();
+        ignoreHiddenInHome = new javax.swing.JCheckBox();
 
         setPreferredSize(new java.awt.Dimension(360, 360));
 
@@ -188,6 +191,15 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblScanning, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblScanning.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(ignoreHiddenInHome, org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.ignoreHiddenInHome.text")); // NOI18N
+        ignoreHiddenInHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ignoreHiddenInHomeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -200,13 +212,14 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sepFileAssociations))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(autoScan)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(lblFilesIgnored)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(setFilesIgnored))
+                    .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(lblScanning)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(setScanning))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -236,8 +249,12 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jScrollPane1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnDefaultIgnored)
-                                .addGap(0, 0, 0))))))
+                                .addComponent(btnDefaultIgnored))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(ignoreHiddenInHome)
+                                    .addComponent(autoScan))
+                                .addGap(0, 0, Short.MAX_VALUE))))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -265,19 +282,22 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(setFilesIgnored, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblFilesIgnored))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblPattern)
                     .addComponent(btnDefaultIgnored)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblPattern))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(ignoreHiddenInHome)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(setScanning, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblScanning))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(autoScan)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 129, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(autoScan))))
+                .addComponent(txtPatternError, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         lblExtension.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FileAssociationsPanel.class, "FileAssociationsPanel.lblExtension.AN")); // NOI18N
@@ -387,6 +407,10 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     fireChanged(null, null);
 }//GEN-LAST:event_autoScanActionPerformed
 
+    private void ignoreHiddenInHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreHiddenInHomeActionPerformed
+        fireChanged(null, null);
+    }//GEN-LAST:event_ignoreHiddenInHomeActionPerformed
+
     void load() {
         cbExtension.removeAllItems();
         cbType.removeAllItems();
@@ -410,6 +434,7 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         txtPattern.getDocument().removeDocumentListener(patternListener);
         txtPattern.setText(IgnoredFilesPreferences.getIgnoredFiles());
         txtPattern.getDocument().addDocumentListener(patternListener);
+        ignoreHiddenInHome.setSelected(IgnoredFilesPreferences.isIgnoreHiddenFilesInUserHome());
         btnDefaultIgnored.setEnabled(!IgnoredFilesPreferences.DEFAULT_IGNORED_FILES.equals(txtPattern.getText()));
 
         boolean manual = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
@@ -422,6 +447,7 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         model.store();
         // store ignored files pattern
         IgnoredFilesPreferences.setIgnoredFiles(txtPattern.getText());
+        IgnoredFilesPreferences.setIgnoreHiddenFilesInUserHome(ignoreHiddenInHome.isSelected());
 
         final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
         boolean manual = nd.getBoolean("manual", false);
@@ -444,6 +470,7 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JButton btnRemove;
     private javax.swing.JComboBox cbExtension;
     private javax.swing.JComboBox cbType;
+    private javax.swing.JCheckBox ignoreHiddenInHome;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblAssociatedAlso;
     private javax.swing.JLabel lblAssociatedAlsoExt;
@@ -451,9 +478,11 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private javax.swing.JLabel lblFileAssociations;
     private javax.swing.JLabel lblFilesIgnored;
     private javax.swing.JLabel lblPattern;
+    private javax.swing.JLabel lblScanning;
     private javax.swing.JLabel lblType;
     private javax.swing.JSeparator sepFileAssociations;
     private javax.swing.JSeparator setFilesIgnored;
+    private javax.swing.JSeparator setScanning;
     private javax.swing.JTextArea txtPattern;
     private javax.swing.JLabel txtPatternError;
     // End of variables declaration//GEN-END:variables
@@ -488,6 +517,8 @@ private void autoScanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         boolean isChanged = false;
         if (extension == null) {
             isChanged |= !txtPattern.getText().equals(IgnoredFilesPreferences.getIgnoredFiles());
+
+            isChanged |= ignoreHiddenInHome.isSelected() != IgnoredFilesPreferences.isIgnoreHiddenFilesInUserHome();
 
             boolean manual = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction").getBoolean("manual", false); // NOI18N
             isChanged |= autoScan.isSelected() == manual;

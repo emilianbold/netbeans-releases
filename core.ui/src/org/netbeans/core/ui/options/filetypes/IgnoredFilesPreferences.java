@@ -62,8 +62,10 @@ final class IgnoredFilesPreferences {
      * in module org.netbeans.modules.masterfs.
      */
     private static final String PROP_IGNORED_FILES = "IgnoredFiles"; // NOI18N
+    private static final String PROP_IGNORE_HIDDEN_FILES_IN_USER_HOME
+            = "IgnoreHiddenFilesInUserHome";                           // NOI18N
     /** Default ignored files pattern. Pattern \.(cvsignore|svn|DS_Store) is covered by ^\..*$ **/
-    static final String DEFAULT_IGNORED_FILES = "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(?!(htaccess|git.+|hgignore|npmignore|jshintrc|bowerrc|travis\\.yml)$).*$"; //NOI18N
+    static final String DEFAULT_IGNORED_FILES = "^(CVS|SCCS|vssver.?\\.scc|#.*#|%.*%|_svn)$|~$|^\\.(git|hg|svn|cache|DS_store)$|^Thumbs.db$"; //NOI18N
     static private String syntaxError;
 
     private IgnoredFilesPreferences() {
@@ -91,6 +93,30 @@ final class IgnoredFilesPreferences {
             NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(syntaxError);
             DialogDisplayer.getDefault().notifyLater(descriptor);
         }
+    }
+
+    /**
+     * Returns true if hidden files in user's home folder should be ignored
+     * (e.i. not displayed in Favorites windows).
+     *
+     * @return True to ignore hidden files in user's home folder, false to show
+     * them.
+     */
+    static boolean isIgnoreHiddenFilesInUserHome() {
+        return getPreferences().getBoolean(
+                PROP_IGNORE_HIDDEN_FILES_IN_USER_HOME, true);
+    }
+
+    /**
+     * Set whether hidden files in home folder should be ignored (i.e. not
+     * displayed in Favorites window).
+     *
+     * @param ignore True to ignore hidden files in user's home folder, false to
+     * show them.
+     */
+    static void setIgnoreHiddenFilesInUserHome(boolean ignore) {
+        getPreferences().putBoolean(
+                PROP_IGNORE_HIDDEN_FILES_IN_USER_HOME, ignore);
     }
 
     /** Returns true if ignored files pattern is valid, false otherwise and
