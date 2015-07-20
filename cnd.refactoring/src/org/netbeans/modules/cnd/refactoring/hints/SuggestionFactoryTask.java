@@ -268,6 +268,9 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                                 break;
                                         }
                                     }
+                                } else if (!tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY) 
+                                        && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                    isGuardMacro = false;
                                 }
                             }
                         }
