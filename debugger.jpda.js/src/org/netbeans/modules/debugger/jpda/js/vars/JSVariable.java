@@ -120,7 +120,11 @@ public class JSVariable {
     }
     
     public static JSVariable createIfScriptObject(JPDADebugger debugger, ObjectVariable ov, String name) {
-        boolean isScript = ov.getClassType().isInstanceOf("jdk.nashorn.internal.runtime.ScriptObject"); // NOI18N
+        JPDAClassType classType = ov.getClassType();
+        if (classType == null) {
+            return null;
+        }
+        boolean isScript = classType.isInstanceOf("jdk.nashorn.internal.runtime.ScriptObject"); // NOI18N
         if (!isScript) {
             return null;
         }
