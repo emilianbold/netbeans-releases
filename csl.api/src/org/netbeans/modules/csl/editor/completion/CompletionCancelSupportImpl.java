@@ -39,36 +39,33 @@
  *
  * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.core;
+package org.netbeans.modules.csl.editor.completion;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.csl.spi.support.CancelSupport;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class SpiSupportAccessor {
-    private static volatile SpiSupportAccessor instance;
+final class CompletionCancelSupportImpl implements CancelSupportImplementation {
+
+    private final AsyncCompletionQuery query;
+
+    private CompletionCancelSupportImpl(@NonNull final AsyncCompletionQuery query) {
+        Parameters.notNull("query", query); //NOI18N
+        this.query = query;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return query.isTaskCancelled();
+    }
 
     @NonNull
-    public static synchronized SpiSupportAccessor getInstance() {
-        if (instance == null) {
-            try {
-                Class.forName(CancelSupport.class.getName(), true, SpiSupportAccessor.class.getClassLoader());
-                assert instance != null;
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return instance;
+    static CompletionCancelSupportImpl create(@NonNull AsyncCompletionQuery query) {
+        return new CompletionCancelSupportImpl(query);
     }
-
-    public static void setInstance(@NonNull final SpiSupportAccessor inst) {
-        Parameters.notNull("inst", inst);   //NOI18N
-        instance = inst;
-    }
-    public abstract void setCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
-    public abstract void removeCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
 }

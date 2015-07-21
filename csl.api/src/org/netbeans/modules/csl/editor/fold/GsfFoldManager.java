@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.csl.editor.fold;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -61,7 +59,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -88,6 +85,8 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -98,7 +97,6 @@ import org.netbeans.modules.parsing.spi.*;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.csl.editor.fold.Bundle.*;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -347,7 +345,7 @@ public class GsfFoldManager implements FoldManager {
         
         public void run(final ParserResult info, SchedulerEvent event) {
             cancelled.set(false);
-            final CancelSupport cs = CancelSupport.create(this);
+            final CancelSupportImplementation cs = SchedulerTaskCancelSupportImpl.create(this);
             SpiSupportAccessor.getInstance().setCancelSupport(cs);
             try {
                 if (LOG.isLoggable(Level.FINER)) {

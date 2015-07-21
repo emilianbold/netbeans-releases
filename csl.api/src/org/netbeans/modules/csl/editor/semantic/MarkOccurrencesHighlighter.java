@@ -59,13 +59,14 @@ import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -84,7 +85,7 @@ public final class MarkOccurrencesHighlighter extends ParserResultTask<ParserRes
     private static final Logger LOG = Logger.getLogger(MarkOccurrencesHighlighter.class.getName());
     
     //private FileObject file;
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     private final Language language;
     private final Snapshot snapshot;
     private int version;
