@@ -183,14 +183,14 @@ abstract public class XMLDocReader extends XMLDecoder {
                     System.err.println("Canceled reading of "+sourceName);
                 } else {
                     ErrorManager.getDefault().annotate(ex, whileMsg);
-                    ErrorManager.getDefault().notify(ex);
+                    ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
                 }
 	    }
 	    return false;
 
 	} catch (IOException ex) {
-	    ErrorManager.getDefault().annotate(ex, whileMsg);
-	    ErrorManager.getDefault().notify(ex);
+            ErrorManager.getDefault().annotate(ex, whileMsg);
+            ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
 	    return false;
 
 	} catch (Exception ex) {
