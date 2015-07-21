@@ -44,6 +44,7 @@ package org.netbeans.modules.php.phpunit.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.base.input.InputProcessor;
 import org.netbeans.api.extexecution.base.input.InputProcessors;
@@ -67,8 +68,9 @@ public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputP
 
             @Override
             public void processLine(String line) {
-                assert version == null : version + " :: " + line;
-                version = parseVersion(line);
+                if (version == null) {
+                    version = parseVersion(line);
+                }
             }
 
             @Override
@@ -86,6 +88,7 @@ public class VersionOutputProcessorFactory implements ExecutionDescriptor.InputP
         return version;
     }
 
+    @CheckForNull
     public String parseVersion(String line) {
         Matcher matcher = versionPattern.matcher(line);
         if (matcher.find()) {

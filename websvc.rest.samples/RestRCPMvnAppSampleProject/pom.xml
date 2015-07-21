@@ -43,7 +43,7 @@
         <module>restsample</module>
     </modules>
     <properties>
-        <netbeans.version>RELEASE70</netbeans.version>
+        <netbeans.version>RELEASE802</netbeans.version>
         <brandingToken>restsample</brandingToken>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
