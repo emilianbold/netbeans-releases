@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -167,6 +169,40 @@ public class FileActionTest extends NbTestCase {
         
     }
     
+    public void testAgregateRefreshes() throws InterruptedException {
+        FileAction action = new FileAction("COMMAND", "TestFileCommandAction", (Icon) null, Lookup.EMPTY);
+        final Semaphore s = new Semaphore(0);
+
+        // Lookup that will be queried inside refreshImpl.
+        Lookup l = new Lookup() {
+
+            @Override
+            public <T> T lookup(Class<T> clazz) {
+                if (DataObject.class.equals(clazz) || FileObject.class.equals(clazz)) {
+                    s.release();
+                }
+                return null;
+            }
+
+            @Override
+            public <T> Lookup.Result<T> lookup(Lookup.Template<T> template) {
+                Class<?> clazz = template.getType();
+                if (DataObject.class.equals(clazz) || FileObject.class.equals(clazz)) {
+                    s.release();
+                }
+                return Lookup.EMPTY.lookup(template);
+            }
+        };
+        for (int i = 0; i < 10; i++) {
+            action.refresh(l, false); // invoke async refresh
+        }
+
+        assertTrue("refreshImpl should be called at least once",
+                s.tryAcquire(1, TimeUnit.MINUTES));
+        assertFalse("refreshImpl should not be called for each consecutive "
+                + "refresh", s.tryAcquire(9, 100, TimeUnit.MILLISECONDS));
+    }
+
     public void testAcceleratorsPropagated() {
         TestSupport.doTestAcceleratorsPropagated(new TestSupport.ActionCreator() {
             public LookupSensitiveAction create(Lookup l) {
