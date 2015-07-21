@@ -58,6 +58,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
@@ -110,6 +111,10 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
+        final CancelSupport cancelSupport = CancelSupport.getDefault();
+        if (cancelSupport.isCancelled()) {
+            return CodeCompletionResult.NONE;
+        }
         long start = System.currentTimeMillis();
         
         

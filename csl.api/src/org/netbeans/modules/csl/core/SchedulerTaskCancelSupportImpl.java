@@ -42,33 +42,31 @@
 package org.netbeans.modules.csl.core;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.csl.spi.support.CancelSupport;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class SpiSupportAccessor {
-    private static volatile SpiSupportAccessor instance;
+public final class SchedulerTaskCancelSupportImpl implements CancelSupportImplementation {
+
+    private final CancelSupport cancelSupport;
+
+    private SchedulerTaskCancelSupportImpl(@NonNull final CancelSupport cancelSupport) {
+        Parameters.notNull("cancelSupport", cancelSupport); //NOI18N
+        this.cancelSupport = cancelSupport;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelSupport.isCancelled();
+    }
 
     @NonNull
-    public static synchronized SpiSupportAccessor getInstance() {
-        if (instance == null) {
-            try {
-                Class.forName(CancelSupport.class.getName(), true, SpiSupportAccessor.class.getClassLoader());
-                assert instance != null;
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return instance;
+    public static SchedulerTaskCancelSupportImpl create(@NonNull final SchedulerTask task) {
+        Parameters.notNull("task", task);   //NOI18N
+        return new SchedulerTaskCancelSupportImpl(CancelSupport.create(task));
     }
-
-    public static void setInstance(@NonNull final SpiSupportAccessor inst) {
-        Parameters.notNull("inst", inst);   //NOI18N
-        instance = inst;
-    }
-    public abstract void setCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
-    public abstract void removeCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
 }
