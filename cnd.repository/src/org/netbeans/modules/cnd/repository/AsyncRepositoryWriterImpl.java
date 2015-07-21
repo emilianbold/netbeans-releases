@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -189,6 +190,7 @@ import org.openide.util.RequestProcessor;
                 RepositoryExceptions.throwException(this, ex);
             }
         } finally {
+            RP.shutdown();
             lock.unlock();
         }
     }

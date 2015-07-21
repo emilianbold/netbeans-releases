@@ -103,7 +103,7 @@ import org.openide.util.Lookup;
  */
 public abstract class CndBaseTestCase extends NativeExecutionBaseTestCase {
 
-    private static final boolean TRACE_START_STOP = false;
+    private static final boolean TRACE_START_STOP = Boolean.getBoolean("cnd.test.trace.start.stop");
 
     private MimePath mimePath1;
     private MimePath mimePath2;
