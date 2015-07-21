@@ -54,12 +54,14 @@ import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -378,9 +380,15 @@ public class ElementUtilitiesEx {
     }
 
     private static String getRealTypeName(TypeMirror type, CompilationInfo ci) {
-        return ci.getTypes().erasure(type).toString();
-    }
-    
+        final TypeMirror et = ci.getTypes().erasure(type);
+        if (et.getKind() == TypeKind.DECLARED) {
+            return ElementUtilities.getBinaryName((TypeElement)((DeclaredType)et).asElement());
+        }
+        if (et.getKind() == TypeKind.ARRAY) {
+            return getRealTypeName(((ArrayType)et).getComponentType(), ci) + "[]";  // NOI18N
+        }
+        return et.toString();
+    }    
         /**
      * Returns the JavaSource repository for given source roots
      */
