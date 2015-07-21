@@ -66,6 +66,8 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.navigation.ElementNode.Description;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -77,10 +79,8 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
-import org.openide.util.RequestProcessor;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -273,7 +273,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     }
 
     protected final void runWithCancelService(@NonNull final Runnable r) {
-        final CancelSupport cs = CancelSupport.create(this);
+        final CancelSupportImplementation cs = SchedulerTaskCancelSupportImpl.create(this);
         SpiSupportAccessor.getInstance().setCancelSupport(cs);
         try {
             r.run();
