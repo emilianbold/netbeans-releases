@@ -374,7 +374,7 @@ public class WindowsHostInfoProvider implements HostInfoProvider {
                 return true;
             }
 
-            String okChars = "~-_/\\:"; // NOI18N
+            String okChars = "~-_/\\:."; // NOI18N
 
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
