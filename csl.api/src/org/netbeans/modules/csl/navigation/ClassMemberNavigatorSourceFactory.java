@@ -47,7 +47,9 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Scheduler;
@@ -55,7 +57,6 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Lookup;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.*;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -110,7 +111,7 @@ public final class ClassMemberNavigatorSourceFactory extends AbstractTaskFactory
     }
 
     private final class ProxyElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
-        private final CancelSupport cancel = CancelSupport.create(this);
+        private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
         private ElementScanningTask task = null;
         private Class<? extends Scheduler> clazz;
 

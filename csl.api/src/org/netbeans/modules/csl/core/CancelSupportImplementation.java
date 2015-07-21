@@ -41,34 +41,10 @@
  */
 package org.netbeans.modules.csl.core;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.csl.spi.support.CancelSupport;
-import org.openide.util.Parameters;
-
 /**
  *
  * @author Tomas Zezula
  */
-public abstract class SpiSupportAccessor {
-    private static volatile SpiSupportAccessor instance;
-
-    @NonNull
-    public static synchronized SpiSupportAccessor getInstance() {
-        if (instance == null) {
-            try {
-                Class.forName(CancelSupport.class.getName(), true, SpiSupportAccessor.class.getClassLoader());
-                assert instance != null;
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return instance;
-    }
-
-    public static void setInstance(@NonNull final SpiSupportAccessor inst) {
-        Parameters.notNull("inst", inst);   //NOI18N
-        instance = inst;
-    }
-    public abstract void setCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
-    public abstract void removeCancelSupport(@NonNull CancelSupportImplementation cancelSupport);
+public interface CancelSupportImplementation {
+    public boolean isCancelled();
 }

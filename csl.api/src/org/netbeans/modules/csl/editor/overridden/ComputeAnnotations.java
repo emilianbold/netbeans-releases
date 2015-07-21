@@ -64,9 +64,11 @@ import org.netbeans.modules.csl.api.OverridingMethods;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.core.AbstractTaskFactory;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.navigation.ElementScanningTask;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -82,7 +84,6 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
@@ -94,7 +95,7 @@ import org.openide.util.NbBundle;
 public final class ComputeAnnotations extends ParserResultTask<Result> {
 
     private static final Logger LOG = Logger.getLogger(ComputeAnnotations.class.getName());
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     @Override
     public void run(Result result, SchedulerEvent event) {

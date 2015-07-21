@@ -69,6 +69,8 @@ import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -80,7 +82,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -104,7 +105,7 @@ public final class GsfHintsProvider extends ParserResultTask<ParserResult> {
     
     public static final Logger LOG = Logger.getLogger(GsfHintsProvider.class.getName()); // NOI18N
 
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     private FileObject file;
     
     /**

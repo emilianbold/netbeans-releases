@@ -44,10 +44,11 @@
 
 package org.netbeans.modules.csl.navigation;
 
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.*;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 
 /**
  * This file is originally from Retouche, the Java Support
@@ -60,7 +61,7 @@ import org.netbeans.modules.parsing.spi.support.CancelSupport;
  */
 public final class CaretListeningTask extends IndexingAwareParserResultTask<ParserResult> {
     
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     CaretListeningTask() {
         super(TaskIndexingMode.ALLOWED_DURING_SCAN);

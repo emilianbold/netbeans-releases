@@ -755,6 +755,9 @@ public class CssCompletion implements CodeCompletionHandler {
                     addSemicolon = false;
                     if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, true, CssTokenId.WS, CssTokenId.NL, CssTokenId.COMMENT)) {
                         //strip off the leading quote and the rest of token after caret
+                        if (tokenDiff < 1) { // @import |"";
+                            return null;
+                        }
                         String valuePrefix = originalToken.text().toString().substring(1, tokenDiff);
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file,
                                 caretOffset, valuePrefix, false, addSemicolon);

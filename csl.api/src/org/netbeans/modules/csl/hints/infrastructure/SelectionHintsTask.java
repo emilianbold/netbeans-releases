@@ -51,7 +51,9 @@ import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -63,7 +65,6 @@ import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -75,7 +76,7 @@ import org.openide.filesystems.FileObject;
 public final class SelectionHintsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SelectionHintsTask.class.getName());
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
     
     /**
      * Tracks the HintsProvider being executed, so it can be cancelled.

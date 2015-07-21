@@ -42,6 +42,7 @@
 package org.netbeans.modules.csl.spi.support;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.util.Parameters;
@@ -62,7 +63,7 @@ public final class CancelSupport {
         SpiSupportAccessor.setInstance(new SpiSupportAccessorImpl());
     }
 
-    private final ThreadLocal<org.netbeans.modules.parsing.spi.support.CancelSupport> selfSpi;
+    private final ThreadLocal<CancelSupportImplementation> selfSpi;
 
     private CancelSupport() {
         this.selfSpi = new ThreadLocal<>();
@@ -73,7 +74,7 @@ public final class CancelSupport {
      * @return true when task is canceled
      */
     public boolean isCancelled() {
-        final org.netbeans.modules.parsing.spi.support.CancelSupport spi = selfSpi.get();
+        final CancelSupportImplementation spi = selfSpi.get();
         return spi == null ?
                 false :
                 spi.isCancelled();
@@ -91,7 +92,7 @@ public final class CancelSupport {
     private static final class SpiSupportAccessorImpl extends SpiSupportAccessor {
 
         @Override
-        public void setCancelSupport(@NonNull final org.netbeans.modules.parsing.spi.support.CancelSupport cancelSupport) {
+        public void setCancelSupport(@NonNull final CancelSupportImplementation cancelSupport) {
             Parameters.notNull("cancelSupport", cancelSupport); //NOI18N
             final CancelSupport cs = getDefault();
             if (cs.selfSpi.get() == null) {
@@ -100,7 +101,7 @@ public final class CancelSupport {
         }
 
         @Override
-        public void removeCancelSupport(@NonNull final org.netbeans.modules.parsing.spi.support.CancelSupport cancelSupport) {
+        public void removeCancelSupport(@NonNull final CancelSupportImplementation cancelSupport) {
             Parameters.notNull("cancelSupport", cancelSupport); //NOI18N
             final CancelSupport cs = getDefault();
             if (cs.selfSpi.get() == cancelSupport) {

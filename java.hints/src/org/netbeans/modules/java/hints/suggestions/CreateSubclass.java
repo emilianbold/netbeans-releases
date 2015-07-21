@@ -293,15 +293,17 @@ public class CreateSubclass {
                             public void run(WorkingCopy parameter) throws Exception {
                                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                                 CompilationUnitTree cut = parameter.getCompilationUnit();
-                                TreePath path = TreePath.getPath(cut, cut.getTypeDecls().get(0));
-                                if (isAbstract) {
-                                    GeneratorUtils.generateAllAbstractMethodImplementations(parameter, path);
-                                }
-                                if (hasNonDefaultConstructor) {
-                                    ConstructorGenerator.Factory factory = new ConstructorGenerator.Factory();
-                                    Iterator<? extends CodeGenerator> generators = factory.create(Lookups.fixed(component, parameter, path)).iterator();
-                                    if (generators.hasNext()) {
-                                        generators.next().invoke();
+                                if (!cut.getTypeDecls().isEmpty()) {
+                                    TreePath path = TreePath.getPath(cut, cut.getTypeDecls().get(0));
+                                    if (isAbstract) {
+                                        GeneratorUtils.generateAllAbstractMethodImplementations(parameter, path);
+                                    }
+                                    if (hasNonDefaultConstructor) {
+                                        ConstructorGenerator.Factory factory = new ConstructorGenerator.Factory();
+                                        Iterator<? extends CodeGenerator> generators = factory.create(Lookups.fixed(component, parameter, path)).iterator();
+                                        if (generators.hasNext()) {
+                                            generators.next().invoke();
+                                        }
                                     }
                                 }
                             }
