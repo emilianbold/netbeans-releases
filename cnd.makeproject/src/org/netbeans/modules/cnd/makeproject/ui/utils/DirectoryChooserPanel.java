@@ -104,7 +104,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
         } else {
             remove(inheritPanel);
             //setPreferredSize(new java.awt.Dimension(450, 350));
-            setPreferredSize(new java.awt.Dimension(450, 220));
+            setPreferredSize(new java.awt.Dimension(450, 270));
         }
 
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
