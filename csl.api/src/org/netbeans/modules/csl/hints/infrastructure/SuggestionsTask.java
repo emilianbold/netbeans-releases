@@ -48,14 +48,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.core.CancelSupportImplementation;
+import org.netbeans.modules.csl.core.SchedulerTaskCancelSupportImpl;
 import org.netbeans.modules.csl.core.SpiSupportAccessor;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -67,7 +67,6 @@ import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.support.CancelSupport;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
@@ -80,7 +79,7 @@ import org.openide.filesystems.FileObject;
 public final class SuggestionsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SuggestionsTask.class.getName());
-    private final CancelSupport cancel = CancelSupport.create(this);
+    private final CancelSupportImplementation cancel = SchedulerTaskCancelSupportImpl.create(this);
 
     /**
      * Tracks the HintsProvider being executed, so it can be cancelled.
