@@ -292,13 +292,17 @@ public class ModulesNode extends AbstractNode {
                 public @Override void actionPerformed(ActionEvent e) {
                     Collection<? extends NbMavenProjectImpl> projects = context.lookupAll(NbMavenProjectImpl.class);
                     final NbMavenProjectImpl[] projectsArray = projects.toArray(new NbMavenProjectImpl[0]);
-                    OpenProjects.getDefault().open(projectsArray, false, true);
                     if(projectsArray.length > 0) {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public @Override void run() {
-                                ProjectActionUtils.selectAndExpandProject(projectsArray[0]);
+                                OpenProjects.getDefault().open(projectsArray, false, true);
+                                RequestProcessor.getDefault().post(new Runnable() {
+                                    public @Override void run() {
+                                        ProjectActionUtils.selectAndExpandProject(projectsArray[0]);
+                                    }
+                                }, 500);    
                             }
-                        }, 500);
+                        });
                     }
                 }
             };
