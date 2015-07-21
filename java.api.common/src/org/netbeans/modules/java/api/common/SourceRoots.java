@@ -116,6 +116,7 @@ public final class SourceRoots extends Roots {
     public static final String DEFAULT_TEST_LABEL = NbBundle.getMessage(SourceRoots.class, "NAME_test.src.dir");
 
     private static final Logger LOG = Logger.getLogger(SourceRoots.class.getName());
+    private static final String REF_PREFIX = "${file.reference."; //NOI18N
 
     private final UpdateHelper helper;
     private final PropertyEvaluator evaluator;
@@ -358,8 +359,8 @@ public final class SourceRoots extends Roots {
                 new Runnable() {
                     @Override
                     public void run() {
-                        Map<URL, String> oldRoots2props = getRootsToProps();
-                        Map<URL, String> newRoots2lab = new HashMap<URL, String>();
+                        final Map<URL, String> oldRoots2props = getRootsToProps();
+                        final Map<URL, String> newRoots2lab = new HashMap<>();
                         for (int i = 0; i < roots.length; i++) {
                             newRoots2lab.put(roots[i], labels[i]);
                         }
@@ -395,8 +396,20 @@ public final class SourceRoots extends Roots {
                         Map<URL, String> propsToRemove = new HashMap<URL, String>(oldRoots2props);
                         propsToRemove.keySet().removeAll(newRoots);
                         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        props.keySet().removeAll(propsToRemove.values());
+                        final Set<String> referencesToRemove = new HashSet<>();
+                        for (String propToRemove : propsToRemove.values()) {
+                            final String propValue = props.getProperty(propToRemove);
+                            if (propValue != null && propValue.startsWith(REF_PREFIX)) {
+                                referencesToRemove.add(propValue);
+                            }
+                            props.remove(propToRemove);
+                        }
                         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                        for (String referenceToRemove : referencesToRemove) {
+                            if (!isUsed(referenceToRemove, props)) {
+                                refHelper.destroyReference(referenceToRemove);
+                            }
+                        }
                         // add the new roots
                         Document doc = ownerElement.getOwnerDocument();
                         oldRoots2props.keySet().retainAll(newRoots);
@@ -562,6 +575,17 @@ public final class SourceRoots extends Roots {
             }
         }
         return true;
+    }
+
+    private static boolean isUsed(
+            @NonNull final String reference,
+            @NonNull final EditableProperties props) {
+        for (Map.Entry<String,String> e : props.entrySet()) {
+            if (e.getValue().contains(reference)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private class ProjectMetadataListener implements PropertyChangeListener, AntProjectListener, FileChangeListener {
