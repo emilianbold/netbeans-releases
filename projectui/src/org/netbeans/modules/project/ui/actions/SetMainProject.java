@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -209,7 +211,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             List<Project> projectList = new ArrayList<Project>(newlyAdded);
             for(Component componentIter : subMenu.getMenuComponents()) {
                 if(componentIter instanceof JRadioButtonMenuItem) {
-                    Project p = (Project) ((JRadioButtonMenuItem)componentIter).getClientProperty(PROJECT_KEY);
+                    Project p = getItemProject((JRadioButtonMenuItem) componentIter);
                     if(p != null) {
                         newlyAdded.remove(p);
                         if(!projectList.contains(p)) {
@@ -253,7 +255,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             final ProjectInformation pi = ProjectUtils.getInformation(projects[i]);
             JRadioButtonMenuItem jmi = new JRadioButtonMenuItem(pi.getDisplayName(), pi.getIcon(), false);
             subMenu.add( jmi );
-            jmi.putClientProperty( PROJECT_KEY, projects[i] );
+            setItemProject(jmi, projects[i]);
             jmi.addActionListener( jmiActionListener );
         }
 
@@ -271,7 +273,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         for( int i = 0; i < subMenu.getItemCount(); i++ ) {
             JMenuItem jmi = subMenu.getItem( i );
             if (jmi != null) {
-                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
+                Project project = getItemProject(jmi);
                 if (project == null) {
                     noneItem = (JRadioButtonMenuItem) jmi;
                 }
@@ -296,7 +298,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         for(Component componentIter : subMenu.getMenuComponents()) {
             if(componentIter instanceof JRadioButtonMenuItem) {
                 JRadioButtonMenuItem menuItem = (JRadioButtonMenuItem) componentIter;
-                Project projectIter = (Project) menuItem.getClientProperty(PROJECT_KEY);
+                Project projectIter = getItemProject(menuItem);
                 if(projectIter != null && !ProjectUtils.getInformation(projectIter).getDisplayName().equals(menuItem.getText())) {
                     menuItem.setText(ProjectUtils.getInformation(projectIter).getDisplayName());
                 }
@@ -343,6 +345,33 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         
     }
     
+    /**
+     * Get project weakly-referenced from an item.
+     *
+     * @param menuItem Menu item.
+     *
+     * @return The project, or null if it is not set or has been
+     * garbage-collected.
+     */
+    private static Project getItemProject(JMenuItem menuItem) {
+        Reference<Project> p = (Reference<Project>) menuItem.getClientProperty(PROJECT_KEY);
+        if (p == null) {
+            return null;
+        } else {
+            return p.get();
+        }
+    }
+
+    /**
+     * Set weakly-referenced project as item's client property.
+     *
+     * @param menuItem Menu item.
+     * @param project The project.
+     */
+    private static void setItemProject(JMenuItem menuItem, Project project) {
+        menuItem.putClientProperty(PROJECT_KEY, new WeakReference<Project>(project));
+    }
+
     // Innerclasses ------------------------------------------------------------
     
     private static class MenuItemActionListener implements ActionListener {
@@ -351,7 +380,7 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-                final Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
+                final Project project = getItemProject(jmi);
                 prefs().putBoolean(CONTEXT_MENU_ITEM_ENABLED, project != null);
                 RP.post(new Runnable() {
                     @Override
