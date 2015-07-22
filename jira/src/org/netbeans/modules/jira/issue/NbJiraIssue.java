@@ -1946,7 +1946,7 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             List<TaskAttribute> allOperations = model.getLocalTaskData().getAttributeMapper().getAttributesByType(model.getLocalTaskData(), TaskAttribute.TYPE_OPERATION);
             for (TaskAttribute operation : allOperations) {
                 // the test must be here, 'operation' (applying writable action) is also among allOperations
-                if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
+                if (operation != null && operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
                     operations.put(operation.getId().substring(TaskAttribute.PREFIX_OPERATION.length()), TaskOperation.createFrom(operation));
                 }
             }
