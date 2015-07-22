@@ -164,7 +164,7 @@ public class MoreAction extends NodeAction implements Presenter.Popup {
                     item = ActionPresenterProvider.getDefault().createPopupPresenter(
                             action);
                 }
-                if (!action.isEnabled()) {
+                if (!canBeEnabledLater(action) && !action.isEnabled()) {
                     continue;
                 }
                 for (Component c : ActionPresenterProvider.getDefault().convertComponents(
@@ -200,6 +200,20 @@ public class MoreAction extends NodeAction implements Presenter.Popup {
             }
         }
         return menu;
+    }
+
+    /**
+     * Some actions are enabled asynchronously, e.g. cut action, so they should
+     * be added to the list even if disabled right now.
+     *
+     * @param a The action.
+     * @return True if the action can be enabled later (i.e. it is updated
+     * asynchronously), false otherwise.
+     */
+    private static boolean canBeEnabledLater(Action a) {
+        Object key = a.getValue("key");                                 //NOI18N
+        return "cut-to-clipboard".equals(key)                           //NOI18N
+                || "copy-to-clipboard".equals(key);                     //NOI18N
     }
 
     /**
