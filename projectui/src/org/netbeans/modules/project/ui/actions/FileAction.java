@@ -60,6 +60,7 @@ import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.RequestProcessor.Task;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
@@ -67,8 +68,10 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
     private String command;
     private FileActionPerformer performer;
     private final String namePattern;
-    
-    
+
+    private final Task refreshTask = createRefreshTask(); // #250349
+    private Lookup refreshContext; // Context for which refresh is scheduled.
+
     private static final Logger LOG = Logger.getLogger(FileAction.class.getName());
     
     public FileAction(String command, String namePattern, Icon icon, Lookup lookup) {
@@ -107,96 +110,120 @@ public final class FileAction extends LookupSensitiveAction implements ContextAw
     
     @Override
     protected void refresh(final Lookup context, final boolean immediate) {
-        final Runnable[] r = new Runnable[1];
-        final boolean[] enable = new boolean[1];
-        final String[] presenterName = new String[1];
-        if (command != null) {
-            r[0] = new Runnable() {
-                @Override public void run() {
-                    Project[] projects = ActionsUtil.getProjectsFromLookup( context, command );
-                    // XXX #64991: handle >1 project (tricky since must pass subset of selection to each)
-                    if ( projects.length != 1 ) {
-                        if (projects.length == 0 && globalProvider(context) != null) {
-                            enable[0] = true;
-                            Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
-                            presenterName[0] = ActionsUtil.formatName(namePattern, files.size(),
-                                    files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
-                            
-                            if(LOG.isLoggable(Level.FINER)) {
-                                LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (no projects in lookup)", new Object[]{presenterName[0], enable[0], files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
-                            }
-                        } else {
-                            enable[0] = false; // Zero or more than one projects found or command not supported
-                            presenterName[0] = ActionsUtil.formatName(namePattern, 0, "");
-                            
-                            if(LOG.isLoggable(Level.FINER)) {
-                                Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
-                                LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (projects > 1 in lookup)", new Object[]{presenterName[0], enable[0], files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
-                            }
-                            
-                        }
-                    }
-                    else {
-                        FileObject[] files = ActionsUtil.getFilesFromLookup( context, projects[0] );
-                        enable[0] = true;
-                        presenterName[0] = ActionsUtil.formatName( namePattern, files.length, files.length > 0 ? files[0].getNameExt() : "" ); // NOI18N
-                        
-                        if(LOG.isLoggable(Level.FINER)) {
-                            LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (one project in lookup)", new Object[]{presenterName[0], enable[0], files.length == 0 ? "no files" : files[0]}); // NOI18N
-                        }
-                    }
-                }
-            };
-        } else if (performer != null) {
-            r[0] = new Runnable() {
-                @Override public void run() {
-                    Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
-                    if (dobjs.size() == 1) {
-                        FileObject f = dobjs.iterator().next().getPrimaryFile();
-
-                        enable[0] = performer.enable(f);
-                        presenterName[0] = ActionsUtil.formatName(namePattern, 1, f.getNameExt());
-                        
-                        if(LOG.isLoggable(Level.FINER)) {
-                            LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}.", new Object[]{presenterName[0], enable[0], f}); // NOI18N
-                        }
-                        
-                    } else {
-                        enable[0] = false;
-                        presenterName[0] = ActionsUtil.formatName(namePattern, 0, ""); // NOI18N
-                        
-                        if(LOG.isLoggable(Level.FINER)) {
-                            LOG.log(Level.FINER, "Enabling [{0}, {1}]. (no dataobjects)", new Object[]{presenterName[0], enable[0]}); // NOI18N
-                        }
-                    }
-                    
-                }
-            };
-        }
-
-        if (r != null) {
-            Runnable delegate = new Runnable() {
-
-                @Override
-                public void run() {
-                    r[0].run();
-                    Mutex.EVENT.writeAccess(new Runnable() {
-                        @Override public void run() {
-                            putValue("menuText", presenterName[0]);
-                            putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName[0]));
-                            setEnabled(enable[0]);
-                        }
-                    });
-                }
-            };
-            if (immediate) {
-                delegate.run();
-            } else {
-                RP.post(delegate);
+        if (immediate) {
+            refreshImpl(context);
+        } else {
+            synchronized (this) {
+                refreshContext = context;
             }
+            refreshTask.schedule(10);
         }
     }
-    
+
+    /**
+     * Implementation of the refresh operation. It can be called synchronously
+     * (directly from {@link #refresh(Lookup, boolean)}) or asynchronously (from
+     * the {@link #refreshTask}).
+     *
+     * @param context The current context.
+     */
+    private void refreshImpl(final Lookup context) {
+        final boolean enable;
+        final String presenterName;
+        if (command != null) {
+
+            Project[] projects = ActionsUtil.getProjectsFromLookup(context, command);
+            // XXX #64991: handle >1 project (tricky since must pass subset of selection to each)
+            if (projects.length != 1) {
+                if (projects.length == 0 && globalProvider(context) != null) {
+                    enable = true;
+                    Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+                    presenterName = ActionsUtil.formatName(namePattern, files.size(),
+                            files.isEmpty() ? "" : files.iterator().next().getPrimaryFile().getNameExt()); // NOI18N
+
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (no projects in lookup)", new Object[]{presenterName, enable, files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
+                    }
+                } else {
+                    enable = false; // Zero or more than one projects found or command not supported
+                    presenterName = ActionsUtil.formatName(namePattern, 0, "");
+
+                    if (LOG.isLoggable(Level.FINER)) {
+                        Collection<? extends DataObject> files = context.lookupAll(DataObject.class);
+                        LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (projects > 1 in lookup)", new Object[]{presenterName, enable, files.isEmpty() ? "no files" : files.iterator().next().getPrimaryFile()}); // NOI18N
+                    }
+                }
+            } else {
+                FileObject[] files = ActionsUtil.getFilesFromLookup(context, projects[0]);
+                enable = true;
+                presenterName = ActionsUtil.formatName(namePattern, files.length, files.length > 0 ? files[0].getNameExt() : ""); // NOI18N
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}. (one project in lookup)", new Object[]{presenterName, enable, files.length == 0 ? "no files" : files[0]}); // NOI18N
+                }
+            }
+        } else if (performer != null) {
+
+            Collection<? extends DataObject> dobjs = context.lookupAll(DataObject.class);
+            if (dobjs.size() == 1) {
+                FileObject f = dobjs.iterator().next().getPrimaryFile();
+
+                enable = performer.enable(f);
+                presenterName = ActionsUtil.formatName(namePattern, 1, f.getNameExt());
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Enabling [{0}, {1}] for {2}.", new Object[]{presenterName, enable, f}); // NOI18N
+                }
+
+            } else {
+                enable = false;
+                presenterName = ActionsUtil.formatName(namePattern, 0, ""); // NOI18N
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.log(Level.FINER, "Enabling [{0}, {1}]. (no dataobjects)", new Object[]{presenterName, enable}); // NOI18N
+                }
+            }
+        } else {
+            return;
+        }
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                putValue("menuText", presenterName);
+                putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
+                setEnabled(enable);
+            }
+        });
+    }
+
+    /**
+     * Create task for refreshing of the action. The refresh will be invoked for
+     * the last known context (passed to {@link #refresh(Lookup, boolean)}).
+     *
+     * @return The task.
+     */
+    private Task createRefreshTask() {
+        return RP.create(new Runnable() {
+
+            @Override
+            public void run() {
+                Lookup l;
+                synchronized (FileAction.this) {
+                    l = refreshContext;
+                }
+                if (l != null) {
+                    refreshImpl(l);
+                }
+                synchronized (FileAction.this) {
+                    //check the last context is the one that was just used
+                    if (refreshContext == l) {
+                        refreshContext = null;
+                    }
+                }
+            }
+        });
+    }
+
     @Override
     protected void actionPerformed( final Lookup context ) {
         Runnable r = new Runnable() {

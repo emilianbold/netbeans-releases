@@ -41,11 +41,21 @@
  */
 package org.netbeans.spi.project.ui.support;
 
+import java.io.Closeable;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ui.convertor.ProjectConvertorFactory;
 import org.netbeans.spi.project.ui.ProjectConvertor;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Support for {@link ProjectConvertor}s.
@@ -78,4 +88,78 @@ public final class ProjectConvertors {
     public static void unregisterConvertorProject(@NonNull final Project project) {
         ProjectConvertorFactory.unregisterConvertorProject(project);
     }
+
+    /**
+     * Finds the owning non convertor project.
+     * Finds nearest enclosing non convertor project.
+     * @param file the {@link FileObject} to find owner for
+     * @return the owning {@link Project} or null if there is no such a project.
+     * @since 1.82
+     */
+    @CheckForNull
+    @SuppressWarnings("NestedAssignment")
+    public static Project getNonConvertorOwner(@NonNull final FileObject file) {
+        for (FileObject parent = file.getParent(); parent != null; parent = parent.getParent()) {
+            final Project prj = FileOwnerQuery.getOwner(parent);
+            if (prj != null && !isConvertorProject(prj)) {
+                return prj;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates {@link FileEncodingQueryImplementation} delegating to the nearest non convertor project.
+     * @return the {@link FileEncodingQueryImplementation}
+     * @since 1.82
+     */
+    @NonNull
+    public static FileEncodingQueryImplementation createFileEncodingQuery() {
+        return new ConvertorFileEncodingQuery();
+    }
+
+    /**
+     * Creates a {@link Lookup} with given instances.
+     * The returned {@link Lookup} implements {@link Closeable}, calling {@link Closeable#close}
+     * on it removes all the instances.
+     * <p class="nonnormative">
+     * Typical usage would be to pass the {@link Lookup} to {@link ProjectConvertor.Result#Result}
+     * and call {@link Closeable#close} on it in the convertor's project factory before the real
+     * project is created.
+     * </p>
+     * @param instances the {@link Lookup} content
+     * @return the {@link Lookup} implementing {@link Closeable}
+     * @since 1.82
+     */
+    @NonNull
+    public static Lookup createProjectConvertorLookup(@NonNull final Object... instances) {
+        return new CloseableLookup(instances);
+    }
+
+    private static final class ConvertorFileEncodingQuery extends FileEncodingQueryImplementation {
+
+        ConvertorFileEncodingQuery() {}
+
+        @Override
+        @CheckForNull
+        public Charset getEncoding(@NonNull final FileObject file) {
+            final Project p = getNonConvertorOwner(file);
+            return p != null ?
+                p.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(file) :
+                null;
+        }
+    }
+
+    private static final class CloseableLookup extends ProxyLookup implements Closeable {
+
+        CloseableLookup(Object... instances) {
+            setLookups(Lookups.fixed(instances));
+        }
+
+        @Override
+        public void close() throws IOException {
+            setLookups(Lookup.EMPTY);
+        }
+    }
+
 }

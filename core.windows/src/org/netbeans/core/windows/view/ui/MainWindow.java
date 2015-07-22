@@ -316,24 +316,36 @@ public final class MainWindow {
            if( null != saveResult && null != dobResult ) {
                saveListener = new LookupListener() {
 
-                   private RequestProcessor.Task lastTask = null;
                    private final Object lock = new Object();
+                   private LookupEvent lastEvent = null;
+
+                   private final RequestProcessor.Task updateTask = RP.create(
+                           new Runnable() {
+
+                       @Override
+                       public void run() {
+                           LookupEvent ev;
+                           synchronized (lock) {
+                               ev = lastEvent;
+                           }
+                           if (ev != null) {
+                               updateMacDocumentProperties(ev);
+                           }
+                           synchronized (lock) {
+                               if (lastEvent == ev) {
+                                   lastEvent = null;
+                               }
+                           }
+                       }
+                   });
 
                    @Override
                    public void resultChanged(final LookupEvent ev) {
 
                        synchronized (lock) {
-                           if (lastTask != null) {
-                               lastTask.cancel();
-                           }
-                           lastTask = RP.post(new Runnable() {
-
-                               @Override
-                               public void run() {
-                                   updateMacDocumentProperties(ev);
-                               }
-                           }, 250);
+                           lastEvent = ev;
                        }
+                       updateTask.schedule(250);
                    }
                };
                saveResult.addLookupListener(saveListener);

@@ -122,7 +122,7 @@ public abstract class AbstractOutputHandler {
     }
 
     private boolean isProtectedWait(Project proj, RunConfig config) {
-        if(!RunUtils.isCompileOnSaveEnabled(proj)) {
+        if(proj == null || !RunUtils.isCompileOnSaveEnabled(proj)) {
             return false;
         }
         String action = config.getActionName();

@@ -58,6 +58,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.csl.spi.support.CancelSupport;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
@@ -251,6 +252,7 @@ public class JsCompletionItem implements CompletionProposal {
         public String prefix;
         public CompletionContext completionContext;
         public boolean addHtmlTagAttributes;
+        public CancelSupport cancelSupport;
     }
     
     private static  ImageIcon priviligedIcon = null;

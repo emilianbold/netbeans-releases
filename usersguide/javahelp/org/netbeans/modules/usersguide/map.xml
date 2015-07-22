@@ -4194,482 +4194,558 @@
   <!-- "Working with NetBeans Modules "-->
   <mapID target="f1_modules.htm" url="f1_modules.htm" />
   <!-- "Working with NetBeans Modules "-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.NameIconLocationPanel" url="f1_modules001.htm#org.netbeans.modules.apisupport.project.ui.wizard.action.NameIconLocationPanel" />
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="NBCSH1780" url="f1_modules001.htm#NBCSH1780" />
-  <!-- "Action Wizard: Name, Icon, and Location"-->
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="f1_modules001.htm-sthref218" url="f1_modules001.htm#sthref218" />
-  <!-- "Action Wizard: Name, Icon, and Location"-->
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="NBCSH1781" url="f1_modules001.htm#NBCSH1781" />
-  <!-- "Action Wizard: Name, Icon, and Location"-->
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="NBCSH1782" url="f1_modules001.htm#NBCSH1782" />
-  <!-- "Action Wizard: Name, Icon, and Location"-->
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="NBCSH1783" url="f1_modules001.htm#NBCSH1783" />
-  <!-- "Action Wizard: Name, Icon, and Location"-->
+  <!-- "Working with NetBeans Modules "-->
   <mapID target="NBCSH1784" url="f1_modules001.htm#NBCSH1784" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.ActionTypePanel" url="f1_modules002.htm#org.netbeans.modules.apisupport.project.ui.wizard.action.ActionTypePanel" />
+  <!-- "Action Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1785" url="f1_modules002.htm#NBCSH1785" />
-  <!-- "Action Wizard: Action Type"-->
+  <!-- "Action Wizard: Name, Icon, and Location"-->
   <mapID target="f1_modules002.htm-sthref219" url="f1_modules002.htm#sthref219" />
-  <!-- "Action Wizard: Action Type"-->
+  <!-- "Action Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1786" url="f1_modules002.htm#NBCSH1786" />
-  <!-- "Action Wizard: Action Type"-->
+  <!-- "Action Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1787" url="f1_modules002.htm#NBCSH1787" />
-  <!-- "Action Wizard: Action Type"-->
+  <!-- "Action Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1788" url="f1_modules002.htm#NBCSH1788" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" url="f1_modules003.htm#org.netbeans.modules.apisupport.project.ui.customizer.AddModulePanel" />
+  <!-- "Action Wizard: Action Type"-->
   <mapID target="NBCSH1789" url="f1_modules003.htm#NBCSH1789" />
-  <!-- "Add Module Dependency Dialog Box"-->
+  <!-- "Action Wizard: Action Type"-->
   <mapID target="f1_modules003.htm-sthref220" url="f1_modules003.htm#sthref220" />
-  <!-- "Add Module Dependency Dialog Box"-->
+  <!-- "Action Wizard: Action Type"-->
   <mapID target="NBCSH1790" url="f1_modules003.htm#NBCSH1790" />
-  <!-- "Add Module Dependency Dialog Box"-->
+  <!-- "Action Wizard: Action Type"-->
   <mapID target="NBCSH1791" url="f1_modules003.htm#NBCSH1791" />
-  <!-- "Add Module Dependency Dialog Box"-->
+  <!-- "Action Wizard: Action Type"-->
   <mapID target="NBCSH1792" url="f1_modules003.htm#NBCSH1792" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" url="f1_modules004.htm#org.netbeans.modules.apisupport.project.ui.customizer.AddFriendPanel" />
+  <!-- "Add Module Dependency Dialog Box"-->
   <mapID target="NBCSH1793" url="f1_modules004.htm#NBCSH1793" />
-  <!-- "Add New Friend Module Dialog Box"-->
+  <!-- "Add Module Dependency Dialog Box"-->
   <mapID target="f1_modules004.htm-sthref221" url="f1_modules004.htm#sthref221" />
-  <!-- "Add New Friend Module Dialog Box"-->
+  <!-- "Add Module Dependency Dialog Box"-->
   <mapID target="NBCSH1794" url="f1_modules004.htm#NBCSH1794" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" url="f1_modules005.htm#org.netbeans.modules.apisupport.project.ui.wizard.BasicConfWizardPanel" />
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="NBCSH1795" url="f1_modules005.htm#NBCSH1795" />
-  <!-- "Module Project: Basic Module Configuration"-->
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="f1_modules005.htm-sthref222" url="f1_modules005.htm#sthref222" />
-  <!-- "Module Project: Basic Module Configuration"-->
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="NBCSH1796" url="f1_modules005.htm#NBCSH1796" />
-  <!-- "Module Project: Basic Module Configuration"-->
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="NBCSH1797" url="f1_modules005.htm#NBCSH1797" />
-  <!-- "Module Project: Basic Module Configuration"-->
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="NBCSH1798" url="f1_modules005.htm#NBCSH1798" />
-  <!-- "Module Project: Basic Module Configuration"-->
+  <!-- "Add New Friend Module Dialog Box"-->
   <mapID target="NBCSH1799" url="f1_modules005.htm#NBCSH1799" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_module" url="f1_modules006.htm#org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_module" />
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1800" url="f1_modules006.htm#NBCSH1800" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="f1_modules006.htm-sthref223" url="f1_modules006.htm#sthref223" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1801" url="f1_modules006.htm#NBCSH1801" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1802" url="f1_modules006.htm#NBCSH1802" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1803" url="f1_modules006.htm#NBCSH1803" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1804" url="f1_modules006.htm#NBCSH1804" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1805" url="f1_modules006.htm#NBCSH1805" />
-  <!-- "Module Project: Name and Location"-->
+  <!-- "Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1806" url="f1_modules006.htm#NBCSH1806" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_application" url="f1_modules007.htm#org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_application" />
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1807" url="f1_modules007.htm#NBCSH1807" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="f1_modules007.htm-sthref224" url="f1_modules007.htm#sthref224" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1808" url="f1_modules007.htm#NBCSH1808" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1809" url="f1_modules007.htm#NBCSH1809" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1810" url="f1_modules007.htm#NBCSH1810" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1811" url="f1_modules007.htm#NBCSH1811" />
-  <!-- "NetBeans Platform Application Project: Name and Location"-->
+  <!-- "Module Project: Name and Location"-->
   <mapID target="NBCSH1812" url="f1_modules007.htm#NBCSH1812" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" url="f1_modules008.htm#org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_library" />
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1813" url="f1_modules008.htm#NBCSH1813" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="f1_modules008.htm-sthref225" url="f1_modules008.htm#sthref225" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1814" url="f1_modules008.htm#NBCSH1814" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1815" url="f1_modules008.htm#NBCSH1815" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1816" url="f1_modules008.htm#NBCSH1816" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1817" url="f1_modules008.htm#NBCSH1817" />
-  <!-- "Library Wrapper Module Project: Name and Location"-->
+  <!-- "NetBeans Platform Application Project: Name and Location"-->
   <mapID target="NBCSH1818" url="f1_modules008.htm#NBCSH1818" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" url="f1_modules009.htm#org.netbeans.modules.apisupport.project.ui.wizard.BasicInfoWizardPanel_suite" />
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1819" url="f1_modules009.htm#NBCSH1819" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="f1_modules009.htm-sthref226" url="f1_modules009.htm#sthref226" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1820" url="f1_modules009.htm#NBCSH1820" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1821" url="f1_modules009.htm#NBCSH1821" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1822" url="f1_modules009.htm#NBCSH1822" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1823" url="f1_modules009.htm#NBCSH1823" />
-  <!-- "Module Suite Project: Name and Location"-->
+  <!-- "Library Wrapper Module Project: Name and Location"-->
   <mapID target="NBCSH1824" url="f1_modules009.htm#NBCSH1824" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.winsys.BasicSettingsPanel" url="f1_modules010.htm#org.netbeans.modules.apisupport.project.ui.wizard.winsys.BasicSettingsPanel" />
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1825" url="f1_modules010.htm#NBCSH1825" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="f1_modules010.htm-sthref227" url="f1_modules010.htm#sthref227" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1826" url="f1_modules010.htm#NBCSH1826" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1827" url="f1_modules010.htm#NBCSH1827" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1828" url="f1_modules010.htm#NBCSH1828" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1829" url="f1_modules010.htm#NBCSH1829" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1830" url="f1_modules010.htm#NBCSH1830" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1831" url="f1_modules010.htm#NBCSH1831" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1832" url="f1_modules010.htm#NBCSH1832" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1833" url="f1_modules010.htm#NBCSH1833" />
-  <!-- "Window Wizard: Basic Settings"-->
+  <!-- "Module Suite Project: Name and Location"-->
   <mapID target="NBCSH1834" url="f1_modules010.htm#NBCSH1834" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.CodeGeneratorPanel" url="f1_modules011.htm#org.netbeans.modules.apisupport.project.ui.wizard.codegenerator.CodeGeneratorPanel" />
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="NBCSH1835" url="f1_modules011.htm#NBCSH1835" />
-  <!-- "Code Generator Wizard: Code Generator"-->
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="f1_modules011.htm-sthref228" url="f1_modules011.htm#sthref228" />
-  <!-- "Code Generator Wizard: Code Generator"-->
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="NBCSH1836" url="f1_modules011.htm#NBCSH1836" />
-  <!-- "Code Generator Wizard: Code Generator"-->
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="NBCSH1837" url="f1_modules011.htm#NBCSH1837" />
-  <!-- "Code Generator Wizard: Code Generator"-->
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="NBCSH1838" url="f1_modules011.htm#NBCSH1838" />
-  <!-- "Code Generator Wizard: Code Generator"-->
+  <!-- "Window Wizard: Basic Settings"-->
   <mapID target="NBCSH1839" url="f1_modules011.htm#NBCSH1839" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" url="f1_modules012.htm#org.netbeans.modules.apisupport.feedreader.FeedReaderWizardPanel" />
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1840" url="f1_modules012.htm#NBCSH1840" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="f1_modules012.htm-sthref229" url="f1_modules012.htm#sthref229" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1841" url="f1_modules012.htm#NBCSH1841" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1842" url="f1_modules012.htm#NBCSH1842" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1843" url="f1_modules012.htm#NBCSH1843" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1844" url="f1_modules012.htm#NBCSH1844" />
-  <!-- "Feed Reader Sample"-->
+  <!-- "Code Generator Wizard: Code Generator"-->
   <mapID target="NBCSH1845" url="f1_modules012.htm#NBCSH1845" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.loader.FileRecognitionPanel" url="f1_modules013.htm#org.netbeans.modules.apisupport.project.ui.wizard.loader.FileRecognitionPanel" />
+  <!-- "Feed Reader Sample"-->
   <mapID target="NBCSH1846" url="f1_modules013.htm#NBCSH1846" />
-  <!-- "File Type: File Recognition"-->
+  <!-- "Feed Reader Sample"-->
   <mapID target="f1_modules013.htm-sthref230" url="f1_modules013.htm#sthref230" />
-  <!-- "File Type: File Recognition"-->
+  <!-- "Feed Reader Sample"-->
   <mapID target="NBCSH1847" url="f1_modules013.htm#NBCSH1847" />
-  <!-- "File Type: File Recognition"-->
+  <!-- "Feed Reader Sample"-->
   <mapID target="NBCSH1848" url="f1_modules013.htm#NBCSH1848" />
-  <!-- "File Type: File Recognition"-->
+  <!-- "Feed Reader Sample"-->
   <mapID target="NBCSH1849" url="f1_modules013.htm#NBCSH1849" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.action.GUIRegistrationPanel" url="f1_modules014.htm#org.netbeans.modules.apisupport.project.ui.wizard.action.GUIRegistrationPanel" />
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1850" url="f1_modules014.htm#NBCSH1850" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="f1_modules014.htm-sthref231" url="f1_modules014.htm#sthref231" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1851" url="f1_modules014.htm#NBCSH1851" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1852" url="f1_modules014.htm#NBCSH1852" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1853" url="f1_modules014.htm#NBCSH1853" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1854" url="f1_modules014.htm#NBCSH1854" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1855" url="f1_modules014.htm#NBCSH1855" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1856" url="f1_modules014.htm#NBCSH1856" />
-  <!-- "Action Wizard: GUI Registration"-->
+  <!-- "File Type: File Recognition"-->
   <mapID target="NBCSH1857" url="f1_modules014.htm#NBCSH1857" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.javahelp.JavaHelpPanel" url="f1_modules015.htm#org.netbeans.modules.apisupport.project.ui.wizard.javahelp.JavaHelpPanel" />
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1858" url="f1_modules015.htm#NBCSH1858" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="f1_modules015.htm-sthref232" url="f1_modules015.htm#sthref232" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1859" url="f1_modules015.htm#NBCSH1859" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1860" url="f1_modules015.htm#NBCSH1860" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1861" url="f1_modules015.htm#NBCSH1861" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1862" url="f1_modules015.htm#NBCSH1862" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1863" url="f1_modules015.htm#NBCSH1863" />
-  <!-- "JavaHelp Help Set Wizard: Location"-->
+  <!-- "Action Wizard: GUI Registration"-->
   <mapID target="NBCSH1864" url="f1_modules015.htm#NBCSH1864" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NameAndLocationPanel" url="f1_modules016.htm#org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.NameAndLocationPanel" />
+  <!-- "JavaHelp Help Set Wizard: Location"-->
   <mapID target="NBCSH1865" url="f1_modules016.htm#NBCSH1865" />
-  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
+  <!-- "JavaHelp Help Set Wizard: Location"-->
   <mapID target="f1_modules016.htm-sthref233" url="f1_modules016.htm#sthref233" />
-  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
+  <!-- "JavaHelp Help Set Wizard: Location"-->
   <mapID target="NBCSH1866" url="f1_modules016.htm#NBCSH1866" />
-  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
+  <!-- "JavaHelp Help Set Wizard: Location"-->
   <mapID target="NBCSH1867" url="f1_modules016.htm#NBCSH1867" />
-  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
+  <!-- "JavaHelp Help Set Wizard: Location"-->
   <mapID target="NBCSH1868" url="f1_modules016.htm#NBCSH1868" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" url="f1_modules017.htm#org.netbeans.modules.apisupport.project.ui.wizard.LibraryConfWizardPanel" />
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="NBCSH1869" url="f1_modules017.htm#NBCSH1869" />
-  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="f1_modules017.htm-sthref234" url="f1_modules017.htm#sthref234" />
-  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="NBCSH1870" url="f1_modules017.htm#NBCSH1870" />
-  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="NBCSH1871" url="f1_modules017.htm#NBCSH1871" />
-  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="NBCSH1872" url="f1_modules017.htm#NBCSH1872" />
-  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
+  <!-- "Java SE Library Descriptor Wizard: Name and Location"-->
   <mapID target="NBCSH1873" url="f1_modules017.htm#NBCSH1873" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" url="f1_modules018.htm#org.netbeans.modules.apisupport.project.ui.wizard.LibraryStartWizardPanel" />
+  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1874" url="f1_modules018.htm#NBCSH1874" />
-  <!-- "Library Wrapper Module Project: Select Library"-->
+  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
   <mapID target="f1_modules018.htm-sthref235" url="f1_modules018.htm#sthref235" />
-  <!-- "Library Wrapper Module Project: Select Library"-->
+  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1875" url="f1_modules018.htm#NBCSH1875" />
-  <!-- "Library Wrapper Module Project: Select Library"-->
+  <!-- "Library Wrapper Module Project: Basic Module Configuration"-->
   <mapID target="NBCSH1876" url="f1_modules018.htm#NBCSH1876" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.loader.NameAndLocationPanel" url="f1_modules019.htm#org.netbeans.modules.apisupport.project.ui.wizard.loader.NameAndLocationPanel" />
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1877" url="f1_modules019.htm#NBCSH1877" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="f1_modules019.htm-sthref236" url="f1_modules019.htm#sthref236" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1878" url="f1_modules019.htm#NBCSH1878" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1879" url="f1_modules019.htm#NBCSH1879" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1880" url="f1_modules019.htm#NBCSH1880" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1881" url="f1_modules019.htm#NBCSH1881" />
-  <!-- "File Type: Name, Icon and Location"-->
+  <!-- "Library Wrapper Module Project: Select Library"-->
   <mapID target="NBCSH1882" url="f1_modules019.htm#NBCSH1882" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.ModuleInstallPanel" url="f1_modules020.htm#org.netbeans.modules.apisupport.project.ui.wizard.moduleinstall.ModuleInstallPanel" />
+  <!-- "File Type: Name, Icon and Location"-->
   <mapID target="NBCSH1883" url="f1_modules020.htm#NBCSH1883" />
-  <!-- "Installer/Activator Wizard: Installer/Activator"-->
+  <!-- "File Type: Name, Icon and Location"-->
   <mapID target="f1_modules020.htm-sthref237" url="f1_modules020.htm#sthref237" />
-  <!-- "Installer/Activator Wizard: Installer/Activator"-->
+  <!-- "File Type: Name, Icon and Location"-->
   <mapID target="NBCSH1884" url="f1_modules020.htm#NBCSH1884" />
-  <!-- "Installer/Activator Wizard: Installer/Activator"-->
+  <!-- "File Type: Name, Icon and Location"-->
   <mapID target="NBCSH1885" url="f1_modules020.htm#NBCSH1885" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" url="f1_modules021.htm#org.netbeans.modules.apisupport.project.ui.platform.NbPlatformCustomizer" />
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1886" url="f1_modules021.htm#NBCSH1886" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="f1_modules021.htm-sthref238" url="f1_modules021.htm#sthref238" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1887" url="f1_modules021.htm#NBCSH1887" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1888" url="f1_modules021.htm#NBCSH1888" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1889" url="f1_modules021.htm#NBCSH1889" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1890" url="f1_modules021.htm#NBCSH1890" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1891" url="f1_modules021.htm#NBCSH1891" />
-  <!-- "NetBeans Platform Manager Dialog Box"-->
+  <!-- "Installer/Activator Wizard: Installer/Activator"-->
   <mapID target="NBCSH1892" url="f1_modules021.htm#NBCSH1892" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.options.OptionsPanel" url="f1_modules022.htm#org.netbeans.modules.apisupport.project.ui.wizard.options.OptionsPanel" />
+  <!-- "NetBeans Platform Manager Dialog Box"-->
   <mapID target="NBCSH1893" url="f1_modules022.htm#NBCSH1893" />
-  <!-- "Options Panel Wizard: Location"-->
+  <!-- "NetBeans Platform Manager Dialog Box"-->
   <mapID target="f1_modules022.htm-sthref239" url="f1_modules022.htm#sthref239" />
-  <!-- "Options Panel Wizard: Location"-->
+  <!-- "NetBeans Platform Manager Dialog Box"-->
   <mapID target="NBCSH1894" url="f1_modules022.htm#NBCSH1894" />
-  <!-- "Options Panel Wizard: Location"-->
+  <!-- "NetBeans Platform Manager Dialog Box"-->
   <mapID target="NBCSH1895" url="f1_modules022.htm#NBCSH1895" />
-  <!-- "Options Panel Wizard: Location"-->
+  <!-- "NetBeans Platform Manager Dialog Box"-->
   <mapID target="NBCSH1896" url="f1_modules022.htm#NBCSH1896" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.options.OptionsPanel0" url="f1_modules023.htm#org.netbeans.modules.apisupport.project.ui.wizard.options.OptionsPanel0" />
+  <!-- "Options Panel Wizard: Location"-->
   <mapID target="NBCSH1897" url="f1_modules023.htm#NBCSH1897" />
-  <!-- "Options Panel Wizard: Choose Panel Type"-->
+  <!-- "Options Panel Wizard: Location"-->
   <mapID target="f1_modules023.htm-sthref240" url="f1_modules023.htm#sthref240" />
-  <!-- "Options Panel Wizard: Choose Panel Type"-->
+  <!-- "Options Panel Wizard: Location"-->
   <mapID target="NBCSH1898" url="f1_modules023.htm#NBCSH1898" />
-  <!-- "Options Panel Wizard: Choose Panel Type"-->
+  <!-- "Options Panel Wizard: Location"-->
   <mapID target="NBCSH1899" url="f1_modules023.htm#NBCSH1899" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.project.NameAndLocationPanel" url="f1_modules024.htm#org.netbeans.modules.apisupport.project.ui.wizard.project.NameAndLocationPanel" />
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="NBCSH1900" url="f1_modules024.htm#NBCSH1900" />
-  <!-- "Project Template Wizard: Name and Location"-->
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="f1_modules024.htm-sthref241" url="f1_modules024.htm#sthref241" />
-  <!-- "Project Template Wizard: Name and Location"-->
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="NBCSH1901" url="f1_modules024.htm#NBCSH1901" />
-  <!-- "Project Template Wizard: Name and Location"-->
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="NBCSH1902" url="f1_modules024.htm#NBCSH1902" />
-  <!-- "Project Template Wizard: Name and Location"-->
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="NBCSH1903" url="f1_modules024.htm#NBCSH1903" />
-  <!-- "Project Template Wizard: Name and Location"-->
+  <!-- "Options Panel Wizard: Choose Panel Type"-->
   <mapID target="NBCSH1904" url="f1_modules024.htm#NBCSH1904" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.QuickSearchPanel" url="f1_modules025.htm#org.netbeans.modules.apisupport.project.ui.wizard.quicksearch.QuickSearchPanel" />
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1905" url="f1_modules025.htm#NBCSH1905" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="f1_modules025.htm-sthref242" url="f1_modules025.htm#sthref242" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1906" url="f1_modules025.htm#NBCSH1906" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1907" url="f1_modules025.htm#NBCSH1907" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1908" url="f1_modules025.htm#NBCSH1908" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1909" url="f1_modules025.htm#NBCSH1909" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1910" url="f1_modules025.htm#NBCSH1910" />
-  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
+  <!-- "Project Template Wizard: Name and Location"-->
   <mapID target="NBCSH1911" url="f1_modules025.htm#NBCSH1911" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.SelectLibraryPanel" url="f1_modules026.htm#org.netbeans.modules.apisupport.project.ui.wizard.librarydescriptor.SelectLibraryPanel" />
+  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
   <mapID target="NBCSH1912" url="f1_modules026.htm#NBCSH1912" />
-  <!-- "Java SE Library Descriptor Wizard: Select Library"-->
+  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
   <mapID target="f1_modules026.htm-sthref243" url="f1_modules026.htm#sthref243" />
-  <!-- "Java SE Library Descriptor Wizard: Select Library"-->
+  <!-- "Quick Search Provider Wizard: Quick Search Provider"-->
   <mapID target="NBCSH1913" url="f1_modules026.htm#NBCSH1913" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.project.SelectProjectPanel" url="f1_modules027.htm#org.netbeans.modules.apisupport.project.ui.wizard.project.SelectProjectPanel" />
+  <!-- "Java SE Library Descriptor Wizard: Select Library"-->
   <mapID target="NBCSH1914" url="f1_modules027.htm#NBCSH1914" />
-  <!-- "Project Template Wizard: Select Project"-->
+  <!-- "Java SE Library Descriptor Wizard: Select Library"-->
   <mapID target="f1_modules027.htm-sthref244" url="f1_modules027.htm#sthref244" />
-  <!-- "Project Template Wizard: Select Project"-->
+  <!-- "Java SE Library Descriptor Wizard: Select Library"-->
   <mapID target="NBCSH1915" url="f1_modules027.htm#NBCSH1915" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.UpdateCenterRegistrationPanel" url="f1_modules028.htm#org.netbeans.modules.apisupport.project.ui.wizard.updatecenter.UpdateCenterRegistrationPanel" />
+  <!-- "Project Template Wizard: Select Project"-->
   <mapID target="NBCSH1916" url="f1_modules028.htm#NBCSH1916" />
-  <!-- "Update Center Wizard: Update Center Declaration"-->
+  <!-- "Project Template Wizard: Select Project"-->
   <mapID target="f1_modules028.htm-sthref245" url="f1_modules028.htm#sthref245" />
-  <!-- "Update Center Wizard: Update Center Declaration"-->
+  <!-- "Project Template Wizard: Select Project"-->
   <mapID target="NBCSH1917" url="f1_modules028.htm#NBCSH1917" />
-  <!-- "Update Center Wizard: Update Center Declaration"-->
+  <!-- "Project Template Wizard: Select Project"-->
   <mapID target="NBCSH1918" url="f1_modules028.htm#NBCSH1918" />
-  <!-- "Update Center Wizard: Update Center Declaration"-->
+  <!-- "Project Template Wizard: Select Project"-->
   <mapID target="NBCSH1919" url="f1_modules028.htm#NBCSH1919" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.winsys.NameAndLocationPanel" url="f1_modules029.htm#org.netbeans.modules.apisupport.project.ui.wizard.winsys.NameAndLocationPanel" />
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="NBCSH1920" url="f1_modules029.htm#NBCSH1920" />
-  <!-- "Window Wizard: Name, Icon and Location"-->
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="f1_modules029.htm-sthref246" url="f1_modules029.htm#sthref246" />
-  <!-- "Window Wizard: Name, Icon and Location"-->
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="NBCSH1921" url="f1_modules029.htm#NBCSH1921" />
-  <!-- "Window Wizard: Name, Icon and Location"-->
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="NBCSH1922" url="f1_modules029.htm#NBCSH1922" />
-  <!-- "Window Wizard: Name, Icon and Location"-->
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="NBCSH1923" url="f1_modules029.htm#NBCSH1923" />
-  <!-- "Window Wizard: Name, Icon and Location"-->
+  <!-- "Update Center Wizard: Update Center Declaration"-->
   <mapID target="NBCSH1924" url="f1_modules029.htm#NBCSH1924" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.wizard.NameIconLocationPanel" url="f1_modules030.htm#org.netbeans.modules.apisupport.project.ui.wizard.wizard.NameIconLocationPanel" />
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1925" url="f1_modules030.htm#NBCSH1925" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="f1_modules030.htm-sthref247" url="f1_modules030.htm#sthref247" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1926" url="f1_modules030.htm#NBCSH1926" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1927" url="f1_modules030.htm#NBCSH1927" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1928" url="f1_modules030.htm#NBCSH1928" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1929" url="f1_modules030.htm#NBCSH1929" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1930" url="f1_modules030.htm#NBCSH1930" />
-  <!-- "Wizard Wizard: Name, Icon, and Location"-->
+  <!-- "Window Wizard: Name, Icon and Location"-->
   <mapID target="NBCSH1931" url="f1_modules030.htm#NBCSH1931" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.wizard.wizard.WizardTypePanel" url="f1_modules031.htm#org.netbeans.modules.apisupport.project.ui.wizard.wizard.WizardTypePanel" />
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1932" url="f1_modules031.htm#NBCSH1932" />
-  <!-- "Wizard Wizard: Wizard Type"-->
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="f1_modules031.htm-sthref248" url="f1_modules031.htm#sthref248" />
-  <!-- "Wizard Wizard: Wizard Type"-->
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1933" url="f1_modules031.htm#NBCSH1933" />
-  <!-- "Wizard Wizard: Wizard Type"-->
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1934" url="f1_modules031.htm#NBCSH1934" />
-  <!-- "Wizard Wizard: Wizard Type"-->
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1935" url="f1_modules031.htm#NBCSH1935" />
-  <!-- "Wizard Wizard: Wizard Type"-->
+  <!-- "Wizard Wizard: Name, Icon, and Location"-->
   <mapID target="NBCSH1936" url="f1_modules031.htm#NBCSH1936" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" url="f1_modules032.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerCompiling" />
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="NBCSH1937" url="f1_modules032.htm#NBCSH1937" />
-  <!-- "Module Project Properties Dialog Box: Compiling"-->
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="f1_modules032.htm-sthref249" url="f1_modules032.htm#sthref249" />
-  <!-- "Module Project Properties Dialog Box: Compiling"-->
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="NBCSH1938" url="f1_modules032.htm#NBCSH1938" />
-  <!-- "Module Project Properties Dialog Box: Compiling"-->
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="NBCSH1939" url="f1_modules032.htm#NBCSH1939" />
-  <!-- "Module Project Properties Dialog Box: Compiling"-->
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="NBCSH1940" url="f1_modules032.htm#NBCSH1940" />
-  <!-- "Module Project Properties Dialog Box: Compiling"-->
+  <!-- "Wizard Wizard: Wizard Type"-->
   <mapID target="NBCSH1941" url="f1_modules032.htm#NBCSH1941" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDisplay" url="f1_modules033.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDisplay" />
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1942" url="f1_modules033.htm#NBCSH1942" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="f1_modules033.htm-sthref250" url="f1_modules033.htm#sthref250" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1943" url="f1_modules033.htm#NBCSH1943" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1944" url="f1_modules033.htm#NBCSH1944" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1945" url="f1_modules033.htm#NBCSH1945" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1946" url="f1_modules033.htm#NBCSH1946" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1947" url="f1_modules033.htm#NBCSH1947" />
-  <!-- "Module Project Properties Dialog Box: Display"-->
+  <!-- "Module Project Properties Dialog Box: Compiling"-->
   <mapID target="NBCSH1948" url="f1_modules033.htm#NBCSH1948" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" url="f1_modules034.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerDocumenting" />
+  <!-- "Module Project Properties Dialog Box: Display"-->
   <mapID target="NBCSH1949" url="f1_modules034.htm#NBCSH1949" />
-  <!-- "Module Project Properties Dialog Box: Documenting"-->
+  <!-- "Module Project Properties Dialog Box: Display"-->
   <mapID target="f1_modules034.htm-sthref251" url="f1_modules034.htm#sthref251" />
-  <!-- "Module Project Properties Dialog Box: Documenting"-->
+  <!-- "Module Project Properties Dialog Box: Display"-->
   <mapID target="NBCSH1950" url="f1_modules034.htm#NBCSH1950" />
-  <!-- "Module Project Properties Dialog Box: Documenting"-->
+  <!-- "Module Project Properties Dialog Box: Display"-->
   <mapID target="NBCSH1951" url="f1_modules034.htm#NBCSH1951" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" url="f1_modules035.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerLibraries" />
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1952" url="f1_modules035.htm#NBCSH1952" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="f1_modules035.htm-sthref252" url="f1_modules035.htm#sthref252" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1953" url="f1_modules035.htm#NBCSH1953" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1954" url="f1_modules035.htm#NBCSH1954" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1955" url="f1_modules035.htm#NBCSH1955" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1956" url="f1_modules035.htm#NBCSH1956" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1957" url="f1_modules035.htm#NBCSH1957" />
-  <!-- "Module Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Project Properties Dialog Box: Documenting"-->
   <mapID target="NBCSH1958" url="f1_modules035.htm#NBCSH1958" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" url="f1_modules036.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerPackaging" />
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1959" url="f1_modules036.htm#NBCSH1959" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="f1_modules036.htm-sthref253" url="f1_modules036.htm#sthref253" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1960" url="f1_modules036.htm#NBCSH1960" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1961" url="f1_modules036.htm#NBCSH1961" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1962" url="f1_modules036.htm#NBCSH1962" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1963" url="f1_modules036.htm#NBCSH1963" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1964" url="f1_modules036.htm#NBCSH1964" />
-  <!-- "Module Project Properties Dialog Box: Packaging"-->
+  <!-- "Module Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1965" url="f1_modules036.htm#NBCSH1965" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" url="f1_modules037.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerSources" />
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="NBCSH1966" url="f1_modules037.htm#NBCSH1966" />
-  <!-- "Module Project Properties Dialog Box: Sources"-->
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="f1_modules037.htm-sthref254" url="f1_modules037.htm#sthref254" />
-  <!-- "Module Project Properties Dialog Box: Sources"-->
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="NBCSH1967" url="f1_modules037.htm#NBCSH1967" />
-  <!-- "Module Project Properties Dialog Box: Sources"-->
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="NBCSH1968" url="f1_modules037.htm#NBCSH1968" />
-  <!-- "Module Project Properties Dialog Box: Sources"-->
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="NBCSH1969" url="f1_modules037.htm#NBCSH1969" />
-  <!-- "Module Project Properties Dialog Box: Sources"-->
+  <!-- "Module Project Properties Dialog Box: Packaging"-->
   <mapID target="NBCSH1970" url="f1_modules037.htm#NBCSH1970" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.CustomizerVersioning" url="f1_modules038.htm#org.netbeans.modules.apisupport.project.ui.customizer.CustomizerVersioning" />
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1971" url="f1_modules038.htm#NBCSH1971" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="f1_modules038.htm-sthref255" url="f1_modules038.htm#sthref255" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1972" url="f1_modules038.htm#NBCSH1972" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1973" url="f1_modules038.htm#NBCSH1973" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1974" url="f1_modules038.htm#NBCSH1974" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1975" url="f1_modules038.htm#NBCSH1975" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1976" url="f1_modules038.htm#NBCSH1976" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1977" url="f1_modules038.htm#NBCSH1977" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1978" url="f1_modules038.htm#NBCSH1978" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1979" url="f1_modules038.htm#NBCSH1979" />
-  <!-- "Module Project Properties Dialog Box: API Versioning"-->
+  <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1980" url="f1_modules038.htm#NBCSH1980" />
   <!-- "Related Topics"-->
   <mapID target="NBCSH1981" url="f1_modules039.htm#NBCSH1981" />
@@ -4678,76 +4754,88 @@
   <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1982" url="f1_modules039.htm#NBCSH1982" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" url="f1_modules040.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" />
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1983" url="f1_modules040.htm#NBCSH1983" />
-  <!-- "Module Suite Project Properties Dialog Box: Application"-->
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="f1_modules040.htm-sthref257" url="f1_modules040.htm#sthref257" />
-  <!-- "Module Suite Project Properties Dialog Box: Application"-->
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1984" url="f1_modules040.htm#NBCSH1984" />
-  <!-- "Module Suite Project Properties Dialog Box: Application"-->
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1985" url="f1_modules040.htm#NBCSH1985" />
-  <!-- "Module Suite Project Properties Dialog Box: Application"-->
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1986" url="f1_modules040.htm#NBCSH1986" />
-  <!-- "Module Suite Project Properties Dialog Box: Application"-->
+  <!-- "Edit Module Dependency Dialog Box"-->
   <mapID target="NBCSH1987" url="f1_modules040.htm#NBCSH1987" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries" url="f1_modules041.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries" />
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="NBCSH1988" url="f1_modules041.htm#NBCSH1988" />
-  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="f1_modules041.htm-sthref258" url="f1_modules041.htm#sthref258" />
-  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="NBCSH1989" url="f1_modules041.htm#NBCSH1989" />
-  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="NBCSH1990" url="f1_modules041.htm#NBCSH1990" />
-  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="NBCSH1991" url="f1_modules041.htm#NBCSH1991" />
-  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
+  <!-- "Module Suite Project Properties Dialog Box: Application"-->
   <mapID target="NBCSH1992" url="f1_modules041.htm#NBCSH1992" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleList" url="f1_modules042.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleList" />
+  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1993" url="f1_modules042.htm#NBCSH1993" />
-  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
+  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
   <mapID target="f1_modules042.htm-sthref259" url="f1_modules042.htm#sthref259" />
-  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
+  <!-- "Module Suite Project Properties Dialog Box: Libraries"-->
   <mapID target="NBCSH1994" url="f1_modules042.htm#NBCSH1994" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSources" url="f1_modules043.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSources" />
+  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
   <mapID target="NBCSH1995" url="f1_modules043.htm#NBCSH1995" />
-  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
+  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
   <mapID target="f1_modules043.htm-sthref260" url="f1_modules043.htm#sthref260" />
-  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
+  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
   <mapID target="NBCSH1996" url="f1_modules043.htm#NBCSH1996" />
-  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
+  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
   <mapID target="NBCSH1997" url="f1_modules043.htm#NBCSH1997" />
-  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
+  <!-- "Module Suite Project Properties Dialog Box: Module List"-->
   <mapID target="NBCSH1998" url="f1_modules043.htm#NBCSH1998" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSplashBranding" url="f1_modules044.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerSplashBranding" />
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1999" url="f1_modules044.htm#NBCSH1999" />
-  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="f1_modules044.htm-sthref261" url="f1_modules044.htm#sthref261" />
-  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH2000" url="f1_modules044.htm#NBCSH2000" />
-  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH2001" url="f1_modules044.htm#NBCSH2001" />
-  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH2002" url="f1_modules044.htm#NBCSH2002" />
-  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
+  <!-- "Module Suite Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH2003" url="f1_modules044.htm#NBCSH2003" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerWindowSystemBranding" url="f1_modules045.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerWindowSystemBranding" />
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2004" url="f1_modules045.htm#NBCSH2004" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="f1_modules045.htm-sthref262" url="f1_modules045.htm#sthref262" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2005" url="f1_modules045.htm#NBCSH2005" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2006" url="f1_modules045.htm#NBCSH2006" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2007" url="f1_modules045.htm#NBCSH2007" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2008" url="f1_modules045.htm#NBCSH2008" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2009" url="f1_modules045.htm#NBCSH2009" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2010" url="f1_modules045.htm#NBCSH2010" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2011" url="f1_modules045.htm#NBCSH2011" />
-  <!-- "Module Suite Project Properties Dialog Box: Window System"-->
+  <!-- "Module Suite Project Properties Dialog Box: Splash Screen"-->
   <mapID target="NBCSH2012" url="f1_modules045.htm#NBCSH2012" />
   <!-- "Related Topics"-->
   <mapID target="NBCSH2013" url="f1_java_project.htm#NBCSH2013" />
