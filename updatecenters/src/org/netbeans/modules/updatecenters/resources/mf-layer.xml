@@ -78,8 +78,6 @@ made subject to such option by the copyright holder.
 <attr name="instanceCreate" methodvalue="org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory.createUpdateProvider"/>
 </file>
 
-   </folder>
-    
   </folder> <!-- Services -->
 
 </filesystem>
