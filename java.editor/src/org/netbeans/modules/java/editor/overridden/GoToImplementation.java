@@ -46,6 +46,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
@@ -156,8 +157,11 @@ public final class GoToImplementation extends BaseAction {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override public void run() {
                                 try {
-                                    Point p = new Point(c.modelToView(caretPos).getLocation());
-                                    IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, finalOverridingMethods), c, p);
+                                    Rectangle view = c.modelToView(caretPos);
+                                    if (view != null) {
+                                        Point p = new Point(view.getLocation());
+                                        IsOverriddenAnnotationAction.mouseClicked(Collections.singletonMap(caption, finalOverridingMethods), c, p);
+                                    }
                                 } catch (BadLocationException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
