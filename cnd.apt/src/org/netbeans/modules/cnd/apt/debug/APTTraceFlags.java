@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ComponentType;
 
 /**
@@ -81,7 +82,7 @@ public class APTTraceFlags {
                     break;
             }
         }
-        if (DebugUtils.getBoolean("apt.report.clank.mode", true)) {
+        if (!CndUtils.isUnitTestMode()) {
             // APTUtils.LOG has level SEVERE by default, so we can't use it here
             Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
         }
