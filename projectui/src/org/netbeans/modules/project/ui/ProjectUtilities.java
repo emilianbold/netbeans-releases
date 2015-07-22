@@ -500,6 +500,9 @@ public class ProjectUtilities {
     }
     
     public static void storeProjectOpenFiles(Project p, Set<String> urls, String groupName) {
+        if(urls.isEmpty()) {
+            return;
+        }
         AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(p);
         aux.removeConfigurationFragment (OPEN_FILES_ELEMENT, OPEN_FILES_NS, false);
 
