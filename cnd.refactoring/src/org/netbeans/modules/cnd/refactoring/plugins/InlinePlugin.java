@@ -135,7 +135,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
 
                     CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
                     Document doc = CsmUtilities.openDocument(ces);
-                    String newText = CsmMacroExpansion.expand(doc, file, ref.getStartOffset(), ref.getEndOffset(), false);
+                    String newText = CsmMacroExpansion.expand(doc, file, ref.getStartOffset(), ref.getEndOffset(), true);
                     if (newText != null && (!newText.isEmpty())) {
                         String descr = NbBundle.getMessage(InlinePlugin.class, "TXT_Preview_Entity_escription") + " " +oldText;  // NOI18N
                         ModificationResult.Difference diff = CsmRefactoringUtils.rename(  ref.getStartOffset()
