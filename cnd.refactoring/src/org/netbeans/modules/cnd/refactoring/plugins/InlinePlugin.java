@@ -131,7 +131,7 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
                 int refLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, ref.getStartOffset())[0];
                 int objLine = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, macro.getStartOffset())[0];
                 if (!(refLine == objLine && (ref.getContainingFile().equals(macro.getContainingFile())))) {
-                    String oldText = ref.getText().toString();
+                    String oldText = macro.getName().toString();
 
                     CloneableEditorSupport ces = CsmUtilities.findCloneableEditorSupport(file);
                     Document doc = CsmUtilities.openDocument(ces);
