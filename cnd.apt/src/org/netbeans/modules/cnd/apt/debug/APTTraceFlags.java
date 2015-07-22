@@ -81,8 +81,10 @@ public class APTTraceFlags {
                     break;
             }
         }
-        // APTUtils.LOG has level SEVERE by default, so we can't use it here
-        Logger.getGlobal().log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
+        if (DebugUtils.getBoolean("apt.report.clank.mode", true)) {
+            // APTUtils.LOG has level SEVERE by default, so we can't use it here
+            Logger.getLogger(APTTraceFlags.class.getName()).log(Level.INFO, "C/C++ code model: using {0} preprocessor", (USE_CLANK ? "new" : "old")); //NOI18N
+        }
     }
 
     public static final boolean ALWAYS_USE_NB_FS = DebugUtils.getBoolean("apt.always.use.filesystem", false); // NOI18N
