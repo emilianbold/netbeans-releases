@@ -143,7 +143,7 @@ public class BreakpointGroup {
             }
     }*/
 
-    static Object[] createGroups(Properties props) {
+    static Object[] createGroups(Properties props, Set<Breakpoint> closedProjectsBreakpoints) {
         //props.addPropertyChangeListener(null);
         String[] groupNames = (String[]) props.getArray("Grouping", new String[] { Group.CUSTOM.name() });
         boolean openProjectsOnly = props.getBoolean(PROP_FROM_OPEN_PROJECTS, true);
@@ -187,7 +187,11 @@ public class BreakpointGroup {
                     continue;
                 }
                 if (openProjectsOnly && !isOpened(bprops.getProjects(), openedProjectsCache, closedProjectsCache, subProjects)) {
-                    continue;
+                    closedProjectsBreakpoints.add(b);
+                    Breakpoint.VALIDITY validity = b.getValidity();
+                    if (!Breakpoint.VALIDITY.VALID.equals(validity)) {
+                        continue;
+                    } // Include valid breakpoints anyway
                 }
                 if (sessionProjects != null && !contains(sessionProjects, bprops.getProjects())) {
                     continue;
