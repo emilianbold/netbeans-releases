@@ -322,7 +322,7 @@ public class AnnotationTypes {
         }
         
         if (ret == null){
-            Utilities.annotateLoggable(new NullPointerException("null AnnotationType for:"+name)); //NOI18N
+            Utilities.annotateLoggable(new NullPointerException("null AnnotationType for:"+name + " allTypes size: " + (allTypes != null ? allTypes.size() : -1))); //NOI18N
         }
         
         return ret;
