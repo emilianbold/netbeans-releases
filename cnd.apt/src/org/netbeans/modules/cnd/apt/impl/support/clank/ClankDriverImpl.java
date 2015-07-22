@@ -116,10 +116,6 @@ public class ClankDriverImpl {
             // TODO: prepare buffers mapping
             // note that for local files no "file://" prefix is added
             CharSequence path = CndFileSystemProvider.toUrl(buffer.getFileSystem(), buffer.getAbsolutePath());
-            if (CndUtils.isDebugMode()) {
-                byte[] bytes = toBytes(path, buffer.getCharBuffer());
-                assert bytes != null;
-            }
             // prepare params to run preprocessor
             ClankRunPreprocessorSettings settings = new ClankRunPreprocessorSettings();
             settings.WorkName = path;
@@ -314,20 +310,6 @@ public class ClankDriverImpl {
             }
         }
         return result;
-    }
-
-    private static byte[] toBytes(CharSequence path, char[] chars) {
-        byte[] asciis = new byte[chars.length];
-        for (int i = 0; i < asciis.length; i++) {
-            char c = chars[i];
-            if (c >= 256) {
-                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic char[" + i + "] [" + c + "] " + (int)c);
-            } else if (c >= 128) {
-                CndUtils.assertTrueInConsole(CndUtils.isUnitTestMode(), path.toString(), ":could be problematic non-ANSII " + c);
-            }
-            asciis[i] = (byte)(c);
-        }
-        return asciis;
     }
 
     public static ClankDriverImpl.APTTokenStreamCacheImplementation extractTokenStream(PreprocHandler ppHandler) {
