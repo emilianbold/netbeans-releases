@@ -751,6 +751,9 @@ public class IssuePanel extends javax.swing.JPanel {
         }
 
         JiraConfiguration config = issue.getRepository().getConfiguration();
+        if(config == null) {
+            return;
+        }
         ResourceBundle bundle = NbBundle.getBundle(IssuePanel.class);
         String projectId = issue.getFieldValue(NbJiraIssue.IssueField.PROJECT);
         Project project = config.getProjectById(projectId);
