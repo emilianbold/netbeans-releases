@@ -146,10 +146,14 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             request.prefix = pref;
             request.completionContext = context;
             request.addHtmlTagAttributes = false;
+            request.cancelSupport = cancelSupport;
         
         jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
+        if (cancelSupport.isCancelled()) {
+            return CodeCompletionResult.NONE;
+        }
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
             switch (context) {
                 case GLOBAL:
@@ -544,7 +548,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
         if (!expChain.isEmpty()) {
             Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-            
+            if (request.cancelSupport.isCancelled()) {
+                return;
+            }
             FileObject fo = request.result.getSnapshot().getSource().getFileObject();
             if (fo != null) {
                 long start = System.currentTimeMillis();
@@ -565,8 +571,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
+        HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
         resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor, true));
-
+        if (request.cancelSupport.isCancelled()) {
+            return addedProperties;
+        }
         resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true, true);
         
         // try to map window property
@@ -589,10 +598,9 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
         for (String string : prototypeChain) {
             resolveTypeFromExpression.add(new TypeUsageImpl(string));
         }
-        
-        
-
-        HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
+        if (request.cancelSupport.isCancelled()) {
+            return addedProperties;
+        }
         boolean isFunction = false; // addding Function to the prototype chain?
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
@@ -624,8 +632,11 @@ class JsCodeCompletion implements CodeCompletionHandler2 {
             addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties); //NOI18N
         }
 
+        if (request.cancelSupport.isCancelled()) {
+            return addedProperties;
+        }
         addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
-
+        
         if (isPublic) {
             // now look to the index again for declared item outside
             StringBuilder fqn = new StringBuilder();
