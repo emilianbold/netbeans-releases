@@ -45,22 +45,22 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="baseide.id" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="8.1 Beta"/>
+    <property name="baseide.id" value="8.1_beta"/>
+    <property name="appname" value="NetBeans 8.1 Beta"/> 
+    <property name="mpkg.name_nb" value="NetBeans 8.1 Beta"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb"/>      
     <property name="nb.check.build.number" value="0"/>
 
     <!-- Unique ID in db/receipts for Development builds -->
-    <property name="nb.id" value="${baseide.id}-${buildnumber}"/>
+    <!--<property name="nb.id" value="${baseide.id}-${buildnumber}"/>-->
     <!-- Unique ID in db/receipts for release build -->
-    <!--<property name="nb.id" value="${baseide.id}"/>-->
+    <property name="nb.id" value="${baseide.id}"/>
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="8.1 Beta"/>
+    <property name="nb.display.version.long"  value="8.1 Beta"/>
+    <property name="nb.display.version.short" value="8.1 Beta"/>
 
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="8.0.20"/>
@@ -89,7 +89,7 @@
     <property name="glassfish_location"     value="${glassfish.location.prefix}/${glassfish.build.type}/${glassfish.version}/archive/bundles/glassfish-4.1-${glassfish.version}.zip"/>
     <property name="glassfish.subdir"       value="glassfish4"/>
     
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <!-- Nested JRE Properties-->        
     <property name="jre.builds.path" value="${jdk_builds_host}/${jre_builds_path}/latest/bundles/macosx-x64"/><!-- Change latest to fcs/b{proper buildnumber} -->
