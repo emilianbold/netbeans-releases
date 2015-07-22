@@ -1,6 +1,5 @@
-#changeset:   15307:5ff858da7004
-#tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Mon Jul 20 23:55:36 2015 +0300
-#summary:     Fixed test test_resolver_typedef_s_e_c_u
-453E2443D8E45E322A73CF6CDFCDE8F4D99E846C clank_0.3.6.zip
+#changeset:   15312:492f6a3b7dbc
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Wed Jul 22 16:15:24 2015 +0200
+#summary:     PERF: reduce number of arrays allocations/copy (speed up 4x, 10x less memory allocations)
+90DD90C090F69032C871E40D9AC01B9108306012 clank_0.3.6.zip
