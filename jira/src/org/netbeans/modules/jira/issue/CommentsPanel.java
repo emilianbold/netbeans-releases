@@ -81,6 +81,7 @@ import org.netbeans.modules.bugtracking.commons.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.commons.LinkButton;
 import org.netbeans.modules.bugtracking.commons.UIUtils;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.client.spi.User;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.team.spi.TeamAccessorUtils;
@@ -140,7 +141,8 @@ public class CommentsPanel extends JPanel {
         }
         String description = issue.getFieldValue(NbJiraIssue.IssueField.DESCRIPTION);
         JiraConfiguration rc = issue.getRepository().getConfiguration();
-        String reporter = rc != null ? rc.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)).getFullName() : ""; // NOI18N
+        User user = rc != null ? rc.getUser(issue.getFieldValue(NbJiraIssue.IssueField.REPORTER)) : null;
+        String reporter = user != null ? user.getFullName() : ""; // NOI18N
         NbJiraIssue.Comment[] comments = issue.getComments();
         this.sections = new ArrayList<>(comments.length);
         sections.add(addSection(
