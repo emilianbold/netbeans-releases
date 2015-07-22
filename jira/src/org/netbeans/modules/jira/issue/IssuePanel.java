@@ -406,14 +406,16 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initProjectCombo() {
-        Project[] projects = issue.getRepository().getConfiguration().getProjects();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();
+        Project[] projects = rc != null ? rc.getProjects() : new Project[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(projects);
         model.setSelectedItem(null); // Make sure nothing is pre-selected
         projectCombo.setModel(model);
     }
 
     private void initPriorityCombo() {
-        Priority[] priority = issue.getRepository().getConfiguration().getPriorities();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();        
+        Priority[] priority = rc != null ? rc.getPriorities() : new Priority[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(priority);
         priorityCombo.setModel(model);
     }
@@ -426,7 +428,8 @@ public class IssuePanel extends javax.swing.JPanel {
     }
 
     private void initResolutionCombo() {
-        Resolution[] resolution = issue.getRepository().getConfiguration().getResolutions();
+        JiraConfiguration rc = issue.getRepository().getConfiguration();
+        Resolution[] resolution = rc != null ? rc.getResolutions() : new Resolution[0];
         DefaultComboBoxModel model = new DefaultComboBoxModel(resolution);
         resolutionCombo.setModel(model);
     }
