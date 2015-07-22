@@ -107,10 +107,12 @@ public class CppUnitCodeGenerator {
                 Collection<CsmParameter> params = fun.getParameters();
                 int i = 0;
                 for (CsmParameter param : params) {
-                    testFunctions.append("    "); // NOI18N
-                    testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));
-                    testFunctions.append("\n"); // NOI18N
-                    i++;
+                    if (!param.isVarArgs()) {
+                        testFunctions.append("    "); // NOI18N
+                        testFunctions.append(CodeGenerationUtils.generateParameterDeclaration(param, i));
+                        testFunctions.append("\n"); // NOI18N
+                        i++;
+                    }
                 }
 
                 testFunctions.append(CodeGenerationUtils.generateFunctionCall(fun));

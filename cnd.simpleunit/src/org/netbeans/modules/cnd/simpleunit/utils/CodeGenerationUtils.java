@@ -90,7 +90,7 @@ public class CodeGenerationUtils {
         StringBuilder paramTypeAndName = new StringBuilder(""); // NOI18N
         String paramType = param.getType().getCanonicalText().toString();
         paramTypeAndName.append(paramType) // NOI18N
-                .append(" ").append(paramName); // NOI18N
+               .append(" ").append(paramName); // NOI18N
         return paramTypeAndName.toString();
     }
 
@@ -127,12 +127,14 @@ public class CodeGenerationUtils {
         functionCall.append("("); // NOI18N
         Collection<CsmParameter> params = fun.getParameters();
         for (CsmParameter param : params) {
-            if (i != 0) {
-                functionCall.append(", "); // NOI18N
+            if (!param.isVarArgs()) {
+                if (i != 0) {
+                    functionCall.append(", "); // NOI18N
+                }
+                String paramName = param.getName().toString();
+                functionCall.append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)); // NOI18N
+                i++;
             }
-            String paramName = param.getName().toString();
-            functionCall.append(((paramName != null && !paramName.isEmpty()) ? paramName : "p" + i)); // NOI18N
-            i++;
         }
         functionCall.append(");\n"); // NOI18N
         return functionCall.toString();
