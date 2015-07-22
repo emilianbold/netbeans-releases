@@ -212,7 +212,7 @@ public final class TaskActivityDisplayer extends ActivityDisplayer {
     }
 
     private JComponent commentDetailsPanel(String comment) {
-        if(comment != null) {
+        if(comment == null) {
             return null;
         }
         JPanel panel = new JPanel(new GridBagLayout());
