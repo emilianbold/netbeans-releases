@@ -2,79 +2,88 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Analyze Performance: Edit Profiling Roots (Advanced)</title>
+<title>Manage Calibration Data Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-07-21</p>
-<p><a id="RootMethodsPanel.HelpCtx" name="RootMethodsPanel.HelpCtx"></a></p>
-<div id="NBCSH3232"><!-- infolevel="all" infotype="General" --><a id="sthref419" name="sthref419"></a>
-<h1>Analyze Performance: Edit Profiling Roots (Advanced)</h1>
+<p>Beta Draft: 2015-07-22</p>
+<p><a id="ManageCalibration.HelpCtx" name="ManageCalibration.HelpCtx"></a></p>
+<div id="NBCSH3246"><!-- infolevel="all" infotype="General" --><a id="sthref419" name="sthref419"></a>
+<h1>Manage Calibration Data Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to access more advanced options for adding, editing and removing the root methods that are specified in the Edit Profiling Roots dialog box. 
+<p>Use to calibrate the IDE with a specific Java platform. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG760">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG696">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 
-<table summary="Descriptions of Edit Profiling Roots Advanced dialog box elements." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<table summary="Description of element in Find in Results dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="32%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t30">Element</th>
-<th align="left" valign="bottom" id="r1c2-t30">Description</th>
+<th align="left" valign="bottom" id="r1c1-t29">Element</th>
+<th align="left" valign="bottom" id="r1c2-t29">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t30" headers="r1c1-t30">
-<p>Add JAR/Folder</p>
+<td align="left" id="r2c1-t29" headers="r1c1-t29">
+<p>Java platforms available for profiling</p>
 </td>
-<td align="left" headers="r2c1-t30 r1c2-t30">Selects profiling roots that are located in a JAR or Java sources folder.
-<p>This option is only available when you are attaching the profiler to an external application</p>
+<td align="left" headers="r2c1-t29 r1c2-t29">This table displays a list of the available local and remote Java platforms and the date of the most recent calibration.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t29" headers="r1c1-t29">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Java Platform</p>
+</td>
+<td align="left" headers="r3c1-t29 r1c2-t29">This column displays the name of the platform.
+<p>You can add or remove Java platforms in the Java Platform Manager.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t30" headers="r1c1-t30">
-<p>Add</p>
+<td align="left" id="r4c1-t29" headers="r1c1-t29">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Last Calibrated</p>
 </td>
-<td align="left" headers="r3c1-t30 r1c2-t30">Specifies a class and method that you want to instrument.</td>
+<td align="left" headers="r4c1-t29 r1c2-t29">This column displays the date of the most recent calibration data for the platform.
+<p>No date is displayed if the file containing the calibration data for the platform is missing or corrupted.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t30" headers="r1c1-t30">
-<p>Edit</p>
+<td align="left" id="r5c1-t29" headers="r1c1-t29">
+<p>Calibrate</p>
 </td>
-<td align="left" headers="r4c1-t30 r1c2-t30">Modifies the selected class and root method.</td>
+<td align="left" headers="r5c1-t29 r1c2-t29">Click to run the calibration process for the selected Java platform.
+<p>The button is disabled if you select a remote Java platform.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t30" headers="r1c1-t30">
-<p>Remove</p>
+<td align="left" id="r6c1-t29" headers="r1c1-t29">
+<p>Java Platforms</p>
 </td>
-<td align="left" headers="r5c1-t30 r1c2-t30">Removes the selected root method from the list of methods that are instrumented.</td>
+<td align="left" headers="r6c1-t29 r1c2-t29">Click to open the Java Platform Manager to add or remove a Java platform. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG2385">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3237" name="NBCSH3237"></a>
+<a id="NBCSH3252" name="NBCSH3252"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG755">
-<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG706">
-<param name="text" value="<html><u>&quot;Attaching the Profiler&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG689">
+<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
