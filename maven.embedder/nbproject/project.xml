@@ -378,6 +378,9 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>../maven/lib/wagon-provider-api-2.4.jar</runtime-relative-path>
             </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>../maven/lib/ext/wagon-http-2.8-shaded.jar</runtime-relative-path>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
