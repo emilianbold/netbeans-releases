@@ -43,6 +43,7 @@ package org.netbeans.modules.odcs.ui;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
@@ -65,9 +66,13 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -216,14 +221,16 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         }
         Set<CreatedProjectInfo> set = new HashSet<>();
         set.add(new CreatedProjectInfo(project, newPrjScmLocal));
-//        // Open the project in Dashboard
-//        EventQueue.invokeLater(new Runnable() {
-//            @Override
-//            public void run () {
-//                TeamUIUtils.activateTeamDashboard();                
-//                uiServer.getDashboard().addProject(projectHandle, true, true);
-//            }
-//        });
+        // Open the project in Dashboard
+        final ODCSUiServer uiServer = ODCSUiServer.forServer(server);
+        final ProjectHandle<ODCSProject>[] projectHandle = new ProjectHandle[] {new ProjectHandleImpl(uiServer, project)};
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                TeamUIUtils.activateTeamDashboard();                
+                uiServer.getDashboard().addProjects(projectHandle, true, true);
+            }
+        });
 
         handle.finish();
 
