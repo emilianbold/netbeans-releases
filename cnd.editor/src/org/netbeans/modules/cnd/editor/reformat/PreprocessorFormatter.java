@@ -126,6 +126,18 @@ public class PreprocessorFormatter {
         }
         if (atSharp) {
             selectPreprocessorIndent(previous, prep);
+            if (prep.moveNext()) {
+                Token<CppTokenId> prev = prep.token();
+                while(prep.moveNext()) {
+                    Token<CppTokenId> current = prep.token();
+                    if (current.id() == WHITESPACE) {
+                        replaceCurrentImbeded(prep, current, prev);
+                    } else if (current.id() == ESCAPED_WHITESPACE) {
+                        replaceCurrentImbeded(prep, current, prev);
+                    }
+                    prev = current;
+                }
+            }
         }
         if (directive != null) {
             switch (directive.id()) {
@@ -170,6 +182,56 @@ public class PreprocessorFormatter {
     private void noIndent(Token<CppTokenId> previous, TokenSequence<CppTokenId> prep, Token<CppTokenId> next) {
         indentBefore(previous, 0, false); // NOI18N
         indentAfter(prep, next, 0); // NOI18N
+    }
+
+    private int textLength(String text, boolean startLine) {
+        if (startLine) {
+            int l = 0;
+            for(int i = 0; i < text.length(); i++) {
+                if (text.charAt(i) == '\t') {
+                    if (context.tabSize > 1) {
+                        l += context.tabSize;
+                    } else {
+                        l++;
+                    }
+                } else {
+                    l++;
+                }
+            }
+            return l;
+        } else {
+            return text.length();
+        }
+    }
+
+    private void replaceCurrentImbeded(TokenSequence<CppTokenId> prep, Token<CppTokenId> current, Token<CppTokenId> previous){
+        String old = current.text().toString();
+        if (current.id() == WHITESPACE) {
+            int l = textLength(old, previous.id() == ESCAPED_LINE);
+            if (!Diff.equals(old, 0, l, false, context.expandTabToSpaces, context.tabSize)){
+                diffs.addFirst(prep.offset(), prep.offset() + current.length(), 0, l, previous.id() == ESCAPED_LINE);
+            }
+        } else if (current.id() == ESCAPED_WHITESPACE) {
+            int beg = -1;
+            for(int i = 0; i < old.length(); i++) {
+                if (old.charAt(i) == '\\') {
+                    beg = i;
+                    break;
+                }
+            }
+            if (beg > 0) {
+                String first = old.substring(0, beg);
+                int l = textLength(first, previous.id() == ESCAPED_LINE);
+                if (!Diff.equals(first, 0, l, false, context.expandTabToSpaces, context.tabSize)){
+                    diffs.addFirst(prep.offset(), prep.offset() + first.length(), 0, l, false);
+                }
+                String rest = old.substring(beg+2);
+                l = textLength(rest, true);
+                if (!Diff.equals(rest, 0, l, false, context.expandTabToSpaces, context.tabSize)){
+                    diffs.addFirst(prep.offset()+beg+2, prep.offset() + old.length(), 0, l, true);
+                }
+            }
+        }
     }
 
     private void indentBefore(Token<CppTokenId> previous, int spaces, boolean isIndent) {
