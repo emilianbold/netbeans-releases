@@ -42,17 +42,27 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import java.awt.Container;
+import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.bugtracking.commons.AutoupdateSupport;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.client.spi.JiraConnectorProvider;
 import org.netbeans.modules.jira.client.spi.JiraConnectorSupport;
 import org.netbeans.modules.jira.client.spi.JiraVersion;
@@ -60,10 +70,8 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 import org.netbeans.modules.team.ide.spi.SettingsServices;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.awt.HtmlRenderer;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -180,30 +188,84 @@ public class JiraAutoupdate {
     };    
     
     @NbBundle.Messages({"CTL_Restart=Change Connector",
-                        "CTL_RestartClickHere=You are accessing a JIRA server with a version higher than 5.0. "
-                                + "Click here to change your connector settings."})
+                        "CTL_OldVersion=You are accessing a JIRA server with a version higher than 5.0.",
+                        "CTL_ClickHere=Click here to change your connector settings.",
+                        "CTL_NeverAgain=Do not show this warning again."})
     private void askToChangeConnector() {
-        if( connectorNotified ) {
+        if( connectorNotified || !JiraConfig.getInstance().showChangeConnectorWarning()) {
             return;
         }
         connectorNotified = true;
         
-        final SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        final JButton[] btns = new JButton[2];
+        btns[0] = createLink(Bundle.CTL_NeverAgain(), createDoNotShowListener(btns));   
+        btns[1] = createLink(Bundle.CTL_NeverAgain(), createDoNotShowListener(btns));   
         
-        AbstractAction a = null;
+        NotificationDisplayer.getDefault().notify(Bundle.CTL_Restart(),
+            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.gif", true ), 
+            createPanel(btns[0]), 
+            createPanel(btns[1]),
+            NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
+    }  
+
+    protected ActionListener createDoNotShowListener(final JButton[] btns) {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JiraConfig.getInstance().stopShowingChangeConnectorWarning();
+                for (JButton btn : btns) {
+                    Container p = btn.getParent();
+                    p.remove(btn);
+                    p.repaint();
+                }
+            }
+        };
+    }  
+    
+    private JComponent createPanel(JButton doNotShowButton) {
+        final SettingsServices settings = Lookup.getDefault().lookup(SettingsServices.class);
+        ActionListener showSettings = null;
         if(settings != null && settings.providesOpenSection(SettingsServices.Section.TASKS)) {
-            a = new AbstractAction() {
+            showSettings = new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     settings.openSection(SettingsServices.Section.TASKS);
                 }
             };
         }
-        NotificationDisplayer.getDefault().notify(
-            Bundle.CTL_Restart(),
-            ImageUtilities.loadImageIcon( "org/netbeans/modules/jira/resources/warning.gif", true ), //NOI18N
-            Bundle.CTL_RestartClickHere(), 
-            a,
-            NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
-    }  
+        final JPanel result = new JPanel();
+        result.setOpaque(false);
+        result.setLayout(new BoxLayout(result, BoxLayout.Y_AXIS));
+        result.add(new JLabel(Bundle.CTL_OldVersion()));
+        result.add(createLink(Bundle.CTL_ClickHere(), showSettings));
+        result.add(new JSeparator());
+        result.add(doNotShowButton);
+        return result;
+    }
+
+    private JButton createLink(String text, ActionListener a) {
+        JButton btn = new HtmlButton(text);
+        btn.setFocusable(false);
+        btn.setBorder(BorderFactory.createEmptyBorder());
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setOpaque(false);
+        btn.setContentAreaFilled(false);
+        btn.addActionListener(a);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
+    private static class HtmlButton extends JButton {
+        public HtmlButton(String text) {
+            super(text);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            HtmlRenderer.renderString("<html><a>" + getText() + "</a></html>",  // NOI18N
+                    g, 0, getBaseline(Integer.MAX_VALUE, getFont().getSize()),
+                    Integer.MAX_VALUE, getFont().getSize(),
+                    getFont(), getForeground(), HtmlRenderer.STYLE_CLIP, true);
+        }
+    }
 }

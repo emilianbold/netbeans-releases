@@ -76,6 +76,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
@@ -1305,12 +1306,18 @@ public class IssuePanel extends javax.swing.JPanel {
                 return;
             }
             if (IssueStatusProvider.EVENT_STATUS_CHANGED.equals(evt.getPropertyName())) {
-                Mutex.EVENT.readAccess(new Runnable() {
+                RP.post(new Runnable() { 
+                    // HACK! see issue #253592                    
                     @Override
-                    public void run () {
-                        updateFieldStatuses();
+                    public void run() {
+                        Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
+                            public void run () {
+                                updateFieldStatuses();
+                            }
+                        });
                     }
-                });
+                }, 500);
             }
         }
     };
