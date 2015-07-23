@@ -563,22 +563,24 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     }
     
     private void updateClassName() {
-        boolean shouldShowClassNameInfo = shouldShowClassNameInfo();
-        tfClassName.setVisible(shouldShowClassNameInfo);
-        lblClassName.setVisible(shouldShowClassNameInfo);
-        if (tfClassName != null && tfClassName.isVisible()) {
-            FileObject fileObj = activatedFOs[0];
+        if (tfClassName != null) {
+            boolean shouldShowClassNameInfo = shouldShowClassNameInfo();
+            tfClassName.setVisible(shouldShowClassNameInfo);
+            lblClassName.setVisible(shouldShowClassNameInfo);
+            if (shouldShowClassNameInfo) {
+                FileObject fileObj = activatedFOs[0];
 
-            ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
-            if (cp != null) {
-                String className = cp.getResourceName(fileObj, '.', false);
+                ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
+                if (cp != null) {
+                    String className = cp.getResourceName(fileObj, '.', false);
 
-                String suffix = (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM))
-                        || (chkIntegrationTests != null && chkIntegrationTests.isEnabled() && chkIntegrationTests.isSelected()) ? TestCreatorProvider.INTEGRATION_TEST_CLASS_SUFFIX : TestCreatorProvider.TEST_CLASS_SUFFIX;
-                String prefilledName = className + getTestingFrameworkSuffix() + suffix;
-                tfClassName.setText(prefilledName);
-                tfClassName.setDefaultText(prefilledName);
-                tfClassName.setCaretPosition(prefilledName.length());
+                    String suffix = (selectedTestingFramework != null && selectedTestingFramework.equals(TestCreatorProvider.FRAMEWORK_SELENIUM))
+                            || (chkIntegrationTests != null && chkIntegrationTests.isEnabled() && chkIntegrationTests.isSelected()) ? TestCreatorProvider.INTEGRATION_TEST_CLASS_SUFFIX : TestCreatorProvider.TEST_CLASS_SUFFIX;
+                    String prefilledName = className + getTestingFrameworkSuffix() + suffix;
+                    tfClassName.setText(prefilledName);
+                    tfClassName.setDefaultText(prefilledName);
+                    tfClassName.setCaretPosition(prefilledName.length());
+                }
             }
         }
     }
