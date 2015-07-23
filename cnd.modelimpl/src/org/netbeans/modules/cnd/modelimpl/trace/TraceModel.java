@@ -211,6 +211,10 @@ public class TraceModel extends TraceModelBase {
         this.dumpModel = dumpModel;
     }
 
+    /**
+     * Note that if you switch dumping ON - this must be done BEFORE parsing starts
+     * since this flag now affects gathering handlers as well.
+     */
     public void setDumpPPState(boolean dumpPPState) {
         this.dumpPPState = dumpPPState;
     }
@@ -238,7 +242,9 @@ public class TraceModel extends TraceModelBase {
 
         @Override
         public void parsingFinished(CsmFile file, PreprocHandler preprocHandler) {
-            states.put(file, preprocHandler);
+            if (dumpPPState) {
+                states.put(file, preprocHandler);
+            }
         }
     };
 
