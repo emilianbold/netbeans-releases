@@ -42,10 +42,10 @@
 package org.netbeans.modules.php.composer;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -60,20 +60,17 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.PhpVersion;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleGenerator;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.ProjectConvertor;
-import org.netbeans.spi.queries.FileEncodingQueryImplementation;
+import org.netbeans.spi.project.ui.support.ProjectConvertors;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 @ProjectConvertor.Registration(requiredPattern = PhpProjectConvertor.COMPOSER_JSON_FILENAME, position = 500)
 public final class PhpProjectConvertor implements ProjectConvertor {
@@ -100,12 +97,12 @@ public final class PhpProjectConvertor implements ProjectConvertor {
             // should not happen often
             displayName = projectDirectory.getNameExt();
         }
-        final TransientLookup transientLkp = new TransientLookup(
+        final Lookup transientLkp = ProjectConvertors.createProjectConvertorLookup(
             new ConvertorClassPathProvider(),
-            new ConvertorFileEncodingQuery());
+            ProjectConvertors.createFileEncodingQuery());
         return new Result(
                 transientLkp,
-                new Factory(projectDirectory, displayName, transientLkp),
+                new Factory(projectDirectory, displayName, (Closeable) transientLkp),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(PROJECT_ICON)));
     }
@@ -153,10 +150,10 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
         private final FileObject projectDirectory;
         private final String displayName;
-        private final TransientLookup transientLkp;
+        private final Closeable transientLkp;
 
 
-        Factory(FileObject projectDirectory, String displayName, TransientLookup transientLkp) {
+        Factory(FileObject projectDirectory, String displayName, Closeable transientLkp) {
             assert projectDirectory != null;
             assert displayName != null : projectDirectory;
             assert transientLkp != null : projectDirectory;
@@ -167,9 +164,7 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
         @Override
         public Project call() throws Exception {
-            transientLkp.hide(
-                ConvertorClassPathProvider.class,
-                ConvertorFileEncodingQuery.class);
+            transientLkp.close();
             PhpModuleGenerator phpModuleGenerator = Lookup.getDefault().lookup(PhpModuleGenerator.class);
             assert phpModuleGenerator != null;
             phpModuleGenerator.createModule(new PhpModuleGenerator.CreateProperties()
@@ -203,24 +198,6 @@ public final class PhpProjectConvertor implements ProjectConvertor {
 
     }
 
-    private static final class TransientLookup extends ProxyLookup {
-
-        private final Lookup base;
-
-        public TransientLookup(Object... services) {
-            this(Lookups.fixed(services));
-        }
-
-        private TransientLookup(Lookup base) {
-            super(base);
-            this.base = base;
-        }
-
-        void hide(Class<?>... clzs) {
-            setLookups(Lookups.exclude(base, clzs));
-        }
-    }
-
     private static class ConvertorClassPathProvider implements ClassPathProvider {
 
         @CheckForNull
@@ -229,43 +206,14 @@ public final class PhpProjectConvertor implements ProjectConvertor {
             if (PhpSourcePath.BOOT_CP.equals(type)
                     || PhpSourcePath.PROJECT_BOOT_CP.equals(type)
                     || PhpSourcePath.SOURCE_CP.equals(type)) {
-                Project phpProject = findPhpProject(file);
-                if (phpProject != null) {
-                    return phpProject.getLookup()
-                            .lookup(ClassPathProvider.class)
-                            .findClassPath(file, type);
+                final Project project = ProjectConvertors.getNonConvertorOwner(file);
+                if (project != null) {
+                    return project.getLookup().lookup(ClassPathProvider.class).findClassPath(file, type);
                 }
             }
             return null;
         }
-    }
 
-    private static class ConvertorFileEncodingQuery extends FileEncodingQueryImplementation {
-
-        @CheckForNull
-        @Override
-        public Charset getEncoding(FileObject file) {
-            final Project phpProject = findPhpProject(file);
-            if (phpProject != null) {
-                return phpProject.getLookup()
-                        .lookup(FileEncodingQueryImplementation.class)
-                        .getEncoding(file);
-            }
-            return null;
-        }
-    }
-
-    @CheckForNull
-    private static Project findPhpProject(@NonNull final FileObject file) {
-        for (FileObject parent = file.getParent(); parent != null; parent = parent.getParent()) {
-            PhpModule phpModule = PhpModule.Factory.forFileObject(parent);
-            if (phpModule != null) {
-                Project project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
-                assert project != null : phpModule.getProjectDirectory();
-                return project;
-            }
-        }
-        return null;
     }
 
 }
