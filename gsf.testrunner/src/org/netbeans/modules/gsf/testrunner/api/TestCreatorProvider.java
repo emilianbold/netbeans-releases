@@ -46,6 +46,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -137,6 +139,7 @@ public abstract class TestCreatorProvider {
         private FileObject targetFolder;
         private final FileObject[] activatedFOs;
         private boolean integrationTests;
+        private Map<String, Object> configurationPanelProperties;
         
         /**
          *
@@ -216,6 +219,27 @@ public abstract class TestCreatorProvider {
          */
         public void setIntegrationTests(boolean integrationTests) {
             this.integrationTests = integrationTests;
+        }
+        
+        /**
+         * Set properties from configuration panel inside "Create Tests" dialog. 
+         * These properties will be available whenever 
+         * {@link TestCreatorProvider#createTests(org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Context)}
+         * is called.
+         *
+         * @param configurationPanelProperties map of properties from configuration panel inside "Create Tests" dialog
+         */
+        public void setConfigurationPanelProperties(Map<String, Object> configurationPanelProperties) {
+            this.configurationPanelProperties = configurationPanelProperties;
+        }
+    
+        /**
+         * Get properties from configuration panel inside "Create Tests" dialog.
+         *
+         * @return map of properties from configuration panel inside "Create Tests" dialog
+         */
+        public Map<String, Object> getConfigurationPanelProperties() {
+            return Collections.unmodifiableMap(configurationPanelProperties);
         }
         
     }
