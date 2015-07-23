@@ -62,6 +62,7 @@ public class JiraConfig {
     private static final String LAST_CHANGE_FROM    = "jira.last_change_from";      // NOI18N 
     private static final String QUERY_LAST_REFRESH  = "jira.query_last_refresh";    // NOI18N
     private static final String ACTIVE_CONNECTOR_CNB= "jira.active_connector";      // NOI18N    
+    private static final String SHOW_CONNECTOR_WARNING = "jira.show.connector.warning"; // NOI18N    
     private static final String PREF_SECTION_COLLAPSED = "collapsedSection"; //NOI18N
     private static final String PREF_TASK = "task."; //NOI18N
     private static final String DELIMITER           = "<=>";                        // NOI18N
@@ -156,4 +157,12 @@ public class JiraConfig {
     public void setActiveConnector(JiraConnectorProvider.Type type) {
         getPreferences().put(ACTIVE_CONNECTOR_CNB, type.getCnb());
     }    
+
+    public void stopShowingChangeConnectorWarning() {
+        getPreferences().putBoolean(SHOW_CONNECTOR_WARNING, false);
+    }
+    
+    public boolean showChangeConnectorWarning() {
+        return getPreferences().getBoolean(SHOW_CONNECTOR_WARNING, true);
+    }
 }
