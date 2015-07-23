@@ -1,5 +1,6 @@
-#changeset:   15312:492f6a3b7dbc
+#changeset:   15319:3155a5a82cb3
+#tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Wed Jul 22 16:15:24 2015 +0200
-#summary:     PERF: reduce number of arrays allocations/copy (speed up 4x, 10x less memory allocations)
-90DD90C090F69032C871E40D9AC01B9108306012 clank_0.3.6.zip
+#date:        Thu Jul 23 17:55:23 2015 +0200
+#summary:     fixed 253670 - [newcodemodel] java.lang.AssertionError: should be assigned only once
+7EA8F4F9C3985197F2E2B5E1DF04F9EF4FC483F8 clank_0.3.6.zip

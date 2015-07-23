@@ -616,8 +616,11 @@ public final class ClankPPCallback extends FileInfoCallback {
         }
 
         private void prepareConvertedGuard() {
-            FileGuardInfo fileGuardInfo = current.getFileGuardInfo();
-            if (fileGuardInfo != null) {
+            SmallVector<FileGuardInfo> guards = current.getFileGuardsInfo();
+            if (guards != null) {
+                assert !guards.empty();
+                // TODO: use the last for now
+                FileGuardInfo fileGuardInfo = guards.$at(guards.size()-1);
                 SourceManager srcMgr = current.getSourceManager();
                 int start = Unsigned.long2uint($second_uint(srcMgr.getDecomposedLoc(fileGuardInfo.getIfDefMacroLocation())));
                 convertedGuard = new FileGuard(start, start+fileGuardInfo.getIfDefMacro().getLength());
