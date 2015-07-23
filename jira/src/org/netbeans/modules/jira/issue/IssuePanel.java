@@ -2431,6 +2431,9 @@ public class IssuePanel extends javax.swing.JPanel {
                         boolean subtask = issue.isSubtask();
                         boolean anySubtaskType = false;
                         IssueType[] issueTypes = config.getIssueTypes(project);
+                        if(issueTypes == null) {
+                            issueTypes = new IssueType[0];
+                        }
                         List<IssueType> types = new ArrayList<IssueType>(issueTypes.length);
                         for (IssueType issueType : issueTypes) {
                             if (issueType.isSubTaskType() == subtask) {

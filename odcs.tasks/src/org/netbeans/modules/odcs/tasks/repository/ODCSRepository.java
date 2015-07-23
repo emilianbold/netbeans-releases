@@ -253,10 +253,10 @@ public class ODCSRepository implements PropertyChangeListener {
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = new RepositoryInfo(id, ODCSConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
         info.putValue(TeamBugtrackingConnector.TEAM_PROJECT_NAME, project.getName());
+        setTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
     
     private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {

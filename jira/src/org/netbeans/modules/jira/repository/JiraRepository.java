@@ -202,9 +202,9 @@ public class JiraRepository {
     }
 
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        setTaskRepository(name, url, user, password, httpUser, httpPassword);
         String id = info != null ? info.getID() : name + System.currentTimeMillis();
         info = createInfo(id, url, name, user, httpUser, password, httpPassword);
+        setTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
     protected RepositoryInfo createInfo(String id, String url, String name, String user, String httpUser, char[] password, char[] httpPassword) {
