@@ -184,9 +184,9 @@ public class HtmlCompletionQuery extends UserTask {
             return null;
         }
 
-        boolean match = true;
+        boolean match = pattern.length() <= expectedCode.length()- ltIndex;
         //now compare the pattern with the expected text
-        for (int i = ltIndex; i < pattern.length(); i++) {
+        for (int i = ltIndex; match && i < pattern.length(); i++) {
             if (pattern.charAt(i) != expectedCode.charAt(i - ltIndex)) {
                 match = false;
                 break;
