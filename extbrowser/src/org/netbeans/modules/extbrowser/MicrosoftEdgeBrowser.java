@@ -55,19 +55,21 @@ import org.openide.util.Utilities;
  * @author Jan Stola
  */
 public class MicrosoftEdgeBrowser extends ExtWebBrowser {
+    /** Determines whether this browser should be hidden. */
     private static Boolean hidden;
 
     /**
      * Determines whether the browser should be visible or not.
      * 
-     * @return {@code true} when the OS is Windows, returns {@code false} otherwise.
+     * @return {@code false} when the OS is Windows and Microsoft Edge is available,
+     * returns {@code true} otherwise.
      */
     public static Boolean isHidden() {
         if (hidden == null) {
             if (Utilities.isWindows()) {
                 hidden = getAppUserModelId().isEmpty();
             } else {
-                hidden = false;
+                hidden = true;
             }
         }
         return hidden;
