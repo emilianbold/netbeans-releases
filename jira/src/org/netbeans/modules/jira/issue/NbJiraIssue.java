@@ -614,8 +614,9 @@ public class NbJiraIssue extends AbstractNbTaskWrapper {
             return new CustomField[0];
         }
         List<CustomField> fields = new ArrayList<CustomField>(10);
+        TaskAttribute[] attrValues = attrs.values().toArray(new TaskAttribute[attrs.size()]);
         
-        for (TaskAttribute attribute : attrs.values()) {
+        for (TaskAttribute attribute : attrValues) {
             String prefix = jiraConstants.getATTRIBUTE_CUSTOM_PREFIX();
             if (attribute.getId().startsWith(prefix)) {
                 CustomField field = new CustomField(attribute);
