@@ -154,7 +154,11 @@ public class CustomHtmlExtension extends HtmlExtension {
     @Override
     public List<CompletionItem> completeOpenTags(CompletionContext context) {
         List<CompletionItem> items = new ArrayList<>();
-        Configuration conf = Configuration.get(context.getResult().getSnapshot().getSource().getFileObject());
+        FileObject file = context.getResult().getSnapshot().getSource().getFileObject();
+        Configuration conf = Configuration.EMPTY;
+        if (file != null) {
+           conf = Configuration.get(file);
+        }
         for (Tag t : conf.getTags()) {
             String tagName = t.getName();
             if (tagName.startsWith(context.getPrefix())) {
