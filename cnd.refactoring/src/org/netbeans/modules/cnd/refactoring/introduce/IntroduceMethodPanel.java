@@ -303,7 +303,7 @@ public class IntroduceMethodPanel extends JPanel implements CustomRefactoringPan
 
         name.setColumns(20);
 
-        returnTypeLabel.setLabelFor(returnTypeLabel);
+        returnTypeLabel.setLabelFor(returnTypeTextField);
         org.openide.awt.Mnemonics.setLocalizedText(returnTypeLabel, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "IntroduceMethodPanel.returnTypeLabel.text")); // NOI18N
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
