@@ -102,9 +102,16 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         Node node = new Node(prn, "Source Packages"); // NOI18N
         node.setComparator(new Operator.DefaultStringComparator(true, false));
         node.select();
+        node.expand();
 
         // create test
-        new ActionNoBlock(null,"Tools|Create/Update Tests").perform(node);
+        new ActionNoBlock("Tools|Create/Update Tests", null).performMenu();
+        try { new NbDialogOperator("Create Tests"); }
+        catch (org.netbeans.junit.AssertionFailedErrorException e) {
+            System.out.println("Another try...");
+            node.select();
+            new ActionNoBlock("Tools|Create/Update Tests", null).performMenu();
+        }
         NbDialogOperator newTestOp = new NbDialogOperator("Create Tests");
         new JButtonOperator(newTestOp, "OK").clickMouse();
         
