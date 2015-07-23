@@ -196,7 +196,7 @@ public class TreeLoader extends LazyTreeLoader {
                             jc.skipAnnotationProcessing = true;
                             jti.analyze(jti.enter(jti.parse(jfo)));
                             if (persist) {
-                                if (canWrite(cpInfo)) {
+                                if (jfm.hasLocation(StandardLocation.CLASS_OUTPUT) && canWrite(cpInfo)) {
                                     Env<AttrContext> env = Enter.instance(context).getEnv(clazz);
                                     HashMap<ClassSymbol, JCClassDecl> syms2trees;
                                     if (env != null && pruneTree(env.tree, Symtab.instance(context), syms2trees = new HashMap<>())) {
