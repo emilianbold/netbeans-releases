@@ -537,8 +537,6 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             }
             break;
         }
-        updateClassName();
-        checkUpdatingExistingTestClass();
 
         testCreatorConfiguration = null;
         Collection<? extends TestCreatorConfigurationProvider> panelProviders = Lookup.getDefault().lookupAll(TestCreatorConfigurationProvider.class);
@@ -559,6 +557,9 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             jPanel.add(bottomPanel, BorderLayout.SOUTH);
             jPanel.revalidate();
         }
+        shouldShowClassToTestInfo();
+        updateClassName();
+        checkUpdatingExistingTestClass();
     }
     
     private void updateClassName() {
@@ -587,6 +588,16 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             return testCreatorConfiguration.showClassNameInfo();
         }
         return true;
+    }
+    
+    private boolean shouldShowClassToTestInfo() {
+        boolean shouldShowClassToTestInfo = true;
+        if (testCreatorConfiguration != null) {
+            shouldShowClassToTestInfo = testCreatorConfiguration.showClassToTestInfo();
+        }
+        lblClassToTest.setVisible(shouldShowClassToTestInfo);
+        lblClassToTestValue.setVisible(shouldShowClassToTestInfo);
+        return shouldShowClassToTestInfo;
     }
     
     private void setSelectedTestingFramework() {
@@ -637,7 +648,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         
         final boolean askForClassName = singleClass;
         
-        JLabel lblClassToTest = new JLabel();
+        lblClassToTest = new JLabel();
         lblClassName = askForClassName ? new JLabel() : null;
         JLabel lblLocation = new JLabel();
         JLabel lblFramework = new JLabel();
@@ -746,6 +757,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         } else {
             panel.add(lblClassToTest,   gbcRight);
         }
+        shouldShowClassToTestInfo();
         if (askForClassName) {
             panel.add(lblClassName,     gbcLeft);
             panel.add(tfClassName,      gbcRight);
@@ -1241,6 +1253,7 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         }
     }
 
+    private JLabel lblClassToTest;
     private JLabel lblClassToTestValue;
     private JLabel lblClassName;
     private ClassNameTextField tfClassName;

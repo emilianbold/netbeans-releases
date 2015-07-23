@@ -88,6 +88,17 @@ public abstract class TestCreatorConfiguration {
     }
     
     /**
+     * Determines whether "Class to Test" label should be shown.
+     * Default implementation just returns {@code true}
+     * 
+     * @return {@code true} if this provider should show "Class to Test" label, {@code false} otherwise
+     * @since 1.6
+     */
+    public boolean showClassToTestInfo() {
+        return true;
+    }
+    
+    /**
      * Finds the configuration panel that should be presented in the test creator dialog.
      * Default implementation just returns an empty panel
      * 

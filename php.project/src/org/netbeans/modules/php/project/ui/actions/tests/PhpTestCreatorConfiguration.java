@@ -115,6 +115,11 @@ public class PhpTestCreatorConfiguration extends TestCreatorConfiguration {
     }
 
     @Override
+    public boolean showClassToTestInfo() {
+        return false;
+    }
+
+    @Override
     public void persistConfigurationPanel(Context context) {
         context.getProperties().put("php", true);
     }
