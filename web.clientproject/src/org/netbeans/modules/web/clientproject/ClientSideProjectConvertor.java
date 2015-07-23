@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.web.clientproject;
 
@@ -106,7 +106,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             ProjectConvertors.createFileEncodingQuery());
         return new Result(
                 transientLkp,
-                new Factory(projectDirectory, displayName, (Closeable)transientLkp),
+                new Factory(projectDirectory, displayName, (Closeable) transientLkp),
                 displayName,
                 ImageUtilities.image2Icon(ImageUtilities.loadImage(ClientSideProject.HTML5_PROJECT_ICON)));
     }
@@ -147,7 +147,7 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
         Factory(FileObject projectDirectory, String displayName, Closeable transientLkp) {
             assert projectDirectory != null;
             assert displayName != null : projectDirectory;
-            assert transientLkp != null: projectDirectory;
+            assert transientLkp != null : projectDirectory;
             this.projectDirectory = projectDirectory;
             this.displayName = displayName;
             this.transientLkp = transientLkp;
@@ -190,4 +190,5 @@ public final class ClientSideProjectConvertor implements ProjectConvertor {
             return null;
         }
     }
+
 }
