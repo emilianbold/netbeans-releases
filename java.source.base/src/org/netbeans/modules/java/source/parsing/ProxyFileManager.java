@@ -333,7 +333,7 @@ public final class ProxyFileManager implements JavaFileManager {
     public boolean hasLocation(@NonNull final JavaFileManager.Location location) {
         checkSingleOwnerThread();
         try {
-            return fileManagers.containsKey(location);
+            return getFileManagers (location).length > 0;
         } finally {
             clearOwnerThread();
         }
