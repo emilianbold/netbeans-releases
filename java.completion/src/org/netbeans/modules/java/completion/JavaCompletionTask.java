@@ -4462,6 +4462,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
             return false;
         }
         for (TypeMirror smartType : smartTypes) {
+            if (type.getKind() == TypeKind.DECLARED){
+                smartType = inferDeclaredType(env.getController().getTypes(), (DeclaredType) type, smartType);
+            }
             if (SourceUtils.checkTypesAssignable(env.getController(), type, smartType)) {
                 return true;
             }
@@ -5321,6 +5324,11 @@ public final class JavaCompletionTask<T> extends BaseTask {
             if (el.getKind().isClass() || el.getKind().isInterface()) {
                 List<? extends TypeParameterElement> typeParams = ((TypeElement)el).getTypeParameters();
                 if (!typeParams.isEmpty()) {
+                    for (TypeMirror typeArgument : ((DeclaredType)type).getTypeArguments()) {
+                        if (typeArgument.getKind() != TypeKind.TYPEVAR) {
+                            return type;
+                        }
+                    }
                     if (el == original.asElement()) {
                         return original;
                     }
