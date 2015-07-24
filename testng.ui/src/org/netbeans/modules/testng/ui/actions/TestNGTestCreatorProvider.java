@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Theofanis Oikonomou
  */
-@Registration(displayName=GuiUtils.TESTNG_TEST_FRAMEWORK)
+@Registration(displayName=GuiUtils.TESTNG_TEST_FRAMEWORK, identifier = TestCreatorProvider.IDENTIFIER_TESTNG)
 public class TestNGTestCreatorProvider extends TestCreatorProvider {
 
     private static final Logger LOGGER = Logger.getLogger(TestNGTestCreatorProvider.class.getName());

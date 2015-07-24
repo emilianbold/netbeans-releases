@@ -70,6 +70,15 @@ public abstract class TestCreatorProvider {
      * @since 2.4
      */
     public static final String FRAMEWORK_PHP = "PHP";
+    
+    /**
+     * @since 2.6
+     */
+    public static final String IDENTIFIER_JUNIT = "junit";
+    public static final String IDENTIFIER_TESTNG = "testng";
+    public static final String IDENTIFIER_SELENIUM = "selenium";
+    public static final String IDENTIFIER_PHP = "php";
+    
     /** suffix of test classes */
     public static final String TEST_CLASS_SUFFIX = "Test"; //NOI18N
     /** suffix of integration test classes */
@@ -83,6 +92,14 @@ public abstract class TestCreatorProvider {
     @Target(ElementType.TYPE)
     @Retention(RetentionPolicy.SOURCE)
     public @interface Registration {
+
+        /**
+         * Identifier of the TestCreatorProvider. 
+         * This should never change to facilitate e.g. usage statistics.
+         * @return 
+         * @since 2.6
+         */
+        String identifier();
 
         /**
          * Display name of the TestCreatorProvider.

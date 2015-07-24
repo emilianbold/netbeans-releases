@@ -74,7 +74,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Theofanis Oikonomou
  */
-@Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
+@Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK, identifier = TestCreatorProvider.IDENTIFIER_JUNIT)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
     @Override
