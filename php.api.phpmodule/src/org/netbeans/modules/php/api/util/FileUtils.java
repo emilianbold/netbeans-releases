@@ -524,7 +524,7 @@ public final class FileUtils {
      * @see #openFile(File, int)
      * @since 2.54
      */
-    public static void openFile(File file) {
+    public static void openFile(@NonNull File file) {
         Parameters.notNull("file", file); // NOI18N
         openFile(file, -1);
     }
@@ -539,7 +539,7 @@ public final class FileUtils {
      * @see #openFile(File)
      * @since 2.54
      */
-    public static void openFile(File file, int line) {
+    public static void openFile(@NonNull File file, int line) {
         Parameters.notNull("file", file); // NOI18N
 
         FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
