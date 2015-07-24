@@ -51,7 +51,6 @@ import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.TreeSet;
@@ -277,7 +276,7 @@ import org.openide.filesystems.FileSystem;
                     kind = CsmMacro.Kind.USER_SPECIFIED;
                     break;
             }
-            ref = MacroImpl.createSystemMacro(token.getTextID(), APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
+            ref = MacroImpl.createSystemMacro(token.getTextID(), null, APTUtils.stringize(macro.getBody(), false), ((ProjectBase) file.getProject()).getUnresolvedFile(), kind);
         }
 
         @Override
@@ -353,7 +352,7 @@ import org.openide.filesystems.FileSystem;
                                 // reference was made so it was macro during APTFindMacrosWalker's walk. Parser missed this variance of header and
                                 // we have to create MacroImpl for skipped filepart on the spot (see IZ#130897)
                                 if (target instanceof Unresolved.UnresolvedFile) {
-                                    refObj = MacroImpl.createSystemMacro(macroName, "", target, CsmMacro.Kind.USER_SPECIFIED);
+                                    refObj = MacroImpl.createSystemMacro(macroName, null, "", target, CsmMacro.Kind.USER_SPECIFIED);
                                 } else {
                                     refObj = MacroImpl.create(macroName, null, "", target, macroStartOffset, macroStartOffset + macroName.length(), CsmMacro.Kind.DEFINED);
                                     Utils.setSelfUID(refObj);

@@ -181,7 +181,17 @@ public class CsmImageLoader implements CsmImageName {
         } else if (CsmKindUtilities.isNamespaceAlias(o)) {
             kind = CsmDeclaration.Kind.NAMESPACE_ALIAS;
         } else if (CsmKindUtilities.isMacro(o)) {
-            return MACRO;
+            CsmMacro m = (CsmMacro)o;
+            switch (m.getKind()) {
+                case COMPILER_PREDEFINED:
+                case USER_SPECIFIED:
+                    return SYSTEM_MACRO;
+                case POSITION_PREDEFINED:
+                case DEFINED:
+                case INVALID:
+                default:
+                    return MACRO;
+            }
         } else if (CsmKindUtilities.isErrorDirective(o)) {
             return ERROR;
         } else if (CsmKindUtilities.isInclude(o)) {
