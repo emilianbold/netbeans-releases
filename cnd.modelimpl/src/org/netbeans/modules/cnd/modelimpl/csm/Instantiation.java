@@ -1589,6 +1589,40 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
         return type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
                type instanceof NestedType; 
     }    
+    
+    public static boolean isTemplateBasedInstantiation(CsmInstantiation inst) {
+        return isTemplateBasedInstantiation(inst, new IdentityHashMap<CsmInstantiation, Boolean>(2));
+    }
+    
+    private static boolean isTemplateBasedInstantiation(CsmInstantiation inst, Map<CsmInstantiation, Boolean> visited) {
+        if (!visited.containsKey(inst)) {
+            visited.put(inst, Boolean.TRUE);
+            for (CsmSpecializationParameter param : inst.getMapping().values()) {
+                if (isTemplateBasedParameter(param, visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    private static boolean isTemplateBasedParameter(CsmSpecializationParameter param, Map<CsmInstantiation, Boolean> visited) {
+        if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
+            CsmType type = ((CsmTypeBasedSpecializationParameter) param).getType();
+            if (CsmKindUtilities.isTemplateParameterType(type)) {
+                return true;
+            } else if (type instanceof Type) {
+                return isTemplateBasedInstantiation(((Type) type).getInstantiation(), visited);
+            }
+        } else if (CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
+            for (CsmSpecializationParameter inner : ((CsmVariadicSpecializationParameter) param).getArgs()) {
+                if (isTemplateBasedParameter(inner, visited)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
    
     private static class TemplateParameterType extends Type implements CsmTemplateParameterType {
         public TemplateParameterType(CsmType type, CsmInstantiation instantiation, TemplateParameterResolver templateParamResolver) {
@@ -2130,40 +2164,6 @@ public abstract class Instantiation<T extends CsmOffsetableDeclaration> extends 
                 }
             }
             return resolved;
-        }
-        
-        private boolean isTemplateBasedInstantiation(CsmInstantiation inst) {
-            return isTemplateBasedInstantiation(inst, new IdentityHashMap<CsmInstantiation, Boolean>(2));
-        }
-        
-        private boolean isTemplateBasedInstantiation(CsmInstantiation inst, Map<CsmInstantiation, Boolean> visited) {
-            if (!visited.containsKey(inst)) {
-                visited.put(inst, Boolean.TRUE);
-                for (CsmSpecializationParameter param : inst.getMapping().values()) {
-                    if (isTemplateBasedParameter(param, visited)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-        
-        private boolean isTemplateBasedParameter(CsmSpecializationParameter param, Map<CsmInstantiation, Boolean> visited) {
-            if (CsmKindUtilities.isTypeBasedSpecalizationParameter(param)) {
-                CsmType type = ((CsmTypeBasedSpecializationParameter) param).getType();
-                if (CsmKindUtilities.isTemplateParameterType(type)) {
-                    return true;
-                } else if (type instanceof Type) {
-                    return isTemplateBasedInstantiation(((Type) type).getInstantiation(), visited);
-                }
-            } else if (CsmKindUtilities.isVariadicSpecalizationParameter(param)) {
-                for (CsmSpecializationParameter inner : ((CsmVariadicSpecializationParameter) param).getArgs()) {
-                    if (isTemplateBasedParameter(inner, visited)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
         }
         
         @Override
