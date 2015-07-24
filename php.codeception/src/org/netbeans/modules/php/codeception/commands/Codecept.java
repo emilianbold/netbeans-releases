@@ -134,6 +134,7 @@ public final class Codecept {
     private static final String CEST_FILE_SUFFIX = CEST_CLASS_SUFFIX + ".php"; // NOI18N
     public static final String CEPT_CLASS_SUFFIX = "Cept"; // NOI18N
     private static final String CEPT_FILE_SUFFIX = CEPT_CLASS_SUFFIX + ".php"; // NOI18N
+    private static final String SUITE_CONFIG_SUFFIX = ".suite.yml"; // NOI18N
     // test method prefix
     public static final String TEST_METHOD_PREFIX = "test"; // NOI18N
 
@@ -506,12 +507,11 @@ public final class Codecept {
     }
 
     @CheckForNull
-    public FileObject getCodeceptionYml(PhpModule phpModule) {
+    public static FileObject getCodeceptionYml(PhpModule phpModule) {
         if (phpModule == null) {
             return null;
         }
         // custom
-        // XXX allow only the source directory?
         // A PHP Framework may have a codeception.yml in an inner directory.
         // e.g. In case of Yii2 framework, source/tests/codeception.yml
         if (CodeceptionPreferences.isCustomCodeceptionYmlEnabled(phpModule)) {
@@ -557,7 +557,7 @@ public final class Codecept {
                     continue;
                 }
                 String name = child.getNameExt();
-                int lastIndexOfSuiteSuffix = name.lastIndexOf(".suite.yml"); // NOI18N
+                int lastIndexOfSuiteSuffix = name.lastIndexOf(SUITE_CONFIG_SUFFIX);
                 if (lastIndexOfSuiteSuffix != -1) {
                     suites.add(name.substring(0, lastIndexOfSuiteSuffix));
                 }
