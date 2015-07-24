@@ -206,7 +206,7 @@ public final class JavaContextSupport {
     }
     
     public static JavaClassInfo createClassInfo(CompilationController controller, TreePath clsTreePath) {
-        assert clsTreePath.getLeaf().getKind() == Tree.Kind.CLASS;            
+        assert isClassOrInterface(clsTreePath);
         List<QualifiedNamePart> qualifiedName = getQualifiedName(clsTreePath);
         String simpleName = qualifiedName.size() > 0 ? qualifiedName.get(qualifiedName.size() - 1).getText().toString() : "<not_initialized>"; // NOI18N
         return new JavaClassInfo(simpleName, qualifiedName);
