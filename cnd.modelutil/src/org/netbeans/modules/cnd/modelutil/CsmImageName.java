@@ -132,6 +132,7 @@ public interface CsmImageName {
     static final String VARIABLE_CONST_ST_FILE_LOCAL = RESOURCE_BASE+"global_constant.png"; // NOI18N
     
     static final String MACRO = RESOURCE_BASE+"code_macro_16.png"; // NOI18N
+    static final String SYSTEM_MACRO = RESOURCE_BASE+"system_macro_16.png"; // NOI18N
     static final String ERROR = RESOURCE_BASE+"code_error_16.png"; // NOI18N
     static final String INCLUDE_USER = RESOURCE_BASE+"include_user_16.png"; // NOI18N
     static final String INCLUDE_SYSTEM = RESOURCE_BASE+"include_sys_16.png"; // NOI18N

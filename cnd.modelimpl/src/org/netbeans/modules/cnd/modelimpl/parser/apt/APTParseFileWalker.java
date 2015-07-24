@@ -176,7 +176,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onDefine(APT apt) {
         super.onDefine(apt);
         if (needMacroAndIncludes()) {
-            MacroImpl macro = createMacro((APTDefine) apt);
+            CsmMacro macro = createMacro((APTDefine) apt);
             this.fileContent.addMacro(macro);
         }
     }
@@ -429,7 +429,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         return ErrorDirectiveImpl.create(this.getFile(), token.getTextID(), pos, getPreprocHandler().getState());
     }
 
-    private MacroImpl createMacro(APTDefine define) {
+    private CsmMacro createMacro(APTDefine define) {
         // create even for invalid macro (to have possibility of showing error HL)
         List<CharSequence> params = null;
         Collection<APTToken> paramTokens = define.getParams();
