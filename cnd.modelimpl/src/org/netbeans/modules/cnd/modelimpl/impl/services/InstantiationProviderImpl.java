@@ -1213,7 +1213,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                      specParam.getScope()
                              );
                         }
-                        if (val1.equals(val2)) {
+                        if (p.isValid(val1) && p.isValid(val2) && val1.equals(val2)) {
                             return 2;
                         }
                     } else {
@@ -1231,7 +1231,7 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                         val1 = p.eval(instParamsText.get(instParamIndex), instParams.get(instParamIndex).getScope());
                         val2 = p.eval(specParamText, specParam.getScope());
                     }
-                    if (val1.equals(val2)) {
+                    if (p.isValid(val1) && p.isValid(val2) && val1.equals(val2)) {
                         return 2;
                     }
                 }
