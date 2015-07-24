@@ -60,6 +60,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.antlr.runtime.CharStream;
@@ -75,6 +77,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheManager;
+import org.netbeans.modules.cnd.api.model.services.CsmCacheMap;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
@@ -133,10 +137,25 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
     @Override
     public Object eval(String expr, CsmInstantiation inst, CsmScope scope) {
-        if(CsmKindUtilities.isOffsetableDeclaration(inst)) {
-            return eval(expr, (CsmOffsetableDeclaration)inst, scope, getMapping(inst));
+        CsmCacheMap cache = getEvaluatorEvalCache();
+        EvaluateRequest key =  new EvaluateRequest(expr, inst, scope);
+        boolean[] found = new boolean[] { false };
+        Object cached = CsmCacheMap.getFromCache(cache, key, found);
+        if (cached != null && found[0]) {
+            return cached;
         } else {
-            return eval(expr, inst.getTemplateDeclaration(), scope, getMapping(inst));
+            long time = System.currentTimeMillis();
+            Object result;
+            if (CsmKindUtilities.isOffsetableDeclaration(inst)) {
+                result = eval(expr, (CsmOffsetableDeclaration)inst, scope, getMapping(inst));
+            } else {
+                result = eval(expr, inst.getTemplateDeclaration(), scope, getMapping(inst));
+            }
+            time = System.currentTimeMillis() - time;
+            if (cache != null) {
+                cache.put(key, CsmCacheMap.toValue(result, time));
+            }
+            return result;
         }
     }
     
@@ -158,7 +177,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         if (LOG.isLoggable(Level.FINE)) {
             LOG.log(Level.FINE, "\nEvaluating expression \"{0}\"\n", expr); // NOI18N
         }
-        
+
         org.netbeans.modules.cnd.antlr.TokenStream ts = APTTokenStreamBuilder.buildTokenStream(expr, APTLanguageSupport.GNU_CPP);
 
         APTLanguageFilter lang = APTLanguageSupport.getInstance().getFilter(APTLanguageSupport.GNU_CPP);
@@ -178,76 +197,94 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
         return result;
     }
     
+    @Override
+    public boolean isValid(Object evaluated) {
+        return evaluated instanceof Integer && ((Integer) evaluated) != Integer.MAX_VALUE;
+    }
+    
     private MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> getMapping(CsmInstantiation inst) {
-        if (TraceFlags.EXPRESSION_EVALUATOR_RECURSIVE_CALC) {
+        CsmCacheMap cache = getEvaluatorGetMappingCache();
+        GetMappingRequest key =  new GetMappingRequest(inst);
+        boolean[] found = new boolean[] { false };
+        Object cached = CsmCacheMap.getFromCache(cache, key, found);
+        if (cached != null && found[0]) {
+            return (MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter>) cached;
+        } else {
+            long time = System.currentTimeMillis();
+            
             MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapHierarchy = new MapHierarchy<>(inst.getMapping());
             
-            while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                
-                Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();                
-                mapHierarchy.push(mapping);
-                
-                List<CsmTemplateParameter> orderedParamsList = new ArrayList<>(inst.getMapping().keySet());
+            if (TraceFlags.EXPRESSION_EVALUATOR_RECURSIVE_CALC) {
+                while(CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                    inst = (CsmInstantiation) inst.getTemplateDeclaration();
 
-                final CsmInstantiation finalInst = inst;
-                Collections.sort(orderedParamsList, new Comparator<CsmTemplateParameter>() {
+                    Map<CsmTemplateParameter, CsmSpecializationParameter> mapping = new HashMap<>();                
+                    mapHierarchy.push(mapping);
 
-                    @Override
-                    public int compare(CsmTemplateParameter o1, CsmTemplateParameter o2) {
-                        int score1 = calcScore(o1);
-                        int score2 = calcScore(o2);
-                        return score1 - score2;
-                    }
-                    
-                    private int calcScore(CsmTemplateParameter param) {
-                        CsmSpecializationParameter spec = finalInst.getMapping().get(param);
-                        if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                            if (!((CsmExpressionBasedSpecializationParameter) spec).isDefaultValue()) {
-                                return -1;
-                            }
+                    List<CsmTemplateParameter> orderedParamsList = new ArrayList<>(inst.getMapping().keySet());
+
+                    final CsmInstantiation finalInst = inst;
+                    Collections.sort(orderedParamsList, new Comparator<CsmTemplateParameter>() {
+
+                        @Override
+                        public int compare(CsmTemplateParameter o1, CsmTemplateParameter o2) {
+                            int score1 = calcScore(o1);
+                            int score2 = calcScore(o2);
+                            return score1 - score2;
                         }
-                        return param.getStartOffset();
+
+                        private int calcScore(CsmTemplateParameter param) {
+                            CsmSpecializationParameter spec = finalInst.getMapping().get(param);
+                            if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+                                if (!((CsmExpressionBasedSpecializationParameter) spec).isDefaultValue()) {
+                                    return -1;
+                                }
+                            }
+                            return param.getStartOffset();
+                        }
+
+                    });
+
+                    for (CsmTemplateParameter param : orderedParamsList) {
+                        Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
+                        CsmSpecializationParameter spec = inst.getMapping().get(param);
+                        if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
+                            Object o = eval(
+                                    ((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), 
+                                    inst.getTemplateDeclaration(), 
+                                    spec.getScope(),
+                                    spec.getContainingFile(),
+                                    spec.getStartOffset(),
+                                    spec.getEndOffset(),
+                                    mapHierarchy
+                            );
+                            CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(
+                                o.toString(),
+                                ((CsmExpressionBasedSpecializationParameter) spec).getScope(),
+                                spec.getContainingFile(), 
+                                spec.getStartOffset(), 
+                                spec.getEndOffset()
+                            );
+                            newMapping.put(param, newSpec);
+                        } else {
+                            newMapping.put(param, spec);
+                        }
+                        mapping.putAll(newMapping);
                     }
-                    
-                });
-                                
-                for (CsmTemplateParameter param : orderedParamsList) {
-                    Map<CsmTemplateParameter, CsmSpecializationParameter> newMapping = new HashMap<>();
-                    CsmSpecializationParameter spec = inst.getMapping().get(param);
-                    if(CsmKindUtilities.isExpressionBasedSpecalizationParameter(spec)) {
-                        Object o = eval(
-                                ((CsmExpressionBasedSpecializationParameter) spec).getText().toString(), 
-                                inst.getTemplateDeclaration(), 
-                                spec.getScope(),
-                                spec.getContainingFile(),
-                                spec.getStartOffset(),
-                                spec.getEndOffset(),
-                                mapHierarchy
-                        );
-                        CsmSpecializationParameter newSpec = ExpressionBasedSpecializationParameterImpl.create(
-                            o.toString(),
-                            ((CsmExpressionBasedSpecializationParameter) spec).getScope(),
-                            spec.getContainingFile(), 
-                            spec.getStartOffset(), 
-                            spec.getEndOffset()
-                        );
-                        newMapping.put(param, newSpec);
-                    } else {
-                        newMapping.put(param, spec);
-                    }
-                    mapping.putAll(newMapping);
+                }
+            } else {
+                while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
+                    inst = (CsmInstantiation) inst.getTemplateDeclaration();
+                    mapHierarchy.push(inst.getMapping());
                 }
             }
             
-            return mapHierarchy;
-        } else {
-            MapHierarchy<CsmTemplateParameter, CsmSpecializationParameter> mapping = new MapHierarchy<>(inst.getMapping());
-            while (CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                mapping.push(inst.getMapping());
+            time = System.currentTimeMillis() - time;
+            if (cache != null) {
+                cache.put(key, CsmCacheMap.toValue(mapHierarchy, time));
             }
-            return mapping;
+
+            return mapHierarchy;
         }
     }
 
@@ -423,5 +460,117 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
     }
+    
+    
+    private CsmCacheMap getEvaluatorEvalCache() {
+        if (level > 0) {
+            return null;
+        }
+        return CsmCacheManager.getClientCache(EvaluateRequest.class, EVAL_INITIALIZER);
+    }
+    
+    private CsmCacheMap getEvaluatorGetMappingCache() {
+        if (level > 0) {
+            return null;
+        }
+        return CsmCacheManager.getClientCache(GetMappingRequest.class, GET_MAPPING_INITIALIZER);
+    }
+    
+    private static final Callable<CsmCacheMap> EVAL_INITIALIZER = new Callable<CsmCacheMap>() {
 
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("Evaluator: eval cache", 1); // NOI18N
+        }
+
+    };
+
+    private static final Callable<CsmCacheMap> GET_MAPPING_INITIALIZER = new Callable<CsmCacheMap>() {
+
+        @Override
+        public CsmCacheMap call() {
+            return new CsmCacheMap("Evaluator: get mapping cache", 1); // NOI18N
+        }
+
+    };
+    
+    private final static class EvaluateRequest {
+        
+        private final String expression;
+        
+        private final CsmInstantiation instantiation;
+        
+        private final CsmScope scope;
+
+        public EvaluateRequest(String expression, CsmInstantiation instantiation, CsmScope scope) {
+            this.expression = expression;
+            this.instantiation = instantiation;
+            this.scope = scope;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 19 * hash + Objects.hashCode(this.expression);
+            hash = 19 * hash + System.identityHashCode(this.instantiation);
+            hash = 19 * hash + System.identityHashCode(this.scope);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EvaluateRequest other = (EvaluateRequest) obj;
+            if (!Objects.equals(this.expression, other.expression)) {
+                return false;
+            }
+            if (this.instantiation != other.instantiation) {
+                return false;
+            }
+            if (this.scope != other.scope) {
+                return false;
+            }
+            return true;
+        }
+    }
+    
+    private final static class GetMappingRequest {
+        
+        private final CsmInstantiation instantiation;
+
+        public GetMappingRequest(CsmInstantiation instantiation) {
+            this.instantiation = instantiation;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(this.instantiation);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final GetMappingRequest other = (GetMappingRequest) obj;
+            if (this.instantiation != other.instantiation) {
+                return false;
+            }
+            return true;
+        }
+    }
 }
