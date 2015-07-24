@@ -58,12 +58,12 @@ import org.netbeans.api.extexecution.print.LineConvertors;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -273,7 +273,7 @@ public final class FileRunner {
                 LOGGER.log(Level.WARNING, null, ex);
             }
             if (options.isOpenResultInEditor()) {
-                PhpProjectUtils.openFile(tmpFile);
+                FileUtils.openFile(tmpFile);
             }
         }
 

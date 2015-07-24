@@ -63,6 +63,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.CreateDescriptor;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
@@ -144,7 +145,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Asynchronou
 
         // #187374
         try {
-            PhpProjectUtils.reformatFile(createdFile);
+            FileUtils.reformatFile(createdFile);
         } catch (IOException exc) {
             LOGGER.log(Level.WARNING, exc.getMessage(), exc);
         }
