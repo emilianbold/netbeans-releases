@@ -1,6 +1,6 @@
-#changeset:   15319:3155a5a82cb3
+#changeset:   15321:17d46603fee8
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Thu Jul 23 17:55:23 2015 +0200
-#summary:     fixed 253670 - [newcodemodel] java.lang.AssertionError: should be assigned only once
-7EA8F4F9C3985197F2E2B5E1DF04F9EF4FC483F8 clank_0.3.6.zip
+#date:        Fri Jul 24 16:20:36 2015 +0200
+#summary:     fixed #253668 - [newcodemodel] java.lang.NullPointerException
+C076FB476BF13287B461CCB5D5988C38960CF404 clank_0.3.6.zip
