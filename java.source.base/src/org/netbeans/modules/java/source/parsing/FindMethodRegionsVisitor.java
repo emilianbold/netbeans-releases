@@ -59,7 +59,7 @@ import org.openide.util.Pair;
  *
  * @author Tomas Zezula
  */
-class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
+class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> implements Runnable {
         
         private final Document doc;
         private final SourcePositions pos;
@@ -74,6 +74,10 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> {
             this.doc = doc;
             this.pos = pos;
             this.canceled = canceled;
+        }
+        
+        public void run() {
+            visit(cu, null);
         }
 
         public List<Pair<DocPositionRegion,MethodTree>> getResult () {
