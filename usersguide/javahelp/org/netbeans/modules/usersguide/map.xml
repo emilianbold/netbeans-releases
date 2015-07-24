@@ -4748,10 +4748,12 @@
   <!-- "Module Project Properties Dialog Box: Sources"-->
   <mapID target="NBCSH1980" url="f1_modules038.htm#NBCSH1980" />
   <!-- "Related Topics"-->
+  <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" url="f1_modules039.htm#org.netbeans.modules.apisupport.project.ui.customizer.EditDependencyPanel" />
+  <!-- "Module Project Properties Dialog Box: API Versioning"-->
   <mapID target="NBCSH1981" url="f1_modules039.htm#NBCSH1981" />
-  <!-- "Edit Module Dependency Dialog Box"-->
+  <!-- "Module Project Properties Dialog Box: API Versioning"-->
   <mapID target="f1_modules039.htm-sthref257" url="f1_modules039.htm#sthref257" />
-  <!-- "Edit Module Dependency Dialog Box"-->
+  <!-- "Module Project Properties Dialog Box: API Versioning"-->
   <mapID target="NBCSH1982" url="f1_modules039.htm#NBCSH1982" />
   <!-- "Related Topics"-->
   <mapID target="org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" url="f1_modules040.htm#org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerBasicBranding" />
@@ -7835,21 +7837,21 @@
   <mapID target="NBCSH3245" url="f1_profiler027.htm#NBCSH3245" />
   <!-- "Related Topics"-->
   <mapID target="ManageCalibration.HelpCtx" url="f1_profiler028.htm#ManageCalibration.HelpCtx" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3246" url="f1_profiler028.htm#NBCSH3246" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="f1_profiler028.htm-sthref419" url="f1_profiler028.htm#sthref419" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3247" url="f1_profiler028.htm#NBCSH3247" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3248" url="f1_profiler028.htm#NBCSH3248" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3249" url="f1_profiler028.htm#NBCSH3249" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3250" url="f1_profiler028.htm#NBCSH3250" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3251" url="f1_profiler028.htm#NBCSH3251" />
-  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <!-- "Select Snapshot to Compare Dialog Box"-->
   <mapID target="NBCSH3252" url="f1_profiler028.htm#NBCSH3252" />
   <!-- "Related Topics"-->
   <mapID target="ProfilerUiFindDialog.HelpCtx" url="f1_profiler029.htm#ProfilerUiFindDialog.HelpCtx" />
@@ -8264,8 +8266,10 @@
   <!-- "Select Class Dialog"-->
   <mapID target="f1_profiler051.htm-sthref444" url="f1_profiler051.htm#sthref444" />
   <!-- "Select Class Dialog"-->
+  <mapID target="SelectFeatureDialog.HelpCtx" url="f1_profiler052.htm#SelectFeatureDialog.HelpCtx" />
+  <!-- "Profile Class / Profile Method (Select Feature) Dialog"-->
   <mapID target="f1_profiler052.htm-sthref446" url="f1_profiler052.htm#sthref446" />
-  <!-- "Select Class Dialog"-->
+  <!-- "Profile Class / Profile Method (Select Feature) Dialog"-->
   <mapID target="SnapshotsWindow.HelpCtx" url="f1_profiler053.htm#SnapshotsWindow.HelpCtx" />
   <!-- "Snapshot Window"-->
   <mapID target="f1_profiler053.htm-sthref448" url="f1_profiler053.htm#sthref448" />
