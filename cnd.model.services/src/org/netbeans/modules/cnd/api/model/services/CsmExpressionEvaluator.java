@@ -124,6 +124,16 @@ public class CsmExpressionEvaluator {
     public static Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
         return getProvider().eval(expr, decl, scope, mapping);
     }
+    
+    /**
+     * Checks if a result of evaluation is valid
+     * 
+     * @param evaluated - result of evaluation
+     * @return true if result is valid, false otherwise
+     */
+    public static boolean isValid(Object evaluated) {
+        return getProvider().isValid(evaluated);
+    }
 
     //
     // Implementation of the default provider
@@ -151,6 +161,11 @@ public class CsmExpressionEvaluator {
         @Override
         public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping) {
             return expr;
+        }
+
+        @Override
+        public boolean isValid(Object evaluated) {
+            return false;
         }
     }
 }

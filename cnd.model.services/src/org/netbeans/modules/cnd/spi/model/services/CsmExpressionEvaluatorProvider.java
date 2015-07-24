@@ -110,4 +110,11 @@ public interface CsmExpressionEvaluatorProvider {
      */
     public Object eval(String expr, CsmOffsetableDeclaration decl, CsmScope scope, CsmFile expressionFile, int startOffset, int endOffset, Map<CsmTemplateParameter, CsmSpecializationParameter> mapping);    
 
+    /**
+     * Checks if a result of evaluation is valid
+     * 
+     * @param evaluated - result of evaluation
+     * @return true if result is valid, false otherwise
+     */
+    public boolean isValid(Object evaluated);
 }
