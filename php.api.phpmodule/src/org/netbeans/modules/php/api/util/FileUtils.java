@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.api.util;
@@ -57,16 +57,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 import org.xml.sax.XMLReader;
@@ -77,7 +90,7 @@ import org.xml.sax.XMLReader;
  */
 public final class FileUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
+    static final Logger LOGGER = Logger.getLogger(FileUtils.class.getName());
 
     /**
      * Constant for PHP MIME type.
@@ -402,6 +415,172 @@ public final class FileUtils {
         final String dirPath = directory.getAbsolutePath();
         final String canDirPath = canDirectory.getAbsolutePath();
         return IS_MAC ? !dirPath.equalsIgnoreCase(canDirPath) : !dirPath.equals(canDirPath);
+    }
+
+    /**
+     * Reformat the file. If the does not exist, nothing is done.
+     * @param file file to be reformatted
+     * @throws IOException if any error occurs
+     * @see #reformatFile(DataObject)
+     * @since 2.54
+     */
+    public static void reformatFile(@NonNull File file) throws IOException {
+        Parameters.notNull("file", file); // NOI18N
+        FileObject fileObject = FileUtil.toFileObject(file);
+        if (fileObject == null) {
+            return;
+        }
+        reformatFile(DataObject.find(fileObject));
+    }
+
+    // XXX see AssertionError at HtmlIndenter.java:68
+    // NbReaderProvider.setupReaders(); cannot be called because of deps
+    /**
+     * Reformat the file.
+     * @param dataObject file to be reformatted
+     * @throws IOException if any error occurs
+     * @see #reformatFile(File)
+     * @since 2.54
+     */
+    public static void reformatFile(@NonNull final DataObject dataObject) throws IOException {
+        Parameters.notNull("dataObject", dataObject); // NOI18N
+
+        EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+        assert ec != null : "No editorcookie for " + dataObject;
+
+        Document doc = ec.openDocument();
+        assert doc instanceof BaseDocument;
+
+        // reformat
+        final BaseDocument baseDoc = (BaseDocument) doc;
+        final Reformat reformat = Reformat.get(baseDoc);
+        reformat.lock();
+        try {
+            // seems to be synchronous but no info in javadoc
+            baseDoc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        reformat.reformat(0, baseDoc.getLength());
+                    } catch (BadLocationException ex) {
+                        LOGGER.log(Level.INFO, "Cannot reformat file " + dataObject.getName(), ex);
+                    }
+                }
+            });
+        } finally {
+            reformat.unlock();
+        }
+
+        // save
+        saveFile(dataObject);
+    }
+
+    /**
+     * Save a file.
+     * @param dataObject file to be saved
+     * @since 2.54
+     */
+    public static void saveFile(@NonNull DataObject dataObject) {
+        Parameters.notNull("dataObject", dataObject); // NOI18N
+        SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+        if (saveCookie != null) {
+            try {
+                try {
+                    saveCookie.save();
+                } catch (UserQuestionException uqe) {
+                    // #216194
+                    NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                        uqe.confirmed();
+                        saveCookie.save();
+                    }
+                }
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, ioe.getLocalizedMessage(), ioe);
+            }
+        }
+    }
+
+    /**
+     * Save a file.
+     * @param fileObject file to be saved
+     * @since 2.54
+     */
+    public static void saveFile(@NonNull FileObject fileObject) {
+        Parameters.notNull("fileObject", fileObject); // NOI18N
+        try {
+            DataObject dobj = DataObject.find(fileObject);
+            if (dobj != null) {
+                saveFile(dobj);
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            LOGGER.log(Level.SEVERE, donfe.getLocalizedMessage(), donfe);
+        }
+    }
+
+    /**
+     * Open file.
+     * @param file file to be opened
+     * @see #openFile(File, int)
+     * @since 2.54
+     */
+    public static void openFile(@NonNull File file) {
+        Parameters.notNull("file", file); // NOI18N
+        openFile(file, -1);
+    }
+
+    /**
+     * Open the file and optionally set cursor to the line. If the file does not exist,
+     * nothing is done.
+     * <p>
+     * <i>Note:</i> This action is always run in AWT thread.
+     * @param file file to be opened
+     * @param line line of a file to set cursor to, {@code -1} if no specific line is needed
+     * @see #openFile(File)
+     * @since 2.54
+     */
+    public static void openFile(@NonNull File file, int line) {
+        Parameters.notNull("file", file); // NOI18N
+
+        FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        if (fileObject == null) {
+            LOGGER.log(Level.INFO, "FileObject not found for {0}", file);
+            return;
+        }
+
+        DataObject dataObject;
+        try {
+            dataObject = DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException ex) {
+            LOGGER.log(Level.INFO, "DataObject not found for {0}", file);
+            return;
+        }
+
+        if (line == -1) {
+            // simply open file
+            EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+            ec.open();
+            return;
+        }
+
+        // open at specific line
+        LineCookie lineCookie = dataObject.getLookup().lookup(LineCookie.class);
+        if (lineCookie == null) {
+            LOGGER.log(Level.INFO, "LineCookie not found for {0}", file);
+            return;
+        }
+        Line.Set lineSet = lineCookie.getLineSet();
+        try {
+            final Line currentLine = lineSet.getCurrent(line - 1);
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    currentLine.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                }
+            });
+        } catch (IndexOutOfBoundsException exc) {
+            LOGGER.log(Level.FINE, null, exc);
+        }
     }
 
     /**
