@@ -80,7 +80,7 @@ import org.openide.util.RequestProcessor;
  * Action for creating new PHP unit tests.
  * @author Tomas Mysik
  */
-@TestCreatorProvider.Registration(displayName = TestCreatorProvider.FRAMEWORK_PHP)
+@TestCreatorProvider.Registration(displayName = TestCreatorProvider.FRAMEWORK_PHP, identifier = TestCreatorProvider.IDENTIFIER_PHP)
 public final class PhpTestCreatorProvider extends TestCreatorProvider {
 
     private static final Logger LOGGER = Logger.getLogger(PhpTestCreatorProvider.class.getName());
