@@ -44,7 +44,7 @@ package org.netbeans.modules.php.project.ui.testrunner;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -71,7 +71,7 @@ public class JumpToCallStackAction extends AbstractAction {
         if (callback != null) {
             Locations.Line location = callback.parseLocation(callstackFrameInfo);
             if (location != null) {
-                PhpProjectUtils.openFile(FileUtil.toFile(location.getFile()), location.getLine());
+                FileUtils.openFile(FileUtil.toFile(location.getFile()), location.getLine());
             }
         }
     }

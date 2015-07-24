@@ -51,7 +51,6 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
-import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -98,7 +97,7 @@ public class RunFileActionProvider implements ActionProvider {
         for (DataObject dataObject : context.lookupAll(DataObject.class)) {
             File file = FileUtil.toFile(dataObject.getPrimaryFile());
             if (file != null) {
-                PhpProjectUtils.saveFile(dataObject);
+                FileUtils.saveFile(dataObject);
                 runFile(file, debug);
             }
         }

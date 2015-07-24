@@ -241,7 +241,7 @@ public final class PhpTestCreatorProvider extends TestCreatorProvider {
     private void reformat(Set<FileObject> files) {
         for (FileObject file : files) {
             try {
-                PhpProjectUtils.reformatFile(FileUtil.toFile(file));
+                FileUtils.reformatFile(FileUtil.toFile(file));
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, "Cannot reformat file " + file, ex);
             }
@@ -251,7 +251,7 @@ public final class PhpTestCreatorProvider extends TestCreatorProvider {
     private void open(Set<FileObject> files) {
         for (FileObject file : files) {
             assert file.isData() : "File must be given to open: " + file;
-            PhpProjectUtils.openFile(FileUtil.toFile(file));
+            FileUtils.openFile(FileUtil.toFile(file));
         }
     }
 
