@@ -1210,15 +1210,20 @@ public class CsmUtilities {
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2) {
         return checkTypesEqual(type1, contextFile1, type2, contextFile2, new AlwaysEqualQualsEqualizer());
     }
-
+    
     public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer) {
+        return checkTypesEqual(type1, contextFile1, type2, contextFile2, qualsEqualizer, true);
+    }
+
+    public static boolean checkTypesEqual(CsmType type1, CsmFile contextFile1, CsmType type2, CsmFile contextFile2, QualifiersEqualizer qualsEqualizer, boolean tryResolveChain) {
         if (type1 != null && type2 != null) {
             if (!qualsEqualizer.areQualsEqual(type1, type2)) {
                 return false;
             }
 
+            final int itersNumber = tryResolveChain ? 2 : 1;
             boolean resolveTypeChain = false;
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < itersNumber; i++) {
                 boolean classifiersWereResolved = false;
                 
                 CsmClassifier tbsp1Cls = getClassifier(type1, contextFile1, resolveTypeChain);
