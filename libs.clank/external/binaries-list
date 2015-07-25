@@ -1,6 +1,6 @@
-#changeset:   15321:17d46603fee8
+#changeset:   15325:16f1e55e43e0
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Fri Jul 24 16:20:36 2015 +0200
-#summary:     fixed #253668 - [newcodemodel] java.lang.NullPointerException
-C076FB476BF13287B461CCB5D5988C38960CF404 clank_0.3.6.zip
+#date:        Sat Jul 25 16:04:21 2015 +0200
+#summary:     MANUAL: implemented llvm.ComputeEditDistance
+74081AE960673AF2D544E5A9B65910683D2BBF5E clank_0.3.6.zip
