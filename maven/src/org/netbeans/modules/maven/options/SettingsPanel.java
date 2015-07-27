@@ -363,23 +363,6 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         pnlCards = new javax.swing.JPanel();
-        pnlExecution = new javax.swing.JPanel();
-        lblCommandLine = new javax.swing.JLabel();
-        comMavenHome = new javax.swing.JComboBox();
-        lblExternalVersion = new javax.swing.JLabel();
-        lblOptions = new javax.swing.JLabel();
-        txtOptions = new javax.swing.JTextField();
-        btnOptions = new javax.swing.JButton();
-        cbSkipTests = new javax.swing.JCheckBox();
-        btnGoals = new javax.swing.JButton();
-        cbAlwaysShow = new javax.swing.JCheckBox();
-        cbReuse = new javax.swing.JCheckBox();
-        cbCollapseSuccessFolds = new javax.swing.JCheckBox();
-        lblOutputTab = new javax.swing.JLabel();
-        rbOutputTabName = new javax.swing.JRadioButton();
-        rbOutputTabId = new javax.swing.JRadioButton();
-        cbOutputTabShowConfig = new javax.swing.JCheckBox();
-        cbShowInfoLevel = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -399,6 +382,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex = new javax.swing.JComboBox();
         btnIndex = new javax.swing.JButton();
         cbDisableIndex = new javax.swing.JCheckBox();
+        jLabel5 = new javax.swing.JLabel();
         plnExperimental = new javax.swing.JPanel();
         cbUseBestMaven = new javax.swing.JCheckBox();
         lblHint = new javax.swing.JLabel();
@@ -406,11 +390,262 @@ public class SettingsPanel extends javax.swing.JPanel {
         lblDirectory = new javax.swing.JLabel();
         txtDirectory = new javax.swing.JTextField();
         btnDirectory = new javax.swing.JButton();
+        pnlExecution = new javax.swing.JPanel();
+        lblCommandLine = new javax.swing.JLabel();
+        comMavenHome = new javax.swing.JComboBox();
+        lblExternalVersion = new javax.swing.JLabel();
+        lblOptions = new javax.swing.JLabel();
+        txtOptions = new javax.swing.JTextField();
+        btnOptions = new javax.swing.JButton();
+        cbSkipTests = new javax.swing.JCheckBox();
+        btnGoals = new javax.swing.JButton();
+        cbAlwaysShow = new javax.swing.JCheckBox();
+        cbReuse = new javax.swing.JCheckBox();
+        cbCollapseSuccessFolds = new javax.swing.JCheckBox();
+        lblOutputTab = new javax.swing.JLabel();
+        rbOutputTabName = new javax.swing.JRadioButton();
+        rbOutputTabId = new javax.swing.JRadioButton();
+        cbOutputTabShowConfig = new javax.swing.JCheckBox();
+        cbShowInfoLevel = new javax.swing.JCheckBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         lstCategory = new javax.swing.JList();
         lblCategory = new javax.swing.JLabel();
 
         pnlCards.setLayout(new java.awt.CardLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel4.text")); // NOI18N
+
+        cbProjectNodeNameMode.setModel(getProjectNodeModel());
+        cbProjectNodeNameMode.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbProjectNodeNameModeItemStateChanged(evt);
+            }
+        });
+        cbProjectNodeNameMode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbProjectNodeNameModeActionPerformed(evt);
+            }
+        });
+
+        txtProjectNodeNameCustomPattern.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.text")); // NOI18N
+        txtProjectNodeNameCustomPattern.setToolTipText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.toolTipText")); // NOI18N
+
+        javax.swing.GroupLayout pnlAppearanceLayout = new javax.swing.GroupLayout(pnlAppearance);
+        pnlAppearance.setLayout(pnlAppearanceLayout);
+        pnlAppearanceLayout.setHorizontalGroup(
+            pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppearanceLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel2)
+                    .addGroup(pnlAppearanceLayout.createSequentialGroup()
+                        .addGap(20, 20, 20)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtProjectNodeNameCustomPattern)
+                            .addComponent(cbProjectNodeNameMode, 0, 258, Short.MAX_VALUE))))
+                .addContainerGap())
+        );
+        pnlAppearanceLayout.setVerticalGroup(
+            pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlAppearanceLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        pnlCards.add(pnlAppearance, "appearance");
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
+
+        lblBinaries.setLabelFor(comBinaries);
+        org.openide.awt.Mnemonics.setLocalizedText(lblBinaries, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblBinaries.text")); // NOI18N
+
+        lblJavadoc.setLabelFor(comJavadoc);
+        org.openide.awt.Mnemonics.setLocalizedText(lblJavadoc, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblJavadoc.text")); // NOI18N
+
+        lblSource.setLabelFor(comSource);
+        org.openide.awt.Mnemonics.setLocalizedText(lblSource, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblSource.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel3.text")); // NOI18N
+        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        javax.swing.GroupLayout pnlDependenciesLayout = new javax.swing.GroupLayout(pnlDependencies);
+        pnlDependencies.setLayout(pnlDependenciesLayout);
+        pnlDependenciesLayout.setHorizontalGroup(
+            pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 265, Short.MAX_VALUE))
+                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                        .addComponent(lblJavadoc)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comJavadoc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                        .addComponent(lblBinaries)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comBinaries, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                        .addComponent(lblSource)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comSource, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 472, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        pnlDependenciesLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {lblBinaries, lblJavadoc, lblSource});
+
+        pnlDependenciesLayout.setVerticalGroup(
+            pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlDependenciesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblBinaries)
+                    .addComponent(comBinaries, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblJavadoc)
+                    .addComponent(comJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSource)
+                    .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(15, Short.MAX_VALUE))
+        );
+
+        pnlCards.add(pnlDependencies, "dependencies");
+
+        lblIndex.setLabelFor(comIndex);
+        org.openide.awt.Mnemonics.setLocalizedText(lblIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblIndex.text")); // NOI18N
+
+        comIndex.setModel(createComboModel());
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnIndex.text")); // NOI18N
+        btnIndex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnIndexActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbDisableIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbDisableIndex.text")); // NOI18N
+        cbDisableIndex.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbDisableIndexActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel5.text")); // NOI18N
+
+        javax.swing.GroupLayout pnlIndexLayout = new javax.swing.GroupLayout(pnlIndex);
+        pnlIndex.setLayout(pnlIndexLayout);
+        pnlIndexLayout.setHorizontalGroup(
+            pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlIndexLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlIndexLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(jLabel5)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(pnlIndexLayout.createSequentialGroup()
+                        .addComponent(lblIndex)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comIndex, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnIndex)
+                        .addContainerGap())
+                    .addGroup(pnlIndexLayout.createSequentialGroup()
+                        .addComponent(cbDisableIndex)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+        );
+        pnlIndexLayout.setVerticalGroup(
+            pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(pnlIndexLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblIndex)
+                    .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnIndex))
+                .addGap(18, 18, 18)
+                .addComponent(cbDisableIndex)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel5)
+                .addContainerGap(12, Short.MAX_VALUE))
+        );
+
+        pnlCards.add(pnlIndex, "index");
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbUseBestMaven, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbUseBestMaven.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblHint.text")); // NOI18N
+        lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        org.openide.awt.Mnemonics.setLocalizedText(cbAlternateLocation, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbAlternateLocation.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblDirectory.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnDirectory.text")); // NOI18N
+        btnDirectory.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDirectoryActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout plnExperimentalLayout = new javax.swing.GroupLayout(plnExperimental);
+        plnExperimental.setLayout(plnExperimentalLayout);
+        plnExperimentalLayout.setHorizontalGroup(
+            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(cbUseBestMaven)
+                    .addComponent(cbAlternateLocation)
+                    .addGroup(plnExperimentalLayout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                                .addComponent(lblDirectory)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(txtDirectory, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnDirectory)))))
+                .addContainerGap())
+        );
+        plnExperimentalLayout.setVerticalGroup(
+            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(plnExperimentalLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(cbUseBestMaven)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbAlternateLocation)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblDirectory)
+                    .addComponent(txtDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDirectory))
+                .addContainerGap(30, Short.MAX_VALUE))
+        );
+
+        pnlCards.add(plnExperimental, "experimental");
 
         lblCommandLine.setLabelFor(comMavenHome);
         org.openide.awt.Mnemonics.setLocalizedText(lblCommandLine, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblCommandLine.text"));
@@ -465,32 +700,37 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())))
+                    .addGroup(pnlExecutionLayout.createSequentialGroup()
+                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(cbAlwaysShow)
+                                    .addComponent(cbReuse)
+                                    .addComponent(cbCollapseSuccessFolds)
+                                    .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                        .addComponent(lblOutputTab)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(cbOutputTabShowConfig)
+                                            .addGroup(pnlExecutionLayout.createSequentialGroup()
+                                                .addComponent(rbOutputTabName)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(rbOutputTabId))))
+                                    .addComponent(cbShowInfoLevel)
+                                    .addComponent(btnGoals))
+                                .addGap(18, 18, 18))
+                            .addComponent(cbSkipTests, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addGap(0, 45, Short.MAX_VALUE))
                     .addGroup(pnlExecutionLayout.createSequentialGroup()
                         .addComponent(lblOptions)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtOptions)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnOptions))
-                    .addGroup(pnlExecutionLayout.createSequentialGroup()
-                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnGoals)
-                            .addComponent(cbAlwaysShow)
-                            .addComponent(cbReuse)
-                            .addComponent(cbSkipTests)
-                            .addComponent(cbCollapseSuccessFolds)
-                            .addGroup(pnlExecutionLayout.createSequentialGroup()
-                                .addComponent(lblOutputTab)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(cbOutputTabShowConfig)
-                                    .addGroup(pnlExecutionLayout.createSequentialGroup()
-                                        .addComponent(rbOutputTabName)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(rbOutputTabId))))
-                            .addComponent(cbShowInfoLevel))
-                        .addGap(0, 161, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(btnOptions)
+                        .addContainerGap())))
         );
         pnlExecutionLayout.setVerticalGroup(
             pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -501,7 +741,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comMavenHome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblExternalVersion, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(21, 21, 21)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblOptions)
                     .addComponent(txtOptions, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -529,235 +769,6 @@ public class SettingsPanel extends javax.swing.JPanel {
         );
 
         pnlCards.add(pnlExecution, "execution");
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel2.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel4.text")); // NOI18N
-
-        cbProjectNodeNameMode.setModel(getProjectNodeModel());
-        cbProjectNodeNameMode.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbProjectNodeNameModeItemStateChanged(evt);
-            }
-        });
-        cbProjectNodeNameMode.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbProjectNodeNameModeActionPerformed(evt);
-            }
-        });
-
-        txtProjectNodeNameCustomPattern.setText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.text")); // NOI18N
-        txtProjectNodeNameCustomPattern.setToolTipText(org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.txtProjectNodeNameCustomPattern.toolTipText")); // NOI18N
-
-        javax.swing.GroupLayout pnlAppearanceLayout = new javax.swing.GroupLayout(pnlAppearance);
-        pnlAppearance.setLayout(pnlAppearanceLayout);
-        pnlAppearanceLayout.setHorizontalGroup(
-            pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlAppearanceLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addGroup(pnlAppearanceLayout.createSequentialGroup()
-                        .addGap(20, 20, 20)
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtProjectNodeNameCustomPattern)
-                            .addComponent(cbProjectNodeNameMode, 0, 331, Short.MAX_VALUE))))
-                .addContainerGap())
-        );
-        pnlAppearanceLayout.setVerticalGroup(
-            pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlAppearanceLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
-                    .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(295, Short.MAX_VALUE))
-        );
-
-        pnlCards.add(pnlAppearance, "appearance");
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel1.text")); // NOI18N
-
-        lblBinaries.setLabelFor(comBinaries);
-        org.openide.awt.Mnemonics.setLocalizedText(lblBinaries, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblBinaries.text")); // NOI18N
-
-        lblJavadoc.setLabelFor(comJavadoc);
-        org.openide.awt.Mnemonics.setLocalizedText(lblJavadoc, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblJavadoc.text")); // NOI18N
-
-        lblSource.setLabelFor(comSource);
-        org.openide.awt.Mnemonics.setLocalizedText(lblSource, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblSource.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.jLabel3.text")); // NOI18N
-        jLabel3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        javax.swing.GroupLayout pnlDependenciesLayout = new javax.swing.GroupLayout(pnlDependencies);
-        pnlDependencies.setLayout(pnlDependenciesLayout);
-        pnlDependenciesLayout.setHorizontalGroup(
-            pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(0, 293, Short.MAX_VALUE))
-                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                        .addComponent(lblJavadoc)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comJavadoc, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                        .addComponent(lblBinaries)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comBinaries, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                        .addComponent(lblSource)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comSource, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-
-        pnlDependenciesLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {lblBinaries, lblJavadoc, lblSource});
-
-        pnlDependenciesLayout.setVerticalGroup(
-            pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlDependenciesLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblBinaries)
-                    .addComponent(comBinaries, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblJavadoc)
-                    .addComponent(comJavadoc, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblSource)
-                    .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(213, Short.MAX_VALUE))
-        );
-
-        pnlCards.add(pnlDependencies, "dependencies");
-
-        lblIndex.setLabelFor(comIndex);
-        org.openide.awt.Mnemonics.setLocalizedText(lblIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblIndex.text")); // NOI18N
-
-        comIndex.setModel(createComboModel());
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnIndex.text")); // NOI18N
-        btnIndex.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnIndexActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbDisableIndex, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbDisableIndex.text")); // NOI18N
-        cbDisableIndex.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cbDisableIndexActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout pnlIndexLayout = new javax.swing.GroupLayout(pnlIndex);
-        pnlIndex.setLayout(pnlIndexLayout);
-        pnlIndexLayout.setHorizontalGroup(
-            pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlIndexLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(cbDisableIndex, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(pnlIndexLayout.createSequentialGroup()
-                        .addComponent(lblIndex)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comIndex, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnIndex)))
-                .addContainerGap())
-        );
-        pnlIndexLayout.setVerticalGroup(
-            pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(pnlIndexLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(pnlIndexLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblIndex)
-                    .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnIndex))
-                .addGap(18, 18, 18)
-                .addComponent(cbDisableIndex)
-                .addContainerGap(308, Short.MAX_VALUE))
-        );
-
-        pnlCards.add(pnlIndex, "index");
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbUseBestMaven, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbUseBestMaven.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblHint.text")); // NOI18N
-        lblHint.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        org.openide.awt.Mnemonics.setLocalizedText(cbAlternateLocation, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbAlternateLocation.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.lblDirectory.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnDirectory, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.btnDirectory.text")); // NOI18N
-        btnDirectory.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDirectoryActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout plnExperimentalLayout = new javax.swing.GroupLayout(plnExperimental);
-        plnExperimental.setLayout(plnExperimentalLayout);
-        plnExperimentalLayout.setHorizontalGroup(
-            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(plnExperimentalLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(plnExperimentalLayout.createSequentialGroup()
-                        .addComponent(cbUseBestMaven)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(plnExperimentalLayout.createSequentialGroup()
-                        .addGap(29, 29, 29)
-                        .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblHint, javax.swing.GroupLayout.DEFAULT_SIZE, 574, Short.MAX_VALUE)
-                            .addGroup(plnExperimentalLayout.createSequentialGroup()
-                                .addComponent(cbAlternateLocation)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(plnExperimentalLayout.createSequentialGroup()
-                                .addGap(29, 29, 29)
-                                .addComponent(lblDirectory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtDirectory)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnDirectory)))))
-                .addContainerGap())
-        );
-        plnExperimentalLayout.setVerticalGroup(
-            plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(plnExperimentalLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(cbUseBestMaven)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblHint, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cbAlternateLocation)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(plnExperimentalLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblDirectory)
-                    .addComponent(txtDirectory, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDirectory))
-                .addContainerGap(164, Short.MAX_VALUE))
-        );
-
-        pnlCards.add(plnExperimental, "experimental");
 
         lstCategory.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "execution", "appearance", "dependencies", "index", "experimental" };
@@ -915,6 +926,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblBinaries;
     private javax.swing.JLabel lblCategory;
