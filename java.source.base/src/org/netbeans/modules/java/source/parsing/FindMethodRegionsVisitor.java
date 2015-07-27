@@ -67,13 +67,14 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> implements R
         private CompilationUnitTree cu;
         private final List<Pair<DocPositionRegion,MethodTree>> posRegions = new LinkedList<Pair<DocPositionRegion, MethodTree>>();
         
-        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, final AtomicBoolean canceled) {
+        public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, final AtomicBoolean canceled, CompilationUnitTree unit) {
             assert doc != null;
             assert pos != null;
             assert canceled != null;
             this.doc = doc;
             this.pos = pos;
             this.canceled = canceled;
+            this.cu = unit;
         }
         
         public void run() {
@@ -90,7 +91,6 @@ class FindMethodRegionsVisitor extends SimpleTreeVisitor<Void,Void> implements R
 
         @Override
         public Void visitCompilationUnit(CompilationUnitTree node, Void p) {
-            cu = node;
             for (Tree t : node.getTypeDecls()) {
                 visit (t,p);
             }
