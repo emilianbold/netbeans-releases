@@ -110,6 +110,11 @@ public class ResultsOutlineSupport {
             "org/netbeans/modules/search/res/context.gif";              //NOI18N
     private static final int VERTICAL_ROW_SPACE = 2;
 
+    private static final String PROP_HORIZONTAL_SCROLLBAR
+            = "netbeans.search.horizontal.scrollbar";                   //NOI18N
+    private static final int HORIZONTAL_SCROLLBAR_POLICY
+            = getHorizontalScrollbarPolicy();
+
     OutlineView outlineView;
     private boolean replacing;
     private boolean details;
@@ -176,8 +181,7 @@ public class ResultsOutlineSupport {
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
         outlineView.getOutline().setRowHeight(
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
-        outlineView.setTreeHorizontalScrollBarPolicy(
-                OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        outlineView.setTreeHorizontalScrollBarPolicy(HORIZONTAL_SCROLLBAR_POLICY);
         setTooltipHidingBehavior();
     }
 
@@ -909,6 +913,31 @@ public class ResultsOutlineSupport {
 
         @Override
         public void columnSelectionChanged(ListSelectionEvent e) {
+        }
+    }
+
+    private static int getHorizontalScrollbarPolicy() {
+        try {
+            String prop = System.getProperty(PROP_HORIZONTAL_SCROLLBAR);
+            if (prop == null) {
+                return OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED;
+            }
+            switch (prop) {
+                case "on":                                              //NOI18N
+                case "On":                                              //NOI18N
+                case "ON":                                              //NOI18N
+                    return OutlineView.HORIZONTAL_SCROLLBAR_ALWAYS;
+                case "off":                                             //NOI18N
+                case "Off":                                             //NOI18N
+                case "OFF":                                             //NOI18N
+                    return OutlineView.HORIZONTAL_SCROLLBAR_NEVER;
+                default:
+                    return OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED;
+            }
+        } catch (Exception e) {
+            Logger.getLogger(ResultsOutlineSupport.class.getName()).log(
+                    Level.INFO, null, e);
+            return OutlineView.HORIZONTAL_SCROLLBAR_AS_NEEDED;
         }
     }
 }

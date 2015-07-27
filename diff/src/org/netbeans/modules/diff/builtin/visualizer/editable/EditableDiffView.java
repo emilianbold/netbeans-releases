@@ -193,6 +193,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     private final Object DIFFING_LOCK = new Object();
     private final String name1;
     private final String name2;
+    private boolean sourcesInitialized;
+    private boolean viewAdded;
 
     public EditableDiffView (final StreamSource ss1, final StreamSource ss2) {
         this(ss1, ss2, false);
@@ -345,7 +347,11 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                     
                                     manager.init();
                                     
-                                    refreshDiff(100);
+                                    sourcesInitialized = true;
+                                    if (viewAdded) {
+                                        addListeners();
+                                        refreshDiff(100);
+                                    }
                                 }
                                 
                             });
@@ -592,15 +598,12 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
     @Override
     public void ancestorAdded(AncestorEvent event) {
         DiffModuleConfig.getDefault().getPreferences().addPreferenceChangeListener(this);
-        expandFolds();
-        initGlobalSizes();
-        addChangeListeners();
-        addDocumentListeners();
-        refreshDiff(50);        
-
-        if (editableCookie == null) return;
-        refreshEditableDocument();
-        editableCookie.addPropertyChangeListener(this);
+        if (sourcesInitialized) {
+            addListeners();
+            refreshDiff(50);
+        } else {
+            viewAdded = true;
+        }
     }
 
     private void refreshEditableDocument() {
@@ -622,10 +625,13 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     @Override
     public void ancestorRemoved(AncestorEvent event) {
-        DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
-        removeDocumentListeners();
-        if (editableCookie != null) {
-            editableCookie.removePropertyChangeListener(this);
+        viewAdded = false;
+        if (sourcesInitialized) {
+            DiffModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);
+            removeDocumentListeners();
+            if (editableCookie != null) {
+                editableCookie.removePropertyChangeListener(this);
+            }
         }
     }
 
@@ -771,6 +777,17 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     Stroke getBoldStroke() {
         return boldStroke;
+    }
+
+    private void addListeners () {
+        expandFolds();
+        initGlobalSizes();
+        addChangeListeners();
+        addDocumentListeners();
+
+        if (editableCookie == null) return;
+        refreshEditableDocument();
+        editableCookie.addPropertyChangeListener(this);
     }
 
     class DiffSplitPaneUI extends BasicSplitPaneUI {
