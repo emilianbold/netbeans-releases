@@ -212,9 +212,9 @@ public final class TaskActivityDisplayer extends ActivityDisplayer {
     }
 
     private JComponent commentDetailsPanel(String comment) {
-		if comment == null) {
-			return null;
-		}
+        if (comment == null) {
+            return null;
+        }
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
