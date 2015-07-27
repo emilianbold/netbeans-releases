@@ -91,12 +91,14 @@ public class MatchedRuleNode extends AbstractNode {
             sourceURL = rule.getSourceURL();
         }
         String stylesheet = Utilities.relativeResourceName(sourceURL, ruleOrigin.getProject());
-        if (stylesheet.isEmpty()) {
-            stylesheet = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+        if (stylesheet != null) {
+            if (stylesheet.isEmpty()) {
+                stylesheet = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+            }
+            String description = NbBundle.getMessage(MatchedRuleNode.class,
+                "MatchedRuleNode.description", stylesheet); // NOI18N
+            setShortDescription(description);
         }
-        String description = NbBundle.getMessage(MatchedRuleNode.class,
-            "MatchedRuleNode.description", stylesheet); // NOI18N
-        setShortDescription(description);
     }
 
     @Override

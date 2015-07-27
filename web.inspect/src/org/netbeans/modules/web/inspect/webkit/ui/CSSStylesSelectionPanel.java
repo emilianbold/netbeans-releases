@@ -1044,12 +1044,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                         } else {
                             ruleLocation = fob.getNameExt();
                         }
-                        if (ruleLocation.isEmpty()) {
-                            ruleLocation = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+                        if (ruleLocation != null) {
+                            if (ruleLocation.isEmpty()) {
+                                ruleLocation = Bundle.CSSStylesSelectionPanel_generatedStylesheet();
+                            }
+                            // Source line seems to be 0-based (i.e. is 0 for the first line).    
+                            int sourceLine = rule.getSourceLine() + 1;
+                            ruleLocation += ":" + sourceLine; // NOI18N
                         }
-                        // Source line seems to be 0-based (i.e. is 0 for the first line).    
-                        int sourceLine = rule.getSourceLine() + 1;
-                        ruleLocation += ":" + sourceLine; // NOI18N
                     }
                 }
                 ruleLocationLabel.setVisible(ruleLocation != null);
