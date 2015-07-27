@@ -87,7 +87,6 @@ public class ReplaceWithPragmaOnce implements Fix {
         Runnable runnable = new Runnable () {
             @Override
             public void run() {
-                long start = System.nanoTime();
                 TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
                     if (docTokenSequence == null) {
                         return;
@@ -105,8 +104,6 @@ public class ReplaceWithPragmaOnce implements Fix {
                                 while (preprocTokenSequence.moveNext()) {
                                     if (preprocTokenSequence.token().id().equals(CppTokenId.PREPROCESSOR_ENDIF)) {
                                         result.set(preprocTokenSequence.offset());
-                                        long end = System.nanoTime();
-                                        System.out.println("PERFORMANCE II | " + ((end - start) * 10e-6) + " ms");
                                         return;
                                     }
                                 }
