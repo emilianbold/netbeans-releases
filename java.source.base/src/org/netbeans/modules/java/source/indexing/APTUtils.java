@@ -463,7 +463,7 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     //keep synchronized with libs.javacapi/manifest.mf and libs.javacimpl/manifest.mf
     //when adding new packages, double-check the quick path in loadClass below:
-    private static final Iterable<? extends String> javacPackages = Arrays.asList("com.sun.javadoc.", "com.sun.source.", "javax.annotation.processing.", "javax.lang.model.", "javax.tools.", "com.sun.tools.javac.", "com.sun.tools.javadoc.", "com.sun.tools.classfile.");
+    private static final Iterable<? extends String> javacPackages = Arrays.asList("com.sun.javadoc.", "com.sun.source.", "javax.annotation.processing.", "javax.lang.model.", "javax.tools.", "com.sun.tools.javac.", "com.sun.tools.javadoc.", "com.sun.tools.classfile.", "com.sun.tools.hc.");
     private static final class BypassOpenIDEUtilClassLoader extends ClassLoader {
         private final ClassLoader contextCL;
         public BypassOpenIDEUtilClassLoader(ClassLoader contextCL) {

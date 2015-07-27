@@ -1098,7 +1098,7 @@ public final class GeneratorUtilities {
                 for (Element element : entry.getKey().getEnclosedElements()) {
                     if (element.getKind().isClass() || element.getKind().isInterface()) {
                         Entry starEntry = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
-                        if (starEntry.scope != null) {
+                        if (starEntry.sym != null && starEntry.sym != element) {
                             TypeElement te = null;
                             for (Element e : elementsToImport) {
                                 if ((e.getKind().isClass() || e.getKind().isInterface()) && element.getSimpleName() == e.getSimpleName()) {

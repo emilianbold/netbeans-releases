@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +65,8 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
@@ -70,6 +74,7 @@ import org.netbeans.modules.java.source.base.OnStopHandler;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -118,7 +123,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                         if (!changes.changed.isEmpty() || !changes.added.isEmpty() || !changes.removed.isEmpty()) {
                             deleteSigFiles(context.getRootURI(), changed);
                             if (changes.preBuildArgs) {
-                                preBuildArgs(context.getRootURI(),javax.swing.JComponent.class.getName());
+                                preBuildArgs(javax.swing.JComponent.class.getName(), context.getRootURI());
                             }
                         }
                         final Map<URL,Set<URL>> toRebuild = JavaCustomIndexer.findDependent(context.getRootURI(), srcDeps, binDeps, peers, changed, !changes.added.isEmpty(), false);
@@ -161,9 +166,18 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             FileObjects.convertFolder2Package(
                 FileObjects.stripExtension(
                     FileUtil.getRelativePath(root, file)));
-        final TransactionContext txCtx = TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
+        final TransactionContext txCtx = TransactionContext.beginTrans()
+                .register(FileManagerTransaction.class, FileManagerTransaction.writeThrough())
+                .register(ProcessorGenerated.class, ProcessorGenerated.nullWrite());
         try {
-            preBuildArgs(root.getURL(), relativePath);
+            final Collection<ClassPath.Entry> entries = JavaPlatform.getDefault().getBootstrapLibraries().entries();
+            final URL[] roots = new URL[1+entries.size()];
+            roots[0] = root.toURL();
+            final Iterator<ClassPath.Entry> eit = entries.iterator();
+            for (int i=1; eit.hasNext(); i++) {
+                roots[i] = eit.next().getURL();
+            }
+            preBuildArgs(relativePath, roots);
         } finally {
             txCtx.commit();
         }
@@ -177,8 +191,8 @@ public class JavaBinaryIndexer extends BinaryIndexer {
      * @param archiveUrl URL of an archive
      */
     private static void preBuildArgs (
-            @NonNull final URL archiveUrl,
-            @NonNull final String fqn) {
+            @NonNull final String fqn,
+            @NonNull final URL... archiveUrls) {
         class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
             @Override
             public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
@@ -188,7 +202,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             }
         }
         ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(
-            ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
+            ClassPathSupport.createClassPath(archiveUrls),
             ClassPathSupport.createClassPath(new URL[0]),
             ClassPathSupport.createClassPath(new URL[0]),
             null,
