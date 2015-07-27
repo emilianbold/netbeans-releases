@@ -41,14 +41,20 @@
  */
 package org.netbeans.modules.cnd.refactoring.hints;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 /**
  *
@@ -56,13 +62,11 @@ import org.openide.util.NbBundle;
  */
 public class ReplaceWithPragmaOnce implements Fix {
     private final BaseDocument doc;
-    private final CsmFile file;
     private final int guardBlockStart;
     private final int guardBlockEnd;
     
-    public ReplaceWithPragmaOnce(Document doc, CsmFile file, int guardBlockStart, int guardBlockEnd) {
+    public ReplaceWithPragmaOnce(Document doc, int guardBlockStart, int guardBlockEnd) {
         this.doc = (BaseDocument) doc;
-        this.file = file;
         this.guardBlockStart = guardBlockStart;
         this.guardBlockEnd = guardBlockEnd;
     }
@@ -74,23 +78,62 @@ public class ReplaceWithPragmaOnce implements Fix {
     
     @Override
     public ChangeInfo implement() throws Exception {
-        CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
-        
         // get offsets of #ifndef - #define
         Position startPosition = NbDocument.createPosition(doc, guardBlockStart, Position.Bias.Forward);
         Position endPosition = NbDocument.createPosition(doc, guardBlockEnd, Position.Bias.Backward);
         
         // get offsets of #endif
-        int lineCount = query.getLineCount(file); // number of the last non-empty line
-        int startLastLineOffset = (int) query.getOffset(file, lineCount, 1);
-        int lastOffset = file.getText().length();
-        final String endifMacro = "#endif";  // NOI18N
-        if (file.getText(startLastLineOffset, lastOffset).toString().contains(endifMacro)) {
-            Position startEndifPosition = NbDocument.createPosition(doc, startLastLineOffset, Position.Bias.Forward);
-            Position endEndifPosition = NbDocument.createPosition(doc, lastOffset, Position.Bias.Backward);
-            doc.replace(startPosition.getOffset(), endPosition.getOffset() - startPosition.getOffset(), "#pragma once", null); // NOI18N
-            doc.replace(startEndifPosition.getOffset(), endEndifPosition.getOffset() - startEndifPosition.getOffset(), "", null); // NOI18N
-        }
+        final AtomicInteger result = new AtomicInteger(-1);
+        Runnable runnable = new Runnable () {
+            @Override
+            public void run() {
+                long start = System.nanoTime();
+                TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
+                    if (docTokenSequence == null) {
+                        return;
+                    }
+                    docTokenSequence.moveEnd();
+                    while (docTokenSequence.movePrevious()) {
+                        if (docTokenSequence.token().id() instanceof CppTokenId) {
+                            CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
+                            if (tokenId.equals(CppTokenId.PREPROCESSOR_DIRECTIVE)) {
+                                TokenSequence<CppTokenId> preprocTokenSequence = docTokenSequence.embedded(CppTokenId.languagePreproc());
+                                if (preprocTokenSequence == null) {
+                                    return;
+                                }
+                                preprocTokenSequence.moveStart();
+                                while (preprocTokenSequence.moveNext()) {
+                                    if (preprocTokenSequence.token().id().equals(CppTokenId.PREPROCESSOR_ENDIF)) {
+                                        result.set(preprocTokenSequence.offset());
+                                        long end = System.nanoTime();
+                                        System.out.println("PERFORMANCE II | " + ((end - start) * 10e-6) + " ms");
+                                        return;
+                                    }
+                                }
+                            } else if (!tokenId.primaryCategory().equals(CppTokenId.WHITESPACE_CATEGORY) 
+                                    && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)) {
+                                return;
+                            }
+                        }
+                    }
+            }
+        };
+        
+        FutureTask<AtomicInteger> atomicOffset = new FutureTask<>(runnable, result);
+        doc.render(atomicOffset);
+        
+        try {
+            int lastOffset = atomicOffset.get().get();
+            if (lastOffset != -1) {
+                lastOffset--;
+                Position startEndifPosition = NbDocument.createPosition(doc, lastOffset, Position.Bias.Forward);
+                Position endEndifPosition = NbDocument.createPosition(doc, doc.getLength(), Position.Bias.Backward);
+                doc.replace(startPosition.getOffset(), endPosition.getOffset() - startPosition.getOffset(), "#pragma once", null); // NOI18N
+                doc.replace(startEndifPosition.getOffset(), endEndifPosition.getOffset() - startEndifPosition.getOffset(), "", null); // NOI18N
+            }
+        } catch (InterruptedException | ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
         return null;
     }
 }
