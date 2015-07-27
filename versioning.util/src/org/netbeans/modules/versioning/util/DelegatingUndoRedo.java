@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.versioning.util;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import org.openide.awt.UndoRedo;
 
 import javax.swing.event.ChangeListener;
@@ -57,16 +59,22 @@ import java.util.*;
 
  * @author Maros Sandor
  */
-public class DelegatingUndoRedo implements UndoRedo, ChangeListener {
+public class DelegatingUndoRedo implements UndoRedo, ChangeListener, PropertyChangeListener {
 
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>(2);
         
     private UndoRedo delegate = UndoRedo.NONE;
+    private JComponent comp = null;
 
     public void setDiffView(JComponent componentDelegate) {
         if (componentDelegate == null) {
             setDelegate(UndoRedo.NONE);
         } else {
+            if (comp != null) {
+                comp.removePropertyChangeListener(this);
+            }
+            comp = componentDelegate;
+            comp.addPropertyChangeListener(this);
             UndoRedo delegate = (UndoRedo) componentDelegate.getClientProperty(UndoRedo.class);
             if (delegate == null) delegate = UndoRedo.NONE; 
             setDelegate(delegate);
@@ -88,6 +96,13 @@ public class DelegatingUndoRedo implements UndoRedo, ChangeListener {
         }
         for (ChangeListener listener : currentListeners) {
             listener.stateChanged(e);
+        }
+    }
+
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (UndoRedo.class.toString().equals(evt.getPropertyName())) {
+            setDiffView(comp);
         }
     }
 
