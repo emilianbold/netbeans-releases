@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.execute;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -808,8 +809,21 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             try {
                 //this url pattern works for all versions except the last one 3.2.3
                 //which is only under <mirror>/apache/maven/maven-3/3.2.3/binaries/
-                URL u = new URL("http://archive.apache.org/dist/maven/binaries/apache-maven-" + ver + "-bin.zip");
-                InputStream is = u.openStream();
+                URL[] urls = new URL[] {new URL("http://archive.apache.org/dist/maven/binaries/apache-maven-" + ver + "-bin.zip"),
+                                        new URL("http://archive.apache.org/dist/maven/maven-3/" + ver + "/binaries/apache-maven-" + ver + "-bin.zip")};
+                InputStream is = null;
+                for (URL u : urls) {
+                    try {
+                        is = u.openStream();
+                        break;
+                    } catch (FileNotFoundException e) {
+                        // try next url
+                    }
+                }
+                if(is == null) {
+                    LOGGER.log(Level.WARNING, "wasn''t able to download maven binaries, version {0}", ver);
+                    return null;
+                }
                 str = new ZipInputStream(is);
                 ZipEntry entry;
                 while ((entry = str.getNextEntry()) != null) {
