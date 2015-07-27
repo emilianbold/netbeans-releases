@@ -48,6 +48,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackFrame;
 import org.netbeans.modules.debugger.jpda.truffle.frames.TruffleStackInfo;
 import org.netbeans.modules.debugger.jpda.truffle.source.SourcePosition;
@@ -62,6 +63,7 @@ public class CurrentPCInfo {
     
     public static final String PROP_SELECTED_FRAME = "selectedFrame";           // NOI18N
     
+    private final Variable suspendedInfo;
     private final Reference<JPDAThread> threadRef;
     private final SourcePosition sp;
     private final TruffleSlotVariable[] vars;
@@ -71,15 +73,20 @@ public class CurrentPCInfo {
     
     private PropertyChangeSupport pchs = new PropertyChangeSupport(this);
     
-    public CurrentPCInfo(JPDAThread thread, SourcePosition sp,
+    public CurrentPCInfo(Variable suspendedInfo, JPDAThread thread, SourcePosition sp,
                          TruffleSlotVariable[] vars, TruffleStackFrame topFrame,
                          TruffleStackInfo stack) {
+        this.suspendedInfo = suspendedInfo;
         this.threadRef = new WeakReference<>(thread);
         this.sp = sp;
         this.vars = vars;
         this.topFrame = topFrame;
         this.stack = stack;
         selectedStackFrame = topFrame;
+    }
+    
+    public Variable getSuspendedInfo() {
+        return suspendedInfo;
     }
     
     public JPDAThread getThread() {

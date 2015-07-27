@@ -154,7 +154,7 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
 //            }
             //Set<JSBreakpoint> annotatedBreakpoints = breakpointAnnotations.keySet();
             for (Breakpoint breakpoint : DebuggerManager.getDebuggerManager().getBreakpoints()) {
-                if (isAnnotateable(breakpoint)) {
+                if (isAnnotateable(breakpoint) && !breakpointAnnotations.containsKey(breakpoint)) {
                     JSLineBreakpoint b = (JSLineBreakpoint) breakpoint;
                     if (fo.equals(b.getFileObject())) {
                         logger.log(Level.FINE, "annotate({0} (ID={1})): b = {2}",
@@ -228,7 +228,7 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
         }
     }
 
-    private void removeAnnotation(Breakpoint breakpoint) {
+    private boolean removeAnnotation(Breakpoint breakpoint) {
         Annotation annotation;
         synchronized (breakpointAnnotations) {
             annotation = breakpointAnnotations.remove(breakpoint);
@@ -237,6 +237,9 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
             logger.log(Level.FINE, "Removed annotation of {0} : {1}",
                        new Object[] { breakpoint, annotation });
             annotation.detach();
+            return true;
+        } else {
+            return false;
         }
     }
     
@@ -267,18 +270,11 @@ class BreakpointAnnotationManager implements PropertyChangeListener {
         }
         
         private void refreshAnnotation(JSLineBreakpoint b) {
-            removeAnnotation(b);
-            /*if (remove) {
-                if (!add) {
-                    breakpointAnnotations.remove(b);
-                }
-            }*/
-            if (add) {
+            boolean removed = removeAnnotation(b);
+            if (add && (!remove || remove && removed)) {
+                // if both add && remove are true (refresh of an existing annotation),
+                // add only when some annotation was actually removed
                 addAnnotation(b);
-                /*breakpointAnnotations.put(b, new WeakSet<Annotation>());
-                for (FileObject fo : annotatedFiles) {
-                    addAnnotationTo(b, fo);
-                }*/
             }
         }
         

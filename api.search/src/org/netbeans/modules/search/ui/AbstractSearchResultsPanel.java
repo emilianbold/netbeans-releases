@@ -57,6 +57,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.text.DefaultEditorKit;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.search.SearchControl;
 import org.netbeans.modules.search.ResultView;
@@ -131,6 +132,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         // map delete key to delete action
         map.put("delete", //NOI18N
                 ExplorerUtils.actionDelete(explorerManager, false));
+        map.put(DefaultEditorKit.copyAction,
+                ExplorerUtils.actionCopy(explorerManager));
+        map.put(DefaultEditorKit.cutAction,
+                ExplorerUtils.actionCut(explorerManager));
 
         lookup = ExplorerUtils.createLookup(explorerManager,
                 ResultView.getInstance().getActionMap());

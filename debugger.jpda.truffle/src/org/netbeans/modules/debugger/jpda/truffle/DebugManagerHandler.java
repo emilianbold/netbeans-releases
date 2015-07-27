@@ -150,10 +150,10 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     if (!(engineValue instanceof ObjectReference)) {
                         return ;
                     }
-                    ReferenceType engineClasstype = ((ObjectReference) engineValue).referenceType();
-                    if (!TRUFFLE_JS_ENGINE_CLASS_NAME.equals(engineClasstype.name())) {
-                        return ;
-                    }
+                    //ReferenceType engineClasstype = ((ObjectReference) engineValue).referenceType();
+                    //if (!TRUFFLE_JS_ENGINE_CLASS_NAME.equals(engineClasstype.name())) {
+                    //    return ;
+                    //}
                     Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(
                             accessorClass,
                             ACCESSOR_SET_UP_DEBUG_MANAGER_FOR,
@@ -241,10 +241,12 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     return ;
                 }
                 Method debugManagerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, ACCESSOR_SET_UP_DEBUG_MANAGER, "()Lorg/netbeans/modules/debugger/jpda/backend/truffle/JPDATruffleDebugManager;");
-                ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
-                if (ret != null && !(ret instanceof ObjectReference)) {
-                    LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
-                    return ;
+                if (debugManagerMethod != null) {
+                    ret = ClassTypeWrapper.invokeMethod(serviceClass, tr, debugManagerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                    if (ret != null && !(ret instanceof ObjectReference)) {
+                        LOG.log(Level.WARNING, "Could not start up debugger manager of "+serviceClass);
+                        return ;
+                    }
                 }
                 TruffleAccess.assureBPSet(debugger, serviceClass);
                 JPDAClassType serviceJPDAClass = ((JPDADebuggerImpl) debugger).getClassType(serviceClass);
@@ -252,7 +254,9 @@ class DebugManagerHandler implements JPDABreakpointListener {
                     accessorClass = serviceClass;
                     accessorJPDAClass = serviceJPDAClass;
                 }
-                debugManager = (ObjectReference) ret;
+                if (debugManagerMethod != null) {
+                    debugManager = (ObjectReference) ret;
+                }
             } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
                 iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
