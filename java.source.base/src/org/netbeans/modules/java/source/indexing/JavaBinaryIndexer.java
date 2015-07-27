@@ -70,6 +70,7 @@ import org.netbeans.modules.java.source.base.OnStopHandler;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -161,9 +162,11 @@ public class JavaBinaryIndexer extends BinaryIndexer {
             FileObjects.convertFolder2Package(
                 FileObjects.stripExtension(
                     FileUtil.getRelativePath(root, file)));
-        final TransactionContext txCtx = TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.writeThrough());
+        final TransactionContext txCtx = TransactionContext.beginTrans()
+                .register(FileManagerTransaction.class, FileManagerTransaction.writeThrough())
+                .register(ProcessorGenerated.class, ProcessorGenerated.nullWrite());
         try {
-            preBuildArgs(root.getURL(), relativePath);
+            preBuildArgs(root.toURL(), relativePath);
         } finally {
             txCtx.commit();
         }
