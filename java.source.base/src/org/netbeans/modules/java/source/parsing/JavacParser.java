@@ -605,7 +605,7 @@ public class JavacParser extends Parser {
                 assert !it.hasNext();
                 final Document doc = currentInfo.getDocument();
                 if (doc != null && supportsReparse) {
-                    final FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.parserCanceled);
+                    final FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions(),this.parserCanceled, unit);
                     doc.render(v);
                     synchronized (positions) {
                         positions.clear();
