@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
 
     <property name="clank.dest.zip" value="${basedir}/external/clank_0.3.6.zip"/>
 
-    <target name="-check-clank-paths" if="${copy.clank.jars}"> 
+    <target name="-overwrite-clank-zip" if="${overwrite.clank.zip}"> 
 
       <property name="clank.suite.dir" value="${sputnik}/clank.suite"/>
       <property name="clank.suite.jars.dir" value="${clank.suite.dir}/build/cluster/modules"/>
@@ -75,12 +75,32 @@ made subject to such option by the copyright holder.
       </zip>
     </target>
     
-    <target name="jar-prep" depends="-check-clank-paths,projectized-common.jar-prep">
-      <unzip src="${clank.dest.zip}" dest="${basedir}/external" overwrite="true">
-      </unzip>
+    <!-- We distribute zip, but use unpacked jars-->
+    <target name="-unzip-clank-jars" depends="-overwrite-clank-zip" if="${libs.clank.building}">
+        <echo message="need to unzip clank, because libs.clank.building=${libs.clank.building}" />
+        <unzip src="${clank.dest.zip}" dest="${basedir}/external" overwrite="true">
+        </unzip>
+    </target>
+    
+    <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
+    <target name="-release.files" depends="-unzip-clank-jars,projectized.-release.files">
     </target>
 
-    <target name="netbeans" depends="projectized-common.netbeans" if="${copy.clank.jars}">
+    <target name="nbm" depends="-pre-build-clank,projectized.nbm,-post-build-clank"/>
+
+    <target name="netbeans" depends="-pre-build-clank,projectized-common.netbeans,-post-build-clank"/>
+    
+    <target name="-check-overwritten-clank-zip" if="${copy.clank.jars}">
+        <property name="overwrite.clank.zip" value="true"/>
+        <echo message="going to replace clank.zip, so set overwrite.clank.zip=${overwrite.clank.zip}" /> 
+    </target>
+    
+    <target name="-pre-build-clank" depends="-check-overwritten-clank-zip">
+        <property name="libs.clank.building" value="true"/>
+        <echo message="building libs.clank, so set libs.clank.building=${libs.clank.building}" />  
+    </target>
+    
+    <target name="-post-build-clank" if="${overwrite.clank.zip}">
         <!-- The only purpose of this target is to print warning below in the very end, rather than in the middle -->
         <echo level="warning" message="################################################################################"></echo>
         <echo level="warning" message="# Attention: clank was not downloaded, but copied from here:"></echo>
