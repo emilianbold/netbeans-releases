@@ -224,6 +224,8 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
             CsmFileInfoQuery query = CsmFileInfoQuery.getDefault();
             if (file.isHeaderFile() && query.hasGuardBlock(file) && CndTokenUtilities.isInPreprocessorDirective(doc, caretOffset)) {
                 final AtomicIntegerArray result = new AtomicIntegerArray(2);
+                result.set(0, -1);
+                result.set(1, -1);
                 Runnable runnable = new Runnable () {
                     @Override
                     public void run() {
@@ -249,12 +251,12 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                             case PREPROCESSOR_PRAGMA:
                                                 return;
                                             case PREPROCESSOR_IFNDEF:
-                                                result.set(0, preprocTokenSequence.offset());
-                                                isGuardMacro = true;
-                                                preprocTokenSequence.moveEnd();
+                                                    result.set(0, preprocTokenSequence.offset());
+                                                    isGuardMacro = true;
+                                                    preprocTokenSequence.moveEnd();
                                                 break;
                                             case PREPROCESSOR_IF:
-                                                isGuardMacro = true;
+                                                    isGuardMacro = true;
                                                 break;
                                             case PREPROCESSOR_DEFINED:
                                                 if (isGuardMacro) {
@@ -267,7 +269,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                                                 if (isGuardMacro) {
                                                     result.set(1, preprocTokenSequence.offset());
                                                 }
-                                                return;
+                                                    return;
                                             default:
                                                 break;
                                         }
@@ -293,7 +295,7 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
                         int endGuardLine = query.getLineColumnByOffset(file, endResult)[0] + 1;
                         int guardEnd = (int)query.getOffset(file, endGuardLine, 1) - 1;
                         if (caretOffset >= guardStart && caretOffset <= guardEnd) {
-                            createReplaceWithPragmaOnceHint(caretOffset, doc, file, fileObject, guardStart, guardEnd);
+                            createReplaceWithPragmaOnceHint(caretOffset, doc, fileObject, guardStart, guardEnd);
                         }
                     }
                 } catch (InterruptedException | ExecutionException ex) {
@@ -425,8 +427,8 @@ public class SuggestionFactoryTask extends IndexingAwareParserResultTask<Parser.
         HintsController.setErrors(doc, SuggestionFactoryTask.class.getName(), hints);
     }
     
-    private void createReplaceWithPragmaOnceHint(int caret, Document doc, CsmFile file, FileObject fo, int guardBlockStart, int guardBlockEnd) {
-        List<Fix> fixes = Collections.<Fix>singletonList(new ReplaceWithPragmaOnce(doc, file, guardBlockStart, guardBlockEnd));
+    private void createReplaceWithPragmaOnceHint(int caret, Document doc, FileObject fo, int guardBlockStart, int guardBlockEnd) {
+        List<Fix> fixes = Collections.<Fix>singletonList(new ReplaceWithPragmaOnce(doc, guardBlockStart, guardBlockEnd));
         String text = NbBundle.getMessage(ReplaceWithPragmaOnce.class, "HINT_Pragma"); //NOI18N
         List<ErrorDescription> hints = Collections.singletonList(
                 ErrorDescriptionFactory.createErrorDescription(Severity.HINT, text, fixes, fo, caret, caret));

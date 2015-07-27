@@ -209,11 +209,13 @@ public class ConfigInterceptor implements FunctionInterceptor {
                         while (token != null && token.id() != JsTokenId.BRACKET_RIGHT_CURLY) {
                             token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.IDENTIFIER, JsTokenId.BRACKET_RIGHT_CURLY));
                             if (token.text().equals(PROPERTY_NAME)) {
-                                token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.STRING));
-                                packageName = token != null ? token.text().toString() : null;
+                                ts.moveNext();
+                                token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.OPERATOR_COLON, JsTokenId.WHITESPACE, JsTokenId.STRING_BEGIN));
+                                packageName = token != null && token.id() == JsTokenId.STRING ? token.text().toString() : null;
                             } else if (token.text().equals(PROPERTY_LOCATION)) {
-                                token = LexUtilities.findNextToken(ts, Arrays.asList(JsTokenId.STRING));
-                                packageLocation = token != null ? token.text().toString() : null;
+                                ts.moveNext();
+                                token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.OPERATOR_COLON, JsTokenId.WHITESPACE, JsTokenId.STRING_BEGIN));
+                                packageLocation = token != null && token.id() == JsTokenId.STRING ? token.text().toString() : null;
                             } else {
                                 ts.moveNext();
                             }
