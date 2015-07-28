@@ -379,6 +379,7 @@ is divided into following sections:
                 <condition property="testng.debug.mode" value="-mixed" else="">
                     <istrue value="${{junit+testng.available}}"/>
                 </condition>
+                <property name="java.failonerror" value="true"/>
             </target>
 
             <target name="-post-init">
@@ -1377,7 +1378,7 @@ is divided into following sections:
                     <sequential>
                         <property environment="env"/>
                         <resolve name="profiler.current.path" value="${{profiler.info.pathvar}}"/>
-                        <java fork="true" classname="@{{classname}}" dir="${{profiler.info.dir}}" jvm="${{profiler.info.jvm}}">
+                        <java fork="true" classname="@{{classname}}" dir="${{profiler.info.dir}}" jvm="${{profiler.info.jvm}}" failonerror="${{java.failonerror}}">
                             <jvmarg line="${{endorsed.classpath.cmd.line.arg}}"/>
                             <jvmarg value="${{profiler.info.jvmargs.agent}}"/>
                             <jvmarg line="${{profiler.info.jvmargs}}"/>
@@ -1500,7 +1501,7 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <java fork="true" classname="@{{classname}}">
+                        <java fork="true" classname="@{{classname}}" failonerror="${{java.failonerror}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>
@@ -1546,7 +1547,7 @@ is divided into following sections:
                         <xsl:attribute name="optional">true</xsl:attribute>
                     </element>
                     <sequential>
-                        <java fork="true" classname="@{{classname}}">
+                        <java fork="true" classname="@{{classname}}" failonerror="${{java.failonerror}}">
                             <xsl:attribute name="dir">${work.dir}</xsl:attribute>
                             <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
                                 <xsl:attribute name="jvm">${platform.java}</xsl:attribute>

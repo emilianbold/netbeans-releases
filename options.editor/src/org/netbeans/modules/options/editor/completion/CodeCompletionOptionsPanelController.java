@@ -224,9 +224,9 @@ public final class CodeCompletionOptionsPanelController extends OptionsPanelCont
     }
 
     public HelpCtx getHelpCtx() {
-        PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
-        HelpCtx ctx = c == null ? null : c.getHelpCtx();
-	return ctx != null ? ctx : new HelpCtx("netbeans.optionsDialog.editor.codeCompletion"); //NOI18N
+//        PreferencesCustomizer c = selector == null ? null : selector.getSelectedCustomizer();
+//        HelpCtx ctx = c == null ? null : c.getHelpCtx();
+	return new HelpCtx("netbeans.optionsDialog.editor.codeCompletion"); //NOI18N
     }
 
     public JComponent getComponent(Lookup masterLookup) {

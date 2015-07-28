@@ -4509,6 +4509,14 @@ public class Reformatter implements ReformatTask {
                                                     }
                                                 }
                                                 pendingDiff = new Diff(offset + currWSPos, offset + i, javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines() ? SPACE + P_TAG : EMPTY);
+                                            } else if (javadocTokens != null && lastNWSPos >= 0 && cs.generateParagraphTagOnBlankLines()) {
+                                                if (pendingDiff != null) {
+                                                    String sub = text.substring(pendingDiff.start - offset, pendingDiff.end - offset);
+                                                    if (!sub.equals(pendingDiff.text)) {
+                                                        addDiff(pendingDiff);
+                                                    }
+                                                }
+                                                pendingDiff = new Diff(offset + i, offset + i, SPACE + P_TAG);
                                             }
                                             currWSPos = -1;
                                             lastNewLinePos = i;
