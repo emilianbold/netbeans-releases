@@ -37,47 +37,53 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="inCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="inDeclarationsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="anEnumHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="anAnonymousClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="bMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="bPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="bImportsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aImports" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="bClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="aClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="anEnumFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="bFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="inCodeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="inDeclarationsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="anAnonymousClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="anEnumHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="anAnonymousClassFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aPackageLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bImportsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aImports" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aClassLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="aClassHeaderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="anEnumFooterLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="bFieldsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="bMethodsField" min="-2" pref="26" max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                      <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="bClassField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
+                                      <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="inCodeField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="inDeclarationsField" max="32767" attributes="0"/>
+                                      <Component id="anAnonymousClassHeaderField" max="32767" attributes="0"/>
+                                      <Component id="anEnumHeaderField" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="aClassFooterField" pref="0" max="32767" attributes="0"/>
+                                      <Component id="anAnonymousClassFooterField" max="32767" attributes="0"/>
+                                      <Component id="anEnumFooterField" max="32767" attributes="0"/>
+                                      <Component id="bFieldsField" pref="0" max="32767" attributes="0"/>
+                                      <Component id="aFieldsField" pref="0" max="32767" attributes="0"/>
+                                  </Group>
+                                  <Component id="aMethodsField" min="-2" pref="26" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="14" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="bClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
-                          <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="inCodeField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="inDeclarationsField" max="32767" attributes="0"/>
-                          <Component id="anAnonymousClassHeaderField" max="32767" attributes="0"/>
-                          <Component id="anEnumHeaderField" alignment="0" max="32767" attributes="0"/>
-                          <Component id="aClassFooterField" pref="0" max="32767" attributes="0"/>
-                          <Component id="anAnonymousClassFooterField" max="32767" attributes="0"/>
-                          <Component id="anEnumFooterField" max="32767" attributes="0"/>
-                          <Component id="bFieldsField" pref="0" max="32767" attributes="0"/>
-                          <Component id="aFieldsField" pref="0" max="32767" attributes="0"/>
-                          <Component id="aMethodsField" pref="0" max="32767" attributes="0"/>
-                          <Component id="bMethodsField" pref="0" max="32767" attributes="0"/>
-                      </Group>
-                      <EmptySpace pref="12" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -182,12 +188,12 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="bMethodsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="aMethodsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="bMethodsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="aMethodsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="bMethodsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="aMethodsField" linkSize="2" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
