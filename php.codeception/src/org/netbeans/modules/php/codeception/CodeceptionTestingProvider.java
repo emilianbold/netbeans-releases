@@ -43,6 +43,7 @@ package org.netbeans.modules.php.codeception;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -129,8 +130,8 @@ public final class CodeceptionTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
-        return new TestCreator(phpModule).createTests(files);
+    public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files, Map<String, Object> configurationPanelProperties) {
+        return new TestCreator(phpModule).createTests(files, configurationPanelProperties);
     }
 
     @Override

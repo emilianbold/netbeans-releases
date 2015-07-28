@@ -49,6 +49,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.php.api.editor.PhpClass;
@@ -130,9 +131,11 @@ public interface PhpTestingProvider {
      * This method is always called in a background thread.
      * @param phpModule the PHP module; never {@code null}
      * @param files source file the tests should be created for
+     * @param configurationPanelProperties properties from {@link org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfiguration configuration panel} (if provided any)
      * @return info about test creating
+     * @since 0.19
      */
-    CreateTestsResult createTests(@NonNull PhpModule phpModule, List<FileObject> files);
+    CreateTestsResult createTests(@NonNull PhpModule phpModule, @NonNull List<FileObject> files, @NonNull Map<String, Object> configurationPanelProperties);
 
     /**
      * Checks whether this provider supports code coverage.
