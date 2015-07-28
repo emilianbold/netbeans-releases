@@ -122,14 +122,15 @@ made subject to such option by the copyright holder.
                 <property  name="tmp.dir" value="${basedir}"/>
                 <property name="run.jvmargs" value="" />
                 <property name="work.dir" value="${basedir}"/>
-                
+                <property name="java.failonerror" value="true"/>
+
                 <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
                 <startprofiler/>
                 <condition else="-testclass @{test}" property="testng.cmd.args" value="-methods @{test}.@{method}">
                     <length string="@{method}" when="gt" length="0" trim="true"/>
                 </condition>
                 <property name="work.dir" value="${basedir}"/>
-                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
                     <jvmarg line="${run.jvmargs}"/>
                     <jvmarg line="${run.jvmargs.ide}"/>
                     <classpath path="${classpath-translated}" />
