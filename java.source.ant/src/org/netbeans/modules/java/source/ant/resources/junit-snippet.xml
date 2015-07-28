@@ -111,7 +111,8 @@ made subject to such option by the copyright holder.
                     <length string="@{method}" when="gt" length="0" trim="true"/>
                 </condition>
                 <property name="work.dir" value="${basedir}"/>
-                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true">
+                <property name="java.failonerror" value="true"/>
+                <java classname="org.testng.TestNG" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
                     <jvmarg value="-ea"/>
                     <jvmarg line="${run.jvmargs}"/>
                     <classpath path="${classpath-translated}" />

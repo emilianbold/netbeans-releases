@@ -49,7 +49,8 @@ made subject to such option by the copyright holder.
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />
-        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true">
+        <property name="java.failonerror" value="true"/>
+        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
             <jvmarg value="-Dfile.encoding=${encoding}"/>
             <redirector inputencoding="${encoding}" outputencoding="${encoding}" errorencoding="${encoding}"/>
             <jvmarg line="${run.jvmargs}" />
