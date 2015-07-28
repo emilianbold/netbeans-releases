@@ -57,9 +57,9 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.php.api.PhpConstants;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.classpath.CommonPhpSourcePath;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
@@ -137,7 +137,7 @@ public final class PhpProjectUtils {
 
     public static SourceGroup[] getSourceGroups(Project phpProject) {
         Sources sources = ProjectUtils.getSources(phpProject);
-        return sources.getSourceGroups(PhpSources.SOURCES_TYPE_PHP);
+        return sources.getSourceGroups(PhpConstants.SOURCES_TYPE_PHP);
     }
 
     public static FileObject[] getSourceObjects(Project phpProject) {
