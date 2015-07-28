@@ -48,7 +48,8 @@ made subject to such option by the copyright holder.
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
-        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true">
+        <property name="java.failonerror" value="true"/>
+        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
             <jvmarg line="${run.jvmargs}" />
             <arg value="${applet.url}"/>
             <syspropertyset>
