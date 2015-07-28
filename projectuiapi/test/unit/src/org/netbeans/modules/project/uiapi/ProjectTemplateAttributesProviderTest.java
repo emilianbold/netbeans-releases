@@ -123,26 +123,26 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
     
 
     public void testCheckProjectAttrs() throws Exception {
-        Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectAttrs(null, folder);
+        Map<String, ? extends Object> checked = ProjectTemplateAttributesProvider.checkProjectAttrs(null, null, folder);
         assertAttribute("default", checked, "license");
         assertAttribute(FEQImpl.ENCODING, checked, "encoding");
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("foo", "bar");
 
-        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, map, folder);
         assertAttribute("default", checked, "license");
         assertAttribute(FEQImpl.ENCODING, checked, "encoding");
         assertEquals("bar", checked.get("foo"));
 
         map.put("project", Collections.emptyMap());
-        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, map, folder);
         assertAttribute("default", checked, "license");
         assertAttribute(FEQImpl.ENCODING, checked, "encoding");
         assertEquals("bar", checked.get("foo"));
 
         map.put("project", Collections.singletonMap("license", "gpl"));
-        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, map, folder);
         assertAttribute("gpl", checked, "license");
         assertAttribute(FEQImpl.ENCODING, checked, "encoding");
         assertEquals("bar", checked.get("foo"));
@@ -151,7 +151,7 @@ public class ProjectTemplateAttributesProviderTest extends NbTestCase {
         projectMap.put("license", "gpl");
         projectMap.put("encoding", "UTF-8");
         map.put("project", projectMap);
-        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, folder);
+        checked = ProjectTemplateAttributesProvider.checkProjectAttrs(map, map, folder);
         assertAttribute("gpl", checked, "license");
         assertAttribute("UTF-8", checked, "encoding");
         assertEquals("bar", checked.get("foo"));
