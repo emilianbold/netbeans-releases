@@ -62,6 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -100,6 +101,9 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
 
     private static final RequestProcessor WORKER = new RequestProcessor(AsyncJavaSymbolDescriptor.class);
     private static final String INIT = "<init>"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(AsyncJavaSymbolDescriptor.class.getName());
+    private static volatile boolean pkgROELogged = false;
+    private static volatile boolean clzROELogged = false;
 
     private static Reference<JavacTaskImpl> javacRef;
 
@@ -242,12 +246,8 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
                     }
                 }
             }
-            if (clzs != null) {
-                getClasses(cr).keySet().retainAll(clzs);
-            }
-            if (pkgs != null) {
-                getPackages(cr).keySet().retainAll(pkgs);
-            }
+            getClasses(cr).keySet().retainAll(clzs);
+            getPackages(cr).keySet().retainAll(pkgs);
             return symbols;
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
@@ -255,24 +255,42 @@ final class AsyncJavaSymbolDescriptor extends JavaSymbolDescriptorBase implement
         }
     }
 
+    @NonNull
     private Map<?,?> getPackages(final ClassReader cr) {
-        try {
-            final Field fld = ClassReader.class.getDeclaredField("classes");    //NOI18N
-            fld.setAccessible(true);
-            return (Map<?,?>) fld.get(cr);
-        } catch (ReflectiveOperationException e) {
-            return null;
-        }
-    }
-
-    private Map<?,?> getClasses(final ClassReader cr) {
+        Map<?,?> res = Collections.emptyMap();
         try {
             final Field fld = ClassReader.class.getDeclaredField("packages");    //NOI18N
             fld.setAccessible(true);
-            return (Map<?,?>) fld.get(cr);
+            final Map<?,?> pkgs = (Map<?,?>) fld.get(cr);
+            if (pkgs != null) {
+                res = pkgs;
+            }
         } catch (ReflectiveOperationException e) {
-            return null;
+            if (!pkgROELogged) {
+                LOG.warning(e.getMessage());
+                pkgROELogged = true;
+            }
         }
+        return res;
+    }
+
+    @NonNull
+    private Map<?,?> getClasses(final ClassReader cr) {
+        Map<?,?> res = Collections.emptyMap();
+        try {
+            final Field fld = ClassReader.class.getDeclaredField("classes");    //NOI18N
+            fld.setAccessible(true);
+            Map<?,?> clzs = (Map<?,?>) fld.get(cr);
+            if (clzs != null) {
+                res = clzs;
+            }
+        } catch (ReflectiveOperationException e) {
+            if (!clzROELogged) {
+                LOG.warning(e.getMessage());
+                clzROELogged = true;
+            }
+        }
+        return res;
     }
 
     private static JavacTaskImpl getJavac(FileObject root) throws IOException {
