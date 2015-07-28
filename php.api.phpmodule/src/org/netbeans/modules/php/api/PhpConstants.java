@@ -50,6 +50,9 @@ public final class PhpConstants {
     private PhpConstants() {
     }
 
+    /**
+     * Constant for PHP sources.
+     */
     public static final String SOURCES_TYPE_PHP = "PHPSOURCE"; // NOI18N
 
 }
