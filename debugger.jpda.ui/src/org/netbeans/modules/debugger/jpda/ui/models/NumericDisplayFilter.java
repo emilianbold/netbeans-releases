@@ -107,7 +107,12 @@ NodeActionsProviderFilter, Constants {
                 JPDAWatch w = (JPDAWatch) node;
                 String e = w.getExceptionDescription ();
                 if (e == null) {
-                    VariablesTableModel.setErrorValueMsg(w, null);
+                    if (columnID == Constants.WATCH_VALUE_COLUMN_ID ||
+                        columnID == Constants.LOCALS_VALUE_COLUMN_ID) {
+                        VariablesTableModel.setErrorValueMsg(w, null);
+                    } else {
+                        VariablesTableModel.setErrorToStringMsg(w, null);
+                    }
                 }
             }
             Variable var = (Variable) node;
