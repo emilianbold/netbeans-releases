@@ -1,6 +1,6 @@
-#changeset:   15331:285244fe2295
+#changeset:   15335:5464dcd6a07f
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Jul 28 00:47:14 2015 +0200
-#summary:     PERF: less clone
-74081AE960673AF2D544E5A9B65910683D2BBF5E clank_0.3.6.zip
+#date:        Tue Jul 28 17:50:45 2015 +0200
+#summary:     PERF: replace ref to directly accessing bucket's entry
+CF1982D5AFB4D85AB1CD9455744074063F13389B clank_0.3.6.zip
