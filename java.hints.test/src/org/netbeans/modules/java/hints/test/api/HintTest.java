@@ -1117,7 +1117,7 @@ public class HintTest {
                         rt = s1.token();
                         if (!wh) {
                             if (!rt.text().toString().equals(gt.text().toString())) {
-                                failNotSame(result, golden, s2.offset());
+                                failNotSame(result, golden, s1.offset());
                             }
                         } else if (!isWH(rt)) {
                             s1.movePrevious();

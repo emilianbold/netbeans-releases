@@ -492,8 +492,10 @@ public class TomcatModuleConfiguration implements ModuleConfiguration, ContextRo
             newContext.setLoggerPrefix(computeLoggerPrefix(path));
             newContext.setLoggerSuffix(".log");    // NOI18N
             newContext.setLoggerTimestamp("true"); // NOI18N
-        } else {
-            // tomcat 5.5 and 6.0
+        } else if (tomcatVersion == TomcatVersion.TOMCAT_55
+                || tomcatVersion == TomcatVersion.TOMCAT_60
+                || tomcatVersion == TomcatVersion.TOMCAT_70){
+            // tomcat 5.5, 6.0 and 7.0
             newContext.setAntiJARLocking("true"); // NOI18N
         }
         return newContext;

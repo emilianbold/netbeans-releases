@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
@@ -55,7 +56,6 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.netbeans.modules.php.codeception.commands.Codecept.GenerateCommand;
-import org.netbeans.modules.php.codeception.ui.CodeceptionCreateTestPanel;
 import org.netbeans.modules.php.codeception.ui.options.CodeceptionOptionsPanelController;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.openide.filesystems.FileObject;
@@ -66,7 +66,10 @@ public final class TestCreator {
 
     private static final Logger LOGGER = Logger.getLogger(TestCreator.class.getName());
 
-    private static final List<GenerateCommand> TEST_COMMANDS = Arrays.asList(
+    public static final String GENERATE_COMMAND_PARAM = "GENERATE_COMMAND_PARAM"; // NOI18N
+    public static final String SUITE_PARAM = "SUITE_PARAM"; // NOI18N
+
+    public static final List<GenerateCommand> TEST_COMMANDS = Arrays.asList(
             GenerateCommand.Test,
             GenerateCommand.Phpunit,
             GenerateCommand.Cept,
@@ -81,12 +84,13 @@ public final class TestCreator {
         this.phpModule = phpModule;
     }
 
-    public CreateTestsResult createTests(List<FileObject> files) {
+    public CreateTestsResult createTests(List<FileObject> files, Map<String, Object> configurationPanelProperties) {
         final Set<FileObject> failed = new HashSet<>();
         final Set<FileObject> succeeded = new HashSet<>();
-        List<String> suiteNames = Codecept.getSuiteNames(phpModule);
-        Pair<GenerateCommand, String> commandSuite = CodeceptionCreateTestPanel.showDialog(TEST_COMMANDS, suiteNames);
-        if (commandSuite != null) {
+        Pair<GenerateCommand, String> commandSuite = Pair.of((GenerateCommand) configurationPanelProperties.get(GENERATE_COMMAND_PARAM),
+                (String) configurationPanelProperties.get(SUITE_PARAM));
+        if (commandSuite.first() != null
+                && commandSuite.second() != null) {
             try {
                 Codecept codeception = Codecept.getForPhpModule(phpModule, true);
                 if (codeception != null) {

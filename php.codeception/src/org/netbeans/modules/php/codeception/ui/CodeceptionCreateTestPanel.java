@@ -43,25 +43,19 @@ package org.netbeans.modules.php.codeception.ui;
 
 import java.awt.EventQueue;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.GroupLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.codeception.commands.Codecept;
 import org.netbeans.modules.php.codeception.commands.Codecept.GenerateCommand;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
-import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 
 public final class CodeceptionCreateTestPanel extends JPanel {
 
-    private CodeceptionCreateTestPanel(List<GenerateCommand> commands, List<String> suites) {
+    public CodeceptionCreateTestPanel(List<GenerateCommand> commands, List<String> suites) {
         assert EventQueue.isDispatchThread();
         assert suites != null;
         assert commands != null;
@@ -77,36 +71,6 @@ public final class CodeceptionCreateTestPanel extends JPanel {
         for (GenerateCommand command : commands) {
             generateComboBox.addItem(command);
         }
-    }
-
-    @NbBundle.Messages("CodeceptionCreateTestPanel.dialog.title=Create Test")
-    @CheckForNull
-    public static Pair<GenerateCommand, String> showDialog(List<GenerateCommand> commands, List<String> suites) {
-        final List<String> suitesCopy = new CopyOnWriteArrayList<>(suites);
-        final List<GenerateCommand> commandsCopy = new CopyOnWriteArrayList<>(commands);
-        return Mutex.EVENT.readAccess(new Mutex.Action<Pair<GenerateCommand, String>>() {
-            @Override
-            public Pair<GenerateCommand, String> run() {
-                assert EventQueue.isDispatchThread();
-                CodeceptionCreateTestPanel panel = new CodeceptionCreateTestPanel(commandsCopy, suitesCopy);
-                NotifyDescriptor descriptor = new NotifyDescriptor(
-                        panel,
-                        Bundle.CodeceptionCreateTestPanel_dialog_title(),
-                        NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.PLAIN_MESSAGE,
-                        null,
-                        NotifyDescriptor.OK_OPTION);
-                if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
-                    return null;
-                }
-                GenerateCommand selectedCommand = panel.getSelectedCommand();
-                String selectedSuite = panel.getSelectedSuite();
-                if (selectedCommand == null || selectedSuite == null) {
-                    return null;
-                }
-                return Pair.of(panel.getSelectedCommand(), panel.getSelectedSuite());
-            }
-        });
     }
 
     public String getSelectedSuite() {

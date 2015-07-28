@@ -500,6 +500,20 @@ public final class ModificationResult {
         final String description;
         private boolean excluded;
         private boolean ignoreGuards = false;
+        
+        /**
+         * The Lookup acquired from the Source
+         */
+        private final Lookup ctxLookup;
+        /**
+         * The FileObject backing the original Source. If the Source is not backed
+         * by a file, the Source instance will be stored in {@link #theSource} field.
+         */
+        private final FileObject sourceFile;
+        
+        /**
+         * The Source object, only in the case the Source is not backed by a FileObject.
+         */
         private final Source theSource;
 
         Difference(Kind kind, Position startPos, Position endPos, String oldText, String newText, String description, Source theSource) {
@@ -510,7 +524,20 @@ public final class ModificationResult {
             this.newText = newText;
             this.description = description;
             this.excluded = false;
-            this.theSource = theSource;
+            if (theSource != null) {
+                this.ctxLookup = theSource.getLookup();
+                assert ctxLookup != null;
+                this.sourceFile = theSource.getFileObject();
+                if (sourceFile == null) {
+                    this.theSource = theSource;
+                } else {
+                    this.theSource = null;
+                }
+            } else {
+                this.ctxLookup = null;
+                this.sourceFile = null;
+                this.theSource = null;
+            }
             // conservatively assume that pos could be null. They shouldn't be, but no doc states so.
             assert startPos == null || endPos == null || (startPos.getOffset() <= endPos.getOffset());
         }
@@ -587,7 +614,18 @@ public final class ModificationResult {
          */
         @CheckForNull
         public Document openDocument() throws IOException {
-            return theSource == null ? null : theSource.getDocument(true);
+            if (ctxLookup == null) {
+                return null;
+            } else if (theSource != null) {
+                return theSource.getDocument(true);
+            }
+            
+            // obtain the source again:
+            Source s = Source.create(sourceFile, ctxLookup);
+            if (s == null) {
+                return null;
+            }
+            return s.getDocument(true);
         }
         
         public static enum Kind {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions.tests;
+package org.netbeans.modules.php.codeception.create;
 
-import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfiguration;
-import org.netbeans.modules.gsf.testrunner.ui.spi.TestCreatorConfigurationProvider;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.php.codeception.CodeceptionTestingProvider;
+import org.netbeans.modules.php.spi.testing.create.CreateTestsSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Theofanis Oikonomou
- */
-@ServiceProvider(service = TestCreatorConfigurationProvider.class, position = 20)
-public class PhpTestCreatorConfigurationProvider implements TestCreatorConfigurationProvider {
+@NbBundle.Messages("CodeceptionTestCreatorProvider.name=Codeception")
+@TestCreatorProvider.Registration(identifier = CodeceptionTestingProvider.IDENTIFIER, displayName = "#CodeceptionTestCreatorProvider.name")
+public class CodeceptionTestCreatorProvider extends TestCreatorProvider {
 
     @Override
-    public TestCreatorConfiguration createTestCreatorConfiguration(FileObject[] activatedFileObjects) {
-        return new PhpTestCreatorConfiguration(activatedFileObjects);
+    public boolean enable(FileObject[] activatedFOs) {
+        return CreateTestsSupport.create(CodeceptionTestingProvider.getInstance(), activatedFOs)
+                .isEnabled();
     }
+
+    @Override
+    public void createTests(Context context) {
+        CreateTestsSupport.create(CodeceptionTestingProvider.getInstance(), context.getActivatedFOs())
+                .createTests(context.getConfigurationPanelProperties());
+    }
+
 }

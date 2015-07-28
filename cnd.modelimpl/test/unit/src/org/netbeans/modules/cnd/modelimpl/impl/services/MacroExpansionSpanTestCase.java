@@ -81,6 +81,10 @@ public class MacroExpansionSpanTestCase extends MacroExpansionDocProviderImplBas
     public void testFile1() throws Exception {
         performTest("file1.cc", 18, 7); // NOI18N
     }
+    
+    public void testFile2() throws Exception {
+        performTest("file1.cc", 37, 11); // NOI18N
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // general staff

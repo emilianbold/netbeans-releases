@@ -75,7 +75,7 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 .findWarning("0:92-0:94:verifier:Convert to switch")
                 .applyFix("FIX_ConvertToStringSwitch")
                 .assertCompilable()
-                .assertOutput("package test;public class Test { public void test() { String g = \"xxx\"; switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; } }}");
+                .assertOutput("package test;public class Test { public void test() { String g = \"xxx\"; switch (g) { case \"j\": System.err.println(1); break; case \"k\": System.err.println(2); break; case \"l\": System.err.println(3); break; default: break; } }}");
     }
 
     public void testSimpleFlow() throws Exception {
@@ -289,6 +289,8 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "                 int b = 1;"
                 + "                 System.err.println(a + b);"
                 + "                 break;"
+                + "             default:"
+                + "                 break;"
                 + "         }\n"
                 + "     }"
                 + "}");
@@ -305,6 +307,9 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "             String g = \"xxx\";\n"
                 + "             if (g == \"j\") {"
                 + "                 System.err.println(1);"
+                + "                 break;"
+                + "             } else if (g == \"m\") {"
+                + "                 System.err.println(3);"
                 + "                 break;"
                 + "             } else if (g == \"k\") {"
                 + "                 System.err.println(2);"
@@ -328,9 +333,14 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "                 case \"j\":"
                 + "                     System.err.println(1);"
                 + "                     break OUTER;"
+                + "                 case \"m\":"
+                + "                     System.err.println(3);"
+                + "                     break OUTER;"
                 + "                 case \"k\":"
                 + "                     System.err.println(2);"
                 + "                     break OUTER;"
+                + "                 default:"
+                + "                     break;"
                 + "             }\n"
                 + "         }\n"
                 + "     }"
@@ -400,6 +410,8 @@ public class ConvertToStringSwitchTest extends NbTestCase {
                 + "                 break;"
                 + "             case \"l\":\n"
                 + "                 System.err.println(3);"
+                + "                 break;"
+                + "             default:"
                 + "                 break;"
                 + "         }\n"
                 + "     }"
