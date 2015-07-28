@@ -84,10 +84,15 @@ made subject to such option by the copyright holder.
     
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
     <target name="-release.files" depends="-unzip-clank-jars,projectized.-release.files">
+        <echo message="overridden -release.files by libs.clank with libs.clank.building=${libs.clank.building} and overwrite.clank.zip=${overwrite.clank.zip}" /> 
     </target>
 
+    <target name="release" depends="-pre-build-clank,projectized.release,-post-build-clank"/>
+    
     <target name="nbm" depends="-pre-build-clank,projectized.nbm,-post-build-clank"/>
 
+    <target name="nbm-nosignature" depends="-pre-build-clank,projectized-common.nbm-nosignature,-post-build-clank"/>
+    
     <target name="netbeans" depends="-pre-build-clank,projectized-common.netbeans,-post-build-clank"/>
     
     <target name="-check-overwritten-clank-zip" if="${copy.clank.jars}">
