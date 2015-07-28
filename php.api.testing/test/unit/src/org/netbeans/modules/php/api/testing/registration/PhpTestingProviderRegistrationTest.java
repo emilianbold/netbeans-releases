@@ -45,6 +45,7 @@ package org.netbeans.modules.php.api.testing.registration;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -147,7 +148,7 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
+        public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files, Map<String, Object> configurationPanelProperties) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
