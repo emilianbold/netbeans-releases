@@ -1,6 +1,6 @@
-#changeset:   15325:16f1e55e43e0
+#changeset:   15331:285244fe2295
 #tag:         tip
 #user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Sat Jul 25 16:04:21 2015 +0200
-#summary:     MANUAL: implemented llvm.ComputeEditDistance
+#date:        Tue Jul 28 00:47:14 2015 +0200
+#summary:     PERF: less clone
 74081AE960673AF2D544E5A9B65910683D2BBF5E clank_0.3.6.zip
