@@ -54,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.JLabel;
@@ -186,6 +187,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             @Override
             public void resultChanged(LookupEvent ev) {
                 //selected node changed
+                if (settingRuleModel.get()) {
+                    return;
+                }
                 Node[] selectedNodes = manager.getSelectedNodes();
                 Node selected = selectedNodes.length > 0 ? selectedNodes[0] : null;
                 boolean empty = (selected == null);
@@ -287,7 +291,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         RP.post(new Runnable() { 
             @Override
             public void run() {
-                RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
+                final RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
                 final AtomicReference<Rule> matched_rule_ref = new AtomicReference<>();
 
                 FileObject file = handle.getFile();
@@ -317,15 +321,24 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     Exceptions.printStackTrace(ex);
                 }
 
-                Rule match = matched_rule_ref.get();
+                final Rule match = matched_rule_ref.get();
                 if (match != null) {
-                    rec.setModel(match.getModel());
-                    rec.setRule(match);
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            settingRuleModel.set(true);
+                            rec.setModel(match.getModel());
+                            settingRuleModel.set(false);
+                            rec.setRule(match);
+                        }
+                    });
                 }
             }
         });
 
     }
+
+    private final AtomicBoolean settingRuleModel = new AtomicBoolean();
 
     @Override
     public final ExplorerManager getExplorerManager() {
