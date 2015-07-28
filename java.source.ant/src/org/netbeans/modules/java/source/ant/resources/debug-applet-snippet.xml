@@ -69,6 +69,7 @@ made subject to such option by the copyright holder.
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
         <property name="work.dir" value="${basedir}"/>
+        <property name="java.failonerror" value="true"/>
         <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
             <classpath>
                 <path path="${classpath-translated}"/>
@@ -77,7 +78,7 @@ made subject to such option by the copyright holder.
                 <path path="${platform.bootcp}"/>
             </bootclasspath>
         </nbjpdastart>
-        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true">
+        <java classpath="${classpath-translated}" classname="sun.applet.AppletViewer" dir="${work.dir}" jvm="${platform.java}" fork="true" failonerror="${java.failonerror}">
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />
