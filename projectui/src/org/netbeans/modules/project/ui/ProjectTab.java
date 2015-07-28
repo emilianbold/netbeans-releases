@@ -1057,10 +1057,9 @@ public class ProjectTab extends TopComponent
                 //Tests whether other selected items have same project owner
                 if( selectedNodes.length > 1 ) {
                     for ( int i = 1; i < selectedNodes.length; i ++) {
-                        selectedNode = selectedNodes[i];
-                        Node parentNode = selectedNode.getParentNode();
-                        while ( !parentNode.equals(rootNode) ) {
-                            selectedNode = parentNode;
+                        selectedNode = selectedNodes[i];                        
+                        while ( !selectedNode.getParentNode().equals(rootNode) ) {
+                            selectedNode = selectedNode.getParentNode();
                         }
                         if ( !projectNode.equals(selectedNode) ) {
                             projectNode = null;
