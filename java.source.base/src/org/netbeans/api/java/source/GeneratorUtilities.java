@@ -1097,25 +1097,26 @@ public final class GeneratorUtilities {
             if (entry.getValue() == -1) {
                 for (Element element : entry.getKey().getEnclosedElements()) {
                     if (element.getKind().isClass() || element.getKind().isInterface()) {
-                        Entry starEntry = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName());
-                        if (starEntry.sym != null && starEntry.sym != element) {
-                            TypeElement te = null;
-                            for (Element e : elementsToImport) {
-                                if ((e.getKind().isClass() || e.getKind().isInterface()) && element.getSimpleName() == e.getSimpleName()) {
-                                    te = (TypeElement) e;
-                                    break;
-                                }                                    
-                            }
-                            if (te != null) {
-                                explicitNamedImports.add(te);
-                            } else {
-                                if (usedTypes == null) {
-                                    usedTypes = getUsedTypes(cut);
+                        for (Entry starEntry = importScope.lookup((com.sun.tools.javac.util.Name)element.getSimpleName()); starEntry.scope != null; starEntry = starEntry.next()) {
+                            if (starEntry.sym != null && starEntry.sym != element) {
+                                TypeElement te = null;
+                                for (Element e : elementsToImport) {
+                                    if ((e.getKind().isClass() || e.getKind().isInterface()) && element.getSimpleName() == e.getSimpleName()) {
+                                        te = (TypeElement) e;
+                                        break;
+                                    }                                    
                                 }
-                                te = usedTypes.get(element.getSimpleName());
                                 if (te != null) {
-                                    elementsToImport.add(te);
                                     explicitNamedImports.add(te);
+                                } else {
+                                    if (usedTypes == null) {
+                                        usedTypes = getUsedTypes(cut);
+                                    }
+                                    te = usedTypes.get(element.getSimpleName());
+                                    if (te != null) {
+                                        elementsToImport.add(te);
+                                        explicitNamedImports.add(te);
+                                    }
                                 }
                             }
                         }
