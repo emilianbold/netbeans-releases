@@ -615,8 +615,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                 skipIndent = false;
             }
             APTToken prevFileToken = fileToken;
-            fileTS.moveNext();
-            fileToken = fileTS.token();
+            fileToken = skipMetaTokens(fileTS, prevFileToken);
             while (fileToken != null && !APTUtils.isEOF(fileToken) && fileToken.getOffset() < docTokenEndOffset) {
                 if (formatter != null) {
                     format = formatter.process(fileToken, fileTS);
@@ -692,6 +691,26 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
 
         tt.appendInterval(docTokenEndOffset - docTokenStartOffset, expandedToken.length(), true, expandedToken, paramsToExpansion);
         return expandedToken;
+    }
+
+    private APTToken skipMetaTokens(MyTokenSequence fileTS, APTToken prevFileToken) {
+        if (APTUtils.isMacroExpandedToken(prevFileToken) && APTUtils.isCommentToken(prevFileToken)) {
+            // Conversion from Clank tokens to APT tokens requires to add fake annotation tokens
+            // to capture additional info about macro expansion. If there is a macro call with nested
+            // macro calls, skip all meta tokens after the first one.
+            APTToken fileToken;
+            do {
+                fileTS.moveNext();
+                fileToken = fileTS.token();
+            } while (APTUtils.isMacroExpandedToken(fileToken)
+                && APTUtils.isCommentToken(fileToken)
+                && prevFileToken.getOffset() < fileToken.getOffset()
+                && prevFileToken.getEndOffset() > fileToken.getEndOffset());
+            return fileToken;
+        } else {
+            fileTS.moveNext();
+            return fileTS.token();
+        }
     }
 
     private void expandMacroToken(TokenSequence docTS, MyTokenSequence fileTS, TransformationTable tt, StringBuilder expandedData, Formatter formatter) {
