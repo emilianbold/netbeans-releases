@@ -110,7 +110,6 @@ public class PinPanel extends javax.swing.JPanel {
 
         envField.setEditable(false);
         envField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envField.text")); // NOI18N
-        envField.setToolTipText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.envField.toolTipText")); // NOI18N
         envField.setFocusable(false);
         envField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -122,7 +121,6 @@ public class PinPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(titleLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleLabel.text")); // NOI18N
 
         titleField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleField.text")); // NOI18N
-        titleField.setToolTipText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.titleField.toolTipText")); // NOI18N
 
         customCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(customCheckBox, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.customCheckBox.text")); // NOI18N
@@ -136,7 +134,6 @@ public class PinPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(directoryLabel, org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryLabel.text")); // NOI18N
 
         directoryField.setText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.text")); // NOI18N
-        directoryField.setToolTipText(org.openide.util.NbBundle.getMessage(PinPanel.class, "PinPanel.directoryField.toolTipText")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
