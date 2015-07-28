@@ -601,7 +601,7 @@ public class IfToSwitchSupport {
             TreeMaker make = copy.getTreeMaker();
             List<StatementTree> statements = new LinkedList<StatementTree>();
             Tree replacedByCase = null;
-            
+            boolean breakGenerated = false;
             if (path != null) {
                 Tree then = path.getLeaf();
 
@@ -649,13 +649,17 @@ public class IfToSwitchSupport {
                             statements.add(make.Break(null));
                         }
                     }
+                    breakGenerated = true;
                 } else {
                     statements.add((StatementTree) then);
                     if (!Utilities.exitsFromAllBranchers(copy, path)) {
                         statements.add(make.Break(null));
                     }
                 }
-            }            
+            } else {
+                // path == null, implicit default.
+                statements.add(make.Break(null));
+            }
             if (desc.literals == null) {
                 CaseTree ct = make.Case(null, statements);
                 if (replacedByCase != null) {
