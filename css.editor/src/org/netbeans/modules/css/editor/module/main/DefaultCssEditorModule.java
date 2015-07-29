@@ -556,6 +556,10 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
             @Override
             public boolean visit(Node node) {
+                assert(node.from() != -1 && node.to() != -1);
+                if (node.from() == -1 || node.to() == -1) {
+                    return false;
+                }
                 switch (node.type()) {
                     case selectorsGroup: //rules
                         //get parent - ruleSet to obtain the { ... } range 

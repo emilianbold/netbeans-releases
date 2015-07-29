@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.java.editor.codegen.ui;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.JPanel;
@@ -63,6 +65,12 @@ public class ImplementOverridePanel extends JPanel {
     public ImplementOverridePanel(ElementNode.Description description, boolean isImplement) {
         initComponents();
         elementSelector = new ElementSelectorPanel(description, false);
+        elementSelector.getExplorerManager().addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        });
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;

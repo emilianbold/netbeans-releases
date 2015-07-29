@@ -55,6 +55,8 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -165,7 +167,14 @@ public class DelegateMethodGenerator implements CodeGenerator {
     @Override
     public void invoke() {
         final DelegatePanel panel = new DelegatePanel(component, handle, description);
-        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
+        final DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, NbBundle.getMessage(ConstructorGenerator.class, "LBL_generate_delegate")); //NOI18N
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                List<ElementHandle<? extends Element>> meths = panel.getDelegateMethods();
+                dialogDescriptor.setValid(meths != null && !meths.isEmpty());
+            }
+        });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {
