@@ -436,7 +436,7 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
                         severityParameter.setParameterValues(toParameterValues(bc.getSeverities()));
                     }
                     statusParameter.setParameterValues(toParameterValues(bc.getStatusValues()));
-                    resolutionParameter.setParameterValues(toParameterValues(bc.getResolutions()));
+                    resolutionParameter.setParameterValues(toParameterValues(getQueryResolutions(bc)));
                     priorityParameter.setParameterValues(toParameterValues(bc.getPriorities()));
                     changedFieldsParameter.setParameterValues(QueryParameter.PV_LAST_CHANGE);
                     summaryParameter.setParameterValues(QueryParameter.PV_TEXT_SEARCH_VALUES);
@@ -1056,6 +1056,12 @@ public class QueryController implements org.netbeans.modules.bugtracking.spi.Que
         return false;
     }
 
+    private List<String> getQueryResolutions(BugzillaConfiguration bc) {
+        List<String> l = bc.getResolutions();
+        l.add(0, "---");
+        return l;
+    }
+    
     private void resetParameters() {
         for(QueryParameter p : parameters.values()) {
             p.reset();
