@@ -86,8 +86,8 @@ public class UnignoreAction extends MultipleRepositoryAction {
     }
 
     @Override
-    protected boolean enable (Node[] activatedNodes) {
-        boolean enabled = super.enable(activatedNodes);
+    protected boolean enableFull (Node[] activatedNodes) {
+        boolean enabled = super.enableFull(activatedNodes);
         if (enabled) {
             enabled = false;
             FileStatusCache cache = Git.getInstance().getFileStatusCache();

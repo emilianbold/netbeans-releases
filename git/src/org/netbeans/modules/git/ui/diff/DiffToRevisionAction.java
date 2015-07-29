@@ -66,7 +66,7 @@ import org.openide.util.actions.SystemAction;
 public class DiffToRevisionAction extends GitAction {
     
     @Override
-    protected boolean enable (Node[] activatedNodes) {
+    protected boolean enableFull (Node[] activatedNodes) {
         VCSContext context = getCurrentContext(activatedNodes);
         return GitUtils.getRepositoryRoots(context).size() == 1;
     }
