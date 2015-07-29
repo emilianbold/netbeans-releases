@@ -76,7 +76,7 @@ public final class DeleteLocalAction extends GitAction {
     private static final Logger LOG = Logger.getLogger(DeleteLocalAction.class.getName());
     
     @Override
-    protected boolean enable (Node[] nodes) {
+    protected boolean enableFull (Node[] nodes) {
         VCSContext context = GitUtils.getCurrentContext(nodes);
         return Git.getInstance().getFileStatusCache().containsFiles(context.getRootFiles(), EnumSet.of(Status.NEW_HEAD_INDEX, Status.NEW_HEAD_WORKING_TREE), true);
     }

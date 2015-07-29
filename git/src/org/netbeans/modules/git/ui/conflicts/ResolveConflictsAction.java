@@ -78,7 +78,7 @@ public class ResolveConflictsAction extends MultipleRepositoryAction {
     }
     
     @Override
-    protected boolean enable (Node[] activatedNodes) {
+    protected boolean enableFull (Node[] activatedNodes) {
         VCSContext context = getCurrentContext(activatedNodes);
         return Git.getInstance().getFileStatusCache().containsFiles(context, EnumSet.of(Status.IN_CONFLICT), false);
     }

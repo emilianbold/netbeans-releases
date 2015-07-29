@@ -2,70 +2,98 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Profile Window with Threads</title>
+<title>Methods Snapshot Dialog</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-07-27</p>
-<p><a id="ProfileThreads.HelpCtx" name="ProfileThreads.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref458" name="sthref458"></a>
-<h1>Profile Window with Threads</h1>
+<p>Beta Draft: 2015-07-28</p>
+<p><a id="CpuSnapshot.HelpCtx" name="CpuSnapshot.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref461" name="sthref461"></a>
+<h1>Methods Snapshot Dialog</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to customize and capture data during a threads session.</p>
-<p>The following table shows the available actions.</p>
+<p>Use to view and analyze data from an existing Methods snapshot.</p>
+<p>The snapshot toolbar contains the following options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="31%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t61">Element</th>
-<th align="left" valign="bottom" id="r1c2-t61">Description</th>
+<th align="left" valign="bottom" id="r1c1-t59">Element</th>
+<th align="left" valign="bottom" id="r1c2-t59">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t61" headers="r1c1-t61">
-<p>All Threads drop-down menu.</p>
+<td align="left" id="r2c1-t59" headers="r1c1-t59">
+<p><img width="20" height="20" src="img/export_snapshot.png" alt="Export snapshot icon" title="Export snapshot icon" />Export Selected Snapshot</p>
 </td>
-<td align="left" headers="r2c1-t61 r1c2-t61">Choose the threads you want to view. The options are: <b>All Threads</b> (default), <b>Live Threads</b>, <b>Finished Threads</b>, and <b>Selected Threads.</b></td>
+<td align="left" headers="r2c1-t59 r1c2-t59">Use to export the snapshot. The options that dynamically appear when you select this icon are based on the selected View options.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t61" headers="r1c1-t61"><img width="16" height="16" src="img/zoomin.png" alt="Zoom in icon" title="Zoom in icon" />Zoom In</td>
-<td align="left" headers="r3c1-t61 r1c2-t61">Toggle this icon to zoom in the threads timeline.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t61" headers="r1c1-t61"><img width="16" height="16" src="img/zoomout.png" alt="Zoom out icon" title="Zoom out icon" />Zoom Out</td>
-<td align="left" headers="r4c1-t61 r1c2-t61">Toggle this icon to zoom out the threads timeline.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t61" headers="r1c1-t61"><img width="16" height="16" src="img/scaletofit.png" alt="Scale to fit icon" title="Scale to fit icon" />Select to Fit</td>
-<td align="left" headers="r5c1-t61 r1c2-t61">Toggle this icon to fit the threads timeline into the screen.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t61" headers="r1c1-t61">
-<p><img width="18" height="18" src="img/take_thread_dump.png" alt="Thread dump icon" title="Thread dump icon" />Thread Dump</p>
+<td align="left" id="r3c1-t59" headers="r1c1-t59">
+<p><img width="17" height="18" src="img/compare_snapshot.png" alt="Compare snapshot icon" title="Compare snapshot icon" />Compare with another snapshot</p>
 </td>
-<td align="left" headers="r6c1-t61 r1c2-t61">Creates a textual dump of all active threads and monitors of the profiled application.</td>
+<td align="left" headers="r3c1-t59 r1c2-t59">Use to compare two snapshots. When you click on this icon a Select Snapshot to Compare dialog with a list of your snapshots is displayed.</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t61" headers="r1c1-t61">
-<p><img width="17" height="17" src="img/take_heap_dump.png" alt="Heap dump icon" title="Heap dump icon" />Heap Dump</p>
+<td align="left" id="r4c1-t59" headers="r1c1-t59">
+<p>View</p>
 </td>
-<td align="left" headers="r7c1-t61 r1c2-t61">Saves an image of the current heap content of the profiled process in .hprof format.</td>
+<td align="left" headers="r4c1-t59 r1c2-t59"></td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t61" headers="r1c1-t61">
-<p><img width="18" height="20" src="img/gc.png" alt="Garbage collection icon" title="Garbage collection icon" />GC</p>
+<td align="left" id="r5c1-t59" headers="r1c1-t59">
+<p><img width="14" height="15" src="img/forward_calls.png" alt="Forward calls icon" title="Forward calls icon" />Forward Calls</p>
 </td>
-<td align="left" headers="r8c1-t61 r1c2-t61">Requests the JVM of the profiled process to invoke garbage collection.</td>
+<td align="left" headers="r5c1-t59 r1c2-t59">Use this icon to view forwards calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t59" headers="r1c1-t59">
+<p><img width="16" height="16" src="img/hot_spots.png" alt="Hot spots icon" title="Hot spots icon" />Hot Spots</p>
+</td>
+<td align="left" headers="r6c1-t59 r1c2-t59">Use this icon to view hot spots.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t59" headers="r1c1-t59">
+<p><img width="15" height="15" src="img/reverse_calls.png" alt="Reverse calls icon" title="Reverse calls icon" />Reverse Calls</p>
+</td>
+<td align="left" headers="r7c1-t59 r1c2-t59">Use this icon to view reverse calls.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t59" headers="r1c1-t59">
+<p><img width="29" height="17" src="img/select_threads.png" alt="Select threads icon" title="Select threads icon" />Select Threads</p>
+</td>
+<td align="left" headers="r8c1-t59 r1c2-t59">Use this icon to narrow the session scope to specific threads.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t59" headers="r1c1-t59">Aggregation</td>
+<td align="left" headers="r9c1-t59 r1c2-t59">Use the dropdown to change the granularity of the displayed results.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t59" headers="r1c1-t59">
+<p>Methods</p>
+</td>
+<td align="left" headers="r10c1-t59 r1c2-t59">Displays results according to the fully-qualified method names</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t59" headers="r1c1-t59">
+<p>Classes</p>
+</td>
+<td align="left" headers="r11c1-t59 r1c2-t59">Displays results for all methods of the same class aggregated in a single entry.</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t59" headers="r1c1-t59">
+<p>Packages</p>
+</td>
+<td align="left" headers="r12c1-t59 r1c2-t59">ll methods of classes that belong to the same package are aggregated</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="sthref459" name="sthref459"></a>
+<a id="sthref462" name="sthref462"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

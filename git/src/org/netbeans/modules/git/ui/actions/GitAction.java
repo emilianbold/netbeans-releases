@@ -43,12 +43,19 @@
 package org.netbeans.modules.git.ui.actions;
 
 import java.awt.EventQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
@@ -79,12 +86,17 @@ public abstract class GitAction extends NodeAction {
 
     @Override
     protected boolean enable (Node[] activatedNodes) {
-        VCSContext context = getCurrentContext(activatedNodes);
-        return GitUtils.isFromGitRepository(context);
+        Future<Project[]> projectOpenTask = OpenProjects.getDefault().openProjects();
+        if (projectOpenTask.isDone()) {
+            return enableFull(activatedNodes);
+        } else {
+            return true;
+        }
     }
 
     @Override
     @NbBundle.Messages({
+        "MSG_GitAction.actionDisabled=Action cannot be executed,\nit is disabled in the current context.",
         "MSG_GitAction.savingFiles.progress=Preparing Git action"
     })
     protected final void performAction(final Node[] nodes) {
@@ -93,6 +105,11 @@ public abstract class GitAction extends NodeAction {
 
             @Override
             public void run () {
+                if (!enableFull(nodes)) {
+                    Logger.getLogger(GitAction.class.getName()).log(Level.INFO, "Action got disabled, execution stopped");
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_GitAction_actionDisabled()));
+                    return;
+                }
                 LifecycleManager.getDefault().saveAll();
                 Utils.logVCSActionEvent("Git"); //NOI18N
                 if (!canceled.get()) {
@@ -128,5 +145,10 @@ public abstract class GitAction extends NodeAction {
     @Override
     protected final boolean asynchronous () {
         return false;
+    }
+
+    protected boolean enableFull (Node[] activatedNodes) {
+        VCSContext context = getCurrentContext(activatedNodes);
+        return GitUtils.isFromGitRepository(context);
     }
 }
