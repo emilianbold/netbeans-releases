@@ -46,6 +46,8 @@ package org.netbeans.modules.java.editor.codegen;
 import com.sun.source.util.TreePath;
 
 import java.awt.Dialog;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -174,8 +176,15 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
     public void invoke() {
         final ImplementOverridePanel panel = new ImplementOverridePanel(description, isImplement);
         final int caretOffset = component.getCaretPosition();
-        DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
-                NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N  //NOI18N
+        final DialogDescriptor dialogDescriptor = GeneratorUtils.createDialogDescriptor(panel, 
+                NbBundle.getMessage(ConstructorGenerator.class, isImplement ?  "LBL_generate_implement" : "LBL_generate_override")); //NOI18N
+        panel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                List<ElementHandle<? extends Element>> meths = panel.getSelectedMethods();
+                dialogDescriptor.setValid(meths != null && !meths.isEmpty());
+            }
+        });
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.setVisible(true);
         if (dialogDescriptor.getValue() == dialogDescriptor.getDefaultValue()) {

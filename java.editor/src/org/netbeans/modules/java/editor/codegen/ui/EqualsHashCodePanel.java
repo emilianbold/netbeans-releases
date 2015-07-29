@@ -45,7 +45,8 @@
 package org.netbeans.modules.java.editor.codegen.ui;
 
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.JLabel;
@@ -74,6 +75,13 @@ public class EqualsHashCodePanel extends JPanel {
         
         GridBagConstraints gridBagConstraints;
 
+        PropertyChangeListener pcl = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                firePropertyChange(evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+            }
+        };
+
         if( generateEquals ) {
             equalsLabel = new JLabel(NbBundle.getMessage(EqualsHashCodeGenerator.class, "LBL_equals_select")); //NOI18N
 
@@ -87,6 +95,7 @@ public class EqualsHashCodePanel extends JPanel {
             add(equalsLabel, gridBagConstraints);
 
             equalsSelector = new ElementSelectorPanel(description, false);
+            equalsSelector.getExplorerManager().addPropertyChangeListener(pcl);
             
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 0;
@@ -113,6 +122,8 @@ public class EqualsHashCodePanel extends JPanel {
             add(hashCodeLabel, gridBagConstraints);
 
             hashCodeSelector = new ElementSelectorPanel( ElementNode.Description.deepCopy(description), false);
+            hashCodeSelector.getExplorerManager().addPropertyChangeListener(pcl);
+
             gridBagConstraints = new GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = 1;
