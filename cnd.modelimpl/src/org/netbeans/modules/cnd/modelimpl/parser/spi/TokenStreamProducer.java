@@ -83,23 +83,25 @@ public abstract class TokenStreamProducer {
     private final FileContent fileContent;
     private boolean allowToCacheOnRelease;
     private CodePatch codePatch;
+    private final boolean fromEnsureParsed;
 
-    protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent) {
+    protected TokenStreamProducer(FileImpl fileImpl, FileContent newFileContent, boolean fromEnsureParsed) {
         assert fileImpl != null : "null file is not allowed";        
         assert newFileContent != null : "null file content is not allowed";        
         this.fileImpl = fileImpl;
         this.fileContent = newFileContent;
+        this.fromEnsureParsed = fromEnsureParsed;
     }        
     
-    public static TokenStreamProducer create(FileImpl file, boolean emptyFileContent, boolean index) {
+    public static TokenStreamProducer create(FileImpl file, boolean emptyFileContent, boolean fromEnsureParsed) {
         FileContent newFileContent = FileContent.getHardReferenceBasedCopy(file.getCurrentFileContent(), emptyFileContent);
-        if (index) {
+        if (fromEnsureParsed) {
             indexFileContent(file);
         }
         if (APTTraceFlags.USE_CLANK) {
-            return ClankTokenStreamProducer.createImpl(file, newFileContent);
+            return ClankTokenStreamProducer.createImpl(file, newFileContent, fromEnsureParsed);
         } else {
-            return APTTokenStreamProducer.createImpl(file, newFileContent);
+            return APTTokenStreamProducer.createImpl(file, newFileContent, fromEnsureParsed);
         }
     }
 
@@ -145,6 +147,10 @@ public abstract class TokenStreamProducer {
         return allowToCacheOnRelease;
     }
 
+    protected final boolean isFromEnsureParsed() {
+        return fromEnsureParsed;
+    }
+    
     public CodePatch getFixCode() {
         return codePatch;
     }

@@ -98,12 +98,12 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
     private int[] skipped;
 
-    private ClankTokenStreamProducer(FileImpl file, FileContent newFileContent) {
-        super(file, newFileContent);
+    private ClankTokenStreamProducer(FileImpl file, FileContent newFileContent, boolean fromEnsureParsed) {
+        super(file, newFileContent, fromEnsureParsed);
     }
     
-    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent) {
-        return new ClankTokenStreamProducer(file, newFileContent);
+    public static TokenStreamProducer createImpl(FileImpl file, FileContent newFileContent, boolean fromEnsureParsed) {
+        return new ClankTokenStreamProducer(file, newFileContent, fromEnsureParsed);
     }
 
     @Override
@@ -166,7 +166,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         if (tokenStream == null) {
           return null;
         }
-        if (triggerParsingActivity) {
+        if (super.isFromEnsureParsed()) {
           addPreprocessorDirectives(fileImpl, getFileContent(), tokStreamCache);
           addMacroExpansions(fileImpl, getFileContent(), tokStreamCache);
           setFileGuard(fileImpl, getFileContent(), tokStreamCache);
@@ -257,7 +257,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         
         @Override
         public void onInclusionDirective(ClankDriver.ClankFileInfo directiveOwner, ClankDriver.ClankInclusionDirective directive) {
-            if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
+            if ((alreadySeenInterestedFileEnter == State.SEEN) && (triggerParsingActivity || insideInterestedFile)) {
               // let's resolve include as FileImpl
               ResolvedPath resolvedPath = directive.getResolvedPath();
               if (resolvedPath == null) {
@@ -300,15 +300,13 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
         public void onEnter(ClankDriver.ClankFileInfo enteredFrom, ClankDriver.ClankFileInfo enteredTo) {
             assert enteredTo != null;
             if (enteredTo.getFileIndex() == stopAtIndex) {
-              assert alreadySeenInterestedFileEnter == State.INITIAL;
-              alreadySeenInterestedFileEnter = State.SEEN;
-              CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
-                      "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
-              if (triggerParsingActivity) {
+                assert alreadySeenInterestedFileEnter == State.INITIAL;
+                alreadySeenInterestedFileEnter = State.SEEN;
+                CndUtils.assertPathsEqualInConsole(enteredTo.getFilePath(), stopFileImpl.getAbsolutePath(),
+                        "{0}\n vs. \n{1}", enteredTo, stopFileImpl);// NOI18N
                 // we entered target file and after that we can
                 // handle inclusive #includes
                 curFiles.add(stopFileImpl);
-              }
             } else {
               if ((alreadySeenInterestedFileEnter == State.SEEN) && triggerParsingActivity) {
                 // let's keep stack of inner includes
