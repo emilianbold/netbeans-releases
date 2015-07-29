@@ -2,20 +2,27 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
 <head>
-<title>Edit Global Filters Dialog Box</title>
+<title>Set Quick Filter Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p>Beta Draft: 2015-07-27</p>
-<p><a id="GlobalFiltersPanel.HelpCtx" name="GlobalFiltersPanel.HelpCtx"></a></p>
-<div id="NBCSH3129"><!-- infolevel="all" infotype="General" --><a id="sthref399" name="sthref399"></a>
-<h1>Edit Global Filters Dialog Box</h1>
+<p>Beta Draft: 2015-07-28</p>
+<p><a id="QuickFilterPanel.HelpCtx" name="QuickFilterPanel.HelpCtx"></a></p>
+<div id="NBCSH3135"><!-- infolevel="all" infotype="General" --><a id="sthref399" name="sthref399"></a>
+<h1>Set Quick Filter Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to edit, delete or modify global filters that are used in filter sets. You use filter sets to limit the classes that are profiled when analyzing application performance. How?</p>
+<p>Use to specify classes or packages that you want to exclude or include when analyzing application performance. Unlike global filters or custom filter sets, a quick filter can be applied only to the current application. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb8100&id=NBDAG740">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
-<table summary="Descriptions of Edit Global Filters commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="32%" />
+<table summary="Descriptions of Set Quick Filter options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -26,37 +33,30 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t9" headers="r1c1-t9">
-<p>New</p>
+<p>Filter Type</p>
 </td>
-<td align="left" headers="r2c1-t9 r1c2-t9">Creates a new row in the list and types the new name and values directly in the fields in the list.</td>
+<td align="left" headers="r2c1-t9 r1c2-t9">Excludes or includes the selected methods when you click <b>Exclusive</b> or <b>Inclusive</b>.
+<p>If Exclude is selected, none of the listed methods are profiled.</p>
+<p>If Include is selected, only the listed methods are profiled.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t9" headers="r1c1-t9">
-<p>Edit</p>
+<p>Filter Value</p>
 </td>
-<td align="left" headers="r3c1-t9 r1c2-t9">Modifies the selected filter. Click Edit and type directly in the field in the list to edit the name or value.
-<p>You can also edit a field by double-clicking in the field.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t9" headers="r1c1-t9">
-<p>Delete</p>
-</td>
-<td align="left" headers="r4c1-t9 r1c2-t9">Removes the selected filter from the list when you click <b>Delete</b>.</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t9" headers="r1c1-t9">
-<p>Move Up and Move Down</p>
-</td>
-<td align="left" headers="r5c1-t9 r1c2-t9">Reorders the filter list when you click <b>Move Up</b> and <b>Move Down</b> on a selected filter.
-<p>The new order is also displayed in the Customize Filter Sets dialog box.</p>
+<td align="left" headers="r3c1-t9 r1c2-t9">Lists the classes and packages to include or exclude. You can type the name in the text area in the following formats:
+<ul>
+<li><code dir="ltr">java.*</code></li>
+<li><code dir="ltr">javax.swing</code></li>
+<li><code dir="ltr">javax.xml.parsers.SAXParser</code></li>
+</ul>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<a id="NBCSH3134" name="NBCSH3134"></a>
+<a id="NBCSH3138" name="NBCSH3138"></a>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
