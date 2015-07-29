@@ -45,6 +45,8 @@ package org.netbeans.modules.java.source.pretty;
 
 import java.io.Writer;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class CharBuffer {
     char[] chars;
@@ -59,6 +61,9 @@ public final class CharBuffer {
     int hardRightMargin = UNLIMITED;
     int lastBlankLines = 0;
     int lastObserved;
+    
+    List<TrimBufferObserver>    trimObservers = new ArrayList<>();
+    
     public final int length() { return used; }
     public void setLength(int l) { if (l < used) used = l < 0 ? 0 : l; }
     public CharBuffer() { chars = new char[10]; }
@@ -213,10 +218,12 @@ public final class CharBuffer {
         int end = used;
         while (st < end && chars[st] <= ' ') st++;
         while (st < end && chars[end-1] <= ' ') end--;
-        if (st >= end) used = 0;
-        else {
-            used = end-st;
+        if (st >= end) {
+            trimTo(0);
+        } else {
+            int x = end-st;
             if (st > 0) System.arraycopy(chars, st, chars, 0, used);
+            trimTo(x);
         }
     }
     public boolean endsWith(String s) {
@@ -238,9 +245,20 @@ public final class CharBuffer {
 	if(t>0 && chars[t-1]>' ')
 	    append(' ');
     }
-    // preparation to some trimmed-notification, might be needed.
+    
+    /**
+     * In addition to trimming the buffer, the method notifies TrimBufferObservers.
+     * @param newUsed the new buffer limit
+     */
     private void trimTo(int newUsed) {
         used = newUsed;
+        for (TrimBufferObserver o : trimObservers) {
+            o.trimmed(used);
+        }
+    }
+    
+    public void addTrimObserver(TrimBufferObserver o) {
+        trimObservers.add(o);
     }
     public void nlTerm() {
 	if(hasMargin())
@@ -369,5 +387,9 @@ public final class CharBuffer {
     }
     public int getCol() {
         return col;
+    }
+    
+    interface TrimNotify {
+        public void trimmed(int len);
     }
 }

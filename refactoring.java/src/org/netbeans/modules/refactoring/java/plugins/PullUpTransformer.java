@@ -66,6 +66,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.MemberInfo.Group;
@@ -114,6 +115,13 @@ public class PullUpTransformer extends RefactoringVisitor {
         ClassTree njuClass = tree;
         for (int i = 0; i < members.length; i++) {
             Element member = members[i].getElementHandle().resolve(workingCopy);
+            if(member.getKind() == ElementKind.METHOD) {
+                ExecutableElement method = (ExecutableElement) member;
+                method = (ExecutableElement) workingCopy.getElementUtilities().getImplementationOf(method, sourceType);
+                if(method != null) {
+                    member = method;
+                }
+            }
             Group group = members[i].getGroup();
             if (group == MemberInfo.Group.IMPLEMENTS) {
                 njuClass = make.addClassImplementsClause(njuClass, make.QualIdent(member));
@@ -150,15 +158,22 @@ public class PullUpTransformer extends RefactoringVisitor {
                 }
             } else {
                 Element current = workingCopy.getTrees().getElement(getCurrentPath());
-                Element currentMember = members[i].getElementHandle().resolve(workingCopy);
-                if (currentMember != null && currentMember.getEnclosingElement().equals(current)) {
-                    if ((classIsAbstract.get() && !currentMember.getModifiers().contains(Modifier.DEFAULT)) || !members[i].isMakeAbstract()
-                            || (currentMember.getModifiers().contains(Modifier.ABSTRACT) && targetType.getKind().isInterface())) {
+                Element member = members[i].getElementHandle().resolve(workingCopy);
+                if(member != null && member.getKind() == ElementKind.METHOD) {
+                    ExecutableElement method = (ExecutableElement) member;
+                    method = (ExecutableElement) workingCopy.getElementUtilities().getImplementationOf(method, sourceType);
+                    if(method != null) {
+                        member = method;
+                    }
+                }
+                if (member != null && member.getEnclosingElement().equals(current)) {
+                    if ((classIsAbstract.get() && !member.getModifiers().contains(Modifier.DEFAULT)) || !members[i].isMakeAbstract()
+                            || (member.getModifiers().contains(Modifier.ABSTRACT) && targetType.getKind().isInterface())) {
                         // in case of interface always remove pulled method
-                        njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(currentMember));
+                        njuClass = make.removeClassMember(njuClass, workingCopy.getTrees().getTree(member));
                         rewrite(tree, njuClass);
-                    } else if (members[i].isMakeAbstract() && currentMember.getModifiers().contains(Modifier.PRIVATE)) {
-                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(currentMember);
+                    } else if (members[i].isMakeAbstract() && member.getModifiers().contains(Modifier.PRIVATE)) {
+                        MethodTree method = (MethodTree) workingCopy.getTrees().getTree(member);
                         ModifiersTree mods = make.removeModifiersModifier(method.getModifiers(), Modifier.PRIVATE);
                         mods = make.addModifiersModifier(mods, targetType.getKind().isInterface() ? Modifier.PUBLIC : Modifier.PROTECTED);
                         rewrite(method.getModifiers(), mods);

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints.spiimpl.hints;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,6 +52,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CancellableTask;
@@ -66,6 +69,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.modules.java.source.PositionRefProvider;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -73,6 +77,7 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -105,6 +110,24 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
         }
 
         Document doc = info.getSnapshot().getSource().getDocument(false);
+        FileObject f = info.getSnapshot().getSource().getFileObject();
+        if (f != null) {
+            // hints use TreePathHandles to persist info for fixes, whcih in turn assume CloneableEditorSupport is
+            // available on the document's DataObject. Since the document is opened, it would have to be opened through
+            // the editor/open cookie, so there should not be a performance penalty in asking for them:
+            PositionRefProvider prp;
+            try {
+                prp = PositionRefProvider.get(f);
+                if (prp == null) {
+                    return;
+                }
+                prp.createPosition(0, Position.Bias.Forward);
+            } catch (IOException | IllegalArgumentException ex) {
+                // the position provider is not working properly; bail out. Hints would fail
+                // unexpectedly on creating TPHs, trying to open or save files etc.
+                return;
+            }
+        }
         long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
         long startTime = System.currentTimeMillis();
 
