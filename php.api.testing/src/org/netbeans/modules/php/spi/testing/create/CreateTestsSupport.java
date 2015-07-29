@@ -94,10 +94,13 @@ public final class CreateTestsSupport {
     private final PhpTestingProvider testingProvider;
     @NonNull
     private final FileObject[] activatedFileObjects;
+
+    // @GuardedBy("this")
     @NullAllowed
-    private final PhpModule phpModule;
+    private PhpModule phpModule;
+    // @GuardedBy("this")
     @NullAllowed
-    private final Project project;
+    private Project project;
 
 
     private CreateTestsSupport(@NonNull PhpTestingProvider testingProvider, @NonNull FileObject[] activatedFileObjects) {
@@ -105,15 +108,6 @@ public final class CreateTestsSupport {
         assert activatedFileObjects != null;
         this.testingProvider = testingProvider;
         this.activatedFileObjects = activatedFileObjects;
-        if (activatedFileObjects.length == 0) {
-            phpModule = null;
-            project = null;
-        } else {
-            phpModule = PhpModule.Factory.forFileObject(activatedFileObjects[0]);
-            assert phpModule != null;
-            project = FileOwnerQuery.getOwner(phpModule.getProjectDirectory());
-            assert project != null;
-        }
     }
 
     /**
@@ -130,11 +124,48 @@ public final class CreateTestsSupport {
 
     /**
      * Gets PHP module in which tests are going to be created.
-     * @return PHP module or {@code null} if no source files are given
+     * @return PHP module or {@code null} if no source files or files from more projects are given
      */
     @CheckForNull
-    public PhpModule getPhpModule() {
+    public synchronized PhpModule getPhpModule() {
+        assert Thread.holdsLock(this);
+        if (phpModule == null) {
+            if (activatedFileObjects.length == 0) {
+                return null;
+            }
+
+            PhpModule onlyOnePhpModuleAllowed = null;
+            for (FileObject fileObj : activatedFileObjects) {
+                if (fileObj == null) {
+                    return null;
+                }
+
+                PhpModule module = PhpModule.Factory.forFileObject(fileObj);
+                if (module == null) {
+                    return null;
+                }
+                if (onlyOnePhpModuleAllowed == null) {
+                    onlyOnePhpModuleAllowed = module;
+                } else if (!onlyOnePhpModuleAllowed.equals(module)) {
+                    // files from more projects given
+                    return null;
+                }
+            }
+            phpModule = onlyOnePhpModuleAllowed;
+        }
         return phpModule;
+    }
+
+    @CheckForNull
+    private synchronized Project getProject() {
+        assert Thread.holdsLock(this);
+        if (project == null) {
+            PhpModule module = getPhpModule();
+            if (module != null) {
+                project = FileOwnerQuery.getOwner(module.getProjectDirectory());
+            }
+        }
+        return project;
     }
 
     /**
@@ -154,12 +185,13 @@ public final class CreateTestsSupport {
      * See {@link org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider#getTestSourceRoots(Collection, FileObject)}.
      */
     public Object[] getTestSourceRoots(@NonNull Collection<SourceGroup> createdSourceRoots, @NonNull FileObject fileObject) {
-        assert CreateTestsSupport.verifyPhpModule(activatedFileObjects);
-        assert phpModule != null;
-        assert project != null;
+        PhpModule phpModuleRef = getPhpModule();
+        assert phpModuleRef != null : Arrays.toString(activatedFileObjects);
+        Project projectRef = getProject();
+        assert projectRef != null : Arrays.toString(activatedFileObjects) + " :: " + phpModuleRef.getProjectDirectory();
         List<Object> folders = new ArrayList<>();
-        List<FileObject> testDirectories = phpModule.getTestDirectories();
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(PhpConstants.SOURCES_TYPE_PHP);
+        List<FileObject> testDirectories = phpModuleRef.getTestDirectories();
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(projectRef).getSourceGroups(PhpConstants.SOURCES_TYPE_PHP);
         for (SourceGroup sg : sourceGroups) {
             if (!sg.contains(fileObject)) {
                 if (testDirectories.contains(sg.getRootFolder())) {
@@ -179,7 +211,17 @@ public final class CreateTestsSupport {
             return false;
         }
 
-        PhpModule onlyOnePhpModuleAllowed = null;
+        PhpModule phpModuleRef = getPhpModule();
+        if (phpModuleRef == null) {
+            return false;
+        }
+        if (phpModuleRef.isBroken()) {
+            return false;
+        }
+        if (!PhpTesting.isTestingProviderEnabled(testingProvider.getIdentifier(), phpModuleRef)) {
+            return false;
+        }
+
         for (FileObject fileObj : activatedFileObjects) {
             if (fileObj == null) {
                 return false;
@@ -191,27 +233,10 @@ public final class CreateTestsSupport {
                 return false;
             }
 
-            PhpModule module = PhpModule.Factory.forFileObject(fileObj);
-            if (module == null) {
-                return false;
-            }
-            if (module.isBroken()) {
-                return false;
-            }
-            if (onlyOnePhpModuleAllowed == null) {
-                onlyOnePhpModuleAllowed = module;
-            } else if (!onlyOnePhpModuleAllowed.equals(module)) {
-                // tests can be generated only for one project at one time
-                return false;
-            }
-            if (!PhpTesting.isTestingProviderEnabled(testingProvider.getIdentifier(), module)) {
-                return false;
-            }
-
-            if (!isUnderSources(module, fileObj)
-                    || isUnderTests(module, fileObj)
+            if (!isUnderSources(phpModuleRef, fileObj)
+                    || isUnderTests(phpModuleRef, fileObj)
                     // XXX no way to get selenium here...
-                    /*|| isUnderSelenium(phpProject, fileObj)*/) {
+                    /*|| isUnderSelenium(phpModuleRef, fileObj)*/) {
                 return false;
             }
         }
@@ -224,7 +249,6 @@ public final class CreateTestsSupport {
      */
     @NbBundle.Messages("CreateTestsSupport.creating=Creating tests...")
     public void createTests(Map<String, Object> configurationPanelProperties) {
-        assert CreateTestsSupport.verifyPhpModule(activatedFileObjects);
         final Map<String, Object> properties = Collections.synchronizedMap(configurationPanelProperties);
         RP.post(new Runnable() {
             @Override
@@ -256,12 +280,13 @@ public final class CreateTestsSupport {
 
     void generateTests(final Map<String, Object> configurationPanelProperties) {
         assert !EventQueue.isDispatchThread();
-        assert phpModule != null;
+        final PhpModule phpModuleRef = getPhpModule();
+        assert phpModuleRef != null : Arrays.toString(activatedFileObjects);
 
         List<FileObject> files = Arrays.asList(activatedFileObjects);
         assert !files.isEmpty() : "No files for tests?!";
         final List<FileObject> sanitizedFiles = new ArrayList<>(files.size() * 2);
-        sanitizeFiles(sanitizedFiles, files, phpModule, phpModule.getLookup().lookup(PhpVisibilityQuery.class));
+        sanitizeFiles(sanitizedFiles, files, phpModuleRef, phpModuleRef.getLookup().lookup(PhpVisibilityQuery.class));
         if (sanitizedFiles.isEmpty()) {
             LOGGER.info("No visible files for creating tests -> exiting.");
             return;
@@ -272,8 +297,8 @@ public final class CreateTestsSupport {
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
-                assert phpModule != null;
-                CreateTestsResult result = testingProvider.createTests(phpModule, sanitizedFiles, configurationPanelProperties);
+                assert phpModuleRef != null;
+                CreateTestsResult result = testingProvider.createTests(phpModuleRef, sanitizedFiles, configurationPanelProperties);
                 succeeded.addAll(result.getSucceeded());
                 failed.addAll(result.getFailed());
             }
@@ -281,7 +306,7 @@ public final class CreateTestsSupport {
         showFailures(failed);
         reformat(succeeded);
         open(succeeded);
-        refreshTests(phpModule.getTestDirectories());
+        refreshTests(phpModuleRef.getTestDirectories());
     }
 
     private void sanitizeFiles(List<FileObject> sanitizedFiles, List<FileObject> files, PhpModule phpModule, PhpVisibilityQuery phpVisibilityQuery) {
@@ -345,17 +370,6 @@ public final class CreateTestsSupport {
                 }
             }
         });
-    }
-
-    private static boolean verifyPhpModule(FileObject[] activatedFileObjects) {
-        Set<PhpModule> phpModules = new HashSet<>();
-        for (FileObject fileObject : activatedFileObjects) {
-            PhpModule phpModule = PhpModule.Factory.forFileObject(fileObject);
-            assert phpModule != null : fileObject;
-            phpModules.add(phpModule);
-        }
-        assert phpModules.size() == 1 : phpModules.size() + " PHP modules found for: " + Arrays.toString(activatedFileObjects);
-        return true;
     }
 
 }

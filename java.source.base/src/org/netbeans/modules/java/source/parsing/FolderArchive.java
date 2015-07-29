@@ -143,17 +143,23 @@ public class FolderArchive implements Archive {
             }
             final File[] content = folder.listFiles();
             if (content != null) {
-                List<JavaFileObject> result = new ArrayList<JavaFileObject>(content.length);
+                List<JavaFileObject> result = new ArrayList<>(content.length);
                 for (File f : content) {
-                    if ((kinds == null || kinds.contains(FileObjects.getKind(FileObjects.getExtension(f.getName())))) &&
+                    final JavaFileObject.Kind fKind = FileObjects.getKind(FileObjects.getExtension(f.getName()));
+                    if ((kinds == null || kinds.contains(fKind)) &&
                         f.isFile() &&
                         (entry == null || entry.includes(BaseUtilities.toURI(f).toURL()))) {
-                        result.add(FileObjects.fileFileObject(f,this.root,filter, encoding()));
+                        result.add(FileObjects.fileFileObject(
+                                f,
+                                this.root,
+                                filter,
+                                fKind == JavaFileObject.Kind.CLASS ?
+                                        UNKNOWN_CHARSET :
+                                        encoding()));
                     }
                 }
                 return Collections.unmodifiableList(result);
             }
-            
         }
         return Collections.<JavaFileObject>emptyList();
     }
