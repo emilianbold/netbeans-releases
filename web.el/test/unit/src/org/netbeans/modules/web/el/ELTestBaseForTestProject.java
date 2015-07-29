@@ -226,6 +226,8 @@ public class ELTestBaseForTestProject extends ELTestBase {
                     return new FieldInfo("beans.Bean");
                 case "appleBean":
                     return new FieldInfo("issue239883.AppleBean");
+                case "test253605":
+                    return new FieldInfo("issue253605.Test253605");
             }
             return null;
         }
