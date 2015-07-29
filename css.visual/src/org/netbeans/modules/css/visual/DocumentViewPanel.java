@@ -182,9 +182,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             @Override
             public void resultChanged(LookupEvent ev) {
                 //selected node changed
-                if (settingRuleModel.get()) {
-                    return;
-                }
                 Node[] selectedNodes = manager.getSelectedNodes();
                 Node selected = selectedNodes.length > 0 ? selectedNodes[0] : null;
                 boolean empty = (selected == null);
@@ -192,7 +189,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 if (!empty) {
                     RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
                     if (ruleHandle != null) {
-                        selectRuleInRuleEditor(ruleHandle);
+                        if (!settingRule.get()) {
+                            selectRuleInRuleEditor(ruleHandle);
+                        }
                         CssStylesListenerSupport.fireRuleSelected(ruleHandle);
                     }
                     Location location = selected.getLookup().lookup(Location.class);
@@ -279,10 +278,14 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
     }
 
+    private final AtomicReference<RuleHandle> ruleHandleToSelect = new AtomicReference<>();
+    private final AtomicBoolean settingRule = new AtomicBoolean();
+
     /**
      * Select rule in rule editor upon user action in the document view.
      */
     private void selectRuleInRuleEditor(final RuleHandle handle) {
+        ruleHandleToSelect.set(handle);
         RP.post(new Runnable() { 
             @Override
             public void run() {
@@ -313,10 +316,12 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            settingRuleModel.set(true);
-                            rec.setModel(match.getModel());
-                            settingRuleModel.set(false);
-                            rec.setRule(match);
+                            if (ruleHandleToSelect.get() == handle) {
+                                settingRule.set(true);
+                                rec.setModel(match.getModel());
+                                rec.setRule(match);
+                                settingRule.set(false);
+                            }
                         }
                     });
                 }
@@ -324,8 +329,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         });
 
     }
-
-    private final AtomicBoolean settingRuleModel = new AtomicBoolean();
 
     @Override
     public final ExplorerManager getExplorerManager() {
