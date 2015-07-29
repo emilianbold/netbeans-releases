@@ -149,7 +149,8 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                         final TreePath methodPath = JavaPluginUtils.findMethod(path);
                         MethodTree methodTree = (MethodTree) methodPath.getLeaf();
                         final int[] parameterSpan = info.getTreeUtilities().findMethodParameterSpan(methodTree);
-                        final TypeMirror tm = info.getTrees().getTypeMirror(path);
+                        TypeMirror typeMirror = info.getTrees().getTypeMirror(path);
+                        final String tm = typeMirror == null ? "Object" : typeMirror.toString();
                         
                         Element methodElement = info.getTrees().getElement(methodPath);
                         Doc javadocDoc = info.getElementUtilities().javaDocFor(methodElement);
@@ -188,8 +189,8 @@ public class IntroduceParameterPanel extends JPanel implements CustomRefactoring
                                 final JEditorPane editorPane = (JEditorPane)singleLineEditor[1];
                                 
                                 DialogBinding.bindComponentToFile(fileObject, parameterSpan[0] + 1, parameterSpan[1] - parameterSpan[0], editorPane);
-                                editorPane.setText(tm.toString() + " " + parameterName); //NOI18N
-                                startOffset = tm.toString().length() + 1;
+                                editorPane.setText(tm + " " + parameterName); //NOI18N
+                                startOffset = tm.length() + 1;
                                 int endOffset = parameterName.length() + startOffset;
                                 editorPane.select(startOffset, endOffset);
                                 try {

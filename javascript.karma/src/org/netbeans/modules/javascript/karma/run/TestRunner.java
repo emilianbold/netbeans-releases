@@ -206,8 +206,8 @@ public final class TestRunner {
     private void browserError(String line) {
         initTestSession();
         Matcher matcher = BROWSER_ERROR_PATTERN.matcher(line);
-        String browser = null;
-        String error = null;
+        String browser;
+        String error;
         if (matcher.find()) {
             browser = matcher.group(1);
             getManager().displayOutput(testSession, Bundle.TestRunner_browser_error(browser), true);
@@ -227,7 +227,8 @@ public final class TestRunner {
             getManager().displayOutput(testSession, line, true);
             browser = Bundle.TestRunner_browser_unknown();
             error = line;
-            assert false : line;
+            // to work around FindBugs
+            assert assertLine(line);
         }
         getManager().displayOutput(testSession, "", false); // NOI18N
         List<String> errors = browserErrors.get(browser);
@@ -236,6 +237,11 @@ public final class TestRunner {
             browserErrors.put(browser, errors);
         }
         errors.add(error);
+    }
+
+    private boolean assertLine(String line) {
+        assert false : line;
+        return true;
     }
 
     @NbBundle.Messages({

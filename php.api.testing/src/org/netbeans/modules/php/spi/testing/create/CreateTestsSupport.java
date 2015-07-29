@@ -155,6 +155,8 @@ public final class CreateTestsSupport {
      */
     public Object[] getTestSourceRoots(@NonNull Collection<SourceGroup> createdSourceRoots, @NonNull FileObject fileObject) {
         assert CreateTestsSupport.verifyPhpModule(activatedFileObjects);
+        assert phpModule != null;
+        assert project != null;
         List<Object> folders = new ArrayList<>();
         List<FileObject> testDirectories = phpModule.getTestDirectories();
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(PhpConstants.SOURCES_TYPE_PHP);
@@ -254,6 +256,7 @@ public final class CreateTestsSupport {
 
     void generateTests(final Map<String, Object> configurationPanelProperties) {
         assert !EventQueue.isDispatchThread();
+        assert phpModule != null;
 
         List<FileObject> files = Arrays.asList(activatedFileObjects);
         assert !files.isEmpty() : "No files for tests?!";
@@ -269,6 +272,7 @@ public final class CreateTestsSupport {
         FileUtil.runAtomicAction(new Runnable() {
             @Override
             public void run() {
+                assert phpModule != null;
                 CreateTestsResult result = testingProvider.createTests(phpModule, sanitizedFiles, configurationPanelProperties);
                 succeeded.addAll(result.getSucceeded());
                 failed.addAll(result.getFailed());

@@ -1041,7 +1041,7 @@ public class Reformatter implements ReformatTask {
                         if (cs.placeNewLineAfterModifiers())
                             newline();
                         else
-                            spaces(1, true);
+                            space();
                     } else {
                         newline();
                     }
