@@ -103,11 +103,14 @@ public class OverridableMethodCallInConstructor {
         if (classElement == null || classElement.getKind() != ElementKind.CLASS) {
             return null;
         }
-
-        if (!classElement.equals(enclosingMethodElement.getEnclosingElement())) {
+        Element classEl = enclosingMethodElement.getEnclosingElement();
+        if (classEl == null || classEl.getKind() != ElementKind.CLASS) {
             return null;
         }
-
+        boolean sameClass = classElement.equals(enclosingMethodElement.getEnclosingElement());
+        if (!info.getTypes().isSubtype(classEl.asType(), classElement.asType())) {
+            return null;
+        }
         if (classElement.getModifiers().contains(Modifier.FINAL)) {
             return null;
         }
@@ -131,8 +134,8 @@ public class OverridableMethodCallInConstructor {
                 NbBundle.getMessage(
                     OverridableMethodCallInConstructor.class,
                     "MSG_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor"),
-                    computeFixes((MethodTree) methodDeclaration.getLeaf(),
-                        classElement, ctx));
+                    sameClass ? computeFixes((MethodTree) methodDeclaration.getLeaf(),
+                        classElement, ctx) : null);
     }
 
     private static Fix[] computeFixes(MethodTree mt, Element classElement, HintContext ctx) {
