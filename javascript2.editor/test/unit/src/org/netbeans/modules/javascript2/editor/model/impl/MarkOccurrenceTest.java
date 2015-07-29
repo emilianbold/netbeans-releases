@@ -1564,9 +1564,42 @@ public class MarkOccurrenceTest extends JsTestBase {
 //        checkOccurrences("testfiles/coloring/issue253129.js", "f^3();", true);
 //    }
     
+    public void testIssue253736_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var addre^ss = {baseUrl:'', id:0};", true);
+    }
+     
+    public void testIssue253736_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var address = {bas^eUrl:'', id:0};", true);
+    }
+    
+    public void testIssue253736_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "var address = {baseUrl:'', i^d:0};", true);
+    }
+    
+    public void testIssue253736_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "syste^mUri.replace(myPattern, function(a, protocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPat^tern, function(a, protocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, prot^ocol, server, id) {", true);
+    }
+    
+    public void testIssue253736_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, protocol, se^rver, id) {", true);
+    }
+    
+    public void testIssue253736_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue253736.js", "systemUri.replace(myPattern, function(a, protocol, server, i^d) {", true);
+    }
+    
     public void testIssue253129_05() throws Exception {
         checkOccurrences("testfiles/coloring/issue253129.js", "var f3, f4, f^5 = f3 = f4 = function (){", true);
     }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
