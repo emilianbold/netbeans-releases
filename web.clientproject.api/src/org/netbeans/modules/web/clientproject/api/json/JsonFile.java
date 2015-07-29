@@ -516,7 +516,9 @@ public final class JsonFile {
             }
             return;
         }
-        for (Pair<String, String[]> watchedField : watchedFields.getData()) {
+        List<Pair<String, String[]>> data = watchedFields.getData();
+        assert data != null;
+        for (Pair<String, String[]> watchedField : data) {
             String propertyName = watchedField.first();
             String[] field = watchedField.second();
             Object oldValue = getContentValue(oldContent, Object.class, field);
