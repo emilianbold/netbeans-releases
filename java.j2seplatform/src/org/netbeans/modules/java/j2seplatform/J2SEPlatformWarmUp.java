@@ -43,8 +43,6 @@
 package org.netbeans.modules.java.j2seplatform;
 
 import org.netbeans.modules.java.j2seplatform.libraries.J2SELibrarySourceForBinaryQuery;
-import org.openide.util.Lookup;
-
 /**
  *
  * @author Tomas Zezula
@@ -55,9 +53,9 @@ public class J2SEPlatformWarmUp implements Runnable {
     public void run() {
         preInitJ2SELibsSFBQ();
     }
-    
+
     private void preInitJ2SELibsSFBQ() {
-        final J2SELibrarySourceForBinaryQuery query = Lookup.getDefault().lookup(J2SELibrarySourceForBinaryQuery.class);
+        final J2SELibrarySourceForBinaryQuery query = J2SELibrarySourceForBinaryQuery.getInstance();
         if (query != null) {
             query.preInit();
         }

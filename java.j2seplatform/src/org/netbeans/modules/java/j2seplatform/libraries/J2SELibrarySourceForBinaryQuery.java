@@ -54,13 +54,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
@@ -68,18 +71,25 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Finds the locations of sources for various libraries.
  * @author Tomas Zezula
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=150)
-public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
+@ServiceProvider(service=SourceForBinaryQueryImplementation.class, position=150)
+public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImplementation2, PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger (J2SELibrarySourceForBinaryQuery.class.getName ());
-    private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new ConcurrentHashMap<URL,SourceForBinaryQueryImplementation2.Result>();
-    private final Map<URL,URL> normalizedURLCache = new ConcurrentHashMap<URL,URL>();
+    private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new ConcurrentHashMap<>();
+    private final Map<URL,URL> normalizedURLCache = new ConcurrentHashMap<>();
+    private final AtomicBoolean lmListens = new AtomicBoolean();
+    //@GuardedBy("this")
+    private Iterable<? extends LibraryManager> lmCache;
+    //@GuardedBy("this")
+    private int lmCacheEvntCnt;
 
     /** Default constructor for lookup. */
     public J2SELibrarySourceForBinaryQuery() {}
@@ -92,7 +102,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         }
         try {
             boolean isNormalizedURL = isNormalizedURL (binaryRoot);
-            for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+            for (LibraryManager mgr : getLibraryManagers()) {
                 for (Library lib : mgr.getLibraries()) {
                     if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
                         for (URL entry : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
@@ -128,7 +138,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     }
     
     public void preInit() {
-        for (final LibraryManager lm : LibraryManager.getOpenManagers()) {
+        for (final LibraryManager lm : getLibraryManagers()) {
             for (final Library lib : lm.getLibraries()) {
                 if (J2SELibraryTypeProvider.LIBRARY_TYPE.equals(lib.getType())) {
                     for (final URL url : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
@@ -190,8 +200,17 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         }
         return "file".equals(url.getProtocol());    //NOI18N
     }
-    
-    
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
+            synchronized (this) {
+                lmCache = null;
+                lmCacheEvntCnt++;
+            }
+        }
+    }
+
     private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
 
         private final LibraryManager manager;        
@@ -323,7 +342,43 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                 return res;
             }
         }
-        
     }
-    
+
+    @NonNull
+    private Iterable<? extends LibraryManager> getLibraryManagers() {
+        Iterable<? extends LibraryManager> res;
+        final int current;
+        synchronized (this) {
+            res = lmCache;
+            current = lmCacheEvntCnt;
+        }
+        if (res == null) {
+            if (lmListens.compareAndSet(false,true)) {
+                LibraryManager.addOpenManagersPropertyChangeListener(this);
+            }
+            res = LibraryManager.getOpenManagers();
+            synchronized (this) {
+                if (current == lmCacheEvntCnt) {
+                    lmCache = res;
+                } else if (lmCache != null) {
+                    res = lmCache;
+                }
+            }
+        }
+        return res;
+    }
+
+    @CheckForNull
+    public static J2SELibrarySourceForBinaryQuery getInstance() {
+        J2SELibrarySourceForBinaryQuery result = Lookup.getDefault().lookup(J2SELibrarySourceForBinaryQuery.class);
+        if (result == null) {
+            for (SourceForBinaryQueryImplementation impl : Lookup.getDefault().lookupAll(SourceForBinaryQueryImplementation.class)) {
+                if (J2SELibrarySourceForBinaryQuery.class == impl.getClass()) {
+                    result = (J2SELibrarySourceForBinaryQuery)impl;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 }
