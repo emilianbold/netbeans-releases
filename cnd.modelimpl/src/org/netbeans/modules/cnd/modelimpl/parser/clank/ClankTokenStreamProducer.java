@@ -749,7 +749,6 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
             CsmMacro referencedMacro;
             if (CharSequenceUtilities.equals(ClankDriver.ClankMacroDirective.BUILD_IN_FILE, directive.getFile())) {
                 referencedMacro =  MacroImpl.createSystemMacro(directive.getMacroName(), directive.getParameters(), "", curFile, CsmMacro.Kind.COMPILER_PREDEFINED);
-                parsingFileContent.addMacro(referencedMacro);
             } else {
                 referencedMacro =  MacroImpl.create(directive.getMacroName(), directive.getParameters(),
                     "", getTargetFile(curFile, directive.getFile()), directive.getDirectiveStartOffset(), directive.getDirectiveEndOffset(), CsmMacro.Kind.DEFINED);
