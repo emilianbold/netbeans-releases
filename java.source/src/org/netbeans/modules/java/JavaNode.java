@@ -147,28 +147,30 @@ public final class JavaNode extends DataNode implements ChangeListener {
         this.computedIconListener = new AtomicReference<>();
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
         Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[] {jdo.getPrimaryFile(), this});
-        WORKER.post(IconTask.create(this));
-        if (isJavaSource) {
-            WORKER.post(new BuildStatusTask(this));
-            WORKER.post(new ExecutableTask(this));
-            jdo.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
-                        Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[]{jdo.getPrimaryFile(), this});
-                        WORKER.post(new Runnable() {
-                            public void run() {
-                                computedIconListener.set(null);
-                                synchronized (JavaNode.this) {
-                                    status = null;
-                                    executableListener = null;
-                                    WORKER.post(new BuildStatusTask(JavaNode.this));
-                                    WORKER.post(new ExecutableTask(JavaNode.this));
+        if (!jdo.isTemplate()) {
+            WORKER.post(IconTask.create(this));
+            if (isJavaSource) {
+                WORKER.post(new BuildStatusTask(this));
+                WORKER.post(new ExecutableTask(this));
+                jdo.addPropertyChangeListener(new PropertyChangeListener() {
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                            Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[]{jdo.getPrimaryFile(), this});
+                            WORKER.post(new Runnable() {
+                                public void run() {
+                                    computedIconListener.set(null);
+                                    synchronized (JavaNode.this) {
+                                        status = null;
+                                        executableListener = null;
+                                        WORKER.post(new BuildStatusTask(JavaNode.this));
+                                        WORKER.post(new ExecutableTask(JavaNode.this));
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }
         }
     }
 
