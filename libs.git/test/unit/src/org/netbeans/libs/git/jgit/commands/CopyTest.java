@@ -271,4 +271,59 @@ public class CopyTest extends AbstractGitTestCase {
         assertEquals(1, m.count);
         assertEquals(null, exs[0]);
     }
+    
+    public void testCopyToIgnored () throws Exception {
+        final File folder = new File(workDir, "folder");
+        folder.mkdirs();
+        File file = new File(folder, "file");
+        file.createNewFile();
+        File file2 = new File(folder, "file2");
+        file2.createNewFile();
+        
+        File ignored = new File(workDir, "ignored");
+        GitClient client = getClient(workDir);
+        client.ignore(new File[] { ignored }, NULL_PROGRESS_MONITOR);
+        client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        
+        
+        File target = new File(ignored, "folder");
+        target.mkdirs();
+        file = new File(target, "file");
+        file.createNewFile();
+        file2 = new File(target, "file2");
+        file2.createNewFile();
+        
+        
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { file, file2 }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+        
+        client.copyAfter(folder, target, NULL_PROGRESS_MONITOR);
+        
+        statuses = client.getStatus(new File[] { file, file2 }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, file, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+        assertStatus(statuses, workDir, file2, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+    }
+    
+    public void testCopyToIgnoredFile () throws Exception {
+        File file = new File(workDir, "test.global.php");
+        file.createNewFile();
+        File ignore = new File(workDir, ".gitignore");
+        write(ignore, "*.local.php");
+        
+        GitClient client = getClient(workDir);
+        client.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        client.commit(new File[] { workDir }, "message", null, null, NULL_PROGRESS_MONITOR);
+        
+        File copy = new File(workDir, "test.local.php");
+        copy.createNewFile();
+        
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { copy }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, copy, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+                
+        client.copyAfter(file, copy, NULL_PROGRESS_MONITOR);
+        
+        statuses = client.getStatus(new File[] { copy }, NULL_PROGRESS_MONITOR);
+        assertStatus(statuses, workDir, copy, false, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_IGNORED, GitStatus.Status.STATUS_ADDED, false);
+    }
 }

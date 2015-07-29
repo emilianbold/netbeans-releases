@@ -242,7 +242,7 @@ public class EvaluationContext {
         this.treePath = treePath;
     }
 
-    TreePath getTreePath() {
+    public TreePath getTreePath() {
         return treePath;
     }
 
@@ -399,7 +399,7 @@ public class EvaluationContext {
 
     public static abstract class VariableInfo {
 
-        public abstract void setValue(Value value);
+        public abstract void setValue(Value value) throws IllegalStateException;
 
         public abstract Type getType() throws ClassNotLoadedException;
 
