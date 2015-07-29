@@ -130,18 +130,30 @@ public class TemplatesPanelTest extends NbTestCase {
     public void testIgnoresSimplefolders() throws Exception {
         FileObject root = FileUtil.getConfigRoot();
         FileObject fo = FileUtil.createFolder(root, "Templates/SimpleFolder");
-        fo.setAttribute("simple", Boolean.FALSE);
-        Node n = TemplatesPanel.getTemplateRootNode();
-        Node[] arr = n.getChildren().getNodes(true);
-        assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
+        try {
+            fo.setAttribute("simple", Boolean.FALSE);
+            Node n = TemplatesPanel.getTemplateRootNode();
+            Node[] arr = n.getChildren().getNodes(true);
+            assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
+        } finally {
+            FileLock lock = fo.lock();
+            fo.delete(lock);
+            lock.releaseLock();
+        }
     }
     public void testIgnoresSimpleNonFolders() throws Exception {
         FileObject root = FileUtil.getConfigRoot();
         FileObject fo = FileUtil.createData(root, "Templates/SimpleFolder.java");
-        fo.setAttribute("simple", Boolean.FALSE);
-        fo.setAttribute("template", Boolean.TRUE);
-        Node n = TemplatesPanel.getTemplateRootNode();
-        Node[] arr = n.getChildren().getNodes(true);
-        assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
+        try {
+            fo.setAttribute("simple", Boolean.FALSE);
+            fo.setAttribute("template", Boolean.TRUE);
+            Node n = TemplatesPanel.getTemplateRootNode();
+            Node[] arr = n.getChildren().getNodes(true);
+            assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
+        } finally {
+            FileLock lock = fo.lock();
+            fo.delete(lock);
+            lock.releaseLock();
+        }
     }
 }
