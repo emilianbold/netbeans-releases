@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.impl.support.clank;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -477,6 +478,12 @@ public final class ClankPPCallback extends FileInfoCallback {
         @Override
         public /*SourceLocation*/int getMacroNameLocation() {
             return macroNameTokenSourceLocation;
+        }
+
+        @Override
+        public String toString() {
+            return super.toString() + this.fileOwnerName + (this.isDefined ? " #define " : " #undef ") + this.macroName + // NOI18N
+                    (this.params == null ? "" : ("(" + this.params + ")")); // NOI18N
         }
     }
 
