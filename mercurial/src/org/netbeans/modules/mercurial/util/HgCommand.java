@@ -4672,7 +4672,10 @@ public abstract class HgCommand<T> implements Callable<T> {
     private static String getEncoding() {
         String enc = null;
         String prop = System.getProperty("mercurial.encoding", ""); //NOI18N
-        if (!prop.isEmpty()) {
+        if (prop.isEmpty()) {
+            prop = System.getenv(ENV_HGENCODING);
+        }
+        if (prop != null && !prop.isEmpty()) {
             try {
                 if (Charset.isSupported(prop)) {
                     enc = prop;
