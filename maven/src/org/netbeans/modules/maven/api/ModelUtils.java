@@ -237,12 +237,18 @@ public final class ModelUtils {
     public static boolean checkByCLIMavenValidationLevel(ModelProblem problem) {
         // XXX HACK - this should be properly solved by upgrading the embeded maven
         String version = MavenSettings.getCommandLineMavenVersion();        
-        if( new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("3.2.1")) > 0) {
-            if(problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.groupId' for ") &&
-               problem.getMessage().contains(" with value '*' does not match a valid id pattern")) 
+        try {
+            if ( version != null && !"".equals(version.trim()) && 
+                 new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("3.2.1")) > 0) 
             {
-                return false;
+                if (problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.groupId' for ")
+                        && problem.getMessage().contains(" with value '*' does not match a valid id pattern")) {
+                    return false;
+                }
             }
+        } catch (Throwable e) {
+            // ignore and be optimistic about the hint
+            LOG.log(Level.INFO, version, e);
         }
         return true;
     }
