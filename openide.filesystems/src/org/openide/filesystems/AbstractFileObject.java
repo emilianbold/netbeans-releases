@@ -454,7 +454,8 @@ final class AbstractFileObject extends AbstractFolder {
     public FileObject createData(String name, String ext)
     throws IOException {
         if (name.contains("/") || name.contains("\\")) {
-            throw new IOException("Use FileUtil.createData() instead!"); // NOI18N
+            throw new IOException("Use FileUtil.createData() instead!"  //NOI18N
+                    + " [" + name + (ext == null ? "" : "." + ext) + "]"); // NOI18N
         }
 
         String fName = null;
