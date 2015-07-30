@@ -962,7 +962,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
                         id,
                         offset,
-                        !fileids.contains(id))); 
+                        fileids == null || !fileids.contains(id))); 
             }
             completionProposals.addAll(proposals);
 
