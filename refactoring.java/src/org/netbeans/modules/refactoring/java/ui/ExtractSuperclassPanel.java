@@ -73,6 +73,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.java.api.ExtractSuperclassRefactoring;
@@ -104,6 +105,7 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
     
     private TapPanel filtersPanel;
     private FiltersManager filtersManager;
+    private final TreePathHandle[] selected;
     
     /** Creates new form ExtractSuperclassPanel
      * @param refactoring The refactoring this panel provides parameters for.
@@ -111,8 +113,9 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
      *      (determined by which nodes the action was invoked on - e.g. if it was
      *      invoked on a method, the method will be pre-selected to be pulled up)
      */
-    public ExtractSuperclassPanel(ExtractSuperclassRefactoring refactoring, final ChangeListener parent) {
+    public ExtractSuperclassPanel(ExtractSuperclassRefactoring refactoring, TreePathHandle[] selected, final ChangeListener parent) {
         this.refactoring = refactoring;
+        this.selected = selected;
         this.tableModel = new TableModel();
         initComponents();
         setPreferredSize(new Dimension(420, 380));
@@ -447,9 +450,18 @@ public class ExtractSuperclassPanel extends JPanel implements CustomRefactoringP
             });
             members = new Object[result.size()][3];
             for (int i = 0; i < members.length; i++) {
-                members[i][0] = Boolean.FALSE;
                 MemberInfo<?> member = result.get(i);
+                members[i][0] = Boolean.FALSE;
                 members[i][1] = member;
+                
+                for (TreePathHandle treePathHandle : selected) {
+                    ElementHandle selectedElement = treePathHandle.getElementHandle();
+                    if(selectedElement != null && member.getElementHandle() instanceof ElementHandle &&
+                            selectedElement.signatureEquals((ElementHandle)member.getElementHandle())) {
+                        members[i][0] = Boolean.TRUE;
+                    }
+                }
+                
                 if (member.getGroup() == MemberInfo.Group.METHOD) {
                     members[i][2] = member.isMakeAbstract();
                 } else {
