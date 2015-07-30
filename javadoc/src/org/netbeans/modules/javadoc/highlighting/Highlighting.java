@@ -76,8 +76,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     
     public static final String LAYER_ID = "org.netbeans.modules.javadoc.highlighting"; //NOI18N
     
-    private static AttributeSet fontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence");
-    
+    private AttributeSet fontColor;
     
     private Document document;
     private TokenHierarchy<? extends Document> hierarchy = null;
@@ -85,6 +84,7 @@ public class Highlighting extends AbstractHighlightsContainer implements TokenHi
     
     /** Creates a new instance of Highlighting */
     public Highlighting(Document doc) {
+        this.fontColor = MimeLookup.getLookup(MimePath.get("text/x-java")).lookup(FontColorSettings.class).getTokenFontColors("javadoc-first-sentence");
         this.document = doc;
         hierarchy = TokenHierarchy.get(document);
         if (hierarchy != null) {
