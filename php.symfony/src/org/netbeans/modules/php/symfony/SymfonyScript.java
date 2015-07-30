@@ -171,7 +171,7 @@ public class SymfonyScript {
 
     public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
         createPhpExecutable(phpModule)
-                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(getAllParams(parameters))
                 .run(getDescriptor(postExecution));
     }
@@ -189,7 +189,7 @@ public class SymfonyScript {
 
         try {
             Future<Integer> result = createPhpExecutable(phpModule)
-                    .displayName(getDisplayName(phpModule, allParams.get(0)))
+                    .displayName(getDisplayName(phpModule))
                     .additionalParameters(getAllParams(allParams))
                     .warnUser(false)
                     .run(getDescriptor(null));
@@ -214,7 +214,7 @@ public class SymfonyScript {
         allParams.addAll(Arrays.asList(params));
 
         createPhpExecutable(phpModule)
-                .displayName(getDisplayName(phpModule, allParams.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(getAllParams(allParams))
                 .warnUser(false)
                 .run(getDescriptor(null));
@@ -229,7 +229,7 @@ public class SymfonyScript {
 
         HelpLineProcessor lineProcessor = new HelpLineProcessor();
         Future<Integer> result = createPhpExecutable(phpModule)
-                .displayName(getDisplayName(phpModule, allParams.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(getAllParams(allParams))
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         try {
@@ -274,11 +274,10 @@ public class SymfonyScript {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "# {1} - command",
-        "SymfonyScript.command.title={0} ({1})"
+        "SymfonyScript.command.title=Symfony ({0})"
     })
-    private String getDisplayName(PhpModule phpModule, String command) {
-        return Bundle.SymfonyScript_command_title(phpModule.getDisplayName(), command);
+    private String getDisplayName(PhpModule phpModule) {
+        return Bundle.SymfonyScript_command_title(phpModule.getDisplayName());
     }
 
     private ExecutionDescriptor getDescriptor(Runnable postExecution) {

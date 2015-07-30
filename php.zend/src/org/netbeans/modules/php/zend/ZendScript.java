@@ -179,7 +179,7 @@ public final class ZendScript {
         HelpLineProcessor lineProcessor = new HelpLineProcessor();
         Future<Integer> result = createPhpExecutable()
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(allParameters)
                 .run(getSilentDescriptor(), getOutProcessorFactory(lineProcessor));
         if (result == null) {
@@ -198,13 +198,12 @@ public final class ZendScript {
         return lineProcessor.getHelp();
     }
 
-    @NbBundle.Messages("ZendScript.register.provider=Zend provider registration")
     public void registerNetBeansProvider() {
         ExecutionDescriptor descriptor = getDescriptor(null);
         try {
             // create config
             Future<Integer> result = createPhpExecutable()
-                    .displayName(Bundle.ZendScript_register_provider())
+                    .displayName(getDisplayName())
                     .additionalParameters(CREATE_CONFIG_COMMAND)
                     .run(descriptor);
             if (result != null) {
@@ -214,7 +213,7 @@ public final class ZendScript {
             descriptor = descriptor.noReset(true);
             // enable config
             result = createPhpExecutable()
-                    .displayName(Bundle.ZendScript_register_provider())
+                    .displayName(getDisplayName())
                     .additionalParameters(ENABLE_CONFIG_COMMAND)
                     .run(descriptor);
             if (result != null) {
@@ -238,7 +237,7 @@ public final class ZendScript {
             File sources = FileUtil.toFile(phpModule.getSourceDirectory());
             Future<Integer> result = createPhpExecutable()
                     .workDir(sources)
-                    .displayName(getDisplayName(phpModule, INIT_PROJECT_COMMAND.get(0)))
+                    .displayName(getDisplayName(phpModule))
                     .additionalParameters(INIT_PROJECT_COMMAND)
                     .warnUser(false)
                     .run(getDescriptor(null));
@@ -291,7 +290,7 @@ public final class ZendScript {
     public void runCommand(PhpModule phpModule, List<String> parameters, Runnable postExecution) {
         createPhpExecutable()
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .displayName(getDisplayName(phpModule, parameters.get(0)))
+                .displayName(getDisplayName(phpModule))
                 .additionalParameters(parameters)
                 .run(getDescriptor(postExecution));
     }
@@ -326,11 +325,17 @@ public final class ZendScript {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "# {1} - command",
-        "ZendScript.command.title={0} ({1})"
+        "ZendScript.command.title=Zend ({0})",
     })
-    private String getDisplayName(PhpModule phpModule, String command) {
-        return Bundle.ZendScript_command_title(phpModule.getDisplayName(), command);
+    private String getDisplayName(PhpModule phpModule) {
+        return Bundle.ZendScript_command_title(phpModule.getDisplayName());
+    }
+
+    @NbBundle.Messages({
+        "ZendScript.command.title.pure=Zend",
+    })
+    private String getDisplayName() {
+        return Bundle.ZendScript_command_title_pure();
     }
 
     //~ Inner classes

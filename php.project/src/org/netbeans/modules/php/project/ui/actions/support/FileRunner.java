@@ -124,7 +124,7 @@ public final class FileRunner {
 
     @NbBundle.Messages({
         "# {0} - project or file name",
-        "FileRunner.run.displayName={0} (run)"
+        "FileRunner.run.displayName=Run ({0})",
     })
     public void run() {
         RP.post(new Runnable() {
@@ -138,7 +138,7 @@ public final class FileRunner {
 
     @NbBundle.Messages({
         "# {0} - project or file name",
-        "FileRunner.debug.displayName={0} (debug)",
+        "FileRunner.debug.displayName=Debug ({0})",
     })
     public void debug() {
         RP.post(new Runnable() {

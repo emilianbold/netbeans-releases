@@ -216,7 +216,7 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     @NbBundle.Messages({
         "# {0} - project name",
-        "InternalWebServer.output.title=Internal WebServer [{0}]"
+        "InternalWebServer.output.title=Internal WebServer ({0})"
     })
     private Future<Integer> createProcess() {
         // validate
