@@ -241,8 +241,10 @@ public final class ModelUtils {
             if ( version != null && !"".equals(version.trim()) && 
                  new DefaultArtifactVersion(version).compareTo(new DefaultArtifactVersion("3.2.1")) > 0) 
             {
-                if (problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.groupId' for ")
-                        && problem.getMessage().contains(" with value '*' does not match a valid id pattern")) {
+                if ( (problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.groupId' for ") ||
+                      problem.getMessage().startsWith("'dependencies.dependency.exclusions.exclusion.artifactId' for "))
+                        && problem.getMessage().contains(" with value '*' does not match a valid id pattern")) 
+                {
                     return false;
                 }
             }
