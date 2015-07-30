@@ -298,6 +298,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         repairTextUI(textualEditorPane);
                         setTextualContent();
                     }
+
+                    manager = new DiffViewManager(EditableDiffView.this);
                     
                     rp.post(new Runnable() {
 
@@ -381,8 +383,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         
         view.addAncestorListener(this);
-
-        manager = new DiffViewManager(this);
     }
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {
