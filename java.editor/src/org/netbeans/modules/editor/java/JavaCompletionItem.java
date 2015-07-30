@@ -3553,7 +3553,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         public int getSortPriority() {
-            return (getElementHandle().getKind().isField() ? 710 : 740) - SMART_TYPE;
+            int i = 0;
+            for (MemberDesc member : members) {
+                i *= 3;
+                switch (member.kind) {
+                    case LOCAL_VARIABLE:
+                    case PARAMETER:
+                    case RESOURCE_VARIABLE:
+                    case EXCEPTION_PARAMETER:
+                        i += 1;
+                        break;
+                    case FIELD:
+                    case ENUM_CONSTANT:
+                        i += 2;
+                        break;
+                    default:
+                        i += 3;
+                }                
+            }
+            return 700 + Math.min(i, 99) - SMART_TYPE;
         }
 
         @Override
