@@ -82,8 +82,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
-import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
 
 /**
  * Represents <tt>tester</tt>.
@@ -210,7 +208,7 @@ public final class Tester {
 
     @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
-        PhpExecutable tester = getExecutable(phpModule, getOutputTitle(runInfo));
+        PhpExecutable tester = getExecutable(phpModule);
         List<String> params = new ArrayList<>();
         params.add(OUTPUT_PARAM);
         params.add(TAP_OUTPUT_PARAM);
@@ -280,14 +278,18 @@ public final class Tester {
         return null;
     }
 
-    private PhpExecutable getExecutable(PhpModule phpModule, String title) {
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "Tester.run.title=Nett Tester ({0})",
+    })
+    private PhpExecutable getExecutable(PhpModule phpModule) {
         // backward compatibility, simply return the first test directory
         FileObject testDirectory = phpModule.getTestDirectory(null);
         assert testDirectory != null : "Test directory not found for " + phpModule.getName();
         return new PhpExecutable(testerPath)
                 .optionsSubcategory(TesterOptionsPanelController.OPTIONS_SUB_PATH)
                 .workDir(FileUtil.toFile(testDirectory))
-                .displayName(title);
+                .displayName(Bundle.Tester_run_title(phpModule.getDisplayName()));
     }
 
     private ExecutionDescriptor getDescriptor() {
@@ -297,32 +299,6 @@ public final class Tester {
                 .showProgress(true)
                 .outLineBased(true)
                 .errLineBased(true);
-    }
-
-    @NbBundle.Messages({
-        "Tester.run.test.single=Nette Tester (test)",
-        "Tester.run.test.all=Nette Tester (test all)",
-        "Tester.debug.single=Nette Tester (debug)",
-        "Tester.debug.all=Nette Tester (debug all)",
-    })
-    private String getOutputTitle(TestRunInfo runInfo) {
-        boolean allTests = runInfo.allTests();
-        switch (runInfo.getSessionType()) {
-            case TEST:
-                if (allTests) {
-                    return Bundle.Tester_run_test_all();
-                }
-                return Bundle.Tester_run_test_single();
-                //break;
-            case DEBUG:
-                if (allTests) {
-                    return Bundle.Tester_debug_all();
-                }
-                return Bundle.Tester_debug_single();
-                //break;
-            default:
-                throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
-        }
     }
 
     private void addBinaryExecutable(PhpModule phpModule, List<String> params) {

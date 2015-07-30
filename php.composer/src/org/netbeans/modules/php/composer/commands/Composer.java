@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.composer.commands;
 
@@ -174,10 +174,9 @@ public final class Composer {
     }
 
     @NbBundle.Messages({
-        "Composer.run.init=Composer (init)",
         "Composer.file.exists=Composer.json already exists - overwrite it?",
         "# {0} - project name",
-        "Composer.init.description=Description of project {0}."
+        "Composer.init.description=Description of project {0}.",
     })
     public Future<Integer> init(PhpModule phpModule) {
         assert phpModule != null;
@@ -204,7 +203,7 @@ public final class Composer {
                 String.format(NAME_PARAM, getInitName(options.getVendor(), phpModule.getName())),
                 String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()),
                 String.format(DESCRIPTION_PARAM, Bundle.Composer_init_description(phpModule.getDisplayName())));
-        return runCommand(phpModule, true, INIT_COMMAND, Bundle.Composer_run_init(), params);
+        return runCommand(phpModule, true, INIT_COMMAND, params);
     }
 
     private String getInitName(String vendor, String projectName) {
@@ -215,67 +214,58 @@ public final class Composer {
         return name.toString();
     }
 
-    @NbBundle.Messages("Composer.run.install=Composer (install)")
     public Future<Integer> install(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
+        return runCommand(phpModule, INSTALL_COMMAND);
     }
 
     public Future<Integer> installDev(PhpModule phpModule) {
         return install(phpModule);
     }
 
-    @NbBundle.Messages("Composer.run.installNoDev=Composer (install no-dev)")
     public Future<Integer> installNoDev(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installNoDev(), Collections.singletonList(NO_DEV_PARAM));
+        return runCommand(phpModule, INSTALL_COMMAND, Collections.singletonList(NO_DEV_PARAM));
     }
 
-    @NbBundle.Messages("Composer.run.update=Composer (update)")
     public Future<Integer> update(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
+        return runCommand(phpModule, UPDATE_COMMAND);
     }
 
     public Future<Integer> updateDev(PhpModule phpModule) {
         return update(phpModule);
     }
 
-    @NbBundle.Messages("Composer.run.updateNoDev=Composer (update no-dev)")
     public Future<Integer> updateNoDev(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateNoDev(), Collections.singletonList(NO_DEV_PARAM));
+        return runCommand(phpModule, UPDATE_COMMAND, Collections.singletonList(NO_DEV_PARAM));
     }
 
-    @NbBundle.Messages("Composer.run.require=Composer (require)")
     public Future<Integer> require(PhpModule phpModule, String... packages) {
         assert phpModule != null;
-        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), Arrays.asList(packages));
+        return runCommand(phpModule, REQUIRE_COMMAND, Arrays.asList(packages));
     }
 
-    @NbBundle.Messages("Composer.run.requireDev=Composer (require dev)")
     public Future<Integer> requireDev(PhpModule phpModule, String... packages) {
         assert phpModule != null;
         List<String> params = new ArrayList<>(packages.length + 1);
         params.add(DEV_PARAM);
         params.addAll(Arrays.asList(packages));
-        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_requireDev(), params);
+        return runCommand(phpModule, REQUIRE_COMMAND, params);
     }
 
-    @NbBundle.Messages("Composer.run.validate=Composer (validate)")
     public Future<Integer> validate(PhpModule phpModule) {
         assert phpModule != null;
-        return runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
+        return runCommand(phpModule, VALIDATE_COMMAND);
     }
 
-    @NbBundle.Messages("Composer.run.selfUpdate=Composer (self-update)")
     public Future<Integer> selfUpdate() {
-        return runCommand(null, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
+        return runCommand(null, SELF_UPDATE_COMMAND);
     }
 
-    @NbBundle.Messages("Composer.run.search=Composer (search)")
     public Future<Integer> search(@NullAllowed PhpModule phpModule, String token, boolean onlyName, final OutputProcessor<SearchResult> outputProcessor) {
-        PhpExecutable composer = getComposerExecutable(phpModule, false, Bundle.Composer_run_search());
+        PhpExecutable composer = getComposerExecutable(phpModule, false);
         if (composer == null) {
             return null;
         }
@@ -312,9 +302,8 @@ public final class Composer {
                 });
     }
 
-    @NbBundle.Messages("Composer.run.show=Composer (show)")
     public Future<Integer> show(@NullAllowed PhpModule phpModule, String name, final OutputProcessor<String> outputProcessor) {
-        PhpExecutable composer = getComposerExecutable(phpModule, false, Bundle.Composer_run_show());
+        PhpExecutable composer = getComposerExecutable(phpModule, false);
         if (composer == null) {
             return null;
         }
@@ -348,16 +337,16 @@ public final class Composer {
                 });
     }
 
-    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, String title) {
-        return runCommand(phpModule, command, title, Collections.<String>emptyList());
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command) {
+        return runCommand(phpModule, command, Collections.<String>emptyList());
     }
 
-    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, String title, List<String> commandParams) {
-        return runCommand(phpModule, false, command, title, commandParams);
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, String command, List<String> commandParams) {
+        return runCommand(phpModule, false, command, commandParams);
     }
 
-    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, boolean forceProjectDir, String command, String title, List<String> commandParams) {
-        PhpExecutable composer = getComposerExecutable(phpModule, forceProjectDir, title);
+    private Future<Integer> runCommand(@NullAllowed PhpModule phpModule, boolean forceProjectDir, String command, List<String> commandParams) {
+        PhpExecutable composer = getComposerExecutable(phpModule, forceProjectDir);
         if (composer == null) {
             return null;
         }
@@ -366,8 +355,13 @@ public final class Composer {
                 .run(getDescriptor(phpModule));
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "Composer.run.title=Composer ({0})",
+        "Composer.run.title.pure=Composer",
+    })
     @CheckForNull
-    private PhpExecutable getComposerExecutable(@NullAllowed PhpModule phpModule, boolean forceProjectDir, String title) {
+    private PhpExecutable getComposerExecutable(@NullAllowed PhpModule phpModule, boolean forceProjectDir) {
         File dir = resolveWorkDir(phpModule, forceProjectDir);
         if (dir == null
                 && phpModule != null) {
@@ -376,7 +370,7 @@ public final class Composer {
         }
         PhpExecutable composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
-                .displayName(title);
+                .displayName(phpModule != null ? Bundle.Composer_run_title(phpModule.getDisplayName()) : Bundle.Composer_run_title_pure());
         if (dir != null) {
             composer.workDir(dir);
         }
