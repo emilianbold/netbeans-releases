@@ -120,6 +120,9 @@ public final class ProjectTemplateAttributesProvider implements CreateFromTempla
                 CreateDescriptor childDesc = bld.withParameters(all).createDescriptor(false);
                 Map<String, ? extends Object> m = attrs.attributesFor(childDesc);
                 if (m != null) {
+                    if (m.containsKey(ATTR_PROJECT)) {
+                        needFill = true;
+                    }
                     all.putAll(m);
                 }
             }

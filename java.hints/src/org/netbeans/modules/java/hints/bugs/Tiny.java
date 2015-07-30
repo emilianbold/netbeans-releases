@@ -58,7 +58,9 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.WhileLoopTree;
+import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,7 +109,8 @@ import org.openide.util.NbBundle.Messages;
     "DESC_indentation=Warns about indentation that suggests possible missing surrounding block",
     "ERR_indentation=Confusing indentation",
     "TEXT_MissingSwitchCase=Possibly missing switch `case' statement",
-    "FIX_AddMissingSwitchCase=Replace label with switch case",
+    "# {0} - constant identifier",
+    "FIX_AddMissingSwitchCase=Replace label with switch case {0}",
 })
 public class Tiny {
 
@@ -343,26 +346,26 @@ public class Tiny {
             return null;
         }
         final CompilationInfo ci = ctx.getInfo();
-        Tree swTree = path.getParentPath().getLeaf();
+        TreePath switchPath = path.getParentPath();
+        Tree swTree = switchPath.getLeaf();
         assert swTree.getKind() == Tree.Kind.SWITCH;
         Tree xp = ((SwitchTree)swTree).getExpression();
-        TypeMirror m = ci.getTrees().getTypeMirror(new TreePath(path.getParentPath(), xp));
-        if (m == null || m.getKind() != TypeKind.DECLARED) {
-            return null;
+        TypeMirror m = ci.getTrees().getTypeMirror(new TreePath(switchPath, xp));
+        boolean enumType = false;
+        if (m != null && m.getKind() == TypeKind.DECLARED) {
+            Element e = ((DeclaredType)m).asElement();
+            if (e != null && e.getKind() == ElementKind.ENUM) {
+                enumType = true;
+            }
         }
-        Element e = ((DeclaredType)m).asElement();
-        // check that the switch expression is an enum; enum identifiers can be confused with labels
-        if (e == null || e.getKind() != ElementKind.ENUM) {
-            return null;
-        }
-        
         // check that the label is not used within its case statement in no break / continue clause
         // the $l is bound to the label identifier, not to the labeled statement!
         TreePath stPath = ctx.getVariables().get("$stmt"); // NOI18N
         TreePath lPath = stPath.getParentPath();
-        LabeledStatementTree lt = (LabeledStatementTree)lPath.getLeaf();
+        final LabeledStatementTree lt = (LabeledStatementTree)lPath.getLeaf();
         final Name l = lt.getLabel();
-        Boolean b = new TreeScanner<Boolean, Void>() {
+        final CompilationInfo info = ctx.getInfo();
+        Boolean b = new TreePathScanner<Boolean, Void>() {
 
             @Override
             public Boolean reduce(Boolean r1, Boolean r2) {
@@ -377,25 +380,100 @@ public class Tiny {
 
             @Override
             public Boolean visitContinue(ContinueTree node, Void p) {
-                return node.getLabel() == l;
+                Tree t = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+                return lt == t || lt.getStatement() == t;
             }
 
             @Override
             public Boolean visitBreak(BreakTree node, Void p) {
-                return node.getLabel() == l;
+                Tree t = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+                return lt == t || lt.getStatement() == t;
             }
             
-        }.scan(path.getLeaf(), null);
+        }.scan(path, null);
         if (Boolean.TRUE == b) {
             // label is a target of a break/continue do not report.
             return null;
         }
-        
+        List<String> options = new ArrayList<>();
+        // eliminate duplicities
+        Set<Element> resolved = new HashSet<>();
+        // if not an enum type, inspect the other cases to see what identifiers are there.
+        // Attempt to resolve the identifiers using the same qualifier(s) as the other cases
+        END: if (enumType) {
+            // try to resolve the identifier as an enum constant:
+            TypeElement te = (TypeElement)((DeclaredType)m).asElement();
+            for (Element f : te.getEnclosedElements()) {
+                if (f.getKind() == ElementKind.ENUM_CONSTANT) {
+                    if (f.getSimpleName().equals(l)) {
+                        options.add(l.toString());
+                        break;
+                    }
+                }
+            }
+        } else {
+            for (CaseTree cst : ((SwitchTree)swTree).getCases()) {
+                Tree expr = cst.getExpression();
+                if (expr == null || 
+                    (expr.getKind() != Tree.Kind.IDENTIFIER && expr.getKind() != Tree.Kind.MEMBER_SELECT)) {
+                    continue;
+                }
+                Element el = info.getTrees().getElement(new TreePath(path, cst.getExpression()));
+                if (el == null) {
+                    continue;
+                }
+                if (expr.getKind() == Tree.Kind.IDENTIFIER) {
+                    // try to resolve an unqualified identifier
+                    if (tryResolveIdentifier(info, lPath, m, resolved, l.toString())) {
+                        options.add(0, l.toString());
+                    }
+                } 
+                // attempt to resolve a simple-qualified identifier; assuming the user already has an import in the source
+                Element outer = el.getEnclosingElement();
+                if (outer != null && (outer.getKind() == ElementKind.CLASS || outer.getKind() == ElementKind.INTERFACE ||
+                        outer.getKind() == ElementKind.ENUM)) {
+                    TypeElement tel = (TypeElement)outer;
+                    String x =  tel.getSimpleName() + "." + l.toString();
+                    if (tryResolveIdentifier(info, lPath, m, resolved, x)) {
+                        options.add(x);
+                    } else {
+                        // last attempt: use FQN
+                        x = tel.getQualifiedName().toString() + "." + l.toString();
+                        if (tryResolveIdentifier(info, lPath, m, resolved, x)) {
+                            options.add(x);
+                        }
+                    }
+                }
+            }
+        }
+        if (options.isEmpty()) {
+            return ErrorDescriptionFactory.forName(ctx, lt, Bundle.TEXT_MissingSwitchCase());
+        }
+        List<Fix> fixes = new ArrayList<>(options.size());
+        for (String s : options) {
+            fixes.add(JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_AddMissingSwitchCase(s), lPath, 
+                        "case " + s + ": $stmt;"));
+        }
         return ErrorDescriptionFactory.forName(ctx, lt, Bundle.TEXT_MissingSwitchCase(), 
-                JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_AddMissingSwitchCase(), lPath, 
-                    "case " + l.toString() + ": $stmt;"));
+                fixes.toArray(new Fix[fixes.size()]));
     }
     
+    private static boolean tryResolveIdentifier(CompilationInfo info, TreePath place, 
+            TypeMirror expectedType, Set<Element> resolved, String ident) {
+        SourcePositions[] positions = new SourcePositions[1];
+        ExpressionTree et = info.getTreeUtilities().parseExpression(ident, positions);
+        TypeMirror unqType = info.getTreeUtilities().attributeTree(et, info.getTrees().getScope(place));
+        Element e = info.getTrees().getElement(new TreePath(place, et));
+        if (!Utilities.isValidType(unqType) || e == null || 
+                (e.getKind() != ElementKind.FIELD && e.getKind() != ElementKind.ENUM_CONSTANT)) {
+            return false;
+        }
+        if (!resolved.add(e)) {
+            return false;
+        }
+        return info.getTypes().isAssignable(unqType, expectedType);
+    }
+
     @Hint(
             displayName = "#DN_HashCodeOnArray",
             description = "#DESC_HashCodeOnArray",
