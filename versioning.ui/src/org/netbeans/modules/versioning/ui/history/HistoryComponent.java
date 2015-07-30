@@ -491,6 +491,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         if(masterView != null) {
             masterView.close();
         }
+        if (diffView != null) {
+            diffView.componentClosed();
+        }
     }
     
     @Override

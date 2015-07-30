@@ -223,7 +223,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
         view.add(searchContainer, BorderLayout.PAGE_END);
         if (enhancedView) {
-            view.add(jTabbedPane = new JTabbedPane(JTabbedPane.TOP), BorderLayout.CENTER);
+            jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+            jTabbedPane.putClientProperty("diff-view-mode-switcher", true);
+            view.add(jTabbedPane, BorderLayout.CENTER);
         } else {
             jTabbedPane = null;
             view.add(jSplitPane1, BorderLayout.CENTER);

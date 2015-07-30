@@ -93,6 +93,7 @@ import org.netbeans.modules.mercurial.ui.status.OpenInEditorAction;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.DiffUtils;
+import org.netbeans.modules.versioning.diff.DiffViewModeSwitcher;
 import org.netbeans.modules.versioning.diff.EditorSaveCookie;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -190,6 +191,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private int lastDividerLoc;
     private int requestedRightLine = -1;
     private int requestedLeftLine = -1;
+    private DiffViewModeSwitcher diffViewModeSwitcher;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -411,6 +413,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         prevAction.setEnabled(false);
         nextAction.setEnabled(false);
         cancelBackgroundTasks(); 
+        this.dpt = null;
+        DiffViewModeSwitcher.release(this);
+        diffViewModeSwitcher = null;
     }
 
     public JPopupMenu getPopup() {
@@ -679,6 +684,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     getActiveFileComponent().setSelectedNode(currentSetup.getNode());
                     fileComponentSetSelectedIndexContext = false;
                 }
+                getDiffViewModeSwitcher().setupMode(view);
                 diffView = view.getJComponent();
                 diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
                 diffView.getActionMap().put("jumpPrev", prevAction);  // NOI18N
@@ -1186,6 +1192,13 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         int gg = splitPane.getDividerLocation();
         splitPane.setTopComponent(getActiveFileComponent().getComponent());
         splitPane.setDividerLocation(gg);
+    }
+
+    private DiffViewModeSwitcher getDiffViewModeSwitcher () {
+        if (diffViewModeSwitcher == null) {
+            diffViewModeSwitcher = DiffViewModeSwitcher.get(this);
+        }
+        return diffViewModeSwitcher;
     }
     
     private class RefreshComboTask implements Runnable {
