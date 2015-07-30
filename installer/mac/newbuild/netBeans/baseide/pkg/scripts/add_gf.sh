@@ -17,7 +17,7 @@ then
   dirname=`dirname "$0"`
   jdk_home=`"$dirname"/get_current_jdk.sh`
   "$jdk_home"/bin/java -cp \
-                           platform/core/core.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:enterprise/modules/org-netbeans-modules-glassfish-common.jar:enterprise/modules/ext/glassfish-tooling-sdk.jar \
+                           platform/core/core.jar:platform/core/core-base.jar:platform/lib/boot.jar:platform/lib/org-openide-modules.jar:platform/core/org-openide-filesystems.jar:platform/lib/org-openide-util.jar:platform/lib/org-openide-util-lookup.jar:platform/lib/org-openide-util-ui.jar:enterprise/modules/org-netbeans-modules-j2eeapis.jar:enterprise/modules/org-netbeans-modules-j2eeserver.jar:enterprise/modules/org-netbeans-modules-glassfish-common.jar:enterprise/modules/org-netbeans-modules-glassfish-tooling.jar \
                            \
                            org.netbeans.modules.glassfish.common.registration.AutomaticRegistration \
                            \

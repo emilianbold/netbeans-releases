@@ -59,6 +59,7 @@ import org.netbeans.api.diff.*;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.diff.DiffViewModeSwitcher;
 import org.netbeans.modules.versioning.ui.history.HistoryComponent.CompareMode;
 import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
@@ -87,6 +88,7 @@ public class HistoryDiffView implements PropertyChangeListener {
     private DiffTask diffTask;
     
     private final Object VIEW_LOCK = new Object();
+    private DiffViewModeSwitcher diffViewModeSwitcher;
     
     /** Creates a new instance of HistoryDiffView */
     public HistoryDiffView(HistoryComponent tc) {
@@ -210,6 +212,11 @@ public class HistoryDiffView implements PropertyChangeListener {
     private boolean onSelectionLastDifference = false;
     void onSelectionLastDifference() {
         onSelectionLastDifference = true;
+    }
+
+    void componentClosed () {
+        DiffViewModeSwitcher.release(this);
+        diffViewModeSwitcher = null;
     }
 
     private class CurrentDiffPrepareTask extends DiffTask {
@@ -427,6 +434,7 @@ public class HistoryDiffView implements PropertyChangeListener {
             @Override
             public void run() {            
                 History.LOG.finer("invoked set diff view"); // NOI18N
+                getDiffViewModeSwitcher().setupMode(dv);
                 JComponent c = dv.getJComponent();
                 setDiffComponent(c);
                 tc.setDiffView(c);
@@ -443,6 +451,13 @@ public class HistoryDiffView implements PropertyChangeListener {
             }
         });
     }    
+
+    private DiffViewModeSwitcher getDiffViewModeSwitcher () {
+        if (diffViewModeSwitcher == null) {
+            diffViewModeSwitcher = DiffViewModeSwitcher.get(this);
+        }
+        return diffViewModeSwitcher;
+    }
 
     private String getTitle(HistoryEntry entry, VCSFileProxy file) {
         String title1;

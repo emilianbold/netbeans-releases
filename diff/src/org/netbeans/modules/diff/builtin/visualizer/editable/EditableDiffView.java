@@ -184,7 +184,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private Integer askedLineLocation;
     private static final String PROP_SMART_SCROLLING_DISABLED = "diff.smartScrollDisabled"; //NOI18N
-    private static final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
+    static final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
@@ -223,7 +223,9 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         searchContainer.setLayout(new BoxLayout(searchContainer, BoxLayout.Y_AXIS));
         view.add(searchContainer, BorderLayout.PAGE_END);
         if (enhancedView) {
-            view.add(jTabbedPane = new JTabbedPane(JTabbedPane.TOP), BorderLayout.CENTER);
+            jTabbedPane = new JTabbedPane(JTabbedPane.TOP);
+            jTabbedPane.putClientProperty("diff-view-mode-switcher", true);
+            view.add(jTabbedPane, BorderLayout.CENTER);
         } else {
             jTabbedPane = null;
             view.add(jSplitPane1, BorderLayout.CENTER);
@@ -296,6 +298,8 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                         repairTextUI(textualEditorPane);
                         setTextualContent();
                     }
+
+                    manager = new DiffViewManager(EditableDiffView.this);
                     
                     rp.post(new Runnable() {
 
@@ -379,8 +383,6 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         }
         
         view.addAncestorListener(this);
-
-        manager = new DiffViewManager(this);
     }
 
     private void initializeTabPane (StreamSource ss1, StreamSource ss2) {
