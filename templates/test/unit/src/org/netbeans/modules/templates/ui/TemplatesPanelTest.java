@@ -136,9 +136,8 @@ public class TemplatesPanelTest extends NbTestCase {
             Node[] arr = n.getChildren().getNodes(true);
             assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
         } finally {
-            FileLock lock = fo.lock();
-            fo.delete(lock);
-            lock.releaseLock();
+            // Cleanup Templates folder
+            fo.getParent().delete();
         }
     }
     public void testIgnoresSimpleNonFolders() throws Exception {
@@ -151,9 +150,8 @@ public class TemplatesPanelTest extends NbTestCase {
             Node[] arr = n.getChildren().getNodes(true);
             assertEquals("Empty: " + Arrays.asList(arr), 0, arr.length);
         } finally {
-            FileLock lock = fo.lock();
-            fo.delete(lock);
-            lock.releaseLock();
+            // Cleanup Templates folder
+            fo.getParent().delete();
         }
     }
 }
