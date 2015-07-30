@@ -93,7 +93,7 @@ class DiffViewManager implements ChangeListener {
         this.master = master;
         this.leftContentPanel = master.getEditorPane1();
         this.rightContentPanel = master.getEditorPane2();
-        highlightComputeTask = new RequestProcessor("DiffViewHighlightsComputer", 1, true, false).create(new HighlightsComputeTask());
+        highlightComputeTask = master.rp.create(new HighlightsComputeTask());
     }
     
     void init() {

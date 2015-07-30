@@ -184,7 +184,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
 
     private Integer askedLineLocation;
     private static final String PROP_SMART_SCROLLING_DISABLED = "diff.smartScrollDisabled"; //NOI18N
-    private static final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
+    static final RequestProcessor rp = new RequestProcessor("EditableDiffViewRP", 10);
     private static final Logger LOG = Logger.getLogger(EditableDiffView.class.getName());
 
     private static final String CONTENT_TYPE_DIFF = "text/x-diff"; //NOI18N
