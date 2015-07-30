@@ -70,10 +70,10 @@ import org.openide.util.WeakListeners;
 
 /**
  * This implementation of the SourceForBinaryQueryImplementation
- * provides sources for the active platform and project libraries
+ * provides sources for the active platform.
  */
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=150)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=90)
 public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
     private static final String JAR_FILE = "jar:file:";                 //NOI18N
