@@ -102,6 +102,9 @@ public class OptionsPanel extends JPanel {
     volatile boolean configured = false;
     volatile boolean enabled;
     volatile String compilerOptions;
+    // #253814
+    // @GuardedBy("EDT")
+    private boolean recompileButtonDisabled = false;
 
 
     public OptionsPanel(CssPreprocessorType type, Project project, boolean initialEnabled, List<Pair<String, String>> initialMappings, String initialCompilerOptions) {
@@ -147,14 +150,13 @@ public class OptionsPanel extends JPanel {
                 enabled = e.getStateChange() == ItemEvent.SELECTED;
                 configured = true;
                 enablePanel(enabled);
-                fireChange();
+                fireChange(false);
             }
         });
         mappingsTableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                enableRecompileButton();
-                fireChange();
+                fireChange(true);
             }
         });
         mappingsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -182,7 +184,7 @@ public class OptionsPanel extends JPanel {
             }
             private void processChange() {
                 compilerOptions = compilerOptionsTextField.getText();
-                fireChange();
+                fireChange(true);
             }
         });
     }
@@ -233,8 +235,16 @@ public class OptionsPanel extends JPanel {
         changeSupport.removeChangeListener(listener);
     }
 
-    void fireChange() {
+    void fireChange(boolean disableRecompile) {
+        assert EventQueue.isDispatchThread();
         changeSupport.fireChange();
+        if (disableRecompile) {
+            boolean refresh = !recompileButtonDisabled;
+            recompileButtonDisabled = true;
+            if (refresh) {
+                enableRecompileButton();
+            }
+        }
     }
 
     void enablePanel(boolean enabled) {
@@ -261,16 +271,28 @@ public class OptionsPanel extends JPanel {
         compilerOptionsInfoLabel.setEnabled(enabled);
     }
 
+    @NbBundle.Messages({
+        "OptionsPanel.recompile.error.noWebRoot=No web root is set.",
+        "OptionsPanel.recompile.error.changeDetected=Save and reopen this dialog first.",
+    })
     void enableRecompileButton() {
+        assert EventQueue.isDispatchThread();
         FileObject webRoot = CssPreprocessorUtils.getWebRoot(project);
         if (webRoot == null) {
             recompileButton.setEnabled(false);
+            recompileButton.setToolTipText(Bundle.OptionsPanel_recompile_error_noWebRoot());
+            return;
+        }
+        if (recompileButtonDisabled) {
+            recompileButton.setEnabled(false);
+            recompileButton.setToolTipText(Bundle.OptionsPanel_recompile_error_changeDetected());
             return;
         }
         ValidationResult result = type.getPreferencesValidator()
                 .validateMappings(webRoot, true, mappings)
                 .getResult();
         recompileButton.setEnabled(result.isFaultless());
+        recompileButton.setToolTipText(null);
     }
 
     void enableRemoveButton() {
