@@ -134,28 +134,13 @@ public class ProjectUtilities {
             }
             return true;
         }
-        
+         
         @Override
         public Map<Project,Set<String>> close(final Project[] projects,
                                                     final boolean notifyUI) {
             final Wrapper wr = new Wrapper();
-
             wr.urls4project = new HashMap<Project,Set<String>>();
-            if (SwingUtilities.isEventDispatchThread()) {
-                doClose(projects, notifyUI, wr);
-            } else {
-                try {
-                    SwingUtilities.invokeAndWait(new Runnable() {
-                        @Override
-                         public void run() {
-                             doClose(projects, notifyUI, wr);
-                         }
-                     });
-                }
-                catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            doClose(projects, notifyUI, wr);
             return wr.urls4project;
         }
 
@@ -166,15 +151,11 @@ public class ProjectUtilities {
             }
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
-            WindowManager wm = WindowManager.getDefault();
+            
             ERR.finer("Closing TCs");
-            for (Mode mode : wm.getModes()) {
-                //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
-                if (!wm.isEditorMode(mode)) {
-                    continue;
-                }
-                ERR.log(Level.FINER, "Closing TCs in mode {0}", mode.getName());
-                for (TopComponent tc : wm.getOpenedTopComponents(mode)) {
+            final Set<TopComponent> openedTC = getOpenedTCs();
+            
+            for (TopComponent tc : openedTC) {
                 DataObject dobj = tc.getLookup().lookup(DataObject.class);
 
                 if (dobj != null) {
@@ -204,7 +185,6 @@ public class ProjectUtilities {
                     ERR.log(Level.FINE, "#194243: no DataObject in lookup of {0} of {1}", new Object[] {tc.getName(), tc.getClass()});
                 }
             }
-            }
             if (notifyUI) {
                 for (DataObject dobj : DataObject.getRegistry().getModifiedSet()) {
                     FileObject fobj = dobj.getPrimaryFile();
@@ -218,9 +198,19 @@ public class ProjectUtilities {
             }
             if (!notifyUI ||
                 (!openFiles.isEmpty() && ExitDialog.showDialog(openFiles))) {
-                // close documents
-                for (TopComponent tc : tc2close) {
-                    tc.close();
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        // close documents
+                        for (TopComponent tc : tc2close) {
+                            tc.close();
+                        }
+                    }
+                };
+                if(SwingUtilities.isEventDispatchThread()) {
+                    r.run();
+                } else {
+                    SwingUtilities.invokeLater(r);
                 }
             } else {
                 // signal that close was vetoed
@@ -228,6 +218,34 @@ public class ProjectUtilities {
                     wr.urls4project = null;
                 }
             }
+        }
+
+        private Set<TopComponent> getOpenedTCs() {
+            final Set<TopComponent> openedTC = new HashSet<TopComponent>();
+            Runnable r = new Runnable() {
+                public void run() {
+                    WindowManager wm = WindowManager.getDefault();
+                    for (Mode mode : wm.getModes()) {
+                        //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
+                        if (!wm.isEditorMode(mode)) {
+                            continue;
+                        }
+                        ERR.log(Level.FINER, "Closing TCs in mode {0}", mode.getName());
+                        openedTC.addAll(Arrays.asList(wm.getOpenedTopComponents(mode)));
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            } else {
+                try {
+                    SwingUtilities.invokeAndWait(r);
+                }
+                catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return openedTC;
         }
     };
     
