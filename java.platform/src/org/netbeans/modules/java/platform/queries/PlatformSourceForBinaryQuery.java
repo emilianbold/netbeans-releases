@@ -70,17 +70,17 @@ import org.openide.util.WeakListeners;
 
 /**
  * This implementation of the SourceForBinaryQueryImplementation
- * provides sources for the active platform and project libraries
+ * provides sources for the active platform.
  */
 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=150)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=90)
 public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
-    
+
     private static final String JAR_FILE = "jar:file:";                 //NOI18N
     private static final String RTJAR_PATH = "/jre/lib/rt.jar!/";       //NOI18N
     private static final String SRC_ZIP = "/src.zip";                    //NOI18N
 
-    private Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new HashMap<URL,SourceForBinaryQueryImplementation2.Result>();
+    private Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new HashMap<>();
 
     public PlatformSourceForBinaryQuery () {
     }
@@ -97,7 +97,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             return res;
         }
         final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        final Collection<JavaPlatform> candidates = new ArrayDeque<JavaPlatform>();
+        final Collection<JavaPlatform> candidates = new ArrayDeque<>();
         for (JavaPlatform platform : jpm.getInstalledPlatforms()) {
             if (contains(platform, binaryRoot)) {
                 candidates.add(platform);
@@ -129,7 +129,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         }
         return null;
     }
-    
+
     @Override
     public SourceForBinaryQuery.Result findSourceRoots (URL binaryRoot) {
         return this.findSourceRoots2(binaryRoot);
@@ -145,7 +145,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         }
         return false;
     }
-    
+
     private static final class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
 
         private final JavaPlatformManager jpm;
@@ -153,8 +153,8 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         private final ChangeSupport cs = new ChangeSupport(this);
         //@GuardedBy("this")
         private Map<JavaPlatform,PropertyChangeListener> platforms;
-        
-                        
+
+
         public Result (
             @NonNull final JavaPlatformManager jpm,
             @NonNull final URL artifact,
@@ -165,7 +165,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             this.jpm = jpm;
             this.artifact = artifact;
             synchronized (this) {
-                this.platforms = new LinkedHashMap<JavaPlatform, PropertyChangeListener>();
+                this.platforms = new LinkedHashMap<>();
                 for (JavaPlatform platform : platforms) {
                     final PropertyChangeListener l = WeakListeners.propertyChange(this, platform);
                     platform.addPropertyChangeListener(l);
@@ -174,7 +174,7 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
                 this.jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, this.jpm));
             }
         }
-                        
+
         @Override
         @NonNull
         public FileObject[] getRoots () {       //No need for caching, platforms does.
@@ -187,19 +187,19 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             }
             return new FileObject[0];
         }
-                        
+
         @Override
         public void addChangeListener (@NonNull final ChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
             cs.addChangeListener(listener);
         }
-                        
+
         @Override
         public void removeChangeListener (@NonNull final ChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
             cs.removeChangeListener(listener);
         }
-        
+
         @Override
         public void propertyChange (@NonNull final PropertyChangeEvent event) {
             if (JavaPlatform.PROP_SOURCE_FOLDER.equals(event.getPropertyName())) {
@@ -219,8 +219,8 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
         private synchronized boolean updateCandidates() {
             boolean affected = false;
             final JavaPlatform[] newPlatforms = jpm.getInstalledPlatforms();
-            final Map<JavaPlatform, PropertyChangeListener> oldPlatforms = new HashMap<JavaPlatform,PropertyChangeListener>(platforms);
-            final Map<JavaPlatform, PropertyChangeListener> newState = new LinkedHashMap<JavaPlatform, PropertyChangeListener>(newPlatforms.length);
+            final Map<JavaPlatform, PropertyChangeListener> oldPlatforms = new HashMap<>(platforms);
+            final Map<JavaPlatform, PropertyChangeListener> newState = new LinkedHashMap<>(newPlatforms.length);
             for (JavaPlatform jp : newPlatforms) {
                 PropertyChangeListener l;
                 if ((l=oldPlatforms.remove(jp))!=null) {
@@ -239,33 +239,34 @@ public class PlatformSourceForBinaryQuery implements SourceForBinaryQueryImpleme
             platforms = newState;
             return affected;
         }
-        
+
     }
-    
+
     private static class UnregisteredPlatformResult implements SourceForBinaryQueryImplementation2.Result {
-        
+
         private final FileObject srcRoot;
-        
+
         private UnregisteredPlatformResult (FileObject fo) {
             Parameters.notNull("fo", fo);   //NOI18N
             srcRoot = fo;
         }
-    
+
         @Override
-        public FileObject[] getRoots() {            
+        public FileObject[] getRoots() {
             return srcRoot.isValid() ? new FileObject[] {srcRoot} : new FileObject[0];
         }
-        
+
         @Override
         public void addChangeListener(ChangeListener l) {
             //Not supported, no listening.
         }
-        
+
         @Override
         public void removeChangeListener(ChangeListener l) {
             //Not supported, no listening.
         }
 
+        @Override
         public boolean preferSources() {
             return false;
         }
