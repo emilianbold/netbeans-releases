@@ -46,9 +46,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -75,6 +79,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
@@ -102,7 +107,9 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -127,7 +134,8 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
         private @NullAllowed POMModel model;
         private Project project;
         private final FileChangeListener listener;
-
+        private final PreferenceChangeListener prefListener;
+        
         StatusProviderImpl(Document doc) {
             this.document = doc;
             listener = new FileChangeAdapter() {
@@ -142,6 +150,18 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                     });
                 }
             };
+            prefListener = new PreferenceChangeListener() {
+                @Override
+                public void preferenceChange(PreferenceChangeEvent evt) {
+                    if(EmbedderFactory.PROP_COMMANDLINE_PATH.equals(evt.getKey())) {
+                        // given by the registered mvn client, the pom validation result may change ...
+                        checkHints();
+                    }
+                }
+            };
+            Preferences prefs = NbPreferences.root().node("org/netbeans/modules/maven");
+            prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefListener, prefs));
+            
             RP.post(new Runnable() {
                 @Override
                 public void run() {
@@ -399,7 +419,13 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                 }
             }
         }
-        return problems;
+        List<ModelProblem> toRet = new LinkedList<ModelProblem>();
+        for (ModelProblem problem : problems) {
+            if(ModelUtils.checkByCLIMavenValidationLevel(problem)) {
+                toRet.add(problem);
+            }
+        }
+        return toRet;
     }
     
     public static class ParentPomAnnotation extends Annotation {

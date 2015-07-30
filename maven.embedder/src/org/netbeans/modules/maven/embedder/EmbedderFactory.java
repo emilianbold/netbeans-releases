@@ -76,7 +76,7 @@ import org.openide.util.BaseUtilities;
  */
 public final class EmbedderFactory {
 
-    private static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath";
+    public static final String PROP_COMMANDLINE_PATH = "commandLineMavenPath";
     
     //same prop constant in MavenSettings.java
     static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; 
