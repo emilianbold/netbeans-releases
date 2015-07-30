@@ -415,8 +415,15 @@ public final class LibraryProvider {
             JSONArray filesData = (JSONArray)data.get(PROPERTY_FILES);
             String[] files = new String[filesData.size()];
             for (int i=0; i<files.length; i++) {
-                JSONObject fileData = (JSONObject)filesData.get(i);
-                files[i] = (String)fileData.get(PROPERTY_FILE_NAME);
+                Object fileInfo = filesData.get(i);
+                String fileName;
+                if (fileInfo instanceof JSONObject) {
+                    JSONObject fileData = (JSONObject)fileInfo;
+                    fileName = (String)fileData.get(PROPERTY_FILE_NAME);
+                } else {
+                    fileName = fileInfo.toString();
+                }
+                files[i] = fileName;
             }
             version.setFileInfo(files, null);
 

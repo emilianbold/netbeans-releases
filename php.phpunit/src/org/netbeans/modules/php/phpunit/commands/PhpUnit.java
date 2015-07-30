@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.php.phpunit.commands;
@@ -253,7 +253,7 @@ public final class PhpUnit {
 
     @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo) throws TestRunException {
-        PhpExecutable phpUnit = getExecutable(phpModule, getOutputTitle(runInfo, PhpUnitPreferences.isCustomSuiteEnabled(phpModule)));
+        PhpExecutable phpUnit = getExecutable(phpModule);
         if (phpUnit == null) {
             return null;
         }
@@ -350,10 +350,9 @@ public final class PhpUnit {
         return null;
     }
 
-    @NbBundle.Messages("PhpUnit.fetch.testGroups=PHPUnit (test-groups)")
     @CheckForNull
     private List<String> getTestGroups(PhpModule phpModule) throws TestRunException {
-        PhpExecutable phpUnit = getExecutable(phpModule, Bundle.PhpUnit_fetch_testGroups());
+        PhpExecutable phpUnit = getExecutable(phpModule);
         assert phpUnit != null;
 
         File workingDirectory = getWorkingDirectory(phpModule);
@@ -390,8 +389,12 @@ public final class PhpUnit {
         return null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "PhpUnit.run.title=PHPUnit ({0})",
+    })
     @CheckForNull
-    private PhpExecutable getExecutable(PhpModule phpModule, String title) {
+    private PhpExecutable getExecutable(PhpModule phpModule) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             org.netbeans.modules.php.phpunit.ui.UiUtils.warnNoSources(phpModule.getDisplayName());
@@ -400,7 +403,7 @@ public final class PhpUnit {
 
         return new PhpExecutable(phpUnitPath)
                 .optionsSubcategory(PhpUnitOptionsPanelController.OPTIONS_SUB_PATH)
-                .displayName(title);
+                .displayName(Bundle.PhpUnit_run_title(phpModule.getDisplayName()));
     }
 
     private List<String> createParams(boolean withDefaults) {
@@ -451,44 +454,6 @@ public final class PhpUnit {
             return null;
         }
         return FileUtil.toFile(testDirectory);
-    }
-
-    @NbBundle.Messages({
-        "PhpUnit.run.test.single=PHPUnit (test)",
-        "PhpUnit.run.test.single.custom=PHPUnit (test, custom)",
-        "PhpUnit.run.test.all=PHPUnit (test all)",
-        "PhpUnit.run.test.all.custom=PHPUnit (test all, custom)",
-        "PhpUnit.debug.single=PHPUnit (debug)",
-        "PhpUnit.debug.single.custom=PHPUnit (debug, custom)",
-        "PhpUnit.debug.all=PHPUnit (debug all)",
-        "PhpUnit.debug.all.custom=PHPUnit (debug all, custom)"
-    })
-    private String getOutputTitle(TestRunInfo runInfo, boolean customSuiteEnabled) {
-        boolean allTests = runInfo.allTests();
-        switch (runInfo.getSessionType()) {
-            case TEST:
-                if (allTests && customSuiteEnabled) {
-                    return Bundle.PhpUnit_run_test_all_custom();
-                } else if (allTests) {
-                    return Bundle.PhpUnit_run_test_all();
-                } else if (customSuiteEnabled) {
-                    return Bundle.PhpUnit_run_test_single_custom();
-                }
-                return Bundle.PhpUnit_run_test_single();
-                //break;
-            case DEBUG:
-                if (allTests && customSuiteEnabled) {
-                    return Bundle.PhpUnit_debug_all_custom();
-                } else if (allTests) {
-                    return Bundle.PhpUnit_debug_all();
-                } else if (customSuiteEnabled) {
-                    return Bundle.PhpUnit_debug_single_custom();
-                }
-                return Bundle.PhpUnit_debug_single();
-                //break;
-            default:
-                throw new IllegalStateException("Unknown session type: " + runInfo.getSessionType());
-        }
     }
 
     void cleanupLogFiles() {
