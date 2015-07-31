@@ -75,7 +75,7 @@ public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfig
 
     @Override
     public Component getConfigurationPanel(Context context) {
-        EventQueue.isDispatchThread();
+        assert EventQueue.isDispatchThread();
         if (panel == null) {
             PhpModule phpModule = createTestsSupport.getPhpModule();
             assert phpModule != null;
@@ -86,7 +86,7 @@ public final class CodeceptionTestCreatorConfiguration extends TestCreatorConfig
 
     @Override
     public void persistConfigurationPanel(Context context) {
-        EventQueue.isDispatchThread();
+        assert EventQueue.isDispatchThread();
         context.getProperties().put(TestCreator.GENERATE_COMMAND_PARAM, panel.getSelectedCommand());
         context.getProperties().put(TestCreator.SUITE_PARAM, panel.getSelectedSuite());
     }

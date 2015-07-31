@@ -91,7 +91,7 @@ public final class TestSessionVo {
     }
 
     public String getInitMessage() {
-        // XXX show something?
+        // XXX if there is an initial message, add it here
         return null;
     }
 

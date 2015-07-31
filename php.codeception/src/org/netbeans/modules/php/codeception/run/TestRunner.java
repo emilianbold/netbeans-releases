@@ -105,7 +105,6 @@ public final class TestRunner {
     }
 
     private void processCodeceptionError(Exception cause) throws TestRunException {
-        // XXX
         LOGGER.info(String.format("File %s not found or cannot be parsed. If there are no errors in Codeception output (verify in Output window), "
                 + "please report an issue (http://www.netbeans.org/issues/).", Codecept.XML_LOG));
         throw new TestRunException(cause);

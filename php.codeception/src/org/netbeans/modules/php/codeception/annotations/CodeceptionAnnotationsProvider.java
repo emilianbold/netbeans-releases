@@ -67,7 +67,6 @@ public final class CodeceptionAnnotationsProvider extends AnnotationCompletionTa
 
     @Override
     public List<AnnotationCompletionTag> getFunctionAnnotations() {
-        // XXX
         return Collections.emptyList();
     }
 
