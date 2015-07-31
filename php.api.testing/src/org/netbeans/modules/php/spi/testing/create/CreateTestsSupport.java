@@ -328,7 +328,7 @@ public final class CreateTestsSupport {
 
     @NbBundle.Messages({
         "# {0} - file names",
-        "CreateTestsSupport.failed=Tests were not generated for the following files:\\n\\n{0}\\nReview the log in Output window."
+        "CreateTestsSupport.failed=Tests were not generated for the following files:\n\n{0}\nReview the log in Output window."
     })
     private void showFailures(Set<FileObject> files) {
         if (files.isEmpty()) {
