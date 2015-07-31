@@ -57,6 +57,8 @@ import org.netbeans.modules.diff.PatchAction;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -73,6 +75,9 @@ import org.openide.filesystems.FileObject;
  * @author Maros Sandor
  */
 public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
+    
+    private static final Logger LOG = Logger.getLogger(ProjectMenuItem.class.getName());
+    private static final boolean SYNC_MENU = Boolean.getBoolean("versioning.syncpopupmenu"); //NOI18N
 
     @Override
     public JMenuItem getPopupPresenter() {
@@ -246,68 +251,79 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
         @NbBundle.Messages("LBL_ProjectPopupMenu_Initializing=Initializing...")
         public JPopupMenu getPopupMenu() {
             if (!initialized) {
-                // clear created items
-                super.removeAll();
-                JMenuItem item = new JMenuItem(Bundle.LBL_PopupMenu_Initializing());
-                item.setEnabled(false);
-                add(item);
                 final Node[] nodes = this.nodes;
                 final VersioningSystem owner = this.owner;
-                Utils.postParallel(new Runnable() {
-                    @Override
-                    public void run () {
-                        final Action[] actions;
-                        if (nodes == null) {
-                            return;
-                        }
-                        if (owner == null) {
-                            // default Versioning menu (Import into...)
-                            List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
-                            Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
-                            List<Action> allvsActions = new ArrayList<Action>(50);
-                            for (VersioningSystem vs : vcs) {
-                                if (vs.isLocalHistory()) {
-                                    continue;
-                                }
-                                Action[] vsActions = createVersioningSystemActions(vs, nodes, true);
-                                if (vsActions != null) {
-                                    allvsActions.addAll(Arrays.asList(vsActions));
-                                }
-                            }
-                            actions = allvsActions.toArray(new Action[allvsActions.size()]);
-                        } else {
-                            // specific versioning system menu
-                            actions = createVersioningSystemActions(owner, nodes, false);
-                        }
-                        EventQueue.invokeLater(new Runnable() {
-                            @Override
-                            public void run () {
-                                JPopupMenu popup = getPopupMenu();
-                                boolean display = popup.isVisible();
-                                popup.setVisible(false);
-                                removeAll();
-                                if (isShowing()) {
-                                    addVersioningSystemItems(actions);
-                                    if (owner == null) {
-                                        if (actions != null && actions.length > 0) {
-                                            addSeparator();
-                                            add(createmenuItem(SystemAction.get(PatchAction.class)));
-                                        } else {
+                initialized = true;
+                if (SYNC_MENU) {
+                    Action[] actions = getActions(nodes, owner);
+                    addVersioningSystemItems(actions);
+                    if (owner == null) {
+                        addNoVCSMenu(actions);
+                    }
+                } else {
+                    // clear created items
+                    super.removeAll();
+                    JMenuItem item = new JMenuItem(Bundle.LBL_PopupMenu_Initializing());
+                    item.setEnabled(false);
+                    add(item);
+                    Utils.postParallel(new Runnable() {
+                        @Override
+                        public void run () {
+                            final Action[] actions;
+                            if (nodes == null) {
+                                LOG.log(Level.WARNING, "Null nodes, context menu not showing.");
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run () {
+                                        JPopupMenu popup = getPopupMenu();
+                                        boolean display = popup.isVisible();
+                                        popup.setVisible(false);
+                                        removeAll();
+                                        if (isShowing()) {
                                             JMenuItem item = new JMenuItem();
                                             Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N                                 
                                             item.setEnabled(false);
                                             add(item);
+                                            popup.setVisible(display);
                                         }
                                     }
-                                    popup.setVisible(display);
-                                }
+                                });
+                                return;
                             }
-                        });
-                    }
-                });
-                initialized = true;
+                            actions = getActions(nodes, owner);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    JPopupMenu popup = getPopupMenu();
+                                    boolean display = popup.isVisible();
+                                    popup.setVisible(false);
+                                    removeAll();
+                                    if (isShowing()) {
+                                        addVersioningSystemItems(actions);
+                                        if (owner == null) {
+                                            addNoVCSMenu(actions);
+                                        }
+                                        popup.setVisible(display);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
             }
             return super.getPopupMenu();
+        }
+
+        private void addNoVCSMenu (Action[] actions) throws MissingResourceException {
+            if (actions != null && actions.length > 0) {
+                addSeparator();
+                add(createmenuItem(SystemAction.get(PatchAction.class)));
+            } else {
+                JMenuItem item = new JMenuItem();
+                Mnemonics.setLocalizedText(item, NbBundle.getMessage(VersioningMainMenu.class, "LBL_NoneAvailable"));  // NOI18N
+                item.setEnabled(false);
+                add(item);
+            }
         }
 
         private boolean addVersioningSystemItems (Action[] actions) {
@@ -322,6 +338,30 @@ public class ProjectMenuItem extends AbstractAction implements Presenter.Popup {
                 return true;
             }
             return false;
+        }
+
+        private Action[] getActions (Node[] node, VersioningSystem owner) {
+            Action[] actions;
+            if (owner == null) {
+                // default Versioning menu (Import into...)
+                List<VersioningSystem> vcs = new ArrayList<VersioningSystem>(Arrays.asList(VersioningManager.getInstance().getVersioningSystems()));
+                Collections.sort(vcs, new VersioningMainMenu.ByDisplayNameComparator());
+                List<Action> allvsActions = new ArrayList<Action>(50);
+                for (VersioningSystem vs : vcs) {
+                    if (vs.isLocalHistory()) {
+                        continue;
+                    }
+                    Action[] vsActions = createVersioningSystemActions(vs, nodes, true);
+                    if (vsActions != null) {
+                        allvsActions.addAll(Arrays.asList(vsActions));
+                    }
+                }
+                actions = allvsActions.toArray(new Action[allvsActions.size()]);
+            } else {
+                // specific versioning system menu
+                actions = createVersioningSystemActions(owner, nodes, false);
+            }
+            return actions;
         }
     }
 }
