@@ -80,20 +80,11 @@ public final class TestSuiteVo {
     }
 
     public List<TestCaseVo> getTestCases() {
-        return sanitizedTestCases();
+        return Collections.unmodifiableList(testCases);
     }
 
     public long getTime() {
         return time;
-    }
-
-    private List<TestCaseVo> sanitizedTestCases() {
-        if (!testCases.isEmpty()) {
-            return Collections.unmodifiableList(testCases);
-        }
-        // XXX can't know actual skipped test cases
-        // because they are not logged in xml file
-        return Collections.singletonList(TestCaseVo.skippedTestCase());
     }
 
     @Override
