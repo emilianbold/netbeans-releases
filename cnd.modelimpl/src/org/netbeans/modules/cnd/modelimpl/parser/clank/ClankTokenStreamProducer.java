@@ -778,7 +778,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public CharSequence getText() {
-            return ""; //NOI18N
+            return referencedMacro.getName();
         }
 
         @Override
@@ -838,7 +838,7 @@ public final class ClankTokenStreamProducer extends TokenStreamProducer {
 
         @Override
         public CharSequence getText() {
-            return referencedMacro.getText();
+            return referencedMacro.getName();
         }
 
         @Override
