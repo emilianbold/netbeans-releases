@@ -83,7 +83,8 @@ public final class TestCaseVo {
 
     @NbBundle.Messages("TestCaseVo.tests.no=No valid test cases found.")
     static TestCaseVo skippedTestCase() {
-        // suite with no testcases => create a fake with error message
+        // currently can't know actual skipped test cases
+        // because they are not logged in xml file
         TestCaseVo testCase = new TestCaseVo(null, Bundle.TestCaseVo_tests_no(), null, -1, -1);
         testCase.status = TestCase.Status.SKIPPED;
         return testCase;

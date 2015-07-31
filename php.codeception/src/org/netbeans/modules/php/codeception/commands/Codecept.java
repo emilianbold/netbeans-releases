@@ -90,16 +90,10 @@ public final class Codecept {
 
     public enum GenerateCommand {
 
-        // XXX remove unused commands?
+        // test commands
         Cept("cept"), // NOI18N
         Cest("cest"), // NOI18N
-        Group("group"), // NOI18N
-        Helper("helper"), // NOI18N
-        Pageobject("pageobject"), // NOI18N
         Phpunit("phpunit"), // NOI18N
-        Scenarios("scenarios"), // NOI18N
-        Stepobject("stepobject"), // NOI18N
-        Suite("suite"), // NOI18N
         Test("test"); // NOI18N
 
         private final String command;
@@ -253,8 +247,7 @@ public final class Codecept {
             return null;
         }
 
-        // XXX allow a working directory other than source directory?
-        // XXX RE: we perhaps prefer project directory...
+        // allow only the project directory
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
             // broken project
@@ -667,7 +660,7 @@ public final class Codecept {
 
     private static final class GenerateTestOutputFactory implements ExecutionDescriptor.InputProcessorFactory2 {
 
-        // XXX improve patterns?
+        // we have to fix these patterns if output messages are changed in Codeception
         private static final Pattern CREATED_FILE_PATTERN = Pattern.compile("Test was created in (?<file>.+\\.php)"); // NOI18N
         private static final Pattern EXISTS_FILE_PATTERN = Pattern.compile("Test (?<file>.+\\.php) already exists"); // NOI18N
 

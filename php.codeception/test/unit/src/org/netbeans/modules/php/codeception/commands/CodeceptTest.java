@@ -50,7 +50,7 @@ public class CodeceptTest extends NbTestCase {
         super(name);
     }
 
-    // XXX the same tests as php.phpunit
+    // the same tests as php.phpunit
     public void testLinePatternTestRunner() {
         Matcher matcher = Codecept.LINE_PATTERN.matcher("/home/gapon/test/Calculator.php:635");
         assertTrue(matcher.matches());
