@@ -294,7 +294,8 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         if (cache == null || recheck) {
             if (enabled) {
                     try {
-                        cache = RequestProcessor.getDefault().submit(new Callable<Properties>() {
+                        RequestProcessor rp = new RequestProcessor("Checkstyle cache" , 1);
+                        cache = rp.submit(new Callable<Properties>() {
                                 @Override
                                 public Properties call() throws Exception {
                                     return convert();
