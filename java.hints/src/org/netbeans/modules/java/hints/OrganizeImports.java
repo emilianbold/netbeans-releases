@@ -133,7 +133,7 @@ public class OrganizeImports {
             int offset = diffs.get(0).getStartPosition().getOffset();
             CompilationUnitTree cu = context.getInfo().getCompilationUnit();
             for (ImportTree imp : cu.getImports()) {
-                if (sp.getStartPosition(cu, imp) >= offset)
+                if (sp.getEndPosition(cu, imp) >= offset)
                     return ErrorDescriptionFactory.forTree(context, imp, NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix); //NOI18N
             }
             return ErrorDescriptionFactory.forTree(context, context.getInfo().getCompilationUnit().getImports().get(0), NbBundle.getMessage(OrganizeImports.class, "MSG_OragnizeImports"), fix); //NOI18N

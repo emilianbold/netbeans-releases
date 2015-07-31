@@ -76,12 +76,19 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.ArtifactUtils;
+import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
+import org.apache.maven.model.DistributionManagement;
 import org.apache.maven.model.Profile;
+import org.apache.maven.model.Relocation;
+import org.apache.maven.model.building.ModelBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuildingException;
+import org.apache.maven.project.ProjectBuildingRequest;
+import org.apache.maven.project.ProjectBuildingResult;
 import org.codehaus.plexus.util.FileUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -105,6 +112,9 @@ import org.netbeans.modules.maven.embedder.DependencyTreeFactory;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.QueryField;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Exclusion;
@@ -134,6 +144,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -957,6 +968,21 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                             }
                         }
                         if (dep == null) {
+                            // relocation maybe?
+                            List<org.netbeans.modules.maven.model.pom.Dependency> deps = model.getProject().getDependencies();
+                            for (org.netbeans.modules.maven.model.pom.Dependency d : deps) {
+                                Relocation rel = getRelocation(d);
+                                if(rel != null && 
+                                   rel.getArtifactId().equals(directArt.getArtifactId()) &&
+                                   rel.getGroupId().equals(directArt.getGroupId()) &&
+                                   rel.getVersion().equals(directArt.getVersion())) 
+                                {
+                                    dep = d;
+                                    break;    
+                                }
+                            }                            
+                        }                        
+                        if (dep == null) {
                             dep = model.getFactory().createDependency();
                             dep.setGroupId(directArt.getGroupId());
                             dep.setArtifactId(directArt.getArtifactId());
@@ -981,6 +1007,33 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
         }
     }
+    
+    private Relocation getRelocation(org.netbeans.modules.maven.model.pom.Dependency d) {
+        ProjectBuildingRequest dpbr = EmbedderFactory.getProjectEmbedder().createMavenExecutionRequest().getProjectBuildingRequest();
+        dpbr.setValidationLevel(ModelBuildingRequest.VALIDATION_LEVEL_MINIMAL);
+        dpbr.setProcessPlugins(false);
+        dpbr.setResolveDependencies(false);
+        ArrayList<ArtifactRepository> remoteRepos = new ArrayList<>();
+        dpbr.setRemoteRepositories(remoteRepos);
+        String groupId = d.getGroupId();
+        String artifactId = d.getArtifactId();
+        String version = d.getVersion();
+        if(groupId != null && !"".equals(groupId.trim()) &&
+           artifactId != null && !"".equals(artifactId.trim()) &&
+           version != null && !"".equals(version.trim())) 
+        {           
+            MavenEmbedder embedder = EmbedderFactory.getProjectEmbedder();
+            Artifact a = embedder.createProjectArtifact(groupId, artifactId, version);
+            try {
+                ProjectBuildingResult r = embedder.buildProject(a, dpbr);
+                DistributionManagement dm = r.getProject().getDistributionManagement();
+                return dm != null ? dm.getRelocation() : null;
+            } catch (ProjectBuildingException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }    
     
     private static Action DOWNLOAD_JAVADOC_ACTION = new DownloadJavadocSrcAction(true);
     private static Action DOWNLOAD_SOURCE_ACTION = new DownloadJavadocSrcAction(false);
