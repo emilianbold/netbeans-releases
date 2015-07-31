@@ -1761,6 +1761,17 @@ public class Utilities {
                 break;
             }
             switch (t.getKind()) {
+                case VARIABLE: {
+                    // the declaration is omitted so that the name will not clash
+                    // with existing names in the source
+                    // PENDING: what if tested expression is the initializer and
+                    // invalid typecast makes the value not assignable to the variable ?
+                    VariableTree vt = (VariableTree)t;
+                    if (vt.getInitializer() == previous) {
+                        breakPrev = true;
+                    }
+                    break;
+                }
                 case CONDITIONAL_EXPRESSION: {
                     // if the tree is the condition part, then we're done and the result is a boolean.
                     ConditionalExpressionTree ctree = (ConditionalExpressionTree)t;
@@ -1838,7 +1849,7 @@ public class Utilities {
         if (stPath == null) {
             return false;
         }
-        
+
         int baseIndex = (int)sp.getStartPosition(ci.getCompilationUnit(), exp.getLeaf());
         if (baseIndex < 0) {
             return false;
