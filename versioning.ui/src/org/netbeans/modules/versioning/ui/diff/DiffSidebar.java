@@ -1015,15 +1015,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         File tempFolder = getTempFolder();
         FileObject tempFileObj = null;
 
-        Collection<File> originalFiles = null;
-        DiffFileEncodingQueryImpl encodinqQuery = null;
         try {            
-            originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
+            Collection<File> originalFiles = checkoutOriginalFiles(filesToCheckout, tempFolder, vs);
 
-            encodinqQuery = Lookup.getDefault().lookup(DiffFileEncodingQueryImpl.class);
             Charset encoding = FileEncodingQuery.getEncoding(fileObject);
-            if(encodinqQuery != null) {
-                encodinqQuery.associateEncoding(encoding, originalFiles);
+            for (File f : originalFiles) {
+                org.netbeans.modules.versioning.util.Utils.associateEncoding(f, encoding);
             }
             File tempFile = new File(tempFolder, fileObject.getNameExt());
             tempFileObj = FileUtil.toFileObject(tempFile);     //can be null
@@ -1032,9 +1029,6 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             // let providers raise errors when they feel appropriate
             return null;
         } finally {
-            if ((originalFiles != null) && (encodinqQuery != null)) {
-                encodinqQuery.resetEncodingForFiles(originalFiles);
-            }
             deleteTempFolder(tempFolder, tempFileObj);
         }
     }
