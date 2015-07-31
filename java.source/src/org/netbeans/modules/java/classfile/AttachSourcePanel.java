@@ -38,13 +38,33 @@
 
 package org.netbeans.modules.java.classfile;
 
+import com.sun.source.util.TreePath;
 import java.net.URL;
+import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.lang.model.element.Element;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.editor.document.EditorDocumentUtils;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.progress.BaseProgressUtils;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -52,6 +72,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -139,8 +160,11 @@ private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_at
                                             final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
                                             final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
                                             if (ec != null && open != null) {
+                                                final ElementHandle activeElement = findElement(fileFo);
                                                 ec.close();
-                                                open.open();
+                                                if (activeElement == null || !UiUtils.open(newFileFo, activeElement)) {
+                                                    open.open();
+                                                }
                                                 success = true;
                                             }
                                         } catch (DataObjectNotFoundException ex) {
@@ -172,6 +196,65 @@ private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_at
         });
 }//GEN-LAST:event_attachSources
 
+    @CheckForNull
+    private ElementHandle<?> findElement(@NonNull final FileObject expectedFile) {
+        final AtomicReference<ElementHandle<?>> res = new AtomicReference<>();
+        JTextComponent editor = EditorRegistry.lastFocusedComponent();
+        final int pos = editor.getCaret().getDot() + 1;
+        final FileObject activeFile = EditorDocumentUtils.getFileObject(editor.getDocument());
+        if (expectedFile.equals(activeFile)) {
+            final Source src = Source.create(expectedFile);
+            if (src != null) {
+                final AtomicBoolean cancel = new AtomicBoolean();
+                BaseProgressUtils.runOffEventDispatchThread(
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                ParserManager.parse(
+                                    Collections.singleton(src),
+                                    new UserTask() {
+                                        @Override
+                                        public void run(ResultIterator resultIterator) throws Exception {
+                                            if (cancel.get()) {
+                                                return;
+                                            }
+                                            Parser.Result result = resultIterator.getParserResult();
+                                            final CompilationController cc = result == null ? null : CompilationController.get(result);
+                                            if (cc != null) {
+                                                cc.toPhase(Phase.ELEMENTS_RESOLVED);
+                                                if (cancel.get()) {
+                                                    return;
+                                                }
+                                                TreePath path = cc.getTreeUtilities().pathFor(pos);
+                                                Element e;
+                                                for (e = cc.getTrees().getElement(path); e == null; e = cc.getTrees().getElement(path)) {
+                                                    path = path.getParentPath();
+                                                    if (path == null) {
+                                                        break;
+                                                    }
+                                                    if (cancel.get()) {
+                                                        return;
+                                                    }
+                                                }
+                                                if (e != null) {
+                                                    res.set(ElementHandle.create(e));
+                                                }
+                                            }
+                                        }
+                                    });
+                            } catch (ParseException e) {
+                                //pass
+                            }
+                        }
+                    },
+                    NbBundle.getMessage(AttachSourcePanel.class, "TXT_OpenAttachedSource"),
+                    cancel,
+                    false);
+            }
+        }
+        return res.get();
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;

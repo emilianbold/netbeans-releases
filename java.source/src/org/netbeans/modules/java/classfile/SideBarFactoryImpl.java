@@ -77,14 +77,10 @@ public class SideBarFactoryImpl implements SideBarFactory {
         }
 
         if (classFileRoot instanceof URL && binaryName instanceof String) {
-            try {
-                return new AttachSourcePanel(
-                    (URL) classFileRoot,
-                    originFile.getURL(),
-                    (String) binaryName);
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            return new AttachSourcePanel(
+                (URL) classFileRoot,
+                originFile.toURL(),
+                (String) binaryName);
         }
         return null;
     }
