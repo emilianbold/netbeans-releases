@@ -1,4 +1,4 @@
-${origin}/iz164017.cpp:6:9: warning:  macro redefined
+${origin}/iz164017.cpp:6:9: warning: 'CC_VISIBILITY' macro redefined
 #define CC_VISIBILITY private
         ^
 ${origin}/iz164017.cpp:3:9: note: previous definition is here
