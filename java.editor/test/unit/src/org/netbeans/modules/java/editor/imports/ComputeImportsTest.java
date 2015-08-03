@@ -346,7 +346,7 @@ public class ComputeImportsTest extends NbTestCase {
         
         Document doc = ec.openDocument();
         
-        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = new ComputeImports().computeCandidates(info);
+        Pair<Map<String, List<Element>>, Map<String, List<Element>>> candidates = new ComputeImports(info).computeCandidates();
         
         dump(getLog(getName() + "-unfiltered.ref"), candidates.b, IGNORE_CLASSES);
         dump(getLog(getName() + "-filtered.ref"), candidates.a, IGNORE_CLASSES);
