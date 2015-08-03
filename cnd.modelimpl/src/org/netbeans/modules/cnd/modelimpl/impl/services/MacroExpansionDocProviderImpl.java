@@ -646,6 +646,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             skipIndent = true;
                         }
                     }
+                    skipIndent = fileToken.getType() == APTTokenTypes.SEMICOLON;
                     if (!skipIndent) {
                         if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
                             expandedToken.append(' '); // NOI18N
@@ -1585,7 +1586,7 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         }
 
         private void init(APTToken fileToken) {
-            shift = fileToken.getColumn();
+            shift = 0;
             indent = 0;
         }
 
@@ -1630,6 +1631,15 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
         private final class TokenBasedFormatter implements Engine {
             public Pair<? extends CharSequence, ? extends CharSequence> process(APTToken fileToken, MyTokenSequence fileTS) {
                 // Do simplified reformatting
+                boolean isMacroExpansionView = false;
+                final String macroViewClass = "org.netbeans.modules.cnd.navigation.macroview.impl.services.MacroExpansionViewProviderImpl"; // NOI18N
+                for (StackTraceElement stackElement : Thread.currentThread().getStackTrace()) {
+                    if (stackElement.getClassName().startsWith(macroViewClass)) {
+                        isMacroExpansionView = true;
+                        break;
+                    }
+                }
+                shift = isMacroExpansionView ? fileTS.file.getLineColumn(fileToken.getOffset())[1] : 0;
                 switch (fileToken.getType()) {
                     case APTTokenTypes.LCURLY: // {
                     {
