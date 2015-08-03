@@ -282,7 +282,9 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="clean-android" depends="check-android-template" if="android.generated.exists">
-        <ant dir="platforms/android" target="clean"/>
+        <exec executable="./gradlew" dir="platforms/android">
+            <arg value="clean" />
+        </exec>
     </target>
     
     <target name="clean-ios" depends="check-ios-template" if="ios.generated.exists">

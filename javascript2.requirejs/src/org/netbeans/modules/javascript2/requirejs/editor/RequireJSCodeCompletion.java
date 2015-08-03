@@ -242,7 +242,8 @@ public class RequireJSCodeCompletion implements CompletionProvider {
                 List<CompletionProposal> result = new ArrayList();
                 Map<String, FSCompletionItem> ccItems  = new HashMap<>();
                 try {
-                    List<CompletionProposal> tmpResult = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, true, new FSCompletionUtils.JSIncludesFilter(fo));
+                    boolean addPrefix = !isClientCode(project, fo);
+                    List<CompletionProposal> tmpResult = FSCompletionUtils.computeRelativeItems(relativeTo, writtenPath, ccContext.getCaretOffset(), addExtensionInCC, addPrefix, new FSCompletionUtils.JSIncludesFilter(fo));
                     handleFileNameDuplicityInCC(tmpResult, ccItems, result);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -366,6 +367,28 @@ public class RequireJSCodeCompletion implements CompletionProvider {
             return ((SimpleHandle.DocumentationHandle)element).getDocumentation();
         }
         return null;
+    }
+    
+    private static String HTML_TEXT = "html";
+    private static String CLIENT_TEXT = "client";
+    
+    /**
+     * The implementation of this method is a hack. Needs to be done properly. 
+     * We should be able to recognized, whether the edited source is targeted 
+     * to be on client or server. 
+     * @param project
+     * @param source
+     * @return 
+     */
+    private boolean isClientCode(Project project, FileObject source) {
+        boolean result = false;
+        String path = source.getPath();
+        if (FileUtil.isParentOf(project.getProjectDirectory(), source)) {
+            path = path.substring(project.getProjectDirectory().getPath().length());
+        }
+        path = path.toLowerCase();
+        result = path.contains(HTML_TEXT) || path.contains(CLIENT_TEXT);
+        return result;
     }
 
 }

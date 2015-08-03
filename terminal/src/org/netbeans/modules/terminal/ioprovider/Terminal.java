@@ -77,6 +77,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.Icon;
@@ -449,8 +450,18 @@ public final class Terminal extends JComponent {
 
 	};
         term.getScreen().addMouseListener(mouseAdapter);
-	
-	term.getScreen().addMouseWheelListener(new MouseWheelListener() {
+
+        term.getScreen().getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Point p = getPopupPosition();
+                postPopupMenu(p);
+            }
+        }
+        );
+
+        term.getScreen().addMouseWheelListener(new MouseWheelListener() {
 
 	    @Override
 	    public void mouseWheelMoved(final MouseWheelEvent e) {
@@ -974,6 +985,12 @@ public final class Terminal extends JComponent {
 	comp.setActionMap(newActionMap);
 	comp.setInputMap(JComponent.WHEN_FOCUSED, newInputMap);
         term.setKeyStrokeSet((HashSet) passKeystrokes);
+    }
+
+    private Point getPopupPosition() {
+        final int offset = 25;
+
+        return new Point(offset, offset);
     }
 
     private void postPopupMenu(Point p) {
