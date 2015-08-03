@@ -274,6 +274,9 @@ public final class Utilities {
 
         if (include != null && !include.isEmpty()) {
             for (String entry : include) {
+                if (s.endsWith(".") && entry.startsWith(s)) {
+                    return false;
+                }
                 if ((entry.endsWith("*") && entry.length() - 1 <= s.length()
                         && s.startsWith(entry.substring(0, entry.length() - 1)))
                         || s.equals(entry)) {
