@@ -95,6 +95,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -117,7 +118,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ProfilesAnalyzer implements Analyzer {
 
     private static final String ICON = "org/netbeans/modules/java/j2seprofiles/resources/profile.png"; //NOI18N
-    
+
     private final Context context;
     private final Result result;
     private final AtomicBoolean canceled = new AtomicBoolean();
@@ -177,31 +178,39 @@ public class ProfilesAnalyzer implements Analyzer {
         final Scope scope = context.getScope();
         final Set<FileObject> roots = new HashSet<>();
         final Set<FileObject> completeRoots = scope.getSourceRoots();
-        final Map<FileObject, Pair<Set<FileObject>,Set<FileObject>>> filter = new HashMap<>();
+        final Map<FileObject, Filter.Builder> filters = new HashMap<>();
         roots.addAll(completeRoots);
         for (NonRecursiveFolder nrf : scope.getFolders()) {
-            final FileObject f = nrf.getFolder();
-            final FileObject ownerRoot = findOwnerRoot(f);
+            final FileObject ownerRoot = findOwnerRoot(nrf.getFolder());
             if (ownerRoot != null && !completeRoots.contains(ownerRoot)) {
                 roots.add(ownerRoot);
-                Pair<Set<FileObject>,Set<FileObject>> filterForRoot = filter.get(ownerRoot);
+                Filter.Builder filterForRoot = filters.get(ownerRoot);
                 if (filterForRoot == null) {
-                    filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
-                    filter.put(ownerRoot, filterForRoot);
+                    filterForRoot = new Filter.Builder();
+                    filters.put(ownerRoot, filterForRoot);
                 }
-                filterForRoot.first().add(f);
+                filterForRoot.addNonRecursiveFolder(nrf);
             }
         }
         for (FileObject f : scope.getFiles()) {
-            final FileObject ownerRoot = findOwnerRoot(f);
-            if (ownerRoot != null && !completeRoots.contains(ownerRoot)) {
-                roots.add(ownerRoot);
-                Pair<Set<FileObject>,Set<FileObject>> filterForRoot = filter.get(ownerRoot);
-                if (filterForRoot == null) {
-                    filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
-                    filter.put(ownerRoot, filterForRoot);
+            Collection<FileObject> ownerRoots = asCollection(findOwnerRoot(f));
+            if (ownerRoots.isEmpty()) {
+                ownerRoots = findOwnedRoots(f);
+            }
+            for (FileObject ownerRoot : ownerRoots) {
+                if (!completeRoots.contains(ownerRoot)) {
+                    roots.add(ownerRoot);
+                    Filter.Builder filterForRoot = filters.get(ownerRoot);
+                    if (filterForRoot == null) {
+                        filterForRoot = new Filter.Builder();
+                        filters.put(ownerRoot, filterForRoot);
+                    }
+                    if (f.isFolder()) {
+                        filterForRoot.addFolder(f);
+                    } else if (f.isData()) {
+                        filterForRoot.addFile(f);
+                    }
                 }
-                filterForRoot.second().add(f);
             }
         }
         final ProfileProvider pp = new ProfileProvider(context);
@@ -236,7 +245,7 @@ public class ProfilesAnalyzer implements Analyzer {
                         ProfileSupport.Validation.SOURCES),
                     new CollectorFactory(vp, profile, canceled));
                 verifySubProjects(projectRefs, owner, profile, result);
-            }            
+            }
         }
         if (!canceled.get()) {
             context.start(submittedBinaries.size() + submittedSources.size());
@@ -270,7 +279,8 @@ public class ProfilesAnalyzer implements Analyzer {
                         verifyBinaryRoot(root, violations, projects, result);
                     } else {
                         //Source roots
-                        verifySourceRoot(root, filter, violations, result);
+                        final Filter.Builder filter = filters.get(root);
+                        verifySourceRoot(root, filter == null ? null : filter.build(), violations, result);
                     }
                     context.progress(++count);
                 } catch (InterruptedException ex) {
@@ -280,7 +290,7 @@ public class ProfilesAnalyzer implements Analyzer {
                 }
             }
             context.finish();
-        }        
+        }
     }
 
     @Override
@@ -376,7 +386,7 @@ public class ProfilesAnalyzer implements Analyzer {
 
     private static void verifySourceRoot(
             @NonNull final FileObject root,
-            @NonNull final Map<? extends FileObject,Pair<Set<FileObject>,Set<FileObject>>> filter,
+            @NullAllowed final Filter filter,
             @NonNull final Collection<? extends ProfileSupport.Violation> violations,
             @NonNull final Result result) {
         try {
@@ -385,7 +395,7 @@ public class ProfilesAnalyzer implements Analyzer {
                 new HashMap<>();
             final JavaSource js = JavaSource.create(
                 cpInfo,
-                violationsToFileObjects(violations, filter.get(root), violationsByFiles));
+                violationsToFileObjects(violations, filter, violationsByFiles));
             if (js != null) {
                 js.runUserActionTask(
                     new Task<CompilationController>(){
@@ -412,12 +422,32 @@ public class ProfilesAnalyzer implements Analyzer {
         }
     }
 
+    @NonNull
+    private Collection<FileObject> asCollection(@NullAllowed final FileObject file) {
+        return file == null ?
+            Collections.<FileObject>emptySet() :
+            Collections.singleton(file);
+    }
 
-    
+
     @CheckForNull
     private static FileObject findOwnerRoot(@NonNull final FileObject file) {
         final ClassPath sourcePath = ClassPath.getClassPath(file, ClassPath.SOURCE);
         return sourcePath == null ? null : sourcePath.findOwnerRoot(file);
+    }
+
+    @NonNull
+    private static Collection<FileObject> findOwnedRoots(@NonNull final FileObject file) {
+        final Project p = FileOwnerQuery.getOwner(file);
+        if (p == null || !file.equals(p.getProjectDirectory())) {
+            return Collections.emptySet();
+        }
+        final Sources sources = ProjectUtils.getSources(p);
+        final Collection<FileObject> res = new ArrayList<>();
+        for (SourceGroup grp : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            res.add(grp.getRootFolder());
+        }
+        return res;
     }
 
     @NonNull
@@ -473,7 +503,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
                         }
                     }
                 }
-                
+
                 if (alreadyProcessed == null) {
                     res.offer(url);
                 } else {
@@ -484,9 +514,9 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
                         projects = new HashSet<>();
                         alreadyProcessed.put(key, projects);
                         res.offer(url);
-                    }                    
+                    }
                     projects.add(owner);
-                }               
+                }
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -496,7 +526,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
 
     private static FileObject[] violationsToFileObjects(
             @NonNull final Collection<? extends ProfileSupport.Violation> violations,
-            @NullAllowed final Pair<Set<FileObject>,Set<FileObject>> filter,
+            @NullAllowed final Filter filter,
             @NullAllowed final Map<FileObject,Collection<ProfileSupport.Violation>> violationsByFiles) {
         final Collection<FileObject> fos = new HashSet<>(violations.size());
         for (ProfileSupport.Violation v : violations) {
@@ -521,22 +551,10 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
 
     private static boolean shouldProcessViolationsInSource(
             @NullAllowed final FileObject source,
-            @NullAllowed final Pair<Set<FileObject>,Set<FileObject>> filter) {
-        if (source == null) {
-            return false;
-        }
-        if (filter == null) {
-            return true;
-        }
-        if (filter.second().contains(source)) {
-            return true;
-        }
-        for (FileObject folder : filter.first()) {
-            if (folder.equals(source.getParent())) {
-                return true;
-            }            
-        }
-        return false;
+            @NullAllowed final Filter filter) {
+        return filter == null ?
+                true :
+                filter.accept(source);
     }
 
     private static final class ProfileProvider {
@@ -594,7 +612,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         @Override
         public boolean isCancelled() {
             return canceled.get();
-        }        
+        }
 
         private void addViolations(
                 @NonNull final URI root,
@@ -647,7 +665,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         private final Trees trees;
         private final Result errors;
         private final Map<String,ProfileSupport.Violation> violationsByBinNames =
-                new HashMap<>();        
+                new HashMap<>();
 
         FindPosScanner(
                 @NonNull final FileObject target,
@@ -706,7 +724,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
                     final Name binName = elements.getBinaryName((TypeElement)e);
                     final ProfileSupport.Violation v = violationsByBinNames.get(binName.toString());
                     if (v != null) {
-                        final SourcePositions sp = trees.getSourcePositions();                        
+                        final SourcePositions sp = trees.getSourcePositions();
                         final int start = (int) sp.getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
                         final int end = (int) sp.getEndPosition(tp.getCompilationUnit(), tp.getLeaf());
                         final SourceLevelQuery.Profile requiredProfile = v.getRequiredProfile();
@@ -735,7 +753,7 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         public Factory() {
             super("jdk-profiles", Bundle.NAME_JdkProfiles(), ICON);
         }
-        
+
         @Override
         public Analyzer createAnalyzer(
                 @NonNull final Context context,
@@ -760,4 +778,69 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         }
     }
 
+    private static interface Filter {
+
+        public boolean accept(@NullAllowed FileObject fo);
+
+        static final class Builder {
+
+            private final Set<FileObject> folders;
+            private final Set<FileObject> nonRecursiveFolders;
+            private final Set<FileObject> files;
+
+            Builder() {
+                this.folders = new HashSet<>();
+                this.nonRecursiveFolders = new HashSet<>();
+                this.files = new HashSet<>();
+            }
+
+            @NonNull
+            Builder addFolder(@NonNull final FileObject folder) {
+                assert folder.isFolder();
+                this.folders.add(folder);
+                return this;
+            }
+
+            @NonNull
+            Builder addNonRecursiveFolder(@NonNull final NonRecursiveFolder nonRecursiveFolder) {
+                final FileObject folder = nonRecursiveFolder.getFolder();
+                assert folder.isFolder();
+                this.nonRecursiveFolders.add(folder);
+                return this;
+            }
+
+            @NonNull
+            Builder addFile(@NonNull final FileObject file) {
+                assert file.isData();
+                this.files.add(file);
+                return this;
+            }
+
+            @NonNull
+            public Filter build() {
+                return new Filter() {
+                    @Override
+                    public boolean accept(@NullAllowed final FileObject fo) {
+                        if (fo == null) {
+                            return false;
+                        }
+                        if (files.contains(fo)) {
+                            return true;
+                        }
+                        for (FileObject folder : nonRecursiveFolders) {
+                            if (folder.equals(fo.getParent())) {
+                                return true;
+                            }
+                        }
+                        for (FileObject folder : folders) {
+                            if (FileUtil.isParentOf(folder, fo)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                };
+            }
+        }
+    }
 }
