@@ -228,10 +228,10 @@ public final class EarProjectGenerator {
         }
         String libraryName = null;
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
-            libraryName = AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_6;
+            libraryName = AntProjectConstants.ENDORSED_LIBRARY_NAME_6;
         }
         if (j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            libraryName = AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH_7;
+            libraryName = AntProjectConstants.ENDORSED_LIBRARY_NAME_7;
         }
         if (libraryName != null) {
             if (rh.getProjectLibraryManager().getLibrary(libraryName) == null) { // NOI18N
