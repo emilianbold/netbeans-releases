@@ -5289,8 +5289,8 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     public Boolean call() throws Exception {
                         boolean success = false;
                         final long tmStart = System.currentTimeMillis();
-                        final LinkedHashMap<BinaryIndexerFactory, Context> contexts = new LinkedHashMap<>();
-                        final BitSet startedIndexers = new BitSet(contexts.size());
+                        final LinkedHashMap<BinaryIndexerFactory, Context> contexts = new LinkedHashMap<>(binaryIndexers.bifs.size());
+                        final BitSet startedIndexers = new BitSet(binaryIndexers.bifs.size());
                         LogContext lctx = getLogContext();
                         if (lctx != null) {
                             lctx.noteRootScanning(root, false);
