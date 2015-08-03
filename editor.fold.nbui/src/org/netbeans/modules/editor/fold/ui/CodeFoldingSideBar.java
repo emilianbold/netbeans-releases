@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.fold.ui;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -369,18 +370,24 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
      * Resolves background color. Must be called after getColoring(), satisfied in updateColors.
      * @return 
      */
-    private Color resolveBackColor() {
+    private Color resolveBackColor(boolean fallback) {
         AttributeSet attr = specificAttrs;
         Color x = (Color)attr.getAttribute(StyleConstants.ColorConstants.Background);
         if (x == null) {
-            x = getParent().getBackground();
+            Container c = getParent();
+            if (c != null) {
+                x = c.getBackground();
+            } else if (fallback) {
+                // fallback in case of inherited color and uninitialized parent
+                return getColoring().getBackColor();
+            }
         }
         return x;
     }
 
     private void updateColors() {
         Coloring c = getColoring();
-        this.backColor = resolveBackColor();
+        this.backColor = resolveBackColor(false); // avoid caching fallback value
         this.foreColor = c.getForeColor();
         this.font = c.getFont();
     }
@@ -393,6 +400,10 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
     protected Color getBackColor() {
         if (backColor == null) {
             updateColors();
+            // avoid caching the color if the parent was not yet properly set
+            if (backColor == null) {
+                return getColoring().getBackColor();
+            }
         }
         return backColor;
     }
@@ -1019,7 +1030,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         visibleMarks.clear();
         
         Coloring coloring = getColoring();
-        g.setColor(resolveBackColor());
+        g.setColor(resolveBackColor(true));
         g.fillRect(clip.x, clip.y, clip.width, clip.height);
         g.setColor(coloring.getForeColor());
 
