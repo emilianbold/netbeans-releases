@@ -61,6 +61,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.Artifact;
@@ -365,7 +366,12 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                                    @Override
                                    public ProjectProblemsProvider.Result call() throws Exception {
                                        if (action != null) {
-                                           action.actionPerformed(null);
+                                            SwingUtilities.invokeAndWait(new Runnable() {
+                                                @Override
+                                                public void run() {
+                                                    action.actionPerformed(null);
+                                                }
+                                            });
                                            String text = (String) action.getValue(ACT_START_MESSAGE);
                                            if (text != null) {
                                                return ProjectProblemsProvider.Result.create(Status.RESOLVED, text);
