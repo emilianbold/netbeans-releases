@@ -31,18 +31,28 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.tree.JCTree;
 import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -99,6 +109,90 @@ class AssignComments extends TreeScanner<Void, Void> {
         this.positions = positions;
     }
 
+    /**
+     * If != -1, provides an upper limit for preceding comments. Used in infix and postfix trees,
+     * where the child should be assigned comments first; the parent might grab comments only from the
+     * start of the leftmost child.
+     */
+    private int limit = -1;
+    
+    /**
+     * Infix and Postfix children are traversed recursively; in order to avoid depth^2 traversal, remember
+     * each found limit position
+     */
+    private final Map<Tree, Integer>  limitCache = new HashMap<>();
+
+    private int setupLimit(Tree t) {
+        int pos = ((JCTree)t).pos;
+        Tree child;
+        switch (t.getKind()) {
+            // assignment
+            case ASSIGNMENT: 
+                child = ((AssignmentTree)t).getVariable();
+                break;
+            
+            // compound assignment
+            case AND_ASSIGNMENT:
+            case DIVIDE_ASSIGNMENT:
+            case LEFT_SHIFT_ASSIGNMENT:
+            case MINUS_ASSIGNMENT:
+            case MULTIPLY_ASSIGNMENT:
+            case OR_ASSIGNMENT:
+            case PLUS_ASSIGNMENT:
+            case REMAINDER_ASSIGNMENT:
+            case RIGHT_SHIFT_ASSIGNMENT:
+            case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                child = ((CompoundAssignmentTree)t).getVariable();
+                break;
+                
+            // binary ops
+            case AND:
+            case CONDITIONAL_AND: case CONDITIONAL_OR:
+            case DIVIDE:
+            case EQUAL_TO: case GREATER_THAN: case GREATER_THAN_EQUAL:
+            case LEFT_SHIFT: case LESS_THAN: case LESS_THAN_EQUAL:
+            case MINUS: case MULTIPLY:
+            case NOT_EQUAL_TO: case OR:
+            case PLUS: case REMAINDER: case RIGHT_SHIFT:
+            case UNSIGNED_RIGHT_SHIFT:
+                child = ((BinaryTree)t).getLeftOperand();
+                break;
+                
+            case INSTANCE_OF:
+                child = ((InstanceOfTree)t).getExpression();
+                break;
+            
+            // unary - postfix
+            
+            case POSTFIX_DECREMENT: case POSTFIX_INCREMENT:
+                child = ((UnaryTree)t).getExpression();
+                break;
+                
+            // ternary
+            case CONDITIONAL_EXPRESSION:
+                child = ((ConditionalExpressionTree)t).getCondition();
+                break;
+                
+            case MEMBER_SELECT:
+                child = ((MemberSelectTree)t).getExpression();
+                break;
+                
+            default:
+                return pos;
+        }
+        if (child != null) {
+            Integer x = limitCache.get(t);
+            if (x != null) {
+                return x;
+            }
+            int l = setupLimit(child);
+            limitCache.put(t, l);
+            return l;
+        } else {
+            return pos;
+        }
+    }
+    
     @Override
     public Void scan(Tree tree, Void p) {
         if (tree == null) {
@@ -107,9 +201,11 @@ class AssignComments extends TreeScanner<Void, Void> {
             //XXX:
             boolean oldMapComments = mapComments;
             try {
+                limit = -1;
                 mapComments |= tree == commentMapTarget;
                 if ((commentMapTarget != null) && info.getTreeUtilities().isSynthetic(new TreePath(new TreePath(unit), tree)))
                     return null;
+                limit = setupLimit(tree);
                 if (commentMapTarget != null) {
                     mapComments2(tree, true, false);
                 }
@@ -378,9 +474,14 @@ class AssignComments extends TreeScanner<Void, Void> {
         } while (forward ? seq.moveNext() : seq.movePrevious());
         return false;
     }
-
+    
     private void lookForPreceedings(TokenSequence<JavaTokenId> seq, Tree tree) {
         int reset = ((JCTree) tree).pos;
+        if (limit >= 0) {
+            // infix and postfix trees must not eat comments up to the symbol, otherwise
+            // comments which belong to nested subtrees of operands could be eaten and incorrectly assigned.
+            reset = Math.min(reset, limit);
+        }
         CommentsCollection cc = null;
         while (seq.moveNext() && seq.offset() < reset) {
             JavaTokenId id = seq.token().id();

@@ -70,6 +70,7 @@ public class LambdaTest {
                                       "public class Test {\n" +
                                       "    public static void main(Runnable r) {\n" +
                                       "        main(new Runnable() {\n" +
+                                      "            @Override\n" +
                                       "            public void run() {\n" +
                                       "                System.err.println(\"block\");\n" +
                                       "            }\n" +
@@ -97,6 +98,7 @@ public class LambdaTest {
                                       "public class Test {\n" +
                                       "    public void main(Runnable r) {\n" +
                                       "        main(new Runnable() {\n" +
+                                      "            @Override\n" +
                                       "            public void run() {\n" +
                                       "                System.err.println(Test.this.toString());\n" +
                                       "            }\n" +
@@ -126,6 +128,7 @@ public class LambdaTest {
                                       "public class Test {\n" +
                                       "    public void main(List<String> list) {\n" +
                                       "        Collections.sort(list, new Comparator<String>() {\n" +
+                                      "            @Override\n" +
                                       "            public int compare(String l, String r) {\n" +
                                       "                return l.compareTo(r);\n" +
                                       "            }\n" +
@@ -155,6 +158,7 @@ public class LambdaTest {
                               "public class Test {\n" +
                               "    public void main() {\n" +
                               "        SwingUtilities.invokeLater(new Runnable() {\n" +
+                              "            @Override\n" +
                               "            public void run() {\n" +
                               "                System.err.println(1);\n" +
                               "            }\n" +
