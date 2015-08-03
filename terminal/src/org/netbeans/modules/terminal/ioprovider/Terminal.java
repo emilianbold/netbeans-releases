@@ -451,7 +451,7 @@ public final class Terminal extends JComponent {
 	};
         term.getScreen().addMouseListener(mouseAdapter);
 
-        term.getScreen().getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+        term.getScreen().getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() { //NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
