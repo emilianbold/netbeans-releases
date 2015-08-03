@@ -70,6 +70,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
+import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -87,6 +90,8 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
@@ -98,6 +103,7 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.completion.Utilities;
 import org.netbeans.modules.java.editor.base.javadoc.JavadocImports;
 import org.openide.util.Union2;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -108,9 +114,19 @@ public final class ComputeImports {
     private static final String ERROR = "<error>";
     
     /** Creates a new instance of JavaFixAllImports */
-    public ComputeImports() {
+    public ComputeImports(final CompilationInfo info) {
+        this.info = info;
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, pcl, preferences));
     }
     
+    private final CompilationInfo info;
+    private final PreferenceChangeListener pcl = new PreferenceChangeListener() {
+        @Override
+        public void preferenceChange(PreferenceChangeEvent evt) {
+            info.putCachedValue(IMPORT_CANDIDATES_KEY, null, CacheClearPolicy.ON_CHANGE);
+        }
+    };
     private boolean cancelled;
 
     /**
@@ -160,12 +176,12 @@ public final class ComputeImports {
     
     private static final Object IMPORT_CANDIDATES_KEY = new Object();
     
-    public ComputeImports computeCandidatesEx(CompilationInfo info) {
+    public ComputeImports computeCandidatesEx() {
         ComputeImports cache = (ComputeImports)info.getCachedValue(IMPORT_CANDIDATES_KEY);
         if (cache != null) {
             return cache;
         }
-        computeCandidates(info, Collections.<String>emptySet());
+        computeCandidates(Collections.<String>emptySet());
         info.putCachedValue(IMPORT_CANDIDATES_KEY, this, CacheClearPolicy.ON_CHANGE);
         return this;
     }
@@ -174,8 +190,8 @@ public final class ComputeImports {
         return new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(candidates, notFilteredCandidates);
     }
     
-    public Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info) {
-        return computeCandidatesEx(info).getSimpleCandidates();
+    public Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates() {
+        return computeCandidatesEx().getSimpleCandidates();
     }
     
     private TreeVisitorImpl visitor;
@@ -184,7 +200,7 @@ public final class ComputeImports {
         this.visitor = visitor;
     }
     
-    Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info, Set<String> forcedUnresolved) {
+    Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(Set<String> forcedUnresolved) {
         TreeVisitorImpl v = new TreeVisitorImpl(info);
 
         setVisitor(v);
@@ -303,7 +319,7 @@ public final class ComputeImports {
         return new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(candidates, notFilteredCandidates);
     }
     
-    public void addMethodFqn(CompilationInfo info, Element el) {
+    public void addMethodFqn(Element el) {
         if (el.getKind() != ElementKind.METHOD) {
             return;
         }
@@ -323,7 +339,7 @@ public final class ComputeImports {
         col.add(fqn);
     }
     
-    public String displayNameForImport(@NonNull CompilationInfo info, @NonNull Element element) {
+    public String displayNameForImport(@NonNull Element element) {
         if (element.getKind().isClass() || element.getKind().isInterface()) {
             return ((TypeElement) element).getQualifiedName().toString();
         }
@@ -932,7 +948,7 @@ public final class ComputeImports {
                     matches &= real.hasNext() == formal.hasNext();
                     
                     if (matches) {
-                        state.addMethodFqn(info, c);
+                        state.addMethodFqn(c);
                         someMatch = true;
                     }
                 }

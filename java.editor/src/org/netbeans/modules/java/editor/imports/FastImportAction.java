@@ -120,7 +120,7 @@ public class FastImportAction extends BaseAction {
                         return;
                     }
                     final JavaSource javaSource = parameter.getJavaSource();
-                    Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = new ComputeImports().computeCandidates(parameter, Collections.singleton(ident));
+                    Pair<Map<String, List<Element>>, Map<String, List<Element>>> result = new ComputeImports(parameter).computeCandidates(Collections.singleton(ident));
 
                     final List<TypeElement> priviledged = ElementFilter.typesIn(result.a.get(ident));
 

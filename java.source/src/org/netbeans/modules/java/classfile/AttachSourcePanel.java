@@ -55,6 +55,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.UiUtils;
@@ -228,7 +229,7 @@ private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_at
                                                 }
                                                 TreePath path = cc.getTreeUtilities().pathFor(pos);
                                                 Element e;
-                                                for (e = cc.getTrees().getElement(path); e == null; e = cc.getTrees().getElement(path)) {
+                                                for (e = element(path, cc); e == null; e = element(path, cc)) {
                                                     path = path.getParentPath();
                                                     if (path == null) {
                                                         break;
@@ -254,6 +255,33 @@ private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_at
             }
         }
         return res.get();
+    }
+
+    @CheckForNull
+    private static Element element(
+            @NonNull final TreePath path,
+            @NonNull final CompilationInfo  ci) {
+        Element e = ci.getTrees().getElement(path);
+        if (e == null) {
+            return e;
+        }
+        switch (e.getKind()) {
+            case PACKAGE:
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+            case ANNOTATION_TYPE:
+            case METHOD:
+            case CONSTRUCTOR:
+            case INSTANCE_INIT:
+            case STATIC_INIT:
+            case FIELD:
+            case ENUM_CONSTANT:
+            case TYPE_PARAMETER:
+                return e;
+            default:
+                return null;
+        }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
