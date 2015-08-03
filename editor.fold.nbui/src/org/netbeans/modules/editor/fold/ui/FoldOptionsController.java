@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.fold.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -62,7 +63,6 @@ import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
 import org.netbeans.modules.editor.settings.storage.api.MemoryPreferences;
@@ -81,7 +81,10 @@ import org.openide.util.WeakListeners;
  * <p/>
  * This class manages only the language switch + overall 'enable folding' setting. All settings
  * for a given language are handled by the language-specific panel.
- *
+ * <p/>
+ * Threading: applyChanges and preferenceChange notifications run in their own dedicated threads. All other accesses
+ * run in EDT (another thread). Access to 'preferences' Map must be synchronized; Preference instances are thread-safe.
+ * 
  * @author sdedic
  */
 @OptionsPanelController.SubRegistration(
@@ -106,17 +109,18 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     /**
      * True, if some of the created panels became dirty
      */
-    private boolean changed;
+    private volatile boolean changed;
     
     /**
      * for firing PROP_DIRTY
      */
-    private PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
     /**
-     * Preferences created for individual MIME types, as they are displaye by the user
+     * Preferences created for individual MIME types, as they are displaye by the user. 
      */
-    private Map<String, MemoryPreferences>    preferences = new HashMap<String, MemoryPreferences>();
+    // @GuardedBy(this)
+    private final Map<String, MemoryPreferences>    preferences = new HashMap<String, MemoryPreferences>();
     
     static {
         // keep this in sync with LegacySettingMap in Fold implementation.
@@ -166,8 +170,13 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     
     @Override
     public void applyChanges() {
-        for (String s : preferences.keySet()) {
-            MemoryPreferences p = preferences.get(s);
+        Map<String, MemoryPreferences> copy;
+        synchronized (preferences) {
+            changed = false;
+            copy = new HashMap<>(preferences);
+        }
+        for (String s : copy.keySet()) {
+            MemoryPreferences p = copy.get(s);
             try {
                 if (PREF_LOG.isLoggable(Level.FINE)) {
                     if ((p.getPreferences() instanceof OverridePreferences) &&
@@ -201,7 +210,6 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
                 prefs.putBoolean(k, basePrefs.getBoolean(k, false));
             }
         }
-        changed = false;
         propSupport.firePropertyChange(PROP_CHANGED, true, false);
     }
 
@@ -209,17 +217,25 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        if (suppressPrefChanges) {
+        if (suppressPrefChanges == Boolean.TRUE) {
             return;
         }
         boolean ch = detectIsChanged();
-        MemoryPreferences defMime = preferences.get(""); // NOI18N
+        MemoryPreferences defMime;
+        synchronized (preferences) {
+            defMime = preferences.get(""); // NOI18N
+        }
         if (defMime != null && defMime.getPreferences() == evt.getNode()) {
             if (FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED.equals(evt.getKey())) {
                 // propagate to all preferences, suppress events
                 suppressPrefChanges = true;
+                Collection<MemoryPreferences> col;
+                
+                synchronized (preferences) {
+                    col = new ArrayList<>(preferences.values());
+                }
                 try {
-                    for (MemoryPreferences p : preferences.values()) {
+                    for (MemoryPreferences p : col) {
                         if (p != defMime) {
                             if (((OverridePreferences)p.getPreferences()).isOverriden(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED)) {
                                 p.getPreferences().remove(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED);
@@ -233,6 +249,7 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
         }
         if (ch != changed) {
             propSupport.firePropertyChange(PROP_CHANGED, !ch, ch);
+            changed = true;
         }
     }
     
@@ -248,41 +265,45 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     
     /* called from the FoldOptionsPanel */
     Preferences prefs(String mime) {
-        MemoryPreferences cached = preferences.get(mime);
-        if (cached != null) {
+        synchronized (preferences) {
+            MemoryPreferences cached = preferences.get(mime);
+            if (cached != null) {
+                return cached.getPreferences();
+            }
+            MimePath path = MimePath.parse(mime);
+            Preferences result = MimeLookup.getLookup(mime).lookup(Preferences.class);
+
+            if (!mime.equals("")) { // NOI18N
+                String parentMime = path.getInheritedType();
+                /*
+                result = new InheritedPreferences(
+                        prefs(parentMime), result);
+                        */
+                cached = MemoryPreferences.getWithInherited(this, 
+                    prefs(parentMime),
+                    result);
+            } else {
+                cached = MemoryPreferences.get(this, result);
+            }
+            cached.getPreferences().addPreferenceChangeListener(weakChangeL);
+            preferences.put(mime, cached);
             return cached.getPreferences();
         }
-        MimePath path = MimePath.parse(mime);
-        Preferences result = MimeLookup.getLookup(mime).lookup(Preferences.class);
-        
-        if (!mime.equals("")) { // NOI18N
-            String parentMime = path.getInheritedType();
-            /*
-            result = new InheritedPreferences(
-                    prefs(parentMime), result);
-                    */
-            cached = MemoryPreferences.getWithInherited(this, 
-                prefs(parentMime),
-                result);
-        } else {
-            cached = MemoryPreferences.get(this, result);
-        }
-        cached.getPreferences().addPreferenceChangeListener(weakChangeL);
-        preferences.put(mime, cached);
-        return cached.getPreferences();
     }
     
     private void clearContents() {
-        // clear the old preference values and recreate the panel
-        for (MemoryPreferences m : preferences.values()) {
-            m.getPreferences().removePreferenceChangeListener(weakChangeL);
-            m.destroy();
+        synchronized (preferences) {
+            // clear the old preference values and recreate the panel
+            for (MemoryPreferences m : preferences.values()) {
+                m.getPreferences().removePreferenceChangeListener(weakChangeL);
+                m.destroy();
+            }
+            preferences.clear();
+            changed = false;
         }
-        preferences.clear();
         if (panel != null) {
             panel.clear();
         }
-        changed = false;
     }
 
     @Override
@@ -303,7 +324,11 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     }
     
     private boolean detectIsChanged() {
-        for (MemoryPreferences cached : preferences.values()) {
+        Collection<MemoryPreferences> cp;
+        synchronized (preferences) {
+            cp = new ArrayList<>(preferences.values());
+        }
+        for (MemoryPreferences cached : cp) {
             if (cached.isDirty(cached.getPreferences())) {
                 return true;
             }
