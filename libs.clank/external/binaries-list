@@ -1,6 +1,6 @@
-#changeset:   15335:5464dcd6a07f
+#changeset:   15347:88d4776827b3
 #tag:         tip
-#user:        Vladimir Voskresensky <vv159170@netbeans.org>
-#date:        Tue Jul 28 17:50:45 2015 +0200
-#summary:     PERF: replace ref to directly accessing bucket's entry
-CF1982D5AFB4D85AB1CD9455744074063F13389B clank_0.3.6.zip
+#user:        Petr Kudryavtsev <petrk@netbeans.org>
+#date:        Wed Jul 29 18:02:52 2015 +0300
+#summary:     Included file not found errors suppressed by default
+3A8AF153DB7B434C6E97911B66A1DF27ADD37FF3 clank_0.3.6.zip

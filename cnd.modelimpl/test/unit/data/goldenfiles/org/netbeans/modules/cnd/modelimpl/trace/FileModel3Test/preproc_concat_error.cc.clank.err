@@ -1,0 +1,3 @@
+/export/devarea/cnd-main/cnd.modelimpl/build/test/unit/data/org/netbeans/modules/cnd/modelimpl/trace/FileModel3Test/preproc_concat_error.cc:2:20: error: '#' is not followed by a macro parameter
+#define FUNC(a)  # b
+                   ^
