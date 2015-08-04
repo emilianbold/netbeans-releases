@@ -376,6 +376,7 @@ public class BinaryAnalyser {
             storeTimeStamps();
             return diff(oldState,newState, preBuildArgs);
         } else {
+            writer.rollback();
             return Changes.FAILURE;
         }
     }
