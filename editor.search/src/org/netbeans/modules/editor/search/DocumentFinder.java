@@ -235,12 +235,20 @@ public class DocumentFinder
             endOffset = startOffset;
             startOffset = temp;
         }
-        if (back && blockSearch)
-            initOffset = endOffset - startOffset;
-        else if (!back && blockSearch) 
-            initOffset = startOffset - blockSearchStartOffset;
-         else
-            initOffset = startOffset;
+        if (blockSearch) {
+            if (back) {
+                initOffset = endOffset - startOffset;
+            } else {
+                initOffset = startOffset - blockSearchStartOffset;
+            }
+        } else {
+            if (back) {
+                initOffset = oppositeDir ? startOffset : endOffset;
+             } else {
+                initOffset = startOffset;
+            }
+        }
+        
         if (initOffset < 0 || initOffset > blockText.length ()) {
             LOG.log (
                 Level.INFO,
