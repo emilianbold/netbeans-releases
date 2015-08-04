@@ -81,6 +81,11 @@ public class HintDescriptionFactory {
         this.metadata = metadata;
         return this;
     }
+    
+    public HintDescriptionFactory setTriggerOptions(String[] triggerOpts) {
+        this.trigger.setOptions(triggerOpts);
+        return this;
+    }
 
     public HintDescriptionFactory setTrigger(Trigger trigger) {
         if (this.trigger != null) {
