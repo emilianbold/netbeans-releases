@@ -257,7 +257,7 @@ public final class CustomizableSideBar {
         
         private int     thickness = 1;
         
-        private boolean disableBackground;
+        private boolean disableBackground = true;
         
         @SuppressWarnings("LeakingThisInConstructor")
         public WestSidebarHolder(JTextComponent target) {
@@ -323,6 +323,7 @@ public final class CustomizableSideBar {
             if (!it.hasNext()) {
                 return;
             }
+            disableBackground = false;
             FontColorSettings fcs = it.next();
             Color line;
             Color back;
@@ -334,13 +335,13 @@ public final class CustomizableSideBar {
                 back = (Color)as.getAttribute(StyleConstants.Background);
                 line = null;
             } else {
-                Object o;
                 back = (Color)as.getAttribute(StyleConstants.Background);
                 line = (Color)as.getAttribute(StyleConstants.Foreground);
             }
             textBkColor = bkgSource.getBackground();
             if (back == null) {
                 back = bkgSource.getBackground();
+                disableBackground = true;
             }
             setBackground(back);
             if (line == null || line.equals(back)) {
@@ -348,7 +349,9 @@ public final class CustomizableSideBar {
             } else {
                 this.lineColor = line;
             }
+            // just in case that some line width may have changed
             revalidate();
+            repaint();
         }
 
         @Override

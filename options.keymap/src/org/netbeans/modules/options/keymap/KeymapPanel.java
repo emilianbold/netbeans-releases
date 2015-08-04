@@ -82,7 +82,6 @@ import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
@@ -227,6 +226,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         popup.add(popupPanel);
         cbProfile.addActionListener(this);
         manageButton.addActionListener(this);
+        btnPrintAsHTML.setVisible(ExportShortcutsAction.getExportShortcutsToHTMLAction().isEnabled());
     }
     
     private ShortcutPopupPanel popupPanel;

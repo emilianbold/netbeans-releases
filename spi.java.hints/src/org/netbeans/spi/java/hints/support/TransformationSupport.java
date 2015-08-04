@@ -225,7 +225,9 @@ public final class TransformationSupport {
 
         for (HintDescription hd : PatternConvertor.create(inputJackpotPattern)) {
             final String triggerPattern = ((Trigger.PatternDescription) hd.getTrigger()).getPattern();
-            descriptions.add(HintDescriptionFactory.create().setTrigger(hd.getTrigger()).setWorker(new HintDescription.Worker() {
+            descriptions.add(HintDescriptionFactory.create().setTrigger(hd.getTrigger()).
+                    setTriggerOptions(hd.getTrigger().getOptions()).
+                setWorker(new HintDescription.Worker() {
                 @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
                     final Map<String, TypeMirrorHandle<?>> constraintsHandles = new HashMap<String, TypeMirrorHandle<?>>();
 

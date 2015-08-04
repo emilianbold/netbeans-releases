@@ -82,6 +82,7 @@ import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.IntegerOption;
+import org.netbeans.spi.java.hints.TriggerOptions;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -247,11 +248,11 @@ public class CodeHintProviderImpl implements HintProvider {
     
     private static void processTreeKindHint(Map<HintMetadata, Collection<HintDescription>> hints, MethodWrapper m, HintMetadata metadata) {
         TriggerTreeKind kindTrigger = m.getAnnotation(TriggerTreeKind.class);
-
+        
         if (kindTrigger == null) {
             return ;
         }
-
+        TriggerOptions opts = m.getAnnotation(TriggerOptions.class);
         Worker w = new WorkerImpl(m.getClazz().getName(), m.getName());
 
         Set<Kind> kinds = EnumSet.noneOf(Kind.class);
@@ -260,6 +261,7 @@ public class CodeHintProviderImpl implements HintProvider {
 
         addHint(hints, metadata, HintDescriptionFactory.create()
                                                        .setTrigger(new Kinds(kinds))
+                                                       .setTriggerOptions(opts == null ? null : opts.value())
                                                        .setWorker(w)
                                                        .setMetadata(metadata)
                                                        .produce());
@@ -290,11 +292,12 @@ public class CodeHintProviderImpl implements HintProvider {
         for (ConstraintVariableType c : patternTrigger.constraints()) {
             constraints.put(c.variable(), c.type());
         }
-
+        TriggerOptions opts = m.getAnnotation(TriggerOptions.class);
         PatternDescription pd = PatternDescription.create(pattern, constraints);
 
         addHint(hints, metadata, HintDescriptionFactory.create()
                                                        .setTrigger(pd)
+                                                       .setTriggerOptions(opts == null ? null : opts.value())
                                                        .setWorker(new WorkerImpl(m.getClazz().getName(), m.getName()))
                                                        .setMetadata(metadata)
                                                        .produce());

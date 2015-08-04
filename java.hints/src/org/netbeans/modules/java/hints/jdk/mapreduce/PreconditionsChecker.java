@@ -71,6 +71,7 @@ import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.errors.Utilities;
 
 /**
  *
@@ -188,7 +189,9 @@ public class PreconditionsChecker {
      */
     private boolean isIterbale(ExpressionTree expression) {
         TypeMirror tm = workingCopy.getTrees().getTypeMirror(TreePath.getPath(workingCopy.getCompilationUnit(), expression));
-
+        if (!Utilities.isValidType(tm)) {
+            return false;
+        }
         if (tm.getKind() == TypeKind.ARRAY) {
             return false;
         } else {
