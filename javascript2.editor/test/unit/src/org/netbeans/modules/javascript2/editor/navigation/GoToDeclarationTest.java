@@ -92,4 +92,37 @@ public class GoToDeclarationTest extends JsTestBase {
     public void testCallbackDeclaration_03() throws Exception {
         checkDeclaration("testfiles/markoccurences/callbackDeclaration2.js", " * @param {reques^tCallback} cb - The callback that handles the response.", " * @callback ^requestCallback");
     }
+    
+    public void testIssue227972_01() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "a.meth^od();", "this.^method = function() { // nagigate from a.method()");
+    }
+    
+    public void testIssue227972_02() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "b.meth^od();", "this.^method = function() { // navigate from b.mehtod()");
+    }
+    
+    public void testIssue227972_03() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "this.me^thod(); // case 1", "this.^method = function() { // nagigate from a.method()");
+    }
+    
+    public void testIssue227972_04() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "this.me^thod(); // case 2", "this.^method = function() { // navigate from b.mehtod()");
+    }
+    
+    public void testIssue227972_05() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "this.me^thod(); // case 3", "this.^method = function() { // navigate from c.method()");
+    }
+    
+    public void testIssue227972_06() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "c.me^thod();", "this.^method = function() { // navigate from c.method()");
+    }
+    
+    public void testIssue227972_07() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "NS.test.met^hod();", "this.^method = function() { // navigate from c.method()");
+    }
+    
+    public void testIssue227972_08() throws Exception {
+        checkDeclaration("testfiles/navigation/issue227972.js", "this.f^();", "MyClass.prototype.^f= function() {};");
+    }
+    
 }
