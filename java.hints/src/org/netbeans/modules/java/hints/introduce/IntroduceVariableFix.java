@@ -42,12 +42,14 @@
 package org.netbeans.modules.java.hints.introduce;
 
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -93,19 +95,22 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
         List<TreePath> allCandidates = new LinkedList<TreePath>();
         allCandidates.add(original);
         allCandidates.addAll(candidates);
+        while (statement != null && statement.getParentPath() != null && !TreeUtils.isParentOf(statement.getParentPath(), allCandidates)) {
+            statement = statement.getParentPath();
+        }
         statement = TreeUtils.findStatement(statement);
         if (statement == null) {
             //XXX: well....
             return null;
         }
-        while (statement.getParentPath() != null && !TreeUtils.isParentOf(statement.getParentPath(), allCandidates)) {
-            statement = statement.getParentPath();
-        }
-        while (statement.getParentPath() != null && statement.getParentPath().getLeaf().getKind() != Tree.Kind.BLOCK && statement.getParentPath().getLeaf().getKind() != Tree.Kind.CASE) {
-            statement = statement.getParentPath();
-        }
         if (statement.getParentPath() == null) {
             return null; //XXX: log
+        }
+        if (statement.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+            // if the lambda was a BLOCK one, the search would terminate at the block.
+            // so the lambda is an expression with a single tree, so the 'statement index' will be 0
+            outPosition[0] = 0;
+            return statement;
         }
         StatementTree statementTree = (StatementTree) statement.getLeaf();
         int index = IntroduceHint.getStatements(statement).indexOf(statementTree);
@@ -198,7 +203,15 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
                     }
                     index = out[0];
                 }
-                List<StatementTree> nueStatements = new LinkedList<StatementTree>(IntroduceHint.getStatements(statement));
+                // handle lambda of expression BodyKind
+                List<StatementTree> nueStatements;
+                if (statement.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION) {
+                    nueStatements = new ArrayList<>();
+                    nueStatements.add(
+                            make.Return((ExpressionTree)statement.getLeaf()));
+                } else {
+                    nueStatements = new LinkedList<StatementTree>(IntroduceHint.getStatements(statement));
+                }
                 GeneratorUtilities.get(parameter).importComments(IntroduceHint.getStatementOrBlock(statement).getLeaf(), parameter.getCompilationUnit());
                 mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
                 VariableTree newVariable = make.Variable(mods, name, make.Type(tm), expression);

@@ -48,6 +48,7 @@ import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
@@ -904,6 +905,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             case CASE:
                 nueTree = make.Case(((CaseTree) toReplace).getExpression(), newStatements);
                 break;
+            case LAMBDA_EXPRESSION: {
+                LambdaExpressionTree let = (LambdaExpressionTree)toReplace;
+                nueTree = make.LambdaExpression(let.getParameters(), make.Block(newStatements, false));
+                break;
+            }
             default:
                 assert getStatements(firstLeaf).size() == 1 : getStatements(firstLeaf).toString();
                 assert newStatements.size() == 1 : newStatements.toString();

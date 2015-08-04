@@ -152,7 +152,19 @@ public final class TreeUtils {
     }
 
     static TreePath findStatement(TreePath statementPath) {
-        while (statementPath != null && (!StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface()) || (statementPath.getParentPath() != null && statementPath.getParentPath().getLeaf().getKind() != Tree.Kind.BLOCK && statementPath.getParentPath().getLeaf().getKind() != Tree.Kind.CASE))) {
+        CYCLE: while (statementPath != null) {
+            Tree leaf = statementPath.getLeaf();
+            if (StatementTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
+                break;
+            }
+            if (statementPath.getParentPath() != null) {
+                switch (statementPath.getParentPath().getLeaf().getKind()) {
+                    case BLOCK:
+                    case CASE:
+                    case LAMBDA_EXPRESSION:
+                        break CYCLE;
+                }
+            }
             if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind())) {
                 return null;
             }
@@ -162,17 +174,24 @@ public final class TreeUtils {
     }
 
     /**
-     * Returns a path to the immediate enclosing method or initializer block
+     * Returns a path to the immediate enclosing method, lambda body or initializer block
      * @param path start of the search
      * @return path to the nearest enclosing executable or {@code null} in case of error.
      */
     static TreePath findMethod(TreePath path) {
         while (path != null) {
-            if (path.getLeaf().getKind() == Tree.Kind.METHOD) {
-                return path;
-            }
-            if (path.getLeaf().getKind() == Tree.Kind.BLOCK && path.getParentPath() != null && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
-                return path;
+            Tree leaf = path.getLeaf();
+            switch (leaf.getKind()) {
+                case BLOCK:
+                    if (path.getParentPath() != null && TreeUtilities.CLASS_TREE_KINDS.contains(path.getParentPath().getLeaf().getKind())) {
+                        return path;
+                    }
+                    break;
+                case METHOD:
+                case LAMBDA_EXPRESSION:
+                    return path;
+                default:
+                    break;
             }
             path = path.getParentPath();
         }
