@@ -437,10 +437,12 @@ public class GeneratorUtils {
                         if (((ClassTree)member).getSimpleName().contentEquals(((ClassTree)tree).getSimpleName())) {
                             return tree;
                         }
+                        break;
                     case VARIABLE:
                         if (((VariableTree)member).getName().contentEquals(((VariableTree)tree).getName())) {
                             return tree;
                         }
+                        break;
                     case METHOD:
                         if (((MethodTree)member).getName().contentEquals(((MethodTree)tree).getName())) {
                             if (memberParams == null) {
@@ -461,6 +463,7 @@ public class GeneratorUtils {
                                 return tree;
                             }
                         }
+                        break;
                 }
             }
         }
