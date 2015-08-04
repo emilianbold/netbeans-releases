@@ -120,7 +120,16 @@ public final class PersistentClassIndex extends ClassIndexImpl {
     @Override
     @NonNull
     public BinaryAnalyser getBinaryAnalyser () {
-        return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
+        final TransactionContext txCtx = TransactionContext.get();
+        assert  txCtx != null;
+        final PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        assert pit != null;
+        Writer writer = pit.getIndexWriter();
+        if (writer == null) {
+            writer = new PIWriter();
+            pit.setIndexWriter(writer);
+        }
+        return new BinaryAnalyser (writer, this.cacheRoot);
     }
 
     @Override
