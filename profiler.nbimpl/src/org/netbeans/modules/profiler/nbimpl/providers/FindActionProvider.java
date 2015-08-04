@@ -44,11 +44,11 @@ package org.netbeans.modules.profiler.nbimpl.providers;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.KeyStroke;
 import org.netbeans.lib.profiler.ui.swing.SearchUtils;
+import org.netbeans.modules.profiler.api.ActionsSupport;
 import org.netbeans.modules.profiler.spi.ActionsSupportProvider;
-import org.openide.actions.FindAction;
-import org.openide.util.actions.CallbackSystemAction;
-import org.openide.util.actions.SystemAction;
+import org.openide.awt.Actions;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -57,12 +57,19 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=ActionsSupportProvider.class, position=1)
 public final class FindActionProvider extends ActionsSupportProvider {
-    public boolean registerAction(String actionKey, Action action, ActionMap actionMap, InputMap inputMap) {
-        if (!SearchUtils.FIND_ACTION_KEY.equals(actionKey)) return false;
-
-        CallbackSystemAction globalFindAction = (CallbackSystemAction)SystemAction.get(FindAction.class);
-        actionMap.put(globalFindAction.getActionMapKey(), action);
-
-        return true;
+    
+    private static final String FIND_ACTION_CATEGORY = "Edit"; // NOI18N
+    private static final String FIND_ACTION_KEY = "org.openide.actions.FindAction"; // NOI18N
+    
+    public KeyStroke registerAction(String actionKey, Action action, ActionMap actionMap, InputMap inputMap) {
+        if (!SearchUtils.FIND_ACTION_KEY.equals(actionKey)) return null;
+        
+        Action find = Actions.forID(FIND_ACTION_CATEGORY, FIND_ACTION_KEY);
+        if (find == null) return null;
+        
+        actionMap.put(FIND_ACTION_KEY, action);
+        
+        Object acc = find.getValue(Action.ACCELERATOR_KEY);
+        return acc instanceof KeyStroke ? (KeyStroke)acc : ActionsSupport.NO_KEYSTROKE;
     }
 }
