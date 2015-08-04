@@ -351,4 +351,8 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue246006_02() throws Exception {
         checkCompletion("testfiles/completion/issue246006_02.js", "x.^", false);
     }
+    
+    public void testIssue223111_01() throws Exception {
+        checkCompletion("testfiles/completion/issue223111.js", "}.a^Property1;", false);
+    }
 }
