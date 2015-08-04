@@ -1150,6 +1150,7 @@ public class BinaryAnalyser {
 
         private final ZipFile zipFile;
         private final Enumeration<? extends ZipEntry> entries;
+        private boolean brokenLogged;
 
         ArchiveProcessor (
                 final @NonNull File file,
@@ -1170,10 +1171,28 @@ public class BinaryAnalyser {
                 while(entries.hasMoreElements()) {
                     final ZipEntry ze;
                     try {
-                        ze = (ZipEntry)entries.nextElement();
+                        ze = entries.nextElement();
                     } catch (InternalError err) {
-                        LOGGER.log(Level.INFO, "Broken zip file: " + zipFile.getName(), err);
+                        LOGGER.log(
+                                Level.INFO,
+                                "Broken zip file: {0}, reason: {1}",    //NOI18N
+                                new Object[] {
+                                    zipFile.getName(),
+                                    err.getMessage()
+                                });
                         return true;
+                    } catch (IllegalArgumentException iae) {
+                        if (!brokenLogged) {
+                            LOGGER.log(
+                                    Level.INFO,
+                                    "Broken zip file: {0}, reason: {1}",    //NOI18N
+                                    new Object[]{
+                                        zipFile.getName(),
+                                        iae.getMessage()
+                                    });
+                            brokenLogged = true;
+                        }
+                        continue;
                     }
                     if (!ze.isDirectory()  && accepts(ze.getName()))  {
                         report (
