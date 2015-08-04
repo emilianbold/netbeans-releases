@@ -55,6 +55,7 @@ import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
@@ -72,6 +73,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -85,6 +87,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -343,8 +346,18 @@ public class Lambda {
                 // ErrorTypes are somehow handled, too, by make.Type
                 thrownTypes.add((ExpressionTree)make.Type(tm));
             }
+            ModifiersTree mt = make.Modifiers(EnumSet.of(Modifier.PUBLIC));
+            // should I ever test for >= source 5, if there's a Lambda :) in the source already ?
+//            if (copy.getSourceVersion().compareTo(SourceVersion.RELEASE_5) >= 0) {
+                boolean generate = copy.getElements().getTypeElement("java.lang.Override") != null;
+
+                if (generate) {
+                   mt = make.addModifiersAnnotation(
+                           mt, make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
+                }
+//            }
             
-            MethodTree newMethod = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
+            MethodTree newMethod = make.Method(mt,
                                                abstractMethod.getSimpleName(),
                                                make.Type(descriptorType.getReturnType()),
                                                Collections.<TypeParameterTree>emptyList(), //XXX: type parameters

@@ -925,8 +925,8 @@ public abstract class PositionEstimator {
         
         private void findNextBoundary(Tree item, int start, int end) {
             int off = Math.max(start, end -1);
-            this.sectionEnd = diffContext.origText.length(); //diffContext.blockSequences.findSectionEnd(off);
-            this.sectionStart = 0; // diffContext.blockSequences.findSectionStart(start);
+            this.sectionEnd = diffContext.blockSequences.findSectionEnd(off);
+            this.sectionStart = diffContext.blockSequences.findSectionStart(start);
         }
         
         private JavaTokenId moveToSrcRelevantBounded(TokenSequence seq, Direction dir) {
