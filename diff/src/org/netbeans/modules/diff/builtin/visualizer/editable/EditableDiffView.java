@@ -1525,6 +1525,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                             diffChanged();
                         }
                         if (getDifferenceIndex() >= diffs.length) updateCurrentDifference(null);
+                        view.revalidate();
                         support.firePropertyChange(DiffController.PROP_DIFFERENCES, null, null);
                         jEditorPane1.setCurrentDiff(diffs);
                         jEditorPane2.setCurrentDiff(diffs);
