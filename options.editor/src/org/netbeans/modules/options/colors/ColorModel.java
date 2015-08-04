@@ -215,7 +215,7 @@ public final class ColorModel {
             c.addAttribute(StyleConstants.NameAttribute, category.getAttribute(StyleConstants.NameAttribute));
 	    if (category.isDefined (StyleConstants.Background)) {
 		annotationType.setUseHighlightColor (true);
-                if (!annotationType.getHighlight().equals((Color) category.getAttribute (StyleConstants.Background))) {
+                if (annotationType.getHighlight() == null || !annotationType.getHighlight().equals((Color) category.getAttribute (StyleConstants.Background))) {
                     annotationType.setHighlight (
                         (Color) category.getAttribute (StyleConstants.Background)
                     );
@@ -225,7 +225,7 @@ public final class ColorModel {
 		annotationType.setUseHighlightColor (false);
 	    if (category.isDefined (StyleConstants.Foreground)) {
 		annotationType.setInheritForegroundColor (false);
-                if (!annotationType.getForegroundColor().equals( (Color) category.getAttribute (StyleConstants.Foreground))) {
+                if (annotationType.getForegroundColor() == null || !annotationType.getForegroundColor().equals( (Color) category.getAttribute (StyleConstants.Foreground))) {
                     annotationType.setForegroundColor (
                     (Color) category.getAttribute (StyleConstants.Foreground)
                     );
@@ -235,7 +235,7 @@ public final class ColorModel {
 		annotationType.setInheritForegroundColor (true);
 	    if (category.isDefined (EditorStyleConstants.WaveUnderlineColor)) {     
                 annotationType.setUseWaveUnderlineColor (true);
-                if(!category.getAttribute (EditorStyleConstants.WaveUnderlineColor).equals(annotationType.getWaveUnderlineColor())) {
+                if(category.getAttribute (EditorStyleConstants.WaveUnderlineColor) == null || !category.getAttribute (EditorStyleConstants.WaveUnderlineColor).equals(annotationType.getWaveUnderlineColor())) {
                     annotationType.setWaveUnderlineColor (
                         (Color) category.getAttribute (EditorStyleConstants.WaveUnderlineColor)
                     );
