@@ -46,6 +46,22 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <apidef name="JavaHintsSPI">Java Hints SPI</apidef>
     </apidefs>
     <changes>
+        <change id="TriggerOptions">
+            <api name="JavaHintsSPI"/>
+            <summary>Hint can choose to trigger for guarded code</summary>
+            <version major="1" minor="27"/>
+            <date day="27" month="7" year="2015"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Hints triggered by Tree.Kind are not invoked for Trees which are
+                    protected from editing (i.e. Form Builder guarded blocks). Hint implementor
+                    can opt to be triggered even for such code, in order to e.g. collect
+                    data.
+                </p>
+            </description>
+        </change>
         <change id="EnhancedJavaFix">
             <api name="JavaHintsSPI"/>
             <summary>Added ability to specify sort text for JavaFix</summary>

@@ -134,8 +134,20 @@ public class CreateSubclass {
         }
 
         TypeElement typeElement = (TypeElement) info.getTrees().getElement(tp);
-
+        
         if (typeElement == null || typeElement.getModifiers().contains(Modifier.FINAL)) return null;
+
+        Element outer = typeElement.getEnclosingElement();
+        // do not offer the hint for non-static inner classes. Permit for classes nested into itnerface - no enclosing instance
+        if (outer != null && outer.getKind() != ElementKind.PACKAGE && outer.getKind() != ElementKind.INTERFACE) {
+            if (outer.getKind() != ElementKind.CLASS && outer.getKind() != ElementKind.ENUM) {
+                return null;
+            }
+            if (!typeElement.getModifiers().contains(Modifier.STATIC)) {
+                return null;
+            }
+        }
+
         
         ClassPath cp = info.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject root = cp.findOwnerRoot(info.getFileObject());

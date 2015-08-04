@@ -185,7 +185,7 @@ public class TooStrongCast {
                             }
                         }
                     } 
-                    if (report && checkAmbiguous(info, parentExec, exp.getArgumentIndex(), casteeType, realExpressionPath)) {
+                    if (report && checkAmbiguous(info, parentExec, exp.getArgumentIndex(), null, realExpressionPath)) {
                         report = false;
                     }
                 }
@@ -211,6 +211,20 @@ public class TooStrongCast {
                 Utilities.isPrimitiveWrapperType(castType) &&
                 info.getTypes().isSameType(casteeType, info.getTypes().unboxedType(castType))) {
                 continue;
+            }
+            if (exec != null) {
+                if (varargs) {
+                    TypeMirror varType = exec.getParameters().get(argIndex).asType();
+                    if (varType.getKind() == TypeKind.ARRAY && info.getTypes().isAssignable(tm, varType)) {
+                        TypeMirror itemType = ((ArrayType)varType).getComponentType();
+                        if (info.getTypes().isAssignable(tm, itemType)) {
+                            continue;
+                        }
+                    }
+                } 
+                if (checkAmbiguous(info, parentExec, exp.getArgumentIndex(), tm, realExpressionPath)) {
+                    continue;
+                }
             }
             filteredTypes.add(Utilities.resolveCapturedType(info, tm));
         }
@@ -248,16 +262,14 @@ public class TooStrongCast {
     private static boolean checkAmbiguous(CompilationInfo info, final TreePath parentExec, int argIndex, TypeMirror casteeType, TreePath realArgTree) {
         CharSequence altType = info.getTypeUtilities().getTypeName(casteeType, TypeUtilities.TypeNameOptions.PRINT_FQN);
         String prefix = null;
-        if (!(casteeType.getKind() == TypeKind.NULL || casteeType.getKind() == TypeKind.INTERSECTION)) {
+        if (casteeType != null && !(casteeType.getKind() == TypeKind.NULL || casteeType.getKind() == TypeKind.INTERSECTION)) {
             prefix = "(" + altType + ")"; // NOI18N
         }
         Tree leaf = parentExec.getLeaf();
         List<? extends Tree> arguments;
-        TreePath origT = null;
         if (leaf instanceof MethodInvocationTree) {
             MethodInvocationTree mi = (MethodInvocationTree)leaf;
             arguments = mi.getArguments();
-            origT = new TreePath(parentExec, mi.getMethodSelect());
         } else {
             arguments = ((NewClassTree)leaf).getArguments();
         }

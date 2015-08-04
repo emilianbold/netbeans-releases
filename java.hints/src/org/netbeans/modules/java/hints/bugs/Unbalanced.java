@@ -67,6 +67,7 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerOptions;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
@@ -141,6 +142,7 @@ public class Unbalanced {
         }
 
         @TriggerTreeKind({Kind.IDENTIFIER, Kind.MEMBER_SELECT})
+        @TriggerOptions(TriggerOptions.PROCESS_GUARDED)
         public static ErrorDescription before(HintContext ctx) {
             VariableElement var = testElement(ctx);
 
@@ -249,6 +251,7 @@ public class Unbalanced {
         }
 
         @TriggerTreeKind({Kind.IDENTIFIER, Kind.MEMBER_SELECT})
+        @TriggerOptions(TriggerOptions.PROCESS_GUARDED)
         public static ErrorDescription before(HintContext ctx) {
             TreePath tp = ctx.getPath();
             VariableElement var = testElement(ctx);
