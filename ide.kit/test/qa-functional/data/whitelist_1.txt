@@ -1,3 +1,15 @@
+# Document-related interfaces split from editor.lib(2)
+org.netbeans.api.editor.document.AtomicLockListener
+
+#237882
+org.openide.filesystems.AbstractFileSystem$SymlinkInfo
+
+# new UI scroll editor tabs when a TC is being dragged over
+org.netbeans.swing.tabcontrol.plaf.BasicScrollingTabDisplayerUI$Autoscroller
+
+# commandline option
+org.netbeans.modules.autoupdate.cli.ModuleOptions
+
 #226670
 org.eclipse.core.runtime.internal.adaptor.BasicLocation$MockLocker
 org.eclipse.osgi.internal.baseadaptor.weaving.DynamicImportList
