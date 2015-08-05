@@ -205,7 +205,10 @@ public final class ColorModel {
 	String profile, 
 	Collection<AttributeSet> annotations
     ) {
-	//S ystem.out.println("ColorModelImpl.setAnnotations ");      
+	if (annotations == null) {
+            EditorSettings.getDefault().setAnnotations(profile, null);
+            return;
+        }      
         Collection<AttributeSet> annos = new ArrayList<AttributeSet>();
 	for(AttributeSet category : annotations) {
 	    AnnotationType annotationType = (AnnotationType) 

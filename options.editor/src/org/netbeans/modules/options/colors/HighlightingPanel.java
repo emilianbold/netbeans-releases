@@ -419,7 +419,16 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
                     } else {
                         isChanged |= checkMaps(currentHighlightings, savedHighlightings);
                     }
+                } else if (savedHighlightings != null && currentHighlightings == null) {
+                    isChanged = true;
                 }
+                if (isChanged) { // no need to iterate further
+                    changed = true;
+                    return;
+                }
+            } else {
+                changed = true;
+                return;
             }
         }
         changed = isChanged;
