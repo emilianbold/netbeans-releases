@@ -1,3 +1,9 @@
+#251589
+org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation$ExternalRootsState
+
+# SVN
+org.netbeans.modules.subversion.remote.SvnMetadataFolderLoader
+
 # Document-related interfaces split from editor.lib(2)
 org.netbeans.api.editor.document.AtomicLockListener
 
