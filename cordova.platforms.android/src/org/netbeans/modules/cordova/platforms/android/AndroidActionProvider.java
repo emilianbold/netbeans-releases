@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms.android;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -58,6 +59,8 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -103,9 +106,10 @@ public class AndroidActionProvider implements ActionProvider {
                 };
     }
 
-    @NbBundle.Messages(
-            "LBL_AvdManager=AVD Manager"
-    )
+    @NbBundle.Messages({
+        "LBL_AvdManager=AVD Manager",
+        "ERR_NO_JDK=NetBeans is currently running on JRE. Cordova Android build requires JDK. Please run NetBeans on JDK to continue."
+    })
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
@@ -123,6 +127,23 @@ public class AndroidActionProvider implements ActionProvider {
                 OptionsDisplayer.getDefault().open("Html5/MobilePlatforms"); // NOI18N
             }
             return;
+        }
+
+        // Quick fix for issue when IDE is running on JRE, Android build fails because it needs javac
+        String jdkHome = System.getProperty("jdk.home"); //NOI18N
+        NotifyDescriptor.Message notJDK = new DialogDescriptor.Message(
+                Bundle.ERR_NO_JDK(),
+                DialogDescriptor.ERROR_MESSAGE);
+        if (jdkHome == null || jdkHome.isEmpty()) {
+            DialogDisplayer.getDefault().notify(notJDK);
+            return;
+        } else {
+            FileObject jdkHomeFO = FileUtil.toFileObject(new File(jdkHome, "bin")); //NOI18N
+            FileObject javacFO = jdkHomeFO.getFileObject("javac"); //NOI18N
+            if (javacFO == null) {
+                DialogDisplayer.getDefault().notify(notJDK);
+                return;
+            }
         }
 
         if (COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command) || COMMAND_REBUILD.equals(command)) {
