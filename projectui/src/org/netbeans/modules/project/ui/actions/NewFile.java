@@ -285,10 +285,12 @@ public class NewFile extends ProjectAction implements PropertyChangeListener, Po
             } else {
                 // fallback
                 FileObject fo = context.lookup(FileObject.class);
-                if(fo != null && fo.isFolder()) {
-                    preselectedFolder = DataFolder.findFolder(fo);
-                } else if(fo.getParent() != null) {                    
-                    preselectedFolder = DataFolder.findFolder(fo.getParent());                    
+                if(fo != null) {
+                    if(fo.isFolder()) {
+                        preselectedFolder = DataFolder.findFolder(fo);
+                    } else if(fo.getParent() != null) {                        
+                        preselectedFolder = DataFolder.findFolder(fo.getParent());                    
+                    }
                 }
             }
         }
