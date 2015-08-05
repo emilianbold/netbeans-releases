@@ -286,6 +286,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     public static final String BOLD_END = "</b>"; //NOI18N
 
     protected int substitutionOffset;
+    protected boolean showTooltip;
 
     protected JavaCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
@@ -577,6 +578,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
         if (sb.length() > 0) {
             CodeTemplateManager.get(doc).createTemporary(sb.toString()).insert(c);
+        }
+        if (showTooltip) {
+            Completion.get().showToolTip();
         }
     }
 
@@ -1973,7 +1977,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     }
                 }, NbBundle.getMessage(JavaCompletionItem.class, "JCI-import_resolve"), cancel, false); //NOI18N
             }
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 
@@ -2526,7 +2530,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (sb.length() == 0) {
                 return cs;
             }
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 
@@ -2817,7 +2821,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             sb.append(toAdd);
-            Completion.get().showToolTip();
+            showTooltip = true;
             return sb;
         }
 

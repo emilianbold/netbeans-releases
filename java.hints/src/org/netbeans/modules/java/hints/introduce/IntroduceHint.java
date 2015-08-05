@@ -73,6 +73,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -87,8 +89,10 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ErrorType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -363,8 +367,25 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     typeVars.retainAll(scanner.usedTypeVariables);
 
                     AtomicBoolean allIfaces = new AtomicBoolean();
-                    List<TargetDescription> targets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
-                            Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces);
+                    Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>();
+                    for (TargetDescription target : IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
+                            Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces)) {
+                        Set<String> cNames = new HashSet<>();
+                        outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                            List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
+                            if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
+                                Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
+                                Iterator<VariableElement> pVarsIt = scanner.usedLocalVariables.keySet().iterator();
+                                while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
+                                    if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
+                                        continue outer;
+                                    }
+                                }
+                                cNames.add(ee.getSimpleName().toString());
+                            }
+                        }
+                        targets.put(target, cNames);
+                    }
 
                     methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
                     methodFix.setTargetIsInterface(allIfaces.get());
