@@ -361,6 +361,27 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     /**
+     * Get line length (in characters), not counting input characters on the
+     * last line.
+     *
+     * This method returns the same result as {@code getLine(idx).length()}, but
+     * is much faster and cheaper, because the text doesn't have to be
+     * constructed (see bug bug 250084).
+     *
+     * Method {@link #length(int)} is very similar, but returns different value
+     * for the last line (it counts also input characters).
+     *
+     * @param idx Line index.
+     *
+     * @see #getLine(int)
+     */
+    private int getLineLength(int idx) {
+        int lineStart = getCharLineStart(idx);
+        int lineEnd = toCharIndex(idx < lineStartList.size() - 1 ? lineStartList.get(idx + 1) : getByteSize());
+        return Math.max(0, lineEnd - lineStart);
+    }
+
+    /**
      * Get a length of single line in bytes.
      */
     private int getByteLineLength(int idx) {
@@ -951,11 +972,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 // The last line can contain input
                 if (line == getLineCount() - 1) {
                     LineInfo li = new LineInfo(this);
-                    try {
-                        li.addSegment(getLine(line).length(), OutputKind.OUT, null, null, null, false);
-                    } catch (IOException e) {
-                        LOG.log(Level.INFO, null, e);
-                    }
+                    li.addSegment(getLineLength(line), OutputKind.OUT, null, null, null, false);
                     li.addSegment(length(line), OutputKind.IN, null, null, null, false);
                     return li;
                 } else {

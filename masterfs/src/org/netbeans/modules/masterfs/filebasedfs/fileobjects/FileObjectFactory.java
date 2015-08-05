@@ -111,6 +111,11 @@ public final class FileObjectFactory {
     
     private FileObjectFactory(FileInfo fInfo, Object msg) {
         final BaseFileObj realRoot = create(fInfo);
+        if (realRoot == null) { // #252580
+            Logger.getLogger(FileObjectFactory.class.getName()).log(
+                    Level.SEVERE, "No fo for " + fInfo + " queried for " + msg,
+                    new NullPointerException());
+        }
         assert realRoot != null : "No fo for " + fInfo + " queried for " + msg;
         root = realRoot;
     }
