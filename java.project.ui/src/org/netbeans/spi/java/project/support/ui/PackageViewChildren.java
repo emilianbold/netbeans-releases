@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -64,12 +65,14 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.project.ui.PackageDisplayUtils;
+import org.netbeans.modules.java.project.ui.PackageDisplayUtils.Accessibility;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
@@ -121,7 +124,8 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
     private static final String NODE_NOT_CREATED = "NNC"; // NOI18N
     private static final String NODE_NOT_CREATED_EMPTY = "NNC_E"; //NOI18N
     private static final int VISIBILITY_CHANGE_WINDOW = 1000;
-    private static final RequestProcessor VISIBILITY_CHANGE_RP = new RequestProcessor(PackageViewChildren.class);
+    private static final RequestProcessor VISIBILITY_CHANGE_RP = new RequestProcessor(String.format("%s-visibility",PackageViewChildren.class.getSimpleName()));    //NOI18N
+    private static final RequestProcessor ACCESSIBILITY_RP = new RequestProcessor(String.format("%s-accessibility",PackageViewChildren.class.getSimpleName()));     //NOI18N
     
     private static final MessageFormat PACKAGE_FLAVOR = new MessageFormat("application/x-java-org-netbeans-modules-java-project-packagenodednd; class=org.netbeans.spi.java.project.support.ui.PackageViewChildren$PackageNode; mask={0}"); //NOI18N
         
@@ -706,6 +710,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         private final FileObject root;
         private DataFolder dataFolder;
         private boolean isDefaultPackage;
+        private volatile Accessibility accessibility;
         
         public PackageNode( FileObject root, DataFolder dataFolder ) {
             this( root, dataFolder, isEmpty( dataFolder ) );
@@ -1098,14 +1103,36 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         
         
         private Image getMyIcon(int type) {
-            FileObject folder = dataFolder.getPrimaryFile();
+            final FileObject folder = dataFolder.getPrimaryFile();
             String path = FileUtil.getRelativePath(root, folder);
             if (path == null) {
                 // ??? - #103711: null cannot be returned because the icon 
                 // must be annotated; general package icon is returned instead
                 return ImageUtilities.loadImage(PackageDisplayUtils.PACKAGE);
             }
-            return PackageDisplayUtils.getIcon(folder, isLeaf());
+            if (accessibility == null) {
+                ACCESSIBILITY_RP.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        accessibility = Accessibility.fromQuery(AccessibilityQuery.isPubliclyAccessible(folder));
+                        fireIconChange();
+                    }
+                });
+            }
+            return PackageDisplayUtils.getIcon(
+                    folder,
+                    isLeaf(),
+                    new Callable<Accessibility>() {
+                        @Override
+                        public Accessibility call() throws Exception {
+                            Accessibility res = accessibility;
+                            if (res == null) {
+                                res = Accessibility.UNKNOWN;
+                            }
+                            return res;
+                        }
+                    });
+
         }
         
         private Image getMyOpenedIcon(int type) {

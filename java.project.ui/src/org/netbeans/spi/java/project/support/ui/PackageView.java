@@ -386,7 +386,7 @@ public class PackageView {
         
         public Icon getIcon() {
             if ( icon == null ) {
-                Image image = PackageDisplayUtils.getIcon(pkg, empty);                
+                Image image = PackageDisplayUtils.getIcon(pkg, empty);
                 icon = image2icon.get(image);
                 if ( icon == null ) {            
                     icon = new ImageIcon( image );

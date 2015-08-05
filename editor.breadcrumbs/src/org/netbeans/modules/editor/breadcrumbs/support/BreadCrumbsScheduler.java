@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
  */
 
@@ -44,6 +44,7 @@ package org.netbeans.modules.editor.breadcrumbs.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -72,7 +73,6 @@ import org.openide.util.lookup.ServiceProvider;
 public final class BreadCrumbsScheduler extends Scheduler {
 
     public BreadCrumbsScheduler () {
-        BreadcrumbsController.addBreadCrumbsEnabledListener(new AListener ());
         EditorRegistry.addPropertyChangeListener (new EditorListener ());
         setEditor (EditorRegistry.focusedComponent ());
     }
@@ -86,40 +86,45 @@ public final class BreadCrumbsScheduler extends Scheduler {
             }
         });
     }
-    
+
     private class AListener implements ChangeListener {
-    
+
         @Override
         public void stateChanged(ChangeEvent e) {
             refresh();
         }
     }
 
+    private final AtomicBoolean listensOnSettings = new AtomicBoolean();
     private JTextComponent  currentEditor;
     private CaretListener   caretListener;
     private Document        currentDocument;
 
-    
+
     protected void setEditor (JTextComponent editor) {
-        if (currentEditor != null)
+        if (currentEditor != null) {
             currentEditor.removeCaretListener (caretListener);
+        }
         currentEditor = editor;
         if (editor != null) {
-            if (caretListener == null)
+            if (listensOnSettings.compareAndSet(false,true)) {
+                BreadcrumbsController.addBreadCrumbsEnabledListener(new AListener ());
+            }
+            if (caretListener == null) {
                 caretListener = new ACaretListener ();
+            }
             editor.addCaretListener (caretListener);
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
             final Source source = Source.create (currentDocument);
             schedule (source, new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot (), editor.getCaret ().getMark ()) {});
-        }
-        else {
+        } else {
             currentDocument = null;
             schedule(null, null);
         }
     }
-    
+
     @Override
     public String toString () {
         return "BreadCrumbsScheduler";
@@ -147,7 +152,7 @@ public final class BreadCrumbsScheduler extends Scheduler {
     }
 
     private class EditorListener implements PropertyChangeListener {
-    
+
         public void propertyChange (PropertyChangeEvent evt) {
             if (evt.getPropertyName () == null ||
                 evt.getPropertyName ().equals (EditorRegistry.FOCUSED_DOCUMENT_PROPERTY) ||
