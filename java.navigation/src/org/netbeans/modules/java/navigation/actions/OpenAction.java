@@ -109,7 +109,7 @@ public final class OpenAction extends AbstractAction {
     }
 
     private static boolean isClassFile(@NonNull final FileObject file) {
-        return "application/x-class-file".equals(file.getMIMEType()) || "class".equals(file.getExt());  //NOI18N
+        return "application/x-class-file".equals(file.getMIMEType("application/x-class-file")) || "class".equals(file.getExt());  //NOI18N
     }
 
     @CheckForNull
