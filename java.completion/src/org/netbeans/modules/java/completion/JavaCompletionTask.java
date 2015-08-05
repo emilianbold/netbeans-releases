@@ -548,7 +548,9 @@ public final class JavaCompletionTask<T> extends BaseTask {
         }
         if (lastTypeParam != null) {
             TokenSequence<JavaTokenId> first = findFirstNonWhitespaceToken(env, startPos, offset);
-            if (first != null && first.token().id() == JavaTokenId.GT) {
+            if (first != null && (first.token().id() == JavaTokenId.GT
+                    || first.token().id() == JavaTokenId.GTGT
+                    || first.token().id() == JavaTokenId.GTGTGT)) {
                 first = nextNonWhitespaceToken(first);
                 if (first != null && first.offset() < offset) {
                     if (first.token().id() == JavaTokenId.EXTENDS) {

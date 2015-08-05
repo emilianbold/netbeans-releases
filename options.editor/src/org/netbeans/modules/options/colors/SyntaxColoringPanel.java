@@ -881,6 +881,12 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
                         } else {
                             isChanged |= checkMaps(languageName, currentSyntax, savedSyntax);
                         }
+                    } else if (savedSyntax != null && currentSyntax == null) {
+                        isChanged = true;
+                    }
+                    if (isChanged) { // no need to iterate further
+                        changed = true;
+                        return;
                     }
                 }
             }

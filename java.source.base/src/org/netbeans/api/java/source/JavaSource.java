@@ -76,6 +76,7 @@ import org.netbeans.modules.java.source.parsing.CachingArchiveProvider;
 import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.MimeTask;
@@ -255,7 +256,7 @@ public final class JavaSource {
         JavaSource js = ref != null ? ref.get() : null;
         if (js == null) {
             mimeType = mimeType == null ? FileUtil.getMIMEType(fileObject, supportedMIMETypes) : mimeType;
-            if ("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt())) {   //NOI18N
+            if (ClassParser.MIME_TYPE.equals(mimeType) || FileObjects.CLASS.equals(fileObject.getExt())) {
                 ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
                 if (bootPath == null) {
                     //javac requires at least java.lang

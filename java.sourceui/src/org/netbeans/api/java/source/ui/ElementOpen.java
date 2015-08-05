@@ -46,17 +46,23 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.fold.Fold;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.ClassParser;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -165,25 +171,41 @@ public final class ElementOpen {
         Parameters.notNull("toSearch", toSearch);   //NOI18N
         Parameters.notNull("toOpen", toOpen);       //NOI18N
 
-        Object[] openInfo = getOpenInfo (toSearch, toOpen, cancel);
-        if (cancel.get()) return false;
+        final Object[] openInfo = !isClassFile(toSearch) ? getOpenInfo (toSearch, toOpen, cancel) : null;
+        if (cancel.get()) {
+            return false;
+        }
         if (openInfo != null) {
             assert openInfo[0] instanceof FileObject;
             return doOpen((FileObject)openInfo[0],(int)openInfo[1], (int)openInfo[2]);
         }
-        
-        BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
 
+        boolean res = false;
+        final BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
         if (beo != null) {
-            return beo.open(ClasspathInfo.create(toSearch), toOpen, cancel);
-        } else {
-            return false;
+            ClassPath bootCp = ClassPath.getClassPath(toSearch, ClassPath.BOOT);
+            if (bootCp == null) {
+                bootCp = JavaPlatform.getDefault().getBootstrapLibraries();
+            }
+            ClassPath cp = ClassPath.getClassPath(toSearch, ClassPath.COMPILE);
+            if (cp == null || cp.findOwnerRoot(toSearch) == null) {
+                cp = ClassPath.getClassPath(toSearch, ClassPath.EXECUTE);
+                if (cp == null) {
+                    cp = ClassPath.EMPTY;
+                }
+            }
+            final ClassPath src = ClassPath.getClassPath(toSearch, ClassPath.SOURCE);
+            res = beo.open(ClasspathInfo.create(bootCp, cp, src), toOpen, cancel);
         }
+        return res;
     }
-    
-    
+
     // Private methods ---------------------------------------------------------
-        
+
+    private static boolean isClassFile(@NonNull final FileObject file) {
+        return FileObjects.CLASS.equals(file.getExt()) || ClassParser.MIME_TYPE.equals(file.getMIMEType(ClassParser.MIME_TYPE));
+    }
+
     private static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle, AtomicBoolean cancel) {
         assert fo != null;
         
