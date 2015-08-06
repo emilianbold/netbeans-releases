@@ -143,6 +143,14 @@ final class AnalyzeStackTopComponent extends TopComponent {
         });
     }
 
+    public void fill(BufferedReader r) {
+        DefaultListModel model = new DefaultListModel ();
+        fillListModel(r, model);
+        if (!model.isEmpty()) {
+            list.setModel (model);
+        }
+    }
+    
     /**
      * Reads the lines from the supplied reader and fills the supplied
      * model with the lines.
@@ -248,11 +256,7 @@ final class AnalyzeStackTopComponent extends TopComponent {
             }
             Reader reader = DataFlavor.stringFlavor.getReaderForText (transferable);
             BufferedReader r = new BufferedReader (reader);
-            DefaultListModel model = new DefaultListModel ();
-            fillListModel(r, model);
-            if (!model.isEmpty()) {
-                list.setModel (model);
-            }
+            fill(r);
         } catch (UnsupportedFlavorException ex) {
             Exceptions.printStackTrace (ex);
         } catch (IOException ex) {
