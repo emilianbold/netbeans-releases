@@ -73,20 +73,20 @@ import org.openide.util.Utilities;
  * inside the Wizard.
  */
 public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable {
-    
+
     private static final Logger LOGGER = Logger.getLogger(NewJ2SEPlatform.class.getName());
-    
+
     private static Set<String> propertiesToFix = new HashSet<String> ();
-    
+
     //Properties used by IDE which should be fixed not to use resolved symlink
     static {
         propertiesToFix.add ("sun.boot.class.path");    //NOI18N
         propertiesToFix.add ("sun.boot.library.path");  //NOI18N
         propertiesToFix.add ("java.library.path");      //NOI18N
         propertiesToFix.add ("java.ext.dirs");          //NOI18N
-        propertiesToFix.add ("java.home");              //NOI18N       
+        propertiesToFix.add ("java.home");              //NOI18N
     }
-    
+
     private boolean valid;
 
     public static NewJ2SEPlatform create (FileObject installFolder) throws IOException {
@@ -107,6 +107,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
      * Actually performs the detection and stores relevant information
      * in this Iterator
      */
+    @Override
     public void run() {
         try {
             //Verify all needed tools
@@ -115,43 +116,44 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
                     return;
                 }
             }
-            FileObject java = findTool("java");
-            if (java == null)
+            FileObject java = findTool("java"); //NOI18N
+            if (java == null) {
                 return;
+            }
             File javaFile = FileUtil.toFile (java);
-            if (javaFile == null)
+            if (javaFile == null) {
                 return;
+            }
             String javapath = javaFile.getAbsolutePath();
-            String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath();
+            String filePath = File.createTempFile("nb-platformdetect", "properties").getAbsolutePath(); //NOI18N
             final String probePath = getSDKProperties(javapath, filePath);
             File f = new File(filePath);
             Properties p = new Properties();
-            InputStream is = new FileInputStream(f);
-            p.load(is);
-            Map<String,String> m = new HashMap<String,String>(p.size());
+            try (InputStream is = new FileInputStream(f)) {
+                p.load(is);
+            }
+            Map<String,String> m = new HashMap<>(p.size());
             for (Enumeration en = p.keys(); en.hasMoreElements(); ) {
                 String k = (String)en.nextElement();
-                String v = p.getProperty(k);                
+                String v = p.getProperty(k);
                 if (J2SEPlatformImpl.SYSPROP_JAVA_CLASS_PATH.equals(k)) {
                     v = filterProbe (v, probePath);
-                }
-                else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
+                } else if (J2SEPlatformImpl.SYSPROP_USER_DIR.equals(k)) {
                     v = ""; //NOI18N
                 }
                 v = fixSymLinks (k,v);
                 m.put(k, v);
-            }   
+            }
             this.setSystemProperties(m);
             this.valid = true;
-            is.close();
             f.delete();
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot execute probe process", ex);
             this.valid = false;
         }
     }
-    
-    
+
+
     /**
      * Fixes sun.boot.class.path property if it contains resolved
      * symbolic link. On Suse the jdk is symlinked and during update
@@ -184,7 +186,7 @@ public final class NewJ2SEPlatform extends J2SEPlatformImpl implements Runnable 
                         if (i > 0) {
                             sb.append(File.pathSeparatorChar);
                         }
-                        sb.append(pathElements[i]);                
+                        sb.append(pathElements[i]);
                     }
                     return sb.toString();
                 }
