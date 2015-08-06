@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
-import java.text.MessageFormat;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import java.util.*;
@@ -51,14 +50,17 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipFile;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -70,16 +72,31 @@ public class Util {
     public static final String PROTO_HTTPS = "https";            //NOI18N
     public static final String PROTO_FILE = "file";              //NOI18N
 
+    private static final Logger LOG = Logger.getLogger(Util.class.getName());
+    //Properties used by IDE which should be fixed not to use resolved symlink
+    private static final Set<String> propertiesToFix;
+    static {
+        final Set<String> p = new HashSet<>();
+        p.add ("sun.boot.class.path");    //NOI18N
+        p.add ("sun.boot.library.path");  //NOI18N
+        p.add ("java.library.path");      //NOI18N
+        p.add ("java.ext.dirs");          //NOI18N
+        p.add ("java.home");              //NOI18N
+        p.add ("java.endorsed.dirs");     //NOI18N
+        propertiesToFix = Collections.unmodifiableSet(p);
+    }
+
     private Util () {
+        throw new IllegalStateException("No instance allowed"); //NOI18N
     }
 
     static ClassPath createClassPath(String classpath) {
         Parameters.notNull("classpath", classpath);
         StringTokenizer tokenizer = new StringTokenizer(classpath, File.pathSeparator);
-        List<PathResourceImplementation> list = new ArrayList<PathResourceImplementation>();
+        List<PathResourceImplementation> list = new ArrayList<>();
         while (tokenizer.hasMoreTokens()) {
             String item = tokenizer.nextToken();
-            File f = FileUtil.normalizeFile(new File(item));            
+            File f = FileUtil.normalizeFile(new File(item));
             URL url = getRootURL (f);
             if (url!=null) {
                 list.add(ClassPathSupport.createResource(url));
@@ -89,7 +106,7 @@ public class Util {
     }
 
     // XXX this method could probably be removed... use standard FileUtil stuff
-    static URL getRootURL  (final File f) {        
+    static URL getRootURL  (final File f) {
         try {
             URL url = Utilities.toURI(f).toURL();
             if (FileUtil.isArchiveFile(url)) {
@@ -114,8 +131,8 @@ public class Util {
             }
             return url;
         } catch (MalformedURLException e) {
-            throw new AssertionError(e);            
-        }        
+            throw new AssertionError(e);
+        }
     }
 
 
@@ -126,10 +143,10 @@ public class Util {
      * @return String
      */
     public static String normalizeName (String displayName) {
-        StringBuffer normalizedName = new StringBuffer ();
+        final StringBuilder normalizedName = new StringBuilder ();
         for (int i=0; i< displayName.length(); i++) {
             char c = displayName.charAt(i);
-            if (Character.isJavaIdentifierPart(c) || c =='-' || c =='.') {
+            if (Character.isJavaIdentifierPart(c) || c =='-' || c =='.') {  //NOI18N
                 normalizedName.append(c);
             }
             else {
@@ -152,7 +169,7 @@ public class Util {
          return makeSpec(version);
     }
 
-    
+
     public static FileObject findTool (String toolName, Collection<FileObject> installFolders) {
         return findTool (toolName, installFolders, null);
     }
@@ -187,20 +204,24 @@ public class Util {
         if (extPath == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
-        StringTokenizer tk = new StringTokenizer (extPath, File.pathSeparator);
+        final StringBuilder sb = new StringBuilder();
+        final StringTokenizer tk = new StringTokenizer (extPath, File.pathSeparator);
         while (tk.hasMoreTokens()) {
             File extFolder = FileUtil.normalizeFile(new File(tk.nextToken()));
             File[] files = extFolder.listFiles();
             if (files != null) {
                 for (int i = 0; i < files.length; i++) {
-                    File f = files[i];                   
+                    File f = files[i];
                     if (!f.exists()) {
                         //May happen, eg. broken link, it is safe to ignore it
                         //since it is an extension directory, but log it.
-                        ErrorManager.getDefault().log (ErrorManager.WARNING,
-                            MessageFormat.format (NbBundle.getMessage(Util.class,"MSG_BrokenExtension"),
-                            new Object[] {f,extFolder}));
+                        LOG.log(
+                                Level.WARNING,
+                                NbBundle.getMessage(Util.class,"MSG_BrokenExtension"),
+                                new Object[] {
+                                    f.getName(),
+                                    extFolder.getAbsolutePath()
+                                });
                         continue;
                     }
                     if (Utilities.isMac() && "._.DS_Store".equals(f.getName())) {  //NOI18N
@@ -209,7 +230,13 @@ public class Util {
                     }
                     FileObject fo = FileUtil.toFileObject(f);
                     if (fo == null) {
-                        Logger.getLogger(Util.class.getName()).warning("Cannot create FileObject for file: "+f.getAbsolutePath()+" exists: " + f.exists());
+                        LOG.log(
+                                Level.WARNING,
+                                "Cannot create FileObject for file: {0} exists: {1}", //NOI18N
+                                new Object[]{
+                                    f.getAbsolutePath(),
+                                    f.exists()
+                                });
                         continue;
                     }
                     if (!FileUtil.isArchiveFile(fo)) {
@@ -247,6 +274,66 @@ public class Util {
         return PROTO_HTTP.equals(protocol) || PROTO_HTTPS.equals(protocol);
     }
 
+    /**
+     * Fixes system properties like sun.boot.class.path if they contains resolved
+     * symbolic link.
+     */
+    @NullUnknown
+    public static String fixSymLinks (
+            @NonNull final String key,
+            @NullAllowed final String value,
+            @NonNull final Collection<? extends FileObject> installFolders) {
+        if (value != null && propertiesToFix.contains (key)) {
+            try {
+                String[] pathElements = value.split(File.pathSeparator);
+                boolean changed = false;
+                for (FileObject installFolder : installFolders) {
+                    final File f = FileUtil.toFile (installFolder);
+                    if (f != null) {
+                        String path = f.getAbsolutePath();
+                        String canonicalPath = f.getCanonicalPath();
+                        if (!path.equals(canonicalPath)) {
+                            for (int i=0; i<pathElements.length; i++) {
+                                if (pathElements[i].startsWith(canonicalPath)) {
+                                    pathElements[i] = path + pathElements[i].substring(canonicalPath.length());
+                                    changed = true;
+                                }
+                            }
+                        }
+                    }
+                }
+                if (changed) {
+                    final StringBuilder sb = new StringBuilder ();
+                    for (int i = 0; i<pathElements.length; i++) {
+                        if (i > 0) {
+                            sb.append(File.pathSeparatorChar);
+                        }
+                        sb.append(pathElements[i]);
+                    }
+                    return sb.toString();
+                }
+            } catch (IOException ioe) {
+                //Returns the original value
+            }
+        }
+        return value;
+    }
+
+    @NonNull
+    public static Collection<FileObject> toFileObjects(Collection<? extends URL> urls) {
+        if (urls.isEmpty()) {
+            return Collections.emptySet();
+        }
+        final Collection<FileObject> result = new ArrayList<> (urls.size());
+        for (URL url : urls) {
+            final FileObject fo = URLMapper.findFileObject(url);
+            if (fo != null) {
+                result.add (fo);
+            }
+        }
+        return result;
+    }
+
     // copy pasted from org.openide.modules.Dependency:
     /** Try to make a specification version from a string.
      * Deal with errors gracefully and try to recover something from it.
@@ -270,6 +357,6 @@ public class Util {
         }
         // Nothing decent in it at all; use zero.
         return new SpecificationVersion("0"); // NOI18N
-    }   
+    }
 
 }
