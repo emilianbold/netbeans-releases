@@ -1822,7 +1822,7 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private void bypassAntBuildScript(String command, Lookup context, Map<String, Object> p, AtomicReference<ExecutorTask> task) throws IllegalArgumentException {
         final JavaMainAction javaMainAction = getJavaMainAction();
-        boolean run = javaMainAction != JavaMainAction.TEST;;
+        boolean run = javaMainAction != JavaMainAction.TEST;
         boolean hasMainMethod = run;
 
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_STEP_INTO.equals(command) || COMMAND_PROFILE.equals(command)) {
