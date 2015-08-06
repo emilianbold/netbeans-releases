@@ -4243,8 +4243,10 @@ public class Reformatter implements ReformatTask {
                                 }
                                 identStart = -1;
                             }
-                            if (insideTagEndOffset >= 0)
+                            if (insideTagEndOffset >= 0) {
                                 addMark(Pair.of(insideTagEndOffset, 6), marks, state);
+                                currWSOffset = -1;
+                            }
                             cseq = null;
                             break;
                         default:
