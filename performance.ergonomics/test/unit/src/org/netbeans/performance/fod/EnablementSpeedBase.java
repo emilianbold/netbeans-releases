@@ -49,6 +49,7 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbPerformanceTest.PerformanceData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.ide.ergonomics.Utilities;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 /**
  * Checks how quick it is to enable a feature.
@@ -96,7 +97,7 @@ public abstract class EnablementSpeedBase extends NbTestCase {
         data.runOrder = PerformanceData.NO_ORDER;
         data.unit = "ms";
         data.value = (now - time);
-        org.netbeans.performance.scanning.Utilities.processUnitTestsResults(this.getClass().getCanonicalName(), data);
+        CommonUtilities.processUnitTestsResults(this.getClass().getCanonicalName(), data);
 
         System.err.println("enabled in " + ((now - time) / 1000) + "s");
     }
