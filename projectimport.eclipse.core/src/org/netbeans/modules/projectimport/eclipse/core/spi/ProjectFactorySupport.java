@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -124,39 +126,39 @@ public class ProjectFactorySupport {
             return oldKey;
         }
         // compare old and new key and add and remove items from classpath;
-        FileObject sourceRoot = FileUtil.toFileObject(model.getEclipseSourceRootsAsFileArray()[0]);
-        
         String resultingKey = newKey;
-        
-        // add new CP items:
-        StringTokenizer st = new StringTokenizer(newKey, ";"); //NOI18N
-        while (st.hasMoreTokens()) {
-            String t = st.nextToken();
-            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
-                continue;
-            }
-            if (!oldKey.contains(t)) {
-                DotClassPathEntry entry = findEntryByEncodedValue(model.getEclipseClassPathEntries(), t);
-                // TODO: items appended to the end of classpath; there is no API to control this apart from editting javac.classpath directly
-                addItemToClassPath(helper, refHelper, entry, model, importProblems, sourceRoot);
-                if (Boolean.FALSE.equals(entry.getImportSuccessful())) {
-                    // adding of item failed: remove it from key so that it can be retried
-                    resultingKey = resultingKey.replace(t+";", ""); //NOI18N
+        final FileObject sourceRoot = findFirstExisting(model.getEclipseSourceRootsAsFileArray());
+        if (sourceRoot != null) {
+            // add new CP items:
+            StringTokenizer st = new StringTokenizer(newKey, ";"); //NOI18N
+            while (st.hasMoreTokens()) {
+                String t = st.nextToken();
+                if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
+                    continue;
+                }
+                if (!oldKey.contains(t)) {
+                    DotClassPathEntry entry = findEntryByEncodedValue(model.getEclipseClassPathEntries(), t);
+                    // TODO: items appended to the end of classpath; there is no API to control this apart from editting javac.classpath directly
+                    addItemToClassPath(helper, refHelper, entry, model, importProblems, sourceRoot);
+                    if (Boolean.FALSE.equals(entry.getImportSuccessful())) {
+                        // adding of item failed: remove it from key so that it can be retried
+                        resultingKey = resultingKey.replace(t+";", ""); //NOI18N
+                    }
                 }
             }
-        }
-        
-        // remove removed CP items:
-        st = new StringTokenizer(oldKey, ";"); //NOI18N
-        while (st.hasMoreTokens()) {
-            String t = st.nextToken();
-            if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
-                continue;
-            }
-            if (!newKey.contains(t)) {
-                if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) { //NOI18N
-                    // removing of item failed: keep it in new key so that it can be retried
-                    resultingKey += t+";"; //NOI18N
+
+            // remove removed CP items:
+            st = new StringTokenizer(oldKey, ";"); //NOI18N
+            while (st.hasMoreTokens()) {
+                String t = st.nextToken();
+                if (t.startsWith("src") || t.startsWith("output") || t.startsWith("jre")) { //NOI18N
+                    continue;
+                }
+                if (!newKey.contains(t)) {
+                    if (!removeOldItemFromClassPath(project, helper, t.substring(0, t.indexOf("=")), t.substring(t.indexOf("=")+1), importProblems, sourceRoot, model.getEclipseProjectFolder())) { //NOI18N
+                        // removing of item failed: keep it in new key so that it can be retried
+                        resultingKey += t+";"; //NOI18N
+                    }
                 }
             }
         }
@@ -699,5 +701,16 @@ public class ProjectFactorySupport {
             }
         }
         return false;
+    }
+
+    @CheckForNull
+    private static FileObject findFirstExisting(@NonNull final File... files) {
+        for (File file : files) {
+            final FileObject fo = FileUtil.toFileObject(file);
+            if (fo != null) {
+                return fo;
+            }
+        }
+        return null;
     }
 }
