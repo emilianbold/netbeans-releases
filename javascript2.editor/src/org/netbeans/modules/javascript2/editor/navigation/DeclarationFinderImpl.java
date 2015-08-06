@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.EditorExtender;
@@ -61,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -72,6 +74,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.SemiTypeResolverVisito
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -252,6 +255,26 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 return loc;
             }
         }
+        // try to find the symbol in index and offer the declarations. 
+        if (occurrence != null) {
+            JsObject object = occurrence.getDeclarations().iterator().next();
+            FileObject fo = object.getFileObject();
+            if (fo != null && object.getName() != null) {
+                Collection<? extends IndexResult> items = JsIndex.get(fo).query(JsIndex.FIELD_BASE_NAME, object.getName(), QuerySupport.Kind.EXACT, JsIndex.TERMS_BASIC_INFO);
+                List<IndexResult> indexResults = new ArrayList<IndexResult>();
+                for (IndexResult item : items) {
+                    IndexedElement element = IndexedElement.create(item);
+                    if (!element.getModifiers().contains(Modifier.PRIVATE) && element.getJSKind() != JsElement.Kind.PARAMETER) {
+                        indexResults.add(item);
+                    }
+                }
+                DeclarationLocation location = processIndexResult(indexResults);
+                if (location != null) {
+                    return location;
+                }
+            }
+        }
+        
         return DeclarationLocation.NONE;
     }
 
