@@ -45,12 +45,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
@@ -61,6 +63,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
@@ -151,6 +154,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             tableModel.removeTableModelListener(this);
         }
         requestTable.setModel(model);
+        requestTable.setRowSorter(new TriStateRowSorter(model));
         model.addTableModelListener(this);
         selectedItemChanged();
         updateVisibility();
@@ -200,7 +204,6 @@ public final class NetworkMonitorTopComponent extends TopComponent
             }
         });
 
-        requestTable.setAutoCreateRowSorter(true);
         requestTableScrollPane.setViewportView(requestTable);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -683,6 +686,30 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
         private void close() {
             parent = null;
+        }
+
+    }
+
+    /**
+     * Table row sorter that cycles between ascending, descending and unsorted orders.
+     */
+    public static class TriStateRowSorter extends TableRowSorter<TableModel> {
+        
+        public TriStateRowSorter(TableModel model) {
+            super(model);
+        }
+
+        @Override
+        public void toggleSortOrder(int column) {
+            List<? extends SortKey> sortKeys = getSortKeys();
+            if (!sortKeys.isEmpty()) {
+                SortKey sortKey = sortKeys.get(0);
+                if (sortKey.getColumn() == column && sortKey.getSortOrder() == SortOrder.DESCENDING) {
+                    setSortKeys(null);
+                    return;
+                }
+            }
+            super.toggleSortOrder(column);
         }
 
     }
