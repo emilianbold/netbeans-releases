@@ -282,15 +282,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     @Override
     public final Collection<FileObject> getInstallFolders() {
-        Collection<FileObject> result = new ArrayList<FileObject> ();
-        for (Iterator<URL> it = this.installFolders.iterator(); it.hasNext();) {
-            URL url = it.next ();
-            FileObject root = URLMapper.findFileObject(url);
-            if (root != null) {
-                result.add (root); 
-            }
-        }
-        return result;
+        return Util.toFileObjects(installFolders);
     }
 
 
