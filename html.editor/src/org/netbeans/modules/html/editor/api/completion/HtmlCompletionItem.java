@@ -250,7 +250,7 @@ public class HtmlCompletionItem implements CompletionItem {
                         doc.remove(substitutionOffset, len);
                         doc.insertString(substitutionOffset, substituteText, null);
                     } else {
-                        c.setCaretPosition(c.getCaret().getDot() + substituteText.length() - len);
+                        c.setCaretPosition(c.getSelectionEnd() + substituteText.length() - len);
                     }
                 } catch (BadLocationException ex) {
                     result[0] = false;
