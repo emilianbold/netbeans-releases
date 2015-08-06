@@ -114,7 +114,7 @@ public final class TextDetail implements Selectable {
     /** Line number where search result occures.*/
     private int line;
     /** Text of the line. */ 
-    private String lineText;
+    private CharSequence lineText;
     /** Column where search result starts. */
     private int column;
     /** Length of search result which to mark. */
@@ -239,30 +239,30 @@ public final class TextDetail implements Selectable {
     }
 
     /** Getter for <code>lineText</code> property. */
-    public String getLineText() {
+    public CharSequence getLineText() {
         return lineText;
     }
     
     /** Setter for <code>lineText</code> property. */
     public void setLineText(String text) {
-        lineText = text;
+        lineText = optimizeLineText(text);
     }
 
-    String getLineTextPart(int beginIndex, int endIndex) {
+    CharSequence getLineTextPart(int beginIndex, int endIndex) {
         if (beginIndex >= 0 && beginIndex <= endIndex) {
-            return lineText.substring(beginIndex, endIndex);
+            return lineText.subSequence(beginIndex, endIndex);
         } else {
             LOG.log(Level.WARNING, "Invalid range: " //NOI18N
                     + "beginIndex = {0}, endIndex = {1}.", //NOI18N
                     new Object[]{beginIndex, endIndex});
-            return lineText.substring(
+            return lineText.subSequence(
                     Math.max(0, beginIndex),
                     Math.max(0, Math.max(beginIndex, endIndex)));
         }
     }
 
-    String getLineTextPart(int beginIndex) {
-        return lineText.substring(beginIndex);
+    CharSequence getLineTextPart(int beginIndex) {
+        return lineText.subSequence(beginIndex, lineText.length());
     }
 
     public int getLineTextLength() {
@@ -295,6 +295,8 @@ public final class TextDetail implements Selectable {
 
     /** Sets the column position of the text. */
     public void setColumn(int col) {
+        assert lineText == null : "setColumn must be called before"     //NOI18N
+                + " setLineText";                                       //NOI18N
         column = col;
     }
 
@@ -309,6 +311,8 @@ public final class TextDetail implements Selectable {
      * @param len the length of the marked text
      */
     public void setMarkLength(int len) {
+        assert lineText == null : "setMarkLength must be called before" //NOI18N
+                + " setLineText";                                       //NOI18N
         markLength = len;
     }
 
@@ -349,18 +353,6 @@ public final class TextDetail implements Selectable {
     /** Sets the matched text. */
     public void setMatchedText(String matchedText) {
         this.matchedText = matchedText;
-    }
-
-    /**
-     * Associates a result of the find with underlying text details.
-     * @param lineNumber the line position of the text.
-     * @param column the column position of the text or 0 (1 based).
-     * @param lineText text of the line.
-     */
-    public void associate(int lineNumber, int column, String lineText) {
-         setLine(lineNumber);
-         setColumn(column);
-         setLineText(lineText);
     }
 
     private void prepareLine() {
@@ -495,6 +487,7 @@ public final class TextDetail implements Selectable {
                 "org/netbeans/modules/search/res/textDetail.png";       //NOI18N
         /** Maximal lenght of displayed text detail. */
         static final int DETAIL_DISPLAY_LENGTH = 240;
+        static final int OUTPUT_DISPLAY_LENGTH = 16384;
         private static final String ELLIPSIS = "...";                   //NOI18N
         
         /** Detail to represent. */
@@ -642,13 +635,13 @@ public final class TextDetail implements Selectable {
             }
         }
 
-        private static String cutLongLine(String s) {
+        private static CharSequence cutLongLine(CharSequence s) {
             if (s == null) {
                 return "";                                              //NOI18N
             } else if (s.length() < DETAIL_DISPLAY_LENGTH) {
                 return s;
             } else {
-                return s.substring(0,
+                return s.subSequence(0,
                         DETAIL_DISPLAY_LENGTH - ELLIPSIS.length()) + ELLIPSIS;
             }
         }
@@ -708,7 +701,7 @@ public final class TextDetail implements Selectable {
                 int matchStart, boolean trim) throws CharConversionException {
             int first = 0; // index of first non-whitespace character
             if (trim) {
-                String lineText = txtDetail.getLineText();
+                CharSequence lineText = txtDetail.getLineText();
                 while (first < matchStart && lineText.charAt(first) <= '\u0020') {
                     first++;
                 }
@@ -777,8 +770,8 @@ public final class TextDetail implements Selectable {
             }
         }
 
-        private static String escape(String s) throws CharConversionException {
-            return XMLUtil.toElementContent(s).replace(" ", "&nbsp;");  //NOI18N
+        private static String escape(CharSequence s) throws CharConversionException {
+            return XMLUtil.toElementContent(s.toString()).replace(" ", "&nbsp;");  //NOI18N
         }
 
         /** Displays the matching string in a text editor. */
@@ -890,9 +883,9 @@ public final class TextDetail implements Selectable {
          */
         private static String getFullDesc(TextDetail det) {
             String filename = det.getDataObject().getPrimaryFile().getNameExt();
-            String lineText = det.getLineText();
-            if (lineText != null && lineText.length() > 16384) { // causes OOME
-                lineText = lineText.substring(0, 16384) + ELLIPSIS;
+            CharSequence lineText = det.getLineText();
+            if (lineText != null && lineText.length() > OUTPUT_DISPLAY_LENGTH) { // causes OOME
+                lineText = lineText.subSequence(0, OUTPUT_DISPLAY_LENGTH) + ELLIPSIS;
             }
             int line = det.getLine();
             int col = det.getColumn();
@@ -983,7 +976,7 @@ public final class TextDetail implements Selectable {
 
         public SurroundingLine(int number, String text) {
             this.number = number;
-            this.text = DetailNode.cutLongLine(text);
+            this.text = DetailNode.cutLongLine(text).toString();
         }
 
         public int getNumber() {
@@ -997,5 +990,113 @@ public final class TextDetail implements Selectable {
 
     void setLineNumberIndent(String lineNumberIndent) {
         this.lineNumberIndent = lineNumberIndent;
+    }
+
+    /**
+     * Create a CharSequence that hold only first OUTPUT_DISPLAY_LENGTH
+     * characters and DETAIL_DISPLAY_LENGTH characters before and after the
+     * match.
+     *
+     * @param lineText
+     */
+    private CharSequence optimizeLineText(String lineText) {
+        if (lineText.length() < DetailNode.OUTPUT_DISPLAY_LENGTH) {
+            return lineText;
+        } else {
+            int from = Math.max(0, column - 1 - DetailNode.DETAIL_DISPLAY_LENGTH);
+            int to = Math.min(lineText.length(), column - 1 + markLength + DetailNode.DETAIL_DISPLAY_LENGTH);
+            if (from < to) {
+                return optimizeText(
+                        lineText, DetailNode.OUTPUT_DISPLAY_LENGTH, from, to);
+            } else {
+                return lineText; // some weird state
+            }
+        }
+    }
+
+    /**
+     * Optimize string, create a character sequence that holds only two
+     * important parts in memory (the rest is ignored). The important parts are
+     * specified amount of characters at beginning of the string and a range
+     * of characters in arbitrary location in the string (it can overlap with
+     * the beginning part).
+     *
+     * @param text Text to optimize.
+     * @param beginning Length of the beginning part.
+     * @param from Start of the important part.
+     * @param to End of the important part.
+     *
+     * @return Optimized (by lossy) character sequence.
+     */
+    static CharSequence optimizeText(String text, int beginning, int from, int to) {
+        return new OptimizedCharSequence(text, beginning, from, to);
+    }
+
+    /**
+     * Data structure for support of
+     * {@link #optimizeText(java.lang.String, int, int, int)}.
+     */
+    private static class OptimizedCharSequence implements CharSequence {
+
+        private final CharSequence first;
+        private final CharSequence second;
+
+        private final int firstLength;
+        private final int secondFrom;
+        private final int secondTo;
+        private final int origLength;
+
+        private OptimizedCharSequence(String lineText, int beginningLength, int from, int to) {
+
+            if (beginningLength >= to || from <= beginningLength) {
+                int len = Math.max(beginningLength, to);
+                first = lineText.subSequence(0, len);
+                firstLength = len;
+                second = null;
+                secondFrom = -1;
+                secondTo = -1;
+            } else {
+                first = lineText.subSequence(0, beginningLength);
+                firstLength = beginningLength;
+                second = lineText.subSequence(from, to);
+                secondFrom = from;
+                secondTo = to;
+            }
+            origLength = lineText.length();
+        }
+
+        @Override
+        public int length() {
+            return origLength;
+        }
+
+        @Override
+        public char charAt(int index) {
+            if (index < firstLength) {
+                return first.charAt(index);
+            } else if (index >= secondFrom && index < secondTo) {
+                return second.charAt(index - secondFrom);
+            } else {
+                return '?';
+            }
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            if (end <= firstLength) {
+                return first.subSequence(start, end);
+            } else if (start >= secondFrom && end <= secondTo) {
+                return second.subSequence(start - secondFrom, end - secondFrom);
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append(this, start, end);
+                return sb.toString();
+            }
+        }
+
+        @Override
+        public String toString() {
+            return new StringBuilder(this).toString();
+        }
     }
 }
