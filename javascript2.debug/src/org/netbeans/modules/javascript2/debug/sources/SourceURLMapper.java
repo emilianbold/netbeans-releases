@@ -60,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.URLStreamHandlerRegistration;
 import org.openide.util.lookup.ServiceProvider;
 
