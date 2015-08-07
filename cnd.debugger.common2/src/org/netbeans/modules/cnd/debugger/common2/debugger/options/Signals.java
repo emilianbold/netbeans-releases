@@ -297,9 +297,12 @@ public final class Signals extends ProfileCategory {
 	    // just when the IDE starts _just_ to get all this information.
 
 	    if (xml_signals != null) {
-		for (int i = 0; i < xml_signals.length; i++) {
-		    int signo = xml_signals[i].signo;
-		    signals[signo-1].setCaught(xml_signals[i].isCaught());
+                for (InitialSignalInfo xml_signal : xml_signals) {
+                    for (InitialSignalInfo signal : signals) {
+                        if (signal.name.equals(xml_signal.name)) {
+                            signal.setCaught(xml_signal.isCaught());
+                        }
+                    }
 		}
 	    }
 

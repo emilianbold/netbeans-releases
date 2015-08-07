@@ -223,7 +223,17 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 //doc.insertString(offset, delimiter + " + " + delimiter, null);
                 //caret.setDot(offset+3);
                 //return offset + 5 + indent;
-                String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+                String str = "\\\n";    //NOI18N
+                if (id != JsTokenId.STRING || offset > ts.offset()) {
+                    str = "\\n\\\n";    //NOI18N
+                    if (offset - ts.offset() < ts.token().length()) {
+                        String text = ts.token().text().toString();
+                        text = text.substring(0, offset - ts.offset());
+                        if(text.endsWith("\\n\\")) {    //NOI18N
+                            str = "\n\\n\\";    //NOI18N
+                        }
+                    }
+                }
                 context.setText(str, -1, str.length());
                 return;
             }
