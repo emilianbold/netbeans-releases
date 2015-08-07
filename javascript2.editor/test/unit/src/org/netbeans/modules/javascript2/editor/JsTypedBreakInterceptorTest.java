@@ -521,4 +521,26 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "ko.applyBindings(new MyGameListViewModel([{name: \"Skyrim\", priority: 1}, {name: \"Max Payne 3\", priority: 2}]));\n"
                 + "^");
     }
+    
+    public void testIssue236799_01() throws Exception {
+        insertBreak("var a = {\n"
+                + "template: '<button class=\"btn\"><i class=\"icon-location-arrow\"></i> Demo</button>^'\n"
+                + "};",
+                "var a = {\n"
+                + "template: '<button class=\"btn\"><i class=\"icon-location-arrow\"></i> Demo</button>\\n\\\n^'\n"
+                + "};"
+        );
+    }
+    
+    public void testIssue236799_02() throws Exception {
+        insertBreak("var a = {\n"
+                + "template: '<button class=\"btn\"><i class=\"icon-location-arrow\"></i> Demo</button>\\n\\^\n"
+                + "'\n"
+                + "};",
+                "var a = {\n"
+                + "template: '<button class=\"btn\"><i class=\"icon-location-arrow\"></i> Demo</button>\\n\\\n"
+                + "\\n\\^\n'\n"
+                + "};"
+        );
+    }
 }

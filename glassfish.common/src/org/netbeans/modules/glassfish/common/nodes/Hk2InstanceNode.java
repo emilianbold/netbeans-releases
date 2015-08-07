@@ -95,6 +95,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
 
     private final GlassfishInstance serverInstance;
     private final InstanceContent instanceContent;
+    private final boolean isFullNode;
     private volatile String displayName = null;
     private volatile String shortDesc = null;
 
@@ -111,6 +112,7 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
                 new ProxyLookup(new AbstractLookup(ic), instance.getLookup()));
         serverInstance = instance;
         instanceContent = ic;
+        this.isFullNode = isFullNode;
         setIconBaseWithExtension(ICON_BASE);
         
         if(isFullNode) {
@@ -172,6 +174,10 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
      * @return A list of actions for local server instance.
      */
     public Action[] getLocalActions() {
+        if (!isFullNode) {
+            return new Action[]{};
+        }
+
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
