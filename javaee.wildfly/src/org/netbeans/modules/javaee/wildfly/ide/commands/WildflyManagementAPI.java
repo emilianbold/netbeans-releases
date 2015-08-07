@@ -42,6 +42,7 @@
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.UNDEFINED;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -337,5 +338,9 @@ public class WildflyManagementAPI {
         Class modelClazz = cl.loadClass("org.jboss.dmr.ModelNode"); // NOI18N
         Method method = clazz.getDeclaredMethod("isSuccessfulOutcome", modelClazz);
         return (Boolean) method.invoke(null, modelNode);
+    }
+
+    static boolean isDefined(String value) {
+        return value != null && !value.isEmpty() && !UNDEFINED.equalsIgnoreCase(value);
     }
 }

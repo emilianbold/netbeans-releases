@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javaee.wildfly.ide.commands;
 
-import static org.netbeans.modules.javaee.wildfly.config.gen.CookieConfigType.PATH;
-import static org.netbeans.modules.javaee.wildfly.config.gen.PropertyType.VALUE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADD;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.ADDRESS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.BYTES;
@@ -54,12 +52,14 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.CONTROL
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_REDEPLOY_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.DEPLOYMENT_UNDEPLOY_OPERATION;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.EXPRESSION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.INCLUDE_RUNTIME;
-import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP_ADDR;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.PATH;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RESULT;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SHUTDOWN;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.NAME;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OP;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.OUTCOME;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.READ_ATTRIBUTE_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.READ_CHILDREN_NAMES_OPERATION;
@@ -67,10 +67,12 @@ import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.READ_CH
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.READ_RESOURCE_OPERATION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RECURSIVE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RECURSIVE_DEPTH;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RESOLVE_EXPRESSION;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.RUNTIME_NAME;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.STEPS;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUBSYSTEM;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.SUCCESS;
+import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.VALUE;
 import static org.netbeans.modules.javaee.wildfly.ide.commands.Constants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.io.File;
@@ -1280,20 +1282,15 @@ public class WildflyClient {
                 Object scanner = readResult(cl, response);
                 if (modelNodeAsBoolean(cl, getModelNodeChild(cl, scanner, "scan-enabled"))) {
                     String path = modelNodeAsString(cl, getModelNodeChild(cl, scanner, PATH));
-                    String relativeTo = readPath(modelNodeAsString(cl, getModelNodeChild(cl, scanner, "relative-to")));
-                    return relativeTo + File.separatorChar + path;
+                    String relativeToPath = modelNodeAsString(cl, getModelNodeChild(cl, scanner, "relative-to"));
+                    if(WildflyManagementAPI.isDefined(relativeToPath)) {
+                        return readPath(relativeToPath) + File.separatorChar + path;
+                    }
+                    return path;
                 }
             }
             return "";
-        } catch (ClassNotFoundException ex) {
-            throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
@@ -1304,8 +1301,7 @@ public class WildflyClient {
             LinkedHashMap<Object, Object> values = new LinkedHashMap<Object, Object>();
             values.put(PATH, pathName);
             final Object readPathOperation = createModelNode(cl);
-            setModelNodeChildString(cl, getModelNodeChild(cl, readPathOperation, OP),
-                    READ_RESOURCE_OPERATION);
+            setModelNodeChildString(cl, getModelNodeChild(cl, readPathOperation, OP), READ_RESOURCE_OPERATION);
             // ModelNode
             Object path = createPathAddressAsModelNode(cl, values);
             setModelNodeChild(cl, getModelNodeChild(cl, readPathOperation, ADDRESS), path);
@@ -1316,15 +1312,32 @@ public class WildflyClient {
                 return modelNodeAsString(cl, getModelNodeChild(cl, readResult(cl, response), PATH));
             }
             return pathName;
-        } catch (ClassNotFoundException ex) {
+        } catch (ClassNotFoundException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException ex) {
             throw new IOException(ex);
-        } catch (IllegalAccessException ex) {
-            throw new IOException(ex);
-        } catch (InstantiationException ex) {
-            throw new IOException(ex);
-        } catch (NoSuchMethodException ex) {
-            throw new IOException(ex);
-        } catch (InvocationTargetException ex) {
+        }
+    }
+    
+    private String resolveExpression(String unresolvedString) throws IOException {
+        try {
+            WildflyDeploymentFactory.WildFlyClassLoader cl = WildflyDeploymentFactory.getInstance().getWildFlyClassLoader(ip);
+            final Object resolveExpression = createModelNode(cl);
+            setModelNodeChildString(cl, getModelNodeChild(cl, resolveExpression, OP), RESOLVE_EXPRESSION);
+            Object rootAddress = createPathAddressAsModelNode(cl, new LinkedHashMap<>());
+            setModelNodeChild(cl, getModelNodeChild(cl, resolveExpression, ADDRESS), rootAddress);
+            String testedExpression;
+            if(unresolvedString.startsWith("${") && unresolvedString.endsWith("}")) {
+                testedExpression = unresolvedString;
+            } else {
+                testedExpression = "${" + unresolvedString + "}";
+            }
+            setModelNodeChild(cl, getModelNodeChild(cl, resolveExpression, EXPRESSION), testedExpression);
+            Object response = executeOnModelNode(cl, resolveExpression);
+            if (isSuccessfulOutcome(cl, response)) {
+                Object resolvedExpression = readResult(cl, response);
+                return modelNodeAsString(cl,resolvedExpression);
+            }
+            return unresolvedString;
+        } catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException | InvocationTargetException | InstantiationException ex) {
             throw new IOException(ex);
         }
     }
