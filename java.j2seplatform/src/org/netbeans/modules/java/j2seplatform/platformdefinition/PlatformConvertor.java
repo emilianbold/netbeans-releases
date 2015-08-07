@@ -250,7 +250,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         synchronized (this) {
             e = keepAlive.removeFirst();
         }
-        JavaPlatform plat = (JavaPlatform)e.getSource();
+        J2SEPlatformImpl plat = (J2SEPlatformImpl)e.getSource();
         try {
             holder.getPrimaryFile().getFileSystem().runAtomicAction(
                 new W(plat, holder, defaultPlatform));
@@ -285,7 +285,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return key;
     }
 
-    public static JavaPlatform create (final JavaPlatform prototype) throws IOException, IllegalArgumentException {
+    public static JavaPlatform create (final J2SEPlatformImpl prototype) throws IOException, IllegalArgumentException {
         Parameters.notNull("prototype", prototype);
         final String systemName = prototype.getProperties().get(J2SEPlatformImpl.PLAT_PROP_ANT_NAME);
         if (systemName == null) {
@@ -367,7 +367,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         return "platforms." + platName + "." + propType;        //NOI18N
     }
 
-    private static DataObject create(final JavaPlatform plat, final DataFolder f, final String idName) throws IOException {
+    private static DataObject create(final J2SEPlatformImpl plat, final DataFolder f, final String idName) throws IOException {
         W w = new W(plat, f, idName);
         f.getPrimaryFile().getFileSystem().runAtomicAction(w);
         try {
@@ -472,19 +472,19 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     }
 
     static class W implements FileSystem.AtomicAction {
-        JavaPlatform instance;
+        J2SEPlatformImpl instance;
         MultiDataObject holder;
         String name;
         DataFolder f;
         boolean defaultPlatform;
 
-        W(JavaPlatform instance, MultiDataObject holder, boolean defaultPlatform) {
+        W(J2SEPlatformImpl instance, MultiDataObject holder, boolean defaultPlatform) {
             this.instance = instance;
             this.holder = holder;
             this.defaultPlatform = defaultPlatform;
         }
         
-        W(JavaPlatform instance, DataFolder f, String n) {
+        W(J2SEPlatformImpl instance, DataFolder f, String n) {
             this.instance = instance;
             this.name = n;
             this.f = f;
@@ -601,7 +601,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 for (ClassPath.Entry entry : instance.getSourceFolders().entries()) {
                     roots.add(entry.getURL());
                 }
-                return !roots.equals(J2SEPlatformImpl.defaultSources(instance));
+                return !roots.equals(instance.defaultSources());
             }
             return true;
         }
