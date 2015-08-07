@@ -172,14 +172,15 @@ public class Constants {
     public static final String ENABLED_TIME = "enabled-time";// NOI18N
     public static final String ENABLED_TIMESTAMP = "enabled-timestamp";// NOI18N
     public static final String ENTIRE_RESOURCE = "entire-resource";// NOI18N
-    public static final String EXECUTE = "execute";// NOI18N
     public static final String EXCEPTIONS = "exceptions";// NOI18N
     public static final String EXCLUDE = "exclude";// NOI18N
     public static final String ESCAPE_CONTROL_CHARACTERS = "escape-control-characters";// NOI18N
     public static final String ESCAPE_NEW_LINE = "escape-new-line";// NOI18N
     public static final String EXCLUSIVE_RUNNING_TIME = "exclusive-running-time";// NOI18N
+    public static final String EXECUTE = "execute";// NOI18N
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";// NOI18N
     public static final String EXECUTION_STATUS = "execution-status";// NOI18N
+    public static final String EXPRESSION = "expression";// NOI18N
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";// NOI18N
     public static final String EXTENSION = "extension";// NOI18N
     public static final String FACILITY = "facility";// NOI18N
@@ -376,6 +377,7 @@ public class Constants {
     public static final String REQUEST_PROPERTIES = "request-properties";// NOI18N
     public static final String REQUIRED = "required";// NOI18N
     public static final String REQUIRES = "requires";// NOI18N
+    public static final String RESOLVE_EXPRESSION = "resolve-expression";// NOI18N
     public static final String RESOLVE_EXPRESSIONS = "resolve-expressions";// NOI18N
     public static final String RESOURCE_ADDED_NOTIFICATION = "resource-added";// NOI18N
     public static final String RESOURCE_REMOVED_NOTIFICATION = "resource-removed";// NOI18N
@@ -492,6 +494,7 @@ public class Constants {
     public static final String UPLOAD_DEPLOYMENT_BYTES = "upload-deployment-bytes";// NOI18N
     public static final String UPLOAD_DEPLOYMENT_URL = "upload-deployment-url";// NOI18N
     public static final String UPLOAD_DEPLOYMENT_STREAM = "upload-deployment-stream";// NOI18N
+    public static final String UNDEFINED = "undefined";// NOI18N
     public static final String UNIT = "unit";// NOI18N
     public static final String UPDATE_AUTO_START_WITH_SERVER_STATUS = "update-auto-start-with-server-status";// NOI18N
     public static final String URI = "uri";// NOI18N
