@@ -131,7 +131,7 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
                             dets = new LinkedList<TextDetail>();
                             dataObject = DataObject.find(fo);
                         }
-                        TextDetail det = MatcherUtils.createTextDetail(m,
+                        TextDetail det = MatcherUtils.createTextDetail(false, m,
                                 dataObject, line.getNumber(), line.getString(),
                                 line.getFileStart(), searchPattern);
                         dets.add(det);

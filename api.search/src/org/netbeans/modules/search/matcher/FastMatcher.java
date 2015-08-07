@@ -277,12 +277,14 @@ public class FastMatcher extends AbstractMatcher {
             int lineNumber, Matcher textMatcher, String text, int lineStart) {
         TextDetail textDetail = new TextDetail(dataObject,
                 searchPattern);
-        textDetail.associate(lineNumber, textMatcher.start() + 1, text);
+        textDetail.setLine(lineNumber);
+        textDetail.setColumn(textMatcher.start() + 1);
         textDetail.setMatchedText(textMatcher.group());
         textDetail.setStartOffset(lineStart + textMatcher.start());
         textDetail.setEndOffset(lineStart + textMatcher.end());
         textDetail.setMarkLength(textMatcher.end()
                 - textMatcher.start());
+        textDetail.setLineText(text);
         return textDetail;
     }
 
@@ -736,12 +738,14 @@ public class FastMatcher extends AbstractMatcher {
          */
         private void setTextDetailInfo(TextDetail textDetail, int startPos,
                 int endPos, String text) {
-            textDetail.associate(currentLineNumber,
-                    startPos - currentLineStart + 1, lastLine);
+
+            textDetail.setLine(currentLineNumber);
             textDetail.setStartOffset(startPos);
             textDetail.setEndOffset(endPos);
             textDetail.setMarkLength(endPos - startPos);
             textDetail.setMatchedText(text);
+            textDetail.setColumn(startPos - currentLineStart + 1);
+            textDetail.setLineText(lastLine);
         }
 
         /**

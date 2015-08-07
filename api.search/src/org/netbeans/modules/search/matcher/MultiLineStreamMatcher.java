@@ -187,9 +187,8 @@ public class MultiLineStreamMatcher extends AbstractMatcher {
             int lineNumber = fs.getLineNumber();
             String lineText = fs.getLineText();
 
-            TextDetail det = MatcherUtils.createTextDetail(matcher, dataObject,
-                    lineNumber, lineText, 0, searchPattern);
-            det.associate(lineNumber, column, lineText);
+            TextDetail det = MatcherUtils.createTextDetail(true, matcher, dataObject,
+                    lineNumber, lineText, column, searchPattern);
             txtDetails.add(det);
         }
         return txtDetails;
