@@ -1,9 +1,9 @@
-Name: Tasktop C2C Server Wiki API
-Version: 1.2.0
+Name: ODCS Server Profile API
+Version: 1.2.1
 License: EPL-v10
 OSR: 15896
 Origin: Oracle
-Description: ODCS Server Wiki API
+Description: ODCS Server Profile API
 
 Eclipse Public License - v 1.0
 
