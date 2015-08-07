@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/home/semorgan/1help/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/home/semorgan/Dodona/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -359,6 +359,7 @@
 				<file title="ConfiguringProjectDefaults.html"/>
 				<file title="ConfiguringProjectSettings.html"/>
 				<file title="ConfiguringSemanticHighlighting.html"/>
+				<file title="CppJavaDevelopment.html"/>
 				<file title="CreateProject.html"/>
 				<file title="CreatingCorC++Project.html"/>
 				<file title="CreatingCorC++ProjectBinary.html"/>
@@ -413,6 +414,8 @@
 				<file title="SettingMainCorC++Project.html"/>
 				<file title="UsingCandC++Launchers.html"/>
 				<file title="WorkingWithCandC++Projects.html"/>
+				<file title="WorkingWithJNA.html"/>
+				<file title="WorkingWithJNI.html"/>
 			</directory>
 			<file title="cnd.hs"/>
 			<file title="cndTOC.xml"/>
