@@ -1,9 +1,9 @@
-Name: ODCS Server SCM API
-Version: 1.2.0
+Name: ODCS Server Cloud API
+Version: 1.2.1
 License: EPL-v10
 OSR: 15896
 Origin: Oracle
-Description: ODCS Server SCM API
+Description: ODCS Server Cloud API
 
 Eclipse Public License - v 1.0
 

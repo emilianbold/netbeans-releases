@@ -589,7 +589,7 @@ public class DetectPanel extends javax.swing.JPanel {
             final String jdocStr = urlsToString(jdoc);
             List<URL> src = cpToUrls(platform.getSourceFolders());
             if (src.isEmpty()) {
-                src = J2SEPlatformImpl.defaultSources(platform);
+                src = platform.defaultSources();
             }
             final String srcStr = urlsToString(src);
             detected.set(
