@@ -1,9 +1,9 @@
 Name: RSS Handler API
-Version: 1.2.0.20150218-000236
+Version: 1.2.1
 License: EPL-v10
 OSR: 15896
 Origin: Oracle
-Description:  ODCS Server Activity Rest Client
+Description: ODCS Server Activity API
 
 Eclipse Public License - v 1.0
 
