@@ -73,10 +73,14 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -101,6 +105,12 @@ public class J2SEPlatformImpl extends JavaPlatform {
     private static final String DEFAULT_SOURCES_PROVIDER_PATH =
             "org-netbeans-api-java/platform/j2seplatform/defaultSourcesProviders/";  //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
+
+    /**
+     * Holds {@link J2SEPlatformDefaultSources} implementations
+     */
+    //@GuardedBy("J2SEPlatformImpl.class")
+    private static Lookup.Result<J2SEPlatformDefaultSources> sourcesRes;
 
     /**
      * Holds the display name of the platform
@@ -141,6 +151,12 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * Holds the specification of the platform
      */
     private Specification spec;
+
+    /**
+     * Holds a listener on global {@link J2SEPlatformDefaultSources} instances.
+     */
+    //@GuardedBy("this")
+    private LookupListener[] sourcesListener;
 
     J2SEPlatformImpl (String dispName, List<URL> installFolders, Map<String,String> initialProperties, Map<String,String> sysProperties, List<URL> sources, List<URL> javadoc) {
         super();
@@ -307,7 +323,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     @Override
     public final ClassPath getSourceFolders () {
         if (sources == null) {
-            sources = createClassPath(defaultSources(this));
+            sources = createClassPath(defaultSources(true));
         }
         return this.sources;
     }
@@ -315,6 +331,14 @@ public class J2SEPlatformImpl extends JavaPlatform {
     public final void setSourceFolders (ClassPath c) {
         assert c != null;
         this.sources = c;
+        LookupListener listener;
+        synchronized(this) {
+            listener = sourcesListener == null ? null : sourcesListener[1];
+            sourcesListener = null;
+        }
+        if (listener != null) {
+            getJ2SEPlatformDefaultSources().removeLookupListener(listener);
+        }
         this.firePropertyChange(PROP_SOURCE_FOLDER, null, null);
     }
 
@@ -472,16 +496,36 @@ public class J2SEPlatformImpl extends JavaPlatform {
         return Collections.unmodifiableList(result);
     }
 
+    public List<URL> defaultSources() {
+        return defaultSources(false);
+    }
+
     @NonNull
-    public static List<URL> defaultSources(JavaPlatform platform) {
-        final JavaPlatform safePlatform = new ForwardingJavaPlatform(platform) {
+    private List<URL> defaultSources(final boolean listen) {
+        final JavaPlatform safePlatform = new ForwardingJavaPlatform(this) {
             @Override
             public List<URL> getJavadocFolders() {
                 return Collections.<URL>emptyList();
             }
         };
         final Set<URI> roots = new LinkedHashSet<>();
-        for (J2SEPlatformDefaultSources src : Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultSources.class)) {
+        final Lookup.Result<? extends J2SEPlatformDefaultSources> res = getJ2SEPlatformDefaultSources();
+        if (listen) {
+            synchronized (this) {
+                if (sourcesListener == null) {
+                    sourcesListener = new LookupListener[2];
+                    sourcesListener[0] = new LookupListener() {
+                        @Override
+                        public void resultChanged(LookupEvent ev) {
+                            sources = null;
+                        }
+                    };
+                    sourcesListener[1] = WeakListeners.create(LookupListener.class, sourcesListener[0], res);
+                    res.addLookupListener(sourcesListener[1]);
+                }
+            }
+        }
+        for (J2SEPlatformDefaultSources src : res.allInstances()) {
             roots.addAll(src.getDefaultSources(safePlatform));
         }
         final List<URL> result = new ArrayList<>(roots.size());
@@ -505,5 +549,17 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         return false;
-    }        
+    }
+
+    @NonNull
+    private static Lookup.Result<? extends J2SEPlatformDefaultSources> getJ2SEPlatformDefaultSources() {
+        final Lookup.Result<J2SEPlatformDefaultSources> res;
+        synchronized (J2SEPlatformImpl.class) {
+            if (sourcesRes == null) {
+                sourcesRes = Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupResult(J2SEPlatformDefaultSources.class);
+            }
+            res = sourcesRes;
+        }
+        return res;
+    }
 }

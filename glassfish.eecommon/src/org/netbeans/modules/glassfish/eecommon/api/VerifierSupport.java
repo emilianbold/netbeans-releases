@@ -211,16 +211,16 @@ public class VerifierSupport extends TopComponent {
         }
         
         // Build verifier execution arguments.
-        String verifierArgs[] = {"-ra", "-d" , dir.getAbsolutePath(), fileName};
+        String verifierArgs[] = {"-ra", "-d" , "\"" + dir.getAbsolutePath() + "\"", "\"" + fileName + "\""}; // NOI18N
         StringBuilder sb = new StringBuilder();
-        sb.append(JavaUtils.VM_CLASSPATH_OPTION).append(' ');
+        sb.append(JavaUtils.VM_CLASSPATH_OPTION).append(" \""); // NOI18N
         sb.append(embeddedStaticShellJar).append(File.pathSeparatorChar);
         sb.append(verifierJar).append(File.pathSeparatorChar);
         sb.append(javaHelpJar);
-        sb.append(' ');
+        sb.append("\" "); // NOI18N
         sb.append(ServerUtils.VERIFIER_MAIN_CLASS);
         for (String arg : verifierArgs) {
-            sb.append(' ');
+            sb.append(' '); // NOI18N
             sb.append(arg);
         }
         String[] args = OsUtils.parseParameters(javaVmExe, sb.toString());
