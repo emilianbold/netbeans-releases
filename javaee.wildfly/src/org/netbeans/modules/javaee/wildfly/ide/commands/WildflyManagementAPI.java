@@ -76,10 +76,10 @@ public class WildflyManagementAPI {
         Class clazz = cl.loadClass("org.jboss.as.controller.client.ModelControllerClient$Factory"); // NOI18N
         if (version.compareTo(WildflyPluginUtils.WILDFLY_9_0_0) >= 0) {
             Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class, Map.class);
-            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000, ENABLED_LOCAL_AUTH);
+            return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT, ENABLED_LOCAL_AUTH);
         }
         Method method = clazz.getDeclaredMethod("create", String.class, int.class, CallbackHandler.class, SSLContext.class, int.class);
-        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), 1000);
+        return method.invoke(null, serverAddress, serverPort, handler, SSLContext.getDefault(), TIMEOUT);
     }
 
     static void closeClient(WildflyDeploymentFactory.WildFlyClassLoader cl, Object client) throws ClassNotFoundException, NoSuchMethodException,
