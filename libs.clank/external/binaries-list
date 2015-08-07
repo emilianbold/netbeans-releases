@@ -1,6 +1,6 @@
-#changeset:   15347:88d4776827b3
+#changeset:   15359:e091d48db2e3
 #tag:         tip
-#user:        Petr Kudryavtsev <petrk@netbeans.org>
-#date:        Wed Jul 29 18:02:52 2015 +0300
-#summary:     Included file not found errors suppressed by default
-3A8AF153DB7B434C6E97911B66A1DF27ADD37FF3 clank_0.3.6.zip
+#user:        Vladimir Voskresensky <vv159170@netbeans.org>
+#date:        Fri Aug 07 15:51:11 2015 +0200
+#summary:     extra fix after 15337:01eaf71eb9fe
+05D079C8352DA7A77245577B4FE3E55DC7390D87 clank_0.3.6.zip
