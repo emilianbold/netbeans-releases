@@ -106,7 +106,13 @@ public class GlassFishPropertiesCustomizer extends JTabbedPane {
             LOGGER.log(Level.INFO, "Storing {0} atributes",
                     instance.getDisplayName());
             try {
-                GlassfishInstance.writeInstanceToFile(instance);
+                // #254197
+                // this is weird, but prevents reintroducing the instance that
+                // has just been removed from panel (and thus the customizer as
+                // well)
+                if(instance.getInstanceProvider().getInstance(instance.getUrl()) != null) {
+                    GlassfishInstance.writeInstanceToFile(instance);
+                }
             } catch(IOException ex) {
                 LOGGER.log(Level.INFO,
                         "Could not store GlassFish server attributes", ex);
