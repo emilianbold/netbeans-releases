@@ -174,6 +174,11 @@ final class BrokenDataShadow extends MultiDataObject {
      * does not revalidate a BrokenDataShadow
      */
     static void checkValidity(EventObject ev) {
+        synchronized (BrokenDataShadow.class) {
+            if (allDataShadows == null || allDataShadows.isEmpty()) {
+                return;
+            }
+        }
         DataObject src = null;
         if (ev instanceof OperationEvent) {
             src = ((OperationEvent)ev).getObject();
@@ -200,11 +205,7 @@ final class BrokenDataShadow extends MultiDataObject {
             DataObject.LOG.log(Level.WARNING, e.toString(), e);
             return;
         }
-        
-        synchronized (BrokenDataShadow.class) {
-            if (allDataShadows == null || allDataShadows.isEmpty ()) return;
-		}
-		
+
         String key;
         try {
             key = file.getURL().toExternalForm();
