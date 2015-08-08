@@ -407,4 +407,7 @@
 	<mapID target="RemoteVCS" url="WorkingWithCandC++Projects/RemoteVCS.html"/>
 	<mapID target="SavingTerminalSettings" url="WorkingWithCandC++Projects/SavingTerminalSettings.html"/>
 	<mapID target="NavigateToBuildLog" url="EditingSourceFiles/NavigateToBuildLog.html"/>
+	<mapID target="CppJavaDevelopment" url="WorkingWithCandC++Projects/CppJavaDevelopment.html"/>
+	<mapID target="WorkingWithJNI" url="WorkingWithCandC++Projects/WorkingWithJNI.html"/>
+	<mapID target="WorkingWithJNA" url="WorkingWithCandC++Projects/WorkingWithJNA.html"/>
 </map>
