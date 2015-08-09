@@ -81,7 +81,7 @@ public abstract class RemoteActionPerformer implements ActionListener, DynamicMe
 
     @Override
     public final void actionPerformed(ActionEvent e) {
-        if (e != null && "performerActivated".equals(e.getActionCommand())) { // NOI18N
+        if (e != null && RemoteOpenActionBase.ACTIVATED_PSEUDO_ACTION_COMAND.equals(e.getActionCommand())) {
             presenter = (RemoteOpenActionBase) e.getSource();
             return;
         }
