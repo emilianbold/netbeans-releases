@@ -60,7 +60,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 
-import org.openide.ErrorManager;
 import org.openide.modules.SpecificationVersion;
 import org.openide.cookies.*;
 import org.openide.filesystems.*;
@@ -85,7 +84,7 @@ import org.netbeans.modules.java.j2seplatform.wizard.J2SEWizardIterator;
  * @author Svata Dedic
  */
 public class PlatformConvertor implements Environment.Provider, InstanceCookie.Of, PropertyChangeListener, Runnable, InstanceContent.Convertor<Class<Node>,Node> {
-    
+
     private static final Logger LOG = Logger.getLogger(PlatformConvertor.class.getName());
 
     private static final String CLASSIC = "classic";        //NOI18N
@@ -117,29 +116,31 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             return Lookup.EMPTY;
         }
     }
-    
-    InstanceContent cookies = new InstanceContent();
-    
+
+    private InstanceContent cookies = new InstanceContent();
+
     private XMLDataObject   holder;
 
     private boolean defaultPlatform;
 
     private Lookup  lookup;
-    
+
     private RequestProcessor.Task    saveTask;
-    
-    private Reference<JavaPlatform>   refPlatform = new WeakReference<JavaPlatform>(null);
-    
-    private LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<PropertyChangeEvent>();
-    
+
+    private Reference<JavaPlatform>   refPlatform = new WeakReference<>(null);
+
+    private LinkedList<PropertyChangeEvent> keepAlive = new LinkedList<>();
+
     private PlatformConvertor(@NonNull final XMLDataObject  object) {
         Parameters.notNull("object", object);
         this.holder = object;
         this.holder.getPrimaryFile().addFileChangeListener( new FileChangeAdapter () {
+            @Override
             public void fileDeleted (final FileEvent fe) {
                 if (!defaultPlatform) {
                     try {
                     ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void> () {
+                        @Override
                         public Void run () throws IOException {
                             String systemName = fe.getFile().getName();
                             String propPrefix =  "platforms." + systemName + ".";   //NOI18N
@@ -159,7 +160,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                         }
                     });
                     } catch (MutexException e) {
-                        ErrorManager.getDefault().notify(e);
+                        Exceptions.printStackTrace(e);
                     }
                 }
             }
@@ -169,15 +170,17 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         lookup = new AbstractLookup(cookies);
         cookies.add(Node.class, this);
     }
-    
+
     Lookup getLookup() {
         return lookup;
     }
-    
+
+    @Override
     public Class instanceClass() {
         return JavaPlatform.class;
     }
-    
+
+    @Override
     public Object instanceCreate() throws java.io.IOException, ClassNotFoundException {
         synchronized (this) {
             Object o = refPlatform.get();
@@ -188,30 +191,29 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 XMLReader reader = XMLUtil.createXMLReader();
                 InputSource is = new org.xml.sax.InputSource(
                     holder.getPrimaryFile().getInputStream());
-                is.setSystemId(holder.getPrimaryFile().getURL().toExternalForm());
+                is.setSystemId(holder.getPrimaryFile().toURL().toExternalForm());
                 reader.setContentHandler(handler);
                 reader.setErrorHandler(handler);
                 reader.setEntityResolver(handler);
 
                 reader.parse(is);
             } catch (SAXException ex) {
-                Exception x = ex.getException();
-                ex.printStackTrace();
-                if (x instanceof java.io.IOException)
-                    throw (IOException)x;
-                else
-                    throw new java.io.IOException(ex.getMessage());
+                final Exception cause = ex.getException();
+                if (cause instanceof java.io.IOException) {
+                    throw (IOException)cause;
+                } else {
+                    throw new java.io.IOException(cause);
+                }
             }
-
             JavaPlatform inst = createPlatform(handler);
-            refPlatform = new WeakReference<JavaPlatform>(inst);
+            refPlatform = new WeakReference<>(inst);
             return inst;
         }
     }
-    
+
     JavaPlatform createPlatform(H handler) {
         JavaPlatform p;
-        
+
         if (handler.isDefault) {
             p = DefaultPlatformImpl.create (handler.properties, handler.sources, handler.javadoc);
             defaultPlatform = true;
@@ -222,17 +224,20 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         p.addPropertyChangeListener(this);
         return p;
     }
-    
+
+    @Override
     public String instanceName() {
         return holder.getName();
     }
-    
+
+    @Override
     public boolean instanceOf(Class<?> type) {
         return (type.isAssignableFrom(JavaPlatform.class));
     }
-    
-    static int DELAY = 2000;
-    
+
+    private static final int DELAY = 2000;
+
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (this) {
             if (saveTask == null)
@@ -243,10 +248,11 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         }
         saveTask.schedule(DELAY);
     }
-    
+
+    @Override
     public void run() {
         PropertyChangeEvent e;
-        
+
         synchronized (this) {
             e = keepAlive.removeFirst();
         }
@@ -255,32 +261,32 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             holder.getPrimaryFile().getFileSystem().runAtomicAction(
                 new W(plat, holder, defaultPlatform));
         } catch (java.io.IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Exceptions.printStackTrace(Exceptions.attachSeverity(ex, Level.INFO));
         }
     }
-    
+
+    @Override
     public Node convert(Class<Node> key) {
         try {
             J2SEPlatformImpl p = (J2SEPlatformImpl) instanceCreate();
             return new J2SEPlatformNode (p,this.holder);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (ClassNotFoundException ex) {
-            ErrorManager.getDefault().notify(ex);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Exceptions.printStackTrace(ex);
         }
         return null;
     }
-    
+
+    @Override
     public String displayName(Class<Node> key) {
         return key.getName();
     }
-    
+
+    @Override
     public String id(Class<Node> key) {
         return key.getName();
     }
-    
+
+    @Override
     public Class<Node> type(Class<Node> key) {
         return key;
     }
@@ -325,16 +331,17 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         if (props.getProperty(homePropName) != null || props.getProperty(bootClassPathPropName) != null
                 || props.getProperty(compilerType)!=null) {
             //Already defined warn user
-            String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName"); //NOI18N
-            throw (IllegalStateException)ErrorManager.getDefault().annotate(
-                    new IllegalStateException(msg), ErrorManager.USER, null, msg,null, null);
+            final String msg = NbBundle.getMessage(J2SEWizardIterator.class,"ERROR_InvalidName"); //NOI18N
+            throw Exceptions.attachLocalizedMessage(
+                    new IllegalStateException(msg),
+                    msg);
         }
         Collection installFolders = platform.getInstallFolders();
         if (installFolders.size()>0) {
             File jdkHome = FileUtil.toFile ((FileObject)installFolders.iterator().next());
             props.setProperty(homePropName, jdkHome.getAbsolutePath());
             ClassPath bootCP = platform.getBootstrapLibraries();
-            StringBuffer sbootcp = new StringBuffer();
+            StringBuilder sbootcp = new StringBuilder();
             for (ClassPath.Entry entry : bootCP.entries()) {
                 URL url = entry.getURL();
                 if ("jar".equals(url.getProtocol())) {              //NOI18N
@@ -373,6 +380,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         try {
             ProjectManager.mutex().writeAccess(
                     new Mutex.ExceptionAction<Void> () {
+                        @Override
                         public Void run () throws Exception {
                             EditableProperties props = PropertyUtils.getGlobalProperties();
                             generatePlatformProperties(plat, idName, props);
@@ -425,8 +433,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private static boolean isDefaultLocation (FileObject tool, Collection<FileObject> installFolders) {
         assert tool != null && installFolders != null;
-        if (installFolders.size()!=1)
+        if (installFolders.size()!=1) {
             return false;
+        }
         FileObject root = installFolders.iterator().next();
         String relativePath = FileUtil.getRelativePath(root,tool);
         if (relativePath == null) {
@@ -437,9 +446,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     }
 
 
-    private static File getToolPath (FileObject tool) throws IOException {
+    private static File getToolPath (FileObject tool) {
         assert tool != null;
-        return Utilities.toFile(URI.create(tool.getURL().toExternalForm()));
+        return Utilities.toFile(URI.create(tool.toURL().toExternalForm()));
     }
 
     private static String normalizePath (File path,  File jdkHome, String propName) {
@@ -455,23 +464,23 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             return loc;
         }
     }
-    
+
     public static class BrokenPlatformException extends IOException {
-        
+
         private final String toolName;
-        
+
         public BrokenPlatformException (final String toolName) {
             super ("Cannot locate " + toolName + " command");   //NOI18N
             this.toolName = toolName;
         }
-        
+
         public String getMissingTool () {
             return this.toolName;
         }
-        
+
     }
 
-    static class W implements FileSystem.AtomicAction {
+    private static final class W implements FileSystem.AtomicAction {
         J2SEPlatformImpl instance;
         MultiDataObject holder;
         String name;
@@ -483,24 +492,24 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             this.holder = holder;
             this.defaultPlatform = defaultPlatform;
         }
-        
+
         W(J2SEPlatformImpl instance, DataFolder f, String n) {
             this.instance = instance;
             this.name = n;
             this.f = f;
             this.defaultPlatform = false;
         }
-        
+
         public void run() throws java.io.IOException {
             FileLock lck;
             FileObject data;
-            
-            
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream ();            
+
+
+            final ByteArrayOutputStream buffer = new ByteArrayOutputStream ();
             try {
                 write (buffer);
             } finally {
-                buffer.close();                        
+                buffer.close();
             }
             if (holder != null) {
                 data = holder.getPrimaryEntry().getFile();
@@ -511,14 +520,9 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 data = folder.createData(fn, "xml");
                 lck = data.lock();
             }
-            try {
-                OutputStream out = data.getOutputStream(lck);
-                try {
-                    out.write(buffer.toByteArray());
-                    out.flush();
-                } finally {
-                    out.close();
-                }
+            try (OutputStream out = data.getOutputStream(lck)) {
+                out.write(buffer.toByteArray());
+                out.flush();
             } finally {
                 lck.releaseLock();
             }
@@ -526,7 +530,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 holder = (MultiDataObject)DataObject.find(data);
             }
         }
-        
+
         void write(final  OutputStream out) throws IOException {
             final Map<String,String> props = instance.getProperties();
             final Map<String,String> sysProps = instance.getSystemProperties();
@@ -537,7 +541,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             if (!defaultPlatform) {
                 final Element jdkHomeElement = doc.createElement(ELEMENT_JDKHOME);
                 for (Iterator<FileObject> it = instance.getInstallFolders().iterator(); it.hasNext();) {
-                    URL url = it.next ().getURL();
+                    URL url = it.next ().toURL();
                     final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     jdkHomeElement.appendChild(resourceElement);
@@ -550,10 +554,10 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             if (!defaultPlatform) {
                 final Element sysPropsElement = doc.createElement(ELEMENT_SYSPROPERTIES);
                 writeProperties(sysProps, sysPropsElement, doc);
-                platformElement.appendChild(sysPropsElement);                                                
+                platformElement.appendChild(sysPropsElement);
             }
             final List<ClassPath.Entry> psl = this.instance.getSourceFolders().entries();
-            if (psl.size()>0 && shouldWriteSources ()) {                
+            if (psl.size()>0 && shouldWriteSources ()) {
                 final Element sourcesElement = doc.createElement (ELEMENT_SOURCEPATH);
                 for (Iterator<ClassPath.Entry> it = psl.iterator(); it.hasNext();) {
                     URL url = it.next ().getURL();
@@ -566,7 +570,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             final List<URL> pdl = this.instance.getJavadocFolders();
             if (pdl.size()>0 && shouldWriteJavadoc ()) {
                 final Element javadocElement = doc.createElement(ELEMENT_JAVADOC);
-                for (URL url : pdl) {                    
+                for (URL url : pdl) {
                     final Element resourceElement = doc.createElement(ELEMENT_RESOURCE);
                     resourceElement.appendChild(doc.createTextNode(url.toExternalForm()));
                     javadocElement.appendChild(resourceElement);
@@ -575,12 +579,12 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             }
             XMLUtil.write(doc, out, "UTF8");                                                    //NOI18N
         }
-        
+
         void writeProperties(final Map<String,String> props, final Element element, final Document doc) throws IOException {
-            final Collection<String> sortedProps = new TreeSet<String>(props.keySet());
+            final Collection<String> sortedProps = new TreeSet<>(props.keySet());
             for (Iterator<String> it = sortedProps.iterator(); it.hasNext(); ) {
                 final String n = it.next();
-                final String val = props.get(n);                
+                final String val = props.get(n);
                 try {
                     XMLUtil.toAttributeValue(n);
                     XMLUtil.toAttributeValue(val);
@@ -589,23 +593,25 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                     propElement.setAttribute(ATTR_PROPERTY_VALUE,val);
                     element.appendChild(propElement);
                 } catch (CharConversionException e) {
-                    Logger.getLogger("global").log(Level.WARNING,"Cannot store property: " + n + " value: " + val);   //NOI18N
+                    LOG.log(
+                        Level.WARNING,
+                        "Cannot store property: {0} value: {1}",       //NOI18N
+                        new Object[]{
+                            n,
+                            val
+                        });
                 }
             }
         }
-        
+
         private boolean shouldWriteSources () {
-            if (defaultPlatform) {
-                assert this.instance instanceof DefaultPlatformImpl;
-                final List<URL> roots = new ArrayList<>();
-                for (ClassPath.Entry entry : instance.getSourceFolders().entries()) {
-                    roots.add(entry.getURL());
-                }
-                return !roots.equals(instance.defaultSources());
+            final List<URL> roots = new ArrayList<>();
+            for (ClassPath.Entry entry : instance.getSourceFolders().entries()) {
+                roots.add(entry.getURL());
             }
-            return true;
+            return !roots.equals(instance.defaultSources());
         }
-        
+
         private boolean shouldWriteJavadoc () {
             if (defaultPlatform) {
                 return !instance.getJavadocFolders().equals(J2SEPlatformImpl.defaultJavadoc(instance));
@@ -613,7 +619,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
             return true;
         }
     }
-    
+
     static final String ELEMENT_PROPERTIES = "properties"; // NOI18N
     static final String ELEMENT_SYSPROPERTIES = "sysproperties"; // NOI18N
     static final String ELEMENT_PROPERTY = "property"; // NOI18N
@@ -626,8 +632,8 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     static final String ATTR_PLATFORM_DEFAULT = "default"; // NOI18N
     static final String ATTR_PROPERTY_NAME = "name"; // NOI18N
     static final String ATTR_PROPERTY_VALUE = "value"; // NOI18N
-    
-    static class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
+
+    private static final class H extends org.xml.sax.helpers.DefaultHandler implements EntityResolver {
         Map<String,String> properties;
         Map<String,String> sysProperties;
         List<URL> sources;
@@ -641,75 +647,95 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
         private List<URL> path;
 
 
+        @Override
         public void startDocument () throws org.xml.sax.SAXException {
         }
-        
+
+        @Override
         public void endDocument () throws org.xml.sax.SAXException {
         }
-        
+
+        @Override
         public void startElement (String uri, String localName, String qName, org.xml.sax.Attributes attrs)
         throws org.xml.sax.SAXException {
-            if (ELEMENT_PLATFORM.equals(qName)) {
-                name = attrs.getValue(ATTR_PLATFORM_NAME);
-                isDefault = "yes".equals(attrs.getValue(ATTR_PLATFORM_DEFAULT));
-            } else if (ELEMENT_PROPERTIES.equals(qName)) {
-                if (properties == null)
-                    properties = new HashMap<String,String>(17);
-                propertyMap = properties;
-            } else if (ELEMENT_SYSPROPERTIES.equals(qName)) {
-                if (sysProperties == null)
-                    sysProperties = new HashMap<String,String>(17);
-                propertyMap = sysProperties;
-            } else if (ELEMENT_PROPERTY.equals(qName)) {
-                if (propertyMap == null)
-                    throw new SAXException("property w/o properties or sysproperties");
-                String name = attrs.getValue(ATTR_PROPERTY_NAME);
-                if (name == null || "".equals(name))
-                    throw new SAXException("missing name");
-                String val = attrs.getValue(ATTR_PROPERTY_VALUE);
-                propertyMap.put(name, val);
-            }
-            else if (ELEMENT_SOURCEPATH.equals(qName)) {
-                this.sources = new ArrayList<URL> ();
-                this.path = this.sources;
-            }
-            else if (ELEMENT_JAVADOC.equals(qName)) {
-                this.javadoc = new ArrayList<URL> ();
-                this.path = this.javadoc;
-            }
-            else if (ELEMENT_JDKHOME.equals(qName)) {
-                this.installFolders = new ArrayList<URL> ();
-                this.path =  this.installFolders;
-            }
-            else if (ELEMENT_RESOURCE.equals(qName)) {
-                this.buffer = new StringBuffer ();
-            }
-        }
-        
-        public void endElement (String uri, String localName, String qName) throws org.xml.sax.SAXException {
-            if (ELEMENT_PROPERTIES.equals(qName) ||
-                ELEMENT_SYSPROPERTIES.equals(qName)) {
-                propertyMap = null;
-            }
-            else if (ELEMENT_SOURCEPATH.equals(qName) || ELEMENT_JAVADOC.equals(qName)) {
-                path = null;
-            }
-            else if (ELEMENT_RESOURCE.equals(qName)) {
-                try {
-                    this.path.add (new URL(this.buffer.toString()));                    
-                } catch (MalformedURLException mue) {
-                    ErrorManager.getDefault().notify(mue); 
+            if (qName != null) {
+                switch (qName) {
+                    case ELEMENT_PLATFORM:
+                        name = attrs.getValue(ATTR_PLATFORM_NAME);
+                        isDefault = "yes".equals(attrs.getValue(ATTR_PLATFORM_DEFAULT));
+                        break;
+                    case ELEMENT_PROPERTIES:
+                        if (properties == null) {
+                            properties = new HashMap<>(17);
+                        }   propertyMap = properties;
+                        break;
+                    case ELEMENT_SYSPROPERTIES:
+                        if (sysProperties == null) {
+                            sysProperties = new HashMap<>(17);
+                        }   propertyMap = sysProperties;
+                        break;
+                    case ELEMENT_PROPERTY:{
+                        if (propertyMap == null) {
+                            throw new SAXException("property w/o properties or sysproperties");
+                        }
+                        String name = attrs.getValue(ATTR_PROPERTY_NAME);
+                        if (name == null || "".equals(name)) {
+                            throw new SAXException("missing name");
+                        }
+                        String val = attrs.getValue(ATTR_PROPERTY_VALUE);
+                        propertyMap.put(name, val);
+                        break;
+                    }
+                    case ELEMENT_SOURCEPATH:
+                        this.sources = new ArrayList<> ();
+                        this.path = this.sources;
+                        break;
+                    case ELEMENT_JAVADOC:
+                        this.javadoc = new ArrayList<> ();
+                        this.path = this.javadoc;
+                        break;
+                    case ELEMENT_JDKHOME:
+                        this.installFolders = new ArrayList<> ();
+                        this.path =  this.installFolders;
+                        break;
+                    case ELEMENT_RESOURCE:
+                        this.buffer = new StringBuffer ();
+                        break;
                 }
-                this.buffer = null;
             }
         }
 
+        @Override
+        public void endElement (String uri, String localName, String qName) throws org.xml.sax.SAXException {
+            if (qName != null) {
+                switch (qName) {
+                    case ELEMENT_PROPERTIES:
+                    case ELEMENT_SYSPROPERTIES:
+                        propertyMap = null;
+                        break;
+                    case ELEMENT_SOURCEPATH:
+                    case ELEMENT_JAVADOC:
+                        path = null;
+                        break;
+                    case ELEMENT_RESOURCE:
+                        try {
+                            this.path.add (new URL(this.buffer.toString()));
+                        } catch (MalformedURLException mue) {
+                            Exceptions.printStackTrace(mue);
+                        }   this.buffer = null;
+                        break;
+                }
+            }
+        }
+
+        @Override
         public void characters(char chars[], int start, int length) throws SAXException {
             if (this.buffer != null) {
                 this.buffer.append(chars, start, length);
             }
         }
-        
+
+        @Override
         public org.xml.sax.InputSource resolveEntity(String publicId, String systemId)
         throws SAXException {
             if (PLATFORM_DTD_ID.equals (publicId)) {
@@ -718,7 +744,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
                 return null; // i.e. follow advice of systemID
             }
         }
-        
+
     }
 
 }
