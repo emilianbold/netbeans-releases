@@ -1403,14 +1403,6 @@ public abstract class BaseActionProvider implements ActionProvider {
         return targets;
     }
 
-    private String[] setupTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        FileObject[] srcPath = sourceRoots.getRoots();
-        FileObject root = getRoot(srcPath, files[0]);
-        p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"test-single"}; // NOI18N
-    }
-
     private String[] setupTestFilesOrPackages(Properties p, FileObject[] files) {
         if (files != null) {
             FileObject root = getRoot(projectTestRoots.getRoots(), files[0]);
@@ -1420,21 +1412,28 @@ public abstract class BaseActionProvider implements ActionProvider {
         return new String[]{"test"}; // NOI18N
     }
 
-    private String[] setupDebugTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        FileObject[] srcPath = sourceRoots.getRoots();
-        FileObject root = getRoot(srcPath, files[0]);
-        String path = FileUtil.getRelativePath(root, files[0]);
+    private void setupTestSingleCommon(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        final FileObject[] srcPath = sourceRoots.getRoots();
+        final FileObject root = getRoot(srcPath, files[0]);
         // Convert foo/FooTest.java -> foo.FooTest
+        final String path = FileUtil.getRelativePath(root, files[0]);
         p.setProperty("test.class", path.substring(0, path.length() - 5).replace('/', '.')); // NOI18N
-        p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
-        return new String[] {"debug-test"}; // NOI18N
-    }
-    
-    private String[] setupProfileTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
-        FileObject[] srcPath = sourceRoots.getRoots();
-        FileObject root = getRoot(srcPath, files[0]);
         p.setProperty("test.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
         p.setProperty("javac.includes", ActionUtils.antIncludesList(files, root)); // NOI18N
+    }
+
+    private String[] setupTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
+        return new String[] {"test-single"}; // NOI18N
+    }
+
+    private String[] setupDebugTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
+        return new String[] {"debug-test"}; // NOI18N
+    }
+
+    private String[] setupProfileTestSingle(Properties p, FileObject[] files, SourceRoots sourceRoots) {
+        setupTestSingleCommon(p, files, sourceRoots);
         return new String[] {"profile-test"}; // NOI18N
     }
 
