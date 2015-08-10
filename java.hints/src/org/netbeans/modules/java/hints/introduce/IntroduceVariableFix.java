@@ -98,7 +98,7 @@ final class IntroduceVariableFix extends IntroduceFixBase implements Fix {
         while (statement != null && statement.getParentPath() != null && !TreeUtils.isParentOf(statement.getParentPath(), allCandidates)) {
             statement = statement.getParentPath();
         }
-        statement = TreeUtils.findStatement(statement);
+        statement = TreeUtils.findStatementInBlock(statement);
         if (statement == null) {
             //XXX: well....
             return null;

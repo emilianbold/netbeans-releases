@@ -150,11 +150,33 @@ public final class TreeUtils {
         }
         return false;
     }
-
+    
+    /**
+     * Finds an enclosing statement which is a part of block or a body.
+     * Unlike {@link #findStatement}, if the enclosing statement is not itself
+     * directly a member of a block or case, returns a parent statement which is. In example
+     * <code>if (cond) y = 1;</code>, expression statement <code>y + 1</code> will not be returned
+     * because it's nested in <code>if</code> rather than in block/body
+     * @param statementPath path
+     * @return enclosing statement whose parent is a block, case, lambda or initializer.
+     */
+    static TreePath findStatementInBlock(TreePath statementPath) {
+        return findBlockOrStatement(statementPath, false);
+    }
+    
+    /**
+     * Finds the enclosing statement.
+     * @param statementPath path
+     * @return the enclosing statement or null.
+     */
     static TreePath findStatement(TreePath statementPath) {
+        return findBlockOrStatement(statementPath, true);
+    }
+
+    static TreePath findBlockOrStatement(TreePath statementPath, boolean statement) {
         CYCLE: while (statementPath != null) {
             Tree leaf = statementPath.getLeaf();
-            if (StatementTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
+            if (statement && StatementTree.class.isAssignableFrom(leaf.getKind().asInterface())) {
                 break;
             }
             if (statementPath.getParentPath() != null) {
