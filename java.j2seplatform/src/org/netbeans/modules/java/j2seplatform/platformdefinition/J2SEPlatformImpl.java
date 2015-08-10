@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -109,8 +110,7 @@ public class J2SEPlatformImpl extends JavaPlatform {
     /**
      * Holds {@link J2SEPlatformDefaultSources} implementations
      */
-    //@GuardedBy("J2SEPlatformImpl.class")
-    private static Lookup.Result<J2SEPlatformDefaultSources> sourcesRes;
+    private static final AtomicReference<Lookup.Result<J2SEPlatformDefaultSources>> sourcesRes = new AtomicReference<>();
 
     /**
      * Holds the display name of the platform
@@ -553,12 +553,12 @@ public class J2SEPlatformImpl extends JavaPlatform {
 
     @NonNull
     private static Lookup.Result<? extends J2SEPlatformDefaultSources> getJ2SEPlatformDefaultSources() {
-        final Lookup.Result<J2SEPlatformDefaultSources> res;
-        synchronized (J2SEPlatformImpl.class) {
-            if (sourcesRes == null) {
-                sourcesRes = Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupResult(J2SEPlatformDefaultSources.class);
+        Lookup.Result<J2SEPlatformDefaultSources> res = sourcesRes.get();
+        if (res == null) {
+            res = Lookups.forPath(DEFAULT_SOURCES_PROVIDER_PATH).lookupResult(J2SEPlatformDefaultSources.class);
+            if (!sourcesRes.compareAndSet(null, res)) {
+                res = sourcesRes.get();
             }
-            res = sourcesRes;
         }
         return res;
     }
