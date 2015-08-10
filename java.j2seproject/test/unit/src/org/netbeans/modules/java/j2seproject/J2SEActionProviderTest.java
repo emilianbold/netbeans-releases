@@ -269,7 +269,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         context = Lookups.fixed(someSource1);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
         assertEquals("correct targets for COMMAND_TEST_SINGLE", "[test-single]", Arrays.toString(targets));
-        assertEquals("correct target parameters", "{ignore.failing.tests=true, javac.includes=foo/BarTest.java, test.includes=foo/BarTest.java}", new TreeMap<Object,Object>(p).toString());
+        assertEquals("correct target parameters", "{ignore.failing.tests=true, javac.includes=foo/BarTest.java, test.class=foo.BarTest, test.includes=foo/BarTest.java}", new TreeMap<Object,Object>(p).toString());
         p = new Properties();
         context = Lookups.fixed(someSource1,someSource2);
         targets = actionProvider.getTargetNames(ActionProvider.COMMAND_TEST_SINGLE, context, p);
@@ -284,9 +284,10 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_DEBUG_TEST_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_DEBUG_TEST_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "debug-test", targets[0]);
-        assertEquals("There must be two target parameters", 2, p.keySet().size());
+        assertEquals("There must be two target parameters", 3, p.keySet().size());
         assertEquals("There must be be target parameter", "foo.BarTest", p.getProperty("test.class"));
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
         
         // test COMMAND_PROFILE_TEST_SINGLE
 
@@ -296,9 +297,10 @@ public class J2SEActionProviderTest extends NbTestCase {
         assertNotNull("Must found some targets for COMMAND_PROFILE_TEST_SINGLE", targets);
         assertEquals("There must be one target for COMMAND_PROFILE_TEST_SINGLE", 1, targets.length);
         assertEquals("Unexpected target name", "profile-test", targets[0]);
-        assertEquals("There must be two target parameters", 2, p.keySet().size());
+        assertEquals("There must be two target parameters", 3, p.keySet().size());
         assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("javac.includes"));
-        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes")); 
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
+        assertEquals("There must be be target parameter", "foo/BarTest.java", p.getProperty("test.includes"));
 
         // test COMMAND_DEBUG_FIX
         actionProvider.unitTestingSupport_fixClasses = "foo/Bar";
