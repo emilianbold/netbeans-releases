@@ -367,28 +367,30 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     typeVars.retainAll(scanner.usedTypeVariables);
 
                     AtomicBoolean allIfaces = new AtomicBoolean();
-                    Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>();
-                    for (TargetDescription target : IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
-                            Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces)) {
-                        Set<String> cNames = new HashSet<>();
-                        outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
-                            List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
-                            if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
-                                Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
-                                Iterator<VariableElement> pVarsIt = scanner.usedLocalVariables.keySet().iterator();
-                                while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
-                                    if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
-                                        continue outer;
+                    Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>(); 
+                     List<TargetDescription> viableTargets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, resolved.getParentPath(), 
+                            Collections.singleton(resolved.getLeaf()), duplicates, cancel, allIfaces);
+                    if (viableTargets != null && !viableTargets.isEmpty()) {
+                        for (TargetDescription target : viableTargets) {
+                            Set<String> cNames = new HashSet<>();
+                            outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                                List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
+                                if (pTypes.size() == scanner.usedLocalVariables.keySet().size()) {
+                                    Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
+                                    Iterator<VariableElement> pVarsIt = scanner.usedLocalVariables.keySet().iterator();
+                                    while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
+                                        if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
+                                            continue outer;
+                                        }
                                     }
+                                    cNames.add(ee.getSimpleName().toString());
                                 }
-                                cNames.add(ee.getSimpleName().toString());
                             }
+                            targets.put(target, cNames);
                         }
-                        targets.put(target, cNames);
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
+                        methodFix.setTargetIsInterface(allIfaces.get());
                     }
-
-                    methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
-                    methodFix.setTargetIsInterface(allIfaces.get());
                 }
             }
         }
