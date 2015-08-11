@@ -324,7 +324,8 @@ public abstract class FileSystem implements Serializable {
     */
     public final boolean isDefault() {
         boolean check = false;
-        assert check = true;
+        // XXX hotfix
+        //	assert check = true;
         if (defFS != null && !check) {
             return defFS;
         }
@@ -335,7 +336,8 @@ public abstract class FileSystem implements Serializable {
             Exceptions.printStackTrace(ex);
         }
         if (defFS != null) {
-            assert defFS == (this == fs) : "Default filesystem used in foreign execution";
+            // XXX hotfix 
+            //	    assert defFS == (this == fs) : "Default filesystem used in foreign execution";
         }
         return defFS = (this == fs);
     }
