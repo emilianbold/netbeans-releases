@@ -365,6 +365,7 @@ public class Constants {
     public static final String REDEPLOY = "redeploy";// NOI18N
     public static final String RELATIVE_ADDRESS = "relative-address";// NOI18N
     public static final String RELATIVE_TO = "relative-to";// NOI18N
+    public static final String RELATIVE_TO_ONLY = "relative-to-only";// NOI18N
     public static final String RELEASE_CODENAME = "release-codename";// NOI18N
     public static final String RELEASE_VERSION = "release-version";// NOI18N
     public static final String RELOAD_REQUIRED = "reload-required";// NOI18N
@@ -379,6 +380,7 @@ public class Constants {
     public static final String REQUIRES = "requires";// NOI18N
     public static final String RESOLVE_EXPRESSION = "resolve-expression";// NOI18N
     public static final String RESOLVE_EXPRESSIONS = "resolve-expressions";// NOI18N
+    public static final String RESOLVE_PATH = "resolve-path";// NOI18N
     public static final String RESOURCE_ADDED_NOTIFICATION = "resource-added";// NOI18N
     public static final String RESOURCE_REMOVED_NOTIFICATION = "resource-removed";// NOI18N
     public static final String RESPONSE = "response";// NOI18N
