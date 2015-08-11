@@ -692,29 +692,4 @@ public class InvalidFormatString extends AbstractCodeAudit {
             type = resolvedType;
         }        
     }
-    
-    private enum IntTypes {
-        S_CHAR(0, "signed char"),   // NOI18N
-        SHORT(1, "short"),          // NOI18N
-        INT(2, "int"),              // NOI18N
-        LONG(3, "long"),            // NOI18N
-        LLONG(4, "long long");      // NOI18N
-        
-        private final int value;
-        private final String textValue;
-        
-        IntTypes(int value, String textValue) {
-            this.value = value;
-            this.textValue = textValue;
-        }
-        
-        @Override
-        public String toString() {
-            return textValue;
-        }
-        
-        public int toInt() {
-            return value;
-        }
-    }
 }
