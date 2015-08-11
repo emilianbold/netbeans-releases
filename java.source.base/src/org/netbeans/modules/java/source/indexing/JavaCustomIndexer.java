@@ -92,7 +92,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
-import org.netbeans.modules.java.source.base.OnStopHandler;
+import org.netbeans.modules.java.source.base.Module;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
@@ -994,7 +994,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 try {
                     final Set<URL> toRefresh = new HashSet<URL>();
                     for (URL removedRoot : removedRoots) {
-                        if (OnStopHandler.isClosed()) {
+                        if (Module.isClosed()) {
                             return;
                         }
                         cim.removeRoot(removedRoot);
@@ -1017,7 +1017,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 }
             } finally {
                 try {
-                    if (OnStopHandler.isClosed()) {
+                    if (Module.isClosed()) {
                         txCtx.rollBack();
                     } else {
                         txCtx.commit();
