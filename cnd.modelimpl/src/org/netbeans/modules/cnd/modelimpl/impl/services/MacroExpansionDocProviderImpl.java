@@ -646,7 +646,6 @@ public class MacroExpansionDocProviderImpl implements CsmMacroExpansionDocProvid
                             skipIndent = true;
                         }
                     }
-                    skipIndent = fileToken.getType() == APTTokenTypes.SEMICOLON;
                     if (!skipIndent) {
                         if (!APTUtils.areAdjacent(prevFileToken, fileToken)) {
                             expandedToken.append(' '); // NOI18N
