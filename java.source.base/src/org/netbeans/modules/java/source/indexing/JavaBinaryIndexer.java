@@ -70,7 +70,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.java.source.TreeLoader;
-import org.netbeans.modules.java.source.base.OnStopHandler;
+import org.netbeans.modules.java.source.base.Module;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
@@ -263,7 +263,7 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 Exceptions.printStackTrace(e);
             } finally {
                 try {
-                    if (OnStopHandler.isClosed()) {
+                    if (Module.isClosed()) {
                         txCtx.rollBack();
                     } else {
                         txCtx.commit();

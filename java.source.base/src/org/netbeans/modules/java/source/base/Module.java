@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,29 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.source.base;
 
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.openide.modules.OnStop;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author Dusan Balek
+ * @author Tomas Zezula
  */
-@OnStop
-public class OnStopHandler implements Runnable {
+public final class Module {
 
+    private static final String STOP_HOOKS_PATH = "Parsing/Indexing/Stop";   //NOI18N
     private static volatile boolean closed;
+
+    private Module() {
+        throw new IllegalStateException("No instance Allowed");
+    }
+
+    @OnStop
+    public static final class ModuleStop implements Runnable {
+        @Override
+        public void run() {
+            close();
+        }
+    }
+
+    @ServiceProvider(service = Runnable.class, path = STOP_HOOKS_PATH)
+    public static final class IndexingStop implements Runnable {
+        @Override
+        public void run() {
+            close();
+            ClassIndexManager.getDefault().close();
+        }
+    }
+
 
     public static boolean isClosed() {
         return closed;
     }
 
-    @Override
-    public void run() {
+    private static void close() {
         closed = true;
-        ClassIndexManager.getDefault().close();
     }
 }
