@@ -412,7 +412,7 @@ public class StatementFinder {
                                  scopeToAdd += "::"; //NOI18N
                              }
                         }
-                        if (scopeToAdd.isEmpty()) {
+                        if (en.isStronglyTyped()) {
                             scopeToAdd += en.getQualifiedName() + "::";  //NOI18N
                         }
                         for(CsmEnumerator e : en.getEnumerators()) {
