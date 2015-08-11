@@ -305,7 +305,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
             }
         } else {
             if (type.contains("signed char")) {                           // NOI18N
-                return Arrays.asList("hhd", "hhi", "c");                  // NOI18N
+                return Arrays.asList("hhd", "hhi");                       // NOI18N
             } else if (type.contains("short")) {                          // NOI18N
                 return Arrays.asList("hd", "hi");                         // NOI18N
             } else if (type.contains("long long")) {                      // NOI18N
