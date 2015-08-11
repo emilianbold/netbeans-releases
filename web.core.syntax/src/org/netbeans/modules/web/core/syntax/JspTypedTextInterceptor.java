@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -55,7 +56,9 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
@@ -80,55 +83,129 @@ public class JspTypedTextInterceptor implements TypedTextInterceptor {
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         char ch = context.getText().charAt(0);
-        if (ch != '}') { // NOI18N
-            showCompletion();
-            return;
-        }
-
         final BaseDocument doc = (BaseDocument) context.getDocument();
-        final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
-        doc.runAtomicAsUser(new Runnable() {
+        if (ch == '}') { // NOI18N
+            final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
+            doc.runAtomicAsUser(new Runnable() {
 
-            @Override
-            public void run() {
-                int caretOffset = context.getOffset();
-                Caret caret = context.getComponent().getCaret();
-                try {
-                    TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence(
-                            doc, caretOffset, JspTokenId.language());
-                    if (ts == null) {
-                        return;
-                    }
-                    ts.move(caretOffset);
-                    if (!ts.moveNext() && !ts.movePrevious()) {
-                        return;
-                    }
-                    do {
-                        Token<JspTokenId> token = ts.token();
-                        if (token.id() == JspTokenId.EOL) {
-                            break;
+                @Override
+                public void run() {
+                    int caretOffset = context.getOffset();
+                    Caret caret = context.getComponent().getCaret();
+                    try {
+                        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence(
+                                doc, caretOffset, JspTokenId.language());
+                        if (ts == null) {
+                            return;
                         }
+                        ts.move(caretOffset);
+                        if (!ts.moveNext() && !ts.movePrevious()) {
+                            return;
+                        }
+                        do {
+                            Token<JspTokenId> token = ts.token();
+                            if (token.id() == JspTokenId.EOL) {
+                                break;
+                            }
 
-                        if (token.id() == JspTokenId.EL) {
-                            String elText = CharSequenceUtilities.toString(token.text());
-                            TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get((Document) doc);
-                            int offset = token.offset(tokenHierarchy) + token.length();
-                            if (elText.matches("(\\$\\{|\\#\\{).*") && offset > caretOffset) {  //NOI18N
-                                doc.remove(caretOffset, 1);
-                                caret.setDot(caretOffset + 1); // skip closing bracket
-                                return;
+                            if (token.id() == JspTokenId.EL) {
+                                String elText = CharSequenceUtilities.toString(token.text());
+                                TokenHierarchy<Document> tokenHierarchy = TokenHierarchy.get((Document) doc);
+                                int offset = token.offset(tokenHierarchy) + token.length();
+                                if (elText.matches("(\\$\\{|\\#\\{).*") && offset > caretOffset) {  //NOI18N
+                                    doc.remove(caretOffset, 1);
+                                    caret.setDot(caretOffset + 1); // skip closing bracket
+                                    return;
+                                }
+                            }
+                        } while (ts.movePrevious());
+
+                    } catch (BadLocationException blex) {
+                        ex.set(blex);
+                    }
+                }
+            });
+            BadLocationException blex = ex.get();
+            if (blex != null) {
+                throw blex;
+            }
+            return;
+        } else if (ch == '>') { // NOI18N
+            final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
+            doc.render(new Runnable() {
+
+                @Override
+                public void run() {
+                    int caretOffset = context.getOffset();
+                    try {
+                        TokenSequence<JspTokenId> ts = LexUtilities.getTokenSequence(
+                                doc, caretOffset, JspTokenId.language());
+                        if (ts == null) {
+                            return;
+                        }
+                        ts.move(caretOffset);
+                        boolean found = false;
+                        while (ts.movePrevious()) {
+                            if (ts.token().id() == JspTokenId.SYMBOL && (ts.token().text().toString().equals("<")
+                                    || ts.token().text().toString().equals("</"))) {
+                                found = true;
+                                break;
+                            }
+                            if (ts.token().id() == JspTokenId.SYMBOL && ts.token().text().toString().equals(">")) {
+                                break;
+                            }
+                            if (ts.token().id() != JspTokenId.ATTRIBUTE
+                                    && ts.token().id() != JspTokenId.ATTR_VALUE
+                                    && ts.token().id() != JspTokenId.TAG
+                                    && ts.token().id() != JspTokenId.ENDTAG
+                                    && ts.token().id() != JspTokenId.SYMBOL
+                                    && ts.token().id() != JspTokenId.EOL
+                                    && ts.token().id() != JspTokenId.WHITESPACE) {
+                                break;
                             }
                         }
-                    } while (ts.movePrevious());
 
-                } catch (BadLocationException blex) {
-                    ex.set(blex);
+                        if (found) {
+                            //ok, the user just type tag closing symbol, lets reindent the line
+                            //since the code runs under document read lock, we cannot lock the
+                            //indentation infrastructure directly. Instead of that create a new
+                            //AWT task and post it for later execution.
+                            final Position from = doc.createPosition(Utilities.getRowStart(doc, ts.offset()));
+                            final Position to = doc.createPosition(Utilities.getRowEnd(doc, ts.offset()));
+
+                            SwingUtilities.invokeLater(new Runnable() {
+
+                                public void run() {
+                                    final Indent indent = Indent.get(doc);
+                                    indent.lock();
+                                    try {
+                                        doc.runAtomic(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    indent.reindent(from.getOffset(), to.getOffset());
+                                                } catch (BadLocationException ex) {
+                                                    //ignore
+                                                }
+                                            }
+                                        });
+                                    } finally {
+                                        indent.unlock();
+                                    }
+                                }
+                            });
+                        }
+                    } catch (BadLocationException blex) {
+                        ex.set(blex);
+                    }
                 }
+            });
+            BadLocationException blex = ex.get();
+            if (blex != null) {
+                throw blex;
             }
-        });
-        BadLocationException blex = ex.get();
-        if (blex != null) {
-            throw blex;
+            return;
         }
         showCompletion();
     }
