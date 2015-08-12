@@ -69,6 +69,7 @@ import org.apache.tools.ant.taskdefs.Manifest.Section;
 import org.apache.tools.ant.taskdefs.ManifestException;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
@@ -86,6 +87,8 @@ public class CopyLibs extends Jar {
     private static final String INDEX = "META-INF/INDEX.LIST";  //NOI18N
     private static final String UTF_8 = "UTF-8";    //NOI18N
     private static final String UTF8 = "UTF8";      //NOI18N
+    private static final String URL_SEPARATOR = "/";    //NOI18N
+    private static final String CP_SEPARATOR = " ";     //NOI18N
 
     Path runtimePath;
     Path excludeFromCopy;
@@ -133,6 +136,41 @@ public class CopyLibs extends Jar {
         super.setEncoding(encoding);
     }
 
+    @Override
+    public void addConfiguredManifest(Manifest newManifest) throws ManifestException {
+        if (newManifest != null && runtimePath != null) {
+            final Manifest.Attribute cpAttr = newManifest.getMainSection().getAttribute(ATTR_CLASS_PATH);
+            String value;
+            if (cpAttr != null && (value = cpAttr.getValue()) != null) {
+                final Set<String> folders = new HashSet<>();
+                for (Resource res : runtimePath) {
+                    final String simpleName = basename(res.getName(), File.separator);
+                    if (res.isDirectory()) {
+                        folders.add(simpleName);
+                    } else {
+                        //In case of conflict in jar and folder simple name the last wins.
+                        folders.remove(simpleName);
+                    }
+                }
+                final String[] parts = value.split(CP_SEPARATOR);
+                boolean changed = false;
+                for (int i=0; i<parts.length; i++) {
+                    final String name = parts[i];
+                    final String simpleName = basename(name, URL_SEPARATOR);
+                    if (folders.contains(simpleName) && !name.endsWith(URL_SEPARATOR)) {
+                        parts[i] = name + URL_SEPARATOR;
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    value = stringJoin(CP_SEPARATOR, parts);    //Replace by String.join in JDK 8 when allowed
+                    cpAttr.setValue(value);
+                }
+            }
+        }
+        super.addConfiguredManifest(newManifest);
+    }
+
 
     @Override
     public void execute() throws BuildException {
@@ -147,8 +185,7 @@ public class CopyLibs extends Jar {
                 this.log(String.format("Not copying library %s , it can't be read.", f.getAbsolutePath()), Project.MSG_WARN);
             } else if (f.isDirectory()) {
                 this.log(String.format("Not copying library %s , it's a directory.", f.getAbsolutePath()), Project.MSG_WARN);
-            }
-            else {
+            } else {
                 filesToCopy.add(f);
             }
         }
@@ -325,5 +362,29 @@ public class CopyLibs extends Jar {
 
     private static boolean isUTF8(final String encoding) {
         return UTF_8.equalsIgnoreCase(encoding) || UTF8.equalsIgnoreCase(encoding);
+    }
+
+    private static String basename(final String name, final String separator) {
+        final int endIndex = name.endsWith(separator) ?
+                name.length() - 1 :
+                name.length();
+        final int startIndex = name.lastIndexOf(separator.charAt(0), endIndex -1);
+        return endIndex == name.length() && startIndex < 0 ?
+                name :
+                name.substring(startIndex < 0 ? 0 : startIndex + 1, endIndex);
+    }
+
+    private static String stringJoin(CharSequence delimiter, CharSequence... elements) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (CharSequence element : elements) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(delimiter);
+            }
+            sb.append(element);
+        }
+        return sb.toString();
     }
 }
