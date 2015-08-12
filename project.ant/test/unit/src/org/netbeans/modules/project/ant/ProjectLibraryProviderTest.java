@@ -307,7 +307,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals("gps", lib.getName());
         Map<String,String> expected = new HashMap<String,String>();
         expected.put("libs.javahelp.classpath", "${base}/jh.jar"+File.pathSeparatorChar+"${base}/jh-search.jar");
-        expected.put("libs.javahelp.javadoc", "${base}/jh-api/");
+        expected.put("libs.javahelp.javadoc", "${base}/jh-api");
         expected.put("libs.gps.type", "j2me");
         assertEquals(expected, loadProperties("libraries.properties"));
         mgr.removeLibrary(lib);

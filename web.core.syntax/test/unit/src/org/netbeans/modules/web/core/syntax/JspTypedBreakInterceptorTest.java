@@ -41,7 +41,15 @@
  */
 package org.netbeans.modules.web.core.syntax;
 
+import java.util.Collections;
+import java.util.concurrent.CountDownLatch;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.test.web.core.syntax.TestBase2;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,12 +66,42 @@ public class JspTypedBreakInterceptorTest extends TestBase2 {
         return true;
     }
 
-
     public void testEndTag1() throws Exception {
         insertBreak("<a>^</a>", "<a>\n    ^\n</a>");
     }
 
     public void testEndTag2() throws Exception {
         insertBreak("<jsp:body>^</jsp:body>", "<jsp:body>\n    ^\n</jsp:body>");
+    }
+
+    public void testAWTWait() throws Exception {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                Source src = Source.create(getTestFile("testSingleJsps/JSPDeclaration.java"));
+                try {
+                    ParserManager.parse(Collections.singleton(src), new UserTask() {
+
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            latch.countDown();
+                            Thread.sleep(30000);
+                        }
+                    });
+                } catch (ParseException ex) {
+                    throw new RuntimeException();
+                }
+            }
+        });
+
+        latch.await();
+        System.out.println("Testing");
+        System.out.flush();
+        long start = System.nanoTime();
+        insertBreak("<a>^</a>", "<a>\n    ^\n</a>");
+        System.out.println("Finished in " + (((System.nanoTime() - start)) / 1000000) + " ms");
     }
 }

@@ -189,7 +189,7 @@ public final class EditorContextSupport {
         final int[] result = new int[] {-1};
 
         try {
-            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(fo)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(fo, new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, fo);
@@ -349,7 +349,7 @@ public final class EditorContextSupport {
         }
         final List<Integer> result = new ArrayList<Integer>();
         try {
-            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(fo)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(fo, new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, fo);
@@ -562,7 +562,7 @@ public final class EditorContextSupport {
         }
         final Integer[] result = new Integer[] { null };
         try {
-            final Future f = parseWhenScanFinishedReallyLazy(Collections.singleton(Source.create(fo)), new UserTask() {
+            final Future f = parseWhenScanFinishedReallyLazy(fo, new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     CompilationController ci = retrieveController(resultIterator, fo);
@@ -747,14 +747,10 @@ public final class EditorContextSupport {
     }
 
     public static String getClassDeclaredAt(FileObject fo, final int currentOffset) {
-        JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) {
-            return null;
-        }
         final String[] currentClassPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(fo, new CancellableTask<CompilationController>() {
                 @Override
                 public void cancel() {
                 }
@@ -883,14 +879,10 @@ public final class EditorContextSupport {
     /** @return { "method name", "method signature", "enclosing class name" }
      */
     public static String[] getMethodDeclaredAt(FileObject fo, final int currentOffset) {
-        JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) {
-            return null;
-        }
         final String[] currentMethodPtr = new String[] { null, null, null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(fo, new CancellableTask<CompilationController>() {
                 @Override
                 public void cancel() {
                 }
@@ -1239,14 +1231,10 @@ public final class EditorContextSupport {
         if (fo == null) {
             return null;
         }
-        JavaSource js = JavaSource.forFileObject(fo);
-        if (js == null) {
-            return null;
-        }
         final String[] currentElementPtr = new String[] { null };
         final Future<Void> scanFinished;
         try {
-            scanFinished = runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+            scanFinished = runWhenScanFinishedReallyLazy(fo, new CancellableTask<CompilationController>() {
                 @Override
                 public void cancel() {
                 }
@@ -1478,12 +1466,16 @@ public final class EditorContextSupport {
 
     }
 
-    private static Future<Void> runWhenScanFinishedReallyLazy(final JavaSource js,
+    private static Future<Void> runWhenScanFinishedReallyLazy(final FileObject fo,
                                                               final Task<CompilationController> task,
                                                               final boolean shared) throws IOException {
         return scanReallyLazy(new ScanRunnable<IOException>(IOException.class) {
             @Override
             public void run(Future<Void>[] resultPtr, IOException[] excPtr) {
+                JavaSource js = JavaSource.forFileObject(fo);
+                if (js == null) {
+                    return ;
+                }
                 try {
                     js.runUserActionTask(task, shared);
                 } catch (IOException ex) {
@@ -1495,11 +1487,12 @@ public final class EditorContextSupport {
         });
     }
 
-    private static Future<Void> parseWhenScanFinishedReallyLazy(final Collection<Source> sources,
+    private static Future<Void> parseWhenScanFinishedReallyLazy(final FileObject fo,
                                                                 final UserTask userTask) throws ParseException {
         return scanReallyLazy(new ScanRunnable<ParseException> (ParseException.class) {
             @Override
             public void run(Future<Void>[] resultPtr, ParseException[] excPtr) {
+                Collection<Source> sources = Collections.singleton(Source.create(fo));
                 try {
                     ParserManager.parse(sources, userTask);
                 } catch (ParseException ex) {

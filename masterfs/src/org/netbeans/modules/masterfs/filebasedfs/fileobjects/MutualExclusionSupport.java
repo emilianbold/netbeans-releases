@@ -60,6 +60,10 @@ import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 
 public final class MutualExclusionSupport<K> {
+
+    private static final int TRIES = Integer.getInteger(               //#229903
+            "org.netbeans.modules.masterfs.mutualexclusion.tries", 10); //NOI18N
+
     private final Map<K,Set<Closeable>> exclusive = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
     private final Map<K,Set<Closeable>> shared = Collections.synchronizedMap(new WeakHashMap<K,Set<Closeable>>());
 
@@ -74,7 +78,7 @@ public final class MutualExclusionSupport<K> {
         final Set<Closeable> unexpectedCounter = unexpected.get(key);
         Set<Closeable> expectedCounter = expected.get(key);
 
-        for (int i = 0; i < 10 && isInUse; i++) {
+        for (int i = 0; i < TRIES && isInUse; i++) {
             isInUse = unexpectedCounter != null && unexpectedCounter.size() > 0;
 
             if (!isInUse) {            
