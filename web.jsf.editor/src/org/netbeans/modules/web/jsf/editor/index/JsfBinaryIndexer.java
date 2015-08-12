@@ -196,7 +196,7 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
         //notify the FaceletsLibrarySupport that the libraries might have changed.
         if(context.getRoot() != null) {  //looks like can be null
             for(Project p : LibraryUtils.getOpenedJSFProjects()) {
-                JsfSupport support = JsfSupportProvider.get(p.getProjectDirectory());
+                JsfSupport support = JsfSupportProvider.get(p);
                 if(support != null) {
                     JsfSupportImpl jsfSupportImpl = (JsfSupportImpl) support;
                     jsfSupportImpl.indexedContentPossiblyChanged();
