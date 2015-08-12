@@ -218,10 +218,6 @@ public class InlinePlugin extends CsmModificationRefactoringPlugin {
             if (preCheckProblem != null) {
                 return preCheckProblem;
             }
-            CsmObject directReferencedObject = CsmRefactoringUtils.getReferencedElement(getStartReferenceObject());
-            // check read-only elements
-            preCheckProblem = checkIfModificationPossible(preCheckProblem, directReferencedObject);
-            fireProgressListenerStop();
             return preCheckProblem;
         } finally {
             CsmCacheManager.leave();
