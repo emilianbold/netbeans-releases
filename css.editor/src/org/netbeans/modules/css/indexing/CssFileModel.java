@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.lib.editor.util.CharSubSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -399,16 +398,28 @@ public class CssFileModel {
         private OffsetRange documentRange, documentBodyRange;
         private CharSequence elementText, elementLineText;
         private int lineOffset = -1;
-        private final Snapshot snapshot;
-        private final Snapshot topLevelSnapshot;
+        private final CharSequence snapshotText;
+        private CharSequence topLevelSnapshotText;
+        private final int documentFrom;
+        private final int documentTo;
+        private int bodyDocFrom;
+        private int bodyDocTo;
 
         public LazyEntry(Snapshot snapshot, Snapshot topLevelSnapshot, String name, OffsetRange range, OffsetRange bodyRange, boolean isVirtual) {
-            this.snapshot = snapshot;
-            this.topLevelSnapshot = topLevelSnapshot;
+            this.snapshotText = snapshot.getText();
+            if (topLevelSnapshot != null) {
+                this.topLevelSnapshotText = topLevelSnapshot.getText();
+            }
             this.name = name;
             this.range = range;
             this.bodyRange = bodyRange;
             this.isVirtual = isVirtual;
+            documentFrom = snapshot.getOriginalOffset(range.getStart());
+            documentTo = snapshot.getOriginalOffset(range.getEnd());
+            if (bodyRange != null) {
+                bodyDocFrom = snapshot.getOriginalOffset(bodyRange.getStart());
+                bodyDocTo = snapshot.getOriginalOffset(bodyRange.getEnd());
+            }
         }
 
         @Override
@@ -424,9 +435,9 @@ public class CssFileModel {
         @Override
         public synchronized int getLineOffset() {
             if (lineOffset == -1) {
-                if (topLevelSnapshot != null && isValidInSourceDocument()) {
+                if (topLevelSnapshotText != null && isValidInSourceDocument()) {
                     try {
-                        lineOffset = LexerUtils.getLineOffset(topLevelSnapshot.getText(), getDocumentRange().getStart());
+                        lineOffset = LexerUtils.getLineOffset(topLevelSnapshotText, getDocumentRange().getStart());
                     } catch (BadLocationException ex) {
                         //no-op
                     }
@@ -439,7 +450,7 @@ public class CssFileModel {
         public synchronized CharSequence getText() {
             if (elementText == null) {
                 //delegate to the underlying source charsequence, do not duplicate any chars!
-                elementText = new CharSubSequence(snapshot.getText(), range.getStart(), range.getEnd());
+                elementText = new CharSubSequence(snapshotText, range.getStart(), range.getEnd());
             }
             return elementText;
         }
@@ -448,11 +459,11 @@ public class CssFileModel {
         public synchronized CharSequence getLineText() {
             if (elementLineText == null) {
                 try {
-                    int astLineStart = GsfUtilities.getRowStart(snapshot.getText(), range.getStart());
-                    int astLineEnd = GsfUtilities.getRowEnd(snapshot.getText(), range.getStart());
+                    int astLineStart = GsfUtilities.getRowStart(snapshotText, range.getStart());
+                    int astLineEnd = GsfUtilities.getRowEnd(snapshotText, range.getStart());
 
                     elementLineText = astLineStart != -1 && astLineEnd != -1
-                            ? snapshot.getText().subSequence(astLineStart, astLineEnd)
+                            ? snapshotText.subSequence(astLineStart, astLineEnd)
                             : null;
 
                 } catch (BadLocationException ex) {
@@ -472,9 +483,6 @@ public class CssFileModel {
         @Override
         public synchronized OffsetRange getDocumentRange() {
             if (documentRange == null) {
-                int documentFrom = snapshot.getOriginalOffset(range.getStart());
-                int documentTo = snapshot.getOriginalOffset(range.getEnd());
-
                 documentRange = documentFrom != -1 && documentTo != -1 ? new OffsetRange(documentFrom, documentTo) : OffsetRange.NONE;
             }
             return documentRange;
@@ -494,9 +502,6 @@ public class CssFileModel {
         public synchronized OffsetRange getDocumentBodyRange() {
             if (documentBodyRange == null) {
                 if (bodyRange != null) {
-                    int bodyDocFrom = snapshot.getOriginalOffset(bodyRange.getStart());
-                    int bodyDocTo = snapshot.getOriginalOffset(bodyRange.getEnd());
-
                     documentBodyRange = bodyDocFrom != -1 && bodyDocTo != -1
                             ? new OffsetRange(bodyDocFrom, bodyDocTo)
                             : OffsetRange.NONE;
