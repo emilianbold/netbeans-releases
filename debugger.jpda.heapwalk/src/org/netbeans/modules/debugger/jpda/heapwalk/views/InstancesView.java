@@ -171,13 +171,6 @@ public class InstancesView extends TopComponent {
         }
         this.hfw = hfw;
         if (hfw == null) return ;
-        java.awt.Container header;
-        header = (java.awt.Container) hfw.getInstancesController().getFieldsBrowserController().getPanel().getComponent(0);
-        header.getComponent(1).setVisible(false);
-        header = (java.awt.Container) hfw.getInstancesController().getInstancesListController().getPanel().getComponent(0);
-        header.getComponent(1).setVisible(false);
-        header = (java.awt.Container) hfw.getInstancesController().getReferencesBrowserController().getPanel().getComponent(0);
-        header.getComponent(1).setVisible(false);
         hfwPanel = hfw.getInstancesController().getPanel();
         add(hfwPanel, "Center");
         revalidate();
