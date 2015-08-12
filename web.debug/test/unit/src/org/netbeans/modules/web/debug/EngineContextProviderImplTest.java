@@ -59,7 +59,7 @@ public class EngineContextProviderImplTest extends NbTestCase {
     }
 
     public void testGetUrl() throws MalformedURLException, URISyntaxException {
-        EngineContextProviderImpl provider = new EngineContextProviderImpl();
+        EngineContextProviderImpl provider = new EngineContextProviderImpl(null);
         assertNull(provider.getURL(null, false));
         assertNull(provider.getURL(null, true));
 
