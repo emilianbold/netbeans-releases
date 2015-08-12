@@ -430,8 +430,12 @@ public class GeneratorUtils {
 
     private static Tree checkDuplicates(WorkingCopy wc, ClassTree clazz, Tree member) {
         List<? extends VariableTree> memberParams = null;
+        TreePath tp = null;
         outer: for (Tree tree : clazz.getMembers()) {
-            if (tree.getKind() == member.getKind()) {
+            if (tp == null) {
+                tp = new TreePath(wc.getCompilationUnit());
+            }
+            if (tree.getKind() == member.getKind() && !wc.getTreeUtilities().isSynthetic(new TreePath(tp, tree))) {
                 switch (member.getKind()) {
                     case CLASS:
                         if (((ClassTree)member).getSimpleName().contentEquals(((ClassTree)tree).getSimpleName())) {
@@ -452,7 +456,6 @@ public class GeneratorUtils {
                             if (memberParams.size() == treeParams.size()) {
                                 Iterator<? extends VariableTree> memberIt = memberParams.iterator();
                                 Iterator<? extends VariableTree> treeIt = treeParams.iterator();
-                                TreePath tp = new TreePath(wc.getCompilationUnit());
                                 while (memberIt.hasNext() && treeIt.hasNext()) {
                                     TypeMirror mTM = wc.getTrees().getTypeMirror(new TreePath(tp, memberIt.next().getType()));
                                     TypeMirror tTM = wc.getTrees().getTypeMirror(new TreePath(tp, treeIt.next().getType()));
