@@ -239,7 +239,7 @@ public class InvalidFormatString extends AbstractCodeAudit {
                     if (type != null) {
                         String fType = info.getFullType();
                         List<String> validFlags = typeToFormat(type);
-                        if (!validFlags.isEmpty() && !validFlags.contains(fType)) {
+                        if (!validFlags.contains(fType)) {
                             result.add(new FormatError(FormatErrorType.TYPE_MISMATCH, type, fType, line));
                         }
                     }
