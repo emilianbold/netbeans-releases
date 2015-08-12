@@ -923,13 +923,16 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     }
 
     private static void autoEdit(JTable tab) {
+        Component editorComponent;
         if (tab.editCellAt(tab.getSelectedRow(), tab.getSelectedColumn(), null)
-                && tab.getEditorComponent() != null) {
+                && (editorComponent = tab.getEditorComponent()) != null) {
             JTextComponent field;
-            if (tab.getEditorComponent() instanceof ChangeParametersButtonPanel) {
-                field = (JTextComponent) ((JScrollPane) ((ChangeParametersButtonPanel) tab.getEditorComponent()).getComp()).getViewport().getView();
+            if (editorComponent instanceof ChangeParametersButtonPanel) {
+                field = (JTextComponent) ((JScrollPane) ((ChangeParametersButtonPanel) editorComponent).getComp()).getViewport().getView();
+            } else if(editorComponent instanceof JScrollPane) {
+                field = (JTextComponent) ((JScrollPane) editorComponent).getViewport().getView();
             } else {
-                field = (JTextComponent) ((JScrollPane) tab.getEditorComponent()).getViewport().getView();
+                field = (JTextComponent) editorComponent;
             }
             field.requestFocusInWindow();
         }

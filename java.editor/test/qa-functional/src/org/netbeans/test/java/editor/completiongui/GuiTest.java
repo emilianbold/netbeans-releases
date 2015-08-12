@@ -45,13 +45,26 @@
 
 package org.netbeans.test.java.editor.completiongui;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.KeyEvent;
 import java.util.regex.Pattern;
+import javax.swing.JComboBox;
+import javax.swing.JList;
+import javax.swing.JTabbedPane;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.operators.ComponentOperator;
+import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JComponentOperator;
+import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
@@ -223,6 +236,100 @@ public class GuiTest extends EditorTestCase {
     public void testReturn() {
         String pattern  = ".*return x.*";
         performCodeCompletion("ContextAware","return ", 35, 1, pattern, false);
+    }
+    
+    public void testExcludeFromNormalCC() {
+        exclude("TestSimpleCase", 10, "Conte",false, false, "org.netbeans.test.java.editor.completiongui.GuiTest.ContextAware");
+    }
+    
+    public void testExcludePackageFromNormalCC() {
+        exclude("TestSimpleCase", 10, "IllegalStateExce",false, true, "java.lang.*");
+    }
+    
+    public void testExcludeFromAllCC() {
+        exclude("TestSimpleCase", 10, "Fil",true, false, "java.io.File");
+    }
+    
+    public void testExcludePackageFromAllCC() {
+        exclude("TestSimpleCase", 10, "Collect",true, true, "java.util.*");
+    }
+
+    private void exclude(String testFile, int line, String prefix, boolean allSymbolsCC, boolean excludePackage, String expected) {
+        int delay;
+        openSourceFile(defaultSamplePackage, testFile);
+        if(firstRun) {
+            new EventTool().waitNoEvent(5000);
+            firstRun = false;
+        }
+        EditorOperator editor = new EditorOperator(testFile);
+        try {
+            editor.requestFocus();
+            editor.setCaretPosition(line, 1);
+            if(prefix!=null) {
+                for (int i = 0; i < prefix.length(); i++) {
+                    char c = prefix.charAt(i);
+                    editor.typeKey(c);
+                }
+            }
+            new EventTool().waitNoEvent(250);
+            if(allSymbolsCC) {
+                editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK);
+                delay = 2000;
+            } else {
+                editor.pushKey(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK);
+                delay = 1000;
+                
+            }
+            new EventTool().waitNoEvent(delay);            
+            
+            delay = 1000;            
+            editor.pushKey(KeyEvent.VK_ENTER, KeyEvent.ALT_DOWN_MASK);
+            new EventTool().waitNoEvent(delay);            
+            if(excludePackage) {
+                editor.pushKey(KeyEvent.VK_DOWN);
+            
+            }
+            editor.pushKey(KeyEvent.VK_ENTER);
+            boolean b = excludedContains(expected);
+            assertTrue("Class is not excluded",b);
+            
+        } finally {
+            editor.close(false);
+        }
+    }
+
+    private boolean excludedContains(String item) {
+        int delay = 1000;
+        OptionsOperator oo = null;            
+        try {
+            oo = OptionsOperator.invoke();
+            oo.selectEditor();
+            JTabbedPane jtp = (JTabbedPane) oo.findSubComponent(new JTabbedPaneOperator.JTabbedPaneFinder());
+            JTabbedPaneOperator jtpo = new JTabbedPaneOperator(jtp);
+            Container page = (Container) jtpo.selectPage("Code Completion");
+            ContainerOperator jco = new ContainerOperator(page);
+            new EventTool().waitNoEvent(delay);
+            
+            JComboBox jcb = (JComboBox) jco.findSubComponent(new JComboBoxOperator.JComboBoxFinder());
+            JComboBoxOperator jcbo = new JComboBoxOperator(jcb);       
+            jcbo.selectItem("text/x-java");
+            new EventTool().waitNoEvent(delay);
+            
+            JList jl = (JList) jco.findSubComponent(new JListOperator.JListFinder());
+            JListOperator jlo = new JListOperator(jl);
+            for (int i = 0; i < jlo.getModel().getSize(); i++) {
+                String actItem = jlo.getModel().getElementAt(i).toString();
+                if(item.equals(actItem)) {
+                    return true;
+                }                
+            }
+            return false;
+            
+        } finally {
+            if(oo!=null) {
+                oo.close();
+            }
+        }
     }
     
     public static void main(String[] args) {
