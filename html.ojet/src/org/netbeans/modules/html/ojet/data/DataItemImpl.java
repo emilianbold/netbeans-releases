@@ -149,21 +149,30 @@ public class DataItemImpl implements DataItem {
                     BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8")); //NOI18N
                     String line;
                     boolean inMembers = false;
-
+                    int ulBalance = 0;
                     while ((line = br.readLine()) != null) {
                         if (!inMembers && line.contains("<a href=\"#members-section\">")) { //NOI18N
                             inMembers = true;
                         }
                         if (inMembers) {
-                            if (line.contains("<li>")) {    //NI18N
-                                String name = line.substring(line.indexOf("<li"));  //NOI18N
-                                name = name.substring(name.indexOf(">") + 1); // end of li tag  //NOI18N
-                                name = name.substring(name.indexOf(">") + 1); // end of a tag   //NOI18N
-                                name = name.substring(0, name.indexOf('<'));                    //NOI18N
-                                options.add(new DataItemOption(name, getDocUrl()));
+                            if (line.contains("<ul")) {
+                                ulBalance++;
+                            }
+                            if (line.contains("<li>") && line.contains("<a") && ulBalance == 1) {    //NI18N
+                                String name = line.substring(line.indexOf(">", line.indexOf("<a")) + 1).trim(); // end of a tag   //NOI18N
+                                while (name.charAt(0) == '<') {
+                                    name = name.substring(name.indexOf('>') + 1).trim();
+                                }
+                                name = name.substring(0, name.indexOf('<')).trim();                    //NOI18N
+                                if (!name.isEmpty()) {
+                                    options.add(new DataItemOption(name, getDocUrl()));
+                                }
                             }
                             if (line.contains("</ul>")) {   //NOI18N
-                                break;
+                                ulBalance--;
+                                if (ulBalance == 0) {
+                                    break;
+                                }
                             }
                         }
 

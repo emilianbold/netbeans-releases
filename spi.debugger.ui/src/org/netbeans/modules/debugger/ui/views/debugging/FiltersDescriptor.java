@@ -70,6 +70,7 @@ import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ui.DebuggingView.DVFilter;
 import org.netbeans.spi.debugger.ui.DebuggingView.DVFilter.Group;
 import org.netbeans.spi.debugger.ui.DebuggingView.DVSupport;
@@ -507,8 +508,15 @@ public final class FiltersDescriptor {
                     public void preferenceChange(PreferenceChangeEvent evt) {
                         boolean wasSelected = isSelected;
                         readValue();
-                        if (wasSelected != isSelected) {
-                            setState(isSelected);
+                        final boolean newSelected = isSelected;
+                        if (wasSelected != newSelected) {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    setState(newSelected);
+                                }
+                            });
+                            
                         }
                     }
                 };
