@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,58 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2014 Sun Microsystems, Inc.
+ * Portions Copyrighted 2015 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.ojet.data;
+package org.netbeans.modules.html.ojet.ui;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.javascript2.editor.api.FrameworksUtils;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
-public abstract class DataProvider {
+public class OJETFrameworkCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
-    public abstract Collection<DataItem> getBindingOptions();
+    @ProjectCustomizer.CompositeCategoryProvider.Registrations({
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = FrameworksUtils.HTML5_CLIENT_PROJECT,
+                category = FrameworksUtils.CATEGORY,
+                position = 261
+        ),
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = FrameworksUtils.PHP_PROJECT,
+                category = FrameworksUtils.CATEGORY,
+                position = 261
+        ),
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(
+                projectType = FrameworksUtils.MAVEN_PROJECT,
+                category = FrameworksUtils.CATEGORY,
+                position = 261
+        )
+    })
 
-    public abstract Collection<DataItem> getComponents();
-
-    public abstract Collection<DataItem> getComponentOptions(String compName);
-    
-    public abstract Collection<String> getAvailableVersions();
-    
-    public abstract String getCurrentVersion();
-    
-    public abstract void setCurrentVersion(String version);
-
-    public static Collection<DataItem> filterByPrefix(Collection<? extends DataItem> data, String prefix) {
-        List<DataItem> result = new ArrayList<>();
-        if (prefix == null || prefix.isEmpty()) {
-            result.addAll(data);
-        } else {
-            for (DataItem dataItem : data) {
-                if (dataItem.getName().startsWith(prefix)) {
-                    result.add(dataItem);
-                }
-            }
-        }
-        return result;
+    public static OJETFrameworkCustomizer createCustomizer() {
+        return new OJETFrameworkCustomizer();
     }
+
+    @NbBundle.Messages("OJETFrameworkCustomizer.displayName=Oracle JET")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                OJETPanel.IDENTIFIER,
+                Bundle.OJETFrameworkCustomizer_displayName(),
+                null, (ProjectCustomizer.Category[]) null);
+    }
+
+    @Override
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        Project project = context.lookup(Project.class);
+        return new OJETPanel(project, category);
+    }
+
 }
