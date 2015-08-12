@@ -59,15 +59,22 @@ import org.openide.modules.InstalledFileLocator;
 public class DataProviderImpl extends DataProvider {
 
     private static DataProviderImpl instance = null;
-    private static final String zipURL = "docs/ojetdocs.zip";
-    private static final HashMap<String, DataItemImpl.DataItemComponent> data = new HashMap<>();
+    private static final String zipFolder = "docs";
+    private static final String ZIP_PREFIX = "ojetdocs-";
+    private static final String ZIP_EXTENSION = ".zip";
+    protected static final String DEFAULT_VERSION = "1.2.0.Dev08102015";
+    private static final HashMap<String, DataItemImpl.DataItemComponent> data = new HashMap();
     private static FileObject docRoot = null;
+    private static String currentVersion;
 
     synchronized public static DataProvider getInstance() {
         if (instance == null) {
             instance = new DataProviderImpl();
-            File zipFile = InstalledFileLocator.getDefault().locate(zipURL, "org.netbeans.modules.html.ojet", false); //NOI18N
-            if (zipFile.exists()) {
+            currentVersion = DEFAULT_VERSION;
+        }
+        if (data.isEmpty()) {
+            File zipFile = InstalledFileLocator.getDefault().locate(zipFolder + "/" + codeFileNameFromVersion(currentVersion), "org.netbeans.modules.html.ojet", false); //NOI18N
+            if (zipFile != null && zipFile.exists()) {
                 docRoot = FileUtil.toFileObject(zipFile);
                 docRoot = FileUtil.getArchiveRoot(docRoot);
                 if (docRoot != null) {
@@ -77,7 +84,6 @@ public class DataProviderImpl extends DataProvider {
                             String name = child.getName();
                             if (name.startsWith("oj.oj")) {
                                 name = name.substring(3);
-                                
                                 data.put(name, new DataItemImpl.DataItemComponent(name, child.toURL().toString()));
                             }
                         }
@@ -111,5 +117,51 @@ public class DataProviderImpl extends DataProvider {
             return component.getOptions();
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public Collection<String> getAvailableVersions() {
+        File folder = InstalledFileLocator.getDefault().locate(zipFolder, "org.netbeans.modules.html.ojet", false); //NOI18N
+        List<String> versions = new ArrayList();
+        if (folder.exists()) {
+            File[] files = folder.listFiles();
+            for (File file : files) {
+                String fileName = file.getName();
+                if (file.isFile() && fileName.startsWith(ZIP_PREFIX) && fileName.endsWith(ZIP_EXTENSION)) {
+                    versions.add(decodeVersionFromFileName(fileName));
+                }
+            }
+        }
+        return versions;
+    }
+
+    private static String decodeVersionFromFileName(String name) {
+        String version = name.substring(ZIP_PREFIX.length());
+        version = version.substring(0, version.length() - ZIP_EXTENSION.length());
+        version = version.replace('_', '.');
+        return version;
+    }
+    
+    private static String codeFileNameFromVersion(String version) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(ZIP_PREFIX);
+        sb.append(version.replace('.', '_'));
+        sb.append(ZIP_EXTENSION);
+        return sb.toString();
+    }
+    
+    @Override
+    public String getCurrentVersion() {
+        return currentVersion;
+    }
+
+    @Override
+    public void setCurrentVersion(String version) {
+        if (!getAvailableVersions().contains(version)) {
+            throw new IllegalArgumentException(version + " is unknown version");
+        } 
+        currentVersion = version;
+        // reset the cache
+        data.clear();
     }
 }
