@@ -410,6 +410,6 @@
 	<mapID target="CppJavaDevelopment" url="WorkingWithCandC++Projects/CppJavaDevelopment.html"/>
 	<mapID target="WorkingWithJNI" url="WorkingWithCandC++Projects/WorkingWithJNI.html"/>
 	<mapID target="WorkingWithJNA" url="WorkingWithCandC++Projects/WorkingWithJNA.html"/>
-        <mapID target="IntroduceMethod"url="EditingSourceFiles/IntroduceMethod.html"/> 
-        <mapID target="RefactorInline"url="EditingSourceFiles/RefactorInline.html"/> 
+	<mapID target="IntroduceMethod" url="EditingSourceFiles/IntroduceMethod.html"/>
+	<mapID target="RefactorInline" url="EditingSourceFiles/RefactorInline.html"/>
 </map>
