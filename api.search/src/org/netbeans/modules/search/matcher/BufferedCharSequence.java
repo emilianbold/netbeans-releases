@@ -107,7 +107,9 @@ public class BufferedCharSequence implements CharSequence {
      * Max subsequence length that will be processed by this implementation by
      * default.
      */
-    public static final int MAX_SUBSEQUENCE_LENGTH = 4 * K;
+    public static final int MAX_SUBSEQUENCE_LENGTH = Integer.getInteger(
+            "org.netbeans.modules.search.matcher.BufferedCharSequence"  //NOI18N
+                    + ".MAX_SUBSEQUENCE_LENGTH", 8 * K);                //NOI18N
     /**
      * Min sink buffer size that will be used.
      */
