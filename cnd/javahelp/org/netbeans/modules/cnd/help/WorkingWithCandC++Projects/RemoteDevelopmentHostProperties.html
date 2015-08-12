@@ -51,8 +51,15 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
             Sharing. If sharing the files is not possible, select Automatic Copying to copy the
             files. The files are copied to your <tt>.netbeans</tt> directory on the remote host.
           </li>
+          <li><b>Check ACL-based remote file permissions.</b> This option enables the IDE 
+              to recognize POSIX-style ACL permissions on files. If you find you cannot see 
+              project files located on a remote Linux server through the IDE, try enabling 
+              this option.  Note that enabling it can cause significant slowdown if the 
+              system has broken automounts.  The option should only be enabled if the remote 
+              server is using POSIX-style ACLs.
+</li>
           <li>
-            <b>X11 Forwarding.</b> If the projects you build on the remote host are graphical
+            <b>Enable X11 Forwarding.</b> If the projects you build on the remote host are graphical
             applications, select Enable X11 Forwarding. This allows you to run the application on
             the remote host, and have the windows shown on your local desktop.
           </li>
