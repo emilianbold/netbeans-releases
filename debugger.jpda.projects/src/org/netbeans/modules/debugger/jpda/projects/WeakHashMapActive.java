@@ -48,7 +48,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.openide.util.lookup.implspi.ActiveQueue;
+import org.openide.util.BaseUtilities;
 
 /**
  * A weak hash map, that automatically release entries as soon as they are freed by GC.
@@ -67,7 +67,7 @@ public final class WeakHashMapActive<K,V> extends AbstractMap<K,V> {
     public WeakHashMapActive() {
         super();
         map = new HashMap<Reference<K>, V>();
-        queue = ActiveQueue.queue();
+        queue = BaseUtilities.activeReferenceQueue();
     }
     
     @Override

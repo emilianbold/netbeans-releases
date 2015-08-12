@@ -227,6 +227,18 @@ public class GsfDataObject extends MultiDataObject {
 // and sets the DO.modified flag accordingly. Explicit call to DO.setModified() in this case may lead to data loss.
 //                    getDataObject().setModified(false);
                 }
+
+                /**
+                 * Human descriptive, localized name of the savable. It is
+                 * advised that all implementations of Savable override the
+                 * toString method to provide human readable name.
+                 *
+                 * @return human readable name representing the savable
+                 */
+                @Override
+                public String toString() {
+                    return getFile().getNameExt();
+                }
             }
             
             public Environment(GsfDataObject obj) {
