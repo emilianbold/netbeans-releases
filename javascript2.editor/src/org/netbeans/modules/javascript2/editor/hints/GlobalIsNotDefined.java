@@ -114,7 +114,11 @@ public class GlobalIsNotDefined extends JsAstRule {
                     && !jsHintGlobalDefinition.contains(varName)
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
-                
+
+                if (context.isCancelled()) {
+                    return;
+                }
+
                 // check whether is defined as window property
                 Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn("window." + varName, JsIndex.FIELD_BASE_NAME);
                 if (findByFqn.isEmpty()) {

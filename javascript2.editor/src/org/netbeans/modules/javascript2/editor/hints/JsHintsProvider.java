@@ -301,7 +301,7 @@ public class JsHintsProvider implements HintsProvider {
         }
     }
 
-    public static class JsRuleContext extends RuleContext {
+    public class JsRuleContext extends RuleContext {
 
         private JsParserResult jsParserResult = null;
 
@@ -310,6 +310,10 @@ public class JsHintsProvider implements HintsProvider {
                 jsParserResult = (JsParserResult)parserResult;
             }
             return jsParserResult;
+        }
+
+        public boolean isCancelled() {
+            return cancel;
         }
 
     }
