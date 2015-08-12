@@ -43,25 +43,25 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author sdedic
  */
 public class IndexingModule {
+    private static final String STOP_HOOKS_PATH = "Parsing/Indexing/Stop";   //NOI18N
     private static volatile boolean closed;
 
     /**
      * Initialization part of the former IndexerModule / ModuleInstall
-     * 
+     *
      * @author sdedic
      */
     @OnStart
@@ -71,7 +71,7 @@ public class IndexingModule {
             RepositoryUpdater.getDefault().start(false);
         }
     }
-    
+
     @OnStop
     public static class Shutdown implements Runnable, Callable<Boolean> {
 
@@ -81,6 +81,7 @@ public class IndexingModule {
             final Runnable postTask = new Runnable() {
                 @Override
                 public void run() {
+                    callStopHooks();
                     LuceneIndexFactory.getDefault().close();
                     DocumentBasedIndexManager.getDefault().close();
                 }
@@ -98,11 +99,25 @@ public class IndexingModule {
             LogContext.notifyClosing();
             return true;
         }
-        
     }
-    
+
     public static boolean isClosed() {
         return closed;
+    }
+
+    private static void callStopHooks() {
+        for (Runnable r : Lookups.forPath(STOP_HOOKS_PATH).lookupAll(Runnable.class)) {
+            try {
+                r.run();
+            } catch (Throwable t) {
+                if (t instanceof ThreadDeath) {
+                    throw (ThreadDeath) t;
+                } else {
+                    Exceptions.printStackTrace(t);
+                }
+            }
+        }
+
     }
 
 }

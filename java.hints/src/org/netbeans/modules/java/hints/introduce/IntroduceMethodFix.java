@@ -295,26 +295,30 @@ public final class IntroduceMethodFix extends IntroduceFixBase implements Fix {
         }
         AtomicBoolean allIfaces = new AtomicBoolean();
         Map<TargetDescription, Set<String>> targets = new LinkedHashMap<>();
-        for (TargetDescription target : IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel, allIfaces)) {
-            Set<String> cNames = new HashSet<>();
-            outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
-                List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
-                if (pTypes.size() == paramsVariables.size()) {
-                    Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
-                    Iterator<VariableElement> pVarsIt = paramsVariables.iterator();
-                    while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
-                        if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
-                            continue outer;
+        List<TargetDescription> viableTargets = IntroduceExpressionBasedMethodFix.computeViableTargets(info, block, statementsToWrap, duplicates, cancel, allIfaces);
+        IntroduceMethodFix imf = null;
+        if (viableTargets != null && !viableTargets.isEmpty()) {
+            for (TargetDescription target : viableTargets) {
+                Set<String> cNames = new HashSet<>();
+                outer: for (ExecutableElement ee : ElementFilter.methodsIn(target.type.resolve(info).getEnclosedElements())) {
+                    List<? extends TypeMirror> pTypes = ((ExecutableType) ee.asType()).getParameterTypes();
+                    if (pTypes.size() == paramsVariables.size()) {
+                        Iterator<? extends TypeMirror> pTypesIt = pTypes.iterator();
+                        Iterator<VariableElement> pVarsIt = paramsVariables.iterator();
+                        while (pTypesIt.hasNext() && pVarsIt.hasNext()) {
+                            if (!info.getTypes().isSameType(pTypesIt.next(), pVarsIt.next().asType())) {
+                                continue outer;
+                            }
                         }
+                        cNames.add(ee.getSimpleName().toString());
                     }
-                    cNames.add(ee.getSimpleName().toString());
                 }
+                targets.put(target, cNames);
             }
-            targets.put(target, cNames);
+            imf = new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
+                    duplicatesCount, scanner.getUsedTypeVars(), end, targets);
+            imf.setTargetIsInterface(allIfaces.get());
         }
-        IntroduceMethodFix imf = new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], 
-                duplicatesCount, scanner.getUsedTypeVars(), end, targets);
-        imf.setTargetIsInterface(allIfaces.get());
         return imf;
     }
 
