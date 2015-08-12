@@ -421,6 +421,13 @@ jaxbu
         
 Sample template to unmarshal JAXB objects.
 -----------------------
+junit
+@${baseType type="org.junit.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}
+null
+-----------------------
 le
 ${no-indent}length
 null
@@ -753,8 +760,19 @@ sy
 ${no-indent}synchronized 
 null
 -----------------------
+systrace
+System.out.println("${className currClassFQName editable="false"}.${methodName currMethodName editable="false"}()");
+null
+-----------------------
 tds
 Thread.dumpStack();
+null
+-----------------------
+testng
+@${baseType type="org.testng.annotations.Test" default="Test" editable="false"}
+public void test${Method}() {
+    ${cursor}
+}
 null
 -----------------------
 th
