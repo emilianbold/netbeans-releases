@@ -79,6 +79,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     private static final String FOLDER_TO_DELETE = "folderToDelete";    //NOI18N
 
     private final SpecificationVersion JDK_14 = new SpecificationVersion ("1.4");   //NOI18N
+    private final SpecificationVersion JDK_18 = new SpecificationVersion ("1.8");   //NOI18N
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     private JavaTargetChooserPanelGUI gui;
     private WizardDescriptor.Panel<WizardDescriptor> bottomPanel;
@@ -116,7 +117,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 null;
     }
 
-    @Messages("ERR_JavaTargetChooser_WrongPlatform=Wrong source level of the project. You will not be able to compile this file since it contains Java 5 features.")
+    @Messages("ERR_JavaTargetChooser_WrongPlatform=Wrong source level of the project. You will not be able to compile this file since it contains JDK {0} features.")
     @Override
     public boolean isValid() {              
         if (gui == null) {
@@ -210,10 +211,14 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
             setErrorMessage( "ERR_JavaTargetChooser_DefaultPackage" );            
         }
         String categories = (String) template.getAttribute("templateCategory"); // NOI18N
-        if (categories != null && Arrays.asList(categories.split(",")).contains(NewJavaFileWizardIterator.JDK_5)) {
-            //Only warning, display it only if everything else id OK.
-            if (specVersion != null && specVersion.compareTo(JDK_14) <= 0) {
-                wizard.getNotificationLineSupport().setErrorMessage(ERR_JavaTargetChooser_WrongPlatform());
+        if (specVersion != null && categories != null) {
+            List<String> catList = Arrays.asList(categories.split(","));
+            if (catList.contains(NewJavaFileWizardIterator.JDK_5) && specVersion.compareTo(JDK_14) <= 0) {
+                //Only warning, display it only if everything else id OK.
+                wizard.getNotificationLineSupport().setErrorMessage(ERR_JavaTargetChooser_WrongPlatform(5));
+            } else if (catList.contains(NewJavaFileWizardIterator.JDK_9) && specVersion.compareTo(JDK_18) <= 0) {
+                //Only warning, display it only if everything else id OK.
+                wizard.getNotificationLineSupport().setErrorMessage(ERR_JavaTargetChooser_WrongPlatform(9));
             }
         }
         
