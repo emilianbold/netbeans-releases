@@ -225,7 +225,6 @@ public class JavaBinaryIndexer extends BinaryIndexer {
                 List<? extends VariableElement> params = method.getParameters();
                 if (!params.isEmpty()) {
                     params.get(0).getSimpleName();
-                    break;
                 }
             }
         }
