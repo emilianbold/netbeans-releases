@@ -61,6 +61,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Iterator;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
@@ -143,7 +144,8 @@ public class CopyLibs extends Jar {
             String value;
             if (cpAttr != null && (value = cpAttr.getValue()) != null) {
                 final Set<String> folders = new HashSet<>();
-                for (Resource res : runtimePath) {
+                for (Iterator<Resource> it = runtimePath.iterator(); it.hasNext();) {
+                    final Resource res = it.next();
                     final String simpleName = basename(res.getName(), File.separator);
                     if (res.isDirectory()) {
                         folders.add(simpleName);
