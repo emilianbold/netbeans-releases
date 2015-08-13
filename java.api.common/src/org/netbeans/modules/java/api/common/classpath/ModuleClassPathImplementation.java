@@ -302,24 +302,26 @@ final class ModuleClassPathImplementation  implements ClassPathImplementation, P
     }
 
     private static void collectRequiredModulesImpl(Symbol.ModuleSymbol module, boolean transitive, Collection<? super URL> c) {
-        for (Directive.RequiresDirective req : module.requires) {
-            if (transitive) {
-                collectRequiredModulesImpl(req.module, transitive, c);
-            }
-            final JavaFileObject jfo = req.module.module_info.classfile != null ?
-                    req.module.module_info.classfile :
-                    req.module.module_info.sourcefile;
-            if (jfo != null) {
-                try {
-                    c.add(moduleURL(jfo));
-                } catch (MalformedURLException e) {
-                    LOG.log(
-                        Level.WARNING,
-                        "Invalid URL: {0}, reason: {1}",    //NOI18N
-                        new Object[]{
-                            jfo.toUri(),
-                            e.getMessage()
-                        });
+        if (module != null) {
+            for (Directive.RequiresDirective req : module.requires) {
+                if (transitive) {
+                    collectRequiredModulesImpl(req.module, transitive, c);
+                }
+                final JavaFileObject jfo = req.module.module_info.classfile != null ?
+                        req.module.module_info.classfile :
+                        req.module.module_info.sourcefile;
+                if (jfo != null) {
+                    try {
+                        c.add(moduleURL(jfo));
+                    } catch (MalformedURLException e) {
+                        LOG.log(
+                            Level.WARNING,
+                            "Invalid URL: {0}, reason: {1}",    //NOI18N
+                            new Object[]{
+                                jfo.toUri(),
+                                e.getMessage()
+                            });
+                    }
                 }
             }
         }
