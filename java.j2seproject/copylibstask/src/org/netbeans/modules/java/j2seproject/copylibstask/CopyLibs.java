@@ -66,8 +66,10 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
 import org.apache.tools.ant.taskdefs.Manifest;
 import org.apache.tools.ant.taskdefs.Manifest.Section;
+import org.apache.tools.ant.taskdefs.ManifestException;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.util.FileUtils;
 import org.apache.tools.zip.ZipEntry;
 import org.apache.tools.zip.ZipFile;
@@ -85,6 +87,8 @@ public class CopyLibs extends Jar {
     private static final String INDEX = "META-INF/INDEX.LIST";  //NOI18N
     private static final String UTF_8 = "UTF-8";    //NOI18N
     private static final String UTF8 = "UTF8";      //NOI18N
+    private static final String URL_SEPARATOR = "/";    //NOI18N
+    private static final String CP_SEPARATOR = " ";     //NOI18N
 
     Path runtimePath;
     Path excludeFromCopy;
@@ -95,12 +99,12 @@ public class CopyLibs extends Jar {
     public CopyLibs () {
         this.rebase = true;
     }
-    
+
     public void setRuntimeClassPath (final Path path) {
         assert path != null;
         this.runtimePath = path;
     }
-    
+
     public Path getRuntimeClassPath () {
         return this.runtimePath;
     }
@@ -132,46 +136,77 @@ public class CopyLibs extends Jar {
         super.setEncoding(encoding);
     }
 
-    
+    @Override
+    public void addConfiguredManifest(Manifest newManifest) throws ManifestException {
+        if (newManifest != null && runtimePath != null) {
+            final Manifest.Attribute cpAttr = newManifest.getMainSection().getAttribute(ATTR_CLASS_PATH);
+            String value;
+            if (cpAttr != null && (value = cpAttr.getValue()) != null) {
+                final Set<String> folders = new HashSet<>();
+                for (Resource res : runtimePath) {
+                    final String simpleName = basename(res.getName(), File.separator);
+                    if (res.isDirectory()) {
+                        folders.add(simpleName);
+                    } else {
+                        //In case of conflict in jar and folder simple name the last wins.
+                        folders.remove(simpleName);
+                    }
+                }
+                final String[] parts = value.split(CP_SEPARATOR);
+                boolean changed = false;
+                for (int i=0; i<parts.length; i++) {
+                    final String name = parts[i];
+                    final String simpleName = basename(name, URL_SEPARATOR);
+                    if (folders.contains(simpleName) && !name.endsWith(URL_SEPARATOR)) {
+                        parts[i] = name + URL_SEPARATOR;
+                        changed = true;
+                    }
+                }
+                if (changed) {
+                    value = stringJoin(CP_SEPARATOR, parts);    //Replace by String.join in JDK 8 when allowed
+                    cpAttr.setValue(value);
+                }
+            }
+        }
+        super.addConfiguredManifest(newManifest);
+    }
+
+
     @Override
     public void execute() throws BuildException {
         if (this.runtimePath == null) {
             throw new BuildException ("RuntimeClassPath must be set.");
         }
         final String[] pathElements = this.runtimePath.list();
-        final List<File> filesToCopy = new ArrayList<File>(pathElements.length);
-        for (int i=0; i< pathElements.length; i++) {
-            final File f = new File (pathElements[i]);
+        final List<File> filesToCopy = new ArrayList<>(pathElements.length);
+        for (String pathElement : pathElements) {
+            final File f = new File(pathElement);
             if (!f.canRead()) {
                 this.log(String.format("Not copying library %s , it can't be read.", f.getAbsolutePath()), Project.MSG_WARN);
-            } else if (f.isDirectory()) {                
+            } else if (f.isDirectory()) {
                 this.log(String.format("Not copying library %s , it's a directory.", f.getAbsolutePath()), Project.MSG_WARN);
-            }
-            else {
+            } else {
                 filesToCopy.add(f);
             }
-        }        
+        }
         final File destFile = this.getDestFile();
         final File destFolder = destFile.getParentFile();
         assert destFolder != null && destFolder.canWrite();
         try {
             ResourceBundle bundle = ResourceBundle.getBundle("org.netbeans.modules.java.j2seproject.copylibstask.Bundle");  //NOI18N
-            assert bundle != null;            
+            assert bundle != null;
             final File readme = new File (destFolder,bundle.getString("TXT_README_FILE_NAME"));
             if (!readme.exists()) {
                 readme.createNewFile();
             }
-            final PrintWriter out = new PrintWriter (new FileWriter (readme));            
-            try {
-                final String content = bundle.getString("TXT_README_FILE_CONTENT");                
+            try (PrintWriter out = new PrintWriter (new FileWriter (readme))) {
+                final String content = bundle.getString("TXT_README_FILE_CONTENT");
                 out.println (MessageFormat.format(content,new Object[] {destFile.getName()}));
-            } finally {
-                out.close ();
             }
         } catch (IOException ioe) {
             this.log("Cannot generate readme file.",Project.MSG_VERBOSE);
-        }        
-        
+        }
+
         if (!filesToCopy.isEmpty()) {
             final File libFolder = new File (destFolder,LIB);
             if (!libFolder.exists()) {
@@ -180,7 +215,7 @@ public class CopyLibs extends Jar {
             }
             assert libFolder.canWrite();
 
-            final Set<File> ignoreList = new HashSet<File>();
+            final Set<File> ignoreList = new HashSet<>();
             if (this.excludeFromCopy != null) {
                 for (String excludeElement : this.excludeFromCopy.list()) {
                     ignoreList.add(new File (excludeElement));
@@ -200,7 +235,7 @@ public class CopyLibs extends Jar {
                 }
                 this.log("Copy " + fileToCopy.getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
                 try {
-                    File libFile = new File (libFolder,fileToCopy.getName());                    
+                    File libFile = new File (libFolder,fileToCopy.getName());
                     if (!rebase(fileToCopy, libFile)) {
                         libFile.delete();
                         utils.copyFile(fileToCopy,libFile);
@@ -235,11 +270,8 @@ public class CopyLibs extends Jar {
                 }
                 final ZipEntry manifestEntry = zf.getEntry(MANIFEST);
                 if (manifestEntry != null) {
-                    final Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName(UTF_8));    //NOI18N
-                    try {
+                    try (Reader in = new InputStreamReader(zf.getInputStream(manifestEntry), Charset.forName(UTF_8))) {
                         manifest = new Manifest(in);
-                    } finally {
-                        in.close();
                     }
                 }
                 if (manifest == null) {
@@ -270,17 +302,15 @@ public class CopyLibs extends Jar {
                     return false;
                 }
                 final Enumeration<? extends ZipEntry> zent = zf.getEntries();
-                final ZipOutputStream out = new ZipOutputStream(target);
-                out.setEncoding(getEncoding());   //NOI18N
-//                out.setUseLanguageEncodingFlag(getUseLanguageEnodingFlag());      requires Ant 1.8
-//                out.setCreateUnicodeExtraFields(getCreateUnicodeExtraFields().getPolicy());   requires Ant 1.8
-//                out.setFallbackToUTF8(getFallBackToUTF8());   requires Ant 1.8
-                try {
+                try (final ZipOutputStream out = new ZipOutputStream(target)) {
+                    out.setEncoding(getEncoding());   //NOI18N
+    //              out.setUseLanguageEncodingFlag(getUseLanguageEnodingFlag());      requires Ant 1.8
+//                  out.setCreateUnicodeExtraFields(getCreateUnicodeExtraFields().getPolicy());   requires Ant 1.8
+//                  out.setFallbackToUTF8(getFallBackToUTF8());   requires Ant 1.8
                     while (zent.hasMoreElements()) {
                         final ZipEntry entry = zent.nextElement();
-                        final InputStream in = zf.getInputStream(entry);
-                        try {
-                            
+                        try (InputStream in = zf.getInputStream(entry)) {
+
                             if (MANIFEST.equals(entry.getName())) {
                                 out.putNextEntry(entry);
                                 mainSection.removeAttribute(ATTR_CLASS_PATH);
@@ -292,24 +322,20 @@ public class CopyLibs extends Jar {
                                 out.putNextEntry(entry);
                                 copy(in,out);
                             }
-                        } finally {
-                            in.close();
                         }
                     }
                     return true;
-                } finally {
-                    out.close();
                 }
             } finally {
                 zf.close();
             }
-        } catch (Exception e) {
+        } catch (IOException | ManifestException e) {
             this.log("Cannot fix dependencies for: " + target.getAbsolutePath(), Project.MSG_WARN);   //NOI18N
         }
         return false;
     }
 
-    private static boolean isSigned(final Manifest manifest) {        
+    private static boolean isSigned(final Manifest manifest) {
         Section section = manifest.getSection(MANIFEST);
         if (section != null) {
             final Enumeration<String> sectionKeys = (Enumeration<String>) section.getAttributeKeys();
@@ -336,5 +362,29 @@ public class CopyLibs extends Jar {
 
     private static boolean isUTF8(final String encoding) {
         return UTF_8.equalsIgnoreCase(encoding) || UTF8.equalsIgnoreCase(encoding);
+    }
+
+    private static String basename(final String name, final String separator) {
+        final int endIndex = name.endsWith(separator) ?
+                name.length() - 1 :
+                name.length();
+        final int startIndex = name.lastIndexOf(separator.charAt(0), endIndex -1);
+        return endIndex == name.length() && startIndex < 0 ?
+                name :
+                name.substring(startIndex < 0 ? 0 : startIndex + 1, endIndex);
+    }
+
+    private static String stringJoin(CharSequence delimiter, CharSequence... elements) {
+        final StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        for (CharSequence element : elements) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(delimiter);
+            }
+            sb.append(element);
+        }
+        return sb.toString();
     }
 }
