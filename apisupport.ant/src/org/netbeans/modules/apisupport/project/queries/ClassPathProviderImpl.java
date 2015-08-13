@@ -267,17 +267,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
         if (type.equals(ClassPath.SOURCE)) {
             Map<String,String> properties = project.evaluator().getProperties();
             if (properties != null) {
-            for (Map.Entry<String,String> entry : properties.entrySet()) {
-                if (entry.getKey().startsWith(NbModuleProject.SOURCE_START)) {
-                    FileObject jar = project.getHelper().resolveFileObject(entry.getValue());
-                    if (jar != null) {
-                        FileObject root = FileUtil.getArchiveRoot(jar);
-                        if (root != null && (root == file || FileUtil.isParentOf(root, file))) {
-                            return ClassPathSupport.createClassPath(new FileObject[] {root});
+                for (Map.Entry<String,String> entry : properties.entrySet()) {
+                    if (entry.getKey().startsWith(NbModuleProject.SOURCE_START)) {
+                        FileObject sourceReference = project.getHelper().resolveFileObject(entry.getValue());
+                        if (sourceReference != null) {
+                            if (FileUtil.isArchiveFile(sourceReference)) {
+                                sourceReference = FileUtil.getArchiveRoot(sourceReference);
+                            }
+                            if (sourceReference != null && (sourceReference == file || FileUtil.isParentOf(sourceReference, file))) {
+                                return ClassPathSupport.createClassPath(new FileObject[] {sourceReference});
+                            }
                         }
                     }
                 }
-            }
             }
         }
         // Something not supported.
