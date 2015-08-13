@@ -290,7 +290,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                                                 addFileToList(urls, f);
                                             }
                                         }
-                                    } else {
+                                    // for some reason there is deployable war in api.jar in 12.2.1
+                                    } else if (!(f.getPath().contains("deployable-libraries") // NOI18N
+                                            && f.getName().endsWith(".war"))) { // NOI18N
                                         addFileToList(urls, f);
                                     }
                                 }
