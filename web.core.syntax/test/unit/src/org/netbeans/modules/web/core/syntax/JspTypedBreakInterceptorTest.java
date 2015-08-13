@@ -102,6 +102,8 @@ public class JspTypedBreakInterceptorTest extends TestBase2 {
         System.out.flush();
         long start = System.nanoTime();
         insertBreak("<a>^</a>", "<a>\n    ^\n</a>");
-        System.out.println("Finished in " + (((System.nanoTime() - start)) / 1000000) + " ms");
+        long time = (((System.nanoTime() - start)) / 1000000);
+        System.out.println("Finished in " + time + " ms");
+        assertTrue(time < 5000);
     }
 }
