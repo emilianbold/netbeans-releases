@@ -160,6 +160,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Version JPA21_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
 
+    // since 12.2.1 there is no separate JPA jar
+    private static final Version JPA21_BUNDLED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
+
     private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
     @Override
@@ -317,10 +320,26 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static void addPersistenceLibrary(List<URL> list, @NonNull File serverRoot,
             @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
+        Version serverVersion;
+        if (j2eePlatform != null) {
+            serverVersion = j2eePlatform.dm.getServerVersion();
+        } else {
+            serverVersion = WLPluginProperties.getServerVersion(serverRoot);
+        }
+        if (serverVersion != null && JPA21_BUNDLED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
+            if (j2eePlatform != null) {
+                synchronized (j2eePlatform) {
+                    j2eePlatform.jpa2Available = true;
+                    j2eePlatform.jpa21Available = true;
+                }
+            }
+            return;
+        }
+
         boolean foundJpa21 = false;
         boolean foundJpa2 = false;
         boolean foundJpa1 = false;
-        
+
         for (Iterator<URL> it = list.iterator(); it.hasNext(); ) {
             URL archiveUrl = FileUtil.getArchiveFile(it.next());
             if (archiveUrl != null) {
@@ -352,12 +371,6 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
                 List<FilenameFilter> filters = new ArrayList<FilenameFilter>(2);
-                Version serverVersion;
-                if (j2eePlatform != null) {
-                    serverVersion = j2eePlatform.dm.getServerVersion();
-                } else {
-                    serverVersion = WLPluginProperties.getServerVersion(serverRoot);
-                }
                 
                 // we have to remove jpa2 jar otherwise we would have both jpa2 and jpa21 on classpath
                 if (serverVersion != null && JPA21_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion) && foundJpa2) {    
