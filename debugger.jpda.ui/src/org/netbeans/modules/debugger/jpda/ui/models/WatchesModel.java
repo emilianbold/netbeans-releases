@@ -525,6 +525,11 @@ public class WatchesModel implements TreeModel {
             clon.setEvaluated(evaluatedWatch);
             return clon;
         }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName()+" '"+w.getExpression()+"' "+(w.isEnabled() ? "enabled." : "disabled.");
+        }
         
     }
     
