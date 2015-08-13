@@ -83,6 +83,7 @@ import org.netbeans.spi.java.classpath.FlaggedClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -1052,9 +1053,10 @@ public final class ClassPath {
      * Not synchronized, HAS TO be called from the synchronized block!
      */
     private void attachRootsListener () {
+        assert Thread.holdsLock(this);
         if (this.rootsListener == null) {
             assert this.rootsCache == null;
-            this.rootsListener = new RootsListener (this);
+            this.rootsListener = new RootsListener ();
         }
     }
 
@@ -1253,29 +1255,27 @@ public final class ClassPath {
     }
 
 
-    private static class RootsListener extends WeakReference<ClassPath> implements FileChangeListener, Runnable {
+    private class RootsListener extends FileChangeAdapter {
 
-        private final Set<File> roots;
+        private final Set</*@GuardedBy("this")*/File> roots;
 
-        private RootsListener (ClassPath owner) {
-            super (owner, BaseUtilities.activeReferenceQueue());
-            roots = new HashSet<File> ();
+        private RootsListener () {
+            roots = new HashSet<> ();
         }
 
         public void addRoots (final Set<? extends File> newRoots) {
             Parameters.notNull("urls",newRoots);    //NOI18N
-
             synchronized (this) {
-                final Set<File> toRemove = new HashSet<File>(roots);
+                final Set<File> toRemove = new HashSet<>(roots);
                 toRemove.removeAll(newRoots);
-                final Set<File> toAdd = new HashSet<File>(newRoots);
+                final Set<File> toAdd = new HashSet<>(newRoots);
                 toAdd.removeAll(roots);
                 for (File root : toRemove) {
-                    FileUtil.removeFileChangeListener(this, root);
+                    safeRemoveFileChangeListener(root);
                     roots.remove(root);
                 }
                 for (File root : toAdd) {
-                    FileUtil.addFileChangeListener(this, root);
+                    safeAddFileChangeListener(root);
                     roots.add (root);
                 }
             }
@@ -1286,52 +1286,57 @@ public final class ClassPath {
             for (final Iterator<File> it = roots.iterator(); it.hasNext();) {
                 final File root = it.next();
                 it.remove();
-                FileUtil.removeFileChangeListener(this, root);
+                safeRemoveFileChangeListener(root);
             }
         }
 
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileChanged(FileEvent fe) {
             processEvent(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             this.processEvent (fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             this.processEvent (fe);
         }
 
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-        }
-
-        public void run() {
-            try {
-                removeAllRoots();
-            } catch (final IllegalArgumentException iae) {
-                //pass - ignore, the FU.removeFileChangeListener holds listeners
-                //in the WeakHashMap and this may be already removed -> IAE.
-            }
-        }
-
         private void processEvent (FileEvent fe) {
-            final ClassPath cp = get();
-            if (cp == null) {
-                return;
+            synchronized (ClassPath.this) {
+                ClassPath.this.rootsCache = null;
+                ClassPath.this.invalidRoots++;
             }
-            synchronized (cp) {
-                cp.rootsCache = null;
-                cp.invalidRoots++;
+            ClassPath.this.firePropertyChange(PROP_ROOTS,null,null,null);
+        }
+
+        private void safeRemoveFileChangeListener(@NonNull final File file) {
+            try {
+                FileUtil.removeFileChangeListener(this, file);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, iae.getMessage());
             }
-            cp.firePropertyChange(PROP_ROOTS,null,null,null);
+        }
+
+        private void safeAddFileChangeListener(@NonNull final File file) {
+            try {
+                FileUtil.addFileChangeListener(this, file);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, iae.getMessage());
+            }
         }
     }
 }
