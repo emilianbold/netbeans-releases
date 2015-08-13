@@ -369,9 +369,9 @@ public class CopyLibs extends Jar {
                 name.length() - 1 :
                 name.length();
         final int startIndex = name.lastIndexOf(separator.charAt(0), endIndex -1);
-        return endIndex == name.length() && startIndex < 0 ?
+        return endIndex == name.length() && startIndex == -1 ?
                 name :
-                name.substring(startIndex < 0 ? 0 : startIndex + 1, endIndex);
+                name.substring(startIndex + 1, endIndex);
     }
 
     private static String stringJoin(CharSequence delimiter, CharSequence... elements) {
