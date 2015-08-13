@@ -164,6 +164,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
+    // since 12.2.1 there is no separate JPA jar
+    private static final Version JAX_RS_BUNDLED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.2.1"); // NOI18N
+
     @Override
     public J2eePlatformImpl getJ2eePlatformImpl(DeploymentManager dm) {
         assert WLDeploymentManager.class.isAssignableFrom(dm.getClass()) : this + " cannot create platform for unknown deployment manager:" + dm;
@@ -445,7 +448,8 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     public boolean accept(File dir, String name) {
                         return ((JERSEY_PATTERN.matcher(name).matches() || JERSEY_PLAIN_PATTERN.matcher(name).matches())
                                 && serverVersion != null
-                                && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion))
+                                && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)
+                                && !JAX_RS_BUNDLED_SERVER_VERSION.isBelowOrEqual(serverVersion))
                                         || GLASSFISH_JAXWS_PATTERN.matcher(name).matches();
                     }
                 };
