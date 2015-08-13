@@ -107,10 +107,11 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
     static final String FOLDER = "Classes";
 
     static final String JDK_5 = "jdk5";
+    static final String JDK_9 = "jdk9";
     
     private static final long serialVersionUID = 1L;
 
-    public enum Type {FILE, PACKAGE, PKG_INFO}
+    public enum Type {FILE, PACKAGE, PKG_INFO, MODULE_INFO}
     
     private final Type type;
     
@@ -134,6 +135,12 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
     @Messages("packageInfoWizard=Java Package Info")
     public static NewJavaFileWizardIterator packageInfoWizard () {
         return new NewJavaFileWizardIterator(Type.PKG_INFO);
+    }
+            
+    @TemplateRegistration(folder = FOLDER, position = 670, content = "resources/module-info.java.template", scriptEngine = "freemarker", displayName = "#moduleInfoWizard", iconBase = JavaTemplates.JAVA_ICON, description = "resources/module-info.html", category = {"java-classes", JDK_9})
+    @Messages("moduleInfoWizard=Java Module Info")
+    public static NewJavaFileWizardIterator moduleInfoWizard () {
+        return new NewJavaFileWizardIterator(Type.MODULE_INFO);
     }
             
     private WizardDescriptor.Panel[] createPanels (WizardDescriptor wizardDescriptor) {
@@ -161,6 +168,10 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
             } else if (type == Type.PKG_INFO) {
                 return new WizardDescriptor.Panel[] {
                     new JavaTargetChooserPanel(project, groups, null, Type.PKG_INFO, true),
+                };
+            } else if (type == Type.MODULE_INFO) {
+                return new WizardDescriptor.Panel[] {
+                    new JavaTargetChooserPanel(project, groups, null, Type.MODULE_INFO, false),
                 };
             } else {
                 assert type == Type.PACKAGE;

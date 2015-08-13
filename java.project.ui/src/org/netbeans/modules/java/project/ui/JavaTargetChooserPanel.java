@@ -151,6 +151,21 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                 setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
                 return false;
             }
+        } else if (type == Type.MODULE_INFO) {
+            //Change in firing order caused that isValid is called before readSettings completed => no targetName available
+            if (gui.getTargetName() == null) {
+                setErrorMessage("INFO_JavaTargetChooser_ProvideClassName");
+                return false;
+            }
+            assert "module-info".equals( gui.getTargetName() );        //NOI18N
+            if ( !isValidPackageName( gui.getPackageName() ) ) {
+                setErrorMessage( "ERR_JavaTargetChooser_InvalidPackage" );
+                return false;
+            }
+            if (!isValidPackage(gui.getRootFolder(), gui.getPackageName())) {
+                setErrorMessage("ERR_JavaTargetChooser_InvalidFolder");
+                return false;
+            }
         } else {
             if (gui.getTargetName() == null) {
                 setErrorMessage("INFO_JavaTargetChooser_ProvideClassName");
@@ -186,7 +201,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
         }
         if (errorMessage!=null) returnValue=false;                
         
-        if (type != Type.PACKAGE && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion) <= 0) {
+        if (type != Type.PACKAGE && type != Type.MODULE_INFO && returnValue && gui.getPackageName().length() == 0 && specVersion != null && JDK_14.compareTo(specVersion) <= 0) {
             if(isValidPackageRequired){
                 setInfoMessage( "ERR_JavaTargetChooser_CantUseDefaultPackage" );
                 return false;
