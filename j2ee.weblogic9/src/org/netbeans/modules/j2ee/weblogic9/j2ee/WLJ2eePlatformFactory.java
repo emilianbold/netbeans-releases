@@ -154,8 +154,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     private static final Version JDK7_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
 
+    private static final Version JDK8_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
+
     private static final Version JPA2_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
-    
+
     private static final Version JPA21_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.3"); // NOI18N
 
     private static final Version JAX_RS_SUPPORTED_SERVER_VERSION = Version.fromJsr277NotationWithFallback("12.1.1"); // NOI18N
@@ -530,6 +532,10 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                     profiles.add(Profile.JAVA_EE_6_FULL);
                     profiles.add(Profile.JAVA_EE_6_WEB);
                 }
+                if (version.isAboveOrEqual(WLDeploymentFactory.VERSION_1221)) {
+                    profiles.add(Profile.JAVA_EE_7_FULL);
+                    profiles.add(Profile.JAVA_EE_7_WEB);
+                }
             }
 
             domainChangeListener = new DomainChangeListener(this);
@@ -618,6 +624,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
                 }
                 if (serverVersion.isAboveOrEqual(JDK7_SUPPORTED_SERVER_VERSION)) {
                     versions.add("1.7"); // NOI18N
+                }
+                if (serverVersion.isAboveOrEqual(JDK8_SUPPORTED_SERVER_VERSION)) {
+                    versions.add("1.8"); // NOI18N
                 }
             }
             return versions;
