@@ -65,6 +65,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -139,7 +140,8 @@ public class AndroidActionProvider implements ActionProvider {
             return;
         } else {
             FileObject jdkHomeFO = FileUtil.toFileObject(new File(jdkHome, "bin")); //NOI18N
-            FileObject javacFO = jdkHomeFO.getFileObject("javac"); //NOI18N
+            String javacFileName = Utilities.isWindows() ? "javac.exe" : "javac"; //NOI18N
+            FileObject javacFO = jdkHomeFO.getFileObject(javacFileName);
             if (javacFO == null) {
                 DialogDisplayer.getDefault().notify(notJDK);
                 return;
