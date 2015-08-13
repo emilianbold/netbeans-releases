@@ -1271,11 +1271,11 @@ public final class ClassPath {
                 final Set<File> toAdd = new HashSet<>(newRoots);
                 toAdd.removeAll(roots);
                 for (File root : toRemove) {
-                    FileUtil.removeFileChangeListener(this, root);
+                    safeRemoveFileChangeListener(root);
                     roots.remove(root);
                 }
                 for (File root : toAdd) {
-                    FileUtil.addFileChangeListener(this, root);
+                    safeAddFileChangeListener(root);
                     roots.add (root);
                 }
             }
@@ -1286,7 +1286,7 @@ public final class ClassPath {
             for (final Iterator<File> it = roots.iterator(); it.hasNext();) {
                 final File root = it.next();
                 it.remove();
-                FileUtil.removeFileChangeListener(this, root);
+                safeRemoveFileChangeListener(root);
             }
         }
 
@@ -1321,6 +1321,22 @@ public final class ClassPath {
                 ClassPath.this.invalidRoots++;
             }
             ClassPath.this.firePropertyChange(PROP_ROOTS,null,null,null);
+        }
+
+        private void safeRemoveFileChangeListener(@NonNull final File file) {
+            try {
+                FileUtil.removeFileChangeListener(this, file);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, iae.getMessage());
+            }
+        }
+
+        private void safeAddFileChangeListener(@NonNull final File file) {
+            try {
+                FileUtil.addFileChangeListener(this, file);
+            } catch (IllegalArgumentException iae) {
+                LOG.log(Level.FINE, iae.getMessage());
+            }
         }
     }
 }
