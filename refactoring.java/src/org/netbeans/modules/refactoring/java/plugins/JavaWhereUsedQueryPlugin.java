@@ -75,6 +75,7 @@ import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters;
 import org.netbeans.modules.refactoring.java.spi.JavaWhereUsedFilters.ReadWrite;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -286,13 +287,17 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
                     sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.FIELD_REFERENCES), searchScopeType, resourceType));
                 } else if (el.getKind().isClass() || el.getKind().isInterface()) {
                     if (isFindSubclasses || isFindDirectSubclassesOnly) {
+                        EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
                         if (isFindDirectSubclassesOnly) {
                             //get direct implementors from index
-                            EnumSet searchKind = EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS);
                             sourceSet.addAll(idx.getResources(ElementHandle.create((TypeElement) el), searchKind, searchScopeType, resourceType));
                         } else {
-                            //itererate implementors recursively
-                            sourceSet.addAll(getImplementorsRecursive(idx, cpInfo, (TypeElement) el, cancel));
+                            Set<?> implementorsAsHandles = RefactoringUtils.getImplementorsAsHandles(idx, cpInfo, (TypeElement)el, cancel);
+                            if (cancel != null && cancel.get()) {
+                                sourceSet.clear();
+                                return;
+                            }
+                            sourceSet.addAll(SourceUtilsEx.getFiles((Collection<ElementHandle<? extends Element>>) implementorsAsHandles, cpInfo, cancel));
                         }
                     } else {
                         //get type references from index
@@ -414,7 +419,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         Problem problem = null;
         try {
             final FindTask findTask = new FindTask(elements);
-            queryFiles(a, findTask);
+            queryFiles(a, findTask, getClasspathInfo(refactoring));
         } catch (IOException e) {
             problem = createProblemAndLog(null, e);
         }

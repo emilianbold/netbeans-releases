@@ -270,7 +270,11 @@ public abstract class JavaRefactoringPlugin extends ProgressProviderAdapter impl
     }
     
     protected final void queryFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task)  throws java.io.IOException {
-        processFiles(files, task, null, false);
+        queryFiles(files, task, null);
+    }
+    
+    protected final void queryFiles(Set<FileObject> files, CancellableTask<? extends CompilationController> task, ClasspathInfo info)  throws java.io.IOException {
+        processFiles(files, task, info, false);
     }
     
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);

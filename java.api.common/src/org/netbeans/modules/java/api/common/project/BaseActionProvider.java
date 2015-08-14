@@ -140,6 +140,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
@@ -200,6 +201,7 @@ public abstract class BaseActionProvider implements ActionProvider {
     private SourceRoots projectTestRoots;
 
     private boolean serverExecution = false;
+    private UserPropertiesPolicy userPropertiesPolicy;
 
     public BaseActionProvider(Project project, UpdateHelper updateHelper, PropertyEvaluator evaluator, 
             SourceRoots sourceRoots, SourceRoots testRoots, AntProjectHelper antProjectHelper, Callback callback) {
@@ -425,6 +427,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             DefaultProjectOperations.performDefaultRenameOperation(project, null);
             return ;
         }
+        final String[] userPropertiesFile = new String[]{verifyUserPropertiesFile()};
 
         final boolean isCompileOnSaveEnabled = isCompileOnSaveEnabled();
         final AtomicReference<Thread> caller = new AtomicReference<Thread>(Thread.currentThread());
@@ -469,7 +472,10 @@ public abstract class BaseActionProvider implements ActionProvider {
 
             void doRun() {
                 Properties p = new Properties();
-                p.put("nb.internal.action.name", command);
+                p.put("nb.internal.action.name", command);                  //NOI18N
+                if (userPropertiesFile[0] != null) {
+                    p.put("user.properties.file", userPropertiesFile[0]);   //NOI18N
+                }
                 String[] targetNames;
 
                 targetNames = getTargetNames(command, context, p, doJavaChecks);
@@ -665,8 +671,7 @@ public abstract class BaseActionProvider implements ActionProvider {
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
-        }
-        else {
+        } else {
             //Does not need java model
             action.run();
         }
@@ -2271,5 +2276,73 @@ public abstract class BaseActionProvider implements ActionProvider {
 
     private JavaMainAction getJavaMainAction() {
         return JavaMainAction.forName(evaluator.getProperty(PROP_JAVA_MAIN_ACTION));
+    }
+
+    private static enum UserPropertiesPolicy {
+        RUN_ANYWAY(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Anyway")),
+        RUN_WITH(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_With")),
+        RUN_UPDATE(NbBundle.getMessage(BaseActionProvider.class, "OPTION_Run_Update"));
+
+        private final String displayName;
+
+        UserPropertiesPolicy(@NonNull final String displayName) {
+            this.displayName = displayName;
+        }
+
+        @NonNull
+        public String getDisplayName() {
+            return this.displayName;
+        }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+    }
+
+    @CheckForNull
+    private String verifyUserPropertiesFile() {
+        final String currentPath = evaluator.getProperty("user.properties.file");      //NOI18N
+        final File current = currentPath == null ? null : FileUtil.normalizeFile(antProjectHelper.resolveFile(currentPath));
+        final File expected = FileUtil.normalizeFile(new File(System.getProperty("netbeans.user"), "build.properties")); // NOI18N
+        if (!expected.equals(current)) {
+            if (userPropertiesPolicy == null) {
+                final Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor(
+                        NbBundle.getMessage(BaseActionProvider.class, "MSG_InvalidBuildPropertiesPath", ProjectUtils.getInformation(project).getDisplayName()),
+                        NbBundle.getMessage(BaseActionProvider.class, "TITLE_InvalidBuildPropertiesPath"),
+                        0,
+                        NotifyDescriptor.QUESTION_MESSAGE,
+                        UserPropertiesPolicy.values(),
+                        UserPropertiesPolicy.RUN_ANYWAY));
+                userPropertiesPolicy = option instanceof UserPropertiesPolicy ?
+                        (UserPropertiesPolicy) option :
+                        null;
+            }
+            if (null != userPropertiesPolicy) {
+                switch (userPropertiesPolicy) {
+                    case RUN_ANYWAY:
+                        return null;
+                    case RUN_WITH:
+                        return expected.getAbsolutePath();
+                    case RUN_UPDATE:
+                        ProjectManager.mutex().writeAccess(new Runnable() {
+                            @Override
+                            public void run() {
+                                final EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                ep.setProperty("user.properties.file", expected.getAbsolutePath()); //NOI18N
+                                updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+                                try {
+                                    ProjectManager.getDefault().saveProject(project);
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
+                            }
+                        });
+                        return null;
+                    default:
+                }
+            }
+        }
+        return null;
     }
 }
