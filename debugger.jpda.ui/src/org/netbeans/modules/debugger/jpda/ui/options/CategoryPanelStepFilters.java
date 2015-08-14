@@ -265,6 +265,7 @@ class CategoryPanelStepFilters extends StorablePanel {
         });
         filterRemoveButton.setEnabled(filterClassesTable.getSelectedRow() >= 0);
         filterClassesTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        filterClassesTable.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
     }
 
     private void useStepFiltersCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useStepFiltersCheckBoxActionPerformed
