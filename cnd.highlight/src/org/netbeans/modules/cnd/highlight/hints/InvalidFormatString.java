@@ -53,6 +53,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
@@ -107,114 +108,95 @@ public class InvalidFormatString extends AbstractCodeAudit {
                 doc_ = CsmUtilities.openDocument(ces);
             }
             final Document doc = doc_;
-            final AtomicReference<List<FormatError>> result = new AtomicReference<>();
-            Runnable runnable = new Runnable () {
+            final List<FormattedPrintFunction> result = new LinkedList<>();
+            doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    if (doc instanceof AbstractDocument) {
-                        List<FormatError> errorsList = new LinkedList<>();
-                        List<FormattedPrintFunction> functions = new LinkedList<>();
-                        ((AbstractDocument) doc).readLock();
-                        try {
-                            TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
-                            if (docTokenSequence == null) {
-                                return;
-                            }
-                            docTokenSequence.moveStart();
+                    TokenSequence<TokenId> docTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, doc.getLength(), false, true);
+                    if (docTokenSequence == null) {
+                        return;
+                    }
+                    docTokenSequence.moveStart();
 
-                            final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
-                            State state = State.DEFAULT;
-                            boolean formatFlag = false;  // detect was format string already processed
-                            StringBuilder paramBuf = new StringBuilder();
-                            ArrayList<Parameter> params = new ArrayList<>();
-                            String formatString = "";
-                            int bracketsCounter = 0;
-                            while (docTokenSequence.moveNext()) {
-                                if (docTokenSequence.token().id() instanceof CppTokenId) {
-                                    CppTokenId tokenId = (CppTokenId) docTokenSequence.token().id();
-                                    if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
-                                        CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
-                                        CsmObject object = reference.getReferencedObject();
-                                        if (isFormattedPrintFunction(object)) {
-                                            state = State.START;
-                                        }
-                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
-                                        state = State.IN_PARAM;
-                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
-                                        state = State.IN_PARAM_BRACKET;
-                                        bracketsCounter++;
-                                        if (formatFlag) {
-                                            paramBuf.append(docTokenSequence.token().text());
-                                        }
-                                    } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
-                                        bracketsCounter++;
-                                        if (formatFlag) {
-                                            paramBuf.append(docTokenSequence.token().text());
-                                        }
-                                    } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
-                                        bracketsCounter--;
-                                        if (bracketsCounter == 0) {
-                                            state = State.IN_PARAM;
-                                        }
-                                        if (formatFlag) {
-                                            paramBuf.append(docTokenSequence.token().text());
-                                        }
-                                    } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
-                                        if (paramBuf.length() > 0) {
-                                            params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
-                                        }
-                                        int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, docTokenSequence.offset())[0];
-                                        functions.add(new FormattedPrintFunction(file, line, formatString, params));
-                                        state = State.DEFAULT;
-                                        formatFlag = false;
-                                        paramBuf = new StringBuilder();
-                                    } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
-                                        formatFlag = true;
-                                        if (!params.isEmpty()) { 
-                                            params = new ArrayList<>();
-                                        }
-                                        formatString = docTokenSequence.token().text().toString();
-                                    } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
-                                        if (paramBuf.length() > 0) {
-                                            params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
-                                        }
-                                        paramBuf = new StringBuilder();
-                                    } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
-                                            && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
-                                            && formatFlag) {
-                                        paramBuf.append(docTokenSequence.token().text());
-                                    }
-                                }
+                    final CsmReferenceResolver rr = CsmReferenceResolver.getDefault();
+                    State state = State.DEFAULT;
+                    boolean formatFlag = false;  // detect was format string already processed
+                    StringBuilder paramBuf = new StringBuilder();
+                    ArrayList<Parameter> params = new ArrayList<>();
+                    String formatString = "";
+                    int bracketsCounter = 0;
+                    while (docTokenSequence.moveNext()) {
+                        Token<TokenId> token = docTokenSequence.token();
+                        TokenId tokenId = token.id();
+                        if (tokenId.equals(CppTokenId.IDENTIFIER) && state == State.DEFAULT) {
+                            CsmReference reference = rr.findReference(file, doc, docTokenSequence.offset());
+                            CsmObject object = reference.getReferencedObject();
+                            if (isFormattedPrintFunction(object)) {
+                                state = State.START;
                             }
-                        } finally {
-                            ((AbstractDocument) doc).readUnlock();
+                        } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.START) {
+                            state = State.IN_PARAM;
+                        } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM) {
+                            state = State.IN_PARAM_BRACKET;
+                            bracketsCounter++;
+                            if (formatFlag) {
+                                paramBuf.append(token.text());
+                            }
+                        } else if (tokenId.equals(CppTokenId.LPAREN) && state == State.IN_PARAM_BRACKET) {
+                            bracketsCounter++;
+                            if (formatFlag) {
+                                paramBuf.append(token.text());
+                            }
+                        } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM_BRACKET) {
+                            bracketsCounter--;
+                            if (bracketsCounter == 0) {
+                                state = State.IN_PARAM;
+                            }
+                            if (formatFlag) {
+                                paramBuf.append(token.text());
+                            }
+                        } else if (tokenId.equals(CppTokenId.RPAREN) && state == State.IN_PARAM) {
+                            if (paramBuf.length() > 0) {
+                                params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                            }
+                            result.add(new FormattedPrintFunction(file, docTokenSequence.offset(), formatString, params));
+                            state = State.DEFAULT;
+                            formatFlag = false;
+                            paramBuf = new StringBuilder();
+                        } else if (state == State.IN_PARAM && tokenId.equals(CppTokenId.STRING_LITERAL) && !formatFlag) {
+                            formatFlag = true;
+                            if (!params.isEmpty()) { 
+                                params = new ArrayList<>();
+                            }
+                            formatString = token.text().toString();
+                        } else if (state == State.IN_PARAM && formatFlag && tokenId.equals(CppTokenId.COMMA)) {
+                            if (paramBuf.length() > 0) {
+                                params.add(new Parameter(paramBuf.toString(), docTokenSequence.offset()));
+                            }
+                            paramBuf = new StringBuilder();
+                        } else if ((state == State.IN_PARAM || state == State.IN_PARAM_BRACKET) 
+                                && !tokenId.primaryCategory().equals(CppTokenId.COMMENT_CATEGORY)
+                                && formatFlag) {
+                            paramBuf.append(token.text());
                         }
-                        for (FormattedPrintFunction function : functions) {
-                            errorsList.addAll(function.validate());
-                        }
-                        result.set(errorsList);
                     }
                 }
-            };
+            });
             
-            FutureTask<AtomicReference<List<FormatError>>> task = new FutureTask<>(runnable, result);
-            doc.render(task);
-            
-            try {
-                List<FormatError> errors = task.get().get();
-                for (FormatError error : errors) {
-                    int startOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine(), 1);
-                    int endOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine()+1, 1) - 1;
-                    CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
-                    if (response instanceof AnalyzerResponse) {
-                        ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
-                            new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
-                    } else {
-                        response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
-                    }
+            List<FormatError> errors = new LinkedList<>();
+            for (FormattedPrintFunction function : result) {
+                errors.addAll(function.validate());
+            }
+            for (FormatError error : errors) {
+                int startOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine(), 1);
+                int endOffset = (int) CsmFileInfoQuery.getDefault().getOffset(file, error.getLine()+1, 1) - 1;
+                CsmErrorInfo.Severity severity = toSeverity(minimalSeverity());
+                if (response instanceof AnalyzerResponse) {
+                    ((AnalyzerResponse) response).addError(AnalyzerResponse.AnalyzerSeverity.DetectedError, null, file.getFileObject(),
+                        new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
+                } else {
+                    response.addError(new ErrorInfoImpl(CsmHintProvider.NAME, getID(), getMessageForError(error), severity, startOffset, endOffset));  // NOI18N
                 }
-            } catch (InterruptedException | CancellationException | ExecutionException ex) {
-                ex.printStackTrace(System.err);
             }
         }
     }
@@ -697,16 +679,17 @@ public class InvalidFormatString extends AbstractCodeAudit {
         private final CsmFile file;
         private final ArrayList<Parameter> parameters;
         private final String formatString;
-        private final int line;
+        private final int offset;
         
-        public FormattedPrintFunction(CsmFile file, int line, String formatString, ArrayList<Parameter> parameters) {
+        public FormattedPrintFunction(CsmFile file, int offset, String formatString, ArrayList<Parameter> parameters) {
             this.file = file;
-            this.line = line;
+            this.offset = offset;
             this.formatString = formatString;
             this.parameters = parameters;
         }
         
         public List<FormatError> validate() {
+            int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, offset)[0];
             return validateParameters(file, processFormatString(formatString), parameters, line);
         }
     }
