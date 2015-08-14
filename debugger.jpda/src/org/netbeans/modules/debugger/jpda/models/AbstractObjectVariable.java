@@ -983,7 +983,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
             Field[] ch = new Field [k];
             for (i = 0; i < k; i++) {
                 Value v = (Value) l.get (i);
-                ch [i] = (v instanceof ObjectReference) ?
+                ch [i] = (v == null || v instanceof ObjectReference) ?
                     new ObjectArrayFieldVariable (
                         getDebugger(), 
                         (ObjectReference) v, 
