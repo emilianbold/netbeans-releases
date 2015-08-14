@@ -47,11 +47,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -201,155 +196,6 @@ public class InvalidFormatString extends AbstractCodeAudit {
         }
     }
     
-    private List<FormatError> validateParameters(CsmFile file, ArrayList<FormatInfo> formatInfoList, ArrayList<Parameter> parameters, int line) {
-        List<FormatError> result = new LinkedList<>();
-        if (getParametersFromFormat(formatInfoList) != parameters.size()) {
-            result.add(new FormatError(FormatErrorType.ARGS, null, null, line));
-        }
-        for (int i = 0, limit = formatInfoList.size(), pIndex = 0; i < limit; i++) {
-            FormatInfo info = formatInfoList.get(i);
-            List<FormatError> list = info.validateFormat(line);
-            if (list.isEmpty() && !info.specifier().equals("%")) {  // NOI18N
-                String wType = null;
-                String pType = null;
-                String type = null;
-                if (pIndex < parameters.size() && info.hasWidthWildcard()) {
-                    wType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                    if (wType != null && !wType.equals("int")) {  // NOI18N
-                        result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Width", null, line));  // NOI18N
-                    }
-                    pIndex++;
-                }
-                if (pIndex < parameters.size() && info.hasPrecisionWildcard()) {
-                    pType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                    if (pType != null && !pType.equals("int")) {  // NOI18N
-                        result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Precision", null, line));  // NOI18N
-                    }
-                    pIndex++;
-                }
-                if (pIndex < parameters.size()) {
-                    type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
-                    if (type != null) {
-                        String fType = info.getFullType();
-                        List<String> validFlags = typeToFormat(type);
-                        if (!validFlags.contains(fType)) {
-                            result.add(new FormatError(FormatErrorType.TYPE_MISMATCH, type, fType, line));
-                        }
-                    }
-                }
-                pIndex++;
-            } else {
-                result.addAll(list);
-                pIndex++;
-            }
-        }
-        return result;
-    }
-    
-    private String getParameterType(String value, int offset, CsmFile file) {
-        DummyResolvedTypeHandler handler = new DummyResolvedTypeHandler();
-        CsmExpressionResolver.resolveType(value
-                                         ,file
-                                         ,offset
-                                         ,null
-                                         ,handler);
-        
-        if (handler.type != null) {
-            return handler.type.getCanonicalText().toString().replace("const", "");  // NOI18N
-        }
-        return null;
-    }
-    
-    // take const modifier into account
-    private List<String> typeToFormat(String type) {
-        if (type.contains("*")) {                           // NOI18N
-            if (type.contains("void")) {                    // NOI18N
-                return Collections.singletonList("p");      // NOI18N
-            } else if (type.contains("char")) {             // NOI18N
-                return Arrays.asList("p", "hhn", "s");      // NOI18N
-            } else if (type.contains("wchar_t")) {          // NOI18N
-                return Arrays.asList("p", "s", "ls", "S");  // NOI18N
-            } else if (type.contains("short")) {            // NOI18N
-                return Arrays.asList("p", "hn");            // NOI18N
-            } else if (type.contains("int")) {              // NOI18N
-                return Arrays.asList("p", "n");             // NOI18N
-            } else if (type.contains("long long")) {        // NOI18N
-                return Arrays.asList("p", "lln");           // NOI18N
-            } else if (type.contains("long")) {             // NOI18N
-                return Arrays.asList("p", "ln");            // NOI18N
-            } else if (type.contains("intmax_t")) {         // NOI18N
-                return Arrays.asList("p", "jn");            // NOI18N
-            } else if (type.contains("size_t")) {           // NOI18N
-                return Arrays.asList("p", "zn");            // NOI18N
-            } else if (type.contains("ptrdiff_t")) {        // NOI18N
-                return Arrays.asList("p", "tn");            // NOI18N
-            }
-        } else if (type.startsWith("unsigned")) {                  // NOI18N
-            if (type.contains("char")) {                           // NOI18N
-                return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
-            } else if (type.contains("short")) {                   // NOI18N
-                return Arrays.asList("ho", "hu", "hx", "hX");      // NOI18N
-            } else if (type.contains("long long")) {               // NOI18N
-                return Arrays.asList("llo", "llu", "llx", "llX");  // NOI18N
-            } else if (type.contains("long")) {                    // NOI18N
-                return Arrays.asList("lo", "lu", "lx", "lX");      // NOI18N
-            } else if (type.contains("int")) {                     // NOI18N
-                return Arrays.asList("o", "u", "x", "X");          // NOI18N
-            }
-        } else {
-            if (type.contains("signed char")) {                           // NOI18N
-                return Arrays.asList("hhd", "hhi");                       // NOI18N
-            } else if (type.contains("short")) {                          // NOI18N
-                return Arrays.asList("hd", "hi");                         // NOI18N
-            } else if (type.contains("long long")) {                      // NOI18N
-                return Arrays.asList("lld", "lli");                       // NOI18N
-            } else if (type.contains("long")) {                           // NOI18N
-                return Arrays.asList("ld", "li");                         // NOI18N
-            } else if (type.equals("int")) {                              // NOI18N
-                return Arrays.asList("d", "i", "c");                      // NOI18N
-            } else if (type.equals("intmax_t")) {                         // NOI18N
-                return Arrays.asList("jd", "ji");                         // NOI18N
-            } else if (type.equals("uintmax_t")) {                        // NOI18N
-                return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
-            } else if (type.equals("size_t")) {                           // NOI18N
-                return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
-            } else if (type.equals("ptrdiff_t")) {                        // NOI18N
-                return Arrays.asList("td", "ti","to", "tu", "tx", "tX");  // NOI18N
-            } else if (type.equals("wint_t")) {                           // NOI18N
-                return Arrays.asList("c", "lc", "C");                     // NOI18N
-            } else if (type.equals("float")) {  // NOI18N
-                return Collections.EMPTY_LIST;
-            } else if (type.equals("double")) {  // NOI18N
-                return Arrays.asList("f", "lf", "llf", "F", "lF", "llF",   // NOI18N
-                                     "e", "le", "lle", "E", "lE", "llE",   // NOI18N
-                                     "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
-                                     "a", "la", "lla", "A", "lA", "llA");  // NOI18N
-            } else if (type.equals("long double")) {                                   // NOI18N
-                return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
-                                     "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
-                                     "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
-                                     "a", "la", "lla", "La", "A", "lA", "llA", "LA");  // NOI18N
-            }
-        }
-        return Collections.EMPTY_LIST;
-    }
-    
-    private int getParametersFromFormat(Collection<FormatInfo> info) {
-        int result = 0;
-        for (FormatInfo i : info) {
-            if (!i.specifier().equals("%")) {  // NOI18N
-                result++;
-            }
-            if (i.hasPrecisionWildcard()) {
-                result++;
-            }
-            if (i.hasWidthWildcard()) {
-                result++;
-            }
-        }
-        return result;
-    }
-    
     private String getMessageForError(FormatError error) {
         switch (error.getType()) {
             case FLAG:
@@ -366,67 +212,6 @@ public class InvalidFormatString extends AbstractCodeAudit {
                 return NbBundle.getMessage(InvalidFormatString.class, "InvalidFormatString.message.argnum"); // NOI18N
         }
         return null;
-    }
-    
-    private ArrayList<FormatInfo> processFormatString(String format) {
-        ArrayList<FormatInfo> result = new ArrayList<>();
-        FormatInfo info = new FormatInfo();
-        ConversionState state = ConversionState.DEFAULT;
-        for (int i = 0, limit = format.length(); i < limit; i++) {
-            if (format.charAt(i) == '%' && state == ConversionState.DEFAULT) {  // NOI18N
-                state = ConversionState.START;
-                info = new FormatInfo();
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.APOSTROPHE.character()) {
-                state = ConversionState.FLAGS;
-                info.addFormatFlag(FormatFlag.APOSTROPHE);
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.HASH.character()) {
-                state = ConversionState.FLAGS;
-                info.addFormatFlag(FormatFlag.HASH);
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.ZERO.character()) {
-                state = ConversionState.FLAGS;
-                info.addFormatFlag(FormatFlag.ZERO);
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.substring(i, i+1).matches("-|\\+|\\s")) { // NOI18N
-                state = ConversionState.FLAGS;
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.substring(i, i+1).matches("[0-9]|\\*")) { // NOI18N
-                state = ConversionState.WIDTH;
-                if (format.charAt(i) == '*') { // NOI18N
-                    info.setWidthWildcardFlag(true);
-                }
-            }  else if (state == ConversionState.WIDTH && Character.isDigit(format.charAt(i))) {
-                continue;
-            } else if ((state == ConversionState.START || state == ConversionState.FLAGS || state == ConversionState.WIDTH) && format.charAt(i) == '.') {
-                state = ConversionState.PRECISION;
-            } else if (state == ConversionState.PRECISION && format.substring(i, i+1).matches("[0-9]|\\*")) { // NOI18N
-                if (format.charAt(i) == '*') { // NOI18N
-                    info.setPrecisionWildcardFlag(true);
-                }
-            } else if (state != ConversionState.DEFAULT) {
-                if (format.substring(i, i+2).equals("hh")) { // NOI18N
-                    info.setLengthFlag(LengthFlag.hh);
-                    i++;
-                } else if (format.charAt(i) == 'h') { // NOI18N
-                    info.setLengthFlag(LengthFlag.h);
-                } else if (format.charAt(i) == 'j') { // NOI18N
-                    info.setLengthFlag(LengthFlag.j);
-                } else if (format.charAt(i) == 'z') { // NOI18N
-                    info.setLengthFlag(LengthFlag.z);
-                } else if (format.charAt(i) == 't') { // NOI18N
-                    info.setLengthFlag(LengthFlag.t);
-                } else if (format.substring(i, i+2).equals("ll")) { // NOI18N
-                    info.setLengthFlag(LengthFlag.ll);
-                    i++;
-                } else if (format.charAt(i) == 'l') { // NOI18N
-                    info.setLengthFlag(LengthFlag.l);
-                } else if (format.charAt(i) == 'L') { // NOI18N
-                    info.setLengthFlag(LengthFlag.L);
-                } else {
-                    info.setSpecifier(String.valueOf(format.charAt(i)));
-                    result.add(info);
-                    state = ConversionState.DEFAULT;
-                }
-            }
-        }
-        return result;
     }
     
     // check if object is a function which accepted format string
@@ -689,8 +474,215 @@ public class InvalidFormatString extends AbstractCodeAudit {
         }
         
         public List<FormatError> validate() {
+            ArrayList<FormatInfo> formatInfoList = processFormatString(formatString);
+            List<FormatError> result = new LinkedList<>();
             int line = CsmFileInfoQuery.getDefault().getLineColumnByOffset(file, offset)[0];
-            return validateParameters(file, processFormatString(formatString), parameters, line);
+            if (getParametersFromFormat(formatInfoList) != parameters.size()) {
+                result.add(new FormatError(FormatErrorType.ARGS, null, null, line));
+            }
+            for (int i = 0, limit = formatInfoList.size(), pIndex = 0; i < limit; i++) {
+                FormatInfo info = formatInfoList.get(i);
+                List<FormatError> list = info.validateFormat(line);
+                if (list.isEmpty() && !info.specifier().equals("%")) {  // NOI18N
+                    String wType = null;
+                    String pType = null;
+                    String type = null;
+                    if (pIndex < parameters.size() && info.hasWidthWildcard()) {
+                        wType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                        if (wType != null && !wType.equals("int")) {  // NOI18N
+                            result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Width", null, line));  // NOI18N
+                        }
+                        pIndex++;
+                    }
+                    if (pIndex < parameters.size() && info.hasPrecisionWildcard()) {
+                        pType = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                        if (pType != null && !pType.equals("int")) {  // NOI18N
+                            result.add(new FormatError(FormatErrorType.TYPE_WILDCARD, "Precision", null, line));  // NOI18N
+                        }
+                        pIndex++;
+                    }
+                    if (pIndex < parameters.size()) {
+                        type = getParameterType(parameters.get(pIndex).getValue(), parameters.get(pIndex).getOffset(), file);
+                        if (type != null) {
+                            String fType = info.getFullType();
+                            List<String> validFlags = typeToFormat(type);
+                            if (!validFlags.contains(fType)) {
+                                result.add(new FormatError(FormatErrorType.TYPE_MISMATCH, type, fType, line));
+                            }
+                        }
+                    }
+                    pIndex++;
+                } else {
+                    result.addAll(list);
+                    pIndex++;
+                }
+            }
+            return result;
+        }
+        
+        private ArrayList<FormatInfo> processFormatString(String format) {
+            ArrayList<FormatInfo> result = new ArrayList<>();
+            FormatInfo info = new FormatInfo();
+            ConversionState state = ConversionState.DEFAULT;
+            for (int i = 0, limit = format.length(); i < limit; i++) {
+                if (format.charAt(i) == '%' && state == ConversionState.DEFAULT) {  // NOI18N
+                    state = ConversionState.START;
+                    info = new FormatInfo();
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.APOSTROPHE.character()) {
+                    state = ConversionState.FLAGS;
+                    info.addFormatFlag(FormatFlag.APOSTROPHE);
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.HASH.character()) {
+                    state = ConversionState.FLAGS;
+                    info.addFormatFlag(FormatFlag.HASH);
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.charAt(i) == FormatFlag.ZERO.character()) {
+                    state = ConversionState.FLAGS;
+                    info.addFormatFlag(FormatFlag.ZERO);
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.substring(i, i+1).matches("-|\\+|\\s")) { // NOI18N
+                    state = ConversionState.FLAGS;
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS) && format.substring(i, i+1).matches("[0-9]|\\*")) { // NOI18N
+                    state = ConversionState.WIDTH;
+                    if (format.charAt(i) == '*') { // NOI18N
+                        info.setWidthWildcardFlag(true);
+                    }
+                }  else if (state == ConversionState.WIDTH && Character.isDigit(format.charAt(i))) {
+                    continue;
+                } else if ((state == ConversionState.START || state == ConversionState.FLAGS || state == ConversionState.WIDTH) && format.charAt(i) == '.') {
+                    state = ConversionState.PRECISION;
+                } else if (state == ConversionState.PRECISION && format.substring(i, i+1).matches("[0-9]|\\*")) { // NOI18N
+                    if (format.charAt(i) == '*') { // NOI18N
+                        info.setPrecisionWildcardFlag(true);
+                    }
+                } else if (state != ConversionState.DEFAULT) {
+                    if (format.substring(i, i+2).equals("hh")) { // NOI18N
+                        info.setLengthFlag(LengthFlag.hh);
+                        i++;
+                    } else if (format.charAt(i) == 'h') { // NOI18N
+                        info.setLengthFlag(LengthFlag.h);
+                    } else if (format.charAt(i) == 'j') { // NOI18N
+                        info.setLengthFlag(LengthFlag.j);
+                    } else if (format.charAt(i) == 'z') { // NOI18N
+                        info.setLengthFlag(LengthFlag.z);
+                    } else if (format.charAt(i) == 't') { // NOI18N
+                        info.setLengthFlag(LengthFlag.t);
+                    } else if (format.substring(i, i+2).equals("ll")) { // NOI18N
+                        info.setLengthFlag(LengthFlag.ll);
+                        i++;
+                    } else if (format.charAt(i) == 'l') { // NOI18N
+                        info.setLengthFlag(LengthFlag.l);
+                    } else if (format.charAt(i) == 'L') { // NOI18N
+                        info.setLengthFlag(LengthFlag.L);
+                    } else {
+                        info.setSpecifier(String.valueOf(format.charAt(i)));
+                        result.add(info);
+                        state = ConversionState.DEFAULT;
+                    }
+                }
+            }
+            return result;
+        }
+        
+        private int getParametersFromFormat(Collection<FormatInfo> info) {
+            int result = 0;
+            for (FormatInfo i : info) {
+                if (!i.specifier().equals("%")) {  // NOI18N
+                    result++;
+                }
+                if (i.hasPrecisionWildcard()) {
+                    result++;
+                }
+                if (i.hasWidthWildcard()) {
+                    result++;
+                }
+            }
+            return result;
+        }
+        
+        private String getParameterType(String value, int offset, CsmFile file) {
+            DummyResolvedTypeHandler handler = new DummyResolvedTypeHandler();
+            CsmExpressionResolver.resolveType(value
+                                             ,file
+                                             ,offset
+                                             ,null
+                                             ,handler);
+
+            if (handler.type != null) {
+                return handler.type.getCanonicalText().toString().replace("const", "");  // NOI18N
+            }
+            return null;
+        }
+
+        // take const modifier into account
+        private List<String> typeToFormat(String type) {
+            if (type.contains("*")) {                           // NOI18N
+                if (type.contains("void")) {                    // NOI18N
+                    return Collections.singletonList("p");      // NOI18N
+                } else if (type.contains("char")) {             // NOI18N
+                    return Arrays.asList("p", "hhn", "s");      // NOI18N
+                } else if (type.contains("wchar_t")) {          // NOI18N
+                    return Arrays.asList("p", "s", "ls", "S");  // NOI18N
+                } else if (type.contains("short")) {            // NOI18N
+                    return Arrays.asList("p", "hn");            // NOI18N
+                } else if (type.contains("int")) {              // NOI18N
+                    return Arrays.asList("p", "n");             // NOI18N
+                } else if (type.contains("long long")) {        // NOI18N
+                    return Arrays.asList("p", "lln");           // NOI18N
+                } else if (type.contains("long")) {             // NOI18N
+                    return Arrays.asList("p", "ln");            // NOI18N
+                } else if (type.contains("intmax_t")) {         // NOI18N
+                    return Arrays.asList("p", "jn");            // NOI18N
+                } else if (type.contains("size_t")) {           // NOI18N
+                    return Arrays.asList("p", "zn");            // NOI18N
+                } else if (type.contains("ptrdiff_t")) {        // NOI18N
+                    return Arrays.asList("p", "tn");            // NOI18N
+                }
+            } else if (type.startsWith("unsigned")) {                  // NOI18N
+                if (type.contains("char")) {                           // NOI18N
+                    return Arrays.asList("hho", "hhu", "hhx", "hhX");  // NOI18N
+                } else if (type.contains("short")) {                   // NOI18N
+                    return Arrays.asList("ho", "hu", "hx", "hX");      // NOI18N
+                } else if (type.contains("long long")) {               // NOI18N
+                    return Arrays.asList("llo", "llu", "llx", "llX");  // NOI18N
+                } else if (type.contains("long")) {                    // NOI18N
+                    return Arrays.asList("lo", "lu", "lx", "lX");      // NOI18N
+                } else if (type.contains("int")) {                     // NOI18N
+                    return Arrays.asList("o", "u", "x", "X");          // NOI18N
+                }
+            } else {
+                if (type.contains("signed char")) {                           // NOI18N
+                    return Arrays.asList("hhd", "hhi");                       // NOI18N
+                } else if (type.contains("short")) {                          // NOI18N
+                    return Arrays.asList("hd", "hi");                         // NOI18N
+                } else if (type.contains("long long")) {                      // NOI18N
+                    return Arrays.asList("lld", "lli");                       // NOI18N
+                } else if (type.contains("long")) {                           // NOI18N
+                    return Arrays.asList("ld", "li");                         // NOI18N
+                } else if (type.equals("int")) {                              // NOI18N
+                    return Arrays.asList("d", "i", "c");                      // NOI18N
+                } else if (type.equals("intmax_t")) {                         // NOI18N
+                    return Arrays.asList("jd", "ji");                         // NOI18N
+                } else if (type.equals("uintmax_t")) {                        // NOI18N
+                    return Arrays.asList("jo", "ju", "jx", "jX");             // NOI18N
+                } else if (type.equals("size_t")) {                           // NOI18N
+                    return Arrays.asList("zd", "zi","zo", "zu", "zx", "zX");  // NOI18N
+                } else if (type.equals("ptrdiff_t")) {                        // NOI18N
+                    return Arrays.asList("td", "ti","to", "tu", "tx", "tX");  // NOI18N
+                } else if (type.equals("wint_t")) {                           // NOI18N
+                    return Arrays.asList("c", "lc", "C");                     // NOI18N
+                } else if (type.equals("float")) {  // NOI18N
+                    return Collections.EMPTY_LIST;
+                } else if (type.equals("double")) {  // NOI18N
+                    return Arrays.asList("f", "lf", "llf", "F", "lF", "llF",   // NOI18N
+                                         "e", "le", "lle", "E", "lE", "llE",   // NOI18N
+                                         "g", "lg", "llg", "G", "lG", "llG",   // NOI18N
+                                         "a", "la", "lla", "A", "lA", "llA");  // NOI18N
+                } else if (type.equals("long double")) {                                   // NOI18N
+                    return Arrays.asList("f", "lf", "llf", "Lf", "F", "lF", "llF", "LF",   // NOI18N
+                                         "e", "le", "lle", "Le", "E", "lE", "llE", "LE",   // NOI18N
+                                         "g", "lg", "llg", "Lg", "G", "lG", "llG", "LG",   // NOI18N
+                                         "a", "la", "lla", "La", "A", "lA", "llA", "LA");  // NOI18N
+                }
+            }
+            return Collections.EMPTY_LIST;
         }
     }
     
