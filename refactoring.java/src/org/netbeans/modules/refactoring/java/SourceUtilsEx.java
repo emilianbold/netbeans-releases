@@ -275,7 +275,7 @@ public final class SourceUtilsEx {
             ResolvedElementHandle handle = it.next();
             if (((caseSensitive && child.getName().equals(handle.getSourceFileName())) ||
                     (!caseSensitive && child.getName().equalsIgnoreCase(handle.getSourceFileName()))) &&
-                    (child.isData() && "java".equalsIgnoreCase(child.getExt()))) {
+                    (child.isData() && ("java".equalsIgnoreCase(child.getExt()) || "class".equalsIgnoreCase(child.getExt())))) {
                 it.remove();
                 result.add(child);
             }
